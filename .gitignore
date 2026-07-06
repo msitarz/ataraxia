@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+
+# Environments
+.env
+.envrc
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IPython
+profile_default/
+ipython_config.py
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Tests & coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Ruff stuff:
+.ruff_cache/
+
+# IDE
+.vscode/
+
+# Emacs
+*~
+.dir-locals.el
+\.?\#*

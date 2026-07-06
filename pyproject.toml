@@ -1,0 +1,135 @@
+[project]
+name = "ataraxia"
+version = "0.0.0"
+description = "Serverless orchestration engine for backtesting quantitative trading strategies"
+keywords = [
+  "backtesting",
+  "quant",
+  "quantitative-trading",
+  "finance",
+  "data-pipeline",
+]
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Michal Sitarz" }]
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "commitizen>=4.16.4",
+    "debugpy>=1.8.21",
+    "prek>=0.4.8",
+    "pyrefly>=1.1.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.20",
+]
+
+# =============================================================================
+# ruff (linting & formatting)
+# =============================================================================
+[tool.ruff]
+preview = true
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes — unused imports, undefined names, etc.
+  "I",    # isort — import ordering (replaces standalone isort)
+  "UP",   # pyupgrade — modernise syntax: Optional[X] → X | None, etc.
+  "B",    # flake8-bugbear — mutable defaults, loop variable leakage, etc.
+  "SIM",  # flake8-simplify — redundant conditions, unnecessary dicts, etc.
+  "C4",   # flake8-comprehensions — prefer list/dict/set comprehensions
+  "TID",  # flake8-tidy-imports — ban relative imports beyond one level
+  "RUF",  # ruff-native rules — various Python 3 improvements
+  "D",    # pydocstyle - presence and formatting of docstrings
+  "DOC",  # pydoclint - args/returns match signature in docstrings
+]
+extend-ignore = [
+  "D105", # undocumented magic method
+  "D107", # missing docstirng in __init__
+]
+ignore = [
+  "COM812",   # REQUIRED: conflicts with ruff format (trailing comma enforcer)
+  "ISC001",   # REQUIRED: conflicts with ruff format (implicit string concat)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"test/**" = [
+  "S101",     # assert is idiomatic in pytest
+  "ANN",      # no need for type annotations in tests
+  "D",        # no need for pydocstyle in tests
+  "DOC",      # No need for pydoclint in tests
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["ataraxia"]
+force-sort-within-sections = true
+
+# =============================================================================
+# pyrefly (typecheck, lsp)
+# =============================================================================
+[tool.pyrefly]
+project_includes = ["src"]
+python_version = "3.14"
+preset = "strict"
+
+# =============================================================================
+# pytest
+# =============================================================================
+[tool.pytest]
+pythonpath = ["src"]
+testpaths = ["test"]
+addopts = [
+  "--strict-markers",
+  "--tb=short",
+  "--import-mode=importlib",
+]
+
+# =============================================================================
+# pytest-cov (coverage)
+# =============================================================================
+[tool.coverage.run]
+branch = true
+source = ["src/ataraxia"]
+omit = [
+  "src/ataraxia/__init__.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = false
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "@(abc\\.)?abstractmethod",
+  "raise NotImplementedError",
+  "\\.\\.\\.\\s*$",           # ellipsis stub bodies (Protocols, overloads)
+]
+
+# =============================================================================
+# commitizen (conventional commits & version management)
+# =============================================================================
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+tag_format = "v$version"
+changelog_incremental = true
+update_changelog_on_bump = true
+annotated_tag = true
+pre_bump_hooks = ["scripts/commitizen_pre_bump_hook.sh"]
