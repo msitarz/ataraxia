@@ -1,5 +1,7 @@
 dictionaries = ["en_us"]
 words = [
+    "OHLCV",
+    "OHLC",
     "dataclass",
     "instancecheck",
     "metaclass",
