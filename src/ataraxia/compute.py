@@ -73,7 +73,9 @@ class ComputableNode[**P, R](Protocol, metaclass=_ComputeMeta):
 
 
 @runtime_checkable
-class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
+class ComputableSpec[**P, R, I: NamedTuple | None](
+    Hashable, Protocol, metaclass=_ComputeMeta
+):
     """Computable specification protocol.
 
     Defines computation specification to be executed in a computation loop
@@ -86,12 +88,12 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
         compute_node: class implementing ComputableNode protocol.
     """
 
-    init_params: NamedTuple | None
+    init_params: I
     compute_node: ClassVar[type[ComputableNode[..., Any]]]
 
     def dependencies(
         self,
-    ) -> tuple[type | ComputableSpec[..., Any], ...]:
+    ) -> tuple[type | ComputableSpec[..., Any, Any], ...]:
         """Dependencies injected into ComputableNode on every invocation.
 
         Returns:
@@ -105,7 +107,7 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
         Returns:
             Instance of compute_unit.
         """
-        if hasattr(self, "init_params") and self.init_params:
+        if hasattr(self, "init_params") and isinstance(self.init_params, tuple):
             return self.compute_node(*self.init_params)
         else:
             return self.compute_node()

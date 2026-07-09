@@ -30,7 +30,7 @@ class BarNode(ComputableNode[[], Bar]):
 
 
 @dataclass(frozen=True)
-class BarSpec(ComputableSpec[[], Bar]):
+class BarSpec(ComputableSpec[[], Bar, None]):
     """Compute specification for the current bar in the loop."""
 
     compute_node: ClassVar[type[BarNode]] = BarNode
@@ -72,3 +72,23 @@ class RollingWindowNode[T](ComputableNode[[T], tuple[T, ...]]):
         """
         self.queue.appendleft(item)
         return tuple(self.queue)
+
+
+@dataclass(frozen=True)
+class RollingWindowSpec[T]:
+    """Specification for rolling window container.
+
+    It means to be further specialized rather than used directly to provide valid
+    dependency specification.
+    """
+
+    init_params: RollingWindowParams
+    compute_node: ClassVar = RollingWindowNode
+
+    def dependencies(self):
+        """Subclass must provide implementation."""
+        raise NotImplementedError("Subclass must provide implementation")
+
+    def factory(self):
+        """Return RollingWindowNode instance."""
+        return self.compute_node[T](*self.init_params)
