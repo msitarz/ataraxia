@@ -3,12 +3,12 @@
 """Dependency injection module."""
 
 from graphlib import CycleError, TopologicalSorter
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 from ataraxia.bar import Bar
 from ataraxia.compute import ComputableNode, ComputableSpec
 
-type DependencyTreeNode = ComputableSpec[..., Any, NamedTuple | None] | type
+type DependencyTreeNode = ComputableSpec[..., object, NamedTuple | None] | type
 type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
 type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
 
@@ -78,13 +78,16 @@ def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
         raise
 
 
+type ComputeCatalog = dict[DependencyTreeNode, ComputableNode[..., object] | None]
+
+
 def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
     """Return a mapping of specification to instantiated compute node.
 
     Raises:
         TypeError: When one of dependencies is neither ComputableSpec or type.
     """
-    catalog: dict[DependencyTreeNode, ComputableNode[..., Any] | None] = {}
+    catalog: ComputeCatalog = {}
 
     for dep in dependencies:
         if isinstance(dep, type):
@@ -97,7 +100,15 @@ def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
     return catalog
 
 
-def inject_dependencies(bar: Bar):
+type ComputationTree = dict[DependencyTreeNode, object]
+
+
+def inject_dependencies(
+    bar: Bar,
+    catalog: ComputeCatalog,
+    dependencies: DependencyTreeNodeTuple,
+    tree: DependencyTree,
+):
     """Inject dependencies starting with variables in the loop.
 
     This function moves the computation tree by one step within the loop.  Currently
@@ -105,11 +116,31 @@ def inject_dependencies(bar: Bar):
 
     Args:
         bar: Current Bar instance in the computation loop.
+        catalog: Mapping of specifications to instantiated compute nodes.
+        dependencies: sorted tuple of specifications.
+        tree: Mapping of specifications to their dependencies.
 
     Returns:
         Computation tree results of each dependency.
 
     Raises:
-        ValueError: When dependency
+        TypeError: When type dependency is not of Bar class or .
     """
-    pass
+    computations: ComputationTree = {}
+
+    for dep in dependencies:
+        if isinstance(dep, type):
+            if type(bar) is not dep:
+                raise TypeError("Dependency not supported", dep)
+            computations[dep] = bar
+            continue
+
+        node = catalog[dep]
+        send = tuple(computations[d] for d in tree[dep])
+
+        if isinstance(node, ComputableNode):
+            computations[dep] = node(*send)
+        else:
+            raise TypeError("Specification factory must be return a ComputableNode")
+
+    return computations

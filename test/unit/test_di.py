@@ -234,7 +234,6 @@ def test_instantiate_compute_nodes_error(b_node):
         instantiate_compute_nodes((NotSpec(),))
 
 
-@pytest.mark.skip
 def test_inject_dependencies(b_node):
     BNodeParams, _BNode, BSpec = b_node
 
@@ -248,7 +247,7 @@ def test_inject_dependencies(b_node):
         compute_node: ClassVar = ANode
 
         def dependencies(self):
-            return (BSpec(BNodeParams(0.2)), BSpec(BNodeParams(0.6)))
+            return (BSpec(BNodeParams(2)), BSpec(BNodeParams(6)))
 
         def factory(self):
             return self.compute_node()
@@ -256,8 +255,8 @@ def test_inject_dependencies(b_node):
     bar = Bar(3, 6)
 
     aspec = ASpec()
-    bspec02 = BSpec(BNodeParams(0.2))
-    bspec06 = BSpec(BNodeParams(0.6))
+    bspec02 = BSpec(BNodeParams(2))
+    bspec06 = BSpec(BNodeParams(6))
 
     tree = {
         aspec: aspec.dependencies(),
@@ -279,7 +278,7 @@ def test_inject_dependencies(b_node):
 
     assert computed == {
         Bar: bar,
-        bspec06: bar.close + 0.6,
-        bspec02: bar.close + 0.2,
-        aspec: bar.close + 0.2 + bar.close + 0.6,
+        bspec06: bar.close + 6,
+        bspec02: bar.close + 2,
+        aspec: bar.close + 2 + bar.close + 6,
     }

@@ -56,7 +56,7 @@ class _ComputeMeta(_ProtocolMeta):
 
 
 @runtime_checkable
-class ComputableNode[**P, R](Protocol, metaclass=_ComputeMeta):
+class ComputableNode[**P, R](Protocol):
     """Computable node protocol.
 
     Computable node acts as a coroutine similar to a generator.  Attributes can keep
