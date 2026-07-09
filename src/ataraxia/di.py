@@ -16,13 +16,13 @@ def compute_dependency_tree(
     """Return dependency tree of `entry_spec`."""
     deps = () if isinstance(spec, type) else spec.dependencies()
 
-    if tree:
-        if spec in tree:
-            return tree
+    if not tree:
+        tree = {}
 
-        tree[spec] = deps
-    else:
-        tree = {spec: deps}
+    if spec in tree:
+        return tree
+
+    tree[spec] = deps
 
     for dep in deps:
         compute_dependency_tree(dep, tree)
