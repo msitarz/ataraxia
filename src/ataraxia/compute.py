@@ -77,7 +77,8 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
     """Computable specification protocol.
 
     Defines computation specification to be executed in a computation loop
-    providing dependencies and initial parameters.
+    providing dependencies and initial parameters.  Currently classes implementing
+    ComputableSpec protocol must be frozen dataclasses.
 
     Attributes:
         init_params: initial params for ComputableNode.  It must be a NamedTuple.  It

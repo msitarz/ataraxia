@@ -5,14 +5,18 @@
 Provide basic features for the computation model.
 """
 
+from collections import deque
 from dataclasses import dataclass
-from typing import ClassVar, override
+from typing import ClassVar, NamedTuple, override
 
 from ataraxia.bar import Bar
 from ataraxia.compute import ComputableNode, ComputableSpec
 
+# ================
+# Bar Compute Node
+# ================
 
-@dataclass(frozen=True)
+
 class BarNode(ComputableNode[[], Bar]):
     """Current bar processed in the computation loop."""
 
@@ -39,3 +43,32 @@ class BarSpec(ComputableSpec[[], Bar]):
             Tuple with type Bar dependency for DI.
         """
         return (Bar,)
+
+
+# ===========================
+# Rolling Window Compute Node
+# ===========================
+
+
+class RollingWindowParams(NamedTuple):
+    """Parameters for RollingWindow specification."""
+
+    maxlen: int
+
+
+class RollingWindowNode[T](ComputableNode[[T], tuple[T, ...]]):
+    """Container node implementing rolling window."""
+
+    queue: deque[T]
+
+    def __init__(self, maxlen: int):
+        self.queue = deque(maxlen=maxlen)
+
+    def __call__(self, item: T):
+        """Accumulate item.
+
+        Returns:
+            Accumulated items in a tuple.
+        """
+        self.queue.appendleft(item)
+        return tuple(self.queue)
