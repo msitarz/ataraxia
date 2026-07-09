@@ -1,9 +1,12 @@
 dictionaries = ["en_us"]
 words = [
-    "OHLCV",
     "OHLC",
+    "OHLCV",
+    "SMA",
     "dataclass",
+    "dataclasses",
     "instancecheck",
+    "maxlen",
     "metaclass",
     "michal",
     "pyrefly",
