@@ -2,11 +2,17 @@
 # Copyright (C) 2026 by Michal Sitarz
 from dataclasses import dataclass
 from graphlib import CycleError
-from typing import ClassVar
+from typing import ClassVar, NamedTuple
 
 import pytest
 
-from ataraxia.di import compute_dependency_tree, sort_dependency_tree
+from ataraxia.bar import Bar
+from ataraxia.di import (
+    compute_dependency_tree,
+    inject_dependencies,
+    instantiate_compute_nodes,
+    sort_dependency_tree,
+)
 
 
 def test_compute_dependency_tree_good_path():
@@ -171,3 +177,109 @@ def test_sort_dependency_tree_cycle_error():
 
     with pytest.raises(CycleError):
         sort_dependency_tree(tree)
+
+
+@pytest.fixture
+def b_node():
+    class BNodeParams(NamedTuple):
+        x: float
+
+    @dataclass(frozen=True)
+    class BNode:
+        x: float
+
+        def __call__(self, bar):
+            return bar.close + self.x
+
+    @dataclass(frozen=True)
+    class BSpec:
+        init_params: BNodeParams
+        compute_node: ClassVar = BNode
+
+        def dependencies(self):
+            return (Bar,)
+
+        def factory(self):
+            return self.compute_node(*self.init_params)
+
+    return BNodeParams, BNode, BSpec
+
+
+def test_instantiate_compute_nodes(b_node):
+    BNodeParams, BNode, BSpec = b_node
+
+    bspec8 = BSpec(BNodeParams(8))
+    bspec9 = BSpec(BNodeParams(9))
+
+    deps = (Bar, bspec8, bspec9)
+
+    catalog = instantiate_compute_nodes(deps)
+
+    assert isinstance(catalog, dict)
+
+    assert catalog.get(Bar) is None
+
+    assert isinstance(catalog.get(bspec8), BNode)
+    assert catalog[bspec8].x == 8
+
+    assert isinstance(catalog.get(bspec9), BNode)
+    assert catalog[bspec9].x == 9
+
+
+def test_instantiate_compute_nodes_error(b_node):
+    class NotSpec:
+        x: int
+
+    with pytest.raises(TypeError):
+        instantiate_compute_nodes((NotSpec(),))
+
+
+@pytest.mark.skip
+def test_inject_dependencies(b_node):
+    BNodeParams, _BNode, BSpec = b_node
+
+    class ANode:
+        def __call__(self, param1: float, param2: float):
+            return param1 + param2
+
+    @dataclass(frozen=True)
+    class ASpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = ANode
+
+        def dependencies(self):
+            return (BSpec(BNodeParams(0.2)), BSpec(BNodeParams(0.6)))
+
+        def factory(self):
+            return self.compute_node()
+
+    bar = Bar(3, 6)
+
+    aspec = ASpec()
+    bspec02 = BSpec(BNodeParams(0.2))
+    bspec06 = BSpec(BNodeParams(0.6))
+
+    tree = {
+        aspec: aspec.dependencies(),
+        bspec02: bspec02.dependencies(),
+        bspec06: bspec06.dependencies(),
+        Bar: (),
+    }
+
+    deps = (Bar, bspec02, bspec06, aspec)
+
+    catalog = {
+        Bar: None,
+        aspec: aspec.factory(),
+        bspec02: bspec02.factory(),
+        bspec06: bspec06.factory(),
+    }
+
+    computed = inject_dependencies(bar, catalog, deps, tree)
+
+    assert computed == {
+        Bar: bar,
+        bspec06: bar.close + 0.6,
+        bspec02: bar.close + 0.2,
+        aspec: bar.close + 0.2 + bar.close + 0.6,
+    }

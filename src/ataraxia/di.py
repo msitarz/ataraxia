@@ -3,11 +3,12 @@
 """Dependency injection module."""
 
 from graphlib import CycleError, TopologicalSorter
-from typing import Any
+from typing import Any, NamedTuple
 
-from ataraxia.compute import ComputableSpec
+from ataraxia.bar import Bar
+from ataraxia.compute import ComputableNode, ComputableSpec
 
-type DependencyTreeNode = ComputableSpec[..., Any, Any] | type
+type DependencyTreeNode = ComputableSpec[..., Any, NamedTuple | None] | type
 type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
 type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
 
@@ -75,3 +76,40 @@ def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
     except CycleError as e:
         e.add_note("Compute specifications cannot reference each other")
         raise
+
+
+def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
+    """Return a mapping of specification to instantiated compute node.
+
+    Raises:
+        TypeError: When one of dependencies is neither ComputableSpec or type.
+    """
+    catalog: dict[DependencyTreeNode, ComputableNode[..., Any] | None] = {}
+
+    for dep in dependencies:
+        if isinstance(dep, type):
+            catalog[dep] = None
+        elif isinstance(dep, ComputableSpec):
+            catalog[dep] = dep.factory()
+        else:
+            raise TypeError("Dependency must be a class or a specification instance")
+
+    return catalog
+
+
+def inject_dependencies(bar: Bar):
+    """Inject dependencies starting with variables in the loop.
+
+    This function moves the computation tree by one step within the loop.  Currently
+    supports looping over bar values of a single instrument only.
+
+    Args:
+        bar: Current Bar instance in the computation loop.
+
+    Returns:
+        Computation tree results of each dependency.
+
+    Raises:
+        ValueError: When dependency
+    """
+    pass
