@@ -55,6 +55,7 @@ class _ComputeMeta(_ProtocolMeta):
         raise TypeError("Instance and class must be a frozen dataclass")
 
 
+@runtime_checkable
 class ComputableNode[**P, R](Protocol, metaclass=_ComputeMeta):
     """Computable node protocol.
 

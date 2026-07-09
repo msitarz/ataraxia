@@ -6,6 +6,7 @@ Provide basic features for the computation model.
 """
 
 from collections import deque
+from collections.abc import Collection
 from dataclasses import dataclass
 from typing import ClassVar, NamedTuple, override
 
@@ -92,3 +93,78 @@ class RollingWindowSpec[T]:
     def factory(self):
         """Return RollingWindowNode instance."""
         return self.compute_node[T](*self.init_params)
+
+
+# ===========================
+# Rolling Bar Window
+# ===========================
+
+
+@dataclass(frozen=True)
+class RollingBarSpec(RollingWindowSpec[Bar]):
+    """Rolling Bar Window specification."""
+
+    @override
+    def dependencies(self):
+        return (Bar,)
+
+
+# ===========================
+# SMA Compute Node
+# ===========================
+
+type SmaReturnType = float
+
+
+def sma(items: Collection[SmaReturnType], period: int):
+    """Simple Moving Average.
+
+    Args:
+        items: Collection of numbers to calculate sma on.
+        period: Period parameter for sma.
+
+    Returns:
+        Number of calculated sma or None if items not long enough.
+
+    Raises:
+        ValueError: When `items` longer than `period`.
+    """
+    if len(items) < period:
+        return None
+    elif len(items) > period:
+        raise ValueError("Items cannot be longer than period")
+
+    return sum(items) / len(items)
+
+
+class SmaParams(NamedTuple):
+    """Parameter class for SMA node."""
+
+    period: int
+
+
+@dataclass(frozen=True)
+class SmaNode:
+    """Compute node for sma."""
+
+    period: int
+
+    def __call__(self, bars: Collection[Bar]):
+        """Return SMA for `bars`."""
+        return sma(tuple(b.close for b in bars), self.period)
+
+
+@dataclass(frozen=True)
+class SmaSpec:
+    """SMA specification."""
+
+    init_params: SmaParams
+    compute_node: ClassVar = SmaNode
+
+    def dependencies(self):
+        """Return compute node dependencies."""
+        return (RollingBarSpec(RollingWindowParams(self.init_params.period)),)
+
+    def factory(self):
+        """Return compute node instance."""
+        return self.compute_node(*self.init_params)
