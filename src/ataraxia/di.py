@@ -2,12 +2,14 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Dependency injection module."""
 
+from graphlib import CycleError, TopologicalSorter
 from typing import Any
 
 from ataraxia.compute import ComputableSpec
 
 type DependencyTreeNode = ComputableSpec[..., Any, Any] | type
-type DependencyTree = dict[DependencyTreeNode, tuple[DependencyTreeNode, ...]]
+type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
+type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
 
 
 def compute_dependency_tree(
@@ -50,3 +52,26 @@ def compute_dependency_tree(
         compute_dependency_tree(dep, _tree)
 
     return _tree
+
+
+def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
+    """Sort dependency `tree`.
+
+    Takes the tree computed via `compute_dependency_tree`, sorts it checking for
+    CycleError and returns a flat tuple of nodes.  This tuple will be processed.
+
+    Arg:
+        tree: Dependency tree returned from `compute_dependency_tree`.
+
+    Returns:
+        Tuple of sorted dependency nodes.
+
+    Raises:
+        CycleError: When dependencies form a cyclic graph.
+    """
+    ts = TopologicalSorter(tree)
+    try:
+        return tuple(ts.static_order())
+    except CycleError as e:
+        e.add_note("Compute specifications cannot reference each other")
+        raise

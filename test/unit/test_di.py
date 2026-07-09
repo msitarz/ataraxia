@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
 from dataclasses import dataclass
+from graphlib import CycleError
 from typing import ClassVar
 
 import pytest
 
-from ataraxia.di import compute_dependency_tree
+from ataraxia.di import compute_dependency_tree, sort_dependency_tree
 
 
 def test_compute_dependency_tree_good_path():
@@ -92,3 +93,81 @@ def test_compute_dependency_tree_error_deps_not_tuple():
 
     with pytest.raises(TypeError):
         compute_dependency_tree(CSpec())
+
+
+def test_sort_dependency_tree_good_path():
+    @dataclass(frozen=True)
+    class CSpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return (int,)
+
+        def factory(self):
+            return None
+
+    @dataclass(frozen=True)
+    class BSpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return (CSpec(),)
+
+        def factory(self):
+            return None
+
+    @dataclass(frozen=True)
+    class ASpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return (BSpec(), CSpec())
+
+        def factory(self):
+            return None
+
+    tree = {
+        ASpec(): ASpec().dependencies(),
+        BSpec(): BSpec().dependencies(),
+        CSpec(): CSpec().dependencies(),
+        int: (),
+    }
+
+    deps = sort_dependency_tree(tree)
+
+    assert deps == (int, CSpec(), BSpec(), ASpec())
+
+
+def test_sort_dependency_tree_cycle_error():
+    @dataclass(frozen=True)
+    class BSpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return (ASpec(),)
+
+        def factory(self):
+            return None
+
+    @dataclass(frozen=True)
+    class ASpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return (BSpec(),)
+
+        def factory(self):
+            return None
+
+    tree = {
+        ASpec(): ASpec().dependencies(),
+        BSpec(): BSpec().dependencies(),
+    }
+
+    with pytest.raises(CycleError):
+        sort_dependency_tree(tree)
