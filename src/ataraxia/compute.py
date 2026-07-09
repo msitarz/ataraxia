@@ -9,9 +9,10 @@ from collections.abc import Hashable
 import dataclasses
 from dataclasses import is_dataclass
 from typing import (
+    Any,
+    ClassVar,
     NamedTuple,
     Protocol,
-    Self,
     _ProtocolMeta,
     override,
     runtime_checkable,
@@ -85,11 +86,11 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
     """
 
     init_params: NamedTuple | None
-    compute_node: type[ComputableNode[P, R]]
+    compute_node: ClassVar[type[ComputableNode[..., Any]]]
 
     def dependencies(
-        self: Self,
-    ) -> tuple[type | ComputableSpec[..., object], ...]:
+        self,
+    ) -> tuple[type | ComputableSpec[..., Any], ...]:
         """Dependencies injected into ComputableNode on every invocation.
 
         Returns:
@@ -97,7 +98,7 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
         """
         return ()
 
-    def factory(self: Self) -> ComputableNode[P, R]:
+    def factory(self) -> ComputableNode[P, R]:
         """Instantiate compute_unit with init_params.
 
         Returns:
