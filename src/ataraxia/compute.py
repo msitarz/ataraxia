@@ -84,10 +84,12 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
         compute_node: class implementing ComputableNode protocol.
     """
 
-    init_params: NamedTuple
+    init_params: NamedTuple | None
     compute_node: type[ComputableNode[P, R]]
 
-    def dependencies(self: Self):
+    def dependencies(
+        self: Self,
+    ) -> tuple[type | ComputableSpec[..., object], ...]:
         """Dependencies injected into ComputableNode on every invocation.
 
         Returns:
@@ -101,4 +103,7 @@ class ComputableSpec[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
         Returns:
             Instance of compute_unit.
         """
-        return self.compute_node(*self.init_params)
+        if hasattr(self, "init_params") and self.init_params:
+            return self.compute_node(*self.init_params)
+        else:
+            return self.compute_node()
