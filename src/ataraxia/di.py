@@ -11,20 +11,42 @@ type DependencyTree = dict[DependencyTreeNode, tuple[DependencyTreeNode, ...]]
 
 
 def compute_dependency_tree(
-    spec: DependencyTreeNode, tree: DependencyTree | None = None
+    spec: DependencyTreeNode, _tree: DependencyTree | None = None
 ) -> DependencyTree:
-    """Return dependency tree of `entry_spec`."""
-    deps = () if isinstance(spec, type) else spec.dependencies()
+    """Calculate dependency tree for `spec`.
 
-    if not tree:
-        tree = {}
+    Args:
+        spec: Root of the return dependency tree.x
+        _tree: Leave out if calculating the tree from the root node.
 
-    if spec in tree:
-        return tree
+    Returns:
+        Dependency tree for `spec` root node.
 
-    tree[spec] = deps
+    Raises:
+        TypeError: if spec is neither ComputableSpec or type.
+    """
+    if not isinstance(spec, type) and not isinstance(spec, ComputableSpec):
+        raise TypeError("Spec must implement ComputableSpec protocol or be a class")
+
+    if isinstance(spec, ComputableSpec):
+        deps = spec.dependencies()
+        if not deps:
+            raise TypeError("Spec dependencies cannot be empty")
+    else:
+        deps = ()
+
+    if not isinstance(deps, tuple):
+        raise TypeError("Dependencies must be a tuple")
+
+    if not _tree:
+        _tree = {}
+
+    if spec in _tree:
+        return _tree
+
+    _tree[spec] = deps
 
     for dep in deps:
-        compute_dependency_tree(dep, tree)
+        compute_dependency_tree(dep, _tree)
 
-    return tree
+    return _tree

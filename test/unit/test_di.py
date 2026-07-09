@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
-
-
 from dataclasses import dataclass
 from typing import ClassVar
+
+import pytest
 
 from ataraxia.di import compute_dependency_tree
 
@@ -43,3 +43,52 @@ def test_compute_dependency_tree_type_as_entry():
     deps = compute_dependency_tree(int)
 
     assert deps == {int: ()}
+
+
+def test_compute_dependency_tree_error_not_computable_spec():
+    # Error when spec is not a ComputableSpec
+    class ASpec:
+        pass
+
+    with pytest.raises(TypeError):
+        compute_dependency_tree(ASpec())
+
+
+def test_compute_dependency_tree_error_not_a_class():
+    # Error when spec is not a class
+    with pytest.raises(TypeError):
+        compute_dependency_tree(0)
+
+
+def test_compute_dependency_tree_error_no_deps():
+    # Error when spec doesn't have any dependencies
+    @dataclass(frozen=True)
+    class BSpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return ()
+
+        def factory(self):
+            return None
+
+    with pytest.raises(TypeError):
+        compute_dependency_tree(BSpec())
+
+
+def test_compute_dependency_tree_error_deps_not_tuple():
+    # Error when spec dependencies are not a tuple
+    @dataclass(frozen=True)
+    class CSpec:
+        init_params: ClassVar = None
+        compute_node: ClassVar = None
+
+        def dependencies(self):
+            return [int]
+
+        def factory(self):
+            return None
+
+    with pytest.raises(TypeError):
+        compute_dependency_tree(CSpec())
