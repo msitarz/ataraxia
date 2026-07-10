@@ -2,6 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Dependency injection module."""
 
+from collections.abc import Generator, Iterable
 from graphlib import CycleError, TopologicalSorter
 from typing import NamedTuple
 
@@ -103,7 +104,7 @@ def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
 type ComputationTree = dict[DependencyTreeNode, object]
 
 
-def inject_dependencies(
+def compute_step(
     bar: Bar,
     catalog: ComputeCatalog,
     dependencies: DependencyTreeNodeTuple,
@@ -144,3 +145,23 @@ def inject_dependencies(
             raise TypeError("Specification factory must be return a ComputableNode")
 
     return computations
+
+
+def compute(
+    spec: ComputableSpec[..., object, NamedTuple | None], shard: Iterable[Bar]
+) -> Generator[ComputationTree]:
+    """Compute `shard` with `spec`.
+
+    Args:
+        spec: Root node in `DependencyTree`.
+        shard: Data to process.  Currently only iterable that returns `Bar` is
+            supported.
+
+    Yields:
+        `ComputationTree` of each iteration over `shard`.
+    """
+    tree = compute_dependency_tree(spec)
+    deps = sort_dependency_tree(tree)
+    catalog = instantiate_compute_nodes(deps)
+    for bar in shard:
+        yield compute_step(bar, catalog, deps, tree)
