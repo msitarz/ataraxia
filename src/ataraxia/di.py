@@ -7,9 +7,9 @@ from graphlib import CycleError, TopologicalSorter
 from typing import NamedTuple
 
 from ataraxia.bar import Bar
-from ataraxia.compute import ComputableNode, ComputableSpec
+from ataraxia.compute import Computable, Runner
 
-type DependencyTreeNode = ComputableSpec[..., object, NamedTuple | None] | type
+type DependencyTreeNode = Computable[..., object, NamedTuple | None] | type
 type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
 type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
 
@@ -29,10 +29,10 @@ def compute_dependency_tree(
     Raises:
         TypeError: if spec is neither ComputableSpec or type.
     """
-    if not isinstance(spec, type) and not isinstance(spec, ComputableSpec):
+    if not isinstance(spec, type) and not isinstance(spec, Computable):
         raise TypeError("Spec must implement ComputableSpec protocol or be a class")
 
-    if isinstance(spec, ComputableSpec):
+    if isinstance(spec, Computable):
         deps = spec.dependencies()
         if not deps:
             raise TypeError("Spec dependencies cannot be empty")
@@ -79,7 +79,7 @@ def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
         raise
 
 
-type ComputeCatalog = dict[DependencyTreeNode, ComputableNode[..., object] | None]
+type ComputeCatalog = dict[DependencyTreeNode, Runner[..., object] | None]
 
 
 def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
@@ -93,7 +93,7 @@ def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
     for dep in dependencies:
         if isinstance(dep, type):
             catalog[dep] = None
-        elif isinstance(dep, ComputableSpec):
+        elif isinstance(dep, Computable):
             catalog[dep] = dep.factory()
         else:
             raise TypeError("Dependency must be a class or a specification instance")
@@ -139,7 +139,7 @@ def compute_step(
         node = catalog[dep]
         send = tuple(computations[d] for d in tree[dep])
 
-        if isinstance(node, ComputableNode):
+        if isinstance(node, Runner):
             computations[dep] = node(*send)
         else:
             raise TypeError("Specification factory must be return a ComputableNode")
@@ -148,7 +148,7 @@ def compute_step(
 
 
 def compute(
-    spec: ComputableSpec[..., object, NamedTuple | None], shard: Iterable[Bar]
+    spec: Computable[..., object, NamedTuple | None], shard: Iterable[Bar]
 ) -> Generator[ComputationTree]:
     """Compute `shard` with `spec`.
 

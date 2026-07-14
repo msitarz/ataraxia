@@ -6,8 +6,8 @@ from typing import NamedTuple, Protocol, runtime_checkable
 import pytest
 
 from ataraxia.compute import (
-    ComputableNode,
-    ComputableSpec,
+    Computable,
+    Runner,
     _ComputeMeta,
     _is_dataclass_frozen,
 )
@@ -91,7 +91,7 @@ def valid_compute_classes():
     @dataclass(frozen=True)
     class FeatureSpec:
         init_params: FeatureParams
-        compute_node: ComputableNode = Feature
+        compute_node: Runner = Feature
 
         def dependencies(self):
             return ()
@@ -107,11 +107,11 @@ def test_isinstance_of_computable(valid_compute_classes):
 
     feature_spec = FeatureSpec(FeatureParams(12))
 
-    assert isinstance(feature_spec, ComputableSpec)
+    assert isinstance(feature_spec, Computable)
 
     class NotDataclass:
         init_params: FeatureParams
-        compute_node: ComputableNode = Feature
+        compute_node: Runner = Feature
 
         def __init__(self, init_params, compute_node):
             self.init_params = init_params
@@ -126,16 +126,16 @@ def test_isinstance_of_computable(valid_compute_classes):
     not_dataclass_spec = NotDataclass(FeatureParams(12), Feature)
 
     with pytest.raises(TypeError):
-        isinstance(not_dataclass_spec, ComputableSpec)
+        isinstance(not_dataclass_spec, Computable)
 
 
 def test_computable_spec_factory(valid_compute_classes):
     FeatureParams, Feature, *_ = valid_compute_classes
 
     @dataclass(frozen=True)
-    class FeatureSpec(ComputableSpec):
+    class FeatureSpec(Computable):
         init_params: FeatureParams
-        compute_node: ComputableNode = Feature
+        compute_node: Runner = Feature
 
     spec = FeatureSpec(FeatureParams(42))
     inst = spec.factory()
@@ -144,12 +144,12 @@ def test_computable_spec_factory(valid_compute_classes):
     assert inst.period == 42
 
     @dataclass(frozen=True)
-    class FeatureNoParams(ComputableNode):
+    class FeatureNoParams(Runner):
         pass
 
     @dataclass(frozen=True)
-    class FeatureSpecNoParams(ComputableSpec):
-        compute_node: ComputableNode = FeatureNoParams
+    class FeatureSpecNoParams(Computable):
+        compute_node: Runner = FeatureNoParams
 
     spec_no_params = FeatureSpecNoParams()
     inst_no_params = spec_no_params.factory()

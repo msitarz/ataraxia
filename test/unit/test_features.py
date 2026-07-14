@@ -3,7 +3,7 @@
 import pytest
 
 from ataraxia.bar import Bar
-from ataraxia.compute import ComputableNode, ComputableSpec
+from ataraxia.compute import Computable, Runner
 from ataraxia.features import (
     RollingBarSpec,
     RollingWindowNode,
@@ -37,14 +37,14 @@ def test_rolling_window_spec():
     rolling(4)
 
     assert tuple(rolling.queue) == (4,)
-    assert isinstance(rolling_spec, ComputableSpec)
+    assert isinstance(rolling_spec, Computable)
 
 
 def test_rolling_bar_spec():
     rolling_spec = RollingBarSpec(RollingWindowParams(1))
 
     assert rolling_spec.dependencies() == (Bar,)
-    assert isinstance(rolling_spec, ComputableSpec)
+    assert isinstance(rolling_spec, Computable)
 
 
 def test_sma():
@@ -58,10 +58,10 @@ def test_sma():
 def test_sma_node():
     node = SmaNode(2)
 
-    assert isinstance(node, ComputableNode)
+    assert isinstance(node, Runner)
 
 
 def test_sma_spec():
     spec = SmaSpec(RollingWindowParams(2))
 
-    assert isinstance(spec, ComputableSpec)
+    assert isinstance(spec, Computable)

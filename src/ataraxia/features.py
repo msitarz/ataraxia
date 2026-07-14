@@ -11,14 +11,14 @@ from dataclasses import dataclass
 from typing import ClassVar, NamedTuple, override
 
 from ataraxia.bar import Bar
-from ataraxia.compute import ComputableNode, ComputableSpec
+from ataraxia.compute import Computable, Runner
 
 # ================
 # Bar Compute Node
 # ================
 
 
-class BarNode(ComputableNode[[], Bar]):
+class BarNode(Runner[[], Bar]):
     """Current bar processed in the computation loop."""
 
     def __call__(self, bar: Bar):
@@ -31,7 +31,7 @@ class BarNode(ComputableNode[[], Bar]):
 
 
 @dataclass(frozen=True)
-class BarSpec(ComputableSpec[[], Bar, None]):
+class BarSpec(Computable[[], Bar, None]):
     """Compute specification for the current bar in the loop."""
 
     compute_node: ClassVar[type[BarNode]] = BarNode
@@ -57,7 +57,7 @@ class RollingWindowParams(NamedTuple):
     maxlen: int
 
 
-class RollingWindowNode[T](ComputableNode[[T], tuple[T, ...]]):
+class RollingWindowNode[T](Runner[[T], tuple[T, ...]]):
     """Container node implementing rolling window."""
 
     queue: deque[T]

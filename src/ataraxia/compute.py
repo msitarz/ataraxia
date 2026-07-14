@@ -56,7 +56,7 @@ class _ComputeMeta(_ProtocolMeta):
 
 
 @runtime_checkable
-class ComputableNode[**P, R](Protocol):
+class Runner[**P, R](Protocol):
     """Computable node protocol.
 
     Computable node acts as a coroutine similar to a generator.  Attributes can keep
@@ -74,7 +74,7 @@ class ComputableNode[**P, R](Protocol):
 
 
 @runtime_checkable
-class ComputableSpec[**P, R, I: NamedTuple | None](
+class Computable[**P, R, I: NamedTuple | None](
     Hashable, Protocol, metaclass=_ComputeMeta
 ):
     """Computable specification protocol.
@@ -90,11 +90,11 @@ class ComputableSpec[**P, R, I: NamedTuple | None](
     """
 
     init_params: I
-    compute_node: ClassVar[type[ComputableNode[..., Any]]]
+    compute_node: ClassVar[type[Runner[..., Any]]]
 
     def dependencies(
         self,
-    ) -> tuple[type | ComputableSpec[..., Any, Any], ...]:
+    ) -> tuple[type | Computable[..., Any, Any], ...]:
         """Dependencies injected into ComputableNode on every invocation.
 
         Returns:
@@ -102,7 +102,7 @@ class ComputableSpec[**P, R, I: NamedTuple | None](
         """
         return ()
 
-    def factory(self) -> ComputableNode[P, R]:
+    def factory(self) -> Runner[P, R]:
         """Instantiate compute_unit with init_params.
 
         Returns:
