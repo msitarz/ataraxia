@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from graphlib import CycleError
 from operator import itemgetter
-from typing import ClassVar, NamedTuple
+from typing import NamedTuple
 
 import pytest
 
@@ -20,9 +20,6 @@ from ataraxia.di import (
 def test_compute_dependency_graph_good_path():
     @dataclass(frozen=True)
     class ASpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (int,)
 
@@ -31,9 +28,6 @@ def test_compute_dependency_graph_good_path():
 
     @dataclass(frozen=True)
     class EntrySpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (ASpec(),)
 
@@ -73,9 +67,6 @@ def test_compute_dependency_graph_error_no_deps():
     # Error when spec doesn't have any dependencies
     @dataclass(frozen=True)
     class BSpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return ()
 
@@ -90,9 +81,6 @@ def test_compute_dependency_graph_error_deps_not_tuple():
     # Error when spec dependencies are not a tuple
     @dataclass(frozen=True)
     class CSpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return [int]
 
@@ -106,9 +94,6 @@ def test_compute_dependency_graph_error_deps_not_tuple():
 def test_sort_dependency_graph_good_path():
     @dataclass(frozen=True)
     class CSpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (int,)
 
@@ -117,9 +102,6 @@ def test_sort_dependency_graph_good_path():
 
     @dataclass(frozen=True)
     class BSpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (CSpec(),)
 
@@ -128,9 +110,6 @@ def test_sort_dependency_graph_good_path():
 
     @dataclass(frozen=True)
     class ASpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (BSpec(), CSpec())
 
@@ -152,9 +131,6 @@ def test_sort_dependency_graph_good_path():
 def test_sort_dependency_graph_cycle_error():
     @dataclass(frozen=True)
     class BSpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (ASpec(),)
 
@@ -163,9 +139,6 @@ def test_sort_dependency_graph_cycle_error():
 
     @dataclass(frozen=True)
     class ASpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = None
-
         def dependencies(self):
             return (BSpec(),)
 
@@ -196,13 +169,12 @@ def b_node():
     @dataclass(frozen=True)
     class BSpec:
         init_params: BNodeParams
-        compute_node: ClassVar = BNode
 
         def dependencies(self):
             return (Bar,)
 
         def factory(self):
-            return self.compute_node(*self.init_params)
+            return BNode(*self.init_params)
 
     return {
         "params": BNodeParams,
@@ -252,14 +224,11 @@ def a_node(b_node):
 
     @dataclass(frozen=True)
     class ASpec:
-        init_params: ClassVar = None
-        compute_node: ClassVar = ANode
-
         def dependencies(self):
             return (bspec2, bspec6)
 
         def factory(self):
-            return self.compute_node()
+            return ANode()
 
     return {"node": ANode, "spec": ASpec, "bspec2": bspec2, "bspec6": bspec6}
 
