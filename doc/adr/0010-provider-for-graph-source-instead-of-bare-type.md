@@ -12,8 +12,8 @@ The current implementation allows for bare type to supply the computable graph w
 
 ## Decision
 
-Introdue `Provider` protocol which will act as data input for the computable graph.  At first, it can be just a stub with a single `BarProvider`, but with the passage of time, the graph implementation can grow to support multiple data sources.
+Introduce `Provider` concept which will act as data input for the computable graph.  At first, it can be just a stub with a single `BarProvider`, but with the passage of time, the graph implementation can grow to support multiple data sources.
 
 ## Consequences
 
-Reduce ambiguity by introducing concrete protocol for data input into the graph.
+Reduce ambiguity by introducing concrete concept for data input into the graph.
