@@ -8,12 +8,12 @@ from typing import Any
 
 from ataraxia.errors import CycleError
 
-from .protocols import Dependency
+from .protocols import Computable
 
-type Graph = MutableMapping[Dependency[..., Any], tuple[Dependency[..., Any], ...]]
+type Graph = MutableMapping[Computable[..., Any], tuple[Computable[..., Any], ...]]
 
 
-def dependency_graph(computable: Dependency[..., Any], _graph: Graph | None = None):
+def dependency_graph(computable: Computable[..., Any], _graph: Graph | None = None):
     """Return dependency graph for `computable`."""
     if not _graph:
         _graph = {}
@@ -29,7 +29,7 @@ def dependency_graph(computable: Dependency[..., Any], _graph: Graph | None = No
     return _graph
 
 
-def sort_graph(graph: Graph) -> tuple[Dependency[..., Any], ...]:
+def sort_graph(graph: Graph) -> tuple[Computable[..., Any], ...]:
     """Return sorted graph.
 
     Raises:

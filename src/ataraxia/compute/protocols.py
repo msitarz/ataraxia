@@ -15,8 +15,7 @@ class Runner[**P, R](Protocol):
         ...
 
 
-type Dependency[**P, R] = Computable[P, R]
-type DependencyMapping = Mapping[str, Dependency[..., Any]]
+type DependencyMapping = Mapping[str, Computable[..., Any]]
 
 
 @runtime_checkable
