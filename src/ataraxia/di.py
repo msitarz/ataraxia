@@ -7,7 +7,7 @@ from graphlib import CycleError, TopologicalSorter
 from typing import Any
 
 from ataraxia.bar import Bar
-from ataraxia.compute import Computable, Runner
+from ataraxia.compute_old import Computable, Runner
 
 type DependencyGraphNode = Computable[..., Any] | type
 type DependencyGraphNodeTuple = tuple[DependencyGraphNode, ...]

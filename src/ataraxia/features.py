@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from typing import ClassVar, NamedTuple, override
 
 from ataraxia.bar import Bar
-from ataraxia.compute import Computable, Runner
+from ataraxia.compute_old import Computable, Runner
 
 # ================
 # Bar Compute Node

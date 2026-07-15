@@ -3,7 +3,7 @@
 import pytest
 
 from ataraxia.bar import Bar
-from ataraxia.compute import Computable, Runner
+from ataraxia.compute_old import Computable, Runner
 from ataraxia.features import (
     RollingBarSpec,
     RollingWindowNode,

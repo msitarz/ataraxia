@@ -5,7 +5,7 @@ from typing import NamedTuple, Protocol, runtime_checkable
 
 import pytest
 
-from ataraxia.compute import (
+from ataraxia.compute_old import (
     Computable,
     Runner,
     _ComputeMeta,
