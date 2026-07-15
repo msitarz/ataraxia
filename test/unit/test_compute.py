@@ -127,31 +127,3 @@ def test_isinstance_of_computable(valid_compute_classes):
 
     with pytest.raises(TypeError):
         isinstance(not_dataclass_spec, Computable)
-
-
-def test_computable_spec_factory(valid_compute_classes):
-    FeatureParams, Feature, *_ = valid_compute_classes
-
-    @dataclass(frozen=True)
-    class FeatureSpec(Computable):
-        init_params: FeatureParams
-        compute_node: Runner = Feature
-
-    spec = FeatureSpec(FeatureParams(42))
-    inst = spec.factory()
-
-    assert isinstance(inst, Feature)
-    assert inst.period == 42
-
-    @dataclass(frozen=True)
-    class FeatureNoParams(Runner):
-        pass
-
-    @dataclass(frozen=True)
-    class FeatureSpecNoParams(Computable):
-        compute_node: Runner = FeatureNoParams
-
-    spec_no_params = FeatureSpecNoParams()
-    inst_no_params = spec_no_params.factory()
-
-    assert isinstance(inst_no_params, FeatureNoParams)

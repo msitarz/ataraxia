@@ -4,12 +4,12 @@
 
 from collections.abc import Generator, Iterable
 from graphlib import CycleError, TopologicalSorter
-from typing import NamedTuple
+from typing import Any
 
 from ataraxia.bar import Bar
 from ataraxia.compute import Computable, Runner
 
-type DependencyTreeNode = Computable[..., object, NamedTuple | None] | type
+type DependencyTreeNode = Computable[..., Any] | type
 type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
 type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
 
@@ -148,7 +148,7 @@ def compute_step(
 
 
 def compute(
-    spec: Computable[..., object, NamedTuple | None], shard: Iterable[Bar]
+    spec: Computable[..., Any], shard: Iterable[Bar]
 ) -> Generator[ComputationTree]:
     """Compute `shard` with `spec`.
 

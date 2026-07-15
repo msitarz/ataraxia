@@ -10,8 +10,6 @@ import dataclasses
 from dataclasses import is_dataclass
 from typing import (
     Any,
-    ClassVar,
-    NamedTuple,
     Protocol,
     _ProtocolMeta,
     override,
@@ -74,41 +72,20 @@ class Runner[**P, R](Protocol):
 
 
 @runtime_checkable
-class Computable[**P, R, I: NamedTuple | None](
-    Hashable, Protocol, metaclass=_ComputeMeta
-):
+class Computable[**P, R](Hashable, Protocol, metaclass=_ComputeMeta):
     """Computable specification protocol.
 
-    Defines computation specification to be executed in a computation loop
-    providing dependencies and initial parameters.  Currently classes implementing
-    ComputableSpec protocol must be frozen dataclasses.
+    Defines computation specification to be executed in a computation loop via runner.
 
-    Attributes:
-        init_params: initial params for ComputableNode.  It must be a NamedTuple.  It
-            will be unpacked as parameters to compute_node __init__ method.
-        compute_node: class implementing ComputableNode protocol.
+    Classes implementing computable protocol must be frozen dataclasses.
     """
-
-    init_params: I
-    compute_node: ClassVar[type[Runner[..., Any]]]
 
     def dependencies(
         self,
-    ) -> tuple[type | Computable[..., Any, Any], ...]:
-        """Dependencies injected into ComputableNode on every invocation.
-
-        Returns:
-            Tuple of objects adhering to ComputableSpec protocol.
-        """
-        return ()
+    ) -> tuple[Computable[..., Any] | type, ...]:
+        """Return dependencies for the runner."""
+        ...
 
     def factory(self) -> Runner[P, R]:
-        """Instantiate compute_unit with init_params.
-
-        Returns:
-            Instance of compute_unit.
-        """
-        if hasattr(self, "init_params") and isinstance(self.init_params, tuple):
-            return self.compute_node(*self.init_params)
-        else:
-            return self.compute_node()
+        """Return instance of a runner."""
+        ...

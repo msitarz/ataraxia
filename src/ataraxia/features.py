@@ -31,7 +31,7 @@ class BarNode(Runner[[], Bar]):
 
 
 @dataclass(frozen=True)
-class BarSpec(Computable[[], Bar, None]):
+class BarSpec(Computable[[], Bar]):
     """Compute specification for the current bar in the loop."""
 
     compute_node: ClassVar[type[BarNode]] = BarNode
@@ -44,6 +44,10 @@ class BarSpec(Computable[[], Bar, None]):
             Tuple with type Bar dependency for DI.
         """
         return (Bar,)
+
+    @override
+    def factory(self):
+        return BarNode()
 
 
 # ===========================
