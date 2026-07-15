@@ -3,6 +3,7 @@
 """Dependency graph module."""
 
 from collections.abc import MutableMapping
+from graphlib import TopologicalSorter
 from typing import Any
 
 from .protocols import Dependency
@@ -28,4 +29,5 @@ def dependency_graph(computable: Dependency[..., Any], _graph: Graph | None = No
 
 def sort_graph(graph: Graph) -> tuple[Dependency[..., Any], ...]:
     """Return sorted graph."""
-    return ()
+    ts = TopologicalSorter(graph)
+    return tuple(ts.static_order())

@@ -5,7 +5,7 @@ from operator import itemgetter
 
 import pytest
 
-from ataraxia.compute.graph import dependency_graph
+from ataraxia.compute.graph import dependency_graph, sort_graph
 
 
 @pytest.fixture
@@ -44,3 +44,11 @@ def test_dependency_graph_good_path(single_dep):
     graph = dependency_graph(a)
 
     assert graph == {a: (B(),), B(): ()}
+
+
+def test_sort_graph(single_dep):
+    A, B = itemgetter("A", "B")(single_dep)
+
+    graph = {A(): (B(),), B(): ()}
+
+    assert sort_graph(graph) == (B(), A())
