@@ -9,28 +9,28 @@ from typing import Any
 from ataraxia.bar import Bar
 from ataraxia.compute import Computable, Runner
 
-type DependencyTreeNode = Computable[..., Any] | type
-type DependencyTreeNodeTuple = tuple[DependencyTreeNode, ...]
-type DependencyTree = dict[DependencyTreeNode, DependencyTreeNodeTuple]
+type DependencyGraphNode = Computable[..., Any] | type
+type DependencyGraphNodeTuple = tuple[DependencyGraphNode, ...]
+type DependencyGraph = dict[DependencyGraphNode, DependencyGraphNodeTuple]
 
 
-def compute_dependency_tree(
-    spec: DependencyTreeNode, _tree: DependencyTree | None = None
-) -> DependencyTree:
-    """Calculate dependency tree for `spec`.
+def compute_dependency_graph(
+    spec: DependencyGraphNode, _graph: DependencyGraph | None = None
+) -> DependencyGraph:
+    """Calculate dependency graph for `spec`.
 
     Args:
-        spec: Root of the return dependency tree.x
-        _tree: Leave out if calculating the tree from the root node.
+        spec: Root of the return dependency graph.x
+        _graph: Leave out if calculating the graph from the root node.
 
     Returns:
-        Dependency tree for `spec` root node.
+        Dependency graph for `spec` root node.
 
     Raises:
-        TypeError: if spec is neither ComputableSpec or type.
+        TypeError: if spec is neither Computable or type.
     """
     if not isinstance(spec, type) and not isinstance(spec, Computable):
-        raise TypeError("Spec must implement ComputableSpec protocol or be a class")
+        raise TypeError("Spec must implement Computable protocol or be a class")
 
     if isinstance(spec, Computable):
         deps = spec.dependencies()
@@ -42,28 +42,28 @@ def compute_dependency_tree(
     if not isinstance(deps, tuple):
         raise TypeError("Dependencies must be a tuple")
 
-    if not _tree:
-        _tree = {}
+    if not _graph:
+        _graph = {}
 
-    if spec in _tree:
-        return _tree
+    if spec in _graph:
+        return _graph
 
-    _tree[spec] = deps
+    _graph[spec] = deps
 
     for dep in deps:
-        compute_dependency_tree(dep, _tree)
+        compute_dependency_graph(dep, _graph)
 
-    return _tree
+    return _graph
 
 
-def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
-    """Sort dependency `tree`.
+def sort_dependency_graph(graph: DependencyGraph) -> DependencyGraphNodeTuple:
+    """Sort dependency `graph`.
 
-    Takes the tree computed via `compute_dependency_tree`, sorts it checking for
+    Takes the graph computed via `compute_dependency_graph`, sorts it checking for
     CycleError and returns a flat tuple of nodes.  This tuple will be processed.
 
     Arg:
-        tree: Dependency tree returned from `compute_dependency_tree`.
+        graph: Dependency graph returned from `compute_dependency_graph`.
 
     Returns:
         Tuple of sorted dependency nodes.
@@ -71,7 +71,7 @@ def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
     Raises:
         CycleError: When dependencies form a cyclic graph.
     """
-    ts = TopologicalSorter(tree)
+    ts = TopologicalSorter(graph)
     try:
         return tuple(ts.static_order())
     except CycleError as e:
@@ -79,14 +79,14 @@ def sort_dependency_tree(tree: DependencyTree) -> DependencyTreeNodeTuple:
         raise
 
 
-type ComputeCatalog = dict[DependencyTreeNode, Runner[..., object] | None]
+type ComputeCatalog = dict[DependencyGraphNode, Runner[..., object] | None]
 
 
-def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
+def instantiate_compute_nodes(dependencies: DependencyGraphNodeTuple):
     """Return a mapping of specification to instantiated compute node.
 
     Raises:
-        TypeError: When one of dependencies is neither ComputableSpec or type.
+        TypeError: When one of dependencies is neither Computable or type.
     """
     catalog: ComputeCatalog = {}
 
@@ -101,33 +101,33 @@ def instantiate_compute_nodes(dependencies: DependencyTreeNodeTuple):
     return catalog
 
 
-type ComputationTree = dict[DependencyTreeNode, object]
+type ComputationGraph = dict[DependencyGraphNode, object]
 
 
 def compute_step(
     bar: Bar,
     catalog: ComputeCatalog,
-    dependencies: DependencyTreeNodeTuple,
-    tree: DependencyTree,
+    dependencies: DependencyGraphNodeTuple,
+    graph: DependencyGraph,
 ):
     """Inject dependencies starting with variables in the loop.
 
-    This function moves the computation tree by one step within the loop.  Currently
+    This function moves the computation graph by one step within the loop.  Currently
     supports looping over bar values of a single instrument only.
 
     Args:
         bar: Current Bar instance in the computation loop.
         catalog: Mapping of specifications to instantiated compute nodes.
         dependencies: sorted tuple of specifications.
-        tree: Mapping of specifications to their dependencies.
+        graph: Mapping of specifications to their dependencies.
 
     Returns:
-        Computation tree results of each dependency.
+        Computation graph results of each dependency.
 
     Raises:
         TypeError: When type dependency is not of Bar class or .
     """
-    computations: ComputationTree = {}
+    computations: ComputationGraph = {}
 
     for dep in dependencies:
         if isinstance(dep, type):
@@ -137,7 +137,7 @@ def compute_step(
             continue
 
         node = catalog[dep]
-        send = tuple(computations[d] for d in tree[dep])
+        send = tuple(computations[d] for d in graph[dep])
 
         if isinstance(node, Runner):
             computations[dep] = node(*send)
@@ -149,19 +149,19 @@ def compute_step(
 
 def compute(
     spec: Computable[..., Any], shard: Iterable[Bar]
-) -> Generator[ComputationTree]:
+) -> Generator[ComputationGraph]:
     """Compute `shard` with `spec`.
 
     Args:
-        spec: Root node in `DependencyTree`.
+        spec: Root node in `DependencyGraph`.
         shard: Data to process.  Currently only iterable that returns `Bar` is
             supported.
 
     Yields:
-        `ComputationTree` of each iteration over `shard`.
+        `ComputationGraph` of each iteration over `shard`.
     """
-    tree = compute_dependency_tree(spec)
-    deps = sort_dependency_tree(tree)
+    graph = compute_dependency_graph(spec)
+    deps = sort_dependency_graph(graph)
     catalog = instantiate_compute_nodes(deps)
     for bar in shard:
-        yield compute_step(bar, catalog, deps, tree)
+        yield compute_step(bar, catalog, deps, graph)

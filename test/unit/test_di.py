@@ -10,14 +10,14 @@ import pytest
 from ataraxia.bar import Bar
 from ataraxia.di import (
     compute,
-    compute_dependency_tree,
+    compute_dependency_graph,
     compute_step,
     instantiate_compute_nodes,
-    sort_dependency_tree,
+    sort_dependency_graph,
 )
 
 
-def test_compute_dependency_tree_good_path():
+def test_compute_dependency_graph_good_path():
     @dataclass(frozen=True)
     class ASpec:
         init_params: ClassVar = None
@@ -42,34 +42,34 @@ def test_compute_dependency_tree_good_path():
 
     entry_spec = EntrySpec()
 
-    deps = compute_dependency_tree(entry_spec)
+    deps = compute_dependency_graph(entry_spec)
 
     assert deps == {EntrySpec(): (ASpec(),), ASpec(): (int,), int: ()}
 
 
-def test_compute_dependency_tree_type_as_entry():
-    """Tests compute_dependency_tree when entry spec is a type."""
-    deps = compute_dependency_tree(int)
+def test_compute_dependency_graph_type_as_entry():
+    """Tests compute_dependency_graph when entry spec is a type."""
+    deps = compute_dependency_graph(int)
 
     assert deps == {int: ()}
 
 
-def test_compute_dependency_tree_error_not_computable_spec():
-    # Error when spec is not a ComputableSpec
+def test_compute_dependency_graph_error_not_computable_spec():
+    # Error when spec is not a Computable
     class ASpec:
         pass
 
     with pytest.raises(TypeError):
-        compute_dependency_tree(ASpec())
+        compute_dependency_graph(ASpec())
 
 
-def test_compute_dependency_tree_error_not_a_class():
+def test_compute_dependency_graph_error_not_a_class():
     # Error when spec is not a class
     with pytest.raises(TypeError):
-        compute_dependency_tree(0)
+        compute_dependency_graph(0)
 
 
-def test_compute_dependency_tree_error_no_deps():
+def test_compute_dependency_graph_error_no_deps():
     # Error when spec doesn't have any dependencies
     @dataclass(frozen=True)
     class BSpec:
@@ -83,10 +83,10 @@ def test_compute_dependency_tree_error_no_deps():
             return None
 
     with pytest.raises(TypeError):
-        compute_dependency_tree(BSpec())
+        compute_dependency_graph(BSpec())
 
 
-def test_compute_dependency_tree_error_deps_not_tuple():
+def test_compute_dependency_graph_error_deps_not_tuple():
     # Error when spec dependencies are not a tuple
     @dataclass(frozen=True)
     class CSpec:
@@ -100,10 +100,10 @@ def test_compute_dependency_tree_error_deps_not_tuple():
             return None
 
     with pytest.raises(TypeError):
-        compute_dependency_tree(CSpec())
+        compute_dependency_graph(CSpec())
 
 
-def test_sort_dependency_tree_good_path():
+def test_sort_dependency_graph_good_path():
     @dataclass(frozen=True)
     class CSpec:
         init_params: ClassVar = None
@@ -137,19 +137,19 @@ def test_sort_dependency_tree_good_path():
         def factory(self):
             return None
 
-    tree = {
+    graph = {
         ASpec(): ASpec().dependencies(),
         BSpec(): BSpec().dependencies(),
         CSpec(): CSpec().dependencies(),
         int: (),
     }
 
-    deps = sort_dependency_tree(tree)
+    deps = sort_dependency_graph(graph)
 
     assert deps == (int, CSpec(), BSpec(), ASpec())
 
 
-def test_sort_dependency_tree_cycle_error():
+def test_sort_dependency_graph_cycle_error():
     @dataclass(frozen=True)
     class BSpec:
         init_params: ClassVar = None
@@ -172,13 +172,13 @@ def test_sort_dependency_tree_cycle_error():
         def factory(self):
             return None
 
-    tree = {
+    graph = {
         ASpec(): ASpec().dependencies(),
         BSpec(): BSpec().dependencies(),
     }
 
     with pytest.raises(CycleError):
-        sort_dependency_tree(tree)
+        sort_dependency_graph(graph)
 
 
 @pytest.fixture
@@ -271,7 +271,7 @@ def test_compute_step(a_node):
 
     aspec = ASpec()
 
-    tree = {
+    graph = {
         aspec: aspec.dependencies(),
         bspec2: bspec2.dependencies(),
         bspec6: bspec6.dependencies(),
@@ -287,7 +287,7 @@ def test_compute_step(a_node):
         bspec6: bspec6.factory(),
     }
 
-    computed = compute_step(bar, catalog, deps, tree)
+    computed = compute_step(bar, catalog, deps, graph)
 
     assert computed == {
         Bar: bar,
