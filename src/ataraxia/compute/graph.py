@@ -3,8 +3,10 @@
 """Dependency graph module."""
 
 from collections.abc import MutableMapping
-from graphlib import TopologicalSorter
+import graphlib
 from typing import Any
+
+from ataraxia.errors import CycleError
 
 from .protocols import Dependency
 
@@ -28,6 +30,14 @@ def dependency_graph(computable: Dependency[..., Any], _graph: Graph | None = No
 
 
 def sort_graph(graph: Graph) -> tuple[Dependency[..., Any], ...]:
-    """Return sorted graph."""
-    ts = TopologicalSorter(graph)
-    return tuple(ts.static_order())
+    """Return sorted graph.
+
+    Raises:
+        CycleError: When dependencies depend on each other.
+    """
+    ts = graphlib.TopologicalSorter(graph)
+
+    try:
+        return tuple(ts.static_order())
+    except graphlib.CycleError as e:
+        raise CycleError("Cyclical dependency graph") from e

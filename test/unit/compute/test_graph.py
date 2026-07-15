@@ -6,6 +6,7 @@ from operator import itemgetter
 import pytest
 
 from ataraxia.compute.graph import dependency_graph, sort_graph
+from ataraxia.errors import CycleError
 
 
 @pytest.fixture
@@ -52,3 +53,12 @@ def test_sort_graph(single_dep):
     graph = {A(): (B(),), B(): ()}
 
     assert sort_graph(graph) == (B(), A())
+
+
+def test_sort_graph_cycle_error(single_dep):
+    A, B = itemgetter("A", "B")(single_dep)
+
+    graph = {A(): (B(),), B(): (A(),)}
+
+    with pytest.raises(CycleError):
+        sort_graph(graph)
