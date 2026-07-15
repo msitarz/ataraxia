@@ -3,6 +3,7 @@ words = [
     "OHLC",
     "OHLCV",
     "SMA",
+    "backtester",
     "dataclass",
     "dataclasses",
     "instancecheck",
