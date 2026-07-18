@@ -5,7 +5,7 @@ from operator import itemgetter
 
 import pytest
 
-from ataraxia.compute.loop import kickstart_runners
+from ataraxia.compute.loop import prime_catalog
 
 
 @pytest.fixture
@@ -41,9 +41,9 @@ def single_dep():
     return {"BRunner": BRunner, "B": B, "ARunner": ARunner, "A": A}
 
 
-def test_kickstart_instances(single_dep):
+def test_prime_catalog(single_dep):
     A, B, ARunner, BRunner = itemgetter("A", "B", "ARunner", "BRunner")(single_dep)
 
     sorted_graph = (B(), A())
 
-    assert kickstart_runners(sorted_graph) == {B(): BRunner(), A(): ARunner()}
+    assert prime_catalog(sorted_graph) == {B(): BRunner(), A(): ARunner()}

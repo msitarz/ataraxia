@@ -8,8 +8,8 @@ from typing import Any
 from ataraxia.compute import Computable, Runner
 
 
-def kickstart_runners(
-    sorted_graph: tuple[Computable[..., Any], ...],
+def prime_catalog(
+    computables: tuple[Computable[..., Any], ...],
 ) -> Mapping[Computable[..., Any], Runner[..., Any]]:
-    """Return instantiated runner catalog."""
-    return {c: c.factory() for c in sorted_graph}
+    """Return catalog of instantiated runners of computables."""
+    return {c: c.factory() for c in computables}
