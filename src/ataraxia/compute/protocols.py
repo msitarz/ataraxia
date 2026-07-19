@@ -46,8 +46,8 @@ class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
     All computable nodes depend on source nodes.
     """
 
-    def input(self, item: T) -> None:
-        """Pass-through item to dependency nodes."""
+    def send(self, item: T) -> None:
+        """Send item as the next computable runner return value."""
         ...
 
 

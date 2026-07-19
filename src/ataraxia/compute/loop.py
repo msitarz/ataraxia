@@ -44,15 +44,19 @@ def compute_step(
     for node in nodes:
         runner = catalog[node]
         deps = computed_node_deps(node, computed)
+
+        # Keep empty tuple unpacking as pyrefly otherwise reports [invalid-param-spec]
         computed[node] = runner(*(), **deps)
 
     return computed
 
 
 def compute(sink: Sink[..., Any]):
-    """Yield each compute step for the sink of computable graph."""
-    raise NotImplementedError()
+    """Yield each compute step for the sink in the computable graph."""
     sources = sink.sources()
+
+    if len(sources) != 1:
+        raise NotImplementedError("Multi-source computable graph not implemented")
 
     source = sources[0]
 
@@ -61,5 +65,5 @@ def compute(sink: Sink[..., Any]):
     catalog = prime_catalog(nodes)
 
     for item in source:
-        source.input(item)
+        source.send(item)
         yield compute_step(nodes, catalog)
