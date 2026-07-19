@@ -5,12 +5,7 @@
 An elastic computation model with dependency injection.
 """
 
-from .protocols import Computable, DependencyMapping, Runner, Sink, Source
+from .loop import compute
+from .protocols import Computable, Runner, Sink, Source
 
-__all__ = (
-    "Computable",
-    "DependencyMapping",
-    "Runner",
-    "Sink",
-    "Source",
-)
+__all__ = ("Computable", "Runner", "Sink", "Source", "compute")
