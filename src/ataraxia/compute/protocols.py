@@ -2,7 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Protocols for the computation engine."""
 
-from collections.abc import Hashable, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from typing import Any, Protocol, runtime_checkable
 
 
@@ -35,4 +35,29 @@ class Computable[**P, R](Hashable, Protocol):
 
     def factory(self) -> Runner[P, R]:
         """Return instance of this computable execution unit."""
+        ...
+
+
+@runtime_checkable
+class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
+    """Defines source node in the multi-source single-sink DAG of computables.
+
+    Those nodes are used as input from the processed shard data in the compute loop.
+    All computable nodes depend on source nodes.
+    """
+
+    def input(self, item: T) -> None:
+        """Pass-through item to dependency nodes."""
+        ...
+
+
+@runtime_checkable
+class Sink[**P, R](Computable[P, R], Protocol):
+    """Defines sink node in the multi-source single-sink DAG of computables.
+
+    The sink node will be a strategy computable node in the backtest.
+    """
+
+    def sources(self) -> tuple[Source[Any, ..., Any], ...]:
+        """Return all sources used in the computable."""
         ...

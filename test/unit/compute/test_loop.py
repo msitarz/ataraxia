@@ -5,7 +5,7 @@ from operator import itemgetter
 
 import pytest
 
-from ataraxia.compute.loop import prime_catalog
+from ataraxia.compute.loop import compute_step, computed_node_deps, prime_catalog
 
 
 @pytest.fixture
@@ -47,3 +47,20 @@ def test_prime_catalog(single_dep):
     sorted_graph = (B(), A())
 
     assert prime_catalog(sorted_graph) == {B(): BRunner(), A(): ARunner()}
+
+
+def test_computed_node_deps(single_dep):
+    A, B = itemgetter("A", "B")(single_dep)
+
+    computed = {B(): B().factory()(), A(): ValueError("Shouldn't be here")}
+
+    assert computed_node_deps(A(), computed) == {"b": 1}
+
+
+def test_compute_step(single_dep):
+    A, B = itemgetter("A", "B")(single_dep)
+
+    nodes = (B(), A())
+    catalog = {B(): B().factory(), A(): A().factory()}
+
+    assert compute_step(nodes, catalog) == {B(): 1, A(): 4}
