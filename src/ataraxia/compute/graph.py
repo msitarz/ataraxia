@@ -8,7 +8,7 @@ from typing import Any
 
 from ataraxia.errors import CycleError
 
-from .protocols import Computable
+from .protocol import Computable
 
 type Graph = MutableMapping[Computable[..., Any], tuple[Computable[..., Any], ...]]
 

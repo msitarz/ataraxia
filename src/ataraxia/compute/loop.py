@@ -6,7 +6,7 @@ from collections.abc import Mapping, MutableMapping
 from typing import Any
 
 from .graph import dependency_graph, sort_graph
-from .protocols import Computable, Runner, Sink
+from .protocol import Computable, Runner, Sink
 
 type ComputableMapping = Mapping[Computable[..., Any], Runner[..., Any]]
 type ComputedMapping = MutableMapping[Computable[..., Any], Any]
