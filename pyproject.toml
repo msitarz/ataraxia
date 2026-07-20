@@ -132,4 +132,4 @@ tag_format = "v$version"
 changelog_incremental = true
 update_changelog_on_bump = true
 annotated_tag = true
-pre_bump_hooks = ["scripts/commitizen_pre_bump_hook.sh"]
+pre_bump_hooks = ["script/commitizen_pre_bump_hook.sh"]
