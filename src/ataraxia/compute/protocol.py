@@ -3,7 +3,8 @@
 """Protocols for the computation engine."""
 
 from collections.abc import Hashable, Iterable, Mapping
-from typing import Any, Protocol, runtime_checkable
+from types import TracebackType
+from typing import Any, Protocol, Self, runtime_checkable
 
 
 @runtime_checkable
@@ -39,7 +40,25 @@ class Computable[**P, R](Hashable, Protocol):
 
 
 @runtime_checkable
-class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
+class Provider[T](Iterable[T], Protocol):
+    """Define Provider that can be used to iterate over in the compute loop.
+
+    It has a context manager protocol as there will most likely be operations like file
+    opening or network stream reading which require proper context management.
+    """
+
+    def __enter__(self) -> Self: ...
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None: ...
+
+
+@runtime_checkable
+class Source[T, **P, R](Computable[P, R], Protocol):
     """Defines source node in the multi-source single-sink DAG of computables.
 
     Those nodes are used as input from the processed shard data in the compute loop.
@@ -47,7 +66,15 @@ class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
     """
 
     def send(self, item: T) -> None:
-        """Send item as the next computable runner return value."""
+        """Send item as the next runner's return value."""
+        ...
+
+    def provider(self) -> Provider[T]:
+        """Return Provider for this source node.
+
+        Provider will be iterated over in the compute loop and its yielded values will
+        be injected via send method to the Source node.
+        """
         ...
 
 

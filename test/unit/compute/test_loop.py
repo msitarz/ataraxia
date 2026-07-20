@@ -78,6 +78,16 @@ def source_sink():
         def __call__(self):
             return self.next_item
 
+    class TestProvider:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, _exc_type, _exc_value, _traceback):
+            return False
+
+        def __iter__(self):
+            return (x for x in (1, 3))
+
     @dataclass(frozen=True)
     class Src:
         runner: Runner = field(default_factory=SrcRunner)
@@ -91,8 +101,8 @@ def source_sink():
         def send(self, item):
             self.runner.next_item = item
 
-        def __iter__(self):
-            return (x for x in (1, 3))
+        def provider(self):
+            return TestProvider()
 
     @dataclass(frozen=True)
     class SnkRunner:
