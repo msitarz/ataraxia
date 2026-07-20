@@ -16,6 +16,10 @@ cd ataraxia
 make setup
 ```
 
+## Sample data
+
+CSV files in the `sample` folder contain LLM generated data to showcase a simple strategy.
+
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE). SPDX headers are present on source files.
