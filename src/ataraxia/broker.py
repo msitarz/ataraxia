@@ -100,7 +100,16 @@ class BrokerReturn(TypedDict):
 class BrokerRunner:
     """Simple broker implementation.
 
-    Track each signal as separate position, combine in account.
+    Track each signal as separate position, combine pnl in the account.
+
+    Note:
+        This implementation assumes that the position was entered at the bar close, so
+        position tracking starts from the next bar.  This is due to how the computation
+        graph works.  Strategy would send a signal after the bar already closed.
+
+        This is a naive implementation.  It is advised to use lower timeframe data for
+        more resolution or a different implementation of the broker runner that covers
+        all required edge cases.
     """
 
     account: Account = field(default_factory=Account)
