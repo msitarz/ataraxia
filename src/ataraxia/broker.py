@@ -38,11 +38,13 @@ class Position(Signal):
 
         Position orders are stop_loss and take_profit .
         """
-        if not bar.within(self.entry):
-            return None
-
         if bar.within(self.stop_loss):
             return -abs(self.entry - self.stop_loss)
+
+        if bar.within(self.take_profit):
+            return abs(self.take_profit - self.entry)
+
+        return None
 
 
 @dataclass

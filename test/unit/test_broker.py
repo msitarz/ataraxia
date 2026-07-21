@@ -52,6 +52,24 @@ def test_position_on_bar_stop_loss_hit(basic_position: PositionFixture):
     assert position.on_bar(bar) == -15
 
 
+def test_position_on_bar_take_profit_hit(basic_position: PositionFixture):
+    """Should return positive pnl when take profit hit."""
+    position = basic_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=30, low=11, close=28, volume=2)
+
+    assert position.on_bar(bar) == 5
+
+
+def test_position_on_bar_both_orders_hit(basic_position: PositionFixture):
+    """Should trigger stop_loss when both orders hit."""
+    position = basic_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=30, low=10, close=28, volume=2)
+
+    assert position.on_bar(bar) == -15
+
+
 @pytest.mark.skip
 def test_position_on_bar_when_already_finished(basic_position: PositionFixture):
     """Should raise when position not working."""
