@@ -109,7 +109,7 @@ class BrokerRunner:
 
     def __call__(self, bar: Bar, signal: Signal) -> BrokerReturn:
         """Return current account and position objects."""
-        if signal:
+        if signal is not None:
             self.open_positions.append(Position(entry_bar=bar, **asdict(signal)))
         else:
             self.account.unrealized_pnl = 0
