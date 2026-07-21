@@ -43,6 +43,27 @@ def test_position_on_bar_no_order_hit(basic_position: PositionFixture):
     assert position.on_bar(bar) is None
 
 
+def test_position_on_bar_stop_loss_hit(basic_position: PositionFixture):
+    """Should return negative pnl when stop loss hit."""
+    position = basic_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
+
+    assert position.on_bar(bar) == -15
+
+
+@pytest.mark.skip
+def test_position_on_bar_when_already_finished(basic_position: PositionFixture):
+    """Should raise when position not working."""
+    position = basic_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
+
+    position.on_bar(bar)
+
+    # pytest.raises(type)
+
+
 def test_broker_runner_no_signal():
     """Test single signal broker that exits."""
     broker = BrokerRunner()

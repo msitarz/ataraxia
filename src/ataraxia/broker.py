@@ -34,9 +34,15 @@ class Position(Signal):
     def on_bar(self, bar: Bar):
         """Return realized position value.
 
+        This implementation is a happy path where exit is always at the order.
+
         Position orders are stop_loss and take_profit .
         """
-        return None
+        if not bar.within(self.entry):
+            return None
+
+        if bar.within(self.stop_loss):
+            return -abs(self.entry - self.stop_loss)
 
 
 @dataclass
