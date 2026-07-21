@@ -15,9 +15,3 @@ class CycleError(AtaraxiaError, graphlib.CycleError):
     """Dependency graph cycle error."""
 
     pass
-
-
-class PositionError(AtaraxiaError):
-    """Error in Position."""
-
-    pass

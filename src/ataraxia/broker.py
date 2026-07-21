@@ -2,12 +2,12 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Broker computable."""
 
-from dataclasses import dataclass, field
+from collections.abc import MutableSequence, Sequence
+from dataclasses import asdict, dataclass, field
 from typing import Literal, TypedDict
 
 from .bar import Bar
 from .compute import Sink, Source
-from .errors import PositionError
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -22,9 +22,16 @@ class Signal:
     take_profit: int
 
 
+class PositionOnBarReturn(TypedDict):
+    """Return value of Position.on_bar method."""
+
+    closed: bool
+    pnl: int
+
+
 @dataclass(frozen=True, kw_only=True)
 class Position(Signal):
-    """Currently held position."""
+    """Track position data."""
 
     entry_bar: Bar
     entry_level: int = field(init=False)
@@ -36,28 +43,35 @@ class Position(Signal):
     def __post_init__(self):
         object.__setattr__(self, "entry_level", self.entry_bar.close)
 
-    def on_bar(self, bar: Bar):
+    def on_bar(self, bar: Bar) -> PositionOnBarReturn:
         """Return realized position value.
 
         This implementation is a happy path where exit is always at the order.
 
         Position orders are stop_loss and take_profit only.
-
-        Raises:
-            PositionError: When position is already closed,
         """
-        if self.closing_bar:
-            raise PositionError("Position closed")
+        if not self.closing_bar:
+            if bar.within(self.stop_loss):
+                self.close(bar, self.stop_loss, -abs(self.entry_level - self.stop_loss))
+            elif bar.within(self.take_profit):
+                self.close(
+                    bar, self.take_profit, abs(self.take_profit - self.entry_level)
+                )
 
-        if bar.within(self.stop_loss):
-            self.close(bar, self.stop_loss, -abs(self.entry_level - self.stop_loss))
-        elif bar.within(self.take_profit):
-            self.close(bar, self.take_profit, abs(self.take_profit - self.entry_level))
+        return {
+            "closed": bool(self.closing_bar),
+            "pnl": self.closing_pnl or self.pnl(bar),
+        }
 
-        if self.closing_bar:
-            return self.closing_pnl
+    def pnl(self, bar: Bar) -> int:
+        """Return unrealized pnl.
 
-        return None
+        Uses close attribute of the bar.
+        """
+        if self.side == "buy":
+            return bar.close - self.entry_level
+        else:
+            return self.entry_level - bar.close
 
     def close(self, bar: Bar, level: int, pnl: int):
         """Close position."""
@@ -78,19 +92,25 @@ class BrokerReturn(TypedDict):
     """Return type from BrokerRunner."""
 
     account: Account
-    position: Position | None
+    positions: Sequence[Position]
 
 
 @dataclass(frozen=True)
 class BrokerRunner:
-    """Simple broker implementation."""
+    """Simple broker implementation.
 
-    position: Position | None = None
+    Track each signal as separate position, combine to
+    """
+
     account: Account = field(default_factory=Account)
+    positions: MutableSequence[Position] = field(default_factory=list)
 
     def __call__(self, bar: Bar, signal: Signal) -> BrokerReturn:
         """Return current account and position objects."""
-        return {"account": self.account, "position": self.position}
+        if signal:
+            self.positions.append(Position(entry_bar=bar, **asdict(signal)))
+
+        return {"account": self.account, "positions": self.positions}
 
 
 @dataclass(frozen=True)
