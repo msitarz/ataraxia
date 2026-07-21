@@ -7,6 +7,7 @@ import pytest
 
 from ataraxia.bar import Bar
 from ataraxia.broker import Account, BrokerRunner, Position, Signal
+from ataraxia.errors import PositionError
 
 
 class PositionFixture(TypedDict):
@@ -16,11 +17,11 @@ class PositionFixture(TypedDict):
 
 
 @pytest.fixture
-def basic_position() -> PositionFixture:
+def long_position() -> PositionFixture:
     signal = Signal(side="buy", stop_loss=10, take_profit=30)
     bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
 
-    position = Position(bar=bar, **asdict(signal))
+    position = Position(entry_bar=bar, **asdict(signal))
 
     return {
         "bar": bar,
@@ -29,57 +30,89 @@ def basic_position() -> PositionFixture:
     }
 
 
-def test_position_init(basic_position: PositionFixture):
+@pytest.fixture
+def short_position() -> PositionFixture:
+    signal = Signal(side="sell", stop_loss=29, take_profit=11)
+    bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
+
+    position = Position(entry_bar=bar, **asdict(signal))
+
+    return {
+        "bar": bar,
+        "signal": signal,
+        "position": position,
+    }
+
+
+def test_position_init(long_position: PositionFixture):
     """Position use bar's close on init."""
-    assert basic_position["position"].entry == 25
+    assert long_position["position"].entry_level == 25
 
 
-def test_position_on_bar_no_order_hit(basic_position: PositionFixture):
+def test_position_on_bar_no_order_hit(long_position: PositionFixture):
     """Should return None when no order hit."""
-    position = basic_position["position"]
+    position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=29, low=20, close=28, volume=2)
 
     assert position.on_bar(bar) is None
 
 
-def test_position_on_bar_stop_loss_hit(basic_position: PositionFixture):
+def test_position_on_bar_stop_loss_hit(long_position: PositionFixture):
     """Should return negative pnl when stop loss hit."""
-    position = basic_position["position"]
+    position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
 
     assert position.on_bar(bar) == -15
 
 
-def test_position_on_bar_take_profit_hit(basic_position: PositionFixture):
+def test_position_on_bar_take_profit_hit(long_position: PositionFixture):
     """Should return positive pnl when take profit hit."""
-    position = basic_position["position"]
+    position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=30, low=11, close=28, volume=2)
 
     assert position.on_bar(bar) == 5
 
 
-def test_position_on_bar_both_orders_hit(basic_position: PositionFixture):
-    """Should trigger stop_loss when both orders hit."""
-    position = basic_position["position"]
+def test_position_on_bar_both_orders_hit(long_position: PositionFixture):
+    """Should trigger stop loss when both orders hit."""
+    position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=30, low=10, close=28, volume=2)
 
     assert position.on_bar(bar) == -15
 
 
-@pytest.mark.skip
-def test_position_on_bar_when_already_finished(basic_position: PositionFixture):
+def test_position_on_bar_when_already_finished(long_position: PositionFixture):
     """Should raise when position not working."""
-    position = basic_position["position"]
+    position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
 
     position.on_bar(bar)
 
-    # pytest.raises(type)
+    with pytest.raises(PositionError):
+        position.on_bar(bar)
+
+
+def test_position_short_on_bar_take_profit_hit(short_position: PositionFixture):
+    """Should return positive pnl when take profit when shorting hit."""
+    position = short_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=28, low=11, close=28, volume=2)
+
+    assert position.on_bar(bar) == 14
+
+
+def test_position_short_on_bar_stop_loss_hit(short_position: PositionFixture):
+    """Should return positive pnl when take profit when shorting hit."""
+    position = short_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=29, low=11, close=28, volume=2)
+
+    assert position.on_bar(bar) == -4
 
 
 def test_broker_runner_no_signal():

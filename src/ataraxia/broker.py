@@ -7,6 +7,7 @@ from typing import Literal, TypedDict
 
 from .bar import Bar
 from .compute import Sink, Source
+from .errors import PositionError
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -25,26 +26,42 @@ class Signal:
 class Position(Signal):
     """Currently held position."""
 
-    bar: Bar
-    entry: int = field(init=False)
+    entry_bar: Bar
+    entry_level: int = field(init=False)
+
+    closing_bar: Bar | None = field(init=False, default_factory=lambda: None)
+    closing_level: int | None = field(init=False, default_factory=lambda: None)
 
     def __post_init__(self):
-        object.__setattr__(self, "entry", self.bar.close)
+        object.__setattr__(self, "entry_level", self.entry_bar.close)
 
     def on_bar(self, bar: Bar):
         """Return realized position value.
 
         This implementation is a happy path where exit is always at the order.
 
-        Position orders are stop_loss and take_profit .
+        Position orders are stop_loss and take_profit only.
+
+        Raises:
+            PositionError: When position is already closed,
         """
+        if self.closing_bar:
+            raise PositionError("Position closed")
+
         if bar.within(self.stop_loss):
-            return -abs(self.entry - self.stop_loss)
+            self.close(bar, self.stop_loss)
+            return -abs(self.entry_level - self.stop_loss)
 
         if bar.within(self.take_profit):
-            return abs(self.take_profit - self.entry)
+            self.close(bar, self.take_profit)
+            return abs(self.take_profit - self.entry_level)
 
         return None
+
+    def close(self, bar: Bar, level: int):
+        """Close position."""
+        object.__setattr__(self, "closing_bar", bar)
+        object.__setattr__(self, "closing_level", level)
 
 
 @dataclass
