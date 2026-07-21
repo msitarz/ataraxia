@@ -66,6 +66,15 @@ def test_position_on_bar_stop_loss_hit(long_position: PositionFixture):
     assert position.on_bar(bar) == {"pnl": -15, "closed": True}
 
 
+def test_position_on_bar_stop_loss_hit_with_gap(long_position: PositionFixture):
+    """Should return negative pnl when stop loss hit with a gap."""
+    position = long_position["position"]
+
+    bar = Bar(timestamp=2, open=5, high=5, low=1, close=2, volume=2)
+
+    assert position.on_bar(bar) == {"pnl": -20, "closed": True}
+
+
 def test_position_on_bar_take_profit_hit(long_position: PositionFixture):
     """Should return positive pnl when take profit hit."""
     position = long_position["position"]
@@ -73,6 +82,15 @@ def test_position_on_bar_take_profit_hit(long_position: PositionFixture):
     bar = Bar(timestamp=2, open=25, high=30, low=11, close=28, volume=2)
 
     assert position.on_bar(bar) == {"pnl": 5, "closed": True}
+
+
+def test_position_on_bar_take_profit_hit_with_gap(long_position: PositionFixture):
+    """Should return positive pnl when take profit hit with gap."""
+    position = long_position["position"]
+
+    bar = Bar(timestamp=2, open=35, high=40, low=33, close=38, volume=2)
+
+    assert position.on_bar(bar) == {"pnl": 10, "closed": True}
 
 
 def test_position_on_bar_both_orders_hit(long_position: PositionFixture):
@@ -98,7 +116,7 @@ def test_position_on_bar_when_already_finished(long_position: PositionFixture):
 
 
 def test_position_short_on_bar_take_profit_hit(short_position: PositionFixture):
-    """Should return positive pnl when take profit when shorting hit."""
+    """Should return positive pnl when take profit hit when shorting."""
     position = short_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=28, low=11, close=28, volume=2)
@@ -106,8 +124,19 @@ def test_position_short_on_bar_take_profit_hit(short_position: PositionFixture):
     assert position.on_bar(bar) == {"pnl": 14, "closed": True}
 
 
+def test_position_short_on_bar_take_profit_hit_with_gap(
+    short_position: PositionFixture,
+):
+    """Should return positive pnl when take profit hit when shorting with gap."""
+    position = short_position["position"]
+
+    bar = Bar(timestamp=2, open=5, high=6, low=1, close=4, volume=2)
+
+    assert position.on_bar(bar) == {"pnl": 20, "closed": True}
+
+
 def test_position_short_on_bar_stop_loss_hit(short_position: PositionFixture):
-    """Should return positive pnl when take profit when shorting hit."""
+    """Should return negative pnl when stop loss hit when shorting."""
     position = short_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=29, low=11, close=28, volume=2)
@@ -115,8 +144,17 @@ def test_position_short_on_bar_stop_loss_hit(short_position: PositionFixture):
     assert position.on_bar(bar) == {"pnl": -4, "closed": True}
 
 
+def test_position_short_on_bar_stop_loss_hit_with_gap(short_position: PositionFixture):
+    """Should return negative pnl when stop loss hit when shorting with gap."""
+    position = short_position["position"]
+
+    bar = Bar(timestamp=2, open=35, high=40, low=30, close=38, volume=2)
+
+    assert position.on_bar(bar) == {"pnl": -10, "closed": True}
+
+
 def test_position_short_on_bar_closing_pnl(short_position: PositionFixture):
-    """Should return positive pnl when take profit when shorting hit."""
+    """Should set closing_pnl attribute."""
     position = short_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=29, low=11, close=28, volume=2)

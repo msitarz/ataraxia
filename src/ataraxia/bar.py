@@ -14,7 +14,8 @@ CME_INDICES_TICKS_PER_POINT = 4
 class Bar:
     """OHLCV data container for futures data.
 
-    NOTE: This class supports only CME index futures that have 4 ticks per point.
+    Note:
+        This class supports only CME index futures that have 4 ticks per point.
     """
 
     timestamp: int
