@@ -122,6 +122,9 @@ def source_sink():
         def sources(self):
             return (self.source,)
 
+        def consumer(self):
+            return None
+
     return {"Src": Src, "Snk": Snk}
 
 

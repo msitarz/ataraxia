@@ -43,8 +43,8 @@ class Computable[**P, R](Hashable, Protocol):
 class Provider[T](Iterable[T], Protocol):
     """Define Provider that can be used to iterate over in the compute loop.
 
-    It has a context manager protocol as there will most likely be operations like file
-    opening or network stream reading which require proper context management.
+    It must implement a context manager protocol as there will most likely be operations
+    such as file opening or network stream reading which require context management.
     """
 
     def __enter__(self) -> Self: ...
@@ -87,4 +87,12 @@ class Sink[**P, R](Computable[P, R], Protocol):
 
     def sources(self) -> tuple[Source[Any, ..., Any], ...]:
         """Return all sources used in the computable."""
+        ...
+
+    def consumer(self) -> Computable[..., Any] | None:
+        """Return consumer of the sink or None.
+
+        Consumer could be aggregating sink's return values or provide final computation.
+        For example, it can be a broker computable.
+        """
         ...

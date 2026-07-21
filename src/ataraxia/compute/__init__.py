@@ -6,6 +6,6 @@ An elastic computation model with dependency injection.
 """
 
 from .loop import compute
-from .protocol import Computable, Runner, Sink, Source
+from .protocol import Computable, Provider, Runner, Sink, Source
 
-__all__ = ("Computable", "Runner", "Sink", "Source", "compute")
+__all__ = ("Computable", "Provider", "Runner", "Sink", "Source", "compute")

@@ -60,7 +60,7 @@ def compute(sink: Sink[..., Any]):
 
     source = sources[0]
 
-    graph = dependency_graph(sink)
+    graph = dependency_graph(sink.consumer() or sink)
     nodes = sort_graph(graph)
     catalog = prime_catalog(nodes)
 
