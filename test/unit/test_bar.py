@@ -31,3 +31,10 @@ def test_bar_from_map(data):
     assert bar.low == int(10.0 * 4)
     assert bar.close == int(25.75 * 4)
     assert bar.volume == 4321
+
+
+def test_bar_within():
+    """Should return True if value within bar's range."""
+    bar = Bar(timestamp=1, open=10, high=20, low=5, close=15, volume=1)
+
+    assert bar.within(14)
