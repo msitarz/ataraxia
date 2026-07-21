@@ -32,3 +32,7 @@ class Bar:
             return int(float(value) * 4)
         else:
             return int(value)
+
+    def within(self, value: int) -> bool:
+        """Return True if value within bar's range, False otherwise."""
+        return value >= self.low and value <= self.high
