@@ -134,20 +134,53 @@ def test_broker_runner_no_signal():
 
     assert broker(bar=bar, signal=None) == {
         "account": Account(),
-        "positions": [],
+        "open_positions": [],
+        "closed_positions": [],
     }
 
 
-def test_broker_runner_signal_add_position():
-    """Test single signal broker that exits."""
+def test_broker_runner_signal_add_position(long_position):
+    """Test position entry."""
     broker = BrokerRunner()
 
-    bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
-    signal = Signal(side="buy", stop_loss=10, take_profit=35)
+    ret = broker(bar=long_position["bar"], signal=long_position["signal"])
 
-    ret = broker(bar=bar, signal=signal)
-
-    assert len(ret["positions"]) == 1
+    assert len(ret["open_positions"]) == 1
+    assert len(ret["closed_positions"]) == 0
 
     assert ret["account"].pnl == 0
     assert ret["account"].unrealized_pnl == 0
+
+
+def test_broker_runner_signal_close_position(long_position):
+    """Test position add and close."""
+    broker = BrokerRunner()
+
+    broker(bar=long_position["bar"], signal=long_position["signal"])
+
+    bar = Bar(timestamp=2, open=25, high=35, low=15, close=25, volume=1)
+
+    ret = broker(bar=bar, signal=None)
+
+    assert len(ret["open_positions"]) == 0
+    assert len(ret["closed_positions"]) == 1
+
+    assert ret["account"].pnl == 5
+    assert ret["account"].unrealized_pnl == 0
+
+
+def test_broker_runner_unrealized_pnl(long_position):
+    """Test unrealized pnl."""
+    broker = BrokerRunner()
+
+    broker(bar=long_position["bar"], signal=long_position["signal"])
+
+    bar = Bar(timestamp=2, open=25, high=29, low=15, close=29, volume=1)
+
+    ret = broker(bar=bar, signal=None)
+
+    assert len(ret["open_positions"]) == 1
+    assert len(ret["closed_positions"]) == 0
+
+    assert ret["account"].pnl == 0
+    assert ret["account"].unrealized_pnl == 4

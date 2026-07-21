@@ -92,25 +92,41 @@ class BrokerReturn(TypedDict):
     """Return type from BrokerRunner."""
 
     account: Account
-    positions: Sequence[Position]
+    open_positions: Sequence[Position]
+    closed_positions: Sequence[Position]
 
 
 @dataclass(frozen=True)
 class BrokerRunner:
     """Simple broker implementation.
 
-    Track each signal as separate position, combine to
+    Track each signal as separate position, combine in account.
     """
 
     account: Account = field(default_factory=Account)
-    positions: MutableSequence[Position] = field(default_factory=list)
+    open_positions: MutableSequence[Position] = field(default_factory=list)
+    closed_positions: MutableSequence[Position] = field(default_factory=list)
 
     def __call__(self, bar: Bar, signal: Signal) -> BrokerReturn:
         """Return current account and position objects."""
         if signal:
-            self.positions.append(Position(entry_bar=bar, **asdict(signal)))
+            self.open_positions.append(Position(entry_bar=bar, **asdict(signal)))
+        else:
+            self.account.unrealized_pnl = 0
+            for position in self.open_positions[:]:
+                pos = position.on_bar(bar)
+                if pos["closed"]:
+                    self.account.pnl += pos["pnl"]
+                    self.closed_positions.append(position)
+                    self.open_positions.remove(position)
+                else:
+                    self.account.unrealized_pnl += pos["pnl"]
 
-        return {"account": self.account, "positions": self.positions}
+        return {
+            "account": self.account,
+            "open_positions": self.open_positions,
+            "closed_positions": self.closed_positions,
+        }
 
 
 @dataclass(frozen=True)
