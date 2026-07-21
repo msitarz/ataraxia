@@ -85,7 +85,7 @@ def test_position_on_bar_both_orders_hit(long_position: PositionFixture):
 
 
 def test_position_on_bar_when_already_finished(long_position: PositionFixture):
-    """Should raise when position not working."""
+    """Should return closed position."""
     position = long_position["position"]
 
     bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
