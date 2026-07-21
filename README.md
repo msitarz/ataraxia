@@ -1,6 +1,6 @@
 # Ataraxia
 
-Orchestator for massively parallelized and immutable backtests.
+Orchestrator for massively parallelized and immutable backtests.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
