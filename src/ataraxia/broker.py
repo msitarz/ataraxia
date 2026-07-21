@@ -31,6 +31,7 @@ class Position(Signal):
 
     closing_bar: Bar | None = field(init=False, default_factory=lambda: None)
     closing_level: int | None = field(init=False, default_factory=lambda: None)
+    closing_pnl: int | None = field(init=False, default_factory=lambda: None)
 
     def __post_init__(self):
         object.__setattr__(self, "entry_level", self.entry_bar.close)
@@ -49,19 +50,20 @@ class Position(Signal):
             raise PositionError("Position closed")
 
         if bar.within(self.stop_loss):
-            self.close(bar, self.stop_loss)
-            return -abs(self.entry_level - self.stop_loss)
+            self.close(bar, self.stop_loss, -abs(self.entry_level - self.stop_loss))
+        elif bar.within(self.take_profit):
+            self.close(bar, self.take_profit, abs(self.take_profit - self.entry_level))
 
-        if bar.within(self.take_profit):
-            self.close(bar, self.take_profit)
-            return abs(self.take_profit - self.entry_level)
+        if self.closing_bar:
+            return self.closing_pnl
 
         return None
 
-    def close(self, bar: Bar, level: int):
+    def close(self, bar: Bar, level: int, pnl: int):
         """Close position."""
         object.__setattr__(self, "closing_bar", bar)
         object.__setattr__(self, "closing_level", level)
+        object.__setattr__(self, "closing_pnl", pnl)
 
 
 @dataclass

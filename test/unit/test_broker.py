@@ -115,6 +115,17 @@ def test_position_short_on_bar_stop_loss_hit(short_position: PositionFixture):
     assert position.on_bar(bar) == -4
 
 
+def test_position_short_on_bar_closing_pnl(short_position: PositionFixture):
+    """Should return positive pnl when take profit when shorting hit."""
+    position = short_position["position"]
+
+    bar = Bar(timestamp=2, open=25, high=29, low=11, close=28, volume=2)
+
+    position.on_bar(bar)
+
+    assert position.closing_pnl == -4
+
+
 def test_broker_runner_no_signal():
     """Test single signal broker that exits."""
     broker = BrokerRunner()
