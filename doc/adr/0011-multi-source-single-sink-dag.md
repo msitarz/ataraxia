@@ -6,7 +6,7 @@ Date: 2026-07-19
 
 Accepted
 
-Amends [10. Provider for graph leafs instead of bare type](0010-provider-for-graph-leafs-instead-of-bare-type.md)
+Amends [10. Provider for graph source instead of bare type](0010-provider-for-graph-source-instead-of-bare-type.md)
 
 ## Context
 
