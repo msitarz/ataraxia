@@ -126,12 +126,28 @@ def test_position_short_on_bar_closing_pnl(short_position: PositionFixture):
     assert position.closing_pnl == -4
 
 
-@pytest.mark.skip
 def test_broker_runner_no_signal():
     """Test single signal broker that exits."""
     broker = BrokerRunner()
 
-    assert broker(None, Bar(timestamp=1, open=2, high=3, low=1, close=2, volume=0)) == {
+    bar = Bar(timestamp=1, open=2, high=3, low=1, close=2, volume=0)
+
+    assert broker(bar=bar, signal=None) == {
         "account": Account(),
-        "position": None,
+        "positions": [],
     }
+
+
+def test_broker_runner_signal_add_position():
+    """Test single signal broker that exits."""
+    broker = BrokerRunner()
+
+    bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
+    signal = Signal(side="buy", stop_loss=10, take_profit=35)
+
+    ret = broker(bar=bar, signal=signal)
+
+    assert len(ret["positions"]) == 1
+
+    assert ret["account"].pnl == 0
+    assert ret["account"].unrealized_pnl == 0
