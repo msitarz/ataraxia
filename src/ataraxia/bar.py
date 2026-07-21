@@ -7,11 +7,15 @@ from dataclasses import dataclass
 import re
 
 DOT_PATTERN = re.compile(r"\.")
+CME_INDICES_TICKS_PER_POINT = 4
 
 
 @dataclass(frozen=True)
 class Bar:
-    """OHLCV data container for futures data."""
+    """OHLCV data container for futures data.
+
+    NOTE: This class supports only CME index futures that have 4 ticks per point.
+    """
 
     timestamp: int
     open: int
@@ -27,9 +31,9 @@ class Bar:
 
     @classmethod
     def _normalize(cls, value: str):
-        """Return value as int normalized to ticks."""
+        """Return value as int normalized to CME futures indices ticks."""
         if DOT_PATTERN.search(value):
-            return int(float(value) * 4)
+            return int(float(value) * CME_INDICES_TICKS_PER_POINT)
         else:
             return int(value)
 
