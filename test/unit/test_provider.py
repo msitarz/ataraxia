@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
+import textwrap
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -11,23 +12,29 @@ from ataraxia.provider import BarProvider
 
 @pytest.fixture
 def file_contents():
-    return """timestamp,open,high,low,close,volume
+    txt = """timestamp,open,high,low,close,volume
     1,25.0,55.5,23.25,43.25,10
     """
+
+    return textwrap.dedent(txt)
 
 
 @pytest.fixture
 def no_header():
-    return """1,2,3,4,5,6
+    txt = """1,2,3,4,5,6
     1,25.0,55.5,23.25,43.25,10
     """
+
+    return textwrap.dedent(txt)
 
 
 @pytest.fixture
 def wrong_header():
-    return """timing,open,high,low,close,volume
+    txt = """timing,open,high,low,close,volume
     1,25.0,55.5,23.25,43.25,10
     """
+
+    return textwrap.dedent(txt)
 
 
 def test_bar_provider_single_bar(file_contents):
@@ -38,6 +45,18 @@ def test_bar_provider_single_bar(file_contents):
 
         assert isinstance(bar, Bar)
         assert bar.timestamp == 1
+
+
+def test_bar_provider_stop_iteration(file_contents):
+    """Should raise StopIteration when no more data."""
+    m = mock_open(read_data=file_contents)
+    with (
+        patch("builtins.open", m),
+        BarProvider("stub_file_name") as f,
+        pytest.raises(StopIteration),
+    ):
+        next(f)
+        next(f)
 
 
 def test_bar_provider_no_header(no_header):
