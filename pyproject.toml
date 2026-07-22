@@ -17,13 +17,13 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "commitizen>=4.16.4",
+    "commitizen>=4.16.5",
     "debugpy>=1.8.21",
-    "prek>=0.4.9",
+    "prek>=0.4.10",
     "pyrefly>=1.1.1",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
-    "ruff>=0.15.21",
+    "ruff>=0.15.22",
 ]
 
 # =============================================================================
