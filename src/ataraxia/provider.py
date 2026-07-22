@@ -60,3 +60,6 @@ class BarProvider:
         self.reader = csv.DictReader(self.fd, fieldnames=header)
 
         return self.reader
+
+    def __hash__(self):
+        return hash(self.filepath)

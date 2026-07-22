@@ -81,7 +81,14 @@ def test_bar_provider_wrong_header(wrong_header):
         next(f)
 
 
-def test_provider_no_context_manager():
+def test_bar_provider_no_context_manager():
     """Should raise when used outside of context manager."""
     with pytest.raises(ProviderError):
         next(BarProvider("stub_file_name"))
+
+
+def test_bar_provider_hashable_by_filepath():
+    a = BarProvider("dummy_file_name")
+    b = BarProvider("dummy_file_name")
+
+    assert hash(a) == hash(b)
