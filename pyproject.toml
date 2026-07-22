@@ -56,17 +56,17 @@ select = [
   "DOC",  # pydoclint - args/returns match signature in docstrings
 ]
 extend-ignore = [
-  "D105", # undocumented magic method
-  "D107", # missing docstirng in __init__
+  "undocumented-magic-method",
+  "undocumented-public-init",
 ]
 ignore = [
-  "COM812",   # REQUIRED: conflicts with ruff format (trailing comma enforcer)
-  "ISC001",   # REQUIRED: conflicts with ruff format (implicit string concat)
+  "missing-trailing-comma",                    # REQUIRED: conflicts with ruff format
+  "single-line-implicit-string-concatenation", # REQUIRED: conflicts with ruff format
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "test/**" = [
-  "S101",     # assert is idiomatic in pytest
+  "assert",   # assert is idiomatic in pytest
   "ANN",      # no need for type annotations in tests
   "D",        # no need for pydocstyle in tests
   "DOC",      # No need for pydoclint in tests
