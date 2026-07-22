@@ -64,7 +64,6 @@ def compute(sink: Sink[..., Any]):
     nodes = sort_graph(graph)
     catalog = prime_catalog(nodes)
 
-    with source.provider() as iterable:
-        for item in iterable:
-            source.send(item)
-            yield compute_step(nodes, catalog)
+    for item in source:
+        source.send(item)
+        yield compute_step(nodes, catalog)

@@ -45,6 +45,11 @@ class Provider[T](Hashable, Iterable[T], Protocol):
 
     It must implement a context manager protocol as there will most likely be operations
     such as file opening or network stream reading which require context management.
+
+    Its use case is to return Provider instance from source node __iter__ method.
+
+    It must be hashable due to most likely being a source node attribute.  As every
+    computable node must be hashable, so must its attributes.
     """
 
     def __enter__(self) -> Self: ...
@@ -58,7 +63,7 @@ class Provider[T](Hashable, Iterable[T], Protocol):
 
 
 @runtime_checkable
-class Source[T, **P, R](Computable[P, R], Protocol):
+class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
     """Defines source node in the multi-source single-sink DAG of computables.
 
     Those nodes are used as input from the processed shard data in the compute loop.
@@ -67,14 +72,6 @@ class Source[T, **P, R](Computable[P, R], Protocol):
 
     def send(self, item: T) -> None:
         """Send item as the next runner's return value."""
-        ...
-
-    def provider(self) -> Provider[T]:
-        """Return Provider for this source node.
-
-        Provider will be iterated over in the compute loop and its yielded values will
-        be injected via send method to the Source node.
-        """
         ...
 
 
