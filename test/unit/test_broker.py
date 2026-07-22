@@ -222,3 +222,20 @@ def test_broker_runner_unrealized_pnl(long_position):
 
     assert ret["account"].pnl == 0
     assert ret["account"].unrealized_pnl == 4
+
+
+def test_broker_runner_position_update_on_signal(long_position, short_position):
+    """Should update already opened positions when receiving a signal."""
+    broker = BrokerRunner()
+
+    broker(bar=long_position["bar"], signal=long_position["signal"])
+
+    bar = Bar(timestamp=1, open=20, high=29, low=15, close=28, volume=1)
+
+    ret = broker(bar=bar, signal=short_position["signal"])
+
+    assert ret["account"].pnl == 0
+    assert ret["account"].unrealized_pnl == 3
+
+    assert len(ret["open_positions"]) == 2
+    assert len(ret["closed_positions"]) == 0
