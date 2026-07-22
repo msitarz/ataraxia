@@ -40,7 +40,7 @@ class Computable[**P, R](Hashable, Protocol):
 
 
 @runtime_checkable
-class Provider[T](Iterable[T], Protocol):
+class Provider[T](Hashable, Iterable[T], Protocol):
     """Define Provider that can be used to iterate over in the compute loop.
 
     It must implement a context manager protocol as there will most likely be operations
