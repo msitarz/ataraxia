@@ -127,24 +127,32 @@ class BrokerRunner:
 
     def __call__(self, bar: Bar, signal: Signal) -> BrokerReturn:
         """Return current account and position objects."""
+        new_position = None
         if signal is not None:
-            self.open_positions.append(Position(entry_bar=bar, **asdict(signal)))
-        else:
-            self.account.unrealized_pnl = 0
-            for position in self.open_positions[:]:
-                pos = position.on_bar(bar)
-                if pos["closed"]:
-                    self.account.pnl += pos["pnl"]
-                    self.closed_positions.append(position)
-                    self.open_positions.remove(position)
-                else:
-                    self.account.unrealized_pnl += pos["pnl"]
+            new_position = Position(entry_bar=bar, **asdict(signal))
+
+        self._process(bar)
+
+        if new_position is not None:
+            self.open_positions.append(new_position)
 
         return {
             "account": self.account,
             "open_positions": self.open_positions,
             "closed_positions": self.closed_positions,
         }
+
+    def _process(self, bar: Bar):
+        """Process new bar, update positions and account."""
+        self.account.unrealized_pnl = 0
+        for position in self.open_positions[:]:
+            pos = position.on_bar(bar)
+            if pos["closed"]:
+                self.account.pnl += pos["pnl"]
+                self.closed_positions.append(position)
+                self.open_positions.remove(position)
+            else:
+                self.account.unrealized_pnl += pos["pnl"]
 
 
 @dataclass(frozen=True)
