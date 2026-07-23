@@ -6,6 +6,7 @@ from collections import deque
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from ataraxia.bar import Bar
 from ataraxia.compute import Computable
 from ataraxia.errors import FeatureError
 
@@ -54,11 +55,38 @@ def sma(values: Sequence[float], period: int) -> float | None:
     """Return simple moving average of period for values.
 
     Raises:
-        FeatureError: When values has more items than period.
+        FeatureError: When values have more items than period.
     """
     if len(values) < period or not all(values):
         return None
     elif len(values) > period:
-        raise FeatureError("Values cannot have more items than period")
+        raise FeatureError("Cannot have more values than period")
 
     return sum(values) / period
+
+
+@dataclass(frozen=True)
+class SmaRunner:
+    """Simple Moving Average."""
+
+    period: int
+
+    def __call__(self, bars: Sequence[Bar]):
+        """Return simple moving average."""
+        return sma(tuple(b.close for b in bars), self.period)
+
+
+@dataclass(frozen=True)
+class Sma:
+    """Simple Moving Average computable from Bar source."""
+
+    source: Computable[..., Bar]
+    period: int
+
+    def deps(self):
+        """Return dependencies."""
+        return {"bars": RollingWindow(from_node=self.source, maxlen=self.period)}
+
+    def factory(self):
+        """Return runner."""
+        return SmaRunner(self.period)

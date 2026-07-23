@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
 
+from unittest.mock import MagicMock, patch
+
 import pytest
 
+from ataraxia.bar import Bar
 from ataraxia.errors import FeatureError
-from ataraxia.feature import RollingWindow, RollingWindowRunner, sma
+from ataraxia.feature import RollingWindow, RollingWindowRunner, SmaRunner, sma
 
 
 def test_rolling_window_runner():
@@ -55,3 +58,17 @@ def test_sma_none_on_incomplete_data():
 def test_sma_none_on_values_with_none():
     """Should return None when values contain None."""
     assert sma((2, 3, None), 3) is None
+
+
+def test_sma_runner():
+    """Should call sma with bars close values and period."""
+    mock = MagicMock()
+    with patch("ataraxia.feature.sma", mock):
+        period = 3
+        bars = (Bar(timestamp=1, open=10, high=20, low=5, close=15, volume=10),)
+
+        runner = SmaRunner(period)
+
+        runner(bars)
+
+        mock.assert_called_once_with((15,), period)
