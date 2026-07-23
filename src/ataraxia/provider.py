@@ -58,8 +58,7 @@ class BarProvider:
         if self.fd is None:
             raise ProviderError("Use provider as context manager")
 
-        # strip newline via [:-1] as readline appends it
-        header = self.fd.readline()[:-1].split(CSV_DELIMITER)
+        header = self.fd.readline().strip().split(CSV_DELIMITER)
 
         if header != CSV_HEADER:
             raise ProviderError("CSV file must contain a header")
