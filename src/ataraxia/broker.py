@@ -62,7 +62,6 @@ class Position(Signal):
                     bar, self.take_profit, abs(self.take_profit - self.entry_level)
                 )
             elif self.side == "buy" and bar.open > self.take_profit:
-                print(bar, self)
                 self.close(bar, bar.open, bar.open - self.entry_level)
             elif self.side == "sell" and bar.open < self.take_profit:
                 self.close(bar, bar.open, self.entry_level - bar.open)
