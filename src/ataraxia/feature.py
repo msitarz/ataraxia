@@ -3,9 +3,11 @@
 """Basic features as computable nodes."""
 
 from collections import deque
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from ataraxia.compute import Computable
+from ataraxia.errors import FeatureError
 
 
 class RollingWindowRunner[T]:
@@ -46,3 +48,17 @@ class RollingWindow[T]:
     def factory(self):
         """Return new RollingWindowRunner instance."""
         return RollingWindowRunner[T](self.maxlen)
+
+
+def sma(values: Sequence[float], period: int) -> float | None:
+    """Return simple moving average of period for values.
+
+    Raises:
+        FeatureError: When values has more items than period.
+    """
+    if len(values) < period or not all(values):
+        return None
+    elif len(values) > period:
+        raise FeatureError("Values cannot have more items than period")
+
+    return sum(values) / period

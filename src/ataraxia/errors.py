@@ -21,3 +21,9 @@ class ProviderError(AtaraxiaError):
     """Provider error."""
 
     pass
+
+
+class FeatureError(AtaraxiaError, ValueError):
+    """Feature error."""
+
+    pass
