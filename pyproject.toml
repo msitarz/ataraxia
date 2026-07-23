@@ -58,6 +58,7 @@ select = [
   "RUF",  # ruff-native rules — various Python 3 improvements
   "D",    # pydocstyle - presence and formatting of docstrings
   "DOC",  # pydoclint - args/returns match signature in docstrings
+  "T20",  # flake8-print - no stray print statements
 ]
 extend-ignore = [
   "undocumented-magic-method",
