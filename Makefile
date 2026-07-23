@@ -19,7 +19,7 @@ setup:
 lint:
 	uv run ruff check . --fix
 
-.PHONY: lint
+.PHONY: format
 format:
 	uv run ruff format .
 
