@@ -2,7 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Protocols for the computation engine."""
 
-from collections.abc import Hashable, Iterable, Mapping
+from collections.abc import Hashable, Iterable, Iterator, Mapping
 from types import TracebackType
 from typing import Any, Protocol, Self, runtime_checkable
 
@@ -40,7 +40,7 @@ class Computable[**P, R](Hashable, Protocol):
 
 
 @runtime_checkable
-class Provider[T](Hashable, Iterable[T], Protocol):
+class Provider[T](Hashable, Iterator[T], Protocol):
     """Define Provider that can be used to iterate over in the compute loop.
 
     It must implement a context manager protocol as there will most likely be operations
@@ -71,7 +71,11 @@ class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
     """
 
     def send(self, item: T) -> None:
-        """Send item as the next runner's return value."""
+        """Called by the compute loop with item yielded from the provider.
+
+        Generally it should set runner's item which will be returned when compute
+        graph calls it.
+        """
         ...
 
 
