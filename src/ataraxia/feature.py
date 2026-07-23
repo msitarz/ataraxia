@@ -3,6 +3,9 @@
 """Basic features as computable nodes."""
 
 from collections import deque
+from dataclasses import dataclass
+
+from ataraxia.compute import Computable
 
 
 class RollingWindowRunner[T]:
@@ -23,3 +26,23 @@ class RollingWindowRunner[T]:
         """Return accumulated items as a tuple."""
         self.q.appendleft(item)
         return tuple(self.q)
+
+
+@dataclass(frozen=True)
+class RollingWindow[T]:
+    """Computable node used for accumulation.
+
+    Uses RollingWindowRunner as implementation, so it accumulates items in reverse
+    chronological order.
+    """
+
+    from_node: Computable[..., T]
+    maxlen: int
+
+    def deps(self):
+        """Return dependencies for RollingWindow."""
+        return {"item": self.from_node}
+
+    def factory(self):
+        """Return new RollingWindowRunner instance."""
+        return RollingWindowRunner[T](self.maxlen)
