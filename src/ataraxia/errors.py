@@ -27,3 +27,15 @@ class FeatureError(AtaraxiaError, ValueError):
     """Feature error."""
 
     pass
+
+
+class ModuleError(AtaraxiaError, ImportError):
+    """Error while importing a module."""
+
+    pass
+
+
+class BacktestError(AtaraxiaError):
+    """Top-level backtest error."""
+
+    pass

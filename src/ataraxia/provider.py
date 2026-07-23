@@ -8,6 +8,8 @@ Providers deliver data to computable graph sources.
 import csv
 from dataclasses import dataclass
 from io import TextIOBase
+from pathlib import Path
+from types import TracebackType
 
 from .bar import Bar
 from .errors import ProviderError
@@ -25,7 +27,7 @@ class BarProvider:
     timestamp,open,high,low,close,volume
     """
 
-    filepath: str
+    filepath: str | Path
     fd: TextIOBase | None = None
     reader: csv.DictReader[str] | None = None
 
@@ -33,7 +35,12 @@ class BarProvider:
         self.fd = open(self.filepath)
         return self
 
-    def __exit__(self, _exc_type, _exc_value, _traceback):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
         if self.fd:
             self.fd.close()
 
