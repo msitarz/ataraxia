@@ -6,6 +6,7 @@ Integrate external strategy to form a computable graph and process a single shar
 """
 
 from pathlib import Path
+from typing import TypedDict
 
 from ataraxia.broker import BrokerReturn
 from ataraxia.compute import compute
@@ -15,7 +16,16 @@ from ataraxia.source import SourceNode
 from ataraxia.util import import_file, is_sink, is_type
 
 
-def backtest_shard(strategy_path: str | Path, shard_path: str | Path):
+class BacktestShardReturn(BrokerReturn, TypedDict):
+    """Define dict to return from backtest_shard."""
+
+    shard_path: str
+    strategy_path: str
+
+
+def backtest_shard(
+    strategy_path: str | Path, shard_path: str | Path
+) -> BacktestShardReturn:
     """Return results from running strategy on shard.
 
     Args:
@@ -44,7 +54,13 @@ def backtest_shard(strategy_path: str | Path, shard_path: str | Path):
         compute_steps = tuple(compute(sink_node))
         final_step = compute_steps[-1]
 
-        return final_step[sink_node.consumer() or sink_node]
+        result = final_step[sink_node.consumer() or sink_node]
+
+        if isinstance(result, dict):
+            result["shard_path"] = str(shard_path.resolve())
+            result["strategy_path"] = str(strategy_path.resolve())
+
+        return result
 
 
 def backtest_dir(strategy_path: str | Path, dir_path: str | Path):
