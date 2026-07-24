@@ -4,6 +4,8 @@
 
 import argparse
 from collections.abc import Sequence
+from dataclasses import asdict
+import json
 from pathlib import Path
 import sys
 
@@ -23,7 +25,8 @@ def display_results(results: Sequence[BrokerReturn]) -> None:
 
 def save_results(results: Sequence[BrokerReturn], to_file: Path) -> None:
     """Save results with details in to_file."""
-    ...
+    with to_file.open("w") as fp:
+        json.dump(results, fp, indent=2, default=lambda obj: asdict(obj))
 
 
 def main() -> None:

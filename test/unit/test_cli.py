@@ -2,6 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 
 from collections.abc import Sequence
+from pathlib import Path
 from unittest.mock import patch
 
 from _pytest.capture import CaptureFixture
@@ -9,7 +10,7 @@ import pytest
 
 from ataraxia.bar import Bar
 from ataraxia.broker import Account, BrokerReturn, Position
-from ataraxia.cli import display_results, main
+from ataraxia.cli import display_results, main, save_results
 
 
 @pytest.fixture
@@ -125,3 +126,11 @@ def test_main_print_error_and_exit(capsys: CaptureFixture, monkeypatch):
     captured = capsys.readouterr()
 
     assert len(captured.err) > 0
+
+
+def test_save_results(broker_returns, tmp_path: Path):
+    output = tmp_path / "out.json"
+
+    save_results(broker_returns, output)
+
+    assert len(output.read_text()) > 0
