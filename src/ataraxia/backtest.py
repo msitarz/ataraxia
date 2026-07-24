@@ -20,8 +20,8 @@ def backtest_shard(strategy_path: str | Path, shard_path: str | Path):
 
     Args:
         strategy_path: Absolute path to Python module containing strategy.
-            The module must have special __strategy__ attribute that will be used
-            as the sink in the computable graph.
+            The module must have special __sink__ attribute that will be used
+            as the sink in the computable graph.  Sink will usually be the strategy.
 
         shard_path: Absolute path to the CSV shard to be consumed by BarProvider.
 
@@ -33,19 +33,18 @@ def backtest_shard(strategy_path: str | Path, shard_path: str | Path):
 
     module = import_file(strategy_path)
 
-    strategy = module.__strategy__
+    sink = module.__sink__
 
-    if not is_sink(strategy) or not is_type(strategy):
-        raise ModuleError(
-            "Module must provide Sink computable in __strategy__ attribute."
-        )
+    if not is_sink(sink) or not is_type(sink):
+        raise ModuleError("Module must provide Sink computable in __sink__ attribute")
 
     with BarProvider(shard_path) as provider:
         source = SourceNode(provider)
-        all_compute_steps = tuple(compute(strategy(source)))
-        broker_result = tuple(all_compute_steps[-1].values())[-1]
+        sink_node = sink(source)
+        compute_steps = tuple(compute(sink_node))
+        final_step = compute_steps[-1]
 
-        return broker_result
+        return final_step[sink_node.consumer() or sink_node]
 
 
 def backtest_dir(strategy_path: str | Path, dir_path: str | Path):

@@ -35,7 +35,7 @@ def test_backtest_shard(tmp_path: Path):
             "    def sources(self):",
             "        return (self.source,)",
             "",
-            "__strategy__ = Strategy",
+            "__sink__ = Strategy",
         ])
     )
 
