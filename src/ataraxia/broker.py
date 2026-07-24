@@ -110,7 +110,7 @@ class BrokerRunner:
 
     Track each signal as separate position, combine pnl in the account.
 
-    Note:
+    Notes:
         This implementation assumes that the position was entered at the bar close, so
         position tracking starts from the next bar.  This is due to how the computation
         graph works.  Strategy would send a signal after the bar already closed.
