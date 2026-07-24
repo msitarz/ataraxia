@@ -30,6 +30,9 @@ dev = [
 requires = ["uv_build>=0.11.30,<0.12.0"]
 build-backend = "uv_build"
 
+[project.scripts]
+ataraxia = "ataraxia.cli:main"
+
 # =============================================================================
 # ruff (linting & formatting)
 # =============================================================================
@@ -70,12 +73,15 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"src/ataraxia/cli.py" = ["T20"]    # print allowed in CLI code
+
 "test/**" = [
   "assert",   # assert is idiomatic in pytest
   "ANN",      # no need for type annotations in tests
   "D",        # no need for pydocstyle in tests
   "DOC",      # No need for pydoclint in tests
 ]
+
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
