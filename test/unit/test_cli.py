@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
 
+from collections.abc import Sequence
+
 from _pytest.capture import CaptureFixture
 import pytest
 
@@ -10,93 +12,90 @@ from ataraxia.cli import display_results
 
 
 @pytest.fixture
-def broker_returns():
+def broker_returns() -> Sequence[BrokerReturn]:
     b1o = Bar(
-        timestamp=1784516400,
-        open=64956,
-        high=64977,
-        low=64932,
-        close=64956,
-        volume=12525,
+        timestamp=1,
+        open=100,
+        high=150,
+        low=50,
+        close=75,
+        volume=2,
     )
     b1c = Bar(
-        timestamp=1784518200,
-        open=64940,
-        high=64959,
-        low=64899,
-        close=64927,
-        volume=8773,
+        timestamp=2,
+        open=80,
+        high=130,
+        low=20,
+        close=45,
+        volume=2,
     )
 
     p1 = Position(
         side="sell",
-        stop_loss=64976,
-        take_profit=64926,
+        stop_loss=150,
+        take_profit=45,
         entry_bar=b1o,
     )
-    p1.on_bar(b1c)
+    p1.on_bar(b1c)  # profit +30
 
     b2o = Bar(
-        timestamp=1784543400,
-        open=64598,
-        high=64655,
-        low=64568,
-        close=64628,
-        volume=10333,
+        timestamp=3,
+        open=100,
+        high=200,
+        low=50,
+        close=150,
+        volume=10,
     )
     b2c = Bar(
-        timestamp=1784544300,
-        open=64643,
-        high=64661,
-        low=64607,
-        close=64634,
-        volume=9002,
+        timestamp=3,
+        open=150,
+        high=250,
+        low=100,
+        close=110,
+        volume=10,
     )
 
     p2 = Position(
         side="buy",
-        stop_loss=64608,
-        take_profit=64658,
+        stop_loss=90,
+        take_profit=500,
         entry_bar=b2o,
     )
-    p2.on_bar(b2c)
+    p2.on_bar(b2c)  # unrealized loss -40
 
     b3o = Bar(
-        timestamp=1784541600,
-        open=64430,
-        high=64470,
-        low=64422,
-        close=64450,
-        volume=6010,
+        timestamp=4,
+        open=200,
+        high=300,
+        low=100,
+        close=250,
+        volume=10,
     )
     b3c = Bar(
-        timestamp=1784542500,
-        open=64454,
-        high=64490,
-        low=64445,
-        close=64471,
-        volume=5062,
+        timestamp=5,
+        open=250,
+        high=400,
+        low=150,
+        close=175,
+        volume=10,
     )
 
     p3 = Position(
         side="buy",
-        stop_loss=64430,
-        take_profit=64480,
+        stop_loss=100,
+        take_profit=300,
         entry_bar=b3o,
     )
-    p3.on_bar(b3c)
+    p3.on_bar(b3c)  # profit +50
 
     return (
         {
-            "account": Account(pnl=10, unrealized_pnl=0),
-            "closed_positions": [
-                p1,
-                p2,
-            ],
-            "open_positions": [],
+            "account": Account(pnl=30, unrealized_pnl=-40),
+            "closed_positions": [p1],
+            "open_positions": [p2],
         },
         {
-            "account": Account(pnl=30, unrealized_pnl=0),
+            "account": Account(pnl=50, unrealized_pnl=0),
             "closed_positions": [p3],
             "open_positions": [],
         },
@@ -109,5 +108,18 @@ def test_display_results(broker_returns: tuple[BrokerReturn], capsys: CaptureFix
     captured = capsys.readouterr()
 
     assert captured.err == ""
-    # TODO:
-    # assert captured.out == """whatever it should be"""
+    assert captured.out == (
+        """Aggregated backtest results:\n"""
+        """Realized PnL   = 80\n"""
+        """Unrealized PnL = -40\n"""
+    )
+
+
+def test_display_results_print_error_and_exit(capsys: CaptureFixture):
+    """Should print error and exit with code 1 if no broker results."""
+    with pytest.raises(SystemExit):
+        display_results(())
+
+    captured = capsys.readouterr()
+
+    assert len(captured.err) > 0
