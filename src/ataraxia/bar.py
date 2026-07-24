@@ -14,7 +14,7 @@ CME_INDICES_TICKS_PER_POINT = 4
 class Bar:
     """OHLCV data container for futures data.
 
-    Note:
+    Notes:
         This class supports only CME index futures that have 4 ticks per point.
     """
 
@@ -32,9 +32,18 @@ class Bar:
 
     @classmethod
     def _normalize(cls, value: str):
-        """Return value as int normalized to CME futures indices ticks."""
+        """Return value as int normalized to CME futures indices ticks.
+
+        Notes:
+            Using int function to transform float number into int introduces
+            truncation error if the value after normalization is not a whole number.
+
+            This shouldn't be the case when data is correct (CME futures with 4 ticks
+            per point), but rounding solves that error for the future when more
+            instruments are supported.
+        """
         if DOT_PATTERN.search(value):
-            return int(float(value) * CME_INDICES_TICKS_PER_POINT)
+            return round(float(value) * CME_INDICES_TICKS_PER_POINT)
         else:
             return int(value)
 

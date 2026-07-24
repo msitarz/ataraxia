@@ -38,3 +38,8 @@ def test_bar_within():
     bar = Bar(timestamp=1, open=10, high=20, low=5, close=15, volume=1)
 
     assert bar.within(14)
+
+
+def test_bar_normalize_not_truncate():
+    """Should not truncate fractional part of the number."""
+    assert Bar._normalize("3.2") == 13
