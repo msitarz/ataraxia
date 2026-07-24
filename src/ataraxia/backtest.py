@@ -9,7 +9,7 @@ from pathlib import Path
 
 from ataraxia.broker import BrokerReturn
 from ataraxia.compute import compute
-from ataraxia.errors import BacktestError, ModuleError
+from ataraxia.errors import ModuleError
 from ataraxia.provider import BarProvider
 from ataraxia.source import SourceNode
 from ataraxia.util import import_file, is_sink, is_type
@@ -49,15 +49,8 @@ def backtest_shard(strategy_path: str | Path, shard_path: str | Path):
 
 
 def backtest_dir(strategy_path: str | Path, dir_path: str | Path):
-    """Return backtest results from directory containing shards.
-
-    Raises:
-        BacktestError: When dir_path argument is not a directory+
-    """
+    """Return backtest results from directory containing shards."""
     dir_path = Path(dir_path)
-
-    if not dir_path.is_dir():
-        raise BacktestError("dir_path argument must be a directory")
 
     backtest_results: list[BrokerReturn] = []
     for file in dir_path.iterdir():

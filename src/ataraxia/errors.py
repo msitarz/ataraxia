@@ -33,9 +33,3 @@ class ModuleError(AtaraxiaError, ImportError):
     """Error while importing a module."""
 
     pass
-
-
-class BacktestError(AtaraxiaError):
-    """Top-level backtest error."""
-
-    pass

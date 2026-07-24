@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from ataraxia.backtest import backtest_dir, backtest_shard
-from ataraxia.errors import BacktestError, ModuleError
+from ataraxia.errors import ModuleError
 
 
 def test_backtest_shard_raise_on_invalid_module():
@@ -18,5 +18,5 @@ def test_backtest_shard_raise_on_invalid_module():
 
 
 def test_backtest_dir_raise_on_wrong_param():
-    with pytest.raises(BacktestError):
+    with pytest.raises(FileNotFoundError):
         backtest_dir("hello", "i do not exist")
