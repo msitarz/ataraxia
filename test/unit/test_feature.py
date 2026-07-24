@@ -72,3 +72,8 @@ def test_sma_runner():
         runner(bars)
 
         mock.assert_called_once_with((15,), period)
+
+
+def test_sma_with_zero():
+    """Should calculate sma if there is 0 value."""
+    assert sma((0, 2), 2) == 1

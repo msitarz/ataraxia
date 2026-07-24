@@ -57,7 +57,7 @@ def sma(values: Sequence[float], period: int) -> float | None:
     Raises:
         FeatureError: When values have more items than period.
     """
-    if len(values) < period or not all(values):
+    if len(values) < period or not all(x for x in values if x is None):
         return None
     elif len(values) > period:
         raise FeatureError("Cannot have more values than period")
@@ -67,7 +67,10 @@ def sma(values: Sequence[float], period: int) -> float | None:
 
 @dataclass(frozen=True)
 class SmaRunner:
-    """Simple Moving Average."""
+    """Simple Moving Average.
+
+    Uses close of bar to calculate the simple moving average.
+    """
 
     period: int
 
