@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
+from collections.abc import Sequence
 from dataclasses import asdict
 from typing import TypedDict
 
@@ -41,6 +42,18 @@ def short_position() -> PositionFixture:
         "signal": signal,
         "position": position,
     }
+
+
+@pytest.fixture
+def accounts():
+    return (Account(pnl=2000, unrealized_pnl=150), Account(pnl=999, unrealized_pnl=444))
+
+
+def test_sum_accounts(accounts: Sequence[Account]):
+    summed: Account = sum(accounts)
+
+    assert summed.pnl == 2999
+    assert summed.unrealized_pnl == 594
 
 
 def test_position_init(long_position: PositionFixture):

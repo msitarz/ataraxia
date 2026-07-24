@@ -4,7 +4,7 @@
 
 from collections.abc import MutableSequence, Sequence
 from dataclasses import asdict, dataclass, field
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 from .bar import Bar
 from .compute import Sink, Source
@@ -94,6 +94,21 @@ class Account:
 
     pnl: int = 0
     unrealized_pnl: int = 0
+
+    def __add__(self, other: Any):
+        if isinstance(other, Account):
+            return Account(
+                pnl=self.pnl + other.pnl,
+                unrealized_pnl=self.unrealized_pnl + other.unrealized_pnl,
+            )
+
+        return NotImplemented
+
+    def __radd__(self, other: Any):
+        if other == 0:
+            return self
+
+        return self.__add__(other)
 
 
 class BrokerReturn(TypedDict):
