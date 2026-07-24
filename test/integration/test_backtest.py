@@ -4,11 +4,13 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from ataraxia.backtest import backtest_dir, backtest_shard
 
 
-def test_backtest_shard(tmp_path: Path):
-    """Should process provided strategy via provided shard."""
+@pytest.fixture
+def strategy_and_shard_path(tmp_path: Path):
     shard = tmp_path / "shard.csv"
     strategy = tmp_path / "strategy.py"
 
@@ -39,9 +41,34 @@ def test_backtest_shard(tmp_path: Path):
         ])
     )
 
+    return {
+        "shard": shard,
+        "strategy": strategy,
+    }
+
+
+def test_backtest_shard(strategy_and_shard_path):
+    """Should process provided strategy via provided shard."""
+    shard = strategy_and_shard_path["shard"]
+    strategy = strategy_and_shard_path["strategy"]
+
     result = backtest_shard(strategy, shard)
 
     assert result == 150
+
+
+def test_backtest_shard_reordered_compute_results_dict(strategy_and_shard_path):
+    """Should return sink values if compute results dict is not in order."""
+    shard = strategy_and_shard_path["shard"]
+    strategy = strategy_and_shard_path["strategy"]
+
+    def fake_compute(sink):
+        yield {sink: 150, "last_key_in_order": "wrong value"}
+
+    with patch("ataraxia.backtest.compute", fake_compute):
+        result = backtest_shard(strategy, shard)
+
+        assert result == 150
 
 
 def test_backtest_dir(tmp_path: Path):
