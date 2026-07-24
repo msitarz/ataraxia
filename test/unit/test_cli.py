@@ -2,13 +2,14 @@
 # Copyright (C) 2026 by Michal Sitarz
 
 from collections.abc import Sequence
+from unittest.mock import patch
 
 from _pytest.capture import CaptureFixture
 import pytest
 
 from ataraxia.bar import Bar
 from ataraxia.broker import Account, BrokerReturn, Position
-from ataraxia.cli import display_results
+from ataraxia.cli import display_results, main
 
 
 @pytest.fixture
@@ -115,10 +116,11 @@ def test_display_results(broker_returns: tuple[BrokerReturn], capsys: CaptureFix
     )
 
 
-def test_display_results_print_error_and_exit(capsys: CaptureFixture):
+def test_main_print_error_and_exit(capsys: CaptureFixture, monkeypatch):
     """Should print error and exit with code 1 if no broker results."""
-    with pytest.raises(SystemExit):
-        display_results(())
+    monkeypatch.setattr("sys.argv", ["ataraxia", "samples", "showcase.py"])
+    with patch("ataraxia.cli.backtest_dir", return_value=()), pytest.raises(SystemExit):
+        main()
 
     captured = capsys.readouterr()
 
