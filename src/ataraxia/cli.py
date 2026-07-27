@@ -36,16 +36,34 @@ def main() -> None:
         description="Massively parallelized backtest orchestrator",
     )
 
-    parser.add_argument("shard_dir", type=Path)
-    parser.add_argument("strategy", type=Path)
-    parser.add_argument("--output", type=Path, default="results.json")
+    parser.add_argument(
+        "-s",
+        "--sink",
+        type=Path,
+        required=True,
+        help="Path to Python file with graph sink",
+    )
+    parser.add_argument(
+        "-d",
+        "--shards-dir",
+        type=Path,
+        required=True,
+        help="Path to directory with shard files to backtest",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default="results.json",
+        help="Path to output file with results",
+    )
 
     args = parser.parse_args()
 
-    strategy: Path = args.strategy
-    shard_dir: Path = args.shard_dir
+    sink: Path = args.sink
+    shards_dir: Path = args.shards_dir
 
-    results = backtest_dir(strategy, shard_dir)
+    results = backtest_dir(sink, shards_dir)
 
     if not results:
         print("No backtest completed, check params and output file", file=sys.stderr)
