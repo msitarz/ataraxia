@@ -59,3 +59,26 @@ jobs:
 
       - name: Run tests
         run: uv run pytest --cov
+
+  test-examples:
+    name: Test examples
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.14"]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Run example strategy tests
+        run: uv run pytest example/test_*
