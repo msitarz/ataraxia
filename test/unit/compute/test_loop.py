@@ -98,7 +98,7 @@ def source_sink():
             return self
 
         def __exit__(self, exc_type, exc_value, traceback):
-            return True
+            return None
 
     @dataclass(frozen=True)
     class SnkRunner:
