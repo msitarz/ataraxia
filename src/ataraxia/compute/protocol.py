@@ -2,7 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Protocols for the computation engine."""
 
-from collections.abc import Hashable, Iterable, Iterator, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from types import TracebackType
 from typing import Any, Protocol, Self, runtime_checkable
 
@@ -40,29 +40,6 @@ class Computable[**P, R](Hashable, Protocol):
 
 
 @runtime_checkable
-class Provider[T](Hashable, Iterator[T], Protocol):
-    """Define Provider that can be used to iterate over in the compute loop.
-
-    It must implement a context manager protocol as there will most likely be operations
-    such as file opening or network stream reading which require context management.
-
-    Its use case is to return Provider instance from source node __iter__ method.
-
-    It must be hashable due to most likely being a source node attribute.  As every
-    computable node must be hashable, so must its attributes.
-    """
-
-    def __enter__(self) -> Self: ...
-
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> bool | None: ...
-
-
-@runtime_checkable
 class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
     """Defines source node in the multi-source single-sink DAG of computables.
 
@@ -77,6 +54,15 @@ class Source[T, **P, R](Iterable[T], Computable[P, R], Protocol):
         graph calls it.
         """
         ...
+
+    def __enter__(self) -> Self: ...
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None: ...
 
 
 @runtime_checkable

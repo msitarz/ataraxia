@@ -48,19 +48,19 @@ def backtest_shard(
     if not is_sink(sink) or not is_type(sink):
         raise ModuleError("Module must provide Sink computable in __sink__ attribute")
 
-    with BarProvider(shard_path) as provider:
-        source = SourceNode(provider)
-        sink_node = sink(source)
-        compute_steps = tuple(compute(sink_node))
-        final_step = compute_steps[-1]
+    provider = BarProvider(shard_path)
+    source = SourceNode(provider)
+    sink_node = sink(source)
+    compute_steps = tuple(compute(sink_node))
+    final_step = compute_steps[-1]
 
-        result = final_step[sink_node.consumer() or sink_node]
+    result = final_step[sink_node.consumer() or sink_node]
 
-        if isinstance(result, dict):
-            result["shard_path"] = str(shard_path.resolve())
-            result["strategy_path"] = str(strategy_path.resolve())
+    if isinstance(result, dict):
+        result["shard_path"] = str(shard_path.resolve())
+        result["strategy_path"] = str(strategy_path.resolve())
 
-        return result
+    return result
 
 
 def backtest_dir(strategy_path: str | Path, dir_path: str | Path):

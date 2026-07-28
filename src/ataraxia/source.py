@@ -3,9 +3,10 @@
 """Computable source nodes."""
 
 from dataclasses import dataclass, field
+from types import TracebackType
 
-from ataraxia.compute import Provider
 from ataraxia.compute.protocol import DependencyMapping
+from ataraxia.provider import Provider
 
 
 class SourceRunner[T]:
@@ -46,3 +47,15 @@ class SourceNode[T]:
 
     def __iter__(self):
         return self.provider
+
+    def __enter__(self):
+        self.provider.__enter__()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ):
+        return self.provider.__exit__(exc_type, exc_value, traceback)

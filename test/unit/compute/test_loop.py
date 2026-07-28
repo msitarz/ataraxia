@@ -94,6 +94,12 @@ def source_sink():
         def __iter__(self):
             return (x for x in (1, 3))
 
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return True
+
     @dataclass(frozen=True)
     class SnkRunner:
         def __call__(self, item: int):
