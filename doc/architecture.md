@@ -41,8 +41,7 @@ The distributed/serverless deployment described later on is a decided direction
 - Visual strategy and features debugging having each compute step saved
 
 **Non-goals**
-- Fully-autonomous trading agent
-- Enable High Frequency Trading strategies backtesting
+- Fully-autonomous trading agent.
 
 ## Core concepts / vocabulary
 
