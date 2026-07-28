@@ -1,6 +1,6 @@
 [project]
 name = "ataraxia"
-version = "0.0.0"
+version = "0.1.0"
 description = "Serverless orchestration engine for backtesting quantitative trading strategies"
 keywords = [
   "backtesting",
