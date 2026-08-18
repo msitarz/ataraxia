@@ -19,15 +19,15 @@ dependencies = []
 dev = [
     "commitizen>=4.17.0",
     "debugpy>=1.8.21",
-    "prek>=0.4.12",
+    "prek>=0.4.13",
     "pyrefly>=1.2.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
-    "ruff>=0.16.2",
+    "ruff>=0.16.3",
 ]
 
 [build-system]
-requires = ["uv_build>=0.12.3,<0.13.0"]
+requires = ["uv_build>=0.12.5,<0.13.0"]
 build-backend = "uv_build"
 
 [project.scripts]
