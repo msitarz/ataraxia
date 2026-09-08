@@ -23,9 +23,20 @@ Run the sample strategy locally:
 uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
 ```
 
-## Coding Style & Naming Conventions
+## Code style
 
 Use four-space Python indentation, 88-character lines, double quotes, and Google-style docstrings. Follow existing `snake_case` function/module names and `PascalCase` classes. Keep code compatible with strict Pyrefly checking and let Ruff organize imports. Follow `.editorconfig` for UTF-8, LF endings, final newlines, and whitespace. Add `# SPDX-License-Identifier: Apache-2.0` to new source files.
+
+- Prefer function composition over nested control flow. Keep functions and methods focused and small; if a body exceeds 25 lines of code, extract cohesive helper functions. Use guard clauses and early returns to keep nesting shallow.
+- Inject dependencies through function arguments or constructor/dataclass fields instead of monkey patching globals or collaborators. Use the same injection points in tests with small fakes or stubs implementing the required behavior. Only when injection is impractical and patching is absolutely necessary, use `unittest.mock.patch` in a scoped context manager instead of pytest's `monkeypatch` fixture.
+- Define class behavior with `typing.Protocol` and structural duck typing; callers should depend on the required protocol rather than a concrete implementation. Use `@runtime_checkable` when runtime protocol checks are needed, following `src/ataraxia/compute/protocol.py` and `src/ataraxia/provider.py`.
+- Describe structured data with dataclasses. Prefer `@dataclass(frozen=True)` for value objects and computable node specifications, and use `field(default_factory=...)` for per-instance containers or collaborators. Keep node specifications hashable; put execution state in their callable runners, following `src/ataraxia/source.py` and `src/ataraxia/feature.py`.
+- Avoid raw dictionaries for records with known fields. Prefer dataclasses, or `TypedDict` when a dictionary representation is required, as in `BrokerReturn` and `BacktestShardReturn`. Reserve general mappings for truly dynamic keys, such as computable graph nodes or dependency names. Prefer `TypedDict` wherever the key schema can be described; for genuinely arbitrary keys, use explicitly typed `Mapping[K, V]` or `MutableMapping[K, V]` contracts.
+- Wrap lower-level errors that propagate to users in domain exceptions defined in `src/ataraxia/errors.py`. Derive new domain exceptions from `AtaraxiaError`, retain a relevant built-in exception base where appropriate, and preserve the cause with `raise DomainError("Useful context") from exc`, following `sort_graph` in `src/ataraxia/compute/graph.py`. Document propagated domain errors in a Google-style `Raises` section.
+- Follow the computation node pattern: `deps()` declares named inputs, `factory()` supplies a runner, and the runner's `__call__` performs computation. Match dependency keys to runner parameter names. Extract reusable calculations into standalone functions, as `SmaRunner` does with `sma`.
+- Use modern Python typing: `T | None`, built-in generics, `type` aliases, and parameterized protocols/classes. Prefer `collections.abc` interfaces such as `Sequence`, `Mapping`, and `Iterator` in contracts; require mutable interfaces only when mutation is needed. Use `Literal` for closed sets of values, as with signal sides.
+- Use context managers for files and providers so resources close on success and failure. Follow the source/provider context-manager delegation pattern, and use `pathlib.Path` for filesystem paths.
+- Keep console output in `src/ataraxia/cli.py`; library functions return values or raise domain errors. Use pytest fixtures for reusable test inputs, `pytest.raises` for error behavior, `tmp_path` for filesystem tests, and `capsys` for CLI output assertions.
 
 ## Testing Guidelines
 
