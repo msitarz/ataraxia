@@ -3,7 +3,7 @@
 """Broker computable."""
 
 from collections.abc import MutableSequence, Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Any, Literal, TypedDict
 
 from .bar import Bar
@@ -143,7 +143,12 @@ class BrokerRunner:
         """Return current account and position objects."""
         new_position = None
         if signal is not None:
-            new_position = Position(entry_bar=bar, **asdict(signal))
+            new_position = Position(
+                entry_bar=bar,
+                side=signal.side,
+                stop_loss=signal.stop_loss,
+                take_profit=signal.take_profit,
+            )
 
         self._process(bar)
 
