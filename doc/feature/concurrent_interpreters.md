@@ -1,9 +1,13 @@
 # Parallel Shard Processing with Concurrent Interpreters
 
-## Status and Purpose
+## Status
 
-Feature slice for the v0.2 local parallelization milestone. This document
-records the scope, execution contract, and validation results.
+Proposed. Implementation and validation are pending.
+
+## Purpose
+
+This feature slice defines the intended scope, execution contract, and validation
+plan for the v0.2 local parallelization milestone.
 
 Allow a local backtest to process independent shards across CPU cores using Python
 3.14 interpreters. Preserve sequential bar processing within each shard, existing
@@ -13,8 +17,8 @@ direction in [ADR 0015](../adr/0015-fork-and-deploy-model.md).
 
 ## Starting Point
 
-Before this slice, `src/ataraxia/backtest.py::backtest_dir()` iterated directory
-entries sequentially and returned a tuple of results without sorting or filtering.
+Currently, `src/ataraxia/backtest.py::backtest_dir()` iterates directory entries
+sequentially and returns a tuple of results without sorting or filtering.
 `backtest_shard()` imports the strategy file, constructs its provider and graph,
 consumes the compute loop, and returns the final sink or consumer value.
 
@@ -111,7 +115,7 @@ results. Document this when recommending worker counts.
 - Invalid strategies, malformed shards, and unserializable results fail with useful
   context; CLI failures preserve an existing output file.
 - Empty, single-shard, and more-workers-than-shards cases behave as specified.
-- `make ci` and `uv run pytest example/test_crossover.py` pass. Verify whether
+- `make ci` passes, including example tests. Verify whether
   coverage collects worker execution; retain meaningful sequential coverage if it
   does not, without lowering the configured 80% threshold.
 - Record wall time and peak memory for a representative CPU-heavy workload with
