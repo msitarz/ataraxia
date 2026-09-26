@@ -22,24 +22,30 @@ repos:
         args: ["--maxkb=500"]
       - id: detect-private-key
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
-    hooks:
-      - id: ruff-check
-        args: [--fix]
-      - id: ruff-format
-
   - repo: local
     hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run --frozen ruff check --force-exclude
+        language: system
+        types_or: [python, pyi, jupyter]
+        args: [--fix]
+        require_serial: true
+      - id: ruff-format
+        name: ruff format
+        entry: uv run --frozen ruff format --force-exclude
+        language: system
+        types_or: [python, pyi, jupyter]
+        require_serial: true
       - id: pyrefly
         name: pyrefly
-        entry: uv run --no-sync pyrefly check
+        entry: uv run --frozen pyrefly check
         language: system
         types: [python]
         pass_filenames: false
-
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.4.1
-    hooks:
       - id: commitizen
+        name: commitizen check
+        entry: uv run --frozen cz check
+        language: system
+        args: [--allow-abort, --commit-msg-file]
         stages: [commit-msg]
