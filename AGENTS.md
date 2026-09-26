@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+## Required Reading
+
+At the start of every task, read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) in full before substantive discussion, planning, definition of new terms, review, or implementation. Apply its vocabulary throughout the task. Reread it after context loss or compaction and whenever its definitions change. This requirement applies to every agent, including subagents; include it explicitly when delegating work.
+
 ## Project Structure & Module Organization
 
 Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests. Python code lives in `src/ataraxia/`: `compute/` implements the computation graph and loop; sibling modules handle sources, providers, features, brokerage, backtesting, and the CLI. Tests are grouped under `test/unit/`, `test/integration/`, and `test/acceptance/`. `example/` contains a crossover strategy and its tests; `sample/` contains synthetic CSV data. Read `doc/architecture.md` and relevant records in `doc/adr/` before changing architectural boundaries.
@@ -33,10 +37,11 @@ uv run ataraxia --sink example/crossover.py --shards-dir sample --output results
 
 Use a shared vocabulary whose meaning stays consistent within the relevant domain or module. [doc/ubiquitous-language.md](doc/ubiquitous-language.md) is the single source of truth for shared domain terms. AI-generated specifications and code must use the project's established concepts and contracts.
 
-- Before writing a slice, ADR, or implementation, read the relevant terms in `doc/ubiquitous-language.md`, then inspect their definitions in code, tests, and applicable ADRs. Distinguish current implementation from intended changes; surface discrepancies that affect the task.
+- After reading the full glossary, inspect the task-relevant definitions in code, tests, and applicable ADRs. Distinguish current implementation from intended changes; surface discrepancies that affect the task.
 - Use the same terms in discussions, specifications, identifiers, docstrings, tests, and examples. Reuse existing abstractions when their meaning fits. When delegating work, include the relevant vocabulary and contract references so agents share the same context.
 - Keep distinct concepts distinct. A `Provider` supplies input; a `Source` exposes it to the computation graph; a `Runner` is the callable that executes a node. A runner is not an executor worker. Use "feature slice" for a delivery increment when "feature" could be confused with a composable calculation. Qualify terms at real boundaries and explain mappings where meanings differ.
 - Resolve ambiguity using the request and repository context first. If plausible meanings would produce materially different behavior and intent remains unclear, present concrete interpretations to the user before implementing the affected behavior. Do not silently invent domain rules; routine naming choices consistent with established meanings do not require confirmation.
+- When introducing a new domain concept, first check whether an existing term already covers it. If a new term is needed, define it in `doc/ubiquitous-language.md` before using it in specifications or implementation, including its meaning, responsibility, and distinction from related terms. Use it consistently in the feature slice, code, and tests. Resolve materially ambiguous meanings with the user before encoding them; use the ADR workflow when the concept introduces an architectural decision.
 - Maintain shared definitions in `doc/ubiquitous-language.md` and feature-local rules in the relevant slice. Describe a concept's responsibility, relationships, and significant units or lifecycle rules where needed. Refine definitions as understanding grows, update affected code, tests, and docs together, and use the ADR workflow for architectural changes. Preserve historical ADRs and link to the glossary rather than duplicating it in other documents.
 - Verify meaning through observable examples and tests, including timing, units, state transitions, and failure behavior where relevant. Matching terminology alone does not establish correctness; review whether generated code implements the agreed behavior and preserves module boundaries.
 
