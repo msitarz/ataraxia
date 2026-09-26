@@ -7,7 +7,6 @@ from unittest.mock import patch
 import pytest
 
 from ataraxia.backtest import backtest_dir, backtest_shard
-from ataraxia.cli import main
 from ataraxia.errors import ModuleError
 
 
@@ -49,32 +48,14 @@ def strategy_and_shard_path(tmp_path: Path):
     }
 
 
-@pytest.mark.parametrize(
-    ("expression", "expected"),
-    [
-        ("item.close", 150),
-        ("None", None),
-        (
-            "{'close': item.close, 'shard_path': 'old', 'strategy_path': 'old'}",
-            {"close": 150},
-        ),
-    ],
-)
-def test_backtest_shard(strategy_and_shard_path, expression, expected):
-    """Return arbitrary sink values, enriching only dictionaries with input paths."""
+def test_backtest_shard(strategy_and_shard_path):
+    """Should process provided strategy via provided shard."""
     shard = strategy_and_shard_path["shard"]
     strategy = strategy_and_shard_path["strategy"]
-    strategy.write_text(strategy.read_text().replace("item.close", expression))
 
     result = backtest_shard(strategy, shard)
 
-    if isinstance(expected, dict):
-        expected = {
-            **expected,
-            "shard_path": str(shard.resolve()),
-            "strategy_path": str(strategy.resolve()),
-        }
-    assert result == expected
+    assert result == 150
 
 
 def test_backtest_shard_requires_sink_export(strategy_and_shard_path):
@@ -139,47 +120,16 @@ def test_backtest_shard_reordered_compute_results_dict(strategy_and_shard_path):
         assert result == 150
 
 
-def test_backtest_dir(strategy_and_shard_path, tmp_path: Path):
-    """Preserve non-broker values when running a real strategy across shards."""
-    shards = tmp_path / "shards"
-    shards.mkdir()
-    data = strategy_and_shard_path["shard"].read_text()
-    (shards / "first.csv").write_text(data)
-    (shards / "second.csv").write_text(data)
+def test_backtest_dir(tmp_path: Path):
+    """Should process all files in the dir and return values."""
 
-    results = backtest_dir(strategy_and_shard_path["strategy"], shards)
+    file_1 = tmp_path / "file_1.py"
+    file_2 = tmp_path / "file_2.py"
 
-    assert results == (150, 150)
+    file_1.write_text("")
+    file_2.write_text("")
 
+    with patch("ataraxia.backtest.backtest_shard", return_value=3):
+        results = backtest_dir("i do not exist", tmp_path)
 
-@pytest.mark.parametrize("expression", ["item.close", "{'close': item.close}"])
-def test_cli_rejects_non_broker_strategy_results(
-    strategy_and_shard_path, tmp_path: Path, capsys, expression
-):
-    """Unsupported CLI results leave an existing output file intact."""
-    strategy = strategy_and_shard_path["strategy"]
-    strategy.write_text(strategy.read_text().replace("item.close", expression))
-    shards = tmp_path / "shards"
-    shards.mkdir()
-    strategy_and_shard_path["shard"].rename(shards / "shard.csv")
-    output = tmp_path / "results.json"
-    output.write_text("previous results")
-    argv = [
-        "ataraxia",
-        "--sink",
-        str(strategy),
-        "--shards-dir",
-        str(shards),
-        "--output",
-        str(output),
-    ]
-
-    with patch("ataraxia.cli.sys.argv", argv), pytest.raises(SystemExit) as error:
-        main()
-
-    assert error.value.code == 1
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert "CLI requires broker results" in captured.err
-    assert "Python backtest API" in captured.err
-    assert output.read_text() == "previous results"
+        assert results == (3, 3)

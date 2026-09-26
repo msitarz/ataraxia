@@ -11,18 +11,6 @@ The backtest is running the code against a shard of data (e.g. a single intraday
 
 You can run the backtest via a CLI command and inspect per-shard results in the output file.
 
-The Python backtest API returns the final value from the sink's consumer, or from
-the sink itself when no consumer is configured. That value can be any object;
-`backtest_dir()` collects those values into a tuple. Dictionary results gain
-absolute `shard_path` and `strategy_path` entries, replacing those keys if present.
-`BacktestShardReturn` describes broker results with these paths, not every possible
-backtest result.
-
-The CLI requires `BrokerReturn` fields: an `Account` and `open_positions` /
-`closed_positions` sequences of `Position` objects. It checks all results before
-displaying totals or writing JSON. Other results remain available through the
-Python API; the CLI reports an error without overwriting the output file.
-
 Below is an example computable graph.  It injects dependencies from the source node down to the sink and the final sink consumer (usually the broker node).
 
 ```mermaid
