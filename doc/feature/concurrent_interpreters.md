@@ -20,11 +20,12 @@ direction in [ADR 0015](../adr/0015-fork-and-deploy-model.md).
 Currently, `src/ataraxia/backtest.py::backtest_dir()` iterates directory entries
 sequentially and returns a tuple of results without sorting or filtering.
 `backtest_shard()` imports the strategy file, constructs its provider and graph,
-consumes the compute loop, and returns the final sink or consumer value.
+consumes the compute loop, and returns the final sink or consumer value. The
+backtest contract requires that value to be a broker result, enriched with shard
+and strategy metadata.
 
 The CLI aggregates broker accounts and writes JSON only after all shards finish.
-Broker results contain package-defined dataclasses; direct Python callers can also
-receive primitive sink values, as covered by integration tests.
+Broker results contain package-defined dataclasses.
 
 ## Interface and Scope
 
@@ -68,9 +69,9 @@ is unnecessary for this slice.
 4. The coordinator stores results by index and returns the completed tuple. Only
    the main interpreter aggregates accounts and writes the output file.
 
-Package-defined `Account`, `Position`, and `Bar` values and primitive sink results
-must survive serialization without schema changes. Objects defined only in a
-dynamically loaded strategy module may not be importable during unpickling; such
+Package-defined `Account`, `Position`, and `Bar` values must survive serialization
+without schema changes. Objects defined only in a dynamically loaded strategy
+module may not be importable during unpickling; such
 custom results require importable definitions or serializable built-in values.
 Report serialization failures without silently switching execution modes.
 

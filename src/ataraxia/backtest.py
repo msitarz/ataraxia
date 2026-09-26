@@ -28,6 +28,9 @@ def backtest_shard(
 ) -> BacktestShardReturn:
     """Return results from running strategy on shard.
 
+    The selected sink or consumer must return a BrokerReturn, which is enriched
+    with shard and strategy paths.
+
     Args:
         strategy_path: Absolute path to Python module containing strategy.
             The module must export a Sink class as __sink__, which is constructed
@@ -69,11 +72,13 @@ def backtest_shard(
     return result
 
 
-def backtest_dir(strategy_path: str | Path, dir_path: str | Path):
-    """Return backtest results from directory containing shards."""
+def backtest_dir(
+    strategy_path: str | Path, dir_path: str | Path
+) -> tuple[BacktestShardReturn, ...]:
+    """Return broker results for every shard in a directory."""
     dir_path = Path(dir_path)
 
-    backtest_results: list[BrokerReturn] = []
+    backtest_results: list[BacktestShardReturn] = []
     for file in dir_path.iterdir():
         backtest = backtest_shard(strategy_path, file)
 

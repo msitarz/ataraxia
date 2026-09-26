@@ -8,10 +8,11 @@ from unittest.mock import MagicMock, mock_open, patch
 import pytest
 
 from ataraxia.backtest import backtest_dir, backtest_shard
+from ataraxia.broker import Account, BrokerReturn
 
 
 def test_backtest_shard_include_shard_path_strategy_path(tmp_path: Path):
-    """Should raise when provided invalid module."""
+    """Should include the shard and strategy paths in a broker result."""
     module_mock = MagicMock()
 
     @dataclass(frozen=True)
@@ -24,9 +25,17 @@ def test_backtest_shard_include_shard_path_strategy_path(tmp_path: Path):
 
     sink = S(0)
     module_mock.configure_mock(__sink__=S)
+    broker_result: BrokerReturn = {
+        "account": Account(),
+        "open_positions": [],
+        "closed_positions": [],
+    }
 
     with (
-        patch("ataraxia.backtest.compute", return_value=({sink: {}},)),
+        patch(
+            "ataraxia.backtest.compute",
+            return_value=({sink: broker_result},),
+        ),
         patch("ataraxia.backtest.import_file", return_value=module_mock),
         patch("ataraxia.backtest.is_sink", return_value=True),
         patch("ataraxia.backtest.is_type", return_value=True),
