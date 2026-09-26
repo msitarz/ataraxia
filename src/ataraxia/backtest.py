@@ -17,15 +17,13 @@ from ataraxia.util import import_file, is_sink, is_type
 
 
 class BacktestShardReturn(BrokerReturn, TypedDict):
-    """Define dict to return from backtest_shard."""
+    """Describe a broker result enriched with its backtest input paths."""
 
     shard_path: str
     strategy_path: str
 
 
-def backtest_shard(
-    strategy_path: str | Path, shard_path: str | Path
-) -> BacktestShardReturn:
+def backtest_shard(strategy_path: str | Path, shard_path: str | Path) -> object:
     """Return results from running strategy on shard.
 
     Args:
@@ -34,6 +32,12 @@ def backtest_shard(
             with the source. Sink will usually be the strategy.
 
         shard_path: Absolute path to the CSV shard to be consumed by BarProvider.
+
+    Returns:
+        The final consumer value, or the sink value when there is no consumer.
+        Dictionary results gain absolute shard_path and strategy_path entries,
+        replacing any existing values for those keys. Other values are unchanged.
+        Only broker-shaped dictionaries satisfy BacktestShardReturn.
 
     Raises:
         ModuleError: When the module does not export a Sink class as __sink__.
@@ -69,11 +73,14 @@ def backtest_shard(
     return result
 
 
-def backtest_dir(strategy_path: str | Path, dir_path: str | Path):
-    """Return backtest results from directory containing shards."""
+def backtest_dir(strategy_path: str | Path, dir_path: str | Path) -> tuple[object, ...]:
+    """Return each shard's final value in directory iteration order.
+
+    Values follow backtest_shard's result contract, not necessarily BrokerReturn.
+    """
     dir_path = Path(dir_path)
 
-    backtest_results: list[BrokerReturn] = []
+    backtest_results: list[object] = []
     for file in dir_path.iterdir():
         backtest = backtest_shard(strategy_path, file)
 
