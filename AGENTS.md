@@ -28,7 +28,7 @@ Execution is currently local, sequential, and single-source. Parallel execution,
 
 ## Commands and Validation
 
-Use Python 3.14+, `uv`, and `make`. [Makefile](Makefile) and [CI workflow](.github/workflows/ci.yml) define executable checks; [CONTRIBUTING.md](CONTRIBUTING.md) covers contribution setup.
+Use Python 3.14+, `uv`, and `make`. [Makefile](Makefile) defines executable checks; the [CI workflow](.github/workflows/ci.yml) invokes its shared targets. [CONTRIBUTING.md](CONTRIBUTING.md) covers contribution setup.
 
 | Command | Purpose |
 | --- | --- |

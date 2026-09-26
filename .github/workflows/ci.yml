@@ -21,20 +21,8 @@ jobs:
           version: "latest"
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
-      - name: Audit packages
-        run: uv audit --frozen --preview-features audit
-
-      - name: Lint check
-        run: uv run ruff check --output-format=github .
-
-      - name: Format check
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run pyrefly check --output-format=github
+      - name: Run checks
+        run: make ci-check
 
   test:
     name: Test
@@ -54,11 +42,8 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
       - name: Run tests
-        run: uv run pytest --cov
+        run: make ci-test
 
   test-examples:
     name: Test examples
@@ -77,8 +62,5 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
       - name: Run example strategy tests
-        run: uv run pytest example/test_*
+        run: make ci-examples

@@ -32,14 +32,22 @@ typecheck:
 test:
 	uv run pytest --cov
 
-.PHONY: ci
-ci:
+.PHONY: ci ci-setup ci-check ci-test ci-examples
+ci: ci-check ci-test ci-examples
+
+ci-setup:
 	uv sync --frozen --group dev
+
+ci-check: ci-setup
 	uv audit --frozen --preview-features audit
 	uv run ruff check .
 	uv run ruff format --check .
-	uv run pyrefly check
-	uv run pytest --cov
+	$(MAKE) typecheck
+
+ci-test: ci-setup
+	$(MAKE) test
+
+ci-examples: ci-setup
 	uv run pytest example/
 
 .PHONY: clean
