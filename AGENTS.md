@@ -13,6 +13,7 @@ Optimize for the user's complete outcome and ongoing maintenance cost. The small
 - Before adding instructions, exceptions, duplicated logic, or a workaround, trace why it is needed. Check whether the component responsible for the behavior can provide it directly. Existing behavior is evidence, not automatically the intended contract; resolve mismatches against the task and accepted decisions.
 - Prefer one authoritative implementation or definition, with other paths calling, deriving from, or linking to it. Automate deterministic steps people would otherwise need to remember. For example, make `make ci` run all required checks; validate a shared invariant at its owning boundary; derive repeated configuration from its source.
 - Make the smallest cohesive fix that removes the cause within the task's scope. Preserve intentional differences and compatibility requirements; avoid speculative abstractions and unrelated refactors. If a workaround is necessary, explain the constraint and remaining limitation.
+- **Revert fundamentally wrong approaches before reimplementing.** When your change violates an established project contract or convention, revert the offending change and any compensating changes built on it. Preserve unrelated work. Reimplement the smallest correct solution from the restored baseline, following existing project conventions, then validate it. Do not retain unnecessary abstractions, checks, or documentation introduced to support the rejected approach. Use a targeted fix for an isolated defect in an otherwise sound design.
 - Update affected callers, tests, and docs together. Verify the actual command, API, or user flow being recommended, including relevant failures. Do not weaken tests or redefine documented expectations merely to accommodate a defect. Before finishing, check whether the user still has to compensate manually for the problem.
 
 ## Repository Map
@@ -79,6 +80,8 @@ Example: the same strategy and shards yield identical ordered results with one o
 Background: [Thoughtworks](https://www.thoughtworks.com/en-au/insights/e-books/modern-data-engineering-playbook/delivery-planning-principles), [Fowler](https://martinfowler.com/bliki/FeatureDevotion.html), [Beck](https://newsletter.kentbeck.com/p/canon-tdd), [Farley](https://www.davefarley.net/?page_id=50).
 
 ## Architecture Decision Records
+
+Create an ADR only for a substantive architectural decision. Correcting types, tests, or implementation to conform to an established contract does not require a new ADR. Do not turn recovery from your own mistake into a new architectural decision.
 
 1. Search `doc/adr/` for the problem and related decisions; read relevant records and follow amendment/supersession links. Reuse a covering ADR instead of duplicating it.
 2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Open an issue before non-trivial architectural work.
