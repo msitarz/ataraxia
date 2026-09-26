@@ -6,6 +6,15 @@ Read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) **in full at the s
 
 Then inspect task-relevant code, tests, and ADRs. Distinguish current behavior from intended changes and surface discrepancies affecting the task. Before changing architectural boundaries, read [doc/architecture.md](doc/architecture.md) and follow the [ADR workflow](#architecture-decision-records).
 
+## Fix the Underlying Problem
+
+Optimize for the user's complete outcome and ongoing maintenance cost. The smallest useful change may span code, tooling, tests, and documentation.
+
+- Before adding instructions, exceptions, duplicated logic, or a workaround, trace why it is needed. Check whether the component responsible for the behavior can provide it directly. Existing behavior is evidence, not automatically the intended contract; resolve mismatches against the task and accepted decisions.
+- Prefer one authoritative implementation or definition, with other paths calling, deriving from, or linking to it. Automate deterministic steps people would otherwise need to remember. For example, make `make ci` run all required checks; validate a shared invariant at its owning boundary; derive repeated configuration from its source.
+- Make the smallest cohesive fix that removes the cause within the task's scope. Preserve intentional differences and compatibility requirements; avoid speculative abstractions and unrelated refactors. If a workaround is necessary, explain the constraint and remaining limitation.
+- Update affected callers, tests, and docs together. Verify the actual command, API, or user flow being recommended, including relevant failures. Do not weaken tests or redefine documented expectations merely to accommodate a defect. Before finishing, check whether the user still has to compensate manually for the problem.
+
 ## Repository Map
 
 Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests:
