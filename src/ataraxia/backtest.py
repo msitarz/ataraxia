@@ -30,23 +30,29 @@ def backtest_shard(
 
     Args:
         strategy_path: Absolute path to Python module containing strategy.
-            The module must have special __sink__ attribute that will be used
-            as the sink in the computable graph.  Sink will usually be the strategy.
+            The module must export a Sink class as __sink__, which is constructed
+            with the source. Sink will usually be the strategy.
 
         shard_path: Absolute path to the CSV shard to be consumed by BarProvider.
 
     Raises:
-        ModuleError: When the module does not expose strategy.
+        ModuleError: When the module does not export a Sink class as __sink__.
     """
     strategy_path = Path(strategy_path)
     shard_path = Path(shard_path)
 
     module = import_file(strategy_path)
 
-    sink = module.__sink__
+    export_error = (
+        f"Strategy module {strategy_path} must export a Sink class as __sink__"
+    )
+    try:
+        sink = module.__sink__
+    except AttributeError as exc:
+        raise ModuleError(export_error) from exc
 
     if not is_sink(sink) or not is_type(sink):
-        raise ModuleError("Module must provide Sink computable in __sink__ attribute")
+        raise ModuleError(export_error)
 
     provider = BarProvider(shard_path)
     source = SourceNode(provider)
