@@ -8,10 +8,28 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 import sys
+from typing import TypeGuard
 
 from ataraxia.backtest import backtest_dir
-from ataraxia.broker import Account, BrokerReturn
-from ataraxia.errors import BacktestResultError
+from ataraxia.broker import Account, BrokerReturn, Position
+
+
+def _is_broker_results(results: Sequence[object]) -> TypeGuard[Sequence[BrokerReturn]]:
+    """Return whether every result has the broker fields required by the CLI."""
+    for result in results:
+        if not isinstance(result, dict) or not isinstance(
+            result.get("account"), Account
+        ):
+            return False
+        for key in ("open_positions", "closed_positions"):
+            positions = result.get(key)
+            if (
+                not isinstance(positions, Sequence)
+                or isinstance(positions, (str, bytes, bytearray))
+                or not all(isinstance(position, Position) for position in positions)
+            ):
+                return False
+    return True
 
 
 def display_results(results: Sequence[BrokerReturn]) -> None:
@@ -64,14 +82,18 @@ def main() -> None:
     sink: Path = args.sink
     shards_dir: Path = args.shards_dir
 
-    try:
-        results = backtest_dir(sink, shards_dir)
-    except BacktestResultError as exc:
-        print(str(exc), file=sys.stderr)
-        sys.exit(1)
+    results = backtest_dir(sink, shards_dir)
 
     if not results:
         print("No backtest completed, check params and output file", file=sys.stderr)
+        sys.exit(1)
+
+    if not _is_broker_results(results):
+        print(
+            "CLI requires broker results: an Account and open/closed Position "
+            "sequences. Use the Python backtest API for other sink values.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     display_results(results)

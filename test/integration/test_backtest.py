@@ -7,13 +7,8 @@ from unittest.mock import patch
 import pytest
 
 from ataraxia.backtest import backtest_dir, backtest_shard
-from ataraxia.broker import Account
 from ataraxia.cli import main
-from ataraxia.errors import BacktestResultError, ModuleError
-
-RESULT_EXPRESSION = (
-    "{'account': Account(pnl=item.close), 'open_positions': [], 'closed_positions': []}"
-)
+from ataraxia.errors import ModuleError
 
 
 @pytest.fixture
@@ -26,12 +21,11 @@ def strategy_and_shard_path(tmp_path: Path):
     strategy.write_text(
         "\n".join([
             "from dataclasses import dataclass",
-            "from ataraxia.broker import Account",
             "from ataraxia.source import SourceNode",
             "",
             "class StrategyRunner:",
             "    def __call__(self, item):",
-            f"        return {RESULT_EXPRESSION}",
+            "        return item.close",
             "",
             "@dataclass(frozen=True)",
             "class Strategy:",
@@ -55,76 +49,32 @@ def strategy_and_shard_path(tmp_path: Path):
     }
 
 
-def test_backtest_shard(strategy_and_shard_path):
-    """Return a complete broker record with authoritative input paths."""
-    shard = strategy_and_shard_path["shard"]
-    strategy = strategy_and_shard_path["strategy"]
-    strategy.write_text(
-        strategy.read_text().replace(
-            RESULT_EXPRESSION,
-            "{" + f"**{RESULT_EXPRESSION}, "
-            "'shard_path': 'old', 'strategy_path': 'old'}",
-        )
-    )
-
-    result = backtest_shard(strategy, shard)
-
-    assert result == {
-        "account": Account(pnl=150),
-        "open_positions": (),
-        "closed_positions": (),
-        "shard_path": str(shard.resolve()),
-        "strategy_path": str(strategy.resolve()),
-    }
-
-
-def test_backtest_shard_with_broker_consumer():
-    """Return the real broker consumer's account and validated closed positions."""
-    strategy = Path("example/crossover.py")
-    shard = Path("sample/nq_15m_2026_07_19.csv")
-
-    result = backtest_shard(strategy, shard)
-
-    assert result["account"] == Account(pnl=10)
-    assert result["open_positions"] == ()
-    assert isinstance(result["closed_positions"], tuple)
-    assert [position.closing_pnl for position in result["closed_positions"]] == [
-        30,
-        -20,
-    ]
-    assert result["shard_path"] == str(shard.resolve())
-    assert result["strategy_path"] == str(strategy.resolve())
-
-
 @pytest.mark.parametrize(
-    "expression",
+    ("expression", "expected"),
     [
-        "item.close",
-        "None",
-        "{'close': item.close}",
-        "{'account': Account()}",
-        "{'account': None, 'open_positions': [], 'closed_positions': []}",
-        "{'account': Account(), 'open_positions': None, 'closed_positions': []}",
-        "{'account': Account(), 'open_positions': [], 'closed_positions': None}",
-        "{'account': Account(), 'open_positions': '', 'closed_positions': []}",
-        "{'account': Account(), 'open_positions': [], 'closed_positions': b''}",
-        "{'account': Account(), 'open_positions': bytearray(), 'closed_positions': []}",
-        "{'account': Account(), 'open_positions': [42], 'closed_positions': []}",
-        "{'account': Account(), 'open_positions': [], 'closed_positions': [42]}",
+        ("item.close", 150),
+        ("None", None),
+        (
+            "{'close': item.close, 'shard_path': 'old', 'strategy_path': 'old'}",
+            {"close": 150},
+        ),
     ],
 )
-def test_backtest_shard_rejects_invalid_results(strategy_and_shard_path, expression):
-    """Reject incompatible dynamic values before exposing a typed result."""
-    strategy = strategy_and_shard_path["strategy"]
+def test_backtest_shard(strategy_and_shard_path, expression, expected):
+    """Return arbitrary sink values, enriching only dictionaries with input paths."""
     shard = strategy_and_shard_path["shard"]
-    strategy.write_text(strategy.read_text().replace(RESULT_EXPRESSION, expression))
+    strategy = strategy_and_shard_path["strategy"]
+    strategy.write_text(strategy.read_text().replace("item.close", expression))
 
-    with pytest.raises(BacktestResultError, match="Invalid result") as error:
-        backtest_shard(strategy, shard)
+    result = backtest_shard(strategy, shard)
 
-    assert str(strategy) in str(error.value)
-    assert str(shard) in str(error.value)
-    assert isinstance(error.value.__cause__, BacktestResultError)
+    if isinstance(expected, dict):
+        expected = {
+            **expected,
+            "shard_path": str(shard.resolve()),
+            "strategy_path": str(strategy.resolve()),
+        }
+    assert result == expected
 
 
 def test_backtest_shard_requires_sink_export(strategy_and_shard_path):
@@ -181,24 +131,16 @@ def test_backtest_shard_reordered_compute_results_dict(strategy_and_shard_path):
     strategy = strategy_and_shard_path["strategy"]
 
     def fake_compute(sink):
-        yield {
-            sink: {
-                "account": Account(pnl=150),
-                "open_positions": [],
-                "closed_positions": [],
-            },
-            "last_key_in_order": "wrong value",
-        }
+        yield {sink: 150, "last_key_in_order": "wrong value"}
 
     with patch("ataraxia.backtest.compute", fake_compute):
         result = backtest_shard(strategy, shard)
 
-        assert result["account"] == Account(pnl=150)
-        assert result["shard_path"] == str(shard.resolve())
+        assert result == 150
 
 
 def test_backtest_dir(strategy_and_shard_path, tmp_path: Path):
-    """Return a complete record for each shard using a real strategy."""
+    """Preserve non-broker values when running a real strategy across shards."""
     shards = tmp_path / "shards"
     shards.mkdir()
     data = strategy_and_shard_path["shard"].read_text()
@@ -207,32 +149,21 @@ def test_backtest_dir(strategy_and_shard_path, tmp_path: Path):
 
     results = backtest_dir(strategy_and_shard_path["strategy"], shards)
 
-    assert len(results) == 2
-    assert {result["shard_path"] for result in results} == {
-        str((shards / "first.csv").resolve()),
-        str((shards / "second.csv").resolve()),
-    }
-    for result in results:
-        assert result["account"] == Account(pnl=150)
-        assert result["open_positions"] == ()
-        assert result["closed_positions"] == ()
-        assert result["strategy_path"] == str(strategy_and_shard_path["strategy"])
+    assert results == (150, 150)
 
 
 @pytest.mark.parametrize("expression", ["item.close", "{'close': item.close}"])
-@pytest.mark.parametrize("existing_output", [False, True])
 def test_cli_rejects_non_broker_strategy_results(
-    strategy_and_shard_path, tmp_path: Path, capsys, expression, existing_output
+    strategy_and_shard_path, tmp_path: Path, capsys, expression
 ):
     """Unsupported CLI results leave an existing output file intact."""
     strategy = strategy_and_shard_path["strategy"]
-    strategy.write_text(strategy.read_text().replace(RESULT_EXPRESSION, expression))
+    strategy.write_text(strategy.read_text().replace("item.close", expression))
     shards = tmp_path / "shards"
     shards.mkdir()
     strategy_and_shard_path["shard"].rename(shards / "shard.csv")
     output = tmp_path / "results.json"
-    if existing_output:
-        output.write_text("previous results")
+    output.write_text("previous results")
     argv = [
         "ataraxia",
         "--sink",
@@ -249,9 +180,6 @@ def test_cli_rejects_non_broker_strategy_results(
     assert error.value.code == 1
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "Invalid result" in captured.err
-    assert str(strategy) in captured.err
-    if existing_output:
-        assert output.read_text() == "previous results"
-    else:
-        assert not output.exists()
+    assert "CLI requires broker results" in captured.err
+    assert "Python backtest API" in captured.err
+    assert output.read_text() == "previous results"

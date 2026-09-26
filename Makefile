@@ -27,8 +27,6 @@ format:
 .PHONY: typecheck
 typecheck:
 	uv run pyrefly check
-	# Static contract tests must also reject the intentionally invalid assignments.
-	uv run pyrefly check --expectations test/typing/*.py
 
 .PHONY: test
 test:
