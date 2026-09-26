@@ -146,4 +146,6 @@ For focused iteration: `uv run pytest test/unit/test_feature.py`. Default discov
 
 Use Conventional Commits (Commitizen enforced), e.g. `test(compute): fix context manager exit method return value` or `docs: update architecture`. Keep changes focused. PRs explain the problem, resulting behavior, and validation, with relevant issue links.
 
+Every agent-created commit must include a succinct body explaining **why** the change was needed, **what** changed, and **how** it was implemented. Use one short paragraph or up to three short bullets; include relevant validation briefly. Avoid repeating the subject, listing files, or narrating the work session.
+
 External contributions are gated pending CLA setup; follow [CONTRIBUTING.md](CONTRIBUTING.md). Determine the PR base from explicit task instructions or repository metadata, consistent with contribution guidance.
