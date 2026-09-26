@@ -35,7 +35,7 @@ Use Python 3.14+, `uv`, and `make`. [Makefile](Makefile) defines executable chec
 | `make setup` | Synchronize dependencies; install prek pre-commit and commit-message hooks |
 | `uv sync --frozen --group dev` | Install locked dependencies without hooks, as CI does |
 | `make lint` / `make format` | Ruff lint with automatic fixes / formatting |
-| `make typecheck` | Strict Pyrefly checks on `src/` |
+| `make typecheck` | Strict Pyrefly checks on `src/` and static contract tests in `test/typing/` |
 | `make test` | Pytest with branch coverage |
 | `make ci` | Sync locked dependencies, audit packages, check lint/formatting/types, and run covered tests and examples |
 | `uv run pytest example/` | Example tests, outside default discovery |

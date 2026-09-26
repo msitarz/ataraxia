@@ -28,7 +28,7 @@ make setup
 | `make setup`     | Install dependencies and prek Git hooks |
 | `make lint`      | Run `ruff check . --fix`; this can modify files |
 | `make format`    | Run `ruff format .`; this can modify files |
-| `make typecheck` | Run `pyrefly check` |
+| `make typecheck` | Run strict Pyrefly source checks and static contract tests in `test/typing/` |
 | `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
 | `make ci`        | Sync locked dependencies, audit packages, check lint and formatting, type-check, and run covered tests and examples |
 | `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |

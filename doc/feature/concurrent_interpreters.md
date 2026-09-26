@@ -20,11 +20,14 @@ direction in [ADR 0015](../adr/0015-fork-and-deploy-model.md).
 Currently, `src/ataraxia/backtest.py::backtest_dir()` iterates directory entries
 sequentially and returns a tuple of results without sorting or filtering.
 `backtest_shard()` imports the strategy file, constructs its provider and graph,
-consumes the compute loop, and returns the final sink or consumer value.
+consumes the compute loop, and validates the final sink or consumer value to
+construct a complete `BacktestShardReturn`.
 
 The CLI aggregates broker accounts and writes JSON only after all shards finish.
-Broker results contain package-defined dataclasses; direct Python callers can also
-receive primitive sink values, as covered by integration tests.
+Broker results contain package-defined dataclasses. Both Python callers and the
+CLI receive the complete result contract from
+[ADR 17](../adr/0017-require-broker-results-from-backtests.md); scalar and incomplete
+results are rejected at the backtest boundary.
 
 ## Interface and Scope
 
@@ -68,10 +71,10 @@ is unnecessary for this slice.
 4. The coordinator stores results by index and returns the completed tuple. Only
    the main interpreter aggregates accounts and writes the output file.
 
-Package-defined `Account`, `Position`, and `Bar` values and primitive sink results
-must survive serialization without schema changes. Objects defined only in a
+Package-defined `Account`, `Position`, and `Bar` values in `BacktestShardReturn`
+must survive serialization without schema changes. Subclasses defined only in a
 dynamically loaded strategy module may not be importable during unpickling; such
-custom results require importable definitions or serializable built-in values.
+custom values require importable definitions compatible with the result contract.
 Report serialization failures without silently switching execution modes.
 
 Workers are reused. Fresh graph construction does not clear imported helper-module
@@ -110,8 +113,8 @@ results. Document this when recommending worker counts.
 
 - Sequential and parallel sample runs produce identical ordered results, position
   details, serialized JSON, and aggregate PnL (realized 40, unrealized 0).
-- Real-pool tests verify multiple worker interpreters, overlapping tasks, primitive
-  and broker result serialization, and fresh runner state across reused workers.
+- Real-pool tests verify multiple worker interpreters, overlapping tasks, complete
+  broker result serialization, and fresh runner state across reused workers.
 - Invalid strategies, malformed shards, and unserializable results fail with useful
   context; CLI failures preserve an existing output file.
 - Empty, single-shard, and more-workers-than-shards cases behave as specified.

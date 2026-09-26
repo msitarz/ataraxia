@@ -33,3 +33,9 @@ class ModuleError(AtaraxiaError, ImportError):
     """Error while importing a module."""
 
     pass
+
+
+class BacktestResultError(AtaraxiaError, TypeError):
+    """A strategy's final value does not satisfy the backtest result contract."""
+
+    pass

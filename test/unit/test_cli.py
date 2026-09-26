@@ -137,42 +137,6 @@ def test_main_print_error_and_exit(capsys: CaptureFixture):
     backtest_dir.assert_called_once_with(Path("showcase.py"), Path("samples"))
 
 
-@pytest.mark.parametrize(
-    ("field", "value"),
-    [
-        ("account", {"pnl": 0, "unrealized_pnl": 0}),
-        ("open_positions", None),
-        ("closed_positions", None),
-        ("open_positions", ""),
-        ("closed_positions", b""),
-        ("open_positions", bytearray()),
-        ("open_positions", [object()]),
-        ("closed_positions", ({"side": "buy"},)),
-    ],
-)
-def test_main_rejects_malformed_broker_results(
-    broker_returns, tmp_path: Path, capsys: CaptureFixture, field, value
-):
-    """Validate every result before displaying totals or creating output."""
-    output = tmp_path / "results.json"
-    malformed = {**broker_returns[1], field: value}
-    with (
-        patch(
-            "ataraxia.cli.sys.argv",
-            ["ataraxia", "-s", "strategy.py", "-d", "shards", "-o", str(output)],
-        ),
-        patch("ataraxia.cli.backtest_dir", return_value=(broker_returns[0], malformed)),
-        pytest.raises(SystemExit) as error,
-    ):
-        main()
-
-    assert error.value.code == 1
-    captured = capsys.readouterr()
-    assert captured.out == ""
-    assert "CLI requires broker results" in captured.err
-    assert not output.exists()
-
-
 def test_main_accepts_position_sequences(broker_returns, tmp_path: Path, capsys):
     """BrokerReturn permits tuple position sequences as well as lists."""
     output = tmp_path / "results.json"
@@ -181,8 +145,10 @@ def test_main_accepts_position_sequences(broker_returns, tmp_path: Path, capsys)
             **result,
             "open_positions": tuple(result["open_positions"]),
             "closed_positions": tuple(result["closed_positions"]),
+            "strategy_path": str((tmp_path / "strategy.py").resolve()),
+            "shard_path": str((tmp_path / f"shard_{index}.csv").resolve()),
         }
-        for result in broker_returns
+        for index, result in enumerate(broker_returns)
     )
     with (
         patch(
