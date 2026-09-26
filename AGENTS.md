@@ -121,6 +121,16 @@ Use four-space indentation, 88-character lines, double quotes, Google-style docs
 - Use context managers for files/providers, preserving source/provider lifecycle delegation and cleanup on success/failure; use `pathlib.Path`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise domain errors.
 
+### Preserve Type Precision
+
+Type precision is part of correctness. Passing strict Pyrefly is necessary, but does not justify losing information about values or their relationships.
+
+- Never resolve a mismatch by widening a meaningful type to `Any`, `object`, an unparameterized container, or a base type that discards the required contract. Do not remove annotations or add catch-all union members to make incompatible values fit. Existing broad types are debt, not precedent for spreading them.
+- Model the actual contract. Introduce dataclasses, `TypedDict`s, protocols, or explicit unions of supported variants when needed. For reusable behavior, preserve input/output relationships with type parameters through producers, runners, consumers, and containers. A type parameter must be determined by a typed input or owning instance; an unconstrained return-only parameter does not establish safety.
+- When annotations and behavior disagree, determine the intended supported cases and update the affected call chain coherently. Do not retain a false narrow annotation, silently drop supported behavior, or substitute a broad return type followed by caller-side runtime checks. Creating an appropriate type or separating distinct operations is preferable to erasing the distinction.
+- Keep unavoidable untyped input at the external boundary. Validate or adapt it there into an explicit project contract before it enters application code. Do not expose that uncertainty through public result types. Casts, `TypeGuard`/`TypeIs`, ignores, and disabled diagnostics must not conceal a mismatch or replace a missing type model; narrowing predicates must actually establish their claimed contract.
+- Verify both behavior and static guarantees. Run strict Pyrefly and inspect the affected signatures and inferred types; for generic or variant contracts, add focused type-checking cases that demonstrate precise results and rejection of invalid uses. Runtime tests and a green checker alone do not prove that useful type information was preserved.
+
 ## Testing Guidelines
 
 Use pytest, `test_*.py` files, and `test_*` functions. Mirror source modules within unit/integration/acceptance directories where practical. Use fixtures for reusable inputs, `pytest.raises` for failures, `tmp_path` for filesystem tests, and `capsys` for CLI output. Cover changed behavior and relevant edges; maintain at least 80% coverage with branch measurement.
