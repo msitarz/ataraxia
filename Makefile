@@ -8,6 +8,7 @@ help:
 	@echo "make lint      - run ruff check"
 	@echo "make format    - run ruff format"
 	@echo "make typecheck - run pyrefly check"
+	@echo "make ci        - run all CI checks, including audit and example tests"
 
 .PHONY: setup
 setup:
@@ -33,10 +34,13 @@ test:
 
 .PHONY: ci
 ci:
+	uv sync --frozen --group dev
+	uv audit --frozen --preview-features audit
 	uv run ruff check .
 	uv run ruff format --check .
 	uv run pyrefly check
 	uv run pytest --cov
+	uv run pytest example/
 
 .PHONY: clean
 clean:

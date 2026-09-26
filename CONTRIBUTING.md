@@ -19,27 +19,31 @@ cd ataraxia
 make setup
 ```
 
-`make setup` creates the `uv`-managed virtualenv, installs dependencies (including dev extras), and installs the `prek` pre-commit hooks. Re-run it whenever `pyproject.toml` changes.
+`make setup` creates the `uv`-managed virtualenv, installs dependencies (including the dev group), and installs the `prek` pre-commit and commit-message hooks. Re-run it whenever `pyproject.toml` changes.
 
 ## Make targets
 
-| Target           | What it does                                      |
-|------------------|---------------------------------------------------|
-| `make setup`     | Install deps + prek git hooks hooks               |
-| `make lint`      | `ruff check`                                      |
-| `make format`    | `ruff format`                                     |
-| `make typecheck` | `pyrefly check`                                   |
-| `make test`      | `pytest`                                          |
-| `make ci`        | lint + typecheck + test — run before opening a PR |
-| `make clean`     | remove build artifacts, caches, venv              |
+| Target           | What it does |
+|------------------|--------------|
+| `make setup`     | Install dependencies and prek Git hooks |
+| `make lint`      | Run `ruff check . --fix`; this can modify files |
+| `make format`    | Run `ruff format .`; this can modify files |
+| `make typecheck` | Run `pyrefly check` |
+| `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
+| `make ci`        | Sync locked dependencies, audit packages, check lint and formatting, type-check, and run covered tests and examples |
+| `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
 
-`make ci` is what CI runs. Green locally means green in CI.
+Before opening a PR, run all CI checks locally:
+
+```sh
+make ci
+```
 
 ## Submitting a change
 
-1. Branch off `main`.
-2. `make check` locally before pushing.
-3. Open a PR against `main`, referencing the relevant issue if one exists.
+1. Branch off `master`.
+2. Run `make ci` before pushing.
+3. Open a PR against `master`, referencing the relevant issue if one exists.
 4. Wait for review.
 
 ## License
