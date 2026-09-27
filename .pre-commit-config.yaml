@@ -49,3 +49,9 @@ repos:
         language: system
         args: [--allow-abort, --commit-msg-file]
         stages: [commit-msg]
+      - id: commit-message-format
+        name: commit message format
+        entry: uv run --frozen python script/check_commit_message.py
+        language: system
+        stages: [commit-msg]
+        always_run: true
