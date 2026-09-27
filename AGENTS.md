@@ -143,6 +143,6 @@ For focused iteration: `uv run pytest test/unit/test_feature.py`. See [Commands 
 
 Keep commits focused and use Conventional Commits (Commitizen enforced). Use an imperative subject, aiming for 50 characters including type and scope. Separate the body with a blank line; hard-wrap prose and bullet continuations at 72 columns, preserving unbreakable URLs and tokens.
 
-Every agent-created commit must include a succinct body explaining **why** the change was needed, **what** changed, and **how** it was implemented. Use one short paragraph or up to three short bullets; include relevant validation briefly. Avoid repeating the subject, listing files, or narrating the work session.
+Every agent-created commit must include a succinct body with three labeled sections: `Why:`, `What:`, and `How:`, separated by blank lines. Explain the problem or motivation, the resulting change, and the implementation approach, respectively. Keep each section brief and include relevant validation in `How:`. Avoid repeating the subject, listing files, or narrating the work session.
 
 PRs explain the problem, resulting behavior, and validation, with relevant issue links. External contributions are gated pending CLA setup; follow [CONTRIBUTING.md](CONTRIBUTING.md). Determine the PR base from explicit task instructions or repository metadata, consistent with contribution guidance.
