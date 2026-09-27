@@ -8,7 +8,7 @@ help:
 	@echo "make lint      - run ruff check"
 	@echo "make format    - run ruff format"
 	@echo "make typecheck - run pyrefly check"
-	@echo "make ci        - run all CI checks, including audit and example tests"
+	@echo "make ci        - run all CI checks, including audit, examples, and wheel smoke test"
 
 .PHONY: setup
 setup:
@@ -33,10 +33,10 @@ typecheck:
 test:
 	uv run pytest --cov
 
-.PHONY: ci ci-setup ci-check ci-test ci-examples
+.PHONY: ci ci-setup ci-check ci-test ci-examples ci-package
 # Setup validates the lockfile; subsequent commands use that exact environment.
-ci ci-check ci-test ci-examples: export UV_NO_SYNC := true
-ci: ci-check ci-test ci-examples
+ci ci-check ci-test ci-examples ci-package: export UV_NO_SYNC := true
+ci: ci-check ci-test ci-examples ci-package
 
 ci-setup:
 	uv sync --locked --group dev
@@ -53,6 +53,9 @@ ci-test: ci-setup
 
 ci-examples: ci-setup
 	uv run pytest example/
+
+ci-package: ci-setup
+	uv run python script/smoke_installed_package.py
 
 .PHONY: clean
 clean:

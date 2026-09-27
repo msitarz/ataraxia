@@ -64,3 +64,18 @@ jobs:
 
       - name: Run example strategy tests
         run: make ci-examples
+
+  test-package:
+    name: Test installed wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: true
+          python-version: "3.14"
+
+      - name: Run installed-package smoke test
+        run: make ci-package

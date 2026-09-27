@@ -38,7 +38,7 @@ also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-request
 | `make format`    | Run `ruff format .`; this can modify files |
 | `make typecheck` | Run `pyrefly check` |
 | `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
-| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, and run covered tests and examples |
+| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, and run covered tests, examples, and an installed-wheel smoke test |
 | `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
 
 Before opening a PR, run all CI checks locally:
@@ -52,6 +52,11 @@ use the synchronized environment without updating dependency resolution. After
 intentional dependency changes, run `uv lock` and commit the updated lockfile.
 The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
 `.pre-commit-config.yaml` and inspect all tracked files.
+
+`make ci-package` builds a wheel, installs it into a temporary isolated virtual
+environment, and runs the copied sample strategy and shards outside the checkout.
+It checks the installed console entry point, printed totals, and JSON accounts.
+The temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 
