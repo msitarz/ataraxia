@@ -46,7 +46,7 @@ class RollingWindow[T]:
         """Return dependencies for RollingWindow."""
         return {"item": self.from_node}
 
-    def factory(self):
+    def factory(self) -> RollingWindowRunner[T]:
         """Return new RollingWindowRunner instance."""
         return RollingWindowRunner[T](self.maxlen)
 

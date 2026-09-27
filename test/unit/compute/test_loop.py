@@ -2,6 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 from dataclasses import dataclass, field
 from operator import itemgetter
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -12,6 +13,9 @@ from ataraxia.compute.loop import (
     computed_node_deps,
     prime_catalog,
 )
+
+if TYPE_CHECKING:
+    from ataraxia.bar import Bar
 
 
 @pytest.fixture
@@ -269,3 +273,93 @@ def test_compute_closes_source_when_generator_is_closed(source_sink):
     assert exc_type is GeneratorExit
     assert isinstance(exc_value, GeneratorExit)
     assert traceback is not None
+
+
+@pytest.mark.parametrize(
+    ("runner", "names"),
+    [
+        (lambda item: item, ("itme",)),
+        (lambda item: item, ()),
+        (lambda item: item, ("item", "extra")),
+        (lambda item, /: item, ("item",)),
+    ],
+)
+def test_invalid_dependency_names_fail_preparation(single_dep, runner, names):
+    from ataraxia.errors import DependencyError
+
+    class Invalid:
+        def deps(self):
+            return dict.fromkeys(names, single_dep["B"]())
+
+        def factory(self):
+            return runner
+
+    with pytest.raises(DependencyError, match="Invalid dependencies") as error:
+        prime_catalog((Invalid(),))
+    assert isinstance(error.value.__cause__, TypeError)
+
+
+@pytest.mark.parametrize(
+    ("runner", "names"),
+    [
+        (lambda *, item: item, ("item",)),
+        (lambda item=1: item, ()),
+        (lambda **kwargs: kwargs, ("arbitrary",)),
+        (lambda *args: args, ()),
+    ],
+)
+def test_valid_dependency_signatures(single_dep, runner, names):
+    class Valid:
+        def deps(self):
+            return dict.fromkeys(names, single_dep["B"]())
+
+        def factory(self):
+            return runner
+
+    node = Valid()
+    assert prime_catalog((node,))[node] is runner
+
+
+def test_wiring_failure_precedes_source_entry(source_sink):
+    from ataraxia.errors import DependencyError
+
+    class InvalidSink(source_sink["Snk"]):
+        def deps(self):
+            return {"itme": self.source}
+
+    sink = InvalidSink()
+    with pytest.raises(DependencyError):
+        next(compute(sink))
+    assert sink.source.exit_args == []
+
+
+def test_uninspectable_runner_fails_preparation():
+    from ataraxia.errors import DependencyError
+
+    class Node:
+        def deps(self):
+            return {}
+
+        def factory(self):
+            return int
+
+    with pytest.raises(DependencyError) as error:
+        prime_catalog((Node(),))
+    assert isinstance(error.value.__cause__, ValueError)
+
+
+def test_preparation_does_not_evaluate_type_only_annotations():
+    class AnnotatedRunner:
+        def __call__(self, item: Bar | None = None) -> int:
+            return 7
+
+    class Node:
+        def deps(self):
+            return {}
+
+        def factory(self):
+            return AnnotatedRunner()
+
+    node = Node()
+    catalog = prime_catalog((node,))
+    assert compute_step((node,), catalog)[node] == 7

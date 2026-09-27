@@ -27,6 +27,7 @@ format:
 .PHONY: typecheck
 typecheck:
 	uv run pyrefly check
+	uv run pyrefly check --expectations test/typecheck/*.py
 
 .PHONY: test
 test:

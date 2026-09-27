@@ -39,3 +39,7 @@ class BacktestError(AtaraxiaError, ValueError):
     """Error while running a backtest."""
 
     pass
+
+
+class DependencyError(AtaraxiaError, TypeError):
+    """Dependency names do not match the runner call signature."""

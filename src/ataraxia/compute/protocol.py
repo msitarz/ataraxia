@@ -16,6 +16,9 @@ class Runner[**P, R](Protocol):
         ...
 
 
+# Heterogeneous dependencies cannot express the relationship between each key,
+# its node result, and the corresponding runner parameter. Preparation checks
+# keyword binding, not value annotations; typed node constructors check inputs.
 type DependencyMapping = Mapping[str, Computable[..., Any]]
 
 
