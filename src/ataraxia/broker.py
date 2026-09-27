@@ -139,7 +139,7 @@ class BrokerRunner:
     open_positions: MutableSequence[Position] = field(default_factory=list)
     closed_positions: MutableSequence[Position] = field(default_factory=list)
 
-    def __call__(self, bar: Bar, signal: Signal) -> BrokerReturn:
+    def __call__(self, bar: Bar, signal: Signal | None) -> BrokerReturn:
         """Return current account and position objects."""
         new_position = None
         if signal is not None:
@@ -179,7 +179,7 @@ class Broker:
     """Simple broker computable."""
 
     source: Source[Bar, ..., Bar]
-    strategy: Sink[..., Signal]
+    strategy: Sink[..., Signal | None]
 
     def deps(self):
         """Return broker dependencies."""

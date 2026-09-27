@@ -94,7 +94,7 @@ force-sort-within-sections = true
 # pyrefly (typecheck, lsp)
 # =============================================================================
 [tool.pyrefly]
-project_includes = ["src"]
+project_includes = ["src", "example/crossover.py"]
 python_version = "3.14"
 preset = "strict"
 

@@ -2,6 +2,7 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Example simple moving average strategy."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from ataraxia.bar import Bar
@@ -16,18 +17,28 @@ class CrossoverRunner:
     def __call__(
         self,
         bar: Bar,
-        fast_sma: tuple[float | None, float | None],
-        slow_sma: tuple[float | None, float | None],
-    ):
+        fast_sma: Sequence[float | None],
+        slow_sma: Sequence[float | None],
+    ) -> Signal | None:
         """Return Signal on SMA crossover."""
-        if not all(fast_sma) or not all(slow_sma):
+        if len(fast_sma) < 2 or len(slow_sma) < 2:
             return None
 
-        if fast_sma[1] < slow_sma[1] and fast_sma[0] >= slow_sma[0]:
+        fast_current, fast_previous = fast_sma[:2]
+        slow_current, slow_previous = slow_sma[:2]
+        if (
+            fast_current is None
+            or fast_previous is None
+            or slow_current is None
+            or slow_previous is None
+        ):
+            return None
+
+        if fast_previous < slow_previous and fast_current >= slow_current:
             return Signal(
                 side="buy", stop_loss=bar.close - 20, take_profit=bar.close + 30
             )
-        elif fast_sma[1] > slow_sma[1] and fast_sma[0] <= slow_sma[0]:
+        elif fast_previous > slow_previous and fast_current <= slow_current:
             return Signal(
                 side="sell", stop_loss=bar.close + 20, take_profit=bar.close - 30
             )
@@ -39,7 +50,7 @@ class CrossoverRunner:
 class CrossoverStrategy:
     """Simple crossover strategy computable node."""
 
-    source: Source
+    source: Source[Bar, ..., Bar]
 
     def deps(self):
         """Return dependencies for the runner."""
