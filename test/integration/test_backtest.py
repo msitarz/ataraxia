@@ -9,7 +9,7 @@ import pytest
 from ataraxia.backtest import BacktestShardReturn, backtest_dir, backtest_shard
 from ataraxia.bar import Bar
 from ataraxia.broker import Account, BrokerReturn, Position, Signal
-from ataraxia.errors import ModuleError
+from ataraxia.errors import BacktestError, ModuleError
 
 
 @pytest.fixture
@@ -93,6 +93,16 @@ def test_backtest_shard(strategy_and_shard_path):
     result = backtest_shard(strategy, shard)
 
     assert result == expected_backtest_result(shard, strategy)
+
+
+def test_backtest_header_only_shard(strategy_and_shard_path):
+    shard = strategy_and_shard_path["shard"]
+    shard.write_text("timestamp,open,high,low,close,volume\n")
+
+    with pytest.raises(BacktestError, match="contains no bars") as error:
+        backtest_shard(strategy_and_shard_path["strategy"], shard)
+
+    assert str(shard) in str(error.value)
 
 
 def test_backtest_shard_requires_sink_export(strategy_and_shard_path):

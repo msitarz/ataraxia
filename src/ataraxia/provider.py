@@ -50,11 +50,14 @@ class BarProvider(Provider[Bar]):
     The CSV file must be delimited with a comma.
     The CSV file must have a following header:
     timestamp,open,high,low,close,volume
+
+    Each nonblank row must contain six numeric values. Invalid headers and rows
+    raise ProviderError identifying the shard; blank rows are skipped.
     """
 
     filepath: str | Path
     fd: TextIOBase | None = None
-    reader: csv.DictReader[str] | None = None
+    reader: Iterator[list[str]] | None = None
 
     @override
     def __enter__(self):
@@ -77,8 +80,20 @@ class BarProvider(Provider[Bar]):
 
     @override
     def __next__(self):
+        """Return the next bar.
+
+        Raises:
+            ProviderError: When the CSV header or bar data is invalid.
+        """
         reader = self._reader()
-        return Bar.from_map(next(reader))
+        try:
+            row = next(reader)
+            while not row:
+                row = next(reader)
+            values = dict(zip(CSV_HEADER, row, strict=True))
+            return Bar.from_map(values)
+        except (ValueError, OverflowError, csv.Error) as exc:
+            raise ProviderError(f"Invalid bar in shard {self.filepath}: {exc}") from exc
 
     def _reader(self):
         if self.reader is not None:
@@ -90,9 +105,9 @@ class BarProvider(Provider[Bar]):
         header = self.fd.readline().strip().split(CSV_DELIMITER)
 
         if header != CSV_HEADER:
-            raise ProviderError("CSV file must contain a header")
+            raise ProviderError(f"CSV file must contain a header: {self.filepath}")
 
-        self.reader = csv.DictReader(self.fd, fieldnames=header)
+        self.reader = csv.reader(self.fd, strict=True)
 
         return self.reader
 

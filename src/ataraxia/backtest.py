@@ -61,8 +61,8 @@ def backtest_shard(
         shard_path: Absolute path to the CSV shard to be consumed by BarProvider.
 
     Raises:
-        BacktestError: When the selected sink or consumer does not return a broker
-            result.
+        BacktestError: When the shard contains no bars or the selected sink or
+            consumer does not return a broker result.
         ModuleError: When the module does not export a Sink class as __sink__.
     """
     strategy_path = Path(strategy_path)
@@ -85,6 +85,8 @@ def backtest_shard(
     source = SourceNode(provider)
     sink_node = sink(source)
     compute_steps = tuple(compute(sink_node))
+    if not compute_steps:
+        raise BacktestError(f"Shard {shard_path} contains no bars")
     final_step = compute_steps[-1]
 
     result = final_step[sink_node.consumer() or sink_node]

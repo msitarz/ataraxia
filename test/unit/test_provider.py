@@ -92,3 +92,61 @@ def test_bar_provider_hashable_by_filepath():
     b = BarProvider("dummy_file_name")
 
     assert hash(a) == hash(b)
+
+
+@pytest.mark.parametrize(
+    "row",
+    ["1,100", "1,100,200,50,150,1,extra", "1,bad,200,50,150,1", "1,,200,50,150,1"],
+    ids=["missing-columns", "extra-columns", "non-numeric", "empty-value"],
+)
+def test_bar_provider_rejects_malformed_rows_and_closes(tmp_path, row):
+    shard = tmp_path / "invalid.csv"
+    shard.write_text(f"timestamp,open,high,low,close,volume\n{row}\n")
+    provider = BarProvider(shard)
+
+    with pytest.raises(ProviderError, match="Invalid bar") as error, provider:
+        next(provider)
+
+    assert str(shard) in str(error.value)
+    assert isinstance(error.value.__cause__, ValueError)
+    assert provider.fd.closed
+
+
+def test_bar_provider_header_only_exhausts_and_closes(tmp_path):
+    shard = tmp_path / "empty.csv"
+    shard.write_text("timestamp,open,high,low,close,volume\n")
+    provider = BarProvider(shard)
+
+    with provider:
+        assert list(provider) == []
+
+    assert provider.fd.closed
+
+
+def test_bar_provider_skips_blank_rows(tmp_path):
+    shard = tmp_path / "bars.csv"
+    shard.write_text(
+        "timestamp,open,high,low,close,volume\n\n"
+        "1,100,200,50,150,1\n\n2,100,200,50,150,1\n\n"
+    )
+    provider = BarProvider(shard)
+
+    with provider:
+        assert [bar.timestamp for bar in provider] == [1, 2]
+
+    assert provider.fd.closed
+
+
+def test_bar_provider_rejects_unterminated_quote(tmp_path):
+    import csv
+
+    shard = tmp_path / "invalid.csv"
+    shard.write_text('timestamp,open,high,low,close,volume\n1,"100,200,50,150,1\n')
+    provider = BarProvider(shard)
+
+    with pytest.raises(ProviderError, match="Invalid bar") as error, provider:
+        next(provider)
+
+    assert isinstance(error.value.__cause__, csv.Error)
+    assert str(shard) in str(error.value)
+    assert provider.fd.closed

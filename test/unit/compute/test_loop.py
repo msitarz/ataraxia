@@ -139,6 +139,78 @@ def test_compute(source_sink):
     assert next(computed) == {snk.source: 3, snk: 10}
 
 
+def test_equivalent_dependencies_share_state_once_per_bar(source_sink):
+    runners = []
+
+    @dataclass
+    class TotalRunner:
+        total: int = 0
+        calls: int = 0
+
+        def __call__(self, item: int):
+            self.calls += 1
+            self.total += item
+            return self.total
+
+    @dataclass(frozen=True)
+    class Total:
+        source: Source[int, [], int]
+
+        def deps(self):
+            return {"item": self.source}
+
+        def factory(self):
+            runner = TotalRunner()
+            runners.append(runner)
+            return runner
+
+    @dataclass(frozen=True)
+    class Branch:
+        total: Total
+        offset: int
+
+        def deps(self):
+            return {"total": self.total}
+
+        def factory(self):
+            return lambda total: total + self.offset
+
+    @dataclass(frozen=True)
+    class Diamond:
+        left: Branch
+        right: Branch
+
+        def deps(self):
+            return {"left": self.left, "right": self.right}
+
+        def factory(self):
+            return lambda left, right: (left, right)
+
+        def sources(self):
+            return (self.left.total.source,)
+
+        def consumer(self):
+            return None
+
+    source = source_sink["Src"]()
+    left, right = Total(source), Total(source)
+    assert left is not right
+    assert left == right
+    sink = Diamond(Branch(left, 10), Branch(right, 20))
+    original_hashes = tuple(map(hash, (left, right, sink)))
+
+    for run in range(2):
+        steps = list(compute(sink))
+        assert [step[sink] for step in steps] == [(11, 21), (14, 24)]
+        assert [step[left] for step in steps] == [1, 4]
+        assert all(len(step) == 5 for step in steps)
+        assert len(runners) == run + 1
+        assert runners[-1].calls == 2
+        assert runners[-1].total == 4
+        assert tuple(map(hash, (left, right, sink))) == original_hashes
+    assert runners[0] is not runners[1]
+
+
 def test_compute_closes_source_on_exhaustion(source_sink):
     Snk = itemgetter("Snk")(source_sink)
     snk = Snk()
