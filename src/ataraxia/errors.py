@@ -33,3 +33,9 @@ class ModuleError(AtaraxiaError, ImportError):
     """Error while importing a module."""
 
     pass
+
+
+class BacktestError(AtaraxiaError, ValueError):
+    """Error while running a backtest."""
+
+    pass

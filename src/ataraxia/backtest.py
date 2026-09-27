@@ -5,12 +5,13 @@
 Integrate external strategy to form a computable graph and process a single shard.
 """
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TypedDict
+from typing import TypedDict, TypeIs
 
-from ataraxia.broker import BrokerReturn
+from ataraxia.broker import Account, BrokerReturn, Position
 from ataraxia.compute import compute
-from ataraxia.errors import ModuleError
+from ataraxia.errors import BacktestError, ModuleError
 from ataraxia.provider import BarProvider
 from ataraxia.source import SourceNode
 from ataraxia.util import import_file, is_sink, is_type
@@ -21,6 +22,27 @@ class BacktestShardReturn(BrokerReturn, TypedDict):
 
     shard_path: str
     strategy_path: str
+
+
+def is_position_sequence(value: object) -> TypeIs[Sequence[Position]]:
+    """Return whether a value is a sequence of positions."""
+    return (
+        isinstance(value, Sequence)
+        and not isinstance(value, (str, bytes, bytearray))
+        and all(isinstance(position, Position) for position in value)
+    )
+
+
+def is_broker_return(value: object) -> TypeIs[BrokerReturn]:
+    """Return whether a value has the broker result contract."""
+    if not isinstance(value, dict):
+        return False
+
+    return (
+        isinstance(value.get("account"), Account)
+        and is_position_sequence(value.get("open_positions"))
+        and is_position_sequence(value.get("closed_positions"))
+    )
 
 
 def backtest_shard(
@@ -39,6 +61,8 @@ def backtest_shard(
         shard_path: Absolute path to the CSV shard to be consumed by BarProvider.
 
     Raises:
+        BacktestError: When the selected sink or consumer does not return a broker
+            result.
         ModuleError: When the module does not export a Sink class as __sink__.
     """
     strategy_path = Path(strategy_path)
@@ -65,11 +89,19 @@ def backtest_shard(
 
     result = final_step[sink_node.consumer() or sink_node]
 
-    if isinstance(result, dict):
-        result["shard_path"] = str(shard_path.resolve())
-        result["strategy_path"] = str(strategy_path.resolve())
+    if not is_broker_return(result):
+        raise BacktestError(
+            f"Strategy {strategy_path} returned an invalid broker result for shard "
+            f"{shard_path}"
+        )
 
-    return result
+    return {
+        "account": result["account"],
+        "open_positions": result["open_positions"],
+        "closed_positions": result["closed_positions"],
+        "shard_path": str(shard_path.resolve()),
+        "strategy_path": str(strategy_path.resolve()),
+    }
 
 
 def backtest_dir(
