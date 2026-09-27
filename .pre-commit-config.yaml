@@ -18,6 +18,7 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-merge-conflict
+        args: [--assume-in-merge]
       - id: check-added-large-files
         args: ["--maxkb=500"]
       - id: detect-private-key

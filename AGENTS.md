@@ -34,11 +34,11 @@ Use Python 3.14+, `uv`, and `make`. [Makefile](Makefile) defines executable chec
 | Command | Purpose |
 | --- | --- |
 | `make setup` | Synchronize dependencies; install prek pre-commit and commit-message hooks |
-| `uv sync --frozen --group dev` | Install locked dependencies without hooks, as CI does |
+| `uv sync --locked --group dev` | Verify and install locked dependencies without hooks, as CI does |
 | `make lint` / `make format` | Ruff lint with automatic fixes / formatting |
 | `make typecheck` | Strict Pyrefly checks on `src/` |
 | `make test` | Pytest on `test/` with branch coverage |
-| `make ci` | Sync locked dependencies, audit packages, check lint/formatting/types, and run covered tests and examples |
+| `make ci` | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys and lint/formatting/types, and run covered tests and examples |
 | `uv run pytest example/` | Example tests, outside default discovery |
 | `uv audit --frozen --preview-features audit` | Run the dependency audit alone |
 | `uv build` | Build distributions with `uv_build` |

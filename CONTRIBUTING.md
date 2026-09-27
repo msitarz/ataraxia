@@ -38,7 +38,7 @@ also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-request
 | `make format`    | Run `ruff format .`; this can modify files |
 | `make typecheck` | Run `pyrefly check` |
 | `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
-| `make ci`        | Sync locked dependencies, audit packages, check lint and formatting, type-check, and run covered tests and examples |
+| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, and run covered tests and examples |
 | `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
 
 Before opening a PR, run all CI checks locally:
@@ -46,6 +46,12 @@ Before opening a PR, run all CI checks locally:
 ```sh
 make ci
 ```
+
+CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent checks
+use the synchronized environment without updating dependency resolution. After
+intentional dependency changes, run `uv lock` and commit the updated lockfile.
+The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
+`.pre-commit-config.yaml` and inspect all tracked files.
 
 ## Submitting a change
 

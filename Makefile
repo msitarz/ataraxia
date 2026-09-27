@@ -33,13 +33,16 @@ test:
 	uv run pytest --cov
 
 .PHONY: ci ci-setup ci-check ci-test ci-examples
+# Setup validates the lockfile; subsequent commands use that exact environment.
+ci ci-check ci-test ci-examples: export UV_NO_SYNC := true
 ci: ci-check ci-test ci-examples
 
 ci-setup:
-	uv sync --frozen --group dev
+	uv sync --locked --group dev
 
 ci-check: ci-setup
 	uv audit --frozen --preview-features audit
+	uv run prek run --all-files check-yaml check-merge-conflict detect-private-key
 	uv run ruff check .
 	uv run ruff format --check .
 	$(MAKE) typecheck
