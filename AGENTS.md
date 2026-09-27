@@ -23,7 +23,7 @@ Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests:
 - `src/ataraxia/compute/`: computation graph and loop; sibling modules handle sources, providers, features, brokerage, backtesting, and CLI.
 - `test/unit/`, `test/integration/`, `test/acceptance/`: tests by boundary.
 - `example/`: crossover strategy and its tests; `sample/`: synthetic CSV data.
-- [doc/feature/](doc/feature/): feature slices; [doc/adr/](doc/adr/): architectural decisions.
+- `doc/feature/`: feature slices; [doc/adr/](doc/adr/): architectural decisions.
 
 Execution is currently local, sequential, and single-source. Parallel execution, multi-source synchronization, and immutable artifact storage are planned; verify status in code before treating documents as implemented behavior.
 
