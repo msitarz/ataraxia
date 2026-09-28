@@ -2,8 +2,9 @@
 
 Read this file in full when defining, implementing, or reviewing a
 [feat slice](ubiquitous-language.md). It owns the delivery workflow and
-specification-writing guidance. General repository rules, validation commands,
-and architectural decision rules remain in [AGENTS.md](../AGENTS.md).
+specification-writing guidance. Use [documentation ownership](documentation.md) for placement rules,
+[CONTRIBUTING.md](../CONTRIBUTING.md#make-targets) for validation, and the
+[ADR workflow](adr-workflow.md) for architectural decisions.
 
 ## Define and publish for specification review
 
@@ -23,7 +24,7 @@ Create or reuse an issue before drafting the specification or doing non-trivial
 architectural work. Follow [Issue messages](#issue-messages). State whether the
 issue's outcome is an accepted specification or an implemented capability. Write
 the specification in `doc/feat/`, link the issue, and follow the
-[ADR workflow](../AGENTS.md#architecture-decision-records) when decisions are needed.
+[ADR workflow](adr-workflow.md) when decisions are needed.
 
 Once the planning documents are reviewable, run `make ci`, commit and push, and
 open a draft PR against the applicable base. Add links between the issue, feat
@@ -106,7 +107,7 @@ Passing tests does not satisfy either manual gate or authorize merging.
 
 ## Failures and boundaries
 
-Follow [Commands and Validation](../AGENTS.md#commands-and-validation) if network
+Follow [validation procedure](../CONTRIBUTING.md#make-targets) if network
 access prevents `make ci`. Disclose missing checks and keep incomplete work draft.
 If GitHub access fails, report it, continue useful local work, and add external
 links once access returns. Don't claim an issue or PR exists without verifying
@@ -139,7 +140,7 @@ enforce it across every GitHub creation path.
 
 ## Writing feat slices
 
-Write proportional specifications in `doc/feat/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the gates above and the [ADR workflow](../AGENTS.md#architecture-decision-records) during planning and implementation.
+Write proportional specifications in `doc/feat/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the gates above and the [ADR workflow](adr-workflow.md) during planning and implementation.
 
 - Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
 - Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.
