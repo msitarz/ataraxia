@@ -4,7 +4,7 @@ Status: proposed. This revision defines the feat slice for specification review;
 execution is still sequential.
 Tracking: [issue #21](https://github.com/msitarz/ataraxia/issues/21).
 PR: [#24](https://github.com/msitarz/ataraxia/pull/24), draft against `master`.
-Decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
+Supervision decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
 amending [ADR 6](../adr/0006-massive-parallelism-via-sharding.md).
 Terms: [ubiquitous language](../ubiquitous-language.md).
 Workflow: [feat slice workflow](../feat-workflow.md).
@@ -187,10 +187,10 @@ On exhaustion, interruption, or a parent error, stop dispatching, close channels
 and join or kill all owned children with bounded waits. Do not treat a parent
 programming error as an ordinary shard failure.
 
-Normal completion and execution exceptions close providers through `compute()`
-as in ADR 16. Forced kill skips Python `finally` and context-manager exit; OS
-process cleanup releases file handles. The timeout applies to the owned worker,
-not arbitrary strategy-created descendants.
+Resource lifecycle follows [ADR 16](../adr/0016-source-manages-its-own-provider-lifecycle.md)
+for normal execution and [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
+for forced termination. The timeout applies to the owned worker, not arbitrary
+strategy-created descendants.
 
 ## CLI output and compatibility
 
@@ -218,8 +218,11 @@ The output schema is a documented pre-alpha breaking change.
 
 ## Existing decisions and boundaries
 
-Amend ADR 6 through ADR 18; retain its shard independence and aggregation. There
-is no existing accepted subinterpreter decision to supersede: it was a README
+ADR 18 covers the supervised-worker execution model and amends ADR 6; retain
+shard independence and aggregation. The return representation, continuation
+policy, and CLI compatibility below are local contracts of this slice, not
+separate architectural decisions merely because they change code. No new durable
+storage or cloud delivery contract is introduced. There is no existing accepted subinterpreter decision to supersede: it was a README
 roadmap item. Amend the roadmap and architecture to reference the chosen process
 model and show it as unimplemented until validation.
 
