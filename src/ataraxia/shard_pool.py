@@ -1,0 +1,299 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Bounded spawn workers with independent channels and assignment deadlines."""
+
+from collections.abc import Callable, Iterator, Sequence
+from dataclasses import dataclass
+import math
+from multiprocessing import get_context
+from multiprocessing.connection import Connection
+from multiprocessing.process import BaseProcess
+from queue import Empty, Queue
+from threading import Thread
+from time import monotonic
+
+from ataraxia.errors import SupervisorError
+from ataraxia.shard_types import (
+    BacktestShardReturn,
+    ShardFailure,
+    ShardInput,
+    is_shard_outcome,
+)
+
+type ShardOperation = Callable[[str, str], BacktestShardReturn]
+
+
+@dataclass(frozen=True)
+class Receipt:
+    """Record completion after receiving and validating an entire outcome."""
+
+    assignment: int
+    completed: float
+    outcome: BacktestShardReturn | None
+    failure: str | None = None
+
+
+@dataclass
+class Worker:
+    """Own one process, channel, and active assignment at a time."""
+
+    process: BaseProcess
+    channel: Connection
+    assignment: int = -1
+    request: ShardInput | None = None
+    started: float = 0.0
+    reader: Thread | None = None
+
+
+def _worker(channel: Connection, operation: ShardOperation) -> None:
+    try:
+        while True:
+            request = channel.recv()
+            channel.send(operation(request["strategy_path"], request["shard_path"]))
+    except EOFError:
+        return
+    finally:
+        channel.close()
+
+
+def _exchange(worker: Worker, events: Queue[Receipt]) -> None:
+    assignment = worker.assignment
+    request = worker.request
+    if request is None:
+        raise SupervisorError("Cannot dispatch an idle worker")
+    try:
+        worker.channel.send(request)
+        value: object = worker.channel.recv()
+        if not is_shard_outcome(value):
+            raise ValueError("Invalid worker outcome")
+        if (
+            value["strategy_path"] != request["strategy_path"]
+            or value["shard_path"] != request["shard_path"]
+        ):
+            raise ValueError("Worker returned a different assignment")
+        receipt = Receipt(assignment, monotonic(), value)
+    except Exception as exc:
+        receipt = Receipt(assignment, monotonic(), None, f"{type(exc).__name__}: {exc}")
+    events.put(receipt)
+
+
+def _retire(worker: Worker) -> None:
+    if worker.process.pid is not None:
+        if worker.process.is_alive():
+            worker.process.kill()
+        worker.process.join(timeout=1.0)
+        if worker.process.is_alive():
+            raise SupervisorError("Could not reap executor worker")
+    worker.channel.close()
+    if worker.reader is not None:
+        worker.reader.join(timeout=1.0)
+        if worker.reader.is_alive():
+            raise SupervisorError("Could not stop worker channel reader")
+    worker.process.close()
+
+
+def _failure(worker: Worker, message: str) -> ShardFailure:
+    request = worker.request
+    if request is None:
+        raise SupervisorError("Worker failure has no assignment")
+    return {
+        "strategy_path": request["strategy_path"],
+        "shard_path": request["shard_path"],
+        "status": "error",
+        "error": {
+            "kind": "worker_failure",
+            "type": "ataraxia.errors.WorkerFailureError",
+            "message": f"Shard {request['shard_path']}: {message}",
+            "exit_code": worker.process.exitcode,
+            "traceback": None,
+        },
+    }
+
+
+def assignment_outcome(
+    worker: Worker, receipt: Receipt | None, now: float, timeout: float
+) -> BacktestShardReturn | None:
+    """Return a single committed outcome, with expiry winning deadline races."""
+    request = worker.request
+    if request is None:
+        return None
+    if receipt is not None and receipt.completed < worker.started + timeout:
+        if receipt.outcome is not None:
+            return receipt.outcome
+        return _failure(worker, receipt.failure or "Incomplete worker communication")
+    if now >= worker.started + timeout:
+        return {
+            "strategy_path": request["strategy_path"],
+            "shard_path": request["shard_path"],
+            "status": "error",
+            "error": {
+                "kind": "timeout",
+                "type": "ataraxia.errors.ShardTimeoutError",
+                "message": (
+                    f"Shard {request['shard_path']} exceeded its "
+                    f"{timeout:g}-second deadline"
+                ),
+                "timeout_seconds": timeout,
+                "elapsed_seconds": now - worker.started,
+                "traceback": None,
+            },
+        }
+    if worker.process.exitcode is not None:
+        # The reader may still be validating a complete message from an exited child.
+        if worker.reader is not None and worker.reader.is_alive():
+            return None
+        return _failure(worker, "Executor worker exited without an outcome")
+    return None
+
+
+def _dispatch(
+    worker: Worker,
+    request: ShardInput,
+    assignment: int,
+    events: Queue[Receipt],
+    started: float,
+) -> None:
+    worker.assignment = assignment
+    worker.request = request
+    worker.started = started
+    worker.reader = Thread(target=_exchange, args=(worker, events), daemon=True)
+    worker.reader.start()
+
+
+def _start(operation: ShardOperation) -> Worker:
+    context = get_context("spawn")
+    parent, child = context.Pipe()
+    process = context.Process(target=_worker, args=(child, operation))
+    worker = Worker(process, parent)
+    try:
+        process.start()
+    except Exception:
+        parent.close()
+        process.close()
+        raise
+    finally:
+        child.close()
+    return worker
+
+
+def _startup_failure(request: ShardInput, exc: Exception) -> ShardFailure:
+    return {
+        "strategy_path": request["strategy_path"],
+        "shard_path": request["shard_path"],
+        "status": "error",
+        "error": {
+            "kind": "worker_failure",
+            "type": "ataraxia.errors.WorkerFailureError",
+            "message": f"Worker startup failed for {request['shard_path']}: {exc}",
+            "exit_code": None,
+            "traceback": None,
+        },
+    }
+
+
+def _fill_slots(
+    workers: list[Worker],
+    pending: Iterator[tuple[int, ShardInput]],
+    size: int,
+    operation: ShardOperation,
+    events: Queue[Receipt],
+    results: list[BacktestShardReturn],
+) -> bool:
+    for slot in range(size):
+        if slot < len(workers) and workers[slot].request is not None:
+            continue
+        entry = next(pending, None)
+        if entry is None:
+            return True
+        assignment, request = entry
+        started = monotonic()
+        if slot == len(workers):
+            try:
+                workers.append(_start(operation))
+            except Exception as exc:
+                results.append(_startup_failure(request, exc))
+                return False
+        _dispatch(workers[slot], request, assignment, events, started)
+    return False
+
+
+def _commit(
+    workers: list[Worker],
+    worker: Worker,
+    receipt: Receipt | None,
+    timeout: float,
+    results: list[BacktestShardReturn],
+) -> None:
+    outcome = assignment_outcome(worker, receipt, monotonic(), timeout)
+    if outcome is None:
+        return
+    results.append(outcome)
+    if (
+        receipt is not None
+        and receipt.outcome is not None
+        and outcome is receipt.outcome
+    ):
+        worker.request = None
+    else:
+        _retire(worker)
+        workers.remove(worker)
+
+
+def _collect(
+    workers: list[Worker],
+    events: Queue[Receipt],
+    timeout: float,
+    results: list[BacktestShardReturn],
+) -> None:
+    # Drain validated receipts in arrival order before checking remaining deadlines.
+    try:
+        receipt = events.get(timeout=0.01)
+    except Empty:
+        receipt = None
+    while receipt is not None:
+        for worker in tuple(workers):
+            if worker.request is not None and worker.assignment == receipt.assignment:
+                _commit(workers, worker, receipt, timeout, results)
+                break
+        try:
+            receipt = events.get_nowait()
+        except Empty:
+            receipt = None
+    for worker in tuple(workers):
+        _commit(workers, worker, None, timeout, results)
+
+
+def _cleanup(workers: Sequence[Worker]) -> None:
+    errors: list[Exception] = []
+    for worker in workers:
+        try:
+            _retire(worker)
+        except Exception as exc:
+            errors.append(exc)
+    if errors:
+        raise SupervisorError("Executor worker cleanup failed") from errors[0]
+
+
+def run_shards(
+    requests: Sequence[ShardInput], size: int, timeout: float, operation: ShardOperation
+) -> tuple[BacktestShardReturn, ...]:
+    """Return outcomes in arrival order from independently supervised workers.
+
+    Cleanup failures propagate as SupervisorError.
+
+    Raises:
+        ValueError: If pool size or timeout is invalid.
+    """
+    if size < 1 or not math.isfinite(timeout) or timeout <= 0:
+        raise ValueError("Pool size and timeout must be positive and finite")
+    workers: list[Worker] = []
+    events: Queue[Receipt] = Queue()
+    results: list[BacktestShardReturn] = []
+    pending = iter(enumerate(requests))
+    exhausted = False
+    try:
+        while not exhausted or any(worker.request is not None for worker in workers):
+            exhausted = _fill_slots(workers, pending, size, operation, events, results)
+            _collect(workers, events, timeout, results)
+        return tuple(results)
+    finally:
+        _cleanup(workers)

@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 from typing import assert_type
 
-from ataraxia.backtest import (
+from ataraxia.broker import BrokerReturn
+from ataraxia.shard_types import (
     BacktestShardReturn,
     ShardError,
     ShardFailure,
     ShardSuccess,
 )
-from ataraxia.broker import BrokerReturn
 
 
 def narrow(outcome: BacktestShardReturn) -> None:

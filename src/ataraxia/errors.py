@@ -43,3 +43,15 @@ class BacktestError(AtaraxiaError, ValueError):
 
 class DependencyError(AtaraxiaError, TypeError):
     """Dependency names do not match the runner call signature."""
+
+
+class ShardTimeoutError(AtaraxiaError, TimeoutError):
+    """A supervised shard assignment exceeded its wall-clock deadline."""
+
+
+class WorkerFailureError(AtaraxiaError, RuntimeError):
+    """An executor worker did not deliver a valid shard outcome."""
+
+
+class SupervisorError(AtaraxiaError, RuntimeError):
+    """The orchestrator could not preserve its lifecycle invariants."""

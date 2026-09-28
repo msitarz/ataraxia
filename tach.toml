@@ -42,7 +42,7 @@ depends_on = ["ataraxia.compute", "ataraxia.errors"]
 
 [[modules ]]
 path = "ataraxia.backtest"
-depends_on = ["ataraxia.provider", "ataraxia.util", "ataraxia.compute", "ataraxia.broker", "ataraxia.errors", "ataraxia.source"]
+depends_on = ["ataraxia.provider", "ataraxia.util", "ataraxia.compute", "ataraxia.broker", "ataraxia.errors", "ataraxia.source", "ataraxia.shard_types", "ataraxia.shard_pool"]
 
 [[modules ]]
 path = "ataraxia.feature"
@@ -54,3 +54,11 @@ depends_on = ["ataraxia.bar", "ataraxia.compute"]
 
 [rules]
 local_imports = "error"
+
+[[modules]]
+path = "ataraxia.shard_types"
+depends_on = ["ataraxia.broker"]
+
+[[modules]]
+path = "ataraxia.shard_pool"
+depends_on = ["ataraxia.shard_types", "ataraxia.errors"]

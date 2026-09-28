@@ -362,4 +362,16 @@ delivery need separate contracts before cloud implementation.
 
 Step 1: introduced envelopes and exception diagnostics, updated sequential callers
 and atomic JSON saving. Focused backtest/CLI tests and strict type checks pass.
-The ordered delivery steps above remain the execution plan. Next: supervised pool.
+The ordered delivery steps above remain the execution plan.
+
+Step 1 commit: `8ec5594`. Step 2: supervised spawn workers, dedicated pipes and
+parent channel readers, assignment identities, deadlines, replacement and bounded
+cleanup. The 23 focused pool tests pass, including real spawn probes under a
+15-second outer watchdog, 20 MB transfer, killed partial sender, unaffected channel,
+replacement, crash, invalid communication and unpicklable exception diagnostics.
+Strict type and Tach checks pass. Next: CLI options and installed-wheel checks.
+
+The dedicated-channel experiment passed as part of step 2's bounded probes:
+termination during a partial transfer left another worker's channel usable and
+pending work completed. The probe was completed during supervisor development,
+not before its first implementation draft.
