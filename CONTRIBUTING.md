@@ -67,6 +67,19 @@ intentional dependency changes, run `uv lock` and commit the updated lockfile.
 The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
 `.pre-commit-config.yaml` and inspect all tracked files.
 
+For code changes, run focused tests during development, then the complete checks.
+Report any checks that could not run. When network access is unavailable after
+setup, use local verification and report the audit separately as unrun or failed.
+
+Additional commands:
+
+| Command | Purpose |
+| --- | --- |
+| `uv sync --locked --group dev` | Install locked development dependencies without hooks, as CI does |
+| `uv run pytest example/` | Run example tests outside default discovery |
+| `uv audit --frozen --preview-features audit` | Run the dependency audit alone |
+| `uv build` | Build distributions with the declared build backend |
+
 ## Toolchain policy
 
 `pyproject.toml` owns the exact uv pin in `[tool.uv].required-version`.

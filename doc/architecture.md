@@ -99,6 +99,18 @@ The computable graph in itself doesn't know anything about trading, features, ba
   equality, and length remain available, but callers cannot assign step entries.
   Bulk mapping operations expose heterogeneous values as `object`.
 
+### Lifecycle and strategy contracts
+
+Preserve source/runner identity as decided in
+[ADR 12](adr/0012-source-node-computable-instance.md), resource ownership from
+[ADR 16](adr/0016-source-manages-its-own-provider-lifecycle.md), and strategy
+loading from [ADR 14](adr/0014-sink-module-file-special-attribute.md).
+Explicitly close the compute generator when stopping consumption early.
+Equal nodes must share computation through stable equality and hashes.
+Rolling windows return newest first. Broker timing follows
+[ADR 13](adr/0013-broker-position-entry-needs-delay.md); its entry and exit behavior
+is described under the current trading limitations below.
+
 ### Type-checking limits
 
 `make typecheck` (also run by `make ci`) checks positive `assert_type` cases and
