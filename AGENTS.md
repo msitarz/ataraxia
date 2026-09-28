@@ -23,7 +23,7 @@ Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests:
 - `src/ataraxia/compute/`: computation graph and loop; sibling modules handle sources, providers, features, brokerage, backtesting, and CLI.
 - `test/unit/`, `test/integration/`, `test/acceptance/`: tests by boundary.
 - `example/`: crossover strategy and its tests; `sample/`: synthetic CSV data.
-- `doc/feature/`: feature slices; [doc/adr/](doc/adr/): architectural decisions.
+- `doc/feat/`: feat slices; [doc/adr/](doc/adr/): architectural decisions.
 
 Execution is currently local, sequential, and single-source. Parallel execution, multi-source synchronization, and immutable artifact storage are planned; verify status in code before treating documents as implemented behavior.
 
@@ -54,9 +54,9 @@ uv run ataraxia --sink example/crossover.py --shards-dir sample --output results
 
 ## Ubiquitous Language
 
-The [glossary](doc/ubiquitous-language.md) is the single source of truth for shared definitions; feature slices own local rules. Use its terms consistently and reuse abstractions when their meaning fits.
+The [glossary](doc/ubiquitous-language.md) is the single source of truth for shared definitions; feat slices own local rules. Use its terms consistently and reuse abstractions when their meaning fits.
 
-- Keep concepts distinct; a runner is not an executor worker. Use "feature slice" for a delivery increment to distinguish it from a composable calculation. Qualify terms and explain boundary mappings.
+- Keep concepts distinct; a runner is not an executor worker. Use "feat slice" as defined in the glossary, keeping it distinct from a trading Feature. Qualify terms and explain boundary mappings.
 - Resolve ambiguity from the request and repository. If meanings still imply materially different behavior, present concrete interpretations to the user before implementation. Do not invent domain rules; naming consistent with established meanings needs no confirmation.
 - Check for an existing term before introducing one. Define needed terms in the glossary **before using them in specifications or implementation**: meaning, responsibility, distinctions, relationships, and relevant units or lifecycle rules.
 - Link to definitions instead of duplicating them; update affected code, tests, and docs together. Follow the [ADR workflow](#architecture-decision-records) for architectural changes.
@@ -64,9 +64,70 @@ The [glossary](doc/ubiquitous-language.md) is the single source of truth for sha
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one), [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html), [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
 
-## Writing Feature Slices
+## Branch, Issue, and PR Workflow
 
-Write proportional specifications in `doc/feature/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the [ADR workflow](#architecture-decision-records) during planning and implementation.
+Use this workflow for each feat slice, including specification-only delivery.
+Small unrelated fixes or documentation edits may use `fix/`, `docs/`, or `chore/`
+branches without a feat slice or issue; non-trivial work still needs an issue.
+
+1. After reading the glossary and relevant context, inspect the current branch,
+   working tree, and existing issues/PRs. Reuse a branch already owning the work.
+   Otherwise, create a local branch from the applicable PR base before writing
+   the feat slice. Preserve unrelated work; don't branch unrelated work from an
+   existing feat branch. Follow explicit base instructions, otherwise repository
+   contribution guidance (`master` here).
+2. Name feat branches `feat/<short-kebab-case-name>`, for example
+   `feat/parallel-shard-computation`. Use lowercase words and hyphens in the name;
+   no issue number is required because the branch comes first. Validate with
+   `git check-ref-format --branch <name>`. Other branch prefixes use the same name
+   format. Existing branches need not be renamed.
+3. Create or reuse an issue for the feat slice before drafting its specification
+   or doing non-trivial architectural work. Follow [Issue Messages](#issue-messages).
+   State whether completing the issue means an accepted specification or an
+   implemented capability. Write the specification in `doc/feat/` and link the
+   issue; follow the ADR workflow when architectural decisions are needed.
+4. Once the issue and a reviewable specification exist, run `make ci`, commit and
+   push the branch, and open a draft PR against the applicable base. Add working
+   links between the issue, feat slice, and PR as they become available. A PR
+   targets a branch and references an issue. Use `Refs #N` for partial delivery,
+   including specification-only work on an implementation issue; use `Closes #N`
+   only when merging completes that issue. GitHub closing keywords apply when
+   the PR targets the repository's default branch.
+5. Continue scoped work on the same branch and PR. Run required checks before
+   each push and mark the PR ready for review only when the delivery's completion
+   conditions pass. Specification approval doesn't validate unimplemented
+   behavior. Follow [Commands and Validation](#commands-and-validation) when
+   network access prevents `make ci`; disclose missing checks and keep incomplete
+   work draft. Ready for review doesn't authorize merging.
+
+If GitHub access fails, report the failure, continue useful local work, and add
+external links once access returns. Don't claim an issue or PR exists without
+verifying it. If the missing issue blocks architectural work under the ADR
+workflow, finish local preparation without implementing the affected design.
+
+### Issue Messages
+
+Use descriptive sentence-case titles naming the problem or desired capability,
+such as `Add parallel execution across shards`. No type prefix is required;
+classify with existing labels where useful.
+
+Use the [Markdown issue template](.github/ISSUE_TEMPLATE/work-item.md) as the
+authoritative body format for both manual and agent-created issues. Follow its
+Problem, Outcome, and Links prompts; add scope boundaries or open questions when
+they affect the decision. For bugs, include reproduction steps, expected versus
+actual behavior, and relevant versions or logs. Keep the issue a short tracking
+record: the feat slice owns detailed scope, acceptance examples, and validation,
+while ADRs own architectural decisions. Link those records instead of copying
+their specifications into the issue. Add links as artifacts become available.
+
+For CLI creation, fill the template's body into a temporary Markdown file and
+pass it with `gh issue create --title ... --body-file <file>`; omit the template's
+front matter and instructional comments. The template guides content but doesn't
+enforce it across every GitHub creation path.
+
+## Writing Feat Slices
+
+Write proportional specifications in `doc/feat/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the [branch, issue, and PR workflow](#branch-issue-and-pr-workflow) and the [ADR workflow](#architecture-decision-records) during planning and implementation.
 
 - Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
 - Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.
@@ -84,7 +145,7 @@ Background: [Thoughtworks](https://www.thoughtworks.com/en-au/insights/e-books/m
 Create an ADR only for a substantive architectural decision. Correcting types, tests, or implementation to conform to an established contract does not require a new ADR. Do not turn recovery from your own mistake into a new architectural decision.
 
 1. Search `doc/adr/` for the problem and related decisions; read relevant records and follow amendment/supersession links. Reuse a covering ADR instead of duplicating it.
-2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Open an issue before non-trivial architectural work.
+2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Create or reuse the issue through the [branch, issue, and PR workflow](#branch-issue-and-pr-workflow) before non-trivial architectural work.
 3. Use the next unused number and `NNNN-kebab-case-title.md`. Format: `# N. Title`, `Date: YYYY-MM-DD`, then `Status`, `Context`, `Decision`, and `Consequences`. Explain the problem, relevant alternatives/tradeoffs, choice, and consequences. Use `Proposed` while unsettled and `Accepted` once decided.
 4. Change accepted decisions through new records; preserve earlier context, decision, and consequences. Use relative Markdown links:
    - Partial change: new Status says `Amends [N. Title](NNNN-title.md)`; on acceptance, add reciprocal `Amended by [M. Title](MMMM-title.md)` to the earlier record. Follow ADRs 0010/0011 and state what still applies.
@@ -146,4 +207,4 @@ Keep commits focused and use Conventional Commits (Commitizen enforced). Use an 
 
 Every agent-created commit must include a succinct body with three labeled sections: `Why:`, `What:`, and `How:`, separated by blank lines. Explain the problem or motivation, the resulting change, and the implementation approach, respectively. Keep each section brief and include relevant validation in `How:`. Avoid repeating the subject, listing files, or narrating the work session.
 
-PRs explain the problem, resulting behavior, and validation, with relevant issue links. External contributions are gated pending CLA setup; follow [CONTRIBUTING.md](CONTRIBUTING.md). Determine the PR base from explicit task instructions or repository metadata, consistent with contribution guidance.
+PRs explain the problem, resulting behavior, and validation, with relevant issue links. Follow the [branch, issue, and PR workflow](#branch-issue-and-pr-workflow) for draft creation, issue references, and readiness. External contributions are gated pending CLA setup; follow [CONTRIBUTING.md](CONTRIBUTING.md). Determine the PR base from explicit task instructions or repository metadata, consistent with contribution guidance.
