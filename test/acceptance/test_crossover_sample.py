@@ -17,6 +17,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
         [
             "uv",
             "run",
+            "--no-sync",
             "ataraxia",
             "-s",
             "example/crossover.py",
@@ -27,6 +28,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
         ],
         capture_output=True,
         text=True,
+        timeout=30,
     )
 
     assert result.returncode == 0
@@ -126,6 +128,7 @@ def test_cli_shard_failure_preserves_output(
         ],
         capture_output=True,
         text=True,
+        timeout=30,
     )
 
     assert result.returncode != 0

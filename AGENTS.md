@@ -33,17 +33,18 @@ Use Python 3.14+, `uv`, and `make`. [Makefile](Makefile) defines executable chec
 
 | Command | Purpose |
 | --- | --- |
-| `make setup` | Synchronize dependencies; install prek pre-commit and commit-message hooks |
+| `make setup` | Sync locked dependencies; prepare hook/build environments; install Git hooks |
 | `uv sync --locked --group dev` | Verify and install locked dependencies without hooks, as CI does |
 | `make lint` / `make format` | Ruff lint with automatic fixes / formatting |
 | `make typecheck` | Strict Pyrefly checks on `src/` |
 | `make test` | Pytest on `test/` with branch coverage |
+| `make verify` | Run all local CI checks offline using prepared dependencies and hooks; excludes the network-dependent audit |
 | `make ci` | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys and lint/formatting/types, and run covered tests, examples, and an installed-wheel smoke test |
 | `uv run pytest example/` | Example tests, outside default discovery |
 | `uv audit --frozen --preview-features audit` | Run the dependency audit alone |
 | `uv build` | Build distributions with `uv_build` |
 
-For code changes, run focused tests during development, then `make ci` for all CI checks. Report checks that could not run. Update and include `uv.lock` when dependencies change.
+For code changes, run focused tests during development, then `make ci` for all CI checks. When network access is unavailable after setup, run `make verify` for complete local evidence; report the audit separately as unrun or failed. Report checks that could not run. Update and include `uv.lock` when dependencies change.
 
 Run the sample strategy:
 

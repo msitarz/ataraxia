@@ -19,7 +19,7 @@ cd ataraxia
 make setup
 ```
 
-`make setup` creates the `uv`-managed virtualenv, installs dependencies (including the dev group), and installs the `prek` pre-commit and commit-message hooks. Re-run it whenever `pyproject.toml` changes.
+`make setup` creates the `uv`-managed virtualenv, installs dependencies (including the dev group), prepares all pinned hook environments and the wheel build backend, and installs the `prek` pre-commit and commit-message hooks. Re-run it whenever `pyproject.toml`, `uv.lock`, or `.pre-commit-config.yaml` changes. Setup needs network access; caches live in `.cache/uv` and `.cache/prek` by default (override `UV_CACHE_DIR` or `PREK_HOME` if needed).
 
 Commitizen checks Conventional Commit syntax. The body-formatting hook allows
 messages without bodies; when a body is present, separate it from the subject
@@ -34,20 +34,31 @@ also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-request
 
 | Target           | What it does |
 |------------------|--------------|
-| `make setup`     | Install dependencies and prek Git hooks |
+| `make setup`     | Sync locked dependencies, prepare hook/build environments, and install Git hooks |
+| `make verify`    | Verify the prepared environment and run every local CI check offline, including examples and the installed-wheel smoke test |
 | `make lint`      | Run `ruff check . --fix`; this can modify files |
 | `make format`    | Run `ruff format .`; this can modify files |
-| `make typecheck` | Run `pyrefly check` |
+| `make typecheck` | Run strict Pyrefly and positive/negative type expectations |
 | `make arch-check` | Run Tach internal and external dependency checks |
 | `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
 | `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, check architecture, and run covered tests, examples, and an installed-wheel smoke test |
 | `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
+
+After setup, agents without network access can run `make verify`. It checks the
+locked environment without installing or resolving dependencies, then reuses the
+same local check recipes as CI with uv network access disabled. Missing or stale
+environments fail; rerun `make setup` with network access to prepare them. A passing
+verification does not include a vulnerability audit.
 
 Before opening a PR, run all CI checks locally:
 
 ```sh
 make ci
 ```
+
+Full `make ci` runs local verification before the required network-dependent audit.
+An audit failure still fails CI, while completed local results remain available.
+The CI check job also runs its local checks before auditing.
 
 CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent checks
 use the synchronized environment without updating dependency resolution. After

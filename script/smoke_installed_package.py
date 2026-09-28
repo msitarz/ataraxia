@@ -25,6 +25,7 @@ def main() -> None:
             cwd=root,
             env=env,
             check=True,
+            timeout=120,
         )
         (wheel,) = (workspace / "dist").glob("*.whl")
         venv = workspace / "venv"
@@ -33,12 +34,14 @@ def main() -> None:
             cwd=workspace,
             env=env,
             check=True,
+            timeout=120,
         )
         subprocess.run(
             ["uv", "pip", "install", "--python", str(venv / "bin/python"), str(wheel)],
             cwd=workspace,
             env=env,
             check=True,
+            timeout=120,
         )
         shutil.copy2(root / "example/crossover.py", workspace / "crossover.py")
         shutil.copytree(root / "sample", workspace / "sample")
@@ -57,6 +60,7 @@ def main() -> None:
             capture_output=True,
             text=True,
             check=True,
+            timeout=120,
         )
         assert result.stderr == "", result.stderr
         assert result.stdout == (

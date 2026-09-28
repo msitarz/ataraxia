@@ -40,7 +40,11 @@ def test_accept_formatted_or_absent_body(tmp_path, message):
     path = tmp_path / "message"
     path.write_text(message)
     result = subprocess.run(
-        [sys.executable, CHECKER, path], capture_output=True, text=True, check=False
+        [sys.executable, CHECKER, path],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
     )
     assert result.returncode == 0, result.stderr
     assert path.read_bytes() == message.encode()
@@ -62,7 +66,11 @@ def test_reject_unformatted_body(tmp_path, body, error):
     path = tmp_path / "message"
     path.write_text("fix: change\n" + body)
     result = subprocess.run(
-        [sys.executable, CHECKER, path], capture_output=True, text=True, check=False
+        [sys.executable, CHECKER, path],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
     )
     assert result.returncode == 1
     assert error in result.stderr
@@ -71,11 +79,14 @@ def test_reject_unformatted_body(tmp_path, body, error):
 @pytest.mark.parametrize("comment_prefix", ["#", ";", "//"])
 @pytest.mark.parametrize("body, expected", [("Body.", 0), ("word " * 20, 1)])
 def test_verbose_diff_below_scissors(tmp_path, comment_prefix, body, expected):
-    subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+    subprocess.run(
+        ["git", "init", str(tmp_path)], capture_output=True, check=True, timeout=30
+    )
     subprocess.run(
         ["git", "config", "core.commentString", comment_prefix],
         cwd=tmp_path,
         check=True,
+        timeout=30,
     )
     message = (
         f"fix: change\n\n{body}\n\n"
@@ -94,6 +105,7 @@ def test_verbose_diff_below_scissors(tmp_path, comment_prefix, body, expected):
         capture_output=True,
         text=True,
         check=False,
+        timeout=30,
     )
     assert result.returncode == expected, result.stderr
     assert "long diff content" not in result.stderr
@@ -103,7 +115,12 @@ def test_verbose_diff_below_scissors(tmp_path, comment_prefix, body, expected):
 def test_git_commit_hook_and_configured_comments(tmp_path):
     def git(*args, check=True):
         return subprocess.run(
-            ["git", *args], cwd=tmp_path, capture_output=True, text=True, check=check
+            ["git", *args],
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+            check=check,
+            timeout=30,
         )
 
     git("init")
@@ -143,7 +160,7 @@ def test_prek_passes_message_filename(tmp_path):
             [
                 "uv",
                 "run",
-                "--frozen",
+                "--no-sync",
                 "prek",
                 "run",
                 "commit-message-format",
@@ -157,6 +174,7 @@ def test_prek_passes_message_filename(tmp_path):
             capture_output=True,
             text=True,
             check=False,
+            timeout=30,
         )
         assert result.returncode == expected, result.stdout + result.stderr
         assert "commit message format" in result.stdout
