@@ -6,6 +6,29 @@ specification-writing guidance. Use [documentation ownership](documentation.md) 
 [CONTRIBUTING.md](../CONTRIBUTING.md#make-targets) for validation, and the
 [ADR workflow](adr-workflow.md) for architectural decisions.
 
+## Stepwise changes and commits
+
+Before making changes, both defining and executor sessions write a short ordered
+plan showing how the work progresses toward its completion conditions. For each
+step, state the intended outcome, cohesive changes, and relevant verification.
+This applies to specification work, implementation, and review corrections.
+Keep a feat slice's plan in the slice; share the initial plan in the conversation
+before drafting it. For small unrelated work, a plan in the conversation is
+enough; this rule does not require a feat slice or its approval gates.
+
+Execute the plan step by step. Verify each completed step and, if it changes
+repository files, commit it before starting the next step. Keep commits small and
+cohesive, preserving a working path; do not defer all commits until the end.
+Steps without file changes need no empty commit. Use the
+[commit and validation conventions](../CONTRIBUTING.md#commits-and-pull-requests)
+and [required repository checks](../CONTRIBUTING.md#make-targets).
+
+If findings change the approach, revise the remaining plan and explain why before
+continuing. Material contract changes still follow the
+[scope approval gate](#execute-the-approved-scope). Keep completed step commits
+on the branch so the evolution remains traceable; do not squash or rewrite them
+unless the maintainer explicitly requests it.
+
 ## Define and publish for specification review
 
 After reading the glossary and relevant context, inspect the current branch,
@@ -105,6 +128,7 @@ review. Respect any requirement from the maintainer for separate sessions.
 Keep a small handoff section in the feat slice containing:
 
 - Current workflow stage and the defining/executor sessions.
+- Link to the stepwise plan, completed steps with their commits, and the next step.
 - Approved specification commit and evidence of the maintainer's approval.
 - Branch, issue, PR, and applicable ADR links.
 - Current validation evidence or links to it, including limitations.
