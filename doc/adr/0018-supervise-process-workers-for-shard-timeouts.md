@@ -4,7 +4,7 @@ Date: 2026-09-28
 
 ## Status
 
-Proposed
+Accepted
 
 Amends [6. Massive parallelism via sharding](0006-massive-parallelism-via-sharding.md).
 Shard independence and aggregation from ADR 6 still apply.

@@ -7,10 +7,12 @@ implementation status; accepted decisions can still be unimplemented.
 
 ## Current execution
 
-The CLI runs a strategy sequentially over local CSV shards and writes JSON
-results. Each backtest uses one source; multi-source synchronization is not
-implemented. Directory discovery is unsorted and unfiltered. A shard failure
-currently aborts the run; results contain flattened broker fields plus paths.
+The CLI runs a strategy over local CSV shards, directly or in supervised spawn
+workers, and writes JSON shard outcomes. Each backtest uses one source; multi-source synchronization is not
+implemented. Directory discovery is unsorted and unfiltered. Ordinary shard failures
+produce error diagnostics and processing continues; successful envelopes contain
+nested broker results. Parallel deadlines and worker replacement belong to the
+[parallel execution slice](feat/parallel-execution.md).
 See [backtest.py](../src/ataraxia/backtest.py) and [cli.py](../src/ataraxia/cli.py).
 
 The graph is built backward from the sink or its selected consumer, then evaluated
@@ -39,7 +41,8 @@ graph TD
 | `provider` / `source` | CSV input and adaptation into the graph |
 | `feature` | Built-in composable calculations |
 | `broker` | Signals, positions, and PnL accounting |
-| `backtest` | Strategy loading and shard orchestration |
+| `backtest` / `shard_pool` | Strategy loading and shard orchestration / worker supervision |
+| `shard_types` | Shard input, outcome, diagnostic contracts and boundary validation |
 | `cli` | Argument parsing, console output, and result-file writing |
 | `errors` | Shared domain errors |
 
@@ -109,11 +112,10 @@ change during the parallel execution work.
 
 ## Planned capabilities
 
-Local parallel execution is proposed in the
-[parallel execution slice](feat/parallel-execution.md), with supervision rationale
-in [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md).
-Neither is implemented. The slice owns CLI options, schema, deadline behavior,
-compatibility changes, and validation.
+Local parallel execution is implemented on the feat branch; its validation and
+review stage live in the [parallel execution slice](feat/parallel-execution.md).
+[ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) owns the
+supervision rationale.
 
 Persisting computation steps for visual debugging is decided in
 [ADR 5](adr/0005-save-every-computation-step-for-debugging.md) but unimplemented.

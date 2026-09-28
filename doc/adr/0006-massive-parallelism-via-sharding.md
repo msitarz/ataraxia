@@ -6,6 +6,8 @@ Date: 2026-07-14
 
 Accepted
 
+Amended by [18. Supervise process workers for shard timeouts](0018-supervise-process-workers-for-shard-timeouts.md).
+
 ## Context
 
 Backtesting involves processing huge amount of data.  Due to the [ADR 5](0005-save-every-computation-step-for-debugging.md), massive amount of data will be produced and stored.

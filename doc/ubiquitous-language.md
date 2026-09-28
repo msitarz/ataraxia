@@ -38,13 +38,13 @@ when adding or changing terms.
 
 | Term | References | Meaning |
 | --- | --- | --- |
-| Shard input | [Parallel execution feat slice](feat/parallel-execution.md) | A planned execution request identifying a strategy and shard. It carries input references, not live computation objects or execution state. |
-| Shard outcome | [Parallel execution feat slice](feat/parallel-execution.md) | A planned record identifying a strategy and shard, containing either a successful result or a failure diagnostic. |
-| Shard error | [Parallel execution feat slice](feat/parallel-execution.md) | A planned serializable diagnostic for a shard execution exception, timeout, or executor worker failure. |
-| Orchestrator | [Architecture](architecture.md), [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | The backtest application responsibility that discovers independent shards, dispatches shard inputs, and collects shard outcomes. Worker supervision is planned in ADR 18. |
-| Executor worker | [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | A planned child process executing shard inputs and returning shard outcomes. It is distinct from a graph runner; assignments construct fresh runners. |
-| Process pool | [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | A planned bounded set of executor workers owned by the orchestrator. This does not imply Python's `ProcessPoolExecutor`. |
-| Shard timeout | [Parallel execution feat slice](feat/parallel-execution.md) | A planned wall-clock deadline for a shard assignment, measured in seconds. Its timing and expiry contract belong to the parallel execution slice. |
+| Shard input | [Parallel execution feat slice](feat/parallel-execution.md) | An execution request identifying a strategy and shard. It carries input references, not live computation objects or execution state. |
+| Shard outcome | [Parallel execution feat slice](feat/parallel-execution.md) | A record identifying a strategy and shard, containing either a successful result or a failure diagnostic. |
+| Shard error | [Parallel execution feat slice](feat/parallel-execution.md) | A serializable diagnostic for a shard execution exception, timeout, or executor worker failure. |
+| Orchestrator | [Architecture](architecture.md), [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | The backtest application responsibility that discovers independent shards, dispatches shard inputs, and collects shard outcomes. Worker supervision follows ADR 18. |
+| Executor worker | [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | A child process executing shard inputs and returning shard outcomes. It is distinct from a graph runner; assignments construct fresh runners. |
+| Process pool | [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) | A bounded set of executor workers owned by the orchestrator. This does not imply Python's `ProcessPoolExecutor`. |
+| Shard timeout | [Parallel execution feat slice](feat/parallel-execution.md) | A wall-clock deadline for a shard assignment, measured in seconds. Its timing and expiry contract belong to the parallel execution slice. |
 
 ## Delivery workflow
 

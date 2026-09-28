@@ -6,6 +6,8 @@ import argparse
 from collections.abc import Sequence
 from dataclasses import asdict
 import json
+import math
+import os
 from pathlib import Path
 import sys
 from tempfile import NamedTemporaryFile
@@ -37,6 +39,26 @@ def save_results(results: Sequence[BacktestShardReturn], to_file: Path) -> None:
             temporary.unlink(missing_ok=True)
 
 
+def _positive_int(value: str) -> int:
+    try:
+        result = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("Must be a positive integer") from exc
+    if result <= 0:
+        raise argparse.ArgumentTypeError("Must be a positive integer")
+    return result
+
+
+def _positive_seconds(value: str) -> float:
+    try:
+        result = float(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("Must be finite positive seconds") from exc
+    if not math.isfinite(result) or result <= 0:
+        raise argparse.ArgumentTypeError("Must be finite positive seconds")
+    return result
+
+
 def main() -> None:
     """Entry point for the CLI."""
     parser = argparse.ArgumentParser(
@@ -66,12 +88,36 @@ def main() -> None:
         help="Path to output file with results",
     )
 
+    parser.add_argument(
+        "--parallel",
+        nargs="?",
+        type=_positive_int,
+        const=os.process_cpu_count() or 1,
+        default=None,
+        help=(
+            "Run in child processes; optional positive worker count "
+            "(default: available processors)"
+        ),
+    )
+    parser.add_argument(
+        "--shard-timeout",
+        type=_positive_seconds,
+        default=None,
+        help="Parallel assignment deadline in seconds, including startup (default: 5)",
+    )
     args = parser.parse_args()
+    if args.shard_timeout is not None and args.parallel is None:
+        parser.error("--shard-timeout requires --parallel")
 
     sink: Path = args.sink
     shards_dir: Path = args.shards_dir
 
-    results = backtest_dir(sink, shards_dir)
+    results = backtest_dir(
+        sink,
+        shards_dir,
+        parallel=args.parallel,
+        shard_timeout=args.shard_timeout if args.shard_timeout is not None else 5.0,
+    )
 
     if not results:
         print("No backtest completed, check params and output file", file=sys.stderr)

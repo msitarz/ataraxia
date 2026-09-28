@@ -9,9 +9,8 @@ Terms: [ubiquitous language](../ubiquitous-language.md).
 Workflow: [feat slice workflow](../feat-workflow.md).
 
 The issue's completion outcome is the implemented capability described below,
-with passing acceptance criteria and required checks. This delivery contains
-planning documents only and does not complete issue #21 or validate the future
-implementation. Approval evidence and pending work are recorded in the
+with passing acceptance criteria and required checks. Implementation is underway on the owning branch; issue #21 remains open until
+checks and required reviews are complete. Approval evidence and pending work are recorded in the
 [handoff](#handoff); general gates follow the linked workflow.
 
 ## Problem and current behavior
@@ -273,7 +272,7 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 - Issue: [#21](https://github.com/msitarz/ataraxia/issues/21); implementation
   outcome remains open during specification-only delivery.
   PR: [#24](https://github.com/msitarz/ataraxia/pull/24), using `Refs #21`.
-- Applicable decisions: proposed [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
+- Applicable decisions: accepted [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
   and existing ADRs 6, 7, 12, 14, 15, 16, and 17 referenced in this specification.
 - Validation: `make ci` passed for this planning revision: 142 repository tests,
   3 example tests, 97.12% branch-inclusive coverage, strict types and expected
@@ -286,8 +285,7 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
   changes sequential fail-fast/output-preservation behavior and was accepted by the execution instruction.
 - Reviews: specification execution approved; implementation reviews pending. Reviews
   must identify their covered commit; later material changes return to the
-  specification gate. Once ADR 18 is accepted, add its reciprocal amendment link
-  to ADR 6 as required by the ADR workflow.
+  specification gate. ADR 18 is accepted by the execution instruction and ADR 6 now links back.
 - Publication: planning baseline `f74cf2d` passed commit hooks and was pushed to
   the owning branch. Draft PR #24 was created against `master`. This handoff/link
   update is part of the specification revision for review; use the current PR
@@ -364,7 +362,7 @@ Step 1: introduced envelopes and exception diagnostics, updated sequential calle
 and atomic JSON saving. Focused backtest/CLI tests and strict type checks pass.
 The ordered delivery steps above remain the execution plan.
 
-Step 1 commit: `8ec5594`. Step 2: supervised spawn workers, dedicated pipes and
+Step 1 commit: `8ec5594`. Step 2 commit: `bcc228b`. Step 2: supervised spawn workers, dedicated pipes and
 parent channel readers, assignment identities, deadlines, replacement and bounded
 cleanup. The 23 focused pool tests pass, including real spawn probes under a
 15-second outer watchdog, 20 MB transfer, killed partial sender, unaffected channel,
@@ -375,3 +373,8 @@ The dedicated-channel experiment passed as part of step 2's bounded probes:
 termination during a partial transfer left another worker's channel usable and
 pending work completed. The probe was completed during supervisor development,
 not before its first implementation draft.
+
+Step 3: CLI arguments, atomic-save failure tests, real console acceptance for
+mixed errors, unreadable entries, timeout replacement, interruption and discovery
+errors. Sample totals match in both modes; installed-wheel smoke passes in both
+modes outside the checkout. Next: complete repository validation and handoff.

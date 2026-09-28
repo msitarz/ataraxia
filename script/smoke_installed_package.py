@@ -45,35 +45,39 @@ def main() -> None:
         )
         shutil.copy2(root / "example/crossover.py", workspace / "crossover.py")
         shutil.copytree(root / "sample", workspace / "sample")
-        result = subprocess.run(
-            [
-                str(venv / "bin/ataraxia"),
-                "--sink",
-                "crossover.py",
-                "--shards-dir",
-                "sample",
-                "--output",
-                "results.json",
-            ],
-            cwd=workspace,
-            env=env,
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=120,
-        )
-        assert result.stderr == "", result.stderr
-        assert result.stdout == (
-            "Aggregated backtest results:\nRealized PnL   = 40\nUnrealized PnL = 0\n"
-        ), result.stdout
-        results = json.loads((workspace / "results.json").read_text())
-        assert len(results) == 2, results
-        assert {
-            Path(item["shard_path"]).name: item["result"]["account"] for item in results
-        } == {
-            "nq_15m_2026_07_19.csv": {"pnl": 10, "unrealized_pnl": 0},
-            "nq_15m_2026_07_20.csv": {"pnl": 30, "unrealized_pnl": 0},
-        }, results
+        for options in ([], ["--parallel", "2"]):
+            result = subprocess.run(
+                [
+                    str(venv / "bin/ataraxia"),
+                    "--sink",
+                    "crossover.py",
+                    "--shards-dir",
+                    "sample",
+                    "--output",
+                    "results.json",
+                    *options,
+                ],
+                cwd=workspace,
+                env=env,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=120,
+            )
+            assert result.stderr == "", result.stderr
+            assert result.stdout == (
+                "Aggregated backtest results:\nRealized PnL   = 40\n"
+                "Unrealized PnL = 0\n"
+            ), result.stdout
+            results = json.loads((workspace / "results.json").read_text())
+            assert len(results) == 2, results
+            assert {
+                Path(item["shard_path"]).name: item["result"]["account"]
+                for item in results
+            } == {
+                "nq_15m_2026_07_19.csv": {"pnl": 10, "unrealized_pnl": 0},
+                "nq_15m_2026_07_20.csv": {"pnl": 30, "unrealized_pnl": 0},
+            }, results
 
 
 if __name__ == "__main__":

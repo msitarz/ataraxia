@@ -8,7 +8,8 @@ import subprocess
 import pytest
 
 
-def test_crossover_sample_cli_run(tmp_path: Path):
+@pytest.mark.parametrize("options", [[], ["--parallel", "2"]])
+def test_crossover_sample_cli_run(tmp_path: Path, options):
     """Should execute example strategy with sample data via CLI."""
 
     output = tmp_path / "output.json"
@@ -25,6 +26,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
             "sample",
             "-o",
             output.resolve(),
+            *options,
         ],
         capture_output=True,
         text=True,
@@ -78,6 +80,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
     assert all(result["result"]["open_positions"] == [] for result in results)
 
 
+@pytest.mark.parametrize("options", [[], ["--parallel", "2"]])
 @pytest.mark.parametrize("existing_output", [False, True])
 @pytest.mark.parametrize(
     ("contents", "message"),
@@ -103,7 +106,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
     ],
 )
 def test_cli_shard_failure_preserves_output(
-    tmp_path, existing_output, contents, message
+    tmp_path, existing_output, contents, message, options
 ):
     shards = tmp_path / "shards"
     shards.mkdir()
@@ -126,6 +129,7 @@ def test_cli_shard_failure_preserves_output(
             str(shards),
             "-o",
             str(output),
+            *options,
         ],
         capture_output=True,
         text=True,
