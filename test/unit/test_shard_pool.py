@@ -252,3 +252,133 @@ def test_error_variant_boundary_validation(diagnostic):
     assert not is_shard_error({**diagnostic, "type": None})
     assert not is_shard_error({**diagnostic, "extra": True})
     assert not is_shard_error({**diagnostic, "kind": "unknown"})
+
+
+def test_timely_receipt_published_during_another_workers_cleanup_is_preserved():
+    from queue import Queue
+    from unittest.mock import patch
+
+    from ataraxia.shard_pool import _collect, _exchange
+
+    expired = Worker(
+        MagicMock(),
+        MagicMock(),
+        1,
+        {"strategy_path": "/s", "shard_path": "/expired"},
+        0,
+    )
+    process = MagicMock()
+    process.exitcode = None
+    completed = Worker(
+        process, MagicMock(), 2, {"strategy_path": "/s", "shard_path": "/completed"}, 10
+    )
+    outcome = {
+        "strategy_path": "/s",
+        "shard_path": "/completed",
+        "status": "success",
+        "result": {"account": Account(), "open_positions": [], "closed_positions": []},
+    }
+    completed.channel.recv.return_value = outcome
+    events = Queue()
+    clock = [14.0]
+
+    def retire(worker):
+        assert worker is expired
+        clock[0] = 14.9
+        _exchange(completed, events)
+        clock[0] = 16.0
+
+    results = []
+    workers = [expired, completed]
+    with (
+        patch("ataraxia.shard_pool.monotonic", side_effect=lambda: clock[0]),
+        patch("ataraxia.shard_pool._retire", side_effect=retire) as retired,
+    ):
+        _collect(workers, events, 5, results)
+        _collect(workers, events, 5, results)
+    assert results[0]["error"]["kind"] == "timeout"
+    assert results[1] == outcome
+    assert len(results) == 2
+    assert completed.request is None
+    retired.assert_called_once_with(expired)
+
+
+def test_receipt_publication_and_expiry_share_a_critical_section():
+    from queue import Queue
+    from threading import Event, Thread
+    from unittest.mock import patch
+
+    from ataraxia.shard_pool import _commit, _publish
+
+    outcome = {
+        "strategy_path": "/s",
+        "shard_path": "/d",
+        "status": "success",
+        "result": {"account": Account(), "open_positions": [], "closed_positions": []},
+    }
+    process = MagicMock()
+    process.exitcode = None
+    worker = Worker(
+        process, MagicMock(), 1, {"strategy_path": "/s", "shard_path": "/d"}, 10
+    )
+    publishing = Event()
+    release = Event()
+    deciding = Event()
+
+    class HeldQueue(Queue):
+        def put(self, receipt):
+            publishing.set()
+            assert release.wait(2)
+            super().put(receipt)
+
+    results = []
+
+    def commit():
+        deciding.set()
+        _commit([worker], worker, None, 5, results)
+
+    clock = [14.9]
+    publisher = Thread(target=_publish, args=(worker, 1, outcome, None, HeldQueue()))
+    parent = Thread(target=commit)
+    with patch("ataraxia.shard_pool.monotonic", side_effect=lambda: clock[0]):
+        publisher.start()
+        try:
+            assert publishing.wait(2)
+            clock[0] = 15.1
+            parent.start()
+            assert deciding.wait(2)
+            assert results == []
+        finally:
+            release.set()
+            publisher.join(2)
+            if parent.ident is not None:
+                parent.join(2)
+    assert not publisher.is_alive()
+    assert not parent.is_alive()
+    assert results == [outcome]
+
+
+@pytest.mark.parametrize("assignment", [1, 2])
+def test_committed_assignment_rejects_late_publication(assignment):
+    from queue import Queue
+    from unittest.mock import patch
+
+    from ataraxia.shard_pool import _commit, _publish
+
+    process = MagicMock()
+    process.exitcode = None
+    worker = Worker(
+        process, MagicMock(), 1, {"strategy_path": "/s", "shard_path": "/d"}, 10
+    )
+    events = Queue()
+    results = []
+    with (
+        patch("ataraxia.shard_pool.monotonic", return_value=15),
+        patch("ataraxia.shard_pool._retire"),
+    ):
+        _commit([worker], worker, None, 5, results)
+    _publish(worker, assignment, None, "late failure", events)
+    assert events.empty()
+    assert worker.receipt is None
+    assert len(results) == 1
+    assert results[0]["error"]["kind"] == "timeout"

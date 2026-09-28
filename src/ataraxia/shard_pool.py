@@ -8,7 +8,7 @@ from multiprocessing import get_context
 from multiprocessing.connection import Connection
 from multiprocessing.process import BaseProcess
 from queue import Empty, Queue
-from threading import Event, Thread
+from threading import Event, Lock, Thread
 from time import monotonic
 
 from ataraxia.errors import SupervisorError
@@ -45,6 +45,9 @@ class Worker:
     reader: Thread | None = None
     child_channel: Connection | None = None
     launch_complete: Event = field(default_factory=Event)
+    receipt_lock: Lock = field(default_factory=Lock)
+    receipt: Receipt | None = None
+    committed: bool = False
 
 
 def _worker(channel: Connection, operation: ShardOperation) -> None:
@@ -79,10 +82,27 @@ def _exchange(worker: Worker, events: Queue[Receipt]) -> None:
             or value["shard_path"] != request["shard_path"]
         ):
             raise ValueError("Worker returned a different assignment")
-        receipt = Receipt(assignment, monotonic(), value)
+        outcome = value
+        failure = None
     except Exception as exc:
-        receipt = Receipt(assignment, monotonic(), None, f"{type(exc).__name__}: {exc}")
-    events.put(receipt)
+        outcome = None
+        failure = f"{type(exc).__name__}: {exc}"
+    _publish(worker, assignment, outcome, failure, events)
+
+
+def _publish(
+    worker: Worker,
+    assignment: int,
+    outcome: BacktestShardReturn | None,
+    failure: str | None,
+    events: Queue[Receipt],
+) -> None:
+    with worker.receipt_lock:
+        if worker.committed or worker.assignment != assignment:
+            return
+        receipt = Receipt(assignment, monotonic(), outcome, failure)
+        worker.receipt = receipt
+        events.put(receipt)
 
 
 def _launch(worker: Worker) -> None:
@@ -178,9 +198,12 @@ def _dispatch(
     events: Queue[Receipt],
     started: float,
 ) -> None:
-    worker.assignment = assignment
-    worker.request = request
-    worker.started = started
+    with worker.receipt_lock:
+        worker.assignment = assignment
+        worker.request = request
+        worker.started = started
+        worker.receipt = None
+        worker.committed = False
     worker.reader = Thread(target=_exchange, args=(worker, events), daemon=True)
     worker.reader.start()
 
@@ -245,19 +268,46 @@ def _commit(
     timeout: float,
     results: list[BacktestShardReturn],
 ) -> None:
-    outcome = assignment_outcome(worker, receipt, monotonic(), timeout)
-    if outcome is None:
-        return
+    with worker.receipt_lock:
+        if worker.committed:
+            return
+        receipt = worker.receipt or receipt
+        outcome = assignment_outcome(worker, receipt, monotonic(), timeout)
+        if outcome is None:
+            return
+        worker.committed = True
+        reusable = (
+            receipt is not None
+            and receipt.outcome is not None
+            and outcome is receipt.outcome
+        )
+        if reusable:
+            worker.request = None
     results.append(outcome)
-    if (
-        receipt is not None
-        and receipt.outcome is not None
-        and outcome is receipt.outcome
-    ):
-        worker.request = None
-    else:
+    # Killing and reaping must not delay publication from another assignment.
+    if not reusable:
         _retire(worker)
         workers.remove(worker)
+
+
+def _drain_receipts(
+    workers: list[Worker],
+    events: Queue[Receipt],
+    timeout: float,
+    results: list[BacktestShardReturn],
+    receipt: Receipt | None = None,
+) -> None:
+    while True:
+        if receipt is None:
+            try:
+                receipt = events.get_nowait()
+            except Empty:
+                return
+        for worker in tuple(workers):
+            if worker.request is not None and worker.assignment == receipt.assignment:
+                _commit(workers, worker, receipt, timeout, results)
+                break
+        receipt = None
 
 
 def _collect(
@@ -266,21 +316,14 @@ def _collect(
     timeout: float,
     results: list[BacktestShardReturn],
 ) -> None:
-    # Drain validated receipts in arrival order before checking remaining deadlines.
     try:
         receipt = events.get(timeout=0.01)
     except Empty:
         receipt = None
-    while receipt is not None:
-        for worker in tuple(workers):
-            if worker.request is not None and worker.assignment == receipt.assignment:
-                _commit(workers, worker, receipt, timeout, results)
-                break
-        try:
-            receipt = events.get_nowait()
-        except Empty:
-            receipt = None
+    _drain_receipts(workers, events, timeout, results, receipt)
     for worker in tuple(workers):
+        # Cleanup may have admitted new receipts; preserve their arrival order.
+        _drain_receipts(workers, events, timeout, results)
         _commit(workers, worker, None, timeout, results)
 
 

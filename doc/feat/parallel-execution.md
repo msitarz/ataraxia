@@ -258,7 +258,8 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 
 ## Handoff
 
-- Stage: implemented and validated, awaiting manual implementation review and
+- Stage: addressing implementation review findings; prior validation is recorded
+  below. Awaiting manual implementation review and
   defining-session review. Keep [PR #24](https://github.com/msitarz/ataraxia/pull/24)
   draft; no merge or readiness approval is inferred from checks.
 - Defining session: the original process-pool planning conversation in Codex.
@@ -393,7 +394,8 @@ The pool still owns one assignment per worker and never retries a failed shard.
 Parent receipt events use assignment identity and a completion timestamp taken
 after full receive and validation. One parent commit path resolves expiry;
 receipts are drained in arrival order before remaining deadlines are checked.
-Dedicated pipe readers isolate partial transfers; a 20 MB result and a killed
+Receipt publication and commitment now share an assignment lock; cleanup is
+outside that lock. Dedicated pipe readers isolate partial transfers; a 20 MB result and a killed
 partial sender did not prevent unrelated work or replacement from completing.
 Cleanup joins are bounded. An inability to finish startup, stop a channel reader,
 or reap a child raises a run-level supervisor error rather than dispatching more
@@ -402,3 +404,25 @@ no performance improvement or strategy-descendant containment is claimed.
 
 Step 4 commit: `07651ec`. Publication and tracking records are updated; the PR
 remains draft for the required reviews. No review approval or merge is claimed.
+
+## Review correction plan
+
+Review findings supplied by the maintainer on implementation `07651ec`:
+receipt publication during another worker's cleanup can lose a timely result;
+default traceback formatting truncates wide and deep exception groups.
+
+1. Synchronize receipt publication and assignment commitment. Keep cleanup
+   outside the critical section; verify timely publication during delayed cleanup,
+   deadline edges, late-message rejection, and real spawn behavior. Commit the fix.
+2. Retain full exception-group contents with explicit formatter limits. Verify
+   more than 15 children, depth beyond 10, stack locations, notes, chaining and
+   suppressed context, including saved CLI diagnostics in both modes. Commit the fix.
+3. Run `make ci`, update evidence and the review handoff, and push both corrections
+   to the existing draft PR. Required review approvals remain pending.
+
+Correction 1 evidence: a controlled clock reproduces receipt publication at 14.9
+while another worker is reaped until 16.0 (deadline 15.0); the completed shard
+keeps its success and is not killed. A handshake test holds publication across
+an expiry attempt and proves commitment waits for it. Late publication after
+commitment is discarded. All 30 pool unit tests, 12 real-spawn integration tests,
+Ruff and strict type expectations pass. Next: complete exception-group formatting.
