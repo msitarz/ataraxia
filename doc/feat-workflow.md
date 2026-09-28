@@ -13,7 +13,7 @@ working tree, and existing issues/PRs. Reuse a branch already owning the work.
 Otherwise, create a local branch from the applicable PR base before writing the
 specification. Preserve unrelated work; don't base unrelated work on an existing
 feat branch. Explicit task instructions determine the base, otherwise use
-[contribution guidance](../CONTRIBUTING.md#submitting-a-change), currently `master`.
+[contribution guidance](../CONTRIBUTING.md#submitting-a-change).
 
 Name branches `feat/<short-kebab-case-name>`, for example
 `feat/parallel-shard-computation`. Validate with
@@ -23,7 +23,8 @@ branch comes first. Existing branches need not be renamed.
 Create or reuse an issue before drafting the specification or doing non-trivial
 architectural work. Follow [Issue messages](#issue-messages). State whether the
 issue's outcome is an accepted specification or an implemented capability. Write
-the specification in `doc/feat/`, link the issue, and follow the
+the specification in `doc/feat/`, link the issue, follow
+[documentation ownership](documentation.md), and use the
 [ADR workflow](adr-workflow.md) when decisions are needed.
 
 Once the planning documents are reviewable, run `make ci`, commit and push, and
@@ -62,12 +63,14 @@ approval. Report unresolved problems rather than weakening completion conditions
 After execution, stop for manual implementation review and review by the defining
 session. The defining session checks the delivered diff, acceptance examples,
 validation evidence, and any specification changes against the approved scope.
-It reports findings; the executor session owns implementation corrections.
+Report findings according to the glossary's session responsibilities.
 
 Record the commit each review covers and its outcome in the handoff or a linked
 issue/PR review. The executor addresses proposed changes, reruns relevant checks
 and `make ci`, updates evidence, and pushes to the same PR. Repeat the affected
-reviews until findings are resolved. Review the changes from later pushes;
+reviews until findings are resolved. Check documentation ownership and duplication
+alongside contracts and validation; follow
+[documentation review](documentation.md#review). Review the changes from later pushes;
 approvals of earlier commits do not automatically approve new changes. Material
 contract changes also return to specification approval.
 
@@ -146,7 +149,11 @@ enforce it across every GitHub creation path.
 
 ## Writing feat slices
 
-Write proportional specifications in `doc/feat/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the gates above and the [ADR workflow](adr-workflow.md) during planning and implementation.
+Write proportional specifications in `doc/feat/` using short prose and examples;
+no user-story formula or Gherkin is required. Follow the gates above,
+[documentation ownership](documentation.md), and the [ADR workflow](adr-workflow.md).
+Keep local contracts and evidence here; link to shared meanings, architectural
+rationale, and general procedures instead of copying them.
 
 - Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
 - Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.
@@ -155,6 +162,10 @@ Write proportional specifications in `doc/feat/`, using short prose and examples
 - Name assumptions, risks, and open questions. Test uncertainty that could invalidate the approach with a bounded experiment: expected result and evidence that would challenge it. Record findings and revise the plan; an experiment is not a completed feature.
 - Support performance claims with a baseline, representative workload, measurement method, and success criterion.
 
-Example: the same strategy and shards yield identical ordered results with one or two workers; a shard failure preserves an existing output file. These are acceptance contracts; executor classes and scheduling helpers belong in design notes.
+Examples such as successful results matching across execution modes or an
+invalid CLI argument preserving an existing output file express observable
+contracts. They are illustrative, not requirements for every slice. Executor
+classes and scheduling helpers belong in design notes unless architectural
+impact warrants an ADR.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/en-au/insights/e-books/modern-data-engineering-playbook/delivery-planning-principles), [Fowler](https://martinfowler.com/bliki/FeatureDevotion.html), [Beck](https://newsletter.kentbeck.com/p/canon-tdd), [Farley](https://www.davefarley.net/?page_id=50).

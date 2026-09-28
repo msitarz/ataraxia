@@ -2,12 +2,15 @@
 
 ## Status
 
-Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, create or reuse an issue before drafting the specification or implementing the change; PRs that don't match the current architectural direction won't be merged regardless of code quality.
+External contributions are gated pending CLA setup via CLA Assistant; none will
+be accepted before it is configured. For non-trivial work, create or reuse an
+issue before drafting a specification or implementing a change. PRs must match
+the current architectural direction. See [project status](README.md#status).
 
 ## Prerequisites
 
 - Python 3.14+
-- [`uv`](https://github.com/astral-sh/uv), at the exact version required in `pyproject.toml`
+- [`uv`](https://docs.astral.sh/uv/getting-started/installation/), at the exact version required in `pyproject.toml`
 - `make`
 - Git
 
@@ -111,22 +114,11 @@ The temporary environment and artifacts are removed when the check finishes.
 
 Branch off `master` and open PRs against `master` unless the task explicitly
 requires another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md)
-for issue bodies and the general rules in [AGENTS.md](AGENTS.md) for commits.
+for issue bodies and the [commit conventions](#commits-and-pull-requests).
 
-When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
-read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
-issue messages, specification guidance, manual review gates, and session handoffs.
-It requires manual specification approval before execution and both manual and
-defining-session review of implementation. Keep work in the same PR through
-review corrections. The maintainer makes the final merge or close decision.
-
-## License
-
-Apache 2.0. New source files should carry an SPDX header:
-
-```python
-# SPDX-License-Identifier: Apache-2.0
-```
+For feat slices, read the [feat workflow](doc/feat-workflow.md) in full; it owns
+branch naming, issue messages, specification guidance, reviews, and handoffs.
+For other documentation work, follow [documentation ownership](doc/documentation.md).
 
 ## Commits and pull requests
 
@@ -136,4 +128,4 @@ Keep commits focused and use Conventional Commits (Commitizen enforced). Use an 
 
 Every agent-created commit must include a succinct body with three labeled sections: `Why:`, `What:`, and `How:`, separated by blank lines. Explain the problem or motivation, the resulting change, and the implementation approach, respectively. Keep each section brief and include relevant validation in `How:`. Avoid repeating the subject, listing files, or narrating the work session.
 
-PRs explain the problem, resulting behavior, and validation, with relevant issue links. External contributions are gated pending CLA setup; follow the [contribution policy](#status). Determine the PR base from explicit task instructions or repository metadata, consistent with contribution guidance.
+PRs explain the problem, resulting behavior, and validation, with relevant issue links. Follow the [contribution policy](#status) and the base selection above.

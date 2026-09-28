@@ -12,8 +12,8 @@ Workflow: [feat slice workflow](../feat-workflow.md).
 The issue's completion outcome is the implemented capability described below,
 with passing acceptance criteria and required checks. This delivery contains
 planning documents only and does not complete issue #21 or validate the future
-implementation. Execution requires explicit maintainer approval of an identified
-specification commit. Publishing this revision does not supply that approval.
+implementation. Approval evidence and pending work are recorded in the
+[handoff](#handoff); general gates follow the linked workflow.
 
 ## Problem and current behavior
 
@@ -231,17 +231,15 @@ layer into modules, declare their dependencies in `tach.toml`; `compute/` still
 depends only on its own modules and shared errors.
 
 ADR 7's cloud immutability/idempotency and ADR 15's fork-and-deploy direction
-remain applicable and unimplemented. Update the architecture's planned fan-out
-from EventBridge to SNS -> SQS -> Lambda to match the requested direction. A
+remain applicable and unimplemented. Cloud plans live in
+[architecture](../architecture.md#target-execution-and-deployment). A
 future adapter resolves cloud artifacts to local paths, then invokes the same
 shard operation; local absolute paths alone are not portable cloud references.
 No SNS event wrapper or AWS SDK belongs in the local worker contract.
 
 ## Delivery steps
 
-First publish these checked planning documents in a draft PR for manual
-specification review. After the maintainer approves a specific revision, the
-executor session performs the following steps on the same branch and PR:
+After specification approval under the [workflow](../feat-workflow.md), execute:
 
 1. Introduce precise shard input, outcome, and diagnostic types and the shared
    shard operation. Adapt direct sequential callers, aggregation, and JSON
@@ -251,14 +249,10 @@ executor session performs the following steps on the same branch and PR:
    with bounded real-process tests. Keep sequential mode working.
 3. Wire CLI options and validation. Exercise successful, mixed, timed-out,
    all-error, empty, and invalid-argument runs through the real console command.
-   Update help, README usage, and installed-wheel smoke checks.
-4. Run focused checks, strict type cases, and `make ci`. Mark this slice validated
-   only after the acceptance contracts pass; record evidence here. Commit and
-   push checked work, then return it for manual and defining-session reviews.
-
-Follow the [workflow](../feat-workflow.md) for material specification revisions,
-review corrections, and the maintainer's final merge or close decision. Keep the
-PR draft while any required approval or review is outstanding.
+   Update CLI help and installed-wheel smoke checks; keep README navigation current.
+4. Complete the validation plan below and record evidence here. Follow the
+   workflow for reviews and the [contribution procedure](../../CONTRIBUTING.md#make-targets)
+   for repository checks.
 
 ## Handoff
 
@@ -326,8 +320,8 @@ integration/CLI test an outer subprocess timeout, and clean up children even on
 test failure. Do not use sleeps alone to prove overlap; use explicit handshakes.
 Run focused backtest and CLI tests during development. Add positive/negative
 Pyrefly expectation cases proving that `status` narrows the envelope and invalid
-success/error mixtures are rejected. Then run `make ci`; if networking is
-unavailable after setup, use `make verify` and report the audit separately.
+success/error mixtures are rejected. Follow the
+[repository validation procedure](../../CONTRIBUTING.md#make-targets).
 
 ## Verification evidence and remaining risks
 
