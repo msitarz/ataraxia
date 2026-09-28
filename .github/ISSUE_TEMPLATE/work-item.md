@@ -20,6 +20,8 @@ scope, acceptance examples, and validation belong in the linked feat slice. -->
 ## Links
 
 <!-- Add the feat slice, applicable ADRs, dependencies, branch, and PR as they
-become available. No ADR is needed for work that makes no architectural decision.
+become available. For feat slices, link the current handoff and review evidence
+instead of copying them here. Follow doc/feat-workflow.md for approval gates.
+No ADR is needed for work that makes no architectural decision.
 For CLI creation, omit this file's front matter and comments and pass the filled
 body with gh issue create --title ... --body-file <file>. -->

@@ -2,7 +2,7 @@
 
 ## Status
 
-Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, create or reuse an issue before drafting the specification or implementing the change, following the [workflow](AGENTS.md#branch-issue-and-pr-workflow); PRs that don't match the current architectural direction won't be merged regardless of code quality.
+Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, create or reuse an issue before drafting the specification or implementing the change; PRs that don't match the current architectural direction won't be merged regardless of code quality.
 
 ## Prerequisites
 
@@ -96,18 +96,16 @@ The temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 
-Follow the [branch, issue, and PR workflow](AGENTS.md#branch-issue-and-pr-workflow),
-which owns branch naming, issue messages, and PR readiness. Branch off `master`
-and open PRs against `master` unless the task explicitly requires another base.
-For a [feat slice](doc/ubiquitous-language.md), create the local branch first,
-create or reuse its issue, and write its specification in `doc/feat/`. Use the
-[issue template](.github/ISSUE_TEMPLATE/work-item.md) for the issue body.
+Branch off `master` and open PRs against `master` unless the task explicitly
+requires another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md)
+for issue bodies and the general rules in [AGENTS.md](AGENTS.md) for commits.
 
-Once a checked specification is committed and pushed, open a draft PR referencing
-the issue. Continue implementation in the same PR, then mark it ready when the
-delivery's completion conditions and required checks pass. A specification-only
-PR may be ready when its planning outcome is met; it doesn't validate a future
-implementation. Wait for review before merging.
+When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
+read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
+issue messages, specification guidance, manual review gates, and session handoffs.
+It requires manual specification approval before execution and both manual and
+defining-session review of implementation. Keep work in the same PR through
+review corrections. The maintainer makes the final merge or close decision.
 
 ## License
 
