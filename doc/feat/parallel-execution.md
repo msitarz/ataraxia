@@ -407,7 +407,8 @@ remains draft for the required reviews. No review approval or merge is claimed.
 
 ## Review correction plan
 
-Review findings supplied by the maintainer on implementation `07651ec`:
+The maintainer’s findings were reproduced on baseline `1675fc9` (runtime
+implementation `07651ec`):
 receipt publication during another worker's cleanup can lose a timely result;
 default traceback formatting truncates wide and deep exception groups.
 
@@ -426,3 +427,11 @@ keeps its success and is not killed. A handshake test holds publication across
 an expiry attempt and proves commitment waits for it. Late publication after
 commitment is discarded. All 30 pool unit tests, 12 real-spawn integration tests,
 Ruff and strict type expectations pass. Next: complete exception-group formatting.
+
+Correction 1 commit: `9fe8531`.
+Correction 2 evidence: `TracebackException` uses explicit group width/depth limits
+of `sys.maxsize`, avoiding its display defaults. Regressions preserve 20 child
+exceptions through 12 nested group levels, every child message/note/stack, explicit
+causes and suppressed contexts. Saved CLI diagnostics pass in both sequential and
+parallel modes. All 38 focused backtest/integration/CLI tests and strict type
+expectations pass. Next: full CI and publication of the corrected implementation.

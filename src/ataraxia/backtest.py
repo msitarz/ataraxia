@@ -6,6 +6,7 @@ Integrate external strategy to form a computable graph and process a single shar
 """
 
 from pathlib import Path
+import sys
 import traceback
 
 from ataraxia.broker import BrokerReturn
@@ -33,7 +34,12 @@ def exception_diagnostic(exc: Exception) -> ExceptionDiagnostic:
     except Exception:
         message = "Exception message unavailable: __str__ failed"
     try:
-        stack = "".join(traceback.format_exception(exc))
+        formatted = traceback.TracebackException.from_exception(
+            exc,
+            max_group_width=sys.maxsize,
+            max_group_depth=sys.maxsize,
+        )
+        stack = "".join(formatted.format())
     except Exception:
         stack = f"{exception_type}: {message}\nTraceback formatting failed"
     return {

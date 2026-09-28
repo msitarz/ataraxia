@@ -262,3 +262,54 @@ def test_console_invalid_arguments_preserve_output(tmp_path, options):
     )
     assert result.returncode == 2
     assert output.read_text() == "previous"
+
+
+@pytest.mark.parametrize("options", [[], ["--parallel", "2"]])
+def test_saved_diagnostics_preserve_wide_deep_groups(tmp_path, options):
+    strategy = tmp_path / "group_strategy.py"
+    strategy.write_text("""
+children = []
+for index in range(20):
+    try:
+        raise ValueError(f'leaf-{index:02d}')
+    except ValueError as child:
+        child.add_note(f'note-{index:02d}')
+        children.append(child)
+group = ExceptionGroup('level-0', children)
+for level in range(1, 12):
+    group = ExceptionGroup(f'level-{level}', [group])
+try:
+    raise RuntimeError('original cause')
+except RuntimeError as cause:
+    raise group from cause
+""")
+    output = tmp_path / "out.json"
+    result = subprocess.run(
+        [
+            str(COMMAND),
+            "-s",
+            str(strategy),
+            "-d",
+            str(ROOT / "sample"),
+            "-o",
+            str(output),
+            *options,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 1
+    outcomes = json.loads(output.read_text())
+    assert len(outcomes) == 2
+    for outcome in outcomes:
+        assert outcome["status"] == "error"
+        stack = outcome["error"]["traceback"]
+        for index in range(20):
+            assert f"leaf-{index:02d}" in stack
+            assert f"note-{index:02d}" in stack
+        for level in range(12):
+            assert f"level-{level}" in stack
+        assert stack.count(f'File "{strategy}"') >= 20
+        assert "original cause" in stack
+        assert "direct cause" in stack

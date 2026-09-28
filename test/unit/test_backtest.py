@@ -116,7 +116,10 @@ def test_exception_diagnostic_formatting_fallback():
         def __str__(self):
             raise RuntimeError("format failed")
 
-    with patch("ataraxia.backtest.traceback.format_exception", side_effect=ValueError):
+    with patch(
+        "ataraxia.backtest.traceback.TracebackException.from_exception",
+        side_effect=ValueError,
+    ):
         diagnostic = exception_diagnostic(Broken())
     assert "unavailable" in diagnostic["message"]
     assert "formatting failed" in diagnostic["traceback"]
@@ -129,3 +132,54 @@ def test_main_process_base_exceptions_propagate(error):
         pytest.raises(type(error)),
     ):
         backtest_shard("strategy.py", "shard.csv")
+
+
+@pytest.mark.parametrize(("width", "depth"), [(20, 1), (1, 12), (20, 12)])
+def test_exception_diagnostic_preserves_entire_group(width, depth):
+    from ataraxia.backtest import exception_diagnostic
+
+    children = []
+    for index in range(width):
+        try:
+            raise ValueError(f"leaf-{index:02d}")
+        except ValueError as child:
+            child.add_note(f"note-{index:02d}")
+            children.append(child)
+    group = ExceptionGroup("level-0", children)
+    for level in range(1, depth):
+        group = ExceptionGroup(f"level-{level}", [group])
+    try:
+        try:
+            raise RuntimeError("explicit cause")
+        except RuntimeError as cause:
+            raise group from cause
+    except Exception as error:
+        diagnostic = exception_diagnostic(error)
+    stack = diagnostic["traceback"]
+    for index in range(width):
+        assert f"leaf-{index:02d}" in stack
+        assert f"note-{index:02d}" in stack
+    for level in range(depth):
+        assert f"level-{level}" in stack
+    assert stack.count("in test_exception_diagnostic_preserves_entire_group") >= width
+    assert "explicit cause" in stack
+    assert "direct cause" in stack
+    assert "max_group_depth" not in stack
+    assert "and 5 more exceptions" not in stack
+
+
+def test_group_diagnostic_respects_suppressed_context():
+    from ataraxia.backtest import exception_diagnostic
+
+    try:
+        try:
+            raise ValueError("hidden context")
+        except ValueError:
+            raise ExceptionGroup(
+                "visible group", [RuntimeError("visible child")]
+            ) from None
+    except Exception as error:
+        diagnostic = exception_diagnostic(error)
+    assert "hidden context" not in diagnostic["traceback"]
+    assert "visible group" in diagnostic["traceback"]
+    assert "visible child" in diagnostic["traceback"]
