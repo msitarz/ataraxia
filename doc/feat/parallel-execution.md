@@ -258,8 +258,8 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 
 ## Handoff
 
-- Stage: addressing implementation review findings; prior validation is recorded
-  below. Awaiting manual implementation review and
+- Stage: supplied review findings corrected and validated; awaiting manual
+  implementation review and
   defining-session review. Keep [PR #24](https://github.com/msitarz/ataraxia/pull/24)
   draft; no merge or readiness approval is inferred from checks.
 - Defining session: the original process-pool planning conversation in Codex.
@@ -271,10 +271,11 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
   This includes sequential continuation and saved error envelopes.
 - Plan: [delivery steps](#delivery-steps). Completed steps: shard contracts
   `8ec5594`, worker supervision `bcc228b`, CLI and documentation `9465aaa`.
-  Final lifecycle checks and validation: `07651ec`. All four delivery steps are
-  complete and pushed to PR #24. Next: manual implementation and
-  defining-session reviews of implementation commit `07651ec`; this later
-  handoff-only update does not change runtime behavior.
+  Original lifecycle checks and validation: `07651ec`.
+  [Review corrections](#review-correction-plan): receipt synchronization `9fe8531`,
+  full exception groups `a421c16`. Next: manual implementation and defining-session
+  reviews of corrected implementation `a421c16`; this handoff-only update does
+  not change runtime behavior.
 - Branch: `feat/parallel_execution`; base: `master`.
   [Issue #21](https://github.com/msitarz/ataraxia/issues/21) tracks implementation
   and remains open for required reviews. PR #24 remains partial delivery with
@@ -282,15 +283,15 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 - Decisions: accepted [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
   with its reciprocal amendment link in ADR 6, and existing ADRs 6, 7, 12, 14,
   15, 16 and 17 referenced above. No material scope changes were required.
-- Validation: `make ci` passes on Python 3.14.7: 222 repository tests, 3 example
-  tests, 91.21% branch-inclusive coverage, strict Pyrefly and all expected
+- Validation: `make ci` passes on Python 3.14.7: 232 repository tests, 3 example
+  tests, 91.56% branch-inclusive coverage, strict Pyrefly and all expected
   negative cases, Ruff, Tach, tracked-file checks, installed-wheel smoke in both
   execution modes, and an audit of 38 packages without known vulnerabilities.
   Initial sandbox audit attempts failed DNS; the network-enabled rerun passed.
-  Checked 90 local Markdown targets/anchors, whitespace, and the acceptance
-  evidence below. Evidence is local macOS execution; other platforms await CI.
-- Publication: implementation `07651ec` is pushed. PR #24 and issue #21 now
-  link to the implemented behavior and current validation evidence.
+  Local Markdown targets/anchors, whitespace, and the acceptance evidence below
+  are checked. Evidence is local macOS execution; other platforms await CI.
+- Publication: corrected implementation `a421c16` and this handoff are delivered
+  through PR #24. Issue #21 links to the current validation evidence.
 - Reviews: manual implementation and defining-session reviews are pending and
   must identify the implementation commit they cover. The executor's final
   contract inspection is validation, not either required approval.
@@ -393,7 +394,7 @@ The pool still owns one assignment per worker and never retries a failed shard.
 
 Parent receipt events use assignment identity and a completion timestamp taken
 after full receive and validation. One parent commit path resolves expiry;
-receipts are drained in arrival order before remaining deadlines are checked.
+receipts are drained in arrival order between expiry decisions.
 Receipt publication and commitment now share an assignment lock; cleanup is
 outside that lock. Dedicated pipe readers isolate partial transfers; a 20 MB result and a killed
 partial sender did not prevent unrelated work or replacement from completing.
@@ -435,3 +436,10 @@ exceptions through 12 nested group levels, every child message/note/stack, expli
 causes and suppressed contexts. Saved CLI diagnostics pass in both sequential and
 parallel modes. All 38 focused backtest/integration/CLI tests and strict type
 expectations pass. Next: full CI and publication of the corrected implementation.
+
+Correction 2 commit: `a421c16`. Step 3 complete: `make ci` passes for the corrected
+implementation on Python 3.14.7: 232 repository tests, 3 example tests, 91.56%
+branch-inclusive coverage, strict Pyrefly and expected negatives, Ruff, Tach,
+tracked-file checks, installed-wheel smoke in both modes, and a clean 38-package
+audit. Both supplied P2 findings are addressed with regressions; no acceptance or
+scope contracts changed. Reviews of the corrected implementation remain pending.
