@@ -4,7 +4,7 @@ from typing import assert_type
 from ataraxia.bar import Bar
 from ataraxia.compute import Computable, Runner, Sink
 from ataraxia.compute.loop import ComputedMapping, compute, compute_step, prime_catalog
-from ataraxia.feature import RollingWindow, Sma
+from ataraxia.feature import RollingWindow, Sma, sma
 from ataraxia.source import SourceNode
 
 
@@ -25,6 +25,9 @@ def contracts(
     assert_type(results[window], tuple[int, ...])
     assert_type(results[RollingWindow[int](integer, 3)], tuple[int, ...])
     assert_type(results[Sma(source, 3)], float | None)
+    assert_type(sma((2, 3, None), 3), float | None)
+    assert_type(sma((2.0, 3.0), 2), float | None)
+    sma(("wrong",), 1)  # E: is not assignable
     assert_type(source.factory()(), Bar)
     assert_type(runner(1), str)
     wrong: str = results[integer]  # E: is not assignable

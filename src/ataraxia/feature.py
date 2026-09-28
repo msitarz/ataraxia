@@ -51,18 +51,27 @@ class RollingWindow[T]:
         return RollingWindowRunner[T](self.maxlen)
 
 
-def sma(values: Sequence[float], period: int) -> float | None:
+def sma(values: Sequence[float | None], period: int) -> float | None:
     """Return simple moving average of period for values.
+
+    Return None when there are fewer values than period or any value is None.
 
     Raises:
         FeatureError: When values have more items than period.
     """
-    if len(values) < period or not all(x for x in values if x is None):
+    if len(values) < period:
         return None
-    elif len(values) > period:
+
+    complete_values: list[float] = []
+    for value in values:
+        if value is None:
+            return None
+        complete_values.append(value)
+
+    if len(values) > period:
         raise FeatureError("Cannot have more values than period")
 
-    return sum(values) / period
+    return sum(complete_values) / period
 
 
 @dataclass(frozen=True)
