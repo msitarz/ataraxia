@@ -1,8 +1,10 @@
 # Feat slice branch and PR workflow
 
-Status: in progress
+Status: validated
 
 Issue: [22](https://github.com/msitarz/ataraxia/issues/22)
+
+PR: [23](https://github.com/msitarz/ataraxia/pull/23)
 
 ## Problem and outcome
 
@@ -66,7 +68,12 @@ tests, 97.12% branch-inclusive coverage, strict types and expected negative case
 architecture checks, installed-wheel smoke test, and audit of 38 packages. The
 tracked-file hooks also passed after staging the new files. Relative links and
 anchors, template front matter and body headings, terminology, branch naming,
-and whitespace checks passed. PR creation and artifact review are pending.
+and whitespace checks passed. Draft PR 23 was verified to use
+`feat/agent-workflow` as its head, `master` as its base, and issue 22 as its closing
+reference. The issue's Problem, Outcome, and Links body links back to the feat
+slice and PR. The unrelated parallel-execution branch was preserved. This
+exercises the new-work path; reuse, partial delivery, and failure handling were
+checked for consistency in the guidance rather than creating extra GitHub items.
 
 The issue template will appear in GitHub's issue chooser after merging into
 `master`; before then, its Markdown body is used through the CLI. This is
