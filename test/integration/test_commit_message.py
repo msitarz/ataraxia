@@ -68,6 +68,38 @@ def test_reject_unformatted_body(tmp_path, body, error):
     assert error in result.stderr
 
 
+@pytest.mark.parametrize("comment_prefix", ["#", ";", "//"])
+@pytest.mark.parametrize("body, expected", [("Body.", 0), ("word " * 20, 1)])
+def test_verbose_diff_below_scissors(tmp_path, comment_prefix, body, expected):
+    subprocess.run(["git", "init", str(tmp_path)], capture_output=True, check=True)
+    subprocess.run(
+        ["git", "config", "core.commentString", comment_prefix],
+        cwd=tmp_path,
+        check=True,
+    )
+    message = (
+        f"fix: change\n\n{body}\n\n"
+        f"{comment_prefix} Changes to be committed:\n"
+        f"{comment_prefix} ------------------------ >8 ------------------------\n"
+        f"{comment_prefix} Everything below it will be ignored.\n"
+        "diff --git a/example.txt b/example.txt\n"
+        "--- a/example.txt\n+++ b/example.txt\n@@ -1 +1 @@\n"
+        "+" + "long diff content " * 20 + "\n"
+    )
+    path = tmp_path / "message"
+    path.write_text(message)
+    result = subprocess.run(
+        [sys.executable, CHECKER, path],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == expected, result.stderr
+    assert "long diff content" not in result.stderr
+    assert path.read_text() == message
+
+
 def test_git_commit_hook_and_configured_comments(tmp_path):
     def git(*args, check=True):
         return subprocess.run(

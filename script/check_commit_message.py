@@ -8,6 +8,32 @@ import sys
 
 BODY_WIDTH = 72
 PREFIX = re.compile(r"^\s*(?:(?:[-*+] |\d+[.)] )|(?:[\w-]+: |BREAKING CHANGE: ))?")
+SCISSORS = "------------------------ >8 ------------------------"
+
+
+def strip_message(message: str) -> str:
+    """Remove Git's scissors section, comments, and surrounding whitespace.
+
+    Returns:
+        The commit message without editor-only content.
+    """
+    marker = subprocess.run(
+        ["git", "stripspace", "--comment-lines"],
+        input=SCISSORS + "\n",
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.rstrip("\n")
+    lines = message.splitlines()
+    if marker in lines:
+        lines = lines[: lines.index(marker)]
+    return subprocess.run(
+        ["git", "stripspace", "--strip-comments"],
+        input="\n".join(lines),
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
 
 
 def is_wrapped(line: str) -> bool:
@@ -29,16 +55,11 @@ def is_wrapped(line: str) -> bool:
 def check_message(message: str) -> list[str]:
     """Return formatting errors after Git removes comments and whitespace.
 
-    Git's stripspace honors the configured comment character. Empty messages
+    Git's stripspace supplies the configured comment prefix. Ignore verbose
+    diffs below the scissors marker before stripping comments. Empty messages
     remain valid here so Git can handle aborted commits itself.
     """
-    cleaned = subprocess.run(
-        ["git", "stripspace", "--strip-comments"],
-        input=message,
-        text=True,
-        capture_output=True,
-        check=True,
-    ).stdout
+    cleaned = strip_message(message)
     lines = cleaned.splitlines()
     errors: list[str] = []
     if len(lines) > 1 and lines[1]:

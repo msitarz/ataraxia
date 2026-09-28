@@ -25,7 +25,8 @@ Commitizen checks Conventional Commit syntax. The body-formatting hook allows
 messages without bodies; when a body is present, separate it from the subject
 with a blank line and wrap prose and bullet continuations at 72 columns. Put
 unbreakable URLs or tokens on their own lines; indentation, bullet markers, and
-trailer labels may precede them. The checker ignores Git comment lines and does
+trailer labels may precede them. The checker ignores Git comment lines and the
+verbose diff below Git's scissors marker (including Magit commits). It does
 not limit subject length or require section labels. Agent-created commits must
 also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-requests).
 
