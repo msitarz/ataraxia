@@ -55,9 +55,17 @@ def test_sma_none_on_incomplete_data():
     assert sma((2, 3), 3) is None
 
 
-def test_sma_none_on_values_with_none():
+@pytest.mark.parametrize(
+    "values", [(None, 2, 3), (2, None, 3), (2, 3, None), (None, None, None)]
+)
+def test_sma_none_on_values_with_none(values):
     """Should return None when values contain None."""
-    assert sma((2, 3, None), 3) is None
+    assert sma(values, 3) is None
+
+
+def test_sma_none_on_excess_values_with_none():
+    """Missing values take precedence over the excess-value error."""
+    assert sma((2, 3, None), 2) is None
 
 
 def test_sma_runner():

@@ -1,0 +1,56 @@
+interfaces = []
+exclude = [
+    "**/*__pycache__",
+    "**/*egg-info",
+    "**/docs",
+    "**/tests",
+    "**/venv",
+]
+source_roots = ["src"]
+root_module = "dependenciesonly"
+ignore_type_checking_imports = false
+
+[[modules ]]
+path = "ataraxia.compute"
+depends_on = ["ataraxia.errors"]
+depends_on_external = []
+
+[[modules ]]
+path = "ataraxia.provider"
+depends_on = ["ataraxia.bar", "ataraxia.errors"]
+
+[[modules ]]
+path = "ataraxia.bar"
+depends_on = []
+
+[[modules ]]
+path = "ataraxia.source"
+depends_on = ["ataraxia.compute", "ataraxia.provider"]
+
+[[modules ]]
+path = "ataraxia.errors"
+depends_on = []
+depends_on_external = []
+
+[[modules ]]
+path = "ataraxia.cli"
+depends_on = ["ataraxia.broker", "ataraxia.backtest"]
+
+[[modules ]]
+path = "ataraxia.util"
+depends_on = ["ataraxia.compute", "ataraxia.errors"]
+
+[[modules ]]
+path = "ataraxia.backtest"
+depends_on = ["ataraxia.provider", "ataraxia.util", "ataraxia.compute", "ataraxia.broker", "ataraxia.errors", "ataraxia.source"]
+
+[[modules ]]
+path = "ataraxia.feature"
+depends_on = ["ataraxia.errors", "ataraxia.bar", "ataraxia.compute"]
+
+[[modules ]]
+path = "ataraxia.broker"
+depends_on = ["ataraxia.bar", "ataraxia.compute"]
+
+[rules]
+local_imports = "error"

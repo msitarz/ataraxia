@@ -51,3 +51,35 @@ def test_source_node():
 
     with pytest.raises(StopIteration):
         next(iterator)
+
+
+def test_source_node_delegates_provider_lifecycle():
+    """Should enter and exit its provider unchanged."""
+
+    class TestProvider:
+        def __init__(self):
+            self.entered = 0
+            self.exit_args = None
+
+        def __enter__(self):
+            self.entered += 1
+            return self
+
+        def __exit__(self, *args):
+            self.exit_args = args
+            return False
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            raise StopIteration
+
+    provider = TestProvider()
+    source = SourceNode(provider)
+    error = RuntimeError("compute failed")
+
+    assert source.__enter__() is source
+    assert source.__exit__(RuntimeError, error, None) is False
+    assert provider.entered == 1
+    assert provider.exit_args == (RuntimeError, error, None)

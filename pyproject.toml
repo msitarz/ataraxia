@@ -24,11 +24,16 @@ dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "ruff>=0.16.8",
+    "tach>=0.35.1",
 ]
 
 [build-system]
-requires = ["uv_build>=0.12.17,<0.13.0"]
+requires = ["uv_build==0.12.19"]
 build-backend = "uv_build"
+
+# CI reads this pin too; see CONTRIBUTING.md for the toolchain update policy.
+[tool.uv]
+required-version = "==0.12.19"
 
 [project.scripts]
 ataraxia = "ataraxia.cli:main"
@@ -94,7 +99,7 @@ force-sort-within-sections = true
 # pyrefly (typecheck, lsp)
 # =============================================================================
 [tool.pyrefly]
-project_includes = ["src"]
+project_includes = ["src", "example/crossover.py"]
 python_version = "3.14"
 preset = "strict"
 

@@ -18,23 +18,11 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
-      - name: Audit packages
-        run: uv audit --frozen --preview-features audit
-
-      - name: Lint check
-        run: uv run ruff check --output-format=github .
-
-      - name: Format check
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run pyrefly check --output-format=github
+      - name: Run checks
+        run: make ci-check
 
   test:
     name: Test
@@ -50,15 +38,12 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
       - name: Run tests
-        run: uv run pytest --cov
+        run: make ci-test
 
   test-examples:
     name: Test examples
@@ -73,12 +58,24 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: uv sync --frozen --group dev
-
       - name: Run example strategy tests
-        run: uv run pytest example/test_*
+        run: make ci-examples
+
+  test-package:
+    name: Test installed wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version-file: "pyproject.toml"
+          enable-cache: true
+          python-version: "3.14"
+
+      - name: Run installed-package smoke test
+        run: make ci-package
