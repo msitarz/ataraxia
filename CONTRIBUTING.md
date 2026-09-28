@@ -2,7 +2,7 @@
 
 ## Status
 
-Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, open an issue first; PRs that don't match the current architectural direction won't be merged regardless of code quality.
+Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, create or reuse an issue before drafting the specification or implementing the change; PRs that don't match the current architectural direction won't be merged regardless of code quality.
 
 ## Prerequisites
 
@@ -50,7 +50,8 @@ same local check recipes as CI with uv network access disabled. Missing or stale
 environments fail; rerun `make setup` with network access to prepare them. A passing
 verification does not include a vulnerability audit.
 
-Before opening a PR, run all CI checks locally:
+Before pushing a branch or opening a PR, run all CI checks locally, including for
+an early draft PR containing only a specification:
 
 ```sh
 make ci
@@ -95,10 +96,16 @@ The temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 
-1. Branch off `master`.
-2. Run `make ci` before pushing.
-3. Open a PR against `master`, referencing the relevant issue if one exists.
-4. Wait for review.
+Branch off `master` and open PRs against `master` unless the task explicitly
+requires another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md)
+for issue bodies and the general rules in [AGENTS.md](AGENTS.md) for commits.
+
+When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
+read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
+issue messages, specification guidance, manual review gates, and session handoffs.
+It requires manual specification approval before execution and both manual and
+defining-session review of implementation. Keep work in the same PR through
+review corrections. The maintainer makes the final merge or close decision.
 
 ## License
 

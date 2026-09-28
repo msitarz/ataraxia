@@ -4,6 +4,8 @@
 
 Read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) **in full at the start of every task**, before substantive discussion, planning, defining new terms, review, or implementation. Apply its vocabulary throughout. Reread after context loss or compaction and whenever definitions change. Every agent, including subagents, must do this; include the requirement and relevant vocabulary/contract references when delegating.
 
+When defining, implementing, or reviewing a feat slice, read [doc/feat-workflow.md](doc/feat-workflow.md) **in full before starting that work**.
+
 Then inspect task-relevant code, tests, and ADRs. Distinguish current behavior from intended changes and surface discrepancies affecting the task. Before changing architectural boundaries, read [doc/architecture.md](doc/architecture.md) and follow the [ADR workflow](#architecture-decision-records).
 
 ## Fix the Underlying Problem
@@ -23,7 +25,7 @@ Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests:
 - `src/ataraxia/compute/`: computation graph and loop; sibling modules handle sources, providers, features, brokerage, backtesting, and CLI.
 - `test/unit/`, `test/integration/`, `test/acceptance/`: tests by boundary.
 - `example/`: crossover strategy and its tests; `sample/`: synthetic CSV data.
-- `doc/feature/`: feature slices; [doc/adr/](doc/adr/): architectural decisions.
+- `doc/feat/`: feat slices; [doc/adr/](doc/adr/): architectural decisions.
 
 Execution is currently local, sequential, and single-source. Parallel execution, multi-source synchronization, and immutable artifact storage are planned; verify status in code before treating documents as implemented behavior.
 
@@ -54,9 +56,9 @@ uv run ataraxia --sink example/crossover.py --shards-dir sample --output results
 
 ## Ubiquitous Language
 
-The [glossary](doc/ubiquitous-language.md) is the single source of truth for shared definitions; feature slices own local rules. Use its terms consistently and reuse abstractions when their meaning fits.
+The [glossary](doc/ubiquitous-language.md) is the single source of truth for shared definitions; feat slices own local rules. Use its terms consistently and reuse abstractions when their meaning fits.
 
-- Keep concepts distinct; a runner is not an executor worker. Use "feature slice" for a delivery increment to distinguish it from a composable calculation. Qualify terms and explain boundary mappings.
+- Keep concepts distinct; a runner is not an executor worker. Use "feat slice" as defined in the glossary, keeping it distinct from a trading Feature. Qualify terms and explain boundary mappings.
 - Resolve ambiguity from the request and repository. If meanings still imply materially different behavior, present concrete interpretations to the user before implementation. Do not invent domain rules; naming consistent with established meanings needs no confirmation.
 - Check for an existing term before introducing one. Define needed terms in the glossary **before using them in specifications or implementation**: meaning, responsibility, distinctions, relationships, and relevant units or lifecycle rules.
 - Link to definitions instead of duplicating them; update affected code, tests, and docs together. Follow the [ADR workflow](#architecture-decision-records) for architectural changes.
@@ -64,27 +66,12 @@ The [glossary](doc/ubiquitous-language.md) is the single source of truth for sha
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one), [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html), [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
 
-## Writing Feature Slices
-
-Write proportional specifications in `doc/feature/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the [ADR workflow](#architecture-decision-records) during planning and implementation.
-
-- Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
-- Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.
-- Give acceptance examples with preconditions, inputs, action, and expected outputs or side effects. Cover correctness, failures, boundaries, and behavior to preserve through observable contracts. Identify focused, integration, or CLI checks; refine scenarios as needed. Separate validation plans from results, recording evidence and limitations. Mark validated only after acceptance criteria and required repository checks pass.
-- Separate required interfaces, ordering, compatibility, and resource ownership from provisional design. Sketch only enough internals to establish feasibility and consequential tradeoffs.
-- Name assumptions, risks, and open questions. Test uncertainty that could invalidate the approach with a bounded experiment: expected result and evidence that would challenge it. Record findings and revise the plan; an experiment is not a completed feature.
-- Support performance claims with a baseline, representative workload, measurement method, and success criterion.
-
-Example: the same strategy and shards yield identical ordered results with one or two workers; a shard failure preserves an existing output file. These are acceptance contracts; executor classes and scheduling helpers belong in design notes.
-
-Background: [Thoughtworks](https://www.thoughtworks.com/en-au/insights/e-books/modern-data-engineering-playbook/delivery-planning-principles), [Fowler](https://martinfowler.com/bliki/FeatureDevotion.html), [Beck](https://newsletter.kentbeck.com/p/canon-tdd), [Farley](https://www.davefarley.net/?page_id=50).
-
 ## Architecture Decision Records
 
 Create an ADR only for a substantive architectural decision. Correcting types, tests, or implementation to conform to an established contract does not require a new ADR. Do not turn recovery from your own mistake into a new architectural decision.
 
 1. Search `doc/adr/` for the problem and related decisions; read relevant records and follow amendment/supersession links. Reuse a covering ADR instead of duplicating it.
-2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Open an issue before non-trivial architectural work.
+2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Create or reuse an issue before non-trivial architectural work.
 3. Use the next unused number and `NNNN-kebab-case-title.md`. Format: `# N. Title`, `Date: YYYY-MM-DD`, then `Status`, `Context`, `Decision`, and `Consequences`. Explain the problem, relevant alternatives/tradeoffs, choice, and consequences. Use `Proposed` while unsettled and `Accepted` once decided.
 4. Change accepted decisions through new records; preserve earlier context, decision, and consequences. Use relative Markdown links:
    - Partial change: new Status says `Amends [N. Title](NNNN-title.md)`; on acceptance, add reciprocal `Amended by [M. Title](MMMM-title.md)` to the earlier record. Follow ADRs 0010/0011 and state what still applies.
@@ -141,6 +128,8 @@ For relevant changes, cover dependency sharing and runner state; provider cleanu
 For focused iteration: `uv run pytest test/unit/test_feature.py`. See [Commands and Validation](#commands-and-validation) for full checks.
 
 ## Commits and Pull Requests
+
+For small unrelated fixes or documentation edits, use `fix/`, `docs/`, or `chore/` branches with short lowercase, hyphen-separated names.
 
 Keep commits focused and use Conventional Commits (Commitizen enforced). Use an imperative subject, aiming for 50 characters including type and scope. Separate the body with a blank line; hard-wrap prose and bullet continuations at 72 columns, preserving unbreakable URLs and tokens.
 
