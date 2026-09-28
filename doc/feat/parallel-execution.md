@@ -270,8 +270,10 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
   This includes sequential continuation and saved error envelopes.
 - Plan: [delivery steps](#delivery-steps). Completed steps: shard contracts
   `8ec5594`, worker supervision `bcc228b`, CLI and documentation `9465aaa`.
-  Step 4's final lifecycle checks and evidence are included in this validation
-  commit. Next: publish the checked implementation and record its commit here.
+  Final lifecycle checks and validation: `07651ec`. All four delivery steps are
+  complete and pushed to PR #24. Next: manual implementation and
+  defining-session reviews of implementation commit `07651ec`; this later
+  handoff-only update does not change runtime behavior.
 - Branch: `feat/parallel_execution`; base: `master`.
   [Issue #21](https://github.com/msitarz/ataraxia/issues/21) tracks implementation
   and remains open for required reviews. PR #24 remains partial delivery with
@@ -286,6 +288,8 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
   Initial sandbox audit attempts failed DNS; the network-enabled rerun passed.
   Checked 90 local Markdown targets/anchors, whitespace, and the acceptance
   evidence below. Evidence is local macOS execution; other platforms await CI.
+- Publication: implementation `07651ec` is pushed. PR #24 and issue #21 now
+  link to the implemented behavior and current validation evidence.
 - Reviews: manual implementation and defining-session reviews are pending and
   must identify the implementation commit they cover. The executor's final
   contract inspection is validation, not either required approval.
@@ -395,3 +399,6 @@ Cleanup joins are bounded. An inability to finish startup, stop a channel reader
 or reap a child raises a run-level supervisor error rather than dispatching more
 work into that worker. Spawn and transfer overhead still count against the limit;
 no performance improvement or strategy-descendant containment is claimed.
+
+Step 4 commit: `07651ec`. Publication and tracking records are updated; the PR
+remains draft for the required reviews. No review approval or merge is claimed.
