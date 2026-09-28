@@ -8,6 +8,7 @@ help:
 	@echo "make lint      - run ruff check"
 	@echo "make format    - run ruff format"
 	@echo "make typecheck - run pyrefly check"
+	@echo "make arch-check - run architecture checks"
 	@echo "make ci        - run all CI checks, including audit, examples, and wheel smoke test"
 
 .PHONY: setup
@@ -29,6 +30,11 @@ typecheck:
 	uv run pyrefly check
 	uv run pyrefly check --expectations test/typecheck/*.py
 
+.PHONY: arch-check
+arch-check:
+	uv run tach check
+	uv run tach check-external
+
 .PHONY: test
 test:
 	uv run pytest --cov
@@ -47,6 +53,7 @@ ci-check: ci-setup
 	uv run ruff check .
 	uv run ruff format --check .
 	$(MAKE) typecheck
+	$(MAKE) arch-check
 
 ci-test: ci-setup
 	$(MAKE) test

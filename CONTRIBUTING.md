@@ -37,8 +37,9 @@ also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-request
 | `make lint`      | Run `ruff check . --fix`; this can modify files |
 | `make format`    | Run `ruff format .`; this can modify files |
 | `make typecheck` | Run `pyrefly check` |
+| `make arch-check` | Run Tach internal and external dependency checks |
 | `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
-| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, and run covered tests, examples, and an installed-wheel smoke test |
+| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, check architecture, and run covered tests, examples, and an installed-wheel smoke test |
 | `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
 
 Before opening a PR, run all CI checks locally:

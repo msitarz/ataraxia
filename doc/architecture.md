@@ -65,6 +65,19 @@ backtest   — orchestration layer.
 cli        — thin argparse wrapper around backtest.backtest_dir.
 ```
 
+`make arch-check`, also run by `make ci-check` and `make ci`, uses Tach to
+enforce the dependencies declared in `tach.toml`, as decided in
+[ADR 17](adr/0017-enforce-module-dependencies-with-tach.md). The computation boundary from
+[ADR 16](adr/0016-source-manages-its-own-provider-lifecycle.md) permits `compute/`
+to depend only on its own modules and shared errors. Shared errors have no internal
+dependencies, and neither module may import third-party packages. Imports inside
+functions and `TYPE_CHECKING` blocks are checked too. Configured modules cannot
+depend on undeclared project modules; add a module and review its dependencies
+when extending the package.
+
+Tach does not restrict standard-library imports or built-in I/O calls. Keeping
+the computation engine independent of concrete I/O still requires code review.
+
 ## Compute engine (the DAG)
 
 The computable graph in itself doesn't know anything about trading, features, backtesting etc.  It simply provides a framework to compute a loop while injecting dependencies and allowing saving each step of computation in the loop.  Think about this graph as a graph of frozen dependencies, such as that the same node class can be two different dependencies if they were instantiated with different parameters, such as fast SMA and slow SMA being the same implementation, but with different parameters.
