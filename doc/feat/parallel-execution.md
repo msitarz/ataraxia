@@ -3,6 +3,7 @@
 Status: proposed. This revision defines the feat slice for specification review;
 execution is still sequential.
 Tracking: [issue #21](https://github.com/msitarz/ataraxia/issues/21).
+PR: [#24](https://github.com/msitarz/ataraxia/pull/24), draft against `master`.
 Decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
 amending [ADR 6](../adr/0006-massive-parallelism-via-sharding.md).
 Terms: [ubiquitous language](../ubiquitous-language.md).
@@ -261,7 +262,7 @@ PR draft while any required approval or review is outstanding.
 
 ## Handoff
 
-- Stage: preparing planning documents for manual specification review. No
+- Stage: awaiting manual specification review in draft PR #24. No
   implementation is authorized or delivered.
 - Defining session: the process pool planning conversation in Codex (this
   conversation). The maintainer can resume it for defining-session review.
@@ -275,7 +276,8 @@ PR draft while any required approval or review is outstanding.
 - Branch: `feat/parallel_execution`, reusing the existing owning branch as the
   workflow permits. Base: `master`, including workflow commit `4f6550d`.
 - Issue: [#21](https://github.com/msitarz/ataraxia/issues/21); implementation
-  outcome remains open during specification-only delivery. PR: not published yet.
+  outcome remains open during specification-only delivery.
+  PR: [#24](https://github.com/msitarz/ataraxia/pull/24), using `Refs #21`.
 - Applicable decisions: proposed [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
   and existing ADRs 6, 7, 12, 14, 15, 16, and 17 referenced in this specification.
 - Validation: `make ci` passed for this planning revision: 142 repository tests,
@@ -292,6 +294,10 @@ PR draft while any required approval or review is outstanding.
   must identify their covered commit; later material changes return to the
   specification gate. Once ADR 18 is accepted, add its reciprocal amendment link
   to ADR 6 as required by the ADR workflow.
+- Publication: planning baseline `f74cf2d` passed commit hooks and was pushed to
+  the owning branch. Draft PR #24 was created against `master`. This handoff/link
+  update is part of the specification revision for review; use the current PR
+  head commit when recording approval rather than assuming baseline approval.
 
 ## Acceptance examples and validation plan
 
@@ -343,8 +349,8 @@ These observations agree with the official
 [interpreter documentation](https://docs.python.org/3.14/library/concurrent.interpreters.html),
 and [process documentation](https://docs.python.org/3.14/library/multiprocessing.html).
 They establish the timeout limitation and individual process replacement, not a
-validated supervisor or communication protocol. No feature acceptance tests have
-run because implementation has not begun.
+validated supervisor or communication protocol. No implementation acceptance
+tests have run because implementation has not begun.
 
 Before building the full supervisor, run a bounded experiment with two dedicated
 channels: kill one sender mid-transfer while the other completes, then assign
