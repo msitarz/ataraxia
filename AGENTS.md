@@ -17,7 +17,7 @@ specific section is named. Routes are cumulative, not alternatives.
 
 | Task | Read |
 | --- | --- |
-| Change repository files | [Repair and scope rules](doc/engineering.md#fix-the-underlying-problem) |
+| Change repository files | [Repair and scope rules](doc/engineering.md#fix-the-underlying-problem) and [stepwise changes](doc/feat-workflow.md#stepwise-changes-and-commits) |
 | Create, change, or review documentation or shared terms | [Documentation ownership](doc/documentation.md) |
 | Define, implement, or review a feat slice | [Feat workflow](doc/feat-workflow.md), the slice, and applicable ADRs |
 | Consider or change architectural decisions or boundaries | [ADR workflow](doc/adr-workflow.md), [architecture](doc/architecture.md), and relevant ADRs with amendment/supersession links |

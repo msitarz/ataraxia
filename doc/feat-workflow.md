@@ -128,6 +128,7 @@ review. Respect any requirement from the maintainer for separate sessions.
 Keep a small handoff section in the feat slice containing:
 
 - Current workflow stage and the defining/executor sessions.
+- Link to the stepwise plan, completed steps with their commits, and the next step.
 - Approved specification commit and evidence of the maintainer's approval.
 - Branch, issue, PR, and applicable ADR links.
 - Current validation evidence or links to it, including limitations.
