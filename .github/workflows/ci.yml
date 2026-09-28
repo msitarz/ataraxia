@@ -18,7 +18,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
 
       - name: Run checks
@@ -38,7 +38,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
@@ -58,7 +58,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
           python-version: ${{ matrix.python-version }}
 
@@ -73,7 +73,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
         with:
-          version: "latest"
+          version-file: "pyproject.toml"
           enable-cache: true
           python-version: "3.14"
 
