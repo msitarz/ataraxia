@@ -2,8 +2,9 @@
 
 Read this file in full when defining, implementing, or reviewing a
 [feat slice](ubiquitous-language.md). It owns the delivery workflow and
-specification-writing guidance. General repository rules, validation commands,
-and architectural decision rules remain in [AGENTS.md](../AGENTS.md).
+specification-writing guidance. Use [documentation ownership](documentation.md) for placement rules,
+[CONTRIBUTING.md](../CONTRIBUTING.md#make-targets) for validation, and the
+[ADR workflow](adr-workflow.md) for architectural decisions.
 
 ## Define and publish for specification review
 
@@ -12,7 +13,7 @@ working tree, and existing issues/PRs. Reuse a branch already owning the work.
 Otherwise, create a local branch from the applicable PR base before writing the
 specification. Preserve unrelated work; don't base unrelated work on an existing
 feat branch. Explicit task instructions determine the base, otherwise use
-[contribution guidance](../CONTRIBUTING.md#submitting-a-change), currently `master`.
+[contribution guidance](../CONTRIBUTING.md#submitting-a-change).
 
 Name branches `feat/<short-kebab-case-name>`, for example
 `feat/parallel-shard-computation`. Validate with
@@ -22,8 +23,9 @@ branch comes first. Existing branches need not be renamed.
 Create or reuse an issue before drafting the specification or doing non-trivial
 architectural work. Follow [Issue messages](#issue-messages). State whether the
 issue's outcome is an accepted specification or an implemented capability. Write
-the specification in `doc/feat/`, link the issue, and follow the
-[ADR workflow](../AGENTS.md#architecture-decision-records) when decisions are needed.
+the specification in `doc/feat/`, link the issue, follow
+[documentation ownership](documentation.md), and use the
+[ADR workflow](adr-workflow.md) when decisions are needed.
 
 Once the planning documents are reviewable, run `make ci`, commit and push, and
 open a draft PR against the applicable base. Add links between the issue, feat
@@ -61,12 +63,14 @@ approval. Report unresolved problems rather than weakening completion conditions
 After execution, stop for manual implementation review and review by the defining
 session. The defining session checks the delivered diff, acceptance examples,
 validation evidence, and any specification changes against the approved scope.
-It reports findings; the executor session owns implementation corrections.
+Report findings according to the glossary's session responsibilities.
 
 Record the commit each review covers and its outcome in the handoff or a linked
 issue/PR review. The executor addresses proposed changes, reruns relevant checks
 and `make ci`, updates evidence, and pushes to the same PR. Repeat the affected
-reviews until findings are resolved. Review the changes from later pushes;
+reviews until findings are resolved. Check documentation ownership and duplication
+alongside contracts and validation; follow
+[documentation review](documentation.md#review). Review the changes from later pushes;
 approvals of earlier commits do not automatically approve new changes. Material
 contract changes also return to specification approval.
 
@@ -80,6 +84,14 @@ Specification-only delivery follows the manual specification gate and ends when
 the maintainer accepts that planning outcome. It doesn't require implementation
 review of code that wasn't delivered or validate a future implementation. The
 maintainer still makes the final GitHub decision.
+
+## Specification status
+
+A specification is `proposed` before execution, `in progress` during delivery,
+and `validated` after its acceptance criteria and required checks pass. State
+whether completion delivers an accepted specification or implemented behavior.
+Validation does not authorize execution or merging; approvals and pending work
+belong to the handoff stage.
 
 ## Roles and handoffs
 
@@ -100,13 +112,11 @@ Keep a small handoff section in the feat slice containing:
 
 Keep the handoff current at each gate and session transfer. A new session should
 be able to continue from these records without relying on conversation memory.
-Specification status (`proposed`, `in progress`, `validated`) describes acceptance
-and validation evidence; the handoff stage describes approvals and pending work.
-Passing tests does not satisfy either manual gate or authorize merging.
+Keep specification status consistent with the evidence and the handoff stage.
 
 ## Failures and boundaries
 
-Follow [Commands and Validation](../AGENTS.md#commands-and-validation) if network
+Follow [validation procedure](../CONTRIBUTING.md#make-targets) if network
 access prevents `make ci`. Disclose missing checks and keep incomplete work draft.
 If GitHub access fails, report it, continue useful local work, and add external
 links once access returns. Don't claim an issue or PR exists without verifying
@@ -126,9 +136,8 @@ classify with existing labels where useful.
 Use the [Markdown issue template](../.github/ISSUE_TEMPLATE/work-item.md) as the
 authoritative body format for both manual and agent-created issues. Follow its
 Problem, Outcome, and Links prompts; add scope boundaries or open questions when
-they affect the decision. For bugs, include reproduction steps, expected versus
-actual behavior, and relevant versions or logs. Keep the issue a short tracking
-record: the feat slice owns detailed scope, acceptance examples, and validation,
+they affect the decision. Keep the issue a short tracking record: the feat slice
+owns detailed scope, acceptance examples, and validation,
 while ADRs own architectural decisions. Link those records instead of copying
 their specifications into the issue. Add links as artifacts become available.
 
@@ -139,7 +148,11 @@ enforce it across every GitHub creation path.
 
 ## Writing feat slices
 
-Write proportional specifications in `doc/feat/`, using short prose and examples; no user-story formula or Gherkin is required. Follow the gates above and the [ADR workflow](../AGENTS.md#architecture-decision-records) during planning and implementation.
+Write proportional specifications in `doc/feat/` using short prose and examples;
+no user-story formula or Gherkin is required. Follow the gates above,
+[documentation ownership](documentation.md), and the [ADR workflow](adr-workflow.md).
+Keep local contracts and evidence here; link to shared meanings, architectural
+rationale, and general procedures instead of copying them.
 
 - Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
 - Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.
@@ -148,6 +161,10 @@ Write proportional specifications in `doc/feat/`, using short prose and examples
 - Name assumptions, risks, and open questions. Test uncertainty that could invalidate the approach with a bounded experiment: expected result and evidence that would challenge it. Record findings and revise the plan; an experiment is not a completed feature.
 - Support performance claims with a baseline, representative workload, measurement method, and success criterion.
 
-Example: the same strategy and shards yield identical ordered results with one or two workers; a shard failure preserves an existing output file. These are acceptance contracts; executor classes and scheduling helpers belong in design notes.
+Examples such as successful results matching across execution modes or an
+invalid CLI argument preserving an existing output file express observable
+contracts. They are illustrative, not requirements for every slice. Executor
+classes and scheduling helpers belong in design notes unless architectural
+impact warrants an ADR.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/en-au/insights/e-books/modern-data-engineering-playbook/delivery-planning-principles), [Fowler](https://martinfowler.com/bliki/FeatureDevotion.html), [Beck](https://newsletter.kentbeck.com/p/canon-tdd), [Farley](https://www.davefarley.net/?page_id=50).

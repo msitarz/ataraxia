@@ -4,7 +4,7 @@ Status: proposed. This revision defines the feat slice for specification review;
 execution is still sequential.
 Tracking: [issue #21](https://github.com/msitarz/ataraxia/issues/21).
 PR: [#24](https://github.com/msitarz/ataraxia/pull/24), draft against `master`.
-Decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
+Supervision decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
 amending [ADR 6](../adr/0006-massive-parallelism-via-sharding.md).
 Terms: [ubiquitous language](../ubiquitous-language.md).
 Workflow: [feat slice workflow](../feat-workflow.md).
@@ -12,8 +12,8 @@ Workflow: [feat slice workflow](../feat-workflow.md).
 The issue's completion outcome is the implemented capability described below,
 with passing acceptance criteria and required checks. This delivery contains
 planning documents only and does not complete issue #21 or validate the future
-implementation. Execution requires explicit maintainer approval of an identified
-specification commit. Publishing this revision does not supply that approval.
+implementation. Approval evidence and pending work are recorded in the
+[handoff](#handoff); general gates follow the linked workflow.
 
 ## Problem and current behavior
 
@@ -187,10 +187,10 @@ On exhaustion, interruption, or a parent error, stop dispatching, close channels
 and join or kill all owned children with bounded waits. Do not treat a parent
 programming error as an ordinary shard failure.
 
-Normal completion and execution exceptions close providers through `compute()`
-as in ADR 16. Forced kill skips Python `finally` and context-manager exit; OS
-process cleanup releases file handles. The timeout applies to the owned worker,
-not arbitrary strategy-created descendants.
+Resource lifecycle follows [ADR 16](../adr/0016-source-manages-its-own-provider-lifecycle.md)
+for normal execution and [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
+for forced termination. The timeout applies to the owned worker, not arbitrary
+strategy-created descendants.
 
 ## CLI output and compatibility
 
@@ -218,8 +218,11 @@ The output schema is a documented pre-alpha breaking change.
 
 ## Existing decisions and boundaries
 
-Amend ADR 6 through ADR 18; retain its shard independence and aggregation. There
-is no existing accepted subinterpreter decision to supersede: it was a README
+ADR 18 covers the supervised-worker execution model and amends ADR 6; retain
+shard independence and aggregation. The return representation, continuation
+policy, and CLI compatibility below are local contracts of this slice, not
+separate architectural decisions merely because they change code. No new durable
+storage or cloud delivery contract is introduced. There is no existing accepted subinterpreter decision to supersede: it was a README
 roadmap item. Amend the roadmap and architecture to reference the chosen process
 model and show it as unimplemented until validation.
 
@@ -231,17 +234,15 @@ layer into modules, declare their dependencies in `tach.toml`; `compute/` still
 depends only on its own modules and shared errors.
 
 ADR 7's cloud immutability/idempotency and ADR 15's fork-and-deploy direction
-remain applicable and unimplemented. Update the architecture's planned fan-out
-from EventBridge to SNS -> SQS -> Lambda to match the requested direction. A
+remain applicable and unimplemented. Cloud plans live in
+[architecture](../architecture.md#target-execution-and-deployment). A
 future adapter resolves cloud artifacts to local paths, then invokes the same
 shard operation; local absolute paths alone are not portable cloud references.
 No SNS event wrapper or AWS SDK belongs in the local worker contract.
 
 ## Delivery steps
 
-First publish these checked planning documents in a draft PR for manual
-specification review. After the maintainer approves a specific revision, the
-executor session performs the following steps on the same branch and PR:
+After specification approval under the [workflow](../feat-workflow.md), execute:
 
 1. Introduce precise shard input, outcome, and diagnostic types and the shared
    shard operation. Adapt direct sequential callers, aggregation, and JSON
@@ -251,14 +252,10 @@ executor session performs the following steps on the same branch and PR:
    with bounded real-process tests. Keep sequential mode working.
 3. Wire CLI options and validation. Exercise successful, mixed, timed-out,
    all-error, empty, and invalid-argument runs through the real console command.
-   Update help, README usage, and installed-wheel smoke checks.
-4. Run focused checks, strict type cases, and `make ci`. Mark this slice validated
-   only after the acceptance contracts pass; record evidence here. Commit and
-   push checked work, then return it for manual and defining-session reviews.
-
-Follow the [workflow](../feat-workflow.md) for material specification revisions,
-review corrections, and the maintainer's final merge or close decision. Keep the
-PR draft while any required approval or review is outstanding.
+   Update CLI help and installed-wheel smoke checks; keep README navigation current.
+4. Complete the validation plan below and record evidence here. Follow the
+   workflow for reviews and the [contribution procedure](../../CONTRIBUTING.md#make-targets)
+   for repository checks.
 
 ## Handoff
 
@@ -326,8 +323,8 @@ integration/CLI test an outer subprocess timeout, and clean up children even on
 test failure. Do not use sleeps alone to prove overlap; use explicit handshakes.
 Run focused backtest and CLI tests during development. Add positive/negative
 Pyrefly expectation cases proving that `status` narrows the envelope and invalid
-success/error mixtures are rejected. Then run `make ci`; if networking is
-unavailable after setup, use `make verify` and report the audit separately.
+success/error mixtures are rejected. Follow the
+[repository validation procedure](../../CONTRIBUTING.md#make-targets).
 
 ## Verification evidence and remaining risks
 

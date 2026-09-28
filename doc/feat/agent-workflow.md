@@ -6,6 +6,11 @@ Issue: [22](https://github.com/msitarz/ataraxia/issues/22)
 
 PR: [23](https://github.com/msitarz/ataraxia/pull/23)
 
+This validated slice records its delivery scope and evidence. Current guidance
+is routed through [AGENTS.md](../../AGENTS.md); later ownership changes are
+recorded in the [documentation cleanup slice](documentation-ownership.md).
+The requirements below describe this historical delivery, not today's file layout.
+
 ## Problem and outcome
 
 Before this change, agent guidance used “feature slice” alongside trading Features

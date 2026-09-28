@@ -7,15 +7,16 @@ Pre-alpha orchestrator for bar-by-bar backtests of trading strategies.
 
 ## What it is
 
-Backtests currently run locally and sequentially over CSV shards, using a single
-source per backtest. The CLI writes results to a JSON file. Parallel execution and
-immutable artifact storage are planned; see the [roadmap](#roadmap).
+Run trading strategies against CSV shards and inspect JSON results.
+See [architecture](doc/architecture.md) for implemented capabilities and the
+[roadmap](#roadmap) for priorities.
 
 The workflow idea (work-in-progress) is to prototype strategies visually via charting software like TradingView, then implement them by composing features that can be easily unit tested and debugged visually.
 
 ## Status
 
-Ataraxia is pre-alpha.  Expect breaking changes and shifting design.
+Ataraxia is pre-alpha, maintained by a single maintainer. Expect breaking changes
+and shifting design.
 
 ## Why was it made
 
@@ -28,56 +29,34 @@ The main ideas:
 Read [doc/architecture.md](doc/architecture.md) for current behavior and planned
 capabilities, and the [ADR log](doc/adr/) for the decisions behind them.
 
-## Development quickstart
+## Quickstart
 
-Install `uv`.  Refer to the [official documentation](https://docs.astral.sh/uv/getting-started/installation/).
-
-```sh
-git clone https://github.com/msitarz/ataraxia
-cd ataraxia
-make setup
-```
-
-Run the example strategy against the sample data:
+Follow [development setup](CONTRIBUTING.md#getting-started), then run the
+example strategy against the sample data:
 
 ```sh
 uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
 ```
 
-A sink is a computable graph concept, read more in the [architecture file](doc/architecture.md).
+See the [glossary](doc/ubiquitous-language.md) for shared terms and
+[architecture](doc/architecture.md) for current behavior and limitations.
 
 ## Sample data
 
 CSV files in the `sample` folder contain LLM-generated data to showcase a simple strategy.
 
-## Constraints
-
-Currently there are many constraints in the system which should be removed one by one in future versions once orchestration is completed.  Here is a non-exhaustive list of such constraints:
-- Supports only futures data (4 ticks per point).
-- No cost calculation.
-- Naive broker with unrealistic fill implementation.
-- Processes a single data source.
-- Strategy signal supports only market order entry (at current bar close) with required TP and SL orders.
-- No portfolio tracking, simply returns realized and unrealized PnL.
-- PnL accounting per tick, not points or cash.
-- Does not support warm-up data (single source limitation).
-
 ## Roadmap
 
 ### v0.2
 
-- Parallelize locally with a supervised process pool and configurable shard
-  timeouts; preserve the default single-process mode. See the
-  [proposed feat slice](doc/feat/parallel-execution.md) and
-  [ADR 18](doc/adr/0018-supervise-process-workers-for-shard-timeouts.md).
+- Local parallel execution; see the
+  [proposed feat slice](doc/feat/parallel-execution.md).
 
 ### v0.3
 
-Parallelize via AWS Lambda workers.  Fork and deploy on your own AWS account with private strategies.
-
-- SNS -> SQS -> Lambda fan-out to workers that process a single shard and a strategy
-- S3 immutable artifacts (strategies, shards, output)
-- Strategy check via CLI (like ruff check) to prevent invalid strategy deployment
+Cloud execution and immutable artifacts; see the
+[planned deployment model](doc/architecture.md#target-execution-and-deployment).
+Also planned: strategy validation via CLI before deployment.
 
 ### Future versions
 
@@ -90,6 +69,5 @@ Parallelize via AWS Lambda workers.  Fork and deploy on your own AWS account wit
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE). SPDX headers are present on source files.
-
-This repository is not yet open to external contributions — a CLA (via CLA Assistant) will be configured before the first external PR is accepted.
+Apache License 2.0. See [LICENSE](LICENSE) and
+[contribution policy](CONTRIBUTING.md#status).
