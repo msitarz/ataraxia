@@ -68,7 +68,8 @@ Check ownership and duplication when defining and reviewing a feat slice, and
 when changing general guidance. Verify local links and anchors, distinguish
 history from current instructions, and walk through affected reading routes.
 Check that moved requirements remain discoverable and that examples agree with
-their owning contracts. Update affected callers, tests, and documentation together.
+their owning contracts. Follow [repair and scope rules](engineering.md#fix-the-underlying-problem)
+for cohesive changes.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),
 [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html),

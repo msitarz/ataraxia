@@ -1,6 +1,6 @@
 # Documentation ownership and routing
 
-Status: in progress
+Status: validated
 
 Tracking: [issue #25](https://github.com/msitarz/ataraxia/issues/25).
 
@@ -68,9 +68,12 @@ decision is part of this cleanup.
   execute step by step and commit after each step if there is work to commit."
   The approved scope is recorded above; this instruction authorizes execution
   without another specification gate.
-- Stage: executing the approved documentation cleanup. PR creation is deferred
-  at the maintainer's request; manual implementation review remains pending.
-- Validation evidence: to be recorded below. No unresolved findings yet.
+- Recorded scope: commit `6badaf4`, transcribing the already approved plan;
+  base revision: `c15e8f9` on `feat/parallel_execution`.
+- Stage: local execution complete; awaiting manual implementation review.
+  PR creation remains deferred at the maintainer's request. Commits are local.
+- Validation and defining-session review: recorded below. No unresolved findings;
+  this review shares the executor session and is not independent.
 
 ## Validation plan and evidence
 
@@ -78,3 +81,58 @@ Check local links and anchors, ownership and retained requirements, routes for
 documentation/code/feat-slice tasks, and the diff for unintended contract changes.
 Run `make ci`. Record startup and task reading sizes as word counts, not token
 estimates. Subsequent evidence belongs here; the issue links to this record.
+
+### Completed steps and review
+
+The inventory, ownership extraction, routing, glossary separation, document
+compaction, and ADR cleanup were committed separately at `6badaf4`, `554b1a0`,
+`7c0462b`, `749f4cb`, `f17b656`, and `6752428`. This final step records verification
+and review corrections. The defining session reviewed those commits and the final
+verification diff against the approved scope; the final delivered commit is
+recorded in issue 25 after committing. Manual review has not occurred.
+
+Ownership review removed remaining literal toolchain/format settings and copied
+issue/repair rules in favor of their configuration or guidance owners. Routing
+walkthroughs covered a documentation change, a code fix, and a feat slice involving
+architecture. Each locates the relevant owner; unrelated routes remain conditional.
+Delivery approval gates, precise typing guidance, lifecycle contracts, and branch
+base overrides remain discoverable. Historical workflow acceptance criteria and
+review evidence retain their original meaning.
+
+Only Markdown changed. Accepted ADRs are byte-for-byte unchanged. The parallel
+slice's JSON example and entire acceptance table are unchanged; ADR 18 remains
+proposed, and this cleanup authorizes no parallel implementation. Its failure
+continuation/output policy still awaits specification review. The existing cloud
+plan is retained once in architecture and flagged as needing its own architectural
+record before implementation; this cleanup creates no cloud decision.
+
+### Checks
+
+`make ci` passed on 2026-09-28 after the document cleanup and again during final
+verification: 142 repository tests, 3 example tests, 97.12% branch-inclusive
+coverage, Ruff checks, strict Pyrefly and expected negative cases, Tach checks,
+installed-wheel smoke test, and audit of 38 packages. Final local Markdown
+links/anchors and whitespace checks passed; commit hooks passed at each completed
+step. No required checks were unavailable. The existing build-cache warning did
+not fail the build or installed-wheel check.
+
+### Reading sizes
+
+Word counts use whitespace splitting against base revision `c15e8f9`. These are
+guidance sizes, excluding task-specific source, tests, feat specifications, and
+referenced ADRs. Code and architectural feat rows conservatively count complete
+architecture and contribution files, even where routing permits selected sections.
+The documentation row includes the engineering repair section only. This slice's
+inventory, handoff, and evidence are excluded from shared-guidance counts.
+
+| Reading scope | Before | After |
+| --- | ---: | ---: |
+| Mandatory startup | 3,167 | 1,031 |
+| Documentation change before contribution checks | 3,167 | 1,831 |
+| Code task including architecture and contribution guidance | 5,456 | 3,846 |
+| Architectural feat slice guidance | 6,838 | 6,446 |
+
+Mandatory startup reading fell by 67.4%; AGENTS alone fell from 2,164 to 233 words.
+The architectural feat route still requires substantial context because all its
+responsibilities apply. Ownership and single-decision checks require review;
+passing CI alone does not prove semantic duplication is absent.

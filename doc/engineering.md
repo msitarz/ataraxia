@@ -30,10 +30,10 @@ tests, and docs.
 
 ## Code style
 
-Use four-space indentation, 88-character lines, double quotes, Google-style docstrings,
-`snake_case` functions/modules, and `PascalCase` classes. Satisfy strict Pyrefly; let
-Ruff organize imports. Follow `.editorconfig` (UTF-8, LF, final newlines, whitespace).
-Add `# SPDX-License-Identifier: Apache-2.0` to new source files.
+[Ruff configuration](../pyproject.toml) owns formatting, imports, and docstring
+checks; [EditorConfig](../.editorconfig) owns file whitespace and encoding.
+Use `snake_case` functions/modules and `PascalCase` classes. Satisfy strict
+Pyrefly and add `# SPDX-License-Identifier: Apache-2.0` to new source files.
 
 - Prefer function composition, focused functions, guard clauses, and early returns.
   Roughly 25 executable lines is a review signal; extract cohesive helpers that improve
@@ -106,14 +106,14 @@ and run in isolation; integration tests exercise components across boundaries;
 acceptance tests exercise the real user flow. Mirror source modules within
 unit/integration/acceptance directories where practical. Use fixtures for reusable
 inputs, `pytest.raises` for failures, `tmp_path` for filesystem tests, and `capsys` for
-CLI output. Cover changed behavior and relevant edges; maintain at least 80% coverage
-with branch measurement.
+CLI output. Cover changed behavior and relevant edges; meet the branch coverage
+threshold configured in [pyproject.toml](../pyproject.toml).
 
 For relevant changes, cover dependency sharing and runner state; provider cleanup on
 exhaustion, error, and explicit generator closure; rolling-window ordering/warm-up; and
 broker timing preventing same-bar exits for new positions. Use integration tests for
 real strategy loading and acceptance tests for CLI output/artifacts.
 
-Run focused tests during development, for example `uv run pytest
-test/unit/test_feature.py`. Follow [CONTRIBUTING.md](../CONTRIBUTING.md#make-targets)
+Run focused tests during development, for example
+`uv run pytest test/unit/test_feature.py`. Follow [CONTRIBUTING.md](../CONTRIBUTING.md#make-targets)
 for full checks.

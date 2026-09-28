@@ -136,9 +136,8 @@ classify with existing labels where useful.
 Use the [Markdown issue template](../.github/ISSUE_TEMPLATE/work-item.md) as the
 authoritative body format for both manual and agent-created issues. Follow its
 Problem, Outcome, and Links prompts; add scope boundaries or open questions when
-they affect the decision. For bugs, include reproduction steps, expected versus
-actual behavior, and relevant versions or logs. Keep the issue a short tracking
-record: the feat slice owns detailed scope, acceptance examples, and validation,
+they affect the decision. Keep the issue a short tracking record: the feat slice
+owns detailed scope, acceptance examples, and validation,
 while ADRs own architectural decisions. Link those records instead of copying
 their specifications into the issue. Add links as artifacts become available.
 
