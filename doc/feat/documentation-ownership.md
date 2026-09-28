@@ -3,6 +3,8 @@
 Status: validated
 
 Tracking: [issue #25](https://github.com/msitarz/ataraxia/issues/25).
+PR: [#26](https://github.com/msitarz/ataraxia/pull/26), draft against
+`feat/parallel_execution`.
 
 ## Problem and outcome
 
@@ -60,7 +62,7 @@ decision is part of this cleanup.
 
 ## Handoff
 
-- Branch: `feat/documentation-ownership`; base for the later PR:
+- Branch: `feat/documentation-ownership`; PR base:
   `feat/parallel_execution`, explicitly requested by the maintainer.
 - Defining and executor session: the current Codex conversation. These roles
   share a session; no independent review is claimed.
@@ -70,8 +72,10 @@ decision is part of this cleanup.
   without another specification gate.
 - Recorded scope: commit `6badaf4`, transcribing the already approved plan;
   base revision: `c15e8f9` on `feat/parallel_execution`.
-- Stage: local execution complete; awaiting manual implementation review.
-  PR creation remains deferred at the maintainer's request. Commits are local.
+- Stage: published in draft PR #26; awaiting manual implementation review.
+- Publication: the maintainer's instruction, "ok, create the pr," authorized
+  pushing the branch and creating the PR. Implementation baseline `c57af77` was
+  published; this handoff update records the returned PR link and review stage.
 - Validation and defining-session review: recorded below. No unresolved findings;
   this review shares the executor session and is not independent.
 
