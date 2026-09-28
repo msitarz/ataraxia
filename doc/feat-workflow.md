@@ -82,6 +82,14 @@ the maintainer accepts that planning outcome. It doesn't require implementation
 review of code that wasn't delivered or validate a future implementation. The
 maintainer still makes the final GitHub decision.
 
+## Specification status
+
+A specification is `proposed` before execution, `in progress` during delivery,
+and `validated` after its acceptance criteria and required checks pass. State
+whether completion delivers an accepted specification or implemented behavior.
+Validation does not authorize execution or merging; approvals and pending work
+belong to the handoff stage.
+
 ## Roles and handoffs
 
 Use the glossary's [defining session and executor session](ubiquitous-language.md)
@@ -101,9 +109,7 @@ Keep a small handoff section in the feat slice containing:
 
 Keep the handoff current at each gate and session transfer. A new session should
 be able to continue from these records without relying on conversation memory.
-Specification status (`proposed`, `in progress`, `validated`) describes acceptance
-and validation evidence; the handoff stage describes approvals and pending work.
-Passing tests does not satisfy either manual gate or authorize merging.
+Keep specification status consistent with the evidence and the handoff stage.
 
 ## Failures and boundaries
 
