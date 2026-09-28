@@ -1,13 +1,15 @@
 # Ataraxia
 
-Orchestrator for massively parallelized and immutable backtests.
+Pre-alpha orchestrator for bar-by-bar backtests of trading strategies.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/msitarz/ataraxia/actions/workflows/ci.yml/badge.svg)](https://github.com/msitarz/ataraxia/actions/workflows/ci.yml)
 
 ## What it is
 
-Event-driven orchestrator for massively parallelized backtests of trading strategies.
+Backtests currently run locally and sequentially over CSV shards, using a single
+source per backtest. The CLI writes results to a JSON file. Parallel execution and
+immutable artifact storage are planned; see the [roadmap](#roadmap).
 
 The workflow idea (work-in-progress) is to prototype strategies visually via charting software like TradingView, then implement them by composing features that can be easily unit tested and debugged visually.
 
@@ -23,7 +25,8 @@ The main ideas:
 - Bar-by-bar event processing to prevent look-ahead bias.
 - Immutable input and output artifacts to avoid running the same backtest twice.
 
-Discover more about how this is achieved by going through [doc/architecture.md](doc/architecture.md) and the [ADR log](doc/adr/).
+Read [doc/architecture.md](doc/architecture.md) for current behavior and planned
+capabilities, and the [ADR log](doc/adr/) for the decisions behind them.
 
 ## Development quickstart
 
