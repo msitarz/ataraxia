@@ -1,7 +1,6 @@
 # Parallel shard execution
 
-Status: proposed. This revision defines the feat slice for specification review;
-execution is still sequential.
+Status: in progress. Implementation of the approved specification is underway.
 Tracking: [issue #21](https://github.com/msitarz/ataraxia/issues/21).
 PR: [#24](https://github.com/msitarz/ataraxia/pull/24), draft against `master`.
 Supervision decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
@@ -259,17 +258,16 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 
 ## Handoff
 
-- Stage: awaiting manual specification review in draft PR #24. No
-  implementation is authorized or delivered.
+- Stage: execution authorized by the maintainer on 2026-09-28: “execute
+  doc/feat/parallel-execution.md”. This approves revision `8442140`, including
+  sequential continuation and saved error envelopes. Draft PR #24 remains open.
 - Defining session: the process pool planning conversation in Codex (this
   conversation). The maintainer can resume it for defining-session review.
-- Executor session: not assigned. If the maintainer selects this conversation
+- Executor session: current Codex execution conversation. If the maintainer selects this conversation
   for execution too, record that the roles share a session; do not claim an
   independent review.
-- Approved specification commit: none. The instruction to restore the stash
-  and adapt the workflow authorizes planning and publication, not execution.
-  Record the exact commit and the maintainer's explicit approval before handoff
-  to an executor session.
+- Approved specification commit: `8442140f0fbbf85a204fd6e15118111af3866a51`.
+  Approval is the maintainer's execution instruction above.
 - Branch: `feat/parallel_execution`, reusing the existing owning branch as the
   workflow permits. Base: `master`, including workflow commit `4f6550d`.
 - Issue: [#21](https://github.com/msitarz/ataraxia/issues/21); implementation
@@ -283,11 +281,10 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
   38 packages. Also checked 63 local Markdown links/anchors, JSON examples,
   whitespace, and the existing branch name. Prior timeout feasibility evidence
   is recorded below; implementation acceptance criteria have not run.
-- Unresolved specification finding: the proposal continues after ordinary shard
+- Accepted compatibility change: the proposal continues after ordinary shard
   errors in both modes and writes error envelopes to `--output`. This intentionally
-  changes sequential fail-fast/output-preservation behavior and needs explicit
-  acceptance during specification review.
-- Reviews: no specification approval or implementation review recorded. Reviews
+  changes sequential fail-fast/output-preservation behavior and was accepted by the execution instruction.
+- Reviews: specification execution approved; implementation reviews pending. Reviews
   must identify their covered commit; later material changes return to the
   specification gate. Once ADR 18 is accepted, add its reciprocal amendment link
   to ADR 6 as required by the ADR workflow.
@@ -346,8 +343,7 @@ These observations agree with the official
 [interpreter documentation](https://docs.python.org/3.14/library/concurrent.interpreters.html),
 and [process documentation](https://docs.python.org/3.14/library/multiprocessing.html).
 They establish the timeout limitation and individual process replacement, not a
-validated supervisor or communication protocol. No implementation acceptance
-tests have run because implementation has not begun.
+validated supervisor or communication protocol. Implementation evidence is recorded in the handoff as steps complete.
 
 Before building the full supervisor, run a bounded experiment with two dedicated
 channels: kill one sender mid-transfer while the other completes, then assign
@@ -361,3 +357,9 @@ imports and large outputs may need a larger CLI value. Spawn overhead and warm
 dependency globals are compatibility risks. Hard kill cannot preserve in-flight
 tracebacks or guarantee user cleanup. AWS artifact resolution and duplicate
 delivery need separate contracts before cloud implementation.
+
+## Execution evidence
+
+Step 1: introduced envelopes and exception diagnostics, updated sequential callers
+and atomic JSON saving. Focused backtest/CLI tests and strict type checks pass.
+The ordered delivery steps above remain the execution plan. Next: supervised pool.

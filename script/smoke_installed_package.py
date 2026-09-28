@@ -68,7 +68,9 @@ def main() -> None:
         ), result.stdout
         results = json.loads((workspace / "results.json").read_text())
         assert len(results) == 2, results
-        assert {Path(item["shard_path"]).name: item["account"] for item in results} == {
+        assert {
+            Path(item["shard_path"]).name: item["result"]["account"] for item in results
+        } == {
             "nq_15m_2026_07_19.csv": {"pnl": 10, "unrealized_pnl": 0},
             "nq_15m_2026_07_20.csv": {"pnl": 30, "unrealized_pnl": 0},
         }, results

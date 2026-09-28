@@ -7,7 +7,8 @@ Integrate external strategy to form a computable graph and process a single shar
 
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TypedDict, TypeIs
+import traceback
+from typing import Literal, TypedDict, TypeIs
 
 from ataraxia.broker import Account, BrokerReturn, Position
 from ataraxia.compute import compute
@@ -17,11 +18,80 @@ from ataraxia.source import SourceNode
 from ataraxia.util import import_file, is_sink, is_type
 
 
-class BacktestShardReturn(BrokerReturn, TypedDict):
-    """Define dict to return from backtest_shard."""
+class ShardInput(TypedDict):
+    """Identify a strategy and shard by absolute paths."""
 
-    shard_path: str
     strategy_path: str
+    shard_path: str
+
+
+class ExceptionDiagnostic(TypedDict):
+    """Store an exception without live exception or traceback objects."""
+
+    kind: Literal["exception"]
+    type: str
+    message: str
+    traceback: str
+
+
+class TimeoutDiagnostic(TypedDict):
+    """Describe an expired assignment."""
+
+    kind: Literal["timeout"]
+    type: str
+    message: str
+    timeout_seconds: float
+    elapsed_seconds: float
+    traceback: None
+
+
+class WorkerFailureDiagnostic(TypedDict):
+    """Describe a worker that failed to deliver an outcome."""
+
+    kind: Literal["worker_failure"]
+    type: str
+    message: str
+    exit_code: int | None
+    traceback: None
+
+
+type ShardError = ExceptionDiagnostic | TimeoutDiagnostic | WorkerFailureDiagnostic
+
+
+class ShardSuccess(ShardInput):
+    """Contain a validated broker result."""
+
+    status: Literal["success"]
+    result: BrokerReturn
+
+
+class ShardFailure(ShardInput):
+    """Contain a serializable diagnostic, without a broker result."""
+
+    status: Literal["error"]
+    error: ShardError
+
+
+type BacktestShardReturn = ShardSuccess | ShardFailure
+
+
+def exception_diagnostic(exc: Exception) -> ExceptionDiagnostic:
+    """Return chained diagnostics, falling back if user formatting fails."""
+    exception_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
+    try:
+        message = str(exc)
+    except Exception:
+        message = "Exception message unavailable: __str__ failed"
+    try:
+        stack = "".join(traceback.format_exception(exc))
+    except Exception:
+        stack = f"{exception_type}: {message}\nTraceback formatting failed"
+    return {
+        "kind": "exception",
+        "type": exception_type,
+        "message": message,
+        "traceback": stack,
+    }
 
 
 def is_position_sequence(value: object) -> TypeIs[Sequence[Position]]:
@@ -45,9 +115,7 @@ def is_broker_return(value: object) -> TypeIs[BrokerReturn]:
     )
 
 
-def backtest_shard(
-    strategy_path: str | Path, shard_path: str | Path
-) -> BacktestShardReturn:
+def _compute_shard(strategy_path: str | Path, shard_path: str | Path) -> BrokerReturn:
     """Return results from running strategy on shard.
 
     The selected sink or consumer must return a BrokerReturn, which is enriched
@@ -97,13 +165,34 @@ def backtest_shard(
             f"{shard_path}"
         )
 
-    return {
-        "account": result["account"],
-        "open_positions": result["open_positions"],
-        "closed_positions": result["closed_positions"],
-        "shard_path": str(shard_path.resolve()),
-        "strategy_path": str(strategy_path.resolve()),
+    return result
+
+
+def backtest_shard(
+    strategy_path: str | Path, shard_path: str | Path
+) -> BacktestShardReturn:
+    """Return one shard outcome, retaining ordinary failures as diagnostics."""
+    request: ShardInput = {
+        "strategy_path": str(Path(strategy_path).resolve()),
+        "shard_path": str(Path(shard_path).resolve()),
     }
+    try:
+        result = _compute_shard(request["strategy_path"], request["shard_path"])
+    except Exception as exc:
+        failure: ShardFailure = {
+            "strategy_path": request["strategy_path"],
+            "shard_path": request["shard_path"],
+            "status": "error",
+            "error": exception_diagnostic(exc),
+        }
+        return failure
+    success: ShardSuccess = {
+        "strategy_path": request["strategy_path"],
+        "shard_path": request["shard_path"],
+        "status": "success",
+        "result": result,
+    }
+    return success
 
 
 def backtest_dir(

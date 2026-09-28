@@ -9,7 +9,6 @@ import pytest
 
 from ataraxia.backtest import backtest_dir, backtest_shard
 from ataraxia.broker import Account, BrokerReturn
-from ataraxia.errors import BacktestError
 
 
 def test_backtest_shard_include_shard_path_strategy_path(tmp_path: Path):
@@ -78,14 +77,55 @@ def test_backtest_shard_requires_broker_result(result: object):
         patch("ataraxia.backtest.import_file", return_value=module_mock),
         patch("ataraxia.backtest.is_sink", return_value=True),
         patch("ataraxia.backtest.is_type", return_value=True),
-        pytest.raises(BacktestError, match="invalid broker result") as error,
     ):
-        backtest_shard("strategy.py", "shard.csv")
+        outcome = backtest_shard("strategy.py", "shard.csv")
 
-    assert "strategy.py" in str(error.value)
-    assert "shard.csv" in str(error.value)
+    assert outcome["status"] == "error"
+    assert "invalid broker result" in outcome["error"]["message"]
+    assert "strategy.py" in outcome["error"]["message"]
+    assert "shard.csv" in outcome["error"]["message"]
 
 
 def test_backtest_dir_raise_on_wrong_param():
     with pytest.raises(FileNotFoundError):
         backtest_dir("hello", "i do not exist")
+
+
+def test_exception_diagnostics_preserve_chains_notes_groups_and_unpicklable_state():
+    from ataraxia.backtest import exception_diagnostic
+
+    try:
+        try:
+            raise ValueError("original")
+        except ValueError as cause:
+            error = ExceptionGroup("group", [RuntimeError("nested")])
+            error.add_note("useful note")
+            error.unpicklable = lambda: None
+            raise error from cause
+    except Exception as error:
+        diagnostic = exception_diagnostic(error)
+    assert diagnostic["type"] == "builtins.ExceptionGroup"
+    for text in ("original", "direct cause", "nested", "useful note"):
+        assert text in diagnostic["traceback"]
+
+
+def test_exception_diagnostic_formatting_fallback():
+    from ataraxia.backtest import exception_diagnostic
+
+    class Broken(Exception):
+        def __str__(self):
+            raise RuntimeError("format failed")
+
+    with patch("ataraxia.backtest.traceback.format_exception", side_effect=ValueError):
+        diagnostic = exception_diagnostic(Broken())
+    assert "unavailable" in diagnostic["message"]
+    assert "formatting failed" in diagnostic["traceback"]
+
+
+@pytest.mark.parametrize("error", [KeyboardInterrupt(), SystemExit(3)])
+def test_main_process_base_exceptions_propagate(error):
+    with (
+        patch("ataraxia.backtest.import_file", side_effect=error),
+        pytest.raises(type(error)),
+    ):
+        backtest_shard("strategy.py", "shard.csv")

@@ -50,7 +50,8 @@ def test_crossover_sample_cli_run(tmp_path: Path):
         str(Path("example/crossover.py").resolve())
     }
     assert {
-        shard_path: result["account"] for shard_path, result in results_by_shard.items()
+        shard_path: result["result"]["account"]
+        for shard_path, result in results_by_shard.items()
     } == {
         str(Path("sample/nq_15m_2026_07_19.csv").resolve()): {
             "pnl": 10,
@@ -64,7 +65,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
     assert {
         shard_path: [
             (position["side"], position["closing_level"], position["closing_pnl"])
-            for position in result["closed_positions"]
+            for position in result["result"]["closed_positions"]
         ]
         for shard_path, result in results_by_shard.items()
     } == {
@@ -74,7 +75,7 @@ def test_crossover_sample_cli_run(tmp_path: Path):
         ],
         str(Path("sample/nq_15m_2026_07_20.csv").resolve()): [("buy", 64480, 30)],
     }
-    assert all(result["open_positions"] == [] for result in results)
+    assert all(result["result"]["open_positions"] == [] for result in results)
 
 
 @pytest.mark.parametrize("existing_output", [False, True])
@@ -133,9 +134,14 @@ def test_cli_shard_failure_preserves_output(
 
     assert result.returncode != 0
     assert result.stdout == ""
-    assert message in result.stderr
     if contents is not None:
-        assert str(shards / "invalid.csv") in result.stderr
+        assert "diagnostics saved" in result.stderr
+        outcomes = json.loads(output.read_text())
+        assert outcomes[0]["status"] == "error"
+        assert message in outcomes[0]["error"]["message"]
+        assert outcomes[0]["shard_path"] == str(shards / "invalid.csv")
+        return
+    assert message in result.stderr
     if existing_output:
         assert output.read_bytes() == previous
     else:

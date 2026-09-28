@@ -8,8 +8,9 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 import sys
+from tempfile import NamedTemporaryFile
 
-from ataraxia.backtest import backtest_dir
+from ataraxia.backtest import BacktestShardReturn, backtest_dir
 from ataraxia.broker import Account, BrokerReturn
 
 
@@ -23,10 +24,17 @@ def display_results(results: Sequence[BrokerReturn]) -> None:
         print(f"Unrealized PnL = {accounts_sum.unrealized_pnl}")
 
 
-def save_results(results: Sequence[BrokerReturn], to_file: Path) -> None:
+def save_results(results: Sequence[BacktestShardReturn], to_file: Path) -> None:
     """Save results with details in to_file."""
-    with to_file.open("w") as fp:
-        json.dump(results, fp, indent=2, default=lambda obj: asdict(obj))
+    temporary: Path | None = None
+    try:
+        with NamedTemporaryFile(mode="w", dir=to_file.parent, delete=False) as fp:
+            temporary = Path(fp.name)
+            json.dump(results, fp, indent=2, default=lambda obj: asdict(obj))
+        temporary.replace(to_file)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def main() -> None:
@@ -69,5 +77,14 @@ def main() -> None:
         print("No backtest completed, check params and output file", file=sys.stderr)
         sys.exit(1)
 
-    display_results(results)
+    successes = [item["result"] for item in results if item["status"] == "success"]
     save_results(results, args.output)
+    if successes:
+        display_results(successes)
+    failures = len(results) - len(successes)
+    if failures:
+        print(
+            f"{failures} shard(s) failed; diagnostics saved to {args.output}",
+            file=sys.stderr,
+        )
+        sys.exit(1)

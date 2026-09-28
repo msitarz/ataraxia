@@ -140,9 +140,18 @@ def test_main_print_error_and_exit(capsys: CaptureFixture):
 def test_save_results(broker_returns, tmp_path: Path):
     output = tmp_path / "out.json"
 
-    save_results(broker_returns, output)
+    outcomes = [
+        {
+            "strategy_path": "/strategy.py",
+            "shard_path": "/shard.csv",
+            "status": "success",
+            "result": result,
+        }
+        for result in broker_returns
+    ]
+    save_results(outcomes, output)
 
-    assert json.loads(output.read_text()) == [
+    assert [item["result"] for item in json.loads(output.read_text())] == [
         {
             "account": {"pnl": 30, "unrealized_pnl": -40},
             "closed_positions": [

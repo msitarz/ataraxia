@@ -9,7 +9,6 @@ import pytest
 from ataraxia.backtest import BacktestShardReturn, backtest_dir, backtest_shard
 from ataraxia.bar import Bar
 from ataraxia.broker import Account, BrokerReturn, Position, Signal
-from ataraxia.errors import BacktestError, ModuleError
 
 
 @pytest.fixture
@@ -53,33 +52,32 @@ def strategy_and_shard_path(tmp_path: Path):
 
 @pytest.fixture
 def broker_result() -> BrokerReturn:
-    return {
-        "account": Account(),
-        "open_positions": [],
-        "closed_positions": [],
-    }
+    return {"account": Account(), "open_positions": [], "closed_positions": []}
 
 
 def expected_backtest_result(shard: Path, strategy: Path) -> BacktestShardReturn:
     """Return the complete broker result expected from the fixture strategy."""
     return {
-        "account": Account(),
-        "open_positions": [
-            Position(
-                side="buy",
-                stop_loss=100,
-                take_profit=200,
-                entry_bar=Bar(
-                    timestamp=1,
-                    open=100,
-                    high=200,
-                    low=50,
-                    close=150,
-                    volume=1,
-                ),
-            )
-        ],
-        "closed_positions": [],
+        "status": "success",
+        "result": {
+            "account": Account(),
+            "open_positions": [
+                Position(
+                    side="buy",
+                    stop_loss=100,
+                    take_profit=200,
+                    entry_bar=Bar(
+                        timestamp=1,
+                        open=100,
+                        high=200,
+                        low=50,
+                        close=150,
+                        volume=1,
+                    ),
+                )
+            ],
+            "closed_positions": [],
+        },
         "shard_path": str(shard.resolve()),
         "strategy_path": str(strategy.resolve()),
     }
@@ -99,10 +97,10 @@ def test_backtest_header_only_shard(strategy_and_shard_path):
     shard = strategy_and_shard_path["shard"]
     shard.write_text("timestamp,open,high,low,close,volume\n")
 
-    with pytest.raises(BacktestError, match="contains no bars") as error:
-        backtest_shard(strategy_and_shard_path["strategy"], shard)
-
-    assert str(shard) in str(error.value)
+    outcome = backtest_shard(strategy_and_shard_path["strategy"], shard)
+    assert outcome["status"] == "error"
+    assert "contains no bars" in outcome["error"]["message"]
+    assert str(shard) in outcome["error"]["message"]
 
 
 def test_backtest_shard_requires_sink_export(strategy_and_shard_path):
@@ -110,11 +108,11 @@ def test_backtest_shard_requires_sink_export(strategy_and_shard_path):
     strategy = strategy_and_shard_path["strategy"]
     strategy.write_text(strategy.read_text().replace("__sink__ = Strategy", ""))
 
-    with pytest.raises(ModuleError, match="__sink__") as error:
-        backtest_shard(strategy, strategy_and_shard_path["shard"])
-
-    assert str(strategy) in str(error.value)
-    assert isinstance(error.value.__cause__, AttributeError)
+    outcome = backtest_shard(strategy, strategy_and_shard_path["shard"])
+    assert outcome["status"] == "error"
+    assert "__sink__" in outcome["error"]["message"]
+    assert str(strategy) in outcome["error"]["message"]
+    assert "AttributeError" in outcome["error"]["traceback"]
 
 
 @pytest.mark.parametrize("export", ["None", "42", "object", "Strategy(None)"])
@@ -125,10 +123,10 @@ def test_backtest_shard_requires_sink_class(strategy_and_shard_path, export):
         strategy.read_text().replace("__sink__ = Strategy", f"__sink__ = {export}")
     )
 
-    with pytest.raises(ModuleError, match="Sink class") as error:
-        backtest_shard(strategy, strategy_and_shard_path["shard"])
-
-    assert str(strategy) in str(error.value)
+    outcome = backtest_shard(strategy, strategy_and_shard_path["shard"])
+    assert outcome["status"] == "error"
+    assert "Sink class" in outcome["error"]["message"]
+    assert str(strategy) in outcome["error"]["message"]
 
 
 @pytest.mark.parametrize(
@@ -149,8 +147,10 @@ def test_backtest_shard_preserves_strategy_errors(strategy_and_shard_path, failu
     strategy = strategy_and_shard_path["strategy"]
     strategy.write_text(f"{strategy.read_text()}\n{failure}\n")
 
-    with pytest.raises(AttributeError, match=r"^strategy bug$"):
-        backtest_shard(strategy, strategy_and_shard_path["shard"])
+    outcome = backtest_shard(strategy, strategy_and_shard_path["shard"])
+    assert outcome["status"] == "error"
+    assert outcome["error"]["type"] == "builtins.AttributeError"
+    assert outcome["error"]["message"] == "strategy bug"
 
 
 def test_backtest_shard_uses_broker_result_from_compute_step(
@@ -161,7 +161,8 @@ def test_backtest_shard_uses_broker_result_from_compute_step(
     strategy = strategy_and_shard_path["strategy"]
 
     expected: BacktestShardReturn = {
-        **broker_result,
+        "status": "success",
+        "result": broker_result,
         "shard_path": str(shard.resolve()),
         "strategy_path": str(strategy.resolve()),
     }
