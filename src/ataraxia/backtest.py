@@ -47,8 +47,7 @@ def exception_diagnostic(exc: Exception) -> ExceptionDiagnostic:
 def _compute_shard(strategy_path: str | Path, shard_path: str | Path) -> BrokerReturn:
     """Return results from running strategy on shard.
 
-    The selected sink or consumer must return a BrokerReturn, which is enriched
-    with shard and strategy paths.
+    The selected sink or consumer must return a BrokerReturn.
 
     Args:
         strategy_path: Absolute path to Python module containing strategy.
@@ -94,7 +93,11 @@ def _compute_shard(strategy_path: str | Path, shard_path: str | Path) -> BrokerR
             f"{shard_path}"
         )
 
-    return result
+    return {
+        "account": result["account"],
+        "open_positions": result["open_positions"],
+        "closed_positions": result["closed_positions"],
+    }
 
 
 def backtest_shard(
@@ -131,7 +134,7 @@ def backtest_dir(
     parallel: int | None = None,
     shard_timeout: float = 5.0,
 ) -> tuple[BacktestShardReturn, ...]:
-    """Return broker results for every shard in a directory."""
+    """Return shard outcomes in discovery order or parallel arrival order."""
     dir_path = Path(dir_path)
 
     requests: tuple[ShardInput, ...] = tuple(

@@ -49,7 +49,7 @@ CSV files in the `sample` folder contain LLM-generated data to showcase a simple
 
 ### v0.2
 
-- Local parallel execution implemented on the feat branch; see the
+- Local parallel execution implemented; see the
   [feat slice](doc/feat/parallel-execution.md).
 
 ### v0.3

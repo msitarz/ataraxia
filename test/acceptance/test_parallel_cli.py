@@ -61,7 +61,10 @@ from ataraxia.broker import Account
 
 class Runner:
     def __call__(self, item):
-        Path(__file__).with_name(f'{item.timestamp}.pid').write_text(str(os.getpid()))
+        pidfile = Path(__file__).with_name(f'{item.timestamp}.pid')
+        temporary = pidfile.with_suffix('.tmp')
+        temporary.write_text(str(os.getpid()))
+        temporary.replace(pidfile)
         if item.timestamp == 1:
             while True:
                 time.sleep(.01)
@@ -95,24 +98,30 @@ def test_cli_timeout_saved_and_replacement_succeeds(tmp_path):
     first.write_text(HEADER + "1,1,1,1,1,1\n")
     second.write_text(HEADER + "2,1,1,1,1,1\n")
     output = tmp_path / "out.json"
-    result = subprocess.run(
-        [
-            str(COMMAND),
-            "-s",
-            str(strategy),
-            "-d",
-            str(shards),
-            "-o",
-            str(output),
-            "--parallel",
-            "1",
-            "--shard-timeout",
-            ".5",
-        ],
-        capture_output=True,
-        text=True,
-        timeout=15,
-    )
+    try:
+        result = subprocess.run(
+            [
+                str(COMMAND),
+                "-s",
+                str(strategy),
+                "-d",
+                str(shards),
+                "-o",
+                str(output),
+                "--parallel",
+                "1",
+                "--shard-timeout",
+                ".5",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except subprocess.TimeoutExpired:
+        for pidfile in tmp_path.glob("*.pid"):
+            with suppress(ProcessLookupError):
+                os.kill(int(pidfile.read_text()), signal.SIGKILL)
+        raise
     assert result.returncode == 1, result.stderr
     outcomes = {
         Path(item["shard_path"]).name: item for item in json.loads(output.read_text())
@@ -192,4 +201,64 @@ def test_discovery_failure_preserves_output(tmp_path, options):
         timeout=10,
     )
     assert result.returncode != 0
+    assert output.read_text() == "previous"
+
+
+@pytest.mark.parametrize("options", [[], ["--parallel", "2"]])
+@pytest.mark.parametrize("contents", ["", "raise ValueError('import failed')\n"])
+def test_strategy_errors_are_saved_in_both_modes(tmp_path, options, contents):
+    strategy = tmp_path / "strategy.py"
+    strategy.write_text(contents)
+    output = tmp_path / "out.json"
+    result = subprocess.run(
+        [
+            str(COMMAND),
+            "-s",
+            str(strategy),
+            "-d",
+            str(ROOT / "sample"),
+            "-o",
+            str(output),
+            *options,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "2 shard(s) failed" in result.stderr
+    outcomes = json.loads(output.read_text())
+    assert len(outcomes) == 2
+    assert all(item["error"]["kind"] == "exception" for item in outcomes)
+    assert all("result" not in item for item in outcomes)
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        ["--parallel", "0"],
+        ["--shard-timeout", "1"],
+        ["--parallel", "1", "--shard-timeout", "nan"],
+    ],
+)
+def test_console_invalid_arguments_preserve_output(tmp_path, options):
+    output = tmp_path / "out.json"
+    output.write_text("previous")
+    result = subprocess.run(
+        [
+            str(COMMAND),
+            "-s",
+            str(ROOT / "example/crossover.py"),
+            "-d",
+            str(ROOT / "sample"),
+            "-o",
+            str(output),
+            *options,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    assert result.returncode == 2
     assert output.read_text() == "previous"

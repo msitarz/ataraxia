@@ -16,7 +16,12 @@ from ataraxia.broker import Account
 def operation(strategy, shard):
     root = Path(strategy)
     name = Path(shard).name
-    (root / (name + '.pid')).write_text(str(os.getpid()))
+    pidfile = root / (name + '.pid')
+    temporary = root / (name + '.tmp')
+    temporary.write_text(str(os.getpid()))
+    temporary.replace(pidfile)
+    if name in ('fastvalid', 'valid'):
+        (root / (name + '.done')).touch()
     if name == 'hang':
         while True:
             time.sleep(.01)
@@ -61,6 +66,10 @@ def transfer_worker(channel, operation):
     import struct
     request = channel.recv()
     name = Path(request['shard_path']).name
+    pidfile = Path(request['strategy_path']) / (name + '.pid')
+    temporary = pidfile.with_suffix('.tmp')
+    temporary.write_text(str(os.getpid()))
+    temporary.replace(pidfile)
     if name in ('partial', 'partial_exit'):
         os.write(channel.fileno(), struct.pack('!i', 10000000) + b'partial')
         if name == 'partial_exit':
@@ -87,7 +96,7 @@ if __name__ == '__main__':
     inputs = [{'strategy_path': str(root), 'shard_path': str(root / name)}
               for name in names]
     from unittest.mock import patch
-    from ataraxia.shard_pool import _worker, _start
+    from ataraxia.shard_pool import _worker, _start, _launch, _collect
     starts = 0
     def staggered_start(operation):
         global starts
@@ -97,11 +106,37 @@ if __name__ == '__main__':
             time.sleep(.2)
         return worker
     transfer = any(n in names for n in ('partial', 'partial_exit', 'invalid'))
+    def delayed_launch(worker):
+        if Path(worker.request['shard_path']).name == 'startup':
+            while not (root / 'fastvalid.done').exists():
+                time.sleep(.005)
+            time.sleep(.3)
+        _launch(worker)
+    def parent_failure(*args):
+        deadline = time.monotonic() + 3
+        while not (root / 'hang.pid').exists():
+            assert time.monotonic() < deadline
+            time.sleep(.005)
+        if 'interrupt' in names:
+            raise KeyboardInterrupt()
+        raise RuntimeError('parent bug')
     entry = transfer_worker if transfer else _worker
     start = staggered_start if 'unaffected' in names else _start
+    launch = delayed_launch if 'startup' in names else _launch
+    failing_parent = any(n in names for n in ('interrupt', 'parentbug'))
+    collect = parent_failure if failing_parent else _collect
     with patch('ataraxia.shard_pool._worker', entry), \
-         patch('ataraxia.shard_pool._start', start):
-        outcomes = run_shards(inputs, int(sys.argv[3]), float(sys.argv[4]), operation)
+         patch('ataraxia.shard_pool._start', start), \
+         patch('ataraxia.shard_pool._launch', launch), \
+         patch('ataraxia.shard_pool._collect', collect):
+        try:
+            outcomes = run_shards(
+                inputs, int(sys.argv[3]), float(sys.argv[4]), operation)
+        except (KeyboardInterrupt, RuntimeError) as exc:
+            if not any(n in names for n in ('interrupt', 'parentbug')):
+                raise
+            outcomes = [{'parent_error': type(exc).__name__}]
+
     assert not multiprocessing.active_children()
     for name in names:
         pidfile = root / (name + '.pid')
@@ -123,17 +158,32 @@ def probe(tmp_path, names, size, timeout=2):
 
     env = os.environ.copy()
     env["PYTHONPATH"] = str(Path("src").resolve())
-    result = subprocess.run(
-        [sys.executable, str(script), str(tmp_path), names, str(size), str(timeout)],
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=15,
-    )
-    assert result.returncode == 0, result.stderr
-    import json
+    try:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                str(tmp_path),
+                names,
+                str(size),
+                str(timeout),
+            ],
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        assert result.returncode == 0, result.stderr
+        import json
 
-    return json.loads((tmp_path / "out.json").read_text())
+        return json.loads((tmp_path / "out.json").read_text())
+    finally:
+        from contextlib import suppress
+        import signal
+
+        for pidfile in tmp_path.glob("*.pid"):
+            with suppress(ProcessLookupError):
+                os.kill(int(pidfile.read_text()), signal.SIGKILL)
 
 
 def test_real_spawn_overlap_and_arrival(tmp_path):
@@ -208,3 +258,22 @@ def test_incomplete_or_invalid_message_replaces_worker(tmp_path, name):
     results = probe(tmp_path, f"{name},valid", 1, 1)
     assert results[0]["error"]["kind"] == "worker_failure"
     assert results[1]["status"] == "success"
+
+
+def test_startup_does_not_block_other_assignment(tmp_path):
+    outcomes = probe(tmp_path, "startup,fastvalid", 2, 0.2)
+    by_name = {Path(item["shard_path"]).name: item for item in outcomes}
+    assert by_name["startup"]["error"]["kind"] == "timeout"
+    assert by_name["fastvalid"]["status"] == "success"
+
+
+@pytest.mark.parametrize("failure", ["interrupt", "parentbug"])
+def test_parent_failure_cleans_active_workers(tmp_path, failure):
+    outcomes = probe(tmp_path, f"hang,{failure}", 1, 2)
+    assert outcomes == [
+        {
+            "parent_error": "KeyboardInterrupt"
+            if failure == "interrupt"
+            else "RuntimeError"
+        }
+    ]

@@ -1,6 +1,7 @@
 # Parallel shard execution
 
-Status: in progress. Implementation of the approved specification is underway.
+Status: validated. Implemented behavior and required checks pass; manual and
+defining-session implementation reviews remain pending.
 Tracking: [issue #21](https://github.com/msitarz/ataraxia/issues/21).
 PR: [#24](https://github.com/msitarz/ataraxia/pull/24), draft against `master`.
 Supervision decision: [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
@@ -9,17 +10,17 @@ Terms: [ubiquitous language](../ubiquitous-language.md).
 Workflow: [feat slice workflow](../feat-workflow.md).
 
 The issue's completion outcome is the implemented capability described below,
-with passing acceptance criteria and required checks. Implementation is underway on the owning branch; issue #21 remains open until
-checks and required reviews are complete. Approval evidence and pending work are recorded in the
+with passing acceptance criteria and required checks. Implementation and validation are delivered on the owning branch; issue #21
+remains open until required reviews and the maintainer’s merge decision. Approval evidence and pending work are recorded in the
 [handoff](#handoff); general gates follow the linked workflow.
 
-## Problem and current behavior
+## Problem and baseline behavior
 
 Independent shards should run concurrently without a stuck strategy preventing
 remaining work. The main process must enforce a deadline, preserve shard failure
 diagnostics, and replace the affected executor worker.
 
-Code inspected on 2026-09-28:
+Baseline code inspected on 2026-09-28, before implementation:
 
 - `backtest_dir()` iterates `Path.iterdir()` without sorting or filtering, calls
   `backtest_shard()` sequentially, and returns a tuple. Any exception aborts it.
@@ -257,39 +258,37 @@ After specification approval under the [workflow](../feat-workflow.md), execute:
 
 ## Handoff
 
-- Stage: execution authorized by the maintainer on 2026-09-28: “execute
-  doc/feat/parallel-execution.md”. This approves revision `8442140`, including
-  sequential continuation and saved error envelopes. Draft PR #24 remains open.
-- Defining session: the process pool planning conversation in Codex (this
-  conversation). The maintainer can resume it for defining-session review.
-- Executor session: current Codex execution conversation. If the maintainer selects this conversation
-  for execution too, record that the roles share a session; do not claim an
-  independent review.
-- Approved specification commit: `8442140f0fbbf85a204fd6e15118111af3866a51`.
-  Approval is the maintainer's execution instruction above.
-- Branch: `feat/parallel_execution`, reusing the existing owning branch as the
-  workflow permits. Base: `master`, including workflow commit `4f6550d`.
-- Issue: [#21](https://github.com/msitarz/ataraxia/issues/21); implementation
-  outcome remains open during specification-only delivery.
-  PR: [#24](https://github.com/msitarz/ataraxia/pull/24), using `Refs #21`.
-- Applicable decisions: accepted [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md)
-  and existing ADRs 6, 7, 12, 14, 15, 16, and 17 referenced in this specification.
-- Validation: `make ci` passed for this planning revision: 142 repository tests,
-  3 example tests, 97.12% branch-inclusive coverage, strict types and expected
-  negative cases, architecture checks, installed-wheel smoke test, and audit of
-  38 packages. Also checked 63 local Markdown links/anchors, JSON examples,
-  whitespace, and the existing branch name. Prior timeout feasibility evidence
-  is recorded below; implementation acceptance criteria have not run.
-- Accepted compatibility change: the proposal continues after ordinary shard
-  errors in both modes and writes error envelopes to `--output`. This intentionally
-  changes sequential fail-fast/output-preservation behavior and was accepted by the execution instruction.
-- Reviews: specification execution approved; implementation reviews pending. Reviews
-  must identify their covered commit; later material changes return to the
-  specification gate. ADR 18 is accepted by the execution instruction and ADR 6 now links back.
-- Publication: planning baseline `f74cf2d` passed commit hooks and was pushed to
-  the owning branch. Draft PR #24 was created against `master`. This handoff/link
-  update is part of the specification revision for review; use the current PR
-  head commit when recording approval rather than assuming baseline approval.
+- Stage: implemented and validated, awaiting manual implementation review and
+  defining-session review. Keep [PR #24](https://github.com/msitarz/ataraxia/pull/24)
+  draft; no merge or readiness approval is inferred from checks.
+- Defining session: the original process-pool planning conversation in Codex.
+  The maintainer can resume it or explicitly designate a replacement reviewer.
+- Executor session: this Codex execution conversation. No independent
+  defining-session review has been performed or claimed.
+- Approved specification: `8442140f0fbbf85a204fd6e15118111af3866a51`, approved by
+  the maintainer on 2026-09-28 with “execute doc/feat/parallel-execution.md”.
+  This includes sequential continuation and saved error envelopes.
+- Plan: [delivery steps](#delivery-steps). Completed steps: shard contracts
+  `8ec5594`, worker supervision `bcc228b`, CLI and documentation `9465aaa`.
+  Step 4's final lifecycle checks and evidence are included in this validation
+  commit. Next: publish the checked implementation and record its commit here.
+- Branch: `feat/parallel_execution`; base: `master`.
+  [Issue #21](https://github.com/msitarz/ataraxia/issues/21) tracks implementation
+  and remains open for required reviews. PR #24 remains partial delivery with
+  `Refs #21` until the maintainer accepts completion.
+- Decisions: accepted [ADR 18](../adr/0018-supervise-process-workers-for-shard-timeouts.md),
+  with its reciprocal amendment link in ADR 6, and existing ADRs 6, 7, 12, 14,
+  15, 16 and 17 referenced above. No material scope changes were required.
+- Validation: `make ci` passes on Python 3.14.7: 222 repository tests, 3 example
+  tests, 91.21% branch-inclusive coverage, strict Pyrefly and all expected
+  negative cases, Ruff, Tach, tracked-file checks, installed-wheel smoke in both
+  execution modes, and an audit of 38 packages without known vulnerabilities.
+  Initial sandbox audit attempts failed DNS; the network-enabled rerun passed.
+  Checked 90 local Markdown targets/anchors, whitespace, and the acceptance
+  evidence below. Evidence is local macOS execution; other platforms await CI.
+- Reviews: manual implementation and defining-session reviews are pending and
+  must identify the implementation commit they cover. The executor's final
+  contract inspection is validation, not either required approval.
 
 ## Acceptance examples and validation plan
 
@@ -377,4 +376,22 @@ not before its first implementation draft.
 Step 3: CLI arguments, atomic-save failure tests, real console acceptance for
 mixed errors, unreadable entries, timeout replacement, interruption and discovery
 errors. Sample totals match in both modes; installed-wheel smoke passes in both
-modes outside the checkout. Next: complete repository validation and handoff.
+modes outside the checkout. Step 3 commit: `9465aaa`.
+
+Step 4: completed the acceptance checks and required `make ci`. Final inspection
+moved process startup into each assignment's channel thread so startup cannot
+block another worker's deadline, validated incoming path references before worker
+execution, and retained only the original broker fields inside successful results.
+Additional real-process probes cover delayed startup and parent interruption or
+programming failure; every outer watchdog has recorded-PID cleanup on failure.
+The pool still owns one assignment per worker and never retries a failed shard.
+
+Parent receipt events use assignment identity and a completion timestamp taken
+after full receive and validation. One parent commit path resolves expiry;
+receipts are drained in arrival order before remaining deadlines are checked.
+Dedicated pipe readers isolate partial transfers; a 20 MB result and a killed
+partial sender did not prevent unrelated work or replacement from completing.
+Cleanup joins are bounded. An inability to finish startup, stop a channel reader,
+or reap a child raises a run-level supervisor error rather than dispatching more
+work into that worker. Spawn and transfer overhead still count against the limit;
+no performance improvement or strategy-descendant containment is claimed.

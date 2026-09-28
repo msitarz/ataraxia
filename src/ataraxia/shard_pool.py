@@ -2,13 +2,13 @@
 """Bounded spawn workers with independent channels and assignment deadlines."""
 
 from collections.abc import Callable, Iterator, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from multiprocessing import get_context
 from multiprocessing.connection import Connection
 from multiprocessing.process import BaseProcess
 from queue import Empty, Queue
-from threading import Thread
+from threading import Event, Thread
 from time import monotonic
 
 from ataraxia.errors import SupervisorError
@@ -16,6 +16,7 @@ from ataraxia.shard_types import (
     BacktestShardReturn,
     ShardFailure,
     ShardInput,
+    is_shard_input,
     is_shard_outcome,
 )
 
@@ -42,12 +43,19 @@ class Worker:
     request: ShardInput | None = None
     started: float = 0.0
     reader: Thread | None = None
+    child_channel: Connection | None = None
+    launch_complete: Event = field(default_factory=Event)
 
 
 def _worker(channel: Connection, operation: ShardOperation) -> None:
     try:
         while True:
-            request = channel.recv()
+            request: object = channel.recv()
+            if not is_shard_input(request) or set(request) != {
+                "strategy_path",
+                "shard_path",
+            }:
+                raise ValueError("Invalid shard input")
             channel.send(operation(request["strategy_path"], request["shard_path"]))
     except EOFError:
         return
@@ -61,6 +69,7 @@ def _exchange(worker: Worker, events: Queue[Receipt]) -> None:
     if request is None:
         raise SupervisorError("Cannot dispatch an idle worker")
     try:
+        _launch(worker)
         worker.channel.send(request)
         value: object = worker.channel.recv()
         if not is_shard_outcome(value):
@@ -76,7 +85,24 @@ def _exchange(worker: Worker, events: Queue[Receipt]) -> None:
     events.put(receipt)
 
 
+def _launch(worker: Worker) -> None:
+    child = worker.child_channel
+    if child is None:
+        return
+    try:
+        worker.process.start()
+    finally:
+        child.close()
+        worker.launch_complete.set()
+        worker.child_channel = None
+
+
 def _retire(worker: Worker) -> None:
+    if worker.child_channel is not None:
+        if worker.reader is None:
+            worker.child_channel.close()
+        elif not worker.launch_complete.wait(timeout=1.0):
+            raise SupervisorError("Executor worker startup did not finish")
     if worker.process.pid is not None:
         if worker.process.is_alive():
             worker.process.kill()
@@ -162,17 +188,13 @@ def _dispatch(
 def _start(operation: ShardOperation) -> Worker:
     context = get_context("spawn")
     parent, child = context.Pipe()
-    process = context.Process(target=_worker, args=(child, operation))
-    worker = Worker(process, parent)
     try:
-        process.start()
-    except Exception:
+        process = context.Process(target=_worker, args=(child, operation))
+    except BaseException:
         parent.close()
-        process.close()
-        raise
-    finally:
         child.close()
-    return worker
+        raise
+    return Worker(process, parent, child_channel=child)
 
 
 def _startup_failure(request: ShardInput, exc: Exception) -> ShardFailure:
@@ -209,7 +231,7 @@ def _fill_slots(
         if slot == len(workers):
             try:
                 workers.append(_start(operation))
-            except Exception as exc:
+            except OSError as exc:
                 results.append(_startup_failure(request, exc))
                 return False
         _dispatch(workers[slot], request, assignment, events, started)

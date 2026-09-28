@@ -2,6 +2,7 @@
 """Shard boundary contracts and runtime validation."""
 
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Literal, TypedDict, TypeIs
 
 from ataraxia.broker import Account, BrokerReturn, Position
@@ -117,13 +118,23 @@ def is_shard_error(value: object) -> TypeIs[ShardError]:
             return False
 
 
-def is_shard_outcome(value: object) -> TypeIs[BacktestShardReturn]:
-    """Return whether a received outcome has exactly one valid variant."""
+def is_shard_input(value: object) -> TypeIs[ShardInput]:
+    """Return whether received references are absolute strategy and shard paths."""
     if not isinstance(value, dict):
         return False
-    if not isinstance(value.get("strategy_path"), str) or not isinstance(
-        value.get("shard_path"), str
-    ):
+    strategy = value.get("strategy_path")
+    shard = value.get("shard_path")
+    return (
+        isinstance(strategy, str)
+        and Path(strategy).is_absolute()
+        and isinstance(shard, str)
+        and Path(shard).is_absolute()
+    )
+
+
+def is_shard_outcome(value: object) -> TypeIs[BacktestShardReturn]:
+    """Return whether a received outcome has exactly one valid variant."""
+    if not is_shard_input(value):
         return False
     common = {"strategy_path", "shard_path", "status"}
     if value.get("status") == "success":

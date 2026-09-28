@@ -112,7 +112,7 @@ change during the parallel execution work.
 
 ## Planned capabilities
 
-Local parallel execution is implemented on the feat branch; its validation and
+Local parallel execution is implemented; its validation and
 review stage live in the [parallel execution slice](feat/parallel-execution.md).
 [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md) owns the
 supervision rationale.
