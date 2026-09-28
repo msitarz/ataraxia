@@ -66,13 +66,16 @@ Currently there are many constraints in the system which should be removed one b
 
 ### v0.2
 
-- Parallelize locally using concurrent.interpreters
+- Parallelize locally with a supervised process pool and configurable shard
+  timeouts; preserve the default single-process mode. See the
+  [proposed feat slice](doc/feat/parallel-execution.md) and
+  [ADR 18](doc/adr/0018-supervise-process-workers-for-shard-timeouts.md).
 
 ### v0.3
 
 Parallelize via AWS Lambda workers.  Fork and deploy on your own AWS account with private strategies.
 
-- EventBridge fan-out to Lambda workers that process a single shard and a strategy
+- SNS -> SQS -> Lambda fan-out to workers that process a single shard and a strategy
 - S3 immutable artifacts (strategies, shards, output)
 - Strategy check via CLI (like ruff check) to prevent invalid strategy deployment
 

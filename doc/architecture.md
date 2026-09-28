@@ -33,6 +33,11 @@ Only the CLI-driven, single-process, local-file execution path is implemented to
 The distributed/serverless deployment described later on is a decided direction
 (see ADR-0006, ADR-0007) but has no corresponding code in this repository yet.
 
+Local parallel execution is specified in the
+[proposed feat slice](feat/parallel-execution.md) and
+[ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md), but is not
+implemented. The default remains sequential execution in the main process.
+
 ## Design goals & non-goals
 
 **Goals**
@@ -120,14 +125,41 @@ variable or an explicit type argument, such as `RollingWindow[int](node, 3)`. Ty
 lookup does not prove that a node belongs to the graph. The dynamic strategy-loading
 boundary still validates broker results at runtime.
 
+## Local parallel execution _(planned — not yet implemented)_
+
+The main process will orchestrate a bounded pool of individually supervised
+process workers. Each assignment contains only absolute strategy and shard paths;
+the worker imports the strategy and constructs its provider, source, and graph.
+The main process will enforce a configurable wall-clock shard deadline, default
+five seconds, kill and reap a timed-out worker, and replace it for pending work
+without interrupting other assignments. No shard or result sorting is required.
+
+As proposed in [ADR 18](adr/0018-supervise-process-workers-for-shard-timeouts.md),
+this needs individual `multiprocessing.Process` ownership rather than
+`InterpreterPoolExecutor` or `ProcessPoolExecutor`. Orchestration stays in the
+backtest application layer; `compute/` keeps its current boundaries and normal
+provider lifecycle from ADR 16. Forced kill relies on OS resource cleanup.
+
+`BacktestShardReturn` will become a discriminated success/error envelope instead
+of extending `BrokerReturn`. Both modes will share the shard operation and save
+outcomes; the CLI will aggregate successful accounts and report failed shards.
+The [slice](feat/parallel-execution.md) defines the planned schema, CLI options,
+compatibility changes, deadline rules, and validation. Current code still returns
+flattened broker fields and aborts on the first error.
+
 ## Target execution / deployment model _(planned — not yet implemented)_
 
 To process thousands of high-resolution intraday shards across many strategies, ataraxia needs a horizontally scalable data processing pipeline.
 
-- Fan-out mechanism: Lambda orchestrator -> EventBridge -> SQS -> Lambda worker
+- Fan-out mechanism: orchestrator -> SNS -> SQS -> Lambda worker
 - Storage: S3
 - Idempotency: strategy and shard hashes used to identify if the output artifact already exists.
 - Fork-and-deploy model: users must deploy via provided IaC into their own AWS account.
+
+The local shard input/outcome contract from ADR 18 is the worker operation that
+a future Lambda adapter can reuse after resolving cloud artifacts into paths.
+AWS event decoding, artifact lookup, and delivery/idempotency policies remain
+separate from graph computation and the local process supervisor.
 
 ## Testing strategy
 
