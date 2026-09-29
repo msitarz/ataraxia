@@ -1,7 +1,3 @@
----
-id: validation
----
-
 # Validation
 
 Keep small review loops fast while preserving evidence for merge. Existing

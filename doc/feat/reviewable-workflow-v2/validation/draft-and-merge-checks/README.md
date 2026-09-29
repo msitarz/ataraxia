@@ -1,7 +1,3 @@
----
-id: draft-and-merge-checks
----
-
 # Draft and merge checks
 
 Run checks affected by the change while preparing a draft PR. Require full CI

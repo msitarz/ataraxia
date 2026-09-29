@@ -1,7 +1,3 @@
----
-id: docs-checks
----
-
 # Documentation checks
 
 Investigate existing tools before writing custom rules. Adopt deterministic

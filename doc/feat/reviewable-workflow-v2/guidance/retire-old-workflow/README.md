@@ -1,7 +1,3 @@
----
-id: retire-old-workflow
----
-
 # Retire the old workflow
 
 After replacement guidance is navigable, remove the superseded

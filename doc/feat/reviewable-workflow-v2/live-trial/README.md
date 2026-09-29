@@ -1,7 +1,3 @@
----
-id: live-trial
----
-
 # Live trial
 
 Use this hierarchy and small child PRs while replacing the workflow guidance.

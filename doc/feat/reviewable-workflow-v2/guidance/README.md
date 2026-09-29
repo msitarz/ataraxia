@@ -1,7 +1,3 @@
----
-id: guidance
----
-
 # Guidance and routing
 
 Make `AGENTS.md` a short entry point. Put each lasting rule in one owner and

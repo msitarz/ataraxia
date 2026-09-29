@@ -1,7 +1,3 @@
----
-id: rule-owners
----
-
 # Rule owners
 
 Place engineering, ADR, documentation, contribution, and delivery rules in

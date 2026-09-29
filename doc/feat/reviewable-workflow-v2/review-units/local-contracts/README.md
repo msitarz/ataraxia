@@ -1,12 +1,8 @@
----
-id: local-contracts
----
-
 # Local contracts
 
-Give every work unit a `README.md` with only its local ID in YAML frontmatter.
-Keep a small outcome and acceptance contract there; add `spec.md` or `design.md`
-only when the unit needs more room. Directory ancestry identifies its parent.
+Give every work unit a `README.md` with a small outcome and acceptance contract;
+add `spec.md` or `design.md` only when the unit needs more room. Its directory
+path identifies the unit and its parent.
 Discovery may add new children without revising a fixed dependency list.
 
 Use relative links and Mermaid when a diagram helps the review. Do not require

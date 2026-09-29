@@ -1,7 +1,3 @@
----
-id: reviewable-workflow-v2
----
-
 # Reviewable workflow v2
 
 Build a delivery workflow around small PRs that the maintainer can inspect in

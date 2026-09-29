@@ -1,7 +1,3 @@
----
-id: pr-gates
----
-
 # PR review and merge gates
 
 Give each unit a branch and small PR to its parent branch. The PR owns checks,

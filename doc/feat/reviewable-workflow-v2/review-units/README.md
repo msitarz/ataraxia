@@ -1,7 +1,3 @@
----
-id: review-units
----
-
 # Review units
 
 Use the same directory and review pattern recursively for a feat, a large

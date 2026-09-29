@@ -1,7 +1,3 @@
----
-id: experiments-and-rewrites
----
-
 # Experiments and rewrites
 
 Use a small review unit for a bounded prototype question. Keep the observed

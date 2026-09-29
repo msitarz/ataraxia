@@ -1,7 +1,3 @@
----
-id: agent-routes
----
-
 # Agent routes
 
 Replace the long root `AGENTS.md` with a task-routing table. Read the glossary

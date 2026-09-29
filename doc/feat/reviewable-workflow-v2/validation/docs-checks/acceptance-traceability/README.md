@@ -1,7 +1,3 @@
----
-id: acceptance-traceability
----
-
 # Acceptance traceability
 
 Give acceptance criteria stable IDs scoped to their owning README or spec.
