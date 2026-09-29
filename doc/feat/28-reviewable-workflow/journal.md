@@ -543,3 +543,32 @@ bodies and the registered step's parent/base identity. `git diff --check` and
 installed-wheel smoke and audit. The proposal's `make docs-check` remains
 unimplemented; these migration checks do not claim its delivery.
 Maintainer review is pending; no PR is merged, and iteration 2 has not started.
+
+## J-18: Clarify visual review options
+
+```yaml
+id: J-18
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+The maintainer requested explicit permission to use Mermaid when applicable,
+especially in Markdown documentation, in the review template's visual note.
+Preserve their existing addition of GitHub to the review tools in that paragraph.
+This corrects the current artifact within
+[step PR #33](https://github.com/msitarz/ataraxia/pull/33); it does not start
+another delivery step or change the approved specification/design contracts.
+
+Plan: update the owning visual note, check the bounded change and preserved
+history, run required publication CI, and commit. Then advance the overview's
+review revision in a checked metadata commit and push to the same step PR.
+
+Validation: bounded note scope, native entry identity, unchanged contracts and
+journal history, and 49 local links/anchors passed. `git diff --check` and
+`make ci` passed with 232 repository tests, 3 examples, type/import checks,
+installed-wheel smoke and audit. Earlier journal entries remain unchanged;
+maintainer review and dependent continuation remain pending.

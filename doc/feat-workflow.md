@@ -156,10 +156,12 @@ uses recorded evidence. Keep the entry point short; link to detailed evidence.
 | Next | One proposed next iteration and whether it is authorized or awaiting approval |
 | Review effort | Rough initial review estimate and actual maintainer feedback, or explicitly pending feedback |
 
-The maintainer inspects changes in Magit or their editor/IDE; identify the range
-and files without pasting the diff into chat. Link a compact visual when it helps
-answer the review question. Current approval and review rules remain in their
-owning sections above; this template presents evidence for those decisions.
+The maintainer inspects changes in Magit, GitHub or their editor/IDE; identify the
+range and files without pasting the diff into chat. Link a compact visual when it
+helps answer the review question. The agent can use Mermaid when applicable,
+especially for diagrams in Markdown documentation. Current approval and review
+rules remain in their owning sections above; this template presents evidence for
+those decisions.
 
 ## Failures and boundaries
 
