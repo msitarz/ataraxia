@@ -138,6 +138,29 @@ Keep the handoff current at each gate and session transfer. A new session should
 be able to continue from these records without relying on conversation memory.
 Keep specification status consistent with the evidence and the handoff stage.
 
+## Review artifact template
+
+Candidate template for
+[slice 01's first iteration](feat/28-reviewable-workflow/slices/01-review-loop.md#proposed-iterations),
+pending maintainer review. Its
+[worked discovery example](feat/28-reviewable-workflow/journal.md#j-14-deliver-the-review-template-and-example)
+uses recorded evidence. Keep the entry point short; link to detailed evidence.
+
+| Field | Fill with |
+| --- | --- |
+| Outcome | One question or result, its scope, and affected acceptance IDs |
+| Inspect | Exact revision or comparison range, affected files, and direct artifact/evidence links |
+| Evidence | Commands and observed results, failed or unrun checks, and limits; for discovery, hypothesis, alternatives, stopping condition, probe and versions |
+| Consequences | Consequential choices and effects on architecture, vocabulary, compatibility or debt; scoped structural review |
+| Decision requested | The specific artifact or choice for the maintainer to accept, correct or defer |
+| Next | One proposed next iteration and whether it is authorized or awaiting approval |
+| Review effort | Rough initial review estimate and actual maintainer feedback, or explicitly pending feedback |
+
+The maintainer inspects changes in Magit or their editor/IDE; identify the range
+and files without pasting the diff into chat. Link a compact visual when it helps
+answer the review question. Current approval and review rules remain in their
+owning sections above; this template presents evidence for those decisions.
+
 ## Failures and boundaries
 
 Follow [validation procedure](../CONTRIBUTING.md#make-targets) if network
