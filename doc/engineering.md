@@ -69,6 +69,21 @@ Pyrefly and add `# SPDX-License-Identifier: Apache-2.0` to new source files.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise domain
   errors.
 
+### Structural review
+
+Before presenting a change, inspect whether new types and helpers fit the
+responsibilities of the surrounding code. Combine similar records only when
+their meanings, invariants, and supported operations match; retain distinct
+types when a shared shape would erase a useful distinction or weaken type
+precision. Put a helper with the responsibility it serves; use a shared module
+only when its behavior is genuinely shared across owners. Do not move a helper
+to a generic utility module merely because its current location is awkward.
+
+Record the structural decision in the step review, including when no refactor is
+needed. Keep any refactor within the approved outcome, preserve behavior and
+type guarantees, and run the affected checks. A consequential boundary or
+contract change returns to the applicable review gate.
+
 ### Preserve type precision
 
 Type precision is part of correctness. Passing strict Pyrefly is necessary, but does not
