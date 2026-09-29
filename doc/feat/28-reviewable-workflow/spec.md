@@ -142,6 +142,16 @@ proposed relationships; the append-only journal explains consequential events.
 Git retains textual history. Correct a journal entry with a new entry referring
 to it. Avoid transcript dumps, duplicated state, or separate human and agent specs.
 
+Keep the journal sparse: record approvals, consequential choices, investigation
+findings, unresolved review findings, and corrections to earlier entries. A
+delivery step or commit does not require its own journal event. The step PR
+owns its review range and validation report; Git owns textual changes. Give
+each event a short itemized outcome and elaborate only when the decision cannot
+be understood through its linked owners. The overview routes to the current
+approval and step PR without requiring a full journal read. Default the event
+body to one short bullet with a link; add a paragraph only for rationale that
+the linked record cannot supply.
+
 Give feat specifications and designs compact Mermaid views of important behavior
 or relationships. Each view answers one review question, uses shared vocabulary
 and stable acceptance IDs where relevant, and links to its owning contracts.
@@ -300,13 +310,15 @@ Use these six entry kinds:
 | --- | --- |
 | `investigation` | Question, experiment, findings, and recommendation |
 | `decision` | Consequential choice or change of direction |
-| `execution` | Completed iteration and its evidence |
-| `review` | Findings against an identified revision |
+| `execution` | Non-routine result or evidence not already owned by the step PR or Git |
+| `review` | Consequential or unresolved findings against an identified revision |
 | `approval` | Explicit human authorization for an identified revision and scope |
 | `correction` | Correction of an earlier journal record |
 
 Plans and handoffs accompany these entries when useful; they do not require
-additional kinds. `review` and `approval` require a `revision` field containing
+additional kinds. There is no required `execution` event per step; checker
+rules validate events that exist and approval evidence at the applicable gate.
+`review` and `approval` require a `revision` field containing
 the full quoted commit SHA. `approval` also requires `scope`, a nonempty list of
 covered repository-relative document paths, and the specific human instruction
 or its evidence link in prose. A review does not authorize continuation. Record

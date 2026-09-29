@@ -1137,3 +1137,22 @@ the current review head remains the merge gate.
 assessment. **Next:** After reviewed merge and authorization, decide whether
 rewrite migration guidance is the next bounded step. **Review effort:**
 Estimated four minutes; maintainer feedback pending.
+
+## J-32: Propose sparse journal steps
+
+```yaml
+id: J-32
+date: "2026-09-29"
+kind: decision
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+- After [PR #45](https://github.com/msitarz/ataraxia/pull/45) merged at
+  `5ed9278d66f28b6cc3b11301cf7062eb306431f4`, the maintainer said
+  "yes, lets add additional steps in this slice" for shorter journal events
+  and selective reading. [STEP-9 issue #46](https://github.com/msitarz/ataraxia/issues/46)
+  proposes the contract; step 10 would adopt it, and step 11 remains conditional.
+  Existing guidance and historical entries remain unchanged pending review.

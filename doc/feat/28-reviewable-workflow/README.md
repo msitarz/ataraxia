@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: awaiting-discovery-review
+stage: preparing-journal-amendment-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -10,7 +10,7 @@ base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
 approved_revision: null
-review_base_revision: "4491e751264767385b827ee15749550c9beec48b"
+review_base_revision: "5ed9278d66f28b6cc3b11301cf7062eb306431f4"
 review_revision: null
 ---
 
@@ -30,21 +30,23 @@ own decisions.
 
 ## Review entry point
 
-Review the [discovery and promotion rule](../../feat-workflow.md#discovery-and-prototype-promotion)
-and [worked gap assessment](journal.md#j-31-deliver-discovery-and-promotion-guidance)
-as `F28-01:STEP-7`, tracked in
-[issue #44](https://github.com/msitarz/ataraxia/issues/44) and
-[draft PR #45](https://github.com/msitarz/ataraxia/pull/45).
+Review the [sparse journal contract](spec.md#6-keep-records-small-and-authoritative),
+[selective reading design](design.md#documents-and-revisions), and
+[step plan](slices/01-review-loop.md#proposed-iterations)
+as `F28-01:STEP-9`, tracked in
+[issue #46](https://github.com/msitarz/ataraxia/issues/46).
 The step PR will identify its review head against slice merge
-`4491e751264767385b827ee15749550c9beec48b`. Initial review estimate: four minutes
-for the rule and one retrospective example; actual feedback is pending.
+`5ed9278d66f28b6cc3b11301cf7062eb306431f4`. Initial review estimate:
+three minutes for the event policy and future step boundaries; actual feedback
+is pending.
 
 Step PRs [#33](https://github.com/msitarz/ataraxia/pull/33),
 [#35](https://github.com/msitarz/ataraxia/pull/35),
 [#37](https://github.com/msitarz/ataraxia/pull/37),
 [#39](https://github.com/msitarz/ataraxia/pull/39),
-[#41](https://github.com/msitarz/ataraxia/pull/41), and
-[#43](https://github.com/msitarz/ataraxia/pull/43) are merged into the slice.
+[#41](https://github.com/msitarz/ataraxia/pull/41),
+[#43](https://github.com/msitarz/ataraxia/pull/43), and
+[#45](https://github.com/msitarz/ataraxia/pull/45) are merged into the slice.
 [Slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31) remains draft
 pending its remaining steps and full acceptance evidence. The
 [tracking contract](spec.md#delivery-tracking-and-merge-boundaries) and
@@ -75,9 +77,8 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-[J-30](journal.md#j-30-authorize-discovery-guidance) records authorization
-after PR #43 merged. [J-31](journal.md#j-31-deliver-discovery-and-promotion-guidance)
-records the rule and walkthrough. Step tracking belongs to
+[J-32](journal.md#j-32-propose-sparse-journal-steps) records the requested
+planning amendment after PR #45 merged. Step tracking belongs to
 [slice 01](slices/01-review-loop.md). The defining and executor roles share this native
 conversation; no independent review is claimed.
 

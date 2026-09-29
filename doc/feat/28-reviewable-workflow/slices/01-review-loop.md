@@ -3,7 +3,7 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: preparing-discovery-review
+stage: preparing-journal-amendment-review
 approved_revision: "4491e751264767385b827ee15749550c9beec48b"
 issue: 30
 pr: 31
@@ -59,7 +59,14 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-07
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "4491e751264767385b827ee15749550c9beec48b"
-    stage: awaiting-review
+    stage: merged
+  - id: STEP-9
+    issue: 46
+    pr: null
+    branch: feat/reviewable-workflow-slice-01-step-09
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "5ed9278d66f28b6cc3b11301cf7062eb306431f4"
+    stage: preparing-review
 ---
 
 # Adopt the review loop and document ownership
@@ -106,6 +113,12 @@ Describe migration slices for rewrites, with explicit preserved behavior and
 approved intentional changes. No separate experiment index entry is needed for
 each run, and no production prototype adoption happens in this slice.
 
+Propose a sparse journal that keeps approval and consequential evidence while
+leaving routine execution, checks and exact edits with step PRs and Git. Preserve
+historical entries. First review the changed record ownership; adopt it in
+active guidance only after that review. Evaluate a read-only selector only if
+the shorter journal and direct links still leave meaningful lookup cost.
+
 ## Proposed iterations
 
 Commit each changed, checked iteration and present it before the next dependent
@@ -122,10 +135,14 @@ the budget. Corrections reuse the step issue and PR.
 | 6 | Adopt the accepted overhead rules in workflow and contribution guidance; review whether draft publication and merge checks remain clear | Walk through navigation-only versus changed code inputs; affected document checks and current-head CI at merge |
 | 4 | Structural review rule and two cases: similar types and a misplaced helper | Inspect meaning, invariants, precision and ownership; record a justified no-refactor result where appropriate; affected document checks |
 | 7 | Discovery record and prototype promotion gap assessment | Walk through one bounded experiment and the gap to production; inspect links and metadata |
+| 9 | Planning amendment for sparse journal events and selective reading; review which record owns each fact | Compare routine step, approval and consequential-finding cases against Git, PR and README owners; check unchanged history and links. No active guidance or tool change |
+| 10 | Adopt the approved lean journal rule in workflow, ownership guidance and templates; review a short event and a routine step with no event | Check approval scope, handoff recovery, append-only history and affected document routes |
+| 11 | If lookup remains costly, try a read-only journal selector; review its measured value or a reasoned deferral | Select exact ID, kind and recent entries without rewriting history; compare direct links/`rg`, output size and missing-input behavior |
 | 8 | Rewrite migration guidance, if agreed after step 7 | Walk through preserved behavior, intentional changes, comparison, cutover and retirement; inspect links and metadata |
 
-Steps 5 and 6 preceded step 4. Step 7 is now registered; row 8 remains an
-unregistered outline, not an authorized step. Preserve all identities.
+Steps 5 and 6 preceded step 4. Step 9 follows the merged step 7. Rows 8, 10
+and 11 are unregistered outlines; step 11 is conditional and may be deferred.
+Preserve all identities.
 
 Follow [validation selection](../../../../CONTRIBUTING.md#validation-selection)
 for draft publication and current-head merge evidence. Until the new tools
@@ -161,6 +178,7 @@ for each documentation step or claim unrun checks passed.
 | AC-4 | Review similar types, misplaced helpers, an experiment, and a rewrite proposal | Guidance preserves semantic distinctions, permits no refactor, and requires explicit promotion/migration gaps | Recorded structural and discovery walkthrough |
 | AC-5 | Track a slice and two dependent delivery steps through review and integration | Own issues/PRs target the correct parents; corrections reuse tracking; the next step starts from the updated slice after reviewed merge and authorization; integration uses child review and acceptance evidence | Tracking walkthrough and actual initial PR hierarchy, followed by slice 03 fixtures |
 | AC-6 | Review the overhead baseline and navigation/code-change examples | Amendment separates draft checks from merge CI, bounds execution effort, identifies evidence invalidation and reduces duplicate tracking; adoption remains explicit | Recorded baseline and manual rule walkthrough; later selection/provenance fixtures |
+| AC-7 | Resume after a routine step, approval and consequential finding | The README and step PR recover current work without a full journal read; the journal preserves short unique events and historical entries; a selector is adopted only if it improves lookup | Manual three-case walkthrough and later history/metadata fixtures |
 
 ## Boundaries and next review
 

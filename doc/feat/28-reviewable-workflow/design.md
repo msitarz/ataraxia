@@ -106,7 +106,9 @@ does not prove approval or unchanged content. Metadata must not approve itself.
 
 The journal initially stays one file. Each entry starts with YAML metadata for
 its event ID, date, kind, role, and embedded native session identity, followed by
-prose for consequences and evidence links. Follow the
+brief prose for the consequential fact and evidence links. Routine execution
+and check listings stay in the step PR, while Git preserves exact edits. The
+README handoff routes to the current approval and PR. Follow the
 [entry contract](spec.md#journal-entries-and-session-identity), including
 revision and scope fields for reviews and approvals.
 Split definition and execution journals only when size or concurrent work
@@ -128,6 +130,13 @@ metadata without needing private transcripts. Links to other journal events
 stay in prose and use the adopted generic Markdown link checks. Preserve the
 existing prose/S1 entries through an explicit historical boundary; new entries
 follow the embedded format.
+
+Read only the events needed for the current decision. A small read-only selector
+may emit entries by ID, kind, or recent append order if shorter events and the
+README route still leave measurable lookup cost. It reads repository Markdown,
+does not rewrite the journal or authenticate human approval, and has a direct
+link/`rg` fallback. Decide whether to build it after the lean event policy is
+used; do not make agent operation depend on it.
 
 Repository architecture continues to own current system relationships. This
 design owns proposed workflow changes. ADRs own consequential architectural
