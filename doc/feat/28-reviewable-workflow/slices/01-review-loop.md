@@ -2,8 +2,8 @@
 id: F28-01
 kind: slice
 parent: F28
-status: in progress
-approved_revision: "406d2e61356a05b665af6b7aba5c1d25083a57bd"
+status: proposed
+approved_revision: null
 ---
 
 # Adopt the review loop and document ownership

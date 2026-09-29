@@ -1,8 +1,8 @@
 ---
 id: F28
 kind: feat
-status: in progress
-stage: awaiting-iteration-review
+status: proposed
+stage: awaiting-specification-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -10,8 +10,6 @@ base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "406d2e61356a05b665af6b7aba5c1d25083a57bd"
 approved_revision: null
-review_base_revision: "6d1a864bad92ac439bbd1f70fe98ba1699e15abe"
-review_revision: "efe5d17d06c5b1cd02bba593319ba92eb2b0449e"
 ---
 
 # Small reviewed iterations
@@ -21,20 +19,16 @@ project. Each iteration presents one concrete artifact designed for review in
 under five minutes. Discussion can take longer; the agent waits for explicit
 approval before the next dependent iteration.
 
-This package has begun scoped delivery under the
-[current workflow](../../feat-workflow.md). The maintainer authorized slice 01's
-first iteration; the [handoff](#current-handoff) identifies its approval and
-limits. Tool choices, later iterations, and parallel reversal remain proposed.
+This is a proposal using the proposed file layout. The
+[current workflow](../../feat-workflow.md) still governs delivery. No future
+implementation, tool selection, or reversal of parallel execution is approved
+by publication of this package.
 
 ## Review entry point
 
-For slice 01's first iteration, review the
-[candidate template](../../feat-workflow.md#review-artifact-template) and
-[worked discovery example](journal.md#j-14-deliver-the-review-template-and-example).
-The frontmatter's `review_base_revision` and `review_revision` identify the
-comparison in Magit or an editor/IDE, including the approval and handoff changes.
-The [overall specification](spec.md) retains the larger direction; unresolved
-tool choices and later implementation steps have their own review boundaries.
+Start with the [six principles and overall acceptance criteria](spec.md).
+Then review one delivery slice at a time. Approving the direction does not
+approve unresolved tool choices or every later implementation step.
 
 | Document | Authoritative content | Read when |
 | --- | --- | --- |
@@ -60,18 +54,11 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-Defining and executor roles share the
-[conversation recorded in J-13](journal.md#j-13-approve-slice-01-iteration-1).
-There is no independent session review. The maintainer authorized
-[slice 01](slices/01-review-loop.md)'s first iteration at the candidate revision
-named in its frontmatter; J-13 owns the instruction and exact scope.
-The current action is manual review of the delivered template and example at
-`review_revision`. [J-14](journal.md#j-14-deliver-the-review-template-and-example)
-owns execution and check evidence; maintainer feedback is pending. If accepted,
-the proposed next outcome is iteration 2's continuation and material-change
-guidance. That iteration has not started. Overall specification approval remains pending;
-the overview's `approved_revision` remains null.
-The [journal](journal.md) owns approval, execution and validation evidence.
+Defining conversation: [native identity in J-12](journal.md#j-12-adopt-embedded-journal-metadata).
+No executor session has started.
+The next action is manual specification review, beginning with the six principles.
+There is no approved specification revision and no independent session review.
+The [journal](journal.md) owns drafting and validation evidence.
 The [visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format);
 overall specification review remains pending.
 The candidate contracts, design, and delivery slices are committed at the
