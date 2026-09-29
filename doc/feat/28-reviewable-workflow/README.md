@@ -2,13 +2,13 @@
 id: F28
 kind: feat
 status: in progress
-stage: preparing-journal-amendment-review
+stage: awaiting-journal-amendment-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
 base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
-specification_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
+specification_revision: "00700e53a1d38b2822dbfec394decb7b77799cc4"
 approved_revision: null
 review_base_revision: "5ed9278d66f28b6cc3b11301cf7062eb306431f4"
 review_revision: null
@@ -34,7 +34,8 @@ Review the [sparse journal contract](spec.md#6-keep-records-small-and-authoritat
 [selective reading design](design.md#documents-and-revisions), and
 [step plan](slices/01-review-loop.md#proposed-iterations)
 as `F28-01:STEP-9`, tracked in
-[issue #46](https://github.com/msitarz/ataraxia/issues/46).
+[issue #46](https://github.com/msitarz/ataraxia/issues/46) and
+[draft PR #47](https://github.com/msitarz/ataraxia/pull/47).
 The step PR will identify its review head against slice merge
 `5ed9278d66f28b6cc3b11301cf7062eb306431f4`. Initial review estimate:
 three minutes for the event policy and future step boundaries; actual feedback
