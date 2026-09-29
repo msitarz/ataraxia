@@ -33,7 +33,7 @@ own decisions.
 Review the [structural review rule](../../engineering.md#structural-review),
 [delivery gate](../../feat-workflow.md#stepwise-changes-and-commits), and
 [two-case walkthrough](journal.md#j-27-deliver-structural-review-guidance) and
-[base-type correction](journal.md#j-28-clarify-shared-base-types)
+[base-type corrections](journal.md#j-28-clarify-shared-base-types)
 as `F28-01:STEP-4`, tracked in
 [issue #42](https://github.com/msitarz/ataraxia/issues/42) and
 [draft PR #43](https://github.com/msitarz/ataraxia/pull/43).

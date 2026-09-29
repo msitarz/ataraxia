@@ -1038,3 +1038,24 @@ now covers this pattern without weakening variant-specific narrowing. STEP-4
 changes guidance only; its earlier walkthrough remains as recorded. Recheck
 the affected docs and publish the correction to
 [step PR #43](https://github.com/msitarz/ataraxia/pull/43).
+
+## J-29: Identify diagnostic base fields
+
+```yaml
+id: J-29
+date: "2026-09-29"
+kind: correction
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+The maintainer also identified the three [shard error variants](../../../src/ataraxia/shard_types.py)
+as candidates for a shared base `TypedDict`: `ExceptionDiagnostic`,
+`TimeoutDiagnostic`, and `WorkerFailureDiagnostic` repeat `type: str` and
+`message: str`. A base can own those fields while each variant retains its
+`kind` literal and specific fields. Their `traceback` fields differ (`str`
+versus `None`), so moving that field into a widened base would lose useful
+precision. This extends [J-28](#j-28-clarify-shared-base-types)'s example;
+STEP-4 records the review finding without refactoring the parallel code.
