@@ -4,10 +4,11 @@ kind: feat
 status: proposed
 stage: awaiting-specification-review
 issue: 28
-pr: null
+pr: 29
 branch: feat/reviewable-workflow
 base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
+specification_revision: "999858b67ee44bb328954057375435f04f284541"
 approved_revision: null
 ---
 
@@ -57,9 +58,13 @@ Defining session: this conversation. No executor session has started.
 The next action is manual specification review, beginning with the six principles.
 There is no approved specification revision and no independent session review.
 The [journal](journal.md) owns drafting and validation evidence.
+The candidate contracts, design, and delivery slices are committed at the
+frontmatter's `specification_revision`; subsequent publication metadata does not
+approve or implement them.
 
 [Issue #28](https://github.com/msitarz/ataraxia/issues/28) tracks the eventual
 implemented workflow and evaluation. The maintainer requested this stacked base
 to retain the familiar parallel implementation for a later controlled replay.
 The existing [parallel PR #24](https://github.com/msitarz/ataraxia/pull/24) has its
 own pending reviews; this proposal does not resolve them.
+The proposal is published in [draft PR #29](https://github.com/msitarz/ataraxia/pull/29).

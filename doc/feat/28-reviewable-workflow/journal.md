@@ -85,3 +85,17 @@ smoke in both execution modes, and an audit of 38 packages without known
 vulnerabilities. `git diff --cached --check` passed. The first attempt identified
 a fenced Python example formatting issue, which was corrected before the clean
 run. Evidence is local macOS validation, not a new workflow evaluation or STE run.
+
+## J-5: Proposal publication
+
+Date: 2026-09-29. Role/session: defining session, this conversation.
+
+Committed the proposal as `999858b67ee44bb328954057375435f04f284541` and pushed
+`feat/reviewable-workflow`. Created [draft PR #29](https://github.com/msitarz/ataraxia/pull/29)
+against `feat/parallel_execution`, with `Refs #28`. Added tracking links to the
+overview and issue. The specification/design/slice bodies remain at that candidate
+revision; this publication update changes navigation and historical evidence.
+
+No specification approval, executor session, independent defining-session review,
+STE runtime result, workflow adoption, or reversal has been recorded. The next
+decision is the maintainer's specification review, routed by the overview.
