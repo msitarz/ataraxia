@@ -13,7 +13,8 @@ separate unit. These children move rules still stranded in `AGENTS.md`.
 
 ## Work units
 
-- **TODO** [Engineering rules](engineering/README.md)
+- **DONE** Engineering rules — moved repair, coding, type, structural review, and
+  testing guidance to `doc/engineering.md`.
 - **TODO** [ADR rules](adr/README.md)
 - **TODO** [Architecture contracts](architecture/README.md)
 - **TODO** [Contribution rules](contribution/README.md)
