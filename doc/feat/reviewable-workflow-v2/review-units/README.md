@@ -25,6 +25,6 @@ required.
 
 ## Work units
 
-- [Local contracts](local-contracts/README.md)
-- [PR review and merge gates](pr-gates/README.md)
-- [Experiments and rewrites](experiments-and-rewrites/README.md)
+- **TODO** [Local contracts](local-contracts/README.md)
+- **TODO** [PR review and merge gates](pr-gates/README.md)
+- **TODO** [Experiments and rewrites](experiments-and-rewrites/README.md)
