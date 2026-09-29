@@ -245,3 +245,44 @@ advance the candidate revision, then publish through the existing draft PR.
 Validation: bounded document and whitespace checks passed. `make ci` passed
 with 232 repository tests, 3 examples, type/import checks, installed-wheel smoke
 and audit. No calldiff runtime claims were tested.
+
+## J-12: Adopt embedded journal metadata
+
+```yaml
+id: J-12
+date: "2026-09-29"
+kind: decision
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+The maintainer said, "yeah, lets adopt that new format", accepting six entry
+kinds and native identity embedded in each entry. The
+[entry contract](spec.md#journal-entries-and-session-identity) now specifies the
+first YAML block, required fields, review/approval metadata, and ordinary prose
+links. The design, template slice and checker slice follow that contract.
+This adopts the record format for proposal entries; it does not approve execution
+of the complete workflow specification or implement `make docs-check`.
+
+Legacy boundary: [J-1](#j-1-direction-and-branch-base) through
+[J-11](#j-11-note-calldiff-for-future-review), inclusive, retain their earlier
+prose metadata and S1 convention. Their defining conversation is the native
+identity embedded above, previously verified and associated in
+[J-8](#j-8-journal-identity-and-session-registration). J-12 begins the new format;
+later entries cannot use this historical compatibility boundary. Corrections
+append and link to their earlier records; no session registration or YAML
+reference list is required.
+
+Plan: revise the owning contract and affected proposal routes, append this
+decision, check metadata/links/history and repository CI, and commit. Then
+advance the overview's candidate revision in a checked metadata commit and
+publish through the existing draft PR. Preserve every earlier journal entry.
+
+Validation: bounded checks passed for all 10 proposal documents, 39 scoped
+acceptance rows and 89 local links/anchors. Checked J-12's YAML placement and
+fields, verified its native identity, and preserved all earlier journal text.
+`make ci` passed with 232 repository tests, 3 examples, type/import checks,
+installed-wheel smoke and audit. The future documentation checker remains
+unimplemented; these bounded checks do not claim its delivery.

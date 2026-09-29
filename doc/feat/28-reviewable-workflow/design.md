@@ -78,23 +78,30 @@ event and revision. Compare the covered contract text with its approved revision
 including specifications first created on this branch. An ancestor SHA alone
 does not prove approval or unchanged content. Metadata must not approve itself.
 
-The journal initially stays one file with event IDs, dates, separate role and
-declared session references, revision or evidence links, consequence, and approval
-scope when relevant. Follow the [identity contract](spec.md#journal-identity-and-session-references).
+The journal initially stays one file. Each entry starts with YAML metadata for
+its event ID, date, kind, role, and embedded native session identity, followed by
+prose for consequences and evidence links. Follow the
+[entry contract](spec.md#journal-entries-and-session-identity), including
+revision and scope fields for reviews and approvals.
 Split definition and execution journals only when size or concurrent work
 justifies it; retain a route and chronology. Append-only content can still
 conflict in Git. A reviewer
 uses the approved contracts and actual diff; executor narrative remains a claim
 to reproduce. Sharing one session does not establish independent review.
 
-Declare sessions in appended journal events so entries reuse a short reference
-instead of repeating native identifiers. For Codex, store `provider: codex` and
-`thread_id` from verified conversation metadata. The native thread identifies
+Repeat the `session` mapping in each entry rather than maintain registrations
+or aliases. This small duplication lets a reader identify the conversation from
+one event; changing its display name does not change identity. For Codex, store
+`provider: codex` and `thread_id` from verified conversation metadata.
+The native thread identifies
 the conversation; the app-server's `sessionId` identifies a session tree and can
 be shared by forked threads. See [Codex thread documentation](https://developers.openai.com/codex/app-server#start-or-resume-a-thread).
 Another agent needs access to stored history to read or resume that thread.
 Any local availability adapter remains optional; public CI validates repository
-metadata and references without needing private transcripts.
+metadata without needing private transcripts. Links to other journal events
+stay in prose and use the adopted generic Markdown link checks. Preserve the
+existing prose/S1 entries through an explicit historical boundary; new entries
+follow the embedded format.
 
 Repository architecture continues to own current system relationships. This
 design owns proposed workflow changes. ADRs own consequential architectural
@@ -109,7 +116,7 @@ repository-specific contracts. The following are proposals pending slice 02.
 | Layer | Proposed tool | Responsibility and limit |
 | --- | --- | --- |
 | Markdown hygiene | rumdl, pinned after a probe | Markdown structure, supported link/anchor checks, optional frontmatter key rules; verify actual pinned capabilities |
-| Metadata | Strict YAML parser plus JSON Schema or typed validation | Required frontmatter, field types/enums, quoted SHAs, IDs, kind-specific fields; choose one schema source |
+| Metadata | Strict YAML parser plus JSON Schema or typed validation | Frontmatter and entry metadata placement, field types/enums, quoted SHAs, IDs, kind-specific fields; choose one schema source |
 | Workflow semantics | Custom Python runner under `script/docs_check/` | Ownership/routes, ADR reciprocity, acceptance references, approval/revision and append-only history rules |
 | Language | Evaluated ASD-STE100 checker and a Markdown adapter if needed | Scoped procedure/description profiles, approved technical vocabulary, reproducible diagnostics; no claim of complete STE compliance |
 | Existing code gates | Ruff, Pyrefly, Tach, pytest | Code style, precise types, imports and behavior; human review still owns cohesion and architecture fit |
@@ -129,7 +136,9 @@ semantic correctness.
 
 Start the Python runner with CLI selection/output, a shared parsed document
 index, and rules grouped by responsibility. Add modules only as needed. Use a
-real Markdown parser; ignore code fences/spans and preserve source locations.
+real Markdown parser and preserve source locations. Read the designated journal
+metadata fence for schema checks; ignore ordinary code fences/spans when finding
+prose references.
 Do not import the application runtime. Runtime example validation belongs in
 pytest. No plugin framework, persistent cache, or graph database is required.
 

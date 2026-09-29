@@ -189,37 +189,79 @@ reference checks join this target through slice 04; references do not prove test
 passed or sufficiently assert the requirement. Incremental selection retains
 the relevant cross-file and test dependencies.
 
-## Journal identity and session references
+## Journal entries and session identity
 
 For `kind: journal`, frontmatter `owner` resolves to the registered feat or feat
 slice whose events it records. Event IDs use `J-n` and are unique across all
 journals for that owner. External references qualify the owner, such as
 `F28:J-8`; bare references are local. Moving or splitting journals preserves
 identity. Never renumber or reuse an event ID; numbering gaps are allowed.
-Corrections append an event referring to the original.
+Corrections append an event linking to the original.
 
-Each agent entry records its date, delivery role (`defining` or `executor`), and
-session reference separately. Declare a local session reference, such as `S1`,
-once in a journal event with a recognizable name, `provider`, and the provider's
-native `thread_id`. The reference shares the journal owner's scope; external
-references use `F28:S1`. Within that owner, a resumed conversation keeps the same
-reference and native identity; a new conversation gets a new reference and
-identity. Changing delivery role does not create a new conversation.
+Each new entry starts with `## J-n: <title>` followed immediately by one fenced
+`yaml` metadata mapping, then readable prose. Required fields are `id`, `date`,
+`kind`, `role`, and `session`. The metadata `id` matches the heading; `date` is a
+quoted ISO calendar date. Agent roles are `defining` or `executor`. Only this
+first block is entry metadata; YAML examples later in the prose are ordinary
+content. Reject duplicate keys, unknown fields, and unsupported entry kinds.
+
+Use these six entry kinds:
+
+| Kind | Purpose |
+| --- | --- |
+| `investigation` | Question, experiment, findings, and recommendation |
+| `decision` | Consequential choice or change of direction |
+| `execution` | Completed iteration and its evidence |
+| `review` | Findings against an identified revision |
+| `approval` | Explicit human authorization for an identified revision and scope |
+| `correction` | Correction of an earlier journal record |
+
+Plans and handoffs accompany these entries when useful; they do not require
+additional kinds. `review` and `approval` require a `revision` field containing
+the full quoted commit SHA. `approval` also requires `scope`, a nonempty list of
+covered repository-relative document paths, and the specific human instruction
+or its evidence link in prose. A review does not authorize continuation. Record
+approval scope precisely; approval of a format does not approve the whole feat.
+
+The `session` mapping has only `provider` and `thread_id`. Repeat it in every
+entry so each record identifies its conversation without a declaration lookup.
+The pair is the session identity. A resumed conversation keeps that pair; a new
+conversation gets its own native identity. Changing delivery role or the
+conversation's display name does not change identity. New entries have no
+session aliases, names, registration records, or YAML `references` list.
+
+An entry's metadata has this shape; the prose owns findings and rationale:
+
+```yaml
+id: J-12
+date: "2026-09-29"
+kind: decision
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
 
 Obtain native identity from trusted runtime metadata. If it is unavailable,
-record `thread_id: null`, the reason, and a recognizable name or resumable link;
-do not invent an ID. A declared reference remains usable across file moves and
-journal splits. Append an explicit association for legacy entries whose session
-was recorded ambiguously; preserve their original text and identify the events
-and verified identity or uncertainty. This compatibility rule does not excuse
-missing identity metadata in new entries.
+record `thread_id: null` and a nonempty `identity_unavailable_reason` field
+outside the session mapping. Do not invent an ID. Corrections and related events
+use ordinary Markdown links in prose; the adopted generic link checker validates
+targets and anchors. Do not create a custom journal-reference resolver.
 
-`make docs-check` must validate journal owners, event uniqueness and references,
-entry dates and roles, session declarations and references, and provider identity
-fields. Codex native thread IDs are UUIDs; other provider formats need explicit
-profiles. Null identity requires an unavailability reason. Check append-only
-history and legacy associations against the declared base. Incremental selection
-retains related journals, declarations, and inbound references.
+Preserve earlier prose metadata and session aliases as historical records.
+Append a `decision` or `correction` entry identifying the legacy event boundary
+and any verified identity association or uncertainty, with Markdown links.
+Compatibility applies only to those identified historical entries, not new ones.
+Moving or splitting journals preserves event and native session identity.
+
+`make docs-check` must validate journal owners, event uniqueness, metadata
+placement and heading agreement, dates, roles, kinds, provider identity fields,
+and revision/scope fields where required. Codex native thread IDs are UUIDs;
+other provider formats need explicit profiles. Check append-only history and
+the explicit legacy boundary against the declared base. Incremental selection
+retains related journals for owner-wide constraints; ordinary inbound-link
+coverage remains the generic checker's responsibility. Schema validity cannot
+prove that a recorded native identity or human approval is authentic.
 
 Repository checks do not require access to private conversation history. A native
 history availability check is optional and local; report unavailable or unrun

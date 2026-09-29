@@ -33,6 +33,12 @@ Include visual companions in specification and design templates following the
 accepted views in this package as worked examples and inspect rendered behavior
 and relationship views during the manual template walkthrough.
 
+Include a journal-entry template following the
+[entry and identity contract](../spec.md#journal-entries-and-session-identity).
+Its first YAML block records kind and embedded native identity; prose carries
+consequences and ordinary Markdown links. Show a decision and a revision-scoped
+approval without session aliases or a registration step.
+
 Define a lightweight discovery record and prototype promotion gap assessment.
 Describe migration slices for rewrites, with explicit preserved behavior and
 approved intentional changes. No separate experiment index entry is needed for
