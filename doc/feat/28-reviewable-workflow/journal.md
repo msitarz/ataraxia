@@ -865,3 +865,78 @@ links above it. Medium effort is verified from runtime metadata for this trial.
 **Next:** After reviewed merge and explicit authorization, deliver the adopted
 owner guidance as a separate bounded step. Structural step 4 remains pending.
 **Review effort:** Estimated three minutes; actual maintainer feedback pending.
+
+
+## J-24: Authorize overhead guidance
+
+```yaml
+id: J-24
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "5d081802630fce38dbaeee3501665ab15636cc34"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said "merged, lets move on to the next step and see how this new
+overhead reduction workflow actually works." Verified [PR #39](https://github.com/msitarz/ataraxia/pull/39)
+merged into the slice at `004a6ba66d7422284d071a00a5bfa01f3cbd1f93`.
+The approved contract bodies above are the reviewed amendment revision; the
+instruction authorizes delivery of their owner guidance, not step 4 or a new
+checker/cache. Same native conversation performs defining and execution roles.
+
+Plan: register step 6 from the updated slice; deliver the two guidance owners
+and a navigation-versus-code evidence walkthrough; check affected routes and
+history, publish a draft PR, then register its actual link once. Full CI on
+that review head remains required before merge. Initial review estimate:
+four minutes; actual feedback pending.
+
+## J-25: Deliver overhead guidance
+
+```yaml
+id: J-25
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** Advance `F28-01:AC-6` by routing draft validation, evidence reuse
+and full current-head merge CI through [contribution guidance](../../../CONTRIBUTING.md#validation-selection).
+[Workflow guidance](../../feat-workflow.md#stepwise-changes-and-commits) owns
+the execution signal, remote observation and publishing boundaries. No Makefile,
+CI, hook, dependency, cache or application change.
+
+**Inspect:** These two owner sections and the cases below. The step PR names the
+actual head and comparison base; the overview links to it after publication.
+
+| Input change | Required observation |
+| --- | --- |
+| Navigation or non-executable prose only | Affected docs checks and hooks locally; earlier runtime result may be cited only with unchanged inputs/tools/environment; full CI must pass on the latest review head before merge |
+| Code, tests, executable example, checker logic or relevant dependency | Invalidate dependent evidence; run affected focused or broader local checks; full current-head CI still gates merge |
+
+**Evidence:** Bounded inspection passed for 12 relevant documents, 43 scoped
+criteria and 128 local links/anchors, plus preserved approved bodies, journal
+history and native identity. Three incorrect relative paths were corrected
+during inspection. `git diff --check` and the normal commit hooks passed.
+Local full CI was not run for this documentation-only draft. GitHub CI must
+pass on the latest PR head before merge. The examples inspect the guidance,
+not an implemented selection/cache fixture.
+
+**Consequences:** Drafts can be opened while CI is pending, and merge readiness
+still requires actual current-head evidence. A ten-minute target prompts a
+smaller outcome proposal without waiving checks or abandoning authorized work.
+Tracking stays at the current owner; ancestor records link to it.
+
+**Decision requested:** Accept or correct the validation and publishing rules.
+**Next:** After reviewed merge and explicit authorization, continue the remaining
+slice 01 outcome; step 4 is still unstarted. **Review effort:** Estimated four
+minutes; actual feedback pending.

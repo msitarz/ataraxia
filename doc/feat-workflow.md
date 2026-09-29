@@ -34,6 +34,13 @@ continuing. Material contract changes still follow the
 on the branch so the evolution remains traceable; do not squash or rewrite them
 unless the maintainer explicitly requests it.
 
+For routine bounded work, start with a ten-minute execution target. If it slips,
+state the concrete obstacle and propose a smaller outcome while continuing work
+within the authorized scope. Time is a planning signal, never permission to rush,
+skip required checks, or abandon the outcome. Record elapsed time and model
+request count when available; mark unknown usage unknown. Review effort is
+separate and follows maintainer feedback.
+
 ## Delivery branches and review gates
 
 Each feat, feat slice and agreed delivery step has its own issue, branch and PR:
@@ -72,8 +79,12 @@ The prose owns the complete gate; this view shows dependent continuation.
 Slice and feat integration reviews link accepted child PRs and actual acceptance
 evidence. New integration changes receive a bounded step review; a large aggregate
 diff does not establish a short review. Keep incomplete integration PRs draft.
-Run required CI for every published branch and verify integration with its actual
-parent before merge. Missing required evidence keeps the review incomplete.
+An open draft may show pending CI. Before merge, require full CI on its current
+review head and verify integration with its actual parent. A later push needs
+checks for the changed inputs and current-head CI before merge; passing checks
+on an earlier head cannot establish merge readiness. Missing required evidence
+keeps the review incomplete. Follow [validation selection](../CONTRIBUTING.md#validation-selection)
+for local draft checks and evidence reuse.
 The maintainer merges or closes PRs; agents prepare them and never enable automatic
 merging. Record completion explicitly for issues targeting non-default branches;
 closing keywords may not close them. The maintainer closes completed issues.
@@ -100,8 +111,9 @@ the specification in `doc/feat/`, link the issue, follow
 [documentation ownership](documentation.md), and use the
 [ADR workflow](adr-workflow.md) when decisions are needed.
 
-Once the planning documents are reviewable, run `make ci`, commit and push, and
-open a draft PR against the applicable base. Add links between the issue, feat
+Once the planning documents are reviewable, run the applicable local draft checks,
+commit and push, and open a draft PR against the applicable base. State pending
+remote CI honestly. Add links between the issue, feat
 slice, and PR. Use `Refs #N` for partial delivery, including specification-only
 work on an implementation issue; use `Closes #N` only when merging completes the
 issue. GitHub closing keywords apply to PRs targeting the default branch.
@@ -120,7 +132,7 @@ handoff before implementing. If approval is missing or ambiguous, resolve that
 gate with the maintainer before execution. Continue independent preparation.
 
 Implement one authorized outcome on its delivery-step branch and PR. Run focused
-checks and the required repository checks, record results and limitations in the
+checks selected by affected inputs, record results and limitations in the
 feat slice, and update the issue with the stage and links to current evidence. Keep the issue
 short; don't copy the specification or test results into a second record.
 Commit and push checked changes so the PR reflects the delivered implementation.
@@ -142,8 +154,9 @@ validation evidence, and any specification changes against the approved scope.
 Report findings according to the glossary's session responsibilities.
 
 Record the commit each review covers and its outcome in the handoff or a linked
-issue/PR review. The executor addresses proposed changes, reruns relevant checks
-and `make ci`, updates evidence, and pushes to the same PR. Repeat the affected
+issue/PR review. The executor addresses proposed changes, reruns affected local
+checks, updates evidence, and pushes to the same PR. Full CI on the current head
+remains required before merge. Repeat the affected
 reviews until findings are resolved. Check documentation ownership and duplication
 alongside contracts and validation; follow
 [documentation review](documentation.md#review). Review the changes from later pushes;
@@ -195,6 +208,16 @@ Keep the handoff current at each gate and session transfer. A new session should
 be able to continue from these records without relying on conversation memory.
 Keep specification status consistent with the evidence and the handoff stage.
 
+Reuse unchanged guidance already read in the current session; follow mandatory
+rereads after compaction or changed definitions. Reuse a remote observation
+within its gate, then refresh actual head or merge state when a later gate relies
+on it. Keep current tracking at its owning step or slice and link from ancestors;
+avoid copying a changing handoff into every issue and PR. Prefer one cohesive
+artifact commit and one necessary follow-up for the real PR number. The step PR
+can own the published review head/range; an overview need not make another
+commit solely to embed its own SHA. Approval events still pin full revisions
+and covered paths.
+
 ## Review artifact template
 
 Use this template for each iteration. The
@@ -220,8 +243,9 @@ those decisions.
 
 ## Failures and boundaries
 
-Follow [validation procedure](../CONTRIBUTING.md#make-targets) if network
-access prevents `make ci`. Disclose missing checks and keep incomplete work draft.
+Follow [validation procedure](../CONTRIBUTING.md#validation-selection) if network
+access prevents a required check. Disclose missing checks and keep incomplete
+work draft.
 If GitHub access fails, report it, continue useful local work, and add external
 links once access returns. Don't claim an issue or PR exists without verifying
 it. If the missing issue blocks architectural work under the ADR workflow,
