@@ -3,6 +3,7 @@
 Use the same directory and review pattern recursively for a feat, a large
 child, or a small delivery step. Nest when it reduces the context needed for a
 decision; aim for shallow trees and strongly discourage more than five levels.
+Directory nesting does not choose a Git base.
 
 ## Work units
 
