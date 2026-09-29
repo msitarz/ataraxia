@@ -33,7 +33,8 @@ own decisions.
 Review [delivery branches and review gates](../../feat-workflow.md#delivery-branches-and-review-gates),
 [material-change handling](../../feat-workflow.md#execute-the-approved-scope),
 and the [boundary walkthrough](journal.md#boundary-walkthrough) as
-`F28-01:STEP-2`, tracked in [issue #34](https://github.com/msitarz/ataraxia/issues/34).
+`F28-01:STEP-2`, tracked in [issue #34](https://github.com/msitarz/ataraxia/issues/34)
+and [draft step PR #35](https://github.com/msitarz/ataraxia/pull/35).
 The review range is `588cde5ba881b6e20d1dfc0d558ae710e3b6d264` to
 `a7cf2de390e1ea343f54b9701c0f9bdc6b248d22`, also recorded in frontmatter.
 Use the step PR for this guidance and its examples. Later publication metadata
