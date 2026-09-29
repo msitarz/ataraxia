@@ -10,6 +10,8 @@ base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
 approved_revision: null
+review_base_revision: "9231d7164ec41835872bbd594b4e2b3770fbb1ce"
+review_revision: "5c51cd1ef5722af001de1fcc6bd1723ab8c0c7ce"
 ---
 
 # Small reviewed iterations
@@ -32,8 +34,10 @@ Review the [candidate artifact template](../../feat-workflow.md#review-artifact-
 and [worked discovery example](journal.md#j-14-deliver-the-review-template-and-example)
 as `F28-01:STEP-1`, tracked in
 [issue #32](https://github.com/msitarz/ataraxia/issues/32).
-The step branch compares against its slice base; publication metadata will pin
-the delivered revision. The [slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31)
+The review range is `9231d7164ec41835872bbd594b4e2b3770fbb1ce` to
+`5c51cd1ef5722af001de1fcc6bd1723ab8c0c7ce`, also recorded in frontmatter.
+It contains the template/example and necessary step tracking; later publication
+metadata does not change those artifacts. The [slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31)
 remains draft pending delivery steps and full acceptance evidence.
 The adopted [tracking contract](spec.md#delivery-tracking-and-merge-boundaries)
 and [branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base)
