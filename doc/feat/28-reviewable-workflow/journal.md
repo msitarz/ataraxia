@@ -137,3 +137,42 @@ Validation: bounded package checks passed for 38 scoped acceptance rows and
 71 local links/anchors, including namespace ownership and uniqueness. `make ci`
 passed with 232 repository tests, 3 examples, type/import checks, wheel smoke
 and audit. Only proposal documents changed; no checker was implemented.
+
+## J-8: Journal identity and session registration
+
+Date: 2026-09-29
+Role: defining
+Session: S1
+
+Session declaration, scoped to journal owner `F28`:
+
+```yaml
+session_ref: S1
+name: Reviewable workflow definition
+provider: codex
+thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+Legacy association: `F28:J-1`, `F28:J-2`, `F28:J-3`, `F28:J-4`, `F28:J-5`,
+`F28:J-6`, and `F28:J-7` identify this same defining conversation as
+"this conversation". They refer to `F28:S1`. Verified its native thread ID from
+`CODEX_THREAD_ID` and the matching local session metadata record; no transcript
+content is copied into the repository. This append preserves the earlier entries.
+
+The maintainer agreed to native provider/thread identity, separate delivery role,
+and planned structural checks with optional local history availability. Made
+journal-event scope and session-reference contracts explicit and added their
+schema/reference/history fixtures to slice 03. The handoff links to this declared
+session. These records do not establish independent review or approve the full
+specification.
+
+Correction plan: revise the owning contract, design and checker slice; append
+this declaration and update the handoff; verify, commit, advance the candidate
+revision in a checked metadata commit, and publish through the existing draft PR.
+No workflow tooling or parallel implementation changes are part of this step.
+
+Validation: bounded checks passed for all 10 proposal documents, 39 scoped
+acceptance rows and 74 local links/anchors. Checked the declared native identity,
+legacy association and handoff, and confirmed all earlier journal text remains
+unchanged. `make ci` passed with 232 repository tests, 3 examples, type/import
+checks, installed-wheel smoke and audit. Proposed journal checks remain unbuilt.

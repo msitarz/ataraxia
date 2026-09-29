@@ -28,6 +28,13 @@ document-reference checks live here; slice 04 adds collected pytest references
 to the same target. Unknown or invalid references fail even for proposed slices;
 the requirement for completed test evidence depends on delivery status.
 
+Enforce the [journal identity contract](../spec.md#journal-identity-and-session-references)
+through the same target: owner-scoped event and session IDs, separate date/role/
+session fields, declared native identity or an explicit unavailable reason, and
+valid references across journal splits. Legacy associations are explicit appends,
+not edits to historical entries. Native history availability is optional local
+evidence; public CI must work without private conversation storage.
+
 History checks compare covered approved contracts and append-only journals at
 declared revisions. Changes to accepted ADR bodies and completed historical
 slices follow their existing amendment policy. Approval-record consistency is
@@ -38,10 +45,10 @@ checkable; human authority and understanding remain review responsibilities.
 | Step | Concrete artifact and decision | Verification and proposed checkers |
 | --- | --- | --- |
 | 1 | Pinned generic linter config and a small enrolled doc set; review diagnostics and exclusions | Chosen rumdl rules and fixture probes; `make verify-check` |
-| 2 | A first schema/state rule and shared parsing/index seam; review one failing and one clean document | Parser/schema unit fixtures, precise locations, invalid metadata/acceptance owners, duplicate document IDs and tool-failure exit codes |
-| 3 | Navigation/reference and ADR reciprocity rules, introduced one coherent rule per review | Namespace resolution, same-number criteria in distinct scopes, duplicate definitions across files in one scope, dangling/unqualified external references, unreachable required routes and reciprocal records; reuse generic link checks where adequate |
+| 2 | A first schema/state rule and shared parsing/index seam; review one failing and one clean document | Parser/schema unit fixtures, precise locations, invalid metadata/acceptance/journal owners, entry dates/roles, provider identity profiles, duplicate document IDs and tool-failure exit codes |
+| 3 | Navigation/reference and ADR reciprocity rules, introduced one coherent rule per review | Acceptance/event/session scope resolution, same-number IDs in distinct scopes, duplicate definitions across files in one scope, undeclared session references, dangling/unqualified external references, unreachable required routes and reciprocal records; reuse generic link checks where adequate |
 | 4 | Path/directory, staged-index and base-ref selection; review affected-file explanations | Integration fixtures for inbound links, code-only changes, deleted/renamed files, changed config, and an unstaged fix hiding a staged failure |
-| 5 | Approval/revision and append-only transition checks; review their limits | Git-history fixtures including a newly created branch-local spec, contract changes after approval, journal correction append and unauthorized body rewrite |
+| 5 | Approval/revision and append-only transition checks; review their limits | Git-history fixtures including a newly created branch-local spec, contract changes after approval, journal correction and legacy-session association appends, and unauthorized body rewrite |
 | 6 | Make/CI/hook integration and documentation; review a real failing-to-clean run | Full `make docs-check`, targeted examples, missing required capabilities, history base configuration and `make ci` |
 
 Every row can split into smaller iterations. Extend strict type checking to the
@@ -60,6 +67,7 @@ drift inference until evidence requires them.
 | AC-4 | Remove a required tool/model/base, or run offline | Required checks fail or report incomplete; optional/unavailable transition checks are named and never claimed performed | CLI/integration tests |
 | AC-5 | Invoke repository verification and CI | Documentation gates run through the shared target with clear exit codes and compatible hook behavior | Makefile integration tests and `make ci` |
 | AC-6 | Define parent and child criteria, move their files, or introduce invalid owners/definitions/references | The scope contract resolves identities consistently; repeated local numbers across scopes pass, while duplicates within a scope and invalid references fail; file moves preserve identity | Namespace and cross-file fixtures, including incremental selection |
+| AC-7 | Declare sessions, resume or start a conversation, split journals, or associate legacy events | Event and session identity remains scoped and stable; duplicate events, missing declarations, invalid identity fields and dangling references fail; explicit unavailable identities and valid legacy appends pass; public CI needs no private history and local availability results are honest | Schema, cross-file and Git-history fixtures, plus optional local-adapter tests |
 
 ## Next review
 

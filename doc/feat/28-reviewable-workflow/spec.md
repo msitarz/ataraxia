@@ -149,6 +149,44 @@ reference checks join this target through slice 04; references do not prove test
 passed or sufficiently assert the requirement. Incremental selection retains
 the relevant cross-file and test dependencies.
 
+## Journal identity and session references
+
+For `kind: journal`, frontmatter `owner` resolves to the registered feat or feat
+slice whose events it records. Event IDs use `J-n` and are unique across all
+journals for that owner. External references qualify the owner, such as
+`F28:J-8`; bare references are local. Moving or splitting journals preserves
+identity. Never renumber or reuse an event ID; numbering gaps are allowed.
+Corrections append an event referring to the original.
+
+Each agent entry records its date, delivery role (`defining` or `executor`), and
+session reference separately. Declare a local session reference, such as `S1`,
+once in a journal event with a recognizable name, `provider`, and the provider's
+native `thread_id`. The reference shares the journal owner's scope; external
+references use `F28:S1`. Within that owner, a resumed conversation keeps the same
+reference and native identity; a new conversation gets a new reference and
+identity. Changing delivery role does not create a new conversation.
+
+Obtain native identity from trusted runtime metadata. If it is unavailable,
+record `thread_id: null`, the reason, and a recognizable name or resumable link;
+do not invent an ID. A declared reference remains usable across file moves and
+journal splits. Append an explicit association for legacy entries whose session
+was recorded ambiguously; preserve their original text and identify the events
+and verified identity or uncertainty. This compatibility rule does not excuse
+missing identity metadata in new entries.
+
+`make docs-check` must validate journal owners, event uniqueness and references,
+entry dates and roles, session declarations and references, and provider identity
+fields. Codex native thread IDs are UUIDs; other provider formats need explicit
+profiles. Null identity requires an unavailability reason. Check append-only
+history and legacy associations against the declared base. Incremental selection
+retains related journals, declarations, and inbound references.
+
+Repository checks do not require access to private conversation history. A native
+history availability check is optional and local; report unavailable or unrun
+access honestly. An ID does not import a conversation into another agent's
+context. Session metadata identifies the recording agent, not human approval or
+independent review; approval evidence remains a separate journal event contract.
+
 ## Overall acceptance criteria
 
 IDs are scoped to `F28`, remain stable, and are never reused after retirement.

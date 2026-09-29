@@ -54,7 +54,8 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-Defining session: this conversation. No executor session has started.
+Defining session: [F28:S1](journal.md#j-8-journal-identity-and-session-registration).
+No executor session has started.
 The next action is manual specification review, beginning with the six principles.
 There is no approved specification revision and no independent session review.
 The [journal](journal.md) owns drafting and validation evidence.

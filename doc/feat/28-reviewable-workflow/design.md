@@ -39,12 +39,23 @@ event and revision. Compare the covered contract text with its approved revision
 including specifications first created on this branch. An ancestor SHA alone
 does not prove approval or unchanged content. Metadata must not approve itself.
 
-The journal initially stays one file with event IDs, dates, role/session, revision
-or evidence links, consequence, and approval scope when relevant. Split definition
-and execution journals only when size or concurrent work justifies it; retain a
-route and chronology. Append-only content can still conflict in Git. A reviewer
+The journal initially stays one file with event IDs, dates, separate role and
+declared session references, revision or evidence links, consequence, and approval
+scope when relevant. Follow the [identity contract](spec.md#journal-identity-and-session-references).
+Split definition and execution journals only when size or concurrent work
+justifies it; retain a route and chronology. Append-only content can still
+conflict in Git. A reviewer
 uses the approved contracts and actual diff; executor narrative remains a claim
 to reproduce. Sharing one session does not establish independent review.
+
+Declare sessions in appended journal events so entries reuse a short reference
+instead of repeating native identifiers. For Codex, store `provider: codex` and
+`thread_id` from verified conversation metadata. The native thread identifies
+the conversation; the app-server's `sessionId` identifies a session tree and can
+be shared by forked threads. See [Codex thread documentation](https://developers.openai.com/codex/app-server#start-or-resume-a-thread).
+Another agent needs access to stored history to read or resume that thread.
+Any local availability adapter remains optional; public CI validates repository
+metadata and references without needing private transcripts.
 
 Repository architecture continues to own current system relationships. This
 design owns proposed workflow changes. ADRs own consequential architectural
