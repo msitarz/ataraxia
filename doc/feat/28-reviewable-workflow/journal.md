@@ -688,3 +688,118 @@ template and ownership routes. Step 3 has not started.
 **Review effort:** Estimated four minutes for the guidance and this table;
 actual maintainer feedback remains pending. The defining and executor roles share
 this conversation; no independent session review is claimed.
+
+## J-21: Authorize document template delivery
+
+```yaml
+id: J-21
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said, "ok i merged, lets move to the next step". Verified
+[PR #35](https://github.com/msitarz/ataraxia/pull/35) merged into the slice at
+`78a67e709c987d090c98b1aec671d0983e4f5811`, fetched that revision and created
+`feat/reviewable-workflow-slice-01-step-03` from the updated slice.
+This authorizes only `F28-01:STEP-3`: package templates, ownership routes and
+Mermaid companions, using the unchanged candidate contract bodies above.
+The step has [issue #36](https://github.com/msitarz/ataraxia/issues/36).
+Step 4, tool adoption and checker implementation remain pending. Defining and
+executor roles share this native conversation; no independent review is claimed.
+
+Plan and completion condition:
+
+1. Record the verified merge, scoped instruction and step tracking; check
+   native identity, metadata, preserved contracts/history and ancestry, then
+   commit the handoff.
+2. Add one reusable template document for metadata and predictable document
+   bodies; update ownership and workflow routes. Walk through the current grouped
+   feat and a compact child slice, check examples and local links, run `make ci`,
+   and commit the artifact. Preserve all historical slices and journal records.
+3. Pin the review range and navigation, publish a draft step PR to the slice,
+   verify its actual parent/head and update tracking. Stop for maintainer review
+   before step 4. Corrections stay in this step PR.
+
+Initial review estimate: four minutes for the formats, ownership map and worked
+routes; actual feedback remains pending. This advances `F28-01:AC-1` and
+`F28-01:AC-3`; full slice acceptance remains pending.
+
+Handoff validation: bounded checks passed for 10 documents, 42 scoped acceptance
+IDs and 110 local links/anchors, including native identity, metadata, preserved
+contracts/history and updated slice ancestry. Observed merge and explicit
+continuation instruction remain separate evidence.
+
+## J-22: Deliver document formats and owner routes
+
+```yaml
+id: J-22
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** Deliver `F28-01:STEP-3` under [J-21](#j-21-authorize-document-template-delivery),
+advancing `F28-01:AC-1` and `F28-01:AC-3`. The
+[templates](../../feat-templates.md) provide metadata profiles and predictable
+document bodies; [ownership](../../documentation.md#feat-documents) separates
+current state, contracts, proposed design and append-only history. Workflow and
+glossary routes point to these shared owners. Term meanings are preserved.
+
+**Inspect:** Review the field profiles, specification and journal scaffolds, and
+owner map. The overview will pin this artifact against slice merge
+`78a67e709c987d090c98b1aec671d0983e4f5811`. Example values are illustrative,
+not registered feats, acceptance criteria, sessions or approvals.
+
+### Package navigation walkthrough
+
+Agent inspection of existing documents, rather than a maintainer review or
+complete conformance migration:
+
+| Case | Route and observed ownership |
+| --- | --- |
+| Grouped feat | [README](README.md) → [spec](spec.md) for `F28` contracts, [design](design.md#visual-overview) for proposed relationships, [journal](#j-21-authorize-document-template-delivery) for scoped instruction/native identity, then the selected slice |
+| Compact child | [Slice 04](slices/04-acceptance-evidence.md) owns `F28-04` criteria and its local plan; its links reach the parent contracts/design and parent journal without another README, design or journal file |
+
+The existing [specification visuals](spec.md#visual-overview) and
+[design visuals](design.md#visual-overview) demonstrate the respective behavior
+and relationship views. Existing approved bodies keep their headings; they are
+examples of the model, not a claim that they match every new scaffold heading.
+The new ownership diagram and copied-template views await maintainer visual review.
+
+**Evidence:** Bounded checks passed for 10 documents, 42 scoped acceptance IDs and
+171 local links/anchors, including native identity, parent/base tracking and
+preserved contracts/history. Frontmatter and nested Markdown/YAML examples parse;
+illustrative IDs stay outside the live index. `git diff --check` and `make ci`
+passed with 232 repository tests, 3 examples, type/import checks, installed-wheel
+smoke and audit. Mermaid rendering awaits maintainer visual review.
+Future `make docs-check` should
+compose investigated rumdl hygiene/link support, kind-specific metadata and
+heading checks, namespace/history rules and route findings. Language checks await
+the STE investigation; no checker or dependency is adopted here.
+
+**Consequences:** Formats have one linked owner with a specific reading trigger;
+`AGENTS.md` stays a routing entry point. Compact children keep one contract file,
+larger outcomes add files only for distinct responsibilities. Approval remains
+human evidence; schemas cannot authenticate it. Historical records stay intact.
+
+**Decision requested:** Accept the document shapes and metadata/ownership boundaries,
+or request corrections within this step PR.
+
+**Next:** After reviewed merge and authorization, deliver step 4's structural and
+discovery/promotion/migration guidance. Step 4 has not started.
+
+**Review effort:** Estimated four minutes for the format choices and owner map;
+actual maintainer feedback remains pending. Defining and executor roles share
+this conversation; no independent session review is claimed.
