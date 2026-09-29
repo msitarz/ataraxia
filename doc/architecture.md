@@ -29,9 +29,11 @@ graph TD
 
 ### Current state vs. target state
 
-Only the CLI-driven, single-process, local-file execution path is implemented today.
-The distributed/serverless deployment described later on is a decided direction
-(see ADR-0006, ADR-0007) but has no corresponding code in this repository yet.
+Only the CLI-driven, local-file execution path is implemented today. Backtesting
+processes shards sequentially, and each computation has one source. Parallel
+execution, multi-source synchronization, and immutable artifact storage are
+planned. The distributed/serverless deployment described later is a decided
+direction (see ADR-0006, ADR-0007) but has no corresponding code here yet.
 
 ## Design goals & non-goals
 
@@ -58,12 +60,21 @@ Computable nodes must be hashable.  The simplest way to achieve it is to define 
 
 ```
 compute/   — computable DAG core.  No knowledge of trading concepts.
-provider   — provider that reads the shard data.
+bar        — normalized OHLCV input values.
+provider   — context-managed reader for shard data.
+source     — adapter from a provider to a graph input node.
 feature    — built-in composable features.
 broker     — process signals; position/PnL accounting.
 backtest   — orchestration layer.
 cli        — thin argparse wrapper around backtest.backtest_dir.
+errors     — shared domain errors.
+util       — shared graph/strategy-loading utilities.
 ```
+
+`test/unit/`, `test/integration/`, and `test/acceptance/` exercise the
+corresponding boundaries. `example/` holds a crossover strategy and its tests;
+`sample/` holds synthetic CSV data. `doc/feat/` holds delivery specifications,
+while [ADRs](adr/) record architectural decisions.
 
 `make arch-check`, also run by `make ci-check` and `make ci`, uses Tach to
 enforce the dependencies declared in `tach.toml`, as decided in
@@ -83,7 +94,14 @@ the computation engine independent of concrete I/O still requires code review.
 The computable graph in itself doesn't know anything about trading, features, backtesting etc.  It simply provides a framework to compute a loop while injecting dependencies and allowing saving each step of computation in the loop.  Think about this graph as a graph of frozen dependencies, such as that the same node class can be two different dependencies if they were instantiated with different parameters, such as fast SMA and slow SMA being the same implementation, but with different parameters.
 
 - Computable graph is built from a single sink `Computable`, walked backward.
-- Nodes are frozen, hashable, value-equal dataclasses (see ADR-0009, ADR-0012).
+- Built-in nodes are frozen, hashable, value-equal dataclasses. Preserve stable
+  equality and hashes so equivalent dependencies share computation. Pass the
+  same source instance through dependent nodes
+  ([ADR 12](adr/0012-source-node-computable-instance.md)):
+  `SourceNode.factory()` returns the runner updated by `send()`.
+- `compute()` owns the source context, and the source delegates resource
+  management to its provider ([ADR 16](adr/0016-source-manages-its-own-provider-lifecycle.md)).
+  Explicitly close the generator when stopping consumption early.
 - Runner preparation binds dependency names against callable signatures before the
   source context opens. Missing required arguments, unexpected names, required
   positional-only arguments, and uninspectable signatures raise `DependencyError`.
@@ -119,6 +137,16 @@ inline generic constructor under contextual typing: use a separately inferred no
 variable or an explicit type argument, such as `RollingWindow[int](node, 3)`. Typed
 lookup does not prove that a node belongs to the graph. The dynamic strategy-loading
 boundary still validates broker results at runtime.
+
+## Backtesting contracts
+
+Strategy modules export a sink class as `__sink__`; backtesting constructs it
+with a source ([ADR 14](adr/0014-sink-module-file-special-attribute.md)).
+Rolling windows return newest first. The broker enters at the signal bar's close
+and evaluates exits on later bars
+([ADR 13](adr/0013-broker-position-entry-needs-delay.md)).
+Prices and PnL use ticks, four per point for currently supported instruments.
+Preserve these conventions unless a task explicitly changes them.
 
 ## Target execution / deployment model _(planned — not yet implemented)_
 

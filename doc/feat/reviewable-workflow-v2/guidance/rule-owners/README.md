@@ -17,6 +17,7 @@ separate unit. These children move rules still stranded in `AGENTS.md`.
   testing guidance to `doc/engineering.md`.
 - **DONE** ADR rules — moved eligibility, format, amendments, and writing
   guidance to `doc/adr-workflow.md`.
-- **TODO** [Architecture contracts](architecture/README.md)
+- **DONE** Architecture contracts — moved the repository map and current
+  computation and backtesting contracts to `doc/architecture.md`.
 - **TODO** [Contribution rules](contribution/README.md)
 - **TODO** [Documentation ownership](documentation/README.md)

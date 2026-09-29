@@ -6,7 +6,11 @@ Read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) **in full at the s
 
 When defining, implementing, or reviewing a feat slice, read [doc/feat-workflow.md](doc/feat-workflow.md) **in full before starting that work**.
 
-Then inspect task-relevant code, tests, and ADRs. Distinguish current behavior from intended changes and surface discrepancies affecting the task. Before changing architectural boundaries, read [doc/architecture.md](doc/architecture.md) and follow the [ADR workflow](doc/adr-workflow.md).
+Then inspect task-relevant code, tests, and ADRs. Read
+[doc/architecture.md](doc/architecture.md) for the repository map and current
+computation and backtesting contracts. Distinguish current behavior from intended
+changes and surface discrepancies affecting the task. Before changing
+architectural boundaries, follow the [ADR workflow](doc/adr-workflow.md).
 
 ## Engineering Conventions
 
@@ -14,17 +18,6 @@ For any repository change, follow
 [repair and scope rules](doc/engineering.md#fix-the-underlying-problem).
 Read the full [engineering conventions](doc/engineering.md) when changing or
 reviewing code or tests.
-
-## Repository Map
-
-Ataraxia is a pre-alpha orchestrator for bar-by-bar trading backtests:
-
-- `src/ataraxia/compute/`: computation graph and loop; sibling modules handle sources, providers, features, brokerage, backtesting, and CLI.
-- `test/unit/`, `test/integration/`, `test/acceptance/`: tests by boundary.
-- `example/`: crossover strategy and its tests; `sample/`: synthetic CSV data.
-- `doc/feat/`: feat slices; [doc/adr/](doc/adr/): architectural decisions.
-
-Execution is currently local, sequential, and single-source. Parallel execution, multi-source synchronization, and immutable artifact storage are planned; verify status in code before treating documents as implemented behavior.
 
 ## Commands and Validation
 
@@ -62,14 +55,6 @@ The [glossary](doc/ubiquitous-language.md) is the single source of truth for sha
 - Verify meaning and module boundaries through observable examples and tests, including timing, units, state transitions, and failures.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one), [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html), [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
-
-## Computation and Strategy Contracts
-
-- Keep `compute/` independent of trading concepts and concrete I/O.
-- Preserve stable node equality/hashes; equivalent dependencies share computation. Pass the same source instance through dependent nodes. `SourceNode.factory()` returns the runner updated by `send()` (ADR 0012).
-- `compute()` owns the source context; the source delegates resource management to its provider (ADR 0016). Explicitly close the generator when stopping consumption early.
-- Strategy modules export a sink class as `__sink__`; backtesting constructs it with a source (ADR 0014).
-- Rolling windows return newest first. The broker enters at the signal bar's close and evaluates exits on subsequent bars (ADR 0013). Prices/PnL use ticks, four per point for supported instruments. Preserve these conventions unless explicitly changed by the task.
 
 ## Commits and Pull Requests
 
