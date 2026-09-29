@@ -34,10 +34,11 @@ Review the [document profiles and scaffolds](../../feat-templates.md),
 [ownership map](../../documentation.md#feat-documents), and
 [grouped/compact navigation walkthrough](journal.md#package-navigation-walkthrough)
 as `F28-01:STEP-3`, tracked in
-[issue #36](https://github.com/msitarz/ataraxia/issues/36).
+[issue #36](https://github.com/msitarz/ataraxia/issues/36) and
+[draft step PR #37](https://github.com/msitarz/ataraxia/pull/37).
 The review range is `78a67e709c987d090c98b1aec671d0983e4f5811` to
 `bef072a3a52535a67b522018d10847efc766d451`, also recorded in frontmatter.
-The step PR will present these formats and their examples. Later publication
+The step PR presents these formats and their examples. Later publication
 metadata only identifies the review target. Initial review estimate: four minutes.
 
 [Step 1 PR #33](https://github.com/msitarz/ataraxia/pull/33) is merged into the slice.
