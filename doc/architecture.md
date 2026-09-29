@@ -140,12 +140,13 @@ boundary still validates broker results at runtime.
 
 ## Backtesting contracts
 
-Strategy modules export a sink class as `__sink__`; backtesting constructs it
-with a source ([ADR 14](adr/0014-sink-module-file-special-attribute.md)).
-Rolling windows return newest first. The broker enters at the signal bar's close
-and evaluates exits on later bars
-([ADR 13](adr/0013-broker-position-entry-needs-delay.md)).
-Prices and PnL use ticks, four per point for currently supported instruments.
+- Strategy modules export a sink class as `__sink__`; backtesting constructs it
+  with a source ([ADR 14](adr/0014-sink-module-file-special-attribute.md)).
+- Rolling windows return newest first.
+- The broker enters at the signal bar's close and evaluates exits on later bars
+  ([ADR 13](adr/0013-broker-position-entry-needs-delay.md)).
+- Prices and PnL use ticks, four per point for currently supported instruments.
+
 Preserve these conventions unless a task explicitly changes them.
 
 ## Target execution / deployment model _(planned — not yet implemented)_
