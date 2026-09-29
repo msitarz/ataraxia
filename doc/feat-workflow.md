@@ -23,19 +23,69 @@ Steps without file changes need no empty commit. Use the
 [commit and validation conventions](../CONTRIBUTING.md#commits-and-pull-requests)
 and [required repository checks](../CONTRIBUTING.md#make-targets).
 
+Present each agreed outcome with the [review artifact template](#review-artifact-template)
+before dependent continuation. Requested corrections reuse that step's issue,
+branch and PR. Follow the [delivery review gates](#delivery-branches-and-review-gates);
+independent work proceeds only within the maintainer's authorization.
+
 If findings change the approach, revise the remaining plan and explain why before
 continuing. Material contract changes still follow the
 [scope approval gate](#execute-the-approved-scope). Keep completed step commits
 on the branch so the evolution remains traceable; do not squash or rewrite them
 unless the maintainer explicitly requests it.
 
+## Delivery branches and review gates
+
+Each feat, feat slice and agreed delivery step has its own issue, branch and PR:
+
+| Level | Branch starts from and PR targets |
+| --- | --- |
+| Feat | Declared integration base under [contribution guidance](../CONTRIBUTING.md#submitting-a-change) |
+| Feat slice | Its feat branch |
+| Delivery step | Its updated slice branch |
+
+Create a slice issue before delivery and a step issue when its outcome is agreed.
+Register stable slice-local `STEP-n` IDs; external references name the slice,
+such as `F28-01:STEP-2`. Record parent, issue, PR, branch and base revision in the
+handoff or its owning metadata. Outline rows do not require issues until selected.
+Never renumber or reuse step IDs. Verify the actual PR target and head; a wrong
+target must be corrected before merge.
+
+Before the next dependent step, require approval of the current artifact at its
+named revision, its reviewed merge into the slice, and authorization for the next
+outcome. A merge alone does not authorize the next outcome. Passing checks,
+silence or elapsed time are not approval and do not authorize continuation.
+Verify the merge, fetch the updated slice and start the next step branch from
+that revision.
+
+```mermaid
+flowchart LR
+    approval{"Current revision<br/>approved?"} -->|Yes| merged{"Merged into<br/>declared parent?"}
+    approval -->|No| wait["Affected work waits"]
+    merged -->|No| wait
+    merged -->|Yes| scope{"Next outcome<br/>authorized?"}
+    scope -->|No| wait
+    scope -->|Yes| start["Start from<br/>updated slice"]
+```
+
+The prose owns the complete gate; this view shows dependent continuation.
+Slice and feat integration reviews link accepted child PRs and actual acceptance
+evidence. New integration changes receive a bounded step review; a large aggregate
+diff does not establish a short review. Keep incomplete integration PRs draft.
+Run required CI for every published branch and verify integration with its actual
+parent before merge. Missing required evidence keeps the review incomplete.
+The maintainer merges or closes PRs; agents prepare them and never enable automatic
+merging. Record completion explicitly for issues targeting non-default branches;
+closing keywords may not close them. The maintainer closes completed issues.
+
 ## Define and publish for specification review
 
 After reading the glossary and relevant context, inspect the current branch,
-working tree, and existing issues/PRs. Reuse a branch already owning the work.
-Otherwise, create a local branch from the applicable PR base before writing the
-specification. Preserve unrelated work; don't base unrelated work on an existing
-feat branch. Explicit task instructions determine the base, otherwise use
+working tree, and existing issues/PRs. Reuse the current step's branch for
+corrections; start an authorized new outcome from its
+[declared parent](#delivery-branches-and-review-gates). Preserve unrelated work;
+don't base unrelated work on an existing feat branch. Explicit task instructions
+determine the integration base, otherwise use
 [contribution guidance](../CONTRIBUTING.md#submitting-a-change).
 
 Name branches `feat/<short-kebab-case-name>`, for example
@@ -69,17 +119,20 @@ the glossary, this workflow, the approved specification, applicable ADRs, and th
 handoff before implementing. If approval is missing or ambiguous, resolve that
 gate with the maintainer before execution. Continue independent preparation.
 
-Implement the approved scope on the same branch and PR. Run focused checks and
-the required repository checks, record results and limitations in the feat slice,
-and update the issue with the stage and links to current evidence. Keep the issue
+Implement one authorized outcome on its delivery-step branch and PR. Run focused
+checks and the required repository checks, record results and limitations in the
+feat slice, and update the issue with the stage and links to current evidence. Keep the issue
 short; don't copy the specification or test results into a second record.
 Commit and push checked changes so the PR reflects the delivered implementation.
 
-If findings require changing scope, acceptance criteria, interfaces, or another
-material contract, update the specification and applicable ADRs, push the planning
-revision, and return to manual specification review before implementing that
-design. Routine corrections within approved scope don't need a new specification
-approval. Report unresolved problems rather than weakening completion conditions.
+If findings change scope, acceptance criteria, interfaces, architecture, semantics
+or a consequential design choice, pause affected implementation. Present the
+proposed change in the owning specification/design and applicable ADRs; verify,
+commit and publish that planning revision for explicit approval before executing
+it. An earlier approval cannot cover the changed contract automatically. Routine
+implementation choices and corrections within approved scope can proceed in the
+same step PR; recheck them and present the changed revision for review. Report
+unresolved problems rather than weakening completion conditions.
 
 ## Review and revise
 
@@ -102,6 +155,8 @@ completion conditions, checks, manual review, and defining-session review pass,
 record that evidence and mark it ready for the maintainer's final decision.
 The maintainer manually merges accepted work or closes the PR without merging.
 Agents do neither and don't enable automatic merging.
+Record the observed merge separately from approval; dependent continuation follows
+the [delivery review gates](#delivery-branches-and-review-gates).
 
 Specification-only delivery follows the manual specification gate and ends when
 the maintainer accepts that planning outcome. It doesn't require implementation
@@ -140,9 +195,7 @@ Keep specification status consistent with the evidence and the handoff stage.
 
 ## Review artifact template
 
-Candidate template for
-[slice 01's first iteration](feat/28-reviewable-workflow/slices/01-review-loop.md#proposed-iterations),
-pending maintainer review. Its
+Use this template for each iteration. The
 [worked discovery example](feat/28-reviewable-workflow/journal.md#j-14-deliver-the-review-template-and-example)
 uses recorded evidence. Keep the entry point short; link to detailed evidence.
 

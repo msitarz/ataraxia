@@ -619,3 +619,72 @@ Handoff validation: bounded checks passed for 10 documents, 42 scoped acceptance
 IDs and 97 local links/anchors, including native identity, preserved journal and
 contract bodies, step tracking and updated slice ancestry. The merge is observed
 separately from the maintainer's explicit authorization to continue.
+
+## J-20: Deliver continuation and branch gates
+
+```yaml
+id: J-20
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** Deliver `F28-01:STEP-2` under [J-19](#j-19-authorize-continuation-after-step-1-merge),
+advancing `F28-01:AC-2` and `F28-01:AC-5`. Replace the old single-branch execution
+instruction with [delivery branches and review gates](../../feat-workflow.md#delivery-branches-and-review-gates),
+including a visual companion and material-change rules. Contribution guidance
+routes to that owner. Earlier specifications and journal entries remain intact.
+
+**Inspect:** Review the changed workflow paragraphs and the boundary table below.
+The overview will pin the delivered revision against slice merge
+`588cde5ba881b6e20d1dfc0d558ae710e3b6d264`. The existing seven artifact fields and
+Mermaid visual note remain unchanged; the template's pending-review label is
+removed after the maintainer's step 1 merge.
+
+### Boundary walkthrough
+
+These are illustrative instruction/state combinations, checked against the owning
+guidance; they do not authenticate an approval or execute an automated workflow.
+
+| Situation | Expected agent action |
+| --- | --- |
+| “Accept revision A”; its step PR is still open | Record scoped approval; wait for reviewed merge before dependent continuation |
+| “Correct the Mermaid note” within the approved scope | Correct, check, commit and push on the same step PR; present the changed revision |
+| Checks pass, with no maintainer response | Keep the review pending; start no dependent step |
+| Approved A gains a changed contract in B | Pause affected implementation; publish B's planning change for explicit approval |
+| The step PR targets the feat rather than the slice | Correct the target and verify checks against the actual parent before merge |
+| The current revision is approved and the next outcome authorized, but merge is pending | Prepare only independent authorized work; wait for merge before the dependent step |
+| The step is merged, with no authorization for the next outcome | Record integration; await the next instruction |
+| The step is merged and “move to the next step” authorizes the agreed next outcome | Verify the merge, fetch the updated slice, and create the next step's issue/branch/PR |
+
+The final row is also observed in this delivery: PR #33 merged at the recorded
+slice revision, followed by the maintainer's continuation instruction and issue #34.
+The remaining rows are a document walkthrough, not completed checker fixtures.
+Full acceptance and the later two-step integration evaluation remain pending.
+
+**Evidence:** Bounded checks passed for 10 documents, 42 scoped acceptance IDs and
+104 local links/anchors, including native identity, preserved contracts/history,
+tracking, and the eight illustrative cases against the owning rules.
+`git diff --check` and `make ci` passed with 232 repository tests, 3 examples,
+type/import checks, installed-wheel smoke and audit. The new Mermaid view awaits
+maintainer visual review. Future `make docs-check` needs tracking,
+approval/revision and history fixtures for these cases, plus an explicit GitHub
+adapter for actual targets and merge evidence. No checker or library is adopted
+in this step.
+
+**Consequences:** Procedures stay with the workflow owner. Contribution defaults
+delegate feat parent selection there. No application code, dependency or
+architectural decision changes; approved proposal bodies remain unchanged.
+
+**Decision requested:** Review the proceed/stop rules and boundary outcomes;
+accept them or request corrections in this step PR.
+
+**Next:** After reviewed merge and explicit continuation, deliver step 3's package
+template and ownership routes. Step 3 has not started.
+
+**Review effort:** Estimated four minutes for the guidance and this table;
+actual maintainer feedback remains pending. The defining and executor roles share
+this conversation; no independent session review is claimed.

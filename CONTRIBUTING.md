@@ -113,9 +113,12 @@ temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 
-Branch off `master` and open PRs against `master` unless the task explicitly requires
-another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md) for issue
-bodies and the [commit conventions](#commits-and-pull-requests).
+Start feats and unrelated changes from `master` and target their PRs there unless
+the task explicitly requires another integration base. Slice and delivery-step
+branches/PRs follow the [declared parents and review gates](doc/feat-workflow.md#delivery-branches-and-review-gates).
+Use the
+[issue template](.github/ISSUE_TEMPLATE/work-item.md) for issue bodies and the
+[commit conventions](#commits-and-pull-requests).
 
 For feat slices, read the [feat workflow](doc/feat-workflow.md) in full; it owns branch
 naming, issue messages, specification guidance, reviews, and handoffs. For other
