@@ -9,10 +9,10 @@ rewrite. Identify that exception and its base in the PR.
 The PR owns checks, discussion, and rationale; the maintainer reviews its
 current revision and performs merges. A larger unit's direction and material
 contract changes need explicit approval. Small units within that direction can
-proceed to their own review. The merged PR is the authoritative completion
-record. Check the selected unit's PR when needed; local `master` history can
-help locate it but is not a complete status ledger. No README status field or
-retained unit branch is required. Delete merged remote and local branches once
-no dependent stacked PR needs them. GitHub-approved or manually merged PRs
-provide durable decisions across sessions; an available conversation can supply
-the current session's approval.
+proceed to their own review. The parent's unit list on `master` records which
+children remain open and which were delivered or abandoned. Consult the PR for
+review details when needed; routine status checks do not need a GitHub lookup.
+No status field in the child's README or retained unit branch is required.
+Delete merged remote and local branches once no dependent stacked PR needs them.
+GitHub-approved or manually merged PRs provide durable decisions across
+sessions; an available conversation can supply the current session's approval.
