@@ -15,7 +15,8 @@ separate unit. These children move rules still stranded in `AGENTS.md`.
 
 - **DONE** Engineering rules — moved repair, coding, type, structural review, and
   testing guidance to `doc/engineering.md`.
-- **TODO** [ADR rules](adr/README.md)
+- **DONE** ADR rules — moved eligibility, format, amendments, and writing
+  guidance to `doc/adr-workflow.md`.
 - **TODO** [Architecture contracts](architecture/README.md)
 - **TODO** [Contribution rules](contribution/README.md)
 - **TODO** [Documentation ownership](documentation/README.md)

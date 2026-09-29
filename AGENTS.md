@@ -6,7 +6,7 @@ Read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) **in full at the s
 
 When defining, implementing, or reviewing a feat slice, read [doc/feat-workflow.md](doc/feat-workflow.md) **in full before starting that work**.
 
-Then inspect task-relevant code, tests, and ADRs. Distinguish current behavior from intended changes and surface discrepancies affecting the task. Before changing architectural boundaries, read [doc/architecture.md](doc/architecture.md) and follow the [ADR workflow](#architecture-decision-records).
+Then inspect task-relevant code, tests, and ADRs. Distinguish current behavior from intended changes and surface discrepancies affecting the task. Before changing architectural boundaries, read [doc/architecture.md](doc/architecture.md) and follow the [ADR workflow](doc/adr-workflow.md).
 
 ## Engineering Conventions
 
@@ -58,30 +58,10 @@ The [glossary](doc/ubiquitous-language.md) is the single source of truth for sha
 - Keep concepts distinct; a runner is not an executor worker. Use "feat slice" as defined in the glossary, keeping it distinct from a trading Feature. Qualify terms and explain boundary mappings.
 - Resolve ambiguity from the request and repository. If meanings still imply materially different behavior, present concrete interpretations to the user before implementation. Do not invent domain rules; naming consistent with established meanings needs no confirmation.
 - Check for an existing term before introducing one. Define needed terms in the glossary **before using them in specifications or implementation**: meaning, responsibility, distinctions, relationships, and relevant units or lifecycle rules.
-- Link to definitions instead of duplicating them; update affected code, tests, and docs together. Follow the [ADR workflow](#architecture-decision-records) for architectural changes.
+- Link to definitions instead of duplicating them; update affected code, tests, and docs together. Follow the [ADR workflow](doc/adr-workflow.md) for architectural changes.
 - Verify meaning and module boundaries through observable examples and tests, including timing, units, state transitions, and failures.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one), [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html), [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
-
-## Architecture Decision Records
-
-Create an ADR only for a substantive architectural decision. Correcting types, tests, or implementation to conform to an established contract does not require a new ADR. Do not turn recovery from your own mistake into a new architectural decision.
-
-1. Search `doc/adr/` for the problem and related decisions; read relevant records and follow amendment/supersession links. Reuse a covering ADR instead of duplicating it.
-2. Record uncovered architectural decisions **before implementing the affected design**, including module boundaries, execution models, resource ownership, and persistent contracts. Recheck when implementation reveals new choices. Create or reuse an issue before non-trivial architectural work.
-3. Use the next unused number and `NNNN-kebab-case-title.md`. Format: `# N. Title`, `Date: YYYY-MM-DD`, then `Status`, `Context`, `Decision`, and `Consequences`. Explain the problem, relevant alternatives/tradeoffs, choice, and consequences. Use `Proposed` while unsettled and `Accepted` once decided.
-4. Change accepted decisions through new records; preserve earlier context, decision, and consequences. Use relative Markdown links:
-   - Partial change: new Status says `Amends [N. Title](NNNN-title.md)`; on acceptance, add reciprocal `Amended by [M. Title](MMMM-title.md)` to the earlier record. Follow ADRs 0010/0011 and state what still applies.
-   - Replacement: new Status says `Supersedes [N. Title](NNNN-title.md)`; on acceptance, set earlier status to `Superseded by [M. Title](MMMM-title.md)`, following [adr-tools](https://github.com/npryce/adr-tools).
-5. Update slice links and `doc/architecture.md` to reflect the decision and implementation status.
-
-### ADR Writing Style
-
-Match the maintainer's direct, practical voice. Before drafting, reread the closest ADR: 0014 for a small convention, 0012 for a tradeoff, or 0016 for lifecycle changes. Use short sentence-case titles naming the choice and plain, concrete prose; contractions and blunt sentences are natural. Scale detail to the problem, prefer paragraphs, and use lists/code only where useful. Avoid corporate language, inflated benefits, generic introductions, exhaustive templates, and manufactured quirks; keep grammar correct. Compare the draft with its related ADR and remove padding.
-
-- **Context:** explain current behavior and what breaks, becomes awkward, or creates work for the quant. Include useful examples and link relevant prior decisions.
-- **Decision:** state the change directly, why, meaningful alternatives, and tradeoffs. Use first person only for the maintainer's stated reasoning; never invent personal history or experiments.
-- **Consequences:** state costs, capabilities, drawbacks, and deferred work without repeating vague benefits. One sentence can suffice; use bullets for distinct effects.
 
 ## Computation and Strategy Contracts
 
