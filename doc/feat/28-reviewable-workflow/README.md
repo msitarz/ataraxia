@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: awaiting-template-review
+stage: awaiting-continuation-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -10,8 +10,8 @@ base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
 approved_revision: null
-review_base_revision: "9231d7164ec41835872bbd594b4e2b3770fbb1ce"
-review_revision: "1eb8c19231971586a6baa447fa9b0d1ab84f5797"
+review_base_revision: "588cde5ba881b6e20d1dfc0d558ae710e3b6d264"
+review_revision: "a7cf2de390e1ea343f54b9701c0f9bdc6b248d22"
 ---
 
 # Small reviewed iterations
@@ -30,20 +30,21 @@ own decisions.
 
 ## Review entry point
 
-Review the [candidate artifact template](../../feat-workflow.md#review-artifact-template)
-and [worked discovery example](journal.md#j-14-deliver-the-review-template-and-example)
-as `F28-01:STEP-1`, tracked in
-[issue #32](https://github.com/msitarz/ataraxia/issues/32) and
-[draft step PR #33](https://github.com/msitarz/ataraxia/pull/33).
-The review range is `9231d7164ec41835872bbd594b4e2b3770fbb1ce` to
-`1eb8c19231971586a6baa447fa9b0d1ab84f5797`, also recorded in frontmatter.
-It contains the template/example and necessary step tracking; later publication
-metadata does not change those artifacts. The [slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31)
-remains draft pending delivery steps and full acceptance evidence.
-The adopted [tracking contract](spec.md#delivery-tracking-and-merge-boundaries)
-and [branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base)
-provide context. Approving the direction does not approve unresolved tool choices
-or later implementation steps.
+Review [delivery branches and review gates](../../feat-workflow.md#delivery-branches-and-review-gates),
+[material-change handling](../../feat-workflow.md#execute-the-approved-scope),
+and the [boundary walkthrough](journal.md#boundary-walkthrough) as
+`F28-01:STEP-2`, tracked in [issue #34](https://github.com/msitarz/ataraxia/issues/34).
+The review range is `588cde5ba881b6e20d1dfc0d558ae710e3b6d264` to
+`a7cf2de390e1ea343f54b9701c0f9bdc6b248d22`, also recorded in frontmatter.
+Use the step PR for this guidance and its examples. Later publication metadata
+only identifies the review target. Initial review estimate: four minutes.
+
+[Step 1 PR #33](https://github.com/msitarz/ataraxia/pull/33) is merged into the slice.
+[Slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31) remains draft
+pending its remaining steps and full acceptance evidence. The
+[tracking contract](spec.md#delivery-tracking-and-merge-boundaries) and
+[branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base)
+provide context. Tool choices and later steps await their own decisions.
 
 | Document | Authoritative content | Read when |
 | --- | --- | --- |
@@ -69,27 +70,23 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-Defining and executor roles share the
-[conversation in J-15](journal.md#j-15-relocate-delivery-to-child-prs).
-J-15 records the instruction and authorized reversal of the three slice 01
-commits. [J-16](journal.md#j-16-approve-relocated-first-step) records the current
-scope at the amended revision; J-13 is preserved as historical approval evidence.
-Slice 01's branch and tracking belong to its
-[frontmatter](slices/01-review-loop.md), including the registered `STEP-1`.
-[J-17](journal.md#j-17-replay-the-template-on-its-step-branch) records the replay;
-[J-18](journal.md#j-18-clarify-visual-review-options) records the requested visual
-note correction and its checks. The next action is maintainer review of the template/example
-in the step PR to the slice. Corrections reuse that step; dependent continuation
-waits for approval and reviewed merge. The slice integration PR stays draft
-pending its children and full acceptance evidence. Iteration 2 has not started.
-Overall specification approval remains pending; there is no independent session
-review. Original commits and their evidence remain in Git history.
-The [journal](journal.md) owns drafting and validation evidence.
-The [visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format);
-overall specification review remains pending.
-The candidate contracts, design, and delivery slices are committed at the
-frontmatter's `specification_revision`; subsequent publication metadata does not
-approve or implement them.
+[J-19](journal.md#j-19-authorize-continuation-after-step-1-merge) records the
+verified step 1 merge and explicit continuation instruction at the candidate
+contract revision. [J-20](journal.md#j-20-deliver-continuation-and-branch-gates)
+records step 2's guidance, boundary cases and checks. Slice and step tracking
+belong to [slice 01's frontmatter](slices/01-review-loop.md).
+
+The next action is maintainer review of step 2. Corrections reuse that step's PR;
+step 3's package template and ownership routes have not started. The slice stays
+in progress pending its remaining outcomes and acceptance evidence. The defining
+and executor roles share the journal's native conversation; there is no
+independent session review. Overall specification approval remains pending.
+
+The [journal](journal.md) owns consequential history and validation evidence.
+The candidate contracts, design and delivery slices are committed at the
+frontmatter's `specification_revision`; publication metadata does not approve
+them or authorize further implementation. The
+[visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format).
 
 [Issue #28](https://github.com/msitarz/ataraxia/issues/28) tracks the eventual
 implemented workflow and evaluation. The maintainer requested this stacked base
