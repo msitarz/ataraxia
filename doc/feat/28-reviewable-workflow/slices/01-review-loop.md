@@ -17,6 +17,13 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-01
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "9231d7164ec41835872bbd594b4e2b3770fbb1ce"
+    stage: merged
+  - id: STEP-2
+    issue: 34
+    pr: 35
+    branch: feat/reviewable-workflow-slice-01-step-02
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "588cde5ba881b6e20d1dfc0d558ae710e3b6d264"
     stage: awaiting-review
 ---
 
