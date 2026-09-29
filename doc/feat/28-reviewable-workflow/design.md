@@ -6,6 +6,45 @@ owner: F28
 
 # Proposed workflow design
 
+## Visual overview (prototype)
+
+### Where does each fact live?
+
+```mermaid
+flowchart TD
+    overview["README.md<br/>Current state and navigation"]
+    overview -->|Routes to| spec["spec.md<br/>Overall contracts and criteria"]
+    overview -->|Routes to| design["design.md<br/>Proposed relationships"]
+    overview -->|Routes to| journal["journal.md<br/>Events, approvals and sessions"]
+    overview -->|Routes to| slices["slices/<br/>Local contracts and evidence"]
+```
+
+Read the overview, then follow the route for the question under review.
+[Documents and revisions](#documents-and-revisions) owns the placement and
+mutability rules; separate child directories and journals are optional.
+
+### How do the proposed documentation gates fit together?
+
+```mermaid
+flowchart TD
+    verification["verify-check / CI"] --> docs["make docs-check"]
+    docs --> hygiene["rumdl<br/>Markdown hygiene"]
+    docs --> schema["YAML schema<br/>Metadata"]
+    docs --> semantic["Python checker<br/>References and history"]
+    docs -. If adopted .-> language["ASD-STE100 checker<br/>Language profile"]
+    hygiene --> result["Findings, errors and<br/>checks not performed"]
+    schema --> result
+    semantic --> result
+    language --> result
+```
+
+Tool choices await [investigation](slices/02-tool-investigations.md). The dashed
+branch depends on the STE disposition; required adopted checks cannot silently
+skip. Optional network checks run separately. See
+[checker composition](#checker-composition) and
+[selection and truthful results](#selection-and-truthful-results) for the full
+contract, including dependency-aware selection and required inputs.
+
 ## Documents and revisions
 
 Use `doc/feat/<issue>-<short-name>/README.md`, `spec.md`, and `journal.md`.

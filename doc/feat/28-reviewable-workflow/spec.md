@@ -18,6 +18,39 @@ then evaluate them by replaying the familiar parallel-execution slice. This file
 owns overall contracts. The slices own their local contracts and evidence.
 Shared meanings belong to the [glossary](../../ubiquitous-language.md#delivery-workflow).
 
+## Visual overview (prototype)
+
+### What permits the next iteration?
+
+```mermaid
+flowchart LR
+    outcome["Agree one<br/>outcome"] --> artifact["Produce and verify<br/>Inspect structure and commit"]
+    artifact --> review{"Maintainer<br/>review"}
+    review -->|Approve the revision| next["Next dependent<br/>iteration"]
+    review -->|Request correction| artifact
+    review -->|Defer| deferred["Affected work<br/>waits"]
+```
+
+This illustrates [the review gate](#3-advance-through-explicit-review), with
+[structural review](#5-constrain-execution-and-make-drift-visible) before
+presentation: `F28:AC-1`, `F28:AC-2`, and `F28:AC-8`. The sections below own the
+full contracts, including revalidation, approval scope, and authorized work.
+
+### Why can two criteria both be AC-1?
+
+```mermaid
+flowchart TD
+    feat["Feat F28"] --> spec["Overall spec<br/>owner: F28"]
+    feat --> slice["Slice 04<br/>id: F28-04"]
+    spec --> overall["F28:AC-1"]
+    slice --> local["F28-04:AC-1"]
+```
+
+The same local number identifies different criteria in different owning scopes.
+See [acceptance ID scope](#acceptance-id-scope) and
+[test mapping](design.md#acceptance-evidence). This is an identity map, not a
+claim of passing evidence.
+
 ## 1. Size iterations for human review
 
 Plan one coherent question, decision, or observable result per iteration.

@@ -176,3 +176,26 @@ acceptance rows and 74 local links/anchors. Checked the declared native identity
 legacy association and handoff, and confirmed all earlier journal text remains
 unchanged. `make ci` passed with 232 repository tests, 3 examples, type/import
 checks, installed-wheel smoke and audit. Proposed journal checks remain unbuilt.
+
+## J-9: Visual review prototype
+
+Date: 2026-09-29
+Role: defining
+Session: S1
+
+The maintainer requested Mermaid diagrams in the specification and design for
+viewing on GitHub. Added two small views to each: the iteration approval loop
+and acceptance namespaces, then document ownership and proposed checker
+composition. Captions route to the owning contracts and distinguish proposed
+tools from adopted gates. The prototype tests navigation and visual review;
+it does not establish reduced fatigue or make diagrams a second specification.
+
+Plan: add the visual companions and this event; check links, Mermaid rendering,
+contract consistency and repository CI; commit; update the candidate revision
+in a checked metadata commit; publish to the existing draft PR. The maintainer
+can then assess whether these views make review easier.
+
+Validation: `make ci` passed with 232 repository tests, 3 examples, type/import
+checks, installed-wheel smoke and audit. Bounded checks passed for 39 scoped
+acceptance rows and 82 local links/anchors. Rendering was not verified; the
+maintainer requested publishing directly and will inspect the diagrams on GitHub.
