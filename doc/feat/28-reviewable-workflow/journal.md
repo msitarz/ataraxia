@@ -199,3 +199,30 @@ Validation: `make ci` passed with 232 repository tests, 3 examples, type/import
 checks, installed-wheel smoke and audit. Bounded checks passed for 39 scoped
 acceptance rows and 82 local links/anchors. Rendering was not verified; the
 maintainer requested publishing directly and will inspect the diagrams on GitHub.
+
+## J-10: Accept the visual review format
+
+Date: 2026-09-29
+Role: defining
+Session: S1
+
+The maintainer reviewed the published prototype and said, "yeah i really like it.
+We will adopt it." This accepts the visual companion format and the four views
+in `spec.md` and `design.md` at revision
+`47c2e57e9c63e550a57c014bb1db89a2c576abbe`. The approval covers this format;
+it does not approve execution of the entire workflow specification.
+
+Added the visual companion rule to the owning record contract and planned
+templates in slice 01; removed the prototype qualifier from the visual headings.
+Precise requirements remain in prose, and diagrams illustrate one review question
+at a time. The maintainer's feedback is the prototype result; no independent
+browser verification or measured fatigue reduction is claimed.
+
+Plan: record this scoped approval and template contract, check and commit the
+proposal amendment, then advance its candidate revision and publish through the
+existing draft PR. Browser configuration guidance remains outside repository
+workflow policy, and no browser setup or rendering attempt is part of this step.
+
+Validation: bounded checks passed for 39 scoped acceptance rows and 84 local
+links/anchors. `make ci` passed with 232 repository tests, 3 examples, type/import
+checks, installed-wheel smoke and audit. Earlier journal entries remain intact.

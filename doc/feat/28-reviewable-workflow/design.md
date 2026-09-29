@@ -6,7 +6,7 @@ owner: F28
 
 # Proposed workflow design
 
-## Visual overview (prototype)
+## Visual overview
 
 ### Where does each fact live?
 

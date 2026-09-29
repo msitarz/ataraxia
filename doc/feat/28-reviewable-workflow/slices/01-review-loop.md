@@ -28,6 +28,11 @@ stop conditions for unresolved consequential choices. Keep status and evidence
 in their owners. Each step names affected criteria, indicative paths, commands
 once known, an exit condition, and the decision requested at review.
 
+Include visual companions in specification and design templates following the
+[record contract](../spec.md#6-keep-records-small-and-authoritative). Use the
+accepted views in this package as worked examples and inspect rendered behavior
+and relationship views during the manual template walkthrough.
+
 Define a lightweight discovery record and prototype promotion gap assessment.
 Describe migration slices for rewrites, with explicit preserved behavior and
 approved intentional changes. No separate experiment index entry is needed for
@@ -42,7 +47,7 @@ iteration. Split further when the actual review burden exceeds the budget.
 | --- | --- | --- |
 | 1 | A one-screen review artifact template and one worked discovery example; review what information is sufficient | Manual five-minute navigation/readability review; proposed required artifact fields and stable revision references |
 | 2 | The continuation and material-change rules in their owning workflow section; review when an agent proceeds or stops | Walk through approval, correction, silence, new revision, and independent-work examples; proposed approval/history checks |
-| 3 | Package template and ownership routes; review one small slice and one grouped feat | Relative links and planned YAML schemas; proposed rumdl headings/metadata checks and route checks |
+| 3 | Package template, ownership routes and Mermaid companions; review one small slice and one grouped feat | Relative links, rendered views and planned YAML schemas; proposed rumdl headings/metadata checks and route checks |
 | 4 | Structural review and discovery/promotion/migration guidance, reviewed as separate artifacts if needed | Check precise types, module ownership, scope and vocabulary; proposed rumdl/prose checks and investigated Ruff rules, with existing type/Tach checks unchanged |
 
 `make verify-check` and `git diff --check` apply during guidance changes;

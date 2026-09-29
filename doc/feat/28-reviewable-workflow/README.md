@@ -59,6 +59,8 @@ No executor session has started.
 The next action is manual specification review, beginning with the six principles.
 There is no approved specification revision and no independent session review.
 The [journal](journal.md) owns drafting and validation evidence.
+The [visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format);
+overall specification review remains pending.
 The candidate contracts, design, and delivery slices are committed at the
 frontmatter's `specification_revision`; subsequent publication metadata does not
 approve or implement them.

@@ -18,7 +18,7 @@ then evaluate them by replaying the familiar parallel-execution slice. This file
 owns overall contracts. The slices own their local contracts and evidence.
 Shared meanings belong to the [glossary](../../ubiquitous-language.md#delivery-workflow).
 
-## Visual overview (prototype)
+## Visual overview
 
 ### What permits the next iteration?
 
@@ -138,6 +138,13 @@ The overview routes readers; the specification owns contracts; the design owns
 proposed relationships; the append-only journal explains consequential events.
 Git retains textual history. Correct a journal entry with a new entry referring
 to it. Avoid transcript dumps, duplicated state, or separate human and agent specs.
+
+Give feat specifications and designs compact Mermaid views of important behavior
+or relationships. Each view answers one review question, uses shared vocabulary
+and stable acceptance IDs where relevant, and links to its owning contracts.
+Keep spatial layout stable between revisions when practical and make material
+changes visible. The prose owns precise requirements; diagrams illustrate them.
+Review the rendered views for readability and consistency with those requirements.
 
 Group independently usable outcomes into feat slices and review their smaller
 steps. Parent scope governs integration; child criteria do not repeat it. Use
