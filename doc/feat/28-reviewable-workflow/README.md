@@ -33,7 +33,8 @@ own decisions.
 Review the [candidate artifact template](../../feat-workflow.md#review-artifact-template)
 and [worked discovery example](journal.md#j-14-deliver-the-review-template-and-example)
 as `F28-01:STEP-1`, tracked in
-[issue #32](https://github.com/msitarz/ataraxia/issues/32).
+[issue #32](https://github.com/msitarz/ataraxia/issues/32) and
+[draft step PR #33](https://github.com/msitarz/ataraxia/pull/33).
 The review range is `9231d7164ec41835872bbd594b4e2b3770fbb1ce` to
 `5c51cd1ef5722af001de1fcc6bd1723ab8c0c7ce`, also recorded in frontmatter.
 It contains the template/example and necessary step tracking; later publication

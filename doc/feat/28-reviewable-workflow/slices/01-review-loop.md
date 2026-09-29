@@ -13,11 +13,11 @@ base_revision: "daf6d350f141387612d056a8dad60a731fb7a47d"
 steps:
   - id: STEP-1
     issue: 32
-    pr: null
+    pr: 33
     branch: feat/reviewable-workflow-slice-01-step-01
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "9231d7164ec41835872bbd594b4e2b3770fbb1ce"
-    stage: preparing-review
+    stage: awaiting-review
 ---
 
 # Adopt the review loop and document ownership
