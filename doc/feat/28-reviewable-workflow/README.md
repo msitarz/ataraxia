@@ -34,7 +34,8 @@ Review the [structural review rule](../../engineering.md#structural-review),
 [delivery gate](../../feat-workflow.md#stepwise-changes-and-commits), and
 [two-case walkthrough](journal.md#j-27-deliver-structural-review-guidance)
 as `F28-01:STEP-4`, tracked in
-[issue #42](https://github.com/msitarz/ataraxia/issues/42).
+[issue #42](https://github.com/msitarz/ataraxia/issues/42) and
+[draft PR #43](https://github.com/msitarz/ataraxia/pull/43).
 The step PR will identify its review head against slice merge
 `36edc546d33f63c130c930b65884c21f56fd3ec0`. Initial review estimate: four minutes
 for the two owner changes and walkthrough; actual feedback is pending.

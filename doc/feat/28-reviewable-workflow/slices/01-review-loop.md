@@ -48,11 +48,11 @@ steps:
     stage: merged
   - id: STEP-4
     issue: 42
-    pr: null
+    pr: 43
     branch: feat/reviewable-workflow-slice-01-step-04
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
-    stage: preparing-review
+    stage: awaiting-review
 ---
 
 # Adopt the review loop and document ownership
