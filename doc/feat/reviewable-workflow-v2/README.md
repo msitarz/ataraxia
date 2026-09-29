@@ -19,6 +19,7 @@ step list or journal.
 
 These directories map known work, not a required execution order. New child
 units can be added as discoveries warrant. A child's presence in this candidate
-tree does not mean its delivery PR has merged; inspect `master` history for
-that fact. Merge this map to `master` before starting unit PRs that edit it.
+tree does not mean its delivery PR has merged; the merged PR records that fact.
+`master` history may help locate it. Merge this map to `master` before starting
+unit PRs that edit it.
 No active repository guidance changes in this first artifact.
