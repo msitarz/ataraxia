@@ -286,3 +286,49 @@ fields, verified its native identity, and preserved all earlier journal text.
 `make ci` passed with 232 repository tests, 3 examples, type/import checks,
 installed-wheel smoke and audit. The future documentation checker remains
 unimplemented; these bounded checks do not claim its delivery.
+
+## J-13: Approve slice 01 iteration 1
+
+```yaml
+id: J-13
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "406d2e61356a05b665af6b7aba5c1d25083a57bd"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer instructed: "Start slice 01’s first iteration using the current
+candidate; present the template and example before continuing." This authorizes
+only [slice 01](slices/01-review-loop.md#proposed-iterations)'s first iteration:
+a one-screen review artifact template and one worked discovery example, using
+the applicable overall review and record contracts at the revision above.
+Remaining iterations, tool adoption, and parallel reversal await later decisions.
+The defining and executor roles use this same conversation; this is not an
+independent session review.
+
+Plan and completion condition:
+
+1. Record this scoped approval and delivery state; check metadata, history and
+   routes, then commit the handoff.
+2. Place the candidate template in `feat-workflow.md` and a retrospective
+   discovery example in an execution entry. Compare one legacy and one embedded
+   journal record with a reproducible offline probe. Check content, ownership,
+   links, unchanged approved contract bodies, and `make ci`, then commit.
+3. Identify the delivered revision in the overview, check and commit that
+   publication metadata, then push to draft PR #29 and present the artifact.
+   Stop for maintainer review before any dependent iteration.
+
+Estimated initial review: three minutes for the template and example; actual
+maintainer feedback remains pending. This first example supplies partial
+`F28-01:AC-1` evidence, not the complete multi-phase walkthrough or slice delivery.
+
+Handoff validation: bounded metadata, approval scope, native identity, local
+link and whitespace checks passed. Approved contract bodies remain unchanged,
+and all earlier journal text is preserved. Full CI belongs to the artifact step.

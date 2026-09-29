@@ -1,8 +1,8 @@
 ---
 id: F28
 kind: feat
-status: proposed
-stage: awaiting-specification-review
+status: in progress
+stage: executing-slice-01-iteration-1
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -19,10 +19,10 @@ project. Each iteration presents one concrete artifact designed for review in
 under five minutes. Discussion can take longer; the agent waits for explicit
 approval before the next dependent iteration.
 
-This is a proposal using the proposed file layout. The
-[current workflow](../../feat-workflow.md) still governs delivery. No future
-implementation, tool selection, or reversal of parallel execution is approved
-by publication of this package.
+This package has begun scoped delivery under the
+[current workflow](../../feat-workflow.md). The maintainer authorized slice 01's
+first iteration; the [handoff](#current-handoff) identifies its approval and
+limits. Tool choices, later iterations, and parallel reversal remain proposed.
 
 ## Review entry point
 
@@ -54,11 +54,16 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-Defining conversation: [native identity in J-12](journal.md#j-12-adopt-embedded-journal-metadata).
-No executor session has started.
-The next action is manual specification review, beginning with the six principles.
-There is no approved specification revision and no independent session review.
-The [journal](journal.md) owns drafting and validation evidence.
+Defining and executor roles share the
+[conversation recorded in J-13](journal.md#j-13-approve-slice-01-iteration-1).
+There is no independent session review. The maintainer authorized
+[slice 01](slices/01-review-loop.md)'s first iteration at the candidate revision
+named in its frontmatter; J-13 owns the instruction and exact scope.
+The current action is to produce a one-screen review artifact template and a
+worked discovery example, then stop for manual review. Later iterations await
+their own continuation decision. Overall specification approval remains pending;
+the overview's `approved_revision` remains null.
+The [journal](journal.md) owns approval, execution and validation evidence.
 The [visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format);
 overall specification review remains pending.
 The candidate contracts, design, and delivery slices are committed at the
