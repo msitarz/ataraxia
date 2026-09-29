@@ -3,10 +3,10 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: preparing-integration-pr
+stage: awaiting-step-merge
 approved_revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
 issue: 30
-pr: null
+pr: 31
 branch: feat/reviewable-workflow-slice-01
 base_branch: feat/reviewable-workflow
 base_revision: "daf6d350f141387612d056a8dad60a731fb7a47d"
