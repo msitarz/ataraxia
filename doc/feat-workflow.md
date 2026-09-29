@@ -174,15 +174,17 @@ belong to the handoff stage.
 ## Roles and handoffs
 
 Use the glossary's [defining session and executor session](ubiquitous-language.md)
-responsibilities. Identify them with a resumable link or a name the maintainer
-can recognize. If the defining session is unavailable, the maintainer explicitly
+responsibilities. Record roles separately from the native conversation identity
+using the [journal entry profile](feat-templates.md#journal-entry-scaffolds).
+If the defining session is unavailable, the maintainer explicitly
 designates a replacement reviewer; the executor doesn't waive that review.
 If roles share a session, disclose that fact rather than claiming an independent
 review. Respect any requirement from the maintainer for separate sessions.
 
-Keep a small handoff section in the feat slice containing:
+Keep a small current handoff in the owning overview or compact slice following
+[document ownership](documentation.md#feat-documents). It contains or routes to:
 
-- Current workflow stage and the defining/executor sessions.
+- Current workflow stage and the defining/executor roles with native identity.
 - Link to the stepwise plan, completed steps with their commits, and the next step.
 - Approved specification commit and evidence of the maintainer's approval.
 - Branch, issue, PR, and applicable ADR links.
@@ -253,8 +255,15 @@ enforce it across every GitHub creation path.
 Write proportional specifications in `doc/feat/` using short prose and examples;
 no user-story formula or Gherkin is required. Follow the gates above,
 [documentation ownership](documentation.md), and the [ADR workflow](adr-workflow.md).
-Keep local contracts and evidence here; link to shared meanings, architectural
-rationale, and general procedures instead of copying them.
+Keep local contracts and evidence in their [package owners](documentation.md#feat-documents);
+link to shared meanings, architectural rationale and general procedures instead
+of copying them.
+
+Use [document templates](feat-templates.md) for new packages and child slices;
+frontmatter owns their identity and state, while contracts and journals stay
+separate. The templates provide predictable places for decisions, stop conditions
+and falsifiable invariants. Existing historical slices preserve their delivery
+records rather than receiving an automatic retrofit.
 
 - Lead with the problem, code-verified current behavior, and observable outcome. State status (`proposed`, `in progress`, or `validated`); link issues and applicable ADRs as decisions emerge.
 - Scope a small usable increment across necessary components; split larger work by scenario or capability. State non-goals and dependencies; separate preparatory refactors and experiments. Plan short, tested steps that preserve a working path and provide early feedback; make scope/contract changes explicit.

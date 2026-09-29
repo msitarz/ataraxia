@@ -11,12 +11,13 @@ placement and maintenance rules; [AGENTS.md](../AGENTS.md) owns task routing.
 | Documentation placement and duplication rules | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Delivery stages, approval gates, handoffs, and specification guidance | [Feat workflow](feat-workflow.md) |
+| Reusable feat document scaffolds and metadata profiles | [Feat templates](feat-templates.md) |
 | ADR eligibility, granularity, format, and amendment procedure | [ADR workflow](adr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Setup, validation procedure, toolchain maintenance, contribution policy, commits, and PRs | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
-| Local scope, acceptance contracts, validation evidence, and handoff | The relevant [feat slice](feat/) |
+| Local scope, acceptance contracts, validation evidence, and handoff | The relevant [feat/slice package](feat/), using the [owner map](#feat-documents) |
 | One architectural choice and its rationale | The relevant [ADR](adr/) |
 | Issue body format | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md) |
 | Machine-enforced settings and executable checks | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
@@ -47,6 +48,38 @@ change decisions. Validated feat slices preserve the scope and evidence of their
 delivery; add a brief historical note when needed instead of rewriting their
 acceptance criteria to match later guidance. A new change owns its own evidence.
 Issue and PR records link to detailed scope and evidence rather than copying it.
+
+## Feat documents
+
+Use `doc/feat/<issue>-<short-name>/README.md`, `spec.md` and `journal.md`.
+Add `design.md` when proposed relationships need explanation, and `slices/` for
+independently usable outcomes. A compact child slice can be one Markdown file;
+give it a directory only when it needs separate contracts, design or evidence.
+Use the [templates](feat-templates.md) without creating empty scaffolds.
+
+| Document | Owns | Changes |
+| --- | --- | --- |
+| Overview `README.md` | Current status/stage, own tracking, approval pointer, next action and navigation | Update at gates and handoffs |
+| Specification or compact slice body | Scope, observable contracts, invariants, acceptance criteria and delivery dependencies | Material approved changes return through [specification review](feat-workflow.md#execute-the-approved-scope) |
+| Design | Proposed responsibilities, architecture delta and dependencies | Covered material design changes return for review |
+| Journal | Consequential decisions, investigations, approvals and execution evidence | Append; correct earlier events by linking a new entry |
+| Compact slice frontmatter | Its status/approval/tracking and registered steps | Update its own state; parent overview links here |
+
+```mermaid
+flowchart TD
+    overview["README<br/>State and navigation"] --> spec["Spec<br/>Contracts and criteria"]
+    overview --> design["Design, if needed<br/>Proposed relationships"]
+    overview --> journal["Journal<br/>Events and evidence"]
+    overview --> slice["Selected slice<br/>Local contracts and tracking"]
+```
+
+This view routes questions to their owner; the table owns the precise boundaries.
+Keep journals separate from contract bodies. Approval events identify covered
+paths and revision; compare their contract/design text against that revision,
+not just ancestry. Metadata cannot establish approval. Repository architecture
+continues to own current relationships and ADRs own consequential decision rationale.
+Use one set of clear documents for humans and agents. Preserve approved and
+historical records; move or retrofit them only through a reviewed migration.
 
 ## Vocabulary
 
