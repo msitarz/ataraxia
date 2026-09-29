@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: preparing-discovery-review
+stage: awaiting-discovery-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -33,7 +33,8 @@ own decisions.
 Review the [discovery and promotion rule](../../feat-workflow.md#discovery-and-prototype-promotion)
 and [worked gap assessment](journal.md#j-31-deliver-discovery-and-promotion-guidance)
 as `F28-01:STEP-7`, tracked in
-[issue #44](https://github.com/msitarz/ataraxia/issues/44).
+[issue #44](https://github.com/msitarz/ataraxia/issues/44) and
+[draft PR #45](https://github.com/msitarz/ataraxia/pull/45).
 The step PR will identify its review head against slice merge
 `4491e751264767385b827ee15749550c9beec48b`. Initial review estimate: four minutes
 for the rule and one retrospective example; actual feedback is pending.
