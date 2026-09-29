@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: awaiting-overhead-guidance-review
+stage: awaiting-structural-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -30,19 +30,22 @@ own decisions.
 
 ## Review entry point
 
-Review [validation selection](../../../CONTRIBUTING.md#validation-selection) and the
-[stepwise/publishing gates](../../feat-workflow.md#stepwise-changes-and-commits)
-as `F28-01:STEP-6`, tracked in
-[issue #40](https://github.com/msitarz/ataraxia/issues/40) and
-[draft PR #41](https://github.com/msitarz/ataraxia/pull/41).
+Review the [structural review rule](../../engineering.md#structural-review),
+[delivery gate](../../feat-workflow.md#stepwise-changes-and-commits), and
+[two-case walkthrough](journal.md#j-27-deliver-structural-review-guidance) and
+[base-type corrections](journal.md#j-28-clarify-shared-base-types)
+as `F28-01:STEP-4`, tracked in
+[issue #42](https://github.com/msitarz/ataraxia/issues/42) and
+[draft PR #43](https://github.com/msitarz/ataraxia/pull/43).
 The step PR will identify its review head against slice merge
-`004a6ba66d7422284d071a00a5bfa01f3cbd1f93`. Initial review estimate: four minutes
-for the two owner changes and evidence walkthrough; actual feedback is pending.
+`36edc546d33f63c130c930b65884c21f56fd3ec0`. Initial review estimate: four minutes
+for the two owner changes and walkthrough; actual feedback is pending.
 
 Step PRs [#33](https://github.com/msitarz/ataraxia/pull/33),
 [#35](https://github.com/msitarz/ataraxia/pull/35),
 [#37](https://github.com/msitarz/ataraxia/pull/37), and
-[#39](https://github.com/msitarz/ataraxia/pull/39) are merged into the slice.
+[#39](https://github.com/msitarz/ataraxia/pull/39), and
+[#41](https://github.com/msitarz/ataraxia/pull/41) are merged into the slice.
 [Slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31) remains draft
 pending its remaining steps and full acceptance evidence. The
 [tracking contract](spec.md#delivery-tracking-and-merge-boundaries) and
@@ -73,11 +76,10 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-[J-24](journal.md#j-24-authorize-overhead-guidance) records approval of the
-amendment after PR #39 merged and authorization for this delivery step.
-[J-25](journal.md#j-25-deliver-overhead-guidance) records the owner changes and
-validation. Step tracking belongs to [slice 01](slices/01-review-loop.md).
-Step 4 remains unstarted. The defining and executor roles share this native
+[J-26](journal.md#j-26-authorize-structural-review-guidance) records authorization
+after PR #41 merged. [J-27](journal.md#j-27-deliver-structural-review-guidance)
+records the rule and walkthrough. Step tracking belongs to
+[slice 01](slices/01-review-loop.md). The defining and executor roles share this native
 conversation; no independent review is claimed.
 
 The [journal](journal.md) owns consequential history and validation evidence.

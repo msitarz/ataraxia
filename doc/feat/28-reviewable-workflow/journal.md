@@ -940,3 +940,122 @@ Tracking stays at the current owner; ancestor records link to it.
 **Next:** After reviewed merge and explicit authorization, continue the remaining
 slice 01 outcome; step 4 is still unstarted. **Review effort:** Estimated four
 minutes; actual feedback pending.
+
+## J-26: Authorize structural review guidance
+
+```yaml
+id: J-26
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said "move on with step 4" after [PR #41](https://github.com/msitarz/ataraxia/pull/41)
+merged into the slice at the revision above. This authorizes the structural
+review artifact in step 4's outline. Splitting its discovery/promotion and
+migration portions into later outline rows keeps this artifact reviewable;
+those rows are neither registered nor authorized by this instruction.
+
+Plan: register step 4 from the updated slice, add the structural rule in its
+engineering owner and the presentation gate in the feat workflow, then inspect
+two cases, links, metadata, approved bodies and journal history. Commit, publish
+a draft step PR, and register its actual link once. Full CI on the current PR
+head remains required before merge. The defining and executor roles share this
+conversation; no independent review is claimed.
+
+## J-27: Deliver structural review guidance
+
+```yaml
+id: J-27
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** Advance the structural part of `F28-01:AC-4`. The
+[engineering rule](../../engineering.md#structural-review) owns code cohesion,
+type meaning and helper placement; the [feat workflow](../../feat-workflow.md#stepwise-changes-and-commits)
+requires a scoped decision before presenting each step. It does not require a
+refactor after every commit. Prototype promotion and rewrite migration remain
+later outline outcomes.
+
+**Inspect:** The two owner sections and these hypothetical review cases; no
+application code changes are proposed here.
+
+| Case | Structural decision to record |
+| --- | --- |
+| Two records have similar fields, but one represents an input request and the other a completed outcome with different invariants | Keep distinct types and precise narrowing; shared field names alone do not justify folding them. If meaning, invariants and supported operations truly match, consolidate within scope and verify affected typing and behavior. |
+| An exception-formatting helper sits beside orchestration code but serves one error boundary | Move it to the module owning that boundary if doing so improves cohesion within scope; do not default to a generic `util.py`. If current placement already expresses ownership, record no refactor. Verify imports and behavior after a move. |
+
+**Evidence:** Bounded inspection passed for five changed documents: 79 relative
+links and anchors resolve, frontmatter parses, the existing journal remains an
+unchanged prefix, and approved spec/design bodies are unchanged. `git diff
+--check` passed. Normal commit hooks run at commit time. Local full CI and
+application tests were not run for this docs-only draft; full CI on the latest
+review head remains required before merge. The cases inspect guidance, not
+refactored code.
+
+**Consequences:** The decision is explicit even when no code moves. A finding
+that changes approved behavior, interfaces or boundaries returns to the
+material-change gate. Proposed Ruff statement/complexity rules and STE/prose
+checks still await investigation; they do not replace semantic review.
+
+**Decision requested:** Accept or correct the structural rule and its two
+decisions. **Next:** After reviewed merge and authorization, select a bounded
+discovery/promotion outcome; rewrite guidance remains a separate outline row.
+**Review effort:** Estimated four minutes; actual maintainer feedback pending.
+
+## J-28: Clarify shared base types
+
+```yaml
+id: J-28
+date: "2026-09-29"
+kind: correction
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+During review of [J-27](#j-27-deliver-structural-review-guidance), the
+maintainer noted that distinct types can still share a base for common fields.
+The first case in J-27 omitted that option. In the current
+[parallel slice types](../../../src/ataraxia/shard_types.py), `ShardSuccess` and
+`ShardFailure` remain distinct while inheriting common path fields from
+`ShardInput`. The [engineering rule](../../engineering.md#structural-review)
+now covers this pattern without weakening variant-specific narrowing. STEP-4
+changes guidance only; its earlier walkthrough remains as recorded. Recheck
+the affected docs and publish the correction to
+[step PR #43](https://github.com/msitarz/ataraxia/pull/43).
+
+## J-29: Identify diagnostic base fields
+
+```yaml
+id: J-29
+date: "2026-09-29"
+kind: correction
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+The maintainer also identified the three [shard error variants](../../../src/ataraxia/shard_types.py)
+as candidates for a shared base `TypedDict`: `ExceptionDiagnostic`,
+`TimeoutDiagnostic`, and `WorkerFailureDiagnostic` repeat `type: str` and
+`message: str`. A base can own those fields while each variant retains its
+`kind` literal and specific fields. Their `traceback` fields differ (`str`
+versus `None`), so moving that field into a widened base would lose useful
+precision. This extends [J-28](#j-28-clarify-shared-base-types)'s example;
+STEP-4 records the review finding without refactoring the parallel code.

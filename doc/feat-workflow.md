@@ -28,6 +28,15 @@ before dependent continuation. Requested corrections reuse that step's issue,
 branch and PR. Follow the [delivery review gates](#delivery-branches-and-review-gates);
 independent work proceeds only within the maintainer's authorization.
 
+Before presenting a defining or execution step, record a scoped structural
+review: inspect cohesion, type meaning and precision, module and dependency
+boundaries, and documentation ownership. State the specific change needed or
+why no refactor is warranted. Apply the [engineering structural rules](engineering.md#structural-review)
+to code; use [documentation ownership](documentation.md#placement-and-maintenance)
+for document placement. Do not make cleanup mandatory after each commit. A
+finding that changes approved scope or design follows the
+[material-change gate](#execute-the-approved-scope).
+
 If findings change the approach, revise the remaining plan and explain why before
 continuing. Material contract changes still follow the
 [scope approval gate](#execute-the-approved-scope). Keep completed step commits

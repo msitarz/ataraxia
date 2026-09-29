@@ -3,8 +3,8 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: awaiting-overhead-guidance-review
-approved_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
+stage: awaiting-structural-review
+approved_revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
 issue: 30
 pr: 31
 branch: feat/reviewable-workflow-slice-01
@@ -45,6 +45,13 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-06
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "004a6ba66d7422284d071a00a5bfa01f3cbd1f93"
+    stage: merged
+  - id: STEP-4
+    issue: 42
+    pr: 43
+    branch: feat/reviewable-workflow-slice-01-step-04
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
     stage: awaiting-review
 ---
 
@@ -106,9 +113,12 @@ the budget. Corrections reuse the step issue and PR.
 | 3 | Package template, ownership routes and Mermaid companions; review one small slice and one grouped feat | Relative links, rendered views and planned YAML schemas; proposed rumdl headings/metadata checks and route checks |
 | 5 | Overhead-reduction planning amendment; review validation selection, evidence reuse and lighter publishing before changing active guidance | Recorded step 3 baseline and docs/code invalidation walkthrough; later checker fixtures for selection and evidence provenance |
 | 6 | Adopt the accepted overhead rules in workflow and contribution guidance; review whether draft publication and merge checks remain clear | Walk through navigation-only versus changed code inputs; affected document checks and current-head CI at merge |
-| 4 | Structural review and discovery/promotion/migration guidance, reviewed as separate artifacts if needed | Check precise types, module ownership, scope and vocabulary; proposed rumdl/prose checks and investigated Ruff rules, with existing type/Tach checks unchanged |
+| 4 | Structural review rule and two cases: similar types and a misplaced helper | Inspect meaning, invariants, precision and ownership; record a justified no-refactor result where appropriate; affected document checks |
+| 7 | Discovery record and prototype promotion gap assessment, if agreed after step 4 | Walk through one bounded experiment and the gap to production; inspect links and metadata |
+| 8 | Rewrite migration guidance, if agreed after step 7 | Walk through preserved behavior, intentional changes, comparison, cutover and retirement; inspect links and metadata |
 
-Steps 5 and 6 precede the unstarted step 4; preserve all identities.
+Steps 5 and 6 preceded step 4. Rows 7 and 8 are outlines, not registered or
+authorized steps; preserve all identities.
 
 Follow [validation selection](../../../../CONTRIBUTING.md#validation-selection)
 for draft publication and current-head merge evidence. Until the new tools
