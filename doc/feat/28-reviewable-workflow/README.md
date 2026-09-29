@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: preparing-slice-01-step-01
+stage: awaiting-template-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -28,10 +28,17 @@ own decisions.
 
 ## Review entry point
 
-Start with [tracking and merge boundaries](spec.md#delivery-tracking-and-merge-boundaries)
-and the [branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base).
-Slice and step PRs will provide their own review entry points. Approving the
-direction does not approve unresolved tool choices or later implementation steps.
+Review the [candidate artifact template](../../feat-workflow.md#review-artifact-template)
+and [worked discovery example](journal.md#j-14-deliver-the-review-template-and-example)
+as `F28-01:STEP-1`, tracked in
+[issue #32](https://github.com/msitarz/ataraxia/issues/32).
+The step branch compares against its slice base; publication metadata will pin
+the delivered revision. The [slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31)
+remains draft pending delivery steps and full acceptance evidence.
+The adopted [tracking contract](spec.md#delivery-tracking-and-merge-boundaries)
+and [branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base)
+provide context. Approving the direction does not approve unresolved tool choices
+or later implementation steps.
 
 | Document | Authoritative content | Read when |
 | --- | --- | --- |
@@ -63,10 +70,12 @@ J-15 records the instruction and authorized reversal of the three slice 01
 commits. [J-16](journal.md#j-16-approve-relocated-first-step) records the current
 scope at the amended revision; J-13 is preserved as historical approval evidence.
 Slice 01's branch and tracking belong to its
-[frontmatter](slices/01-review-loop.md). The next action is to replay the
-template/example on its first step branch and publish the step PR to the slice.
-The slice integration PR stays draft pending its children and full acceptance
-evidence. Iteration 2 has not started.
+[frontmatter](slices/01-review-loop.md), including the registered `STEP-1`.
+[J-17](journal.md#j-17-replay-the-template-on-its-step-branch) records the replay
+and current checks. The next action is maintainer review of the template/example
+in the step PR to the slice. Corrections reuse that step; dependent continuation
+waits for approval and reviewed merge. The slice integration PR stays draft
+pending its children and full acceptance evidence. Iteration 2 has not started.
 Overall specification approval remains pending; there is no independent session
 review. Original commits and their evidence remain in Git history.
 The [journal](journal.md) owns drafting and validation evidence.

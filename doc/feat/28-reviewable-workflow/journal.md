@@ -424,3 +424,122 @@ Validation: bounded metadata, event preservation, native identity and local-link
 checks passed. `make ci` passed with 232 repository tests, 3 examples, type/import
 checks, installed-wheel smoke and audit. Slice acceptance remains pending.
 Defining and executor roles share the recorded native conversation.
+
+## J-14: Deliver the review template and example
+
+```yaml
+id: J-14
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+Delivered the [candidate review artifact template](../../feat-workflow.md#review-artifact-template)
+under [J-13's scoped approval](#j-13-approve-slice-01-iteration-1).
+The following worked discovery example replays the earlier journal-identity
+question against pinned records. Its decision was already made in
+[J-12](#j-12-adopt-embedded-journal-metadata); this walkthrough evaluates how the
+template presents that evidence.
+
+**Outcome:** Demonstrate the discovery case for `F28-01:AC-1`: can one journal
+entry identify its recording conversation without looking up a session alias?
+
+**Inspect:** Compare
+[J-11](https://github.com/msitarz/ataraxia/blob/406d2e61356a05b665af6b7aba5c1d25083a57bd/doc/feat/28-reviewable-workflow/journal.md#j-11-note-calldiff-for-future-review)
+and [J-12](https://github.com/msitarz/ataraxia/blob/406d2e61356a05b665af6b7aba5c1d25083a57bd/doc/feat/28-reviewable-workflow/journal.md#j-12-adopt-embedded-journal-metadata)
+at candidate `406d2e61356a05b665af6b7aba5c1d25083a57bd`.
+
+**Evidence:** Hypothesis: embedded provider/thread metadata makes one entry
+sufficient for identity lookup. Alternatives: alias plus registration, or repeated
+native identity. Stop after inspecting one record of each form. The
+[offline probe](#discovery-probe-for-the-example), run with Python 3.14.7, printed
+`J-11: alias only; J-12: Codex UUID in entry`. J-11 needs another entry to resolve
+S1; J-12 contains the provider and a valid UUID. The probe checks this bounded
+structural property; it does not authenticate identity or validate general YAML.
+
+**Consequences:** Embedded identity was accepted in J-12. Structural review keeps
+the reusable template with its workflow owner and this evidence in the journal.
+Approved contract bodies remain unchanged. The probe uses existing Git and
+Python, and adds no dependency. General schema/link gates remain future work.
+
+**Decision requested:** Does this field set expose enough context, evidence and
+consequences for a short review? Accept it, request specific corrections, or defer.
+
+**Next:** If accepted, propose iteration 2's continuation and material-change
+guidance with worked boundary cases. Dependent continuation awaits approval.
+
+**Review effort:** Estimated three minutes for the template and this entry point;
+actual maintainer feedback is pending. Other phase examples and the full slice
+acceptance walkthrough remain outstanding.
+
+### Discovery probe for the example
+
+Run from the repository root; the input is the pinned historical candidate:
+
+```sh
+uv run --no-sync python - <<'PY'
+import re
+import subprocess
+from uuid import UUID
+
+revision = "406d2e61356a05b665af6b7aba5c1d25083a57bd"
+path = "doc/feat/28-reviewable-workflow/journal.md"
+journal = subprocess.check_output(["git", "show", f"{revision}:{path}"], text=True)
+legacy = journal.split("## J-11:", 1)[1].split("\n## J-", 1)[0]
+embedded = journal.split("## J-12:", 1)[1].split("\n## J-", 1)[0]
+assert "Session: S1" in legacy and "thread_id:" not in legacy
+assert "  provider: codex\n" in embedded
+thread = re.search(r'^  thread_id: "([^"]+)"$', embedded, re.M).group(1)
+assert str(UUID(thread)) == thread
+print("J-11: alias only; J-12: Codex UUID in entry")
+PY
+```
+
+Iteration validation: the exact documented probe passed. Bounded checks passed
+for 10 package documents, 39 scoped acceptance rows and 115 local links/anchors,
+including the workflow owner. Checked the template/example fields, native entry
+identity, approval scope, unchanged approved contract bodies and append-only
+history. `git diff --check` and `make ci` passed with 232 repository tests,
+3 examples, type/import checks, installed-wheel smoke and audit. Proposed
+`make docs-check` has not been implemented. Maintainer review and independent
+session review have not occurred; iteration 2 has not started.
+
+## J-17: Replay the template on its step branch
+
+```yaml
+id: J-17
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+Replayed the template/example from
+`efe5d17d06c5b1cd02bba593319ba92eb2b0449e` on
+`feat/reviewable-workflow-slice-01-step-01`, based on slice revision
+`9231d7164ec41835872bbd594b4e2b3770fbb1ce`. The first step's tracking lives
+in [slice 01](slices/01-review-loop.md)'s frontmatter. It has
+[issue #32](https://github.com/msitarz/ataraxia/issues/32), and its PR targets
+the slice branch. The receiving slice has
+[issue #30](https://github.com/msitarz/ataraxia/issues/30) and
+[draft PR #31](https://github.com/msitarz/ataraxia/pull/31) to the feat branch.
+
+Preserved J-14 exactly as historical execution evidence after the receiving
+branch's records. Its original comparison and validation refer to that earlier
+delivery. This entry and the overview own the relocation's current evidence and
+review handoff. The reusable template is unchanged; the amended specification
+and design retain the scope approved in J-16. No new delivery iteration is added.
+
+Validation: the exact documented probe passed. Bounded checks passed for 10
+proposal documents, 42 scoped acceptance rows and 125 local links/anchors,
+including unchanged J-13/J-14 records, the original template, approved contract
+bodies and the registered step's parent/base identity. `git diff --check` and
+`make ci` passed with 232 repository tests, 3 examples, type/import checks,
+installed-wheel smoke and audit. The proposal's `make docs-check` remains
+unimplemented; these migration checks do not claim its delivery.
+Maintainer review is pending; no PR is merged, and iteration 2 has not started.
