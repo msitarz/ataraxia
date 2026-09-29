@@ -342,3 +342,85 @@ Checked preserved J-1 through J-12 text, reserved replay IDs and metadata.
 `make ci` passed with 232 repository tests, 3 examples, type/import checks,
 installed-wheel smoke and audit. The proposed checker remains unimplemented;
 the updated Mermaid views await maintainer visual review.
+
+## J-13: Approve slice 01 iteration 1
+
+```yaml
+id: J-13
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "406d2e61356a05b665af6b7aba5c1d25083a57bd"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer instructed: "Start slice 01’s first iteration using the current
+candidate; present the template and example before continuing." This authorizes
+only [slice 01](slices/01-review-loop.md#proposed-iterations)'s first iteration:
+a one-screen review artifact template and one worked discovery example, using
+the applicable overall review and record contracts at the revision above.
+Remaining iterations, tool adoption, and parallel reversal await later decisions.
+The defining and executor roles use this same conversation; this is not an
+independent session review.
+
+Plan and completion condition:
+
+1. Record this scoped approval and delivery state; check metadata, history and
+   routes, then commit the handoff.
+2. Place the candidate template in `feat-workflow.md` and a retrospective
+   discovery example in an execution entry. Compare one legacy and one embedded
+   journal record with a reproducible offline probe. Check content, ownership,
+   links, unchanged approved contract bodies, and `make ci`, then commit.
+3. Identify the delivered revision in the overview, check and commit that
+   publication metadata, then push to draft PR #29 and present the artifact.
+   Stop for maintainer review before any dependent iteration.
+
+Estimated initial review: three minutes for the template and example; actual
+maintainer feedback remains pending. This first example supplies partial
+`F28-01:AC-1` evidence, not the complete multi-phase walkthrough or slice delivery.
+
+Handoff validation: bounded metadata, approval scope, native identity, local
+link and whitespace checks passed. Approved contract bodies remain unchanged,
+and all earlier journal text is preserved. Full CI belongs to the artifact step.
+
+## J-16: Approve relocated first step
+
+```yaml
+id: J-16
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said, "yeah, lets adopt those changes", and instructed reversal,
+planning amendment and replay in a slice PR to the feat. This records that
+instruction at the amended hierarchy revision above, limited to relocating
+`F28-01:STEP-1`'s existing template/example and establishing its review branches.
+It does not authorize iteration 2 or approve the delivered template's contents.
+
+Replayed the original approval commit with its unchanged J-13 record appended
+after J-15. Updated mutable state to identify slice issue #30, branch
+`feat/reviewable-workflow-slice-01` and its feat base. The original review-metadata
+commit's purpose is replayed through new branch/PR handoffs; its obsolete
+comparison range is retained in original Git history. Step delivery will replay
+the original template/example commit on a child branch before review and merge.
+The original order of numbered events is not a new identity; IDs stay reserved.
+
+Validation: bounded metadata, event preservation, native identity and local-link
+checks passed. `make ci` passed with 232 repository tests, 3 examples, type/import
+checks, installed-wheel smoke and audit. Slice acceptance remains pending.
+Defining and executor roles share the recorded native conversation.

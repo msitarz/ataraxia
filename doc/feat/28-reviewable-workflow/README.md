@@ -1,8 +1,8 @@
 ---
 id: F28
 kind: feat
-status: proposed
-stage: relocating-slice-01-delivery
+status: in progress
+stage: preparing-slice-01-step-01
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -60,10 +60,13 @@ the changed contract or design returns for review before affected work proceeds.
 Defining and executor roles share the
 [conversation in J-15](journal.md#j-15-relocate-delivery-to-child-prs).
 J-15 records the instruction and authorized reversal of the three slice 01
-commits. The next action is to replay the approval/handoff on a slice integration
-branch and the template/example on its first step branch, then publish separate
-draft PRs. The feat branch contains the proposal and relocation record while
-the implementation is reviewed in its child PRs. Iteration 2 has not started.
+commits. [J-16](journal.md#j-16-approve-relocated-first-step) records the current
+scope at the amended revision; J-13 is preserved as historical approval evidence.
+Slice 01's branch and tracking belong to its
+[frontmatter](slices/01-review-loop.md). The next action is to replay the
+template/example on its first step branch and publish the step PR to the slice.
+The slice integration PR stays draft pending its children and full acceptance
+evidence. Iteration 2 has not started.
 Overall specification approval remains pending; there is no independent session
 review. Original commits and their evidence remain in Git history.
 The [journal](journal.md) owns drafting and validation evidence.
