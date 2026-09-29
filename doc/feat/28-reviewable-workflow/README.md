@@ -11,7 +11,7 @@ base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
 approved_revision: null
 review_base_revision: "9231d7164ec41835872bbd594b4e2b3770fbb1ce"
-review_revision: "5c51cd1ef5722af001de1fcc6bd1723ab8c0c7ce"
+review_revision: "1eb8c19231971586a6baa447fa9b0d1ab84f5797"
 ---
 
 # Small reviewed iterations
@@ -36,7 +36,7 @@ as `F28-01:STEP-1`, tracked in
 [issue #32](https://github.com/msitarz/ataraxia/issues/32) and
 [draft step PR #33](https://github.com/msitarz/ataraxia/pull/33).
 The review range is `9231d7164ec41835872bbd594b4e2b3770fbb1ce` to
-`5c51cd1ef5722af001de1fcc6bd1723ab8c0c7ce`, also recorded in frontmatter.
+`1eb8c19231971586a6baa447fa9b0d1ab84f5797`, also recorded in frontmatter.
 It contains the template/example and necessary step tracking; later publication
 metadata does not change those artifacts. The [slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31)
 remains draft pending delivery steps and full acceptance evidence.
@@ -76,8 +76,9 @@ commits. [J-16](journal.md#j-16-approve-relocated-first-step) records the curren
 scope at the amended revision; J-13 is preserved as historical approval evidence.
 Slice 01's branch and tracking belong to its
 [frontmatter](slices/01-review-loop.md), including the registered `STEP-1`.
-[J-17](journal.md#j-17-replay-the-template-on-its-step-branch) records the replay
-and current checks. The next action is maintainer review of the template/example
+[J-17](journal.md#j-17-replay-the-template-on-its-step-branch) records the replay;
+[J-18](journal.md#j-18-clarify-visual-review-options) records the requested visual
+note correction and its checks. The next action is maintainer review of the template/example
 in the step PR to the slice. Corrections reuse that step; dependent continuation
 waits for approval and reviewed merge. The slice integration PR stays draft
 pending its children and full acceptance evidence. Iteration 2 has not started.
