@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: in progress
-stage: awaiting-overhead-amendment-review
+stage: awaiting-overhead-guidance-review
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -10,8 +10,8 @@ base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
 specification_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
 approved_revision: null
-review_base_revision: "764e3e1f4cad43482c1847f78b88bc9153913bba"
-review_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
+review_base_revision: "004a6ba66d7422284d071a00a5bfa01f3cbd1f93"
+review_revision: null
 ---
 
 # Small reviewed iterations
@@ -30,18 +30,18 @@ own decisions.
 
 ## Review entry point
 
-Review the [overhead amendment](slices/01-review-loop.md#overhead-reduction-amendment),
-[validation contract](spec.md#execution-effort-and-validation), and
-[evidence design](design.md#bounded-execution-and-evidence-reuse) as
-`F28-01:STEP-5`, tracked in [issue #38](https://github.com/msitarz/ataraxia/issues/38)
-and [draft PR #39](https://github.com/msitarz/ataraxia/pull/39).
-The step PR identifies the published revision against slice merge
-`764e3e1f4cad43482c1847f78b88bc9153913bba`. Initial review estimate: three minutes
-for the proposed rules; actual feedback remains pending.
+Review [validation selection](../../../CONTRIBUTING.md#validation-selection) and the
+[stepwise/publishing gates](../../feat-workflow.md#stepwise-changes-and-commits)
+as `F28-01:STEP-6`, tracked in
+[issue #40](https://github.com/msitarz/ataraxia/issues/40).
+The step PR will identify its review head against slice merge
+`004a6ba66d7422284d071a00a5bfa01f3cbd1f93`. Initial review estimate: four minutes
+for the two owner changes and evidence walkthrough; actual feedback is pending.
 
 Step PRs [#33](https://github.com/msitarz/ataraxia/pull/33),
-[#35](https://github.com/msitarz/ataraxia/pull/35), and
-[#37](https://github.com/msitarz/ataraxia/pull/37) are merged into the slice.
+[#35](https://github.com/msitarz/ataraxia/pull/35),
+[#37](https://github.com/msitarz/ataraxia/pull/37), and
+[#39](https://github.com/msitarz/ataraxia/pull/39) are merged into the slice.
 [Slice integration PR #31](https://github.com/msitarz/ataraxia/pull/31) remains draft
 pending its remaining steps and full acceptance evidence. The
 [tracking contract](spec.md#delivery-tracking-and-merge-boundaries) and
@@ -72,12 +72,12 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-[J-23](journal.md#j-23-propose-overhead-reduction) records the observed overhead,
-maintainer instruction and amendment. The changed candidate awaits approval;
-previous approval records retain their historical scope. Current step tracking
-belongs to [slice 01](slices/01-review-loop.md). Step 4 remains unstarted.
-Active contribution/validation guidance is unchanged. The defining and executor
-roles share this native conversation; no independent review is claimed.
+[J-24](journal.md#j-24-authorize-overhead-guidance) records approval of the
+amendment after PR #39 merged and authorization for this delivery step.
+[J-25](journal.md#j-25-deliver-overhead-guidance) records the owner changes and
+validation. Step tracking belongs to [slice 01](slices/01-review-loop.md).
+Step 4 remains unstarted. The defining and executor roles share this native
+conversation; no independent review is claimed.
 
 The [journal](journal.md) owns consequential history and validation evidence.
 The step PR identifies the candidate contracts and design revision; publication

@@ -3,8 +3,8 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: awaiting-overhead-amendment-review
-approved_revision: null
+stage: awaiting-overhead-guidance-review
+approved_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
 issue: 30
 pr: 31
 branch: feat/reviewable-workflow-slice-01
@@ -38,7 +38,14 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-05
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "764e3e1f4cad43482c1847f78b88bc9153913bba"
-    stage: awaiting-review
+    stage: merged
+  - id: STEP-6
+    issue: 40
+    pr: null
+    branch: feat/reviewable-workflow-slice-01-step-06
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "004a6ba66d7422284d071a00a5bfa01f3cbd1f93"
+    stage: preparing-review
 ---
 
 # Adopt the review loop and document ownership
@@ -98,13 +105,14 @@ the budget. Corrections reuse the step issue and PR.
 | 2 | Continuation, material-change and step/slice PR rules in their owning guidance; review when an agent proceeds or stops | Walk through approval, correction, silence, changed revision, wrong PR base, pending merge and next-step examples; proposed tracking/approval/history checks |
 | 3 | Package template, ownership routes and Mermaid companions; review one small slice and one grouped feat | Relative links, rendered views and planned YAML schemas; proposed rumdl headings/metadata checks and route checks |
 | 5 | Overhead-reduction planning amendment; review validation selection, evidence reuse and lighter publishing before changing active guidance | Recorded step 3 baseline and docs/code invalidation walkthrough; later checker fixtures for selection and evidence provenance |
+| 6 | Adopt the accepted overhead rules in workflow and contribution guidance; review whether draft publication and merge checks remain clear | Walk through navigation-only versus changed code inputs; affected document checks and current-head CI at merge |
 | 4 | Structural review and discovery/promotion/migration guidance, reviewed as separate artifacts if needed | Check precise types, module ownership, scope and vocabulary; proposed rumdl/prose checks and investigated Ruff rules, with existing type/Tach checks unchanged |
 
-Step 5 is newly selected before the unstarted step 4; preserve both identities.
+Steps 5 and 6 precede the unstarted step 4; preserve all identities.
 
-`make verify-check` and `git diff --check` apply during guidance changes;
-`make ci` is required for publication. Until the new tools exist, inspect the
-proposed document checks explicitly rather than claim they ran.
+Follow [validation selection](../../../../CONTRIBUTING.md#validation-selection)
+for draft publication and current-head merge evidence. Until the new tools
+exist, inspect proposed document checks rather than claim they ran.
 
 ## Overhead-reduction amendment
 

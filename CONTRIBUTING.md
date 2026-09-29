@@ -56,16 +56,33 @@ rerun `make setup` with network access to prepare them. A passing verification d
 include a vulnerability audit; report it separately as unrun or failed when networking
 is unavailable. Report checks that could not run.
 
-Before pushing a branch or opening a PR, run all CI checks locally, including for an
-early draft PR containing only a specification:
+## Validation selection
 
-```sh
-make ci
-```
+Before publishing a draft, run affected local checks and the installed commit
+hooks. Select by changed behavior and dependencies, not the file extension alone:
 
-Full `make ci` runs local verification before the required network-dependent audit. An
-audit failure still fails CI, while completed local results remain available. The CI
-check job also runs its local checks before auditing.
+| Change | Local draft checks |
+| --- | --- |
+| Non-executable prose, navigation or metadata | `git diff --check`; inspect affected document links, anchors, metadata and history until `make docs-check` exists |
+| Application code, tests or executable examples | Relevant Ruff, Pyrefly and Tach checks plus focused tests for affected behavior |
+| Dependencies, packaging, CI or checker logic | Broader affected checks, including the applicable full suite and setup |
+
+The table sets a minimum; widen checks for cross-file effects or uncertainty.
+The proposed docs checker is not implemented yet, so manual document inspection
+is reported as manual evidence. A draft PR can open while GitHub CI is pending.
+Before merge, require the full CI run on the current review head against the
+actual parent. If remote CI cannot run, use `make ci` locally on that head and
+report the unavailable remote result; the review remains draft until required
+evidence is complete. `make ci` verifies locally before its network audit. An
+audit failure fails CI even when its earlier local checks passed.
+
+Reuse an earlier passing result only when its relevant inputs, configuration,
+tool versions and environment still match. Record the source revision, command,
+outcome and why it remains applicable; never label an unrun command as run on
+the current head. A changed dependency invalidates dependent evidence. An audit
+has a date and cannot establish current vulnerability status indefinitely.
+Pending, failed, reused and unrun checks need distinct reports. CI on the current
+review head remains the merge backstop; there is no persistent local cache.
 
 CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent checks use
 the synchronized environment without updating dependency resolution. After intentional
