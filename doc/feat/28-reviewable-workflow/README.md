@@ -33,7 +33,8 @@ own decisions.
 Review [validation selection](../../../CONTRIBUTING.md#validation-selection) and the
 [stepwise/publishing gates](../../feat-workflow.md#stepwise-changes-and-commits)
 as `F28-01:STEP-6`, tracked in
-[issue #40](https://github.com/msitarz/ataraxia/issues/40).
+[issue #40](https://github.com/msitarz/ataraxia/issues/40) and
+[draft PR #41](https://github.com/msitarz/ataraxia/pull/41).
 The step PR will identify its review head against slice merge
 `004a6ba66d7422284d071a00a5bfa01f3cbd1f93`. Initial review estimate: four minutes
 for the two owner changes and evidence walkthrough; actual feedback is pending.
