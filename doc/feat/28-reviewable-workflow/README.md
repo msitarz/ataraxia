@@ -8,7 +8,7 @@ pr: 29
 branch: feat/reviewable-workflow
 base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
-specification_revision: "ab502223635d55ae90236f2d9dd4914e25221083"
+specification_revision: "4eeec67a97c440bdf64b62f0dcc08882714122b0"
 approved_revision: null
 ---
 
