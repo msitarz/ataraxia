@@ -8,3 +8,13 @@ module placement, and justified decisions to leave a sound design alone.
 
 Use `08fcd28` as a structural reference, then adapt only rules appropriate to
 the master-based v2 workflow.
+The existing feat workflow owns legacy delivery rules; its replacement is a
+separate unit. These children move rules still stranded in `AGENTS.md`.
+
+## Work units
+
+- **TODO** [Engineering rules](engineering/README.md)
+- **TODO** [ADR rules](adr/README.md)
+- **TODO** [Architecture contracts](architecture/README.md)
+- **TODO** [Contribution rules](contribution/README.md)
+- **TODO** [Documentation ownership](documentation/README.md)
