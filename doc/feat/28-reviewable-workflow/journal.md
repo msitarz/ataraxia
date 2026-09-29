@@ -1059,3 +1059,81 @@ as candidates for a shared base `TypedDict`: `ExceptionDiagnostic`,
 versus `None`), so moving that field into a widened base would lose useful
 precision. This extends [J-28](#j-28-clarify-shared-base-types)'s example;
 STEP-4 records the review finding without refactoring the parallel code.
+
+## J-30: Authorize discovery guidance
+
+```yaml
+id: J-30
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "4491e751264767385b827ee15749550c9beec48b"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said "ok, merged, lets move to step 7" after
+[PR #43](https://github.com/msitarz/ataraxia/pull/43) merged into the slice at
+the revision above. This authorizes step 7's discovery record and prototype
+promotion gap assessment. Tool investigations in slice 02, rewrite guidance
+in step 8, and prototype adoption remain outside this step.
+
+Plan: register step 7 from the updated slice; put the short discovery and
+promotion rule in the feat workflow and a retrospective example here; check
+links, metadata, approved bodies and journal history; commit and publish a
+draft step PR. Register its actual link once. Full CI on the current review
+head remains required before merge. The defining and executor roles share this
+conversation; no independent review is claimed.
+
+## J-31: Deliver discovery and promotion guidance
+
+```yaml
+id: J-31
+date: "2026-09-29"
+kind: execution
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** Advance the discovery portion of `F28-01:AC-4`. The
+[workflow rule](../../feat-workflow.md#discovery-and-prototype-promotion)
+keeps probes grouped by question and makes the gap to a regular feat slice
+reviewable. The earlier [visual prototype](#j-9-visual-review-prototype) is a
+retrospective case, not a new experiment or a claim about production code.
+
+| Discovery record | Observed case |
+| --- | --- |
+| Hypothesis and alternatives | Mermaid companions might make the workflow easier to navigate in GitHub; prose-only and external diagrams were possible alternatives, not tested in this probe. |
+| Probe and stop | Four small views were published in the spec/design; stop at the maintainer's GitHub review. [J-9](#j-9-visual-review-prototype) records the draft checks. The renderer version was not recorded, and local rendering was not verified. |
+| Observation and limit | The maintainer liked the rendered views and adopted the format in [J-10](#j-10-accept-the-visual-review-format). No fatigue reduction was measured, and that response did not validate a general diagram checker. |
+
+The gap from that pilot to reusable delivery guidance was explicit:
+
+| Needed after the pilot | Disposition |
+| --- | --- |
+| Contract and owner | J-10 added the visual companion rule to the owning proposal; [step PR #37](https://github.com/msitarz/ataraxia/pull/37) later delivered reusable templates and owner routes. |
+| Validation and limits | Manual GitHub review established this format's usefulness to the maintainer; Markdown/link and rendered-view checks remain distinct. Automated documentation gates belong to later slices. |
+| Reuse versus new delivery | The four views were retained as examples. No prototype code became a completed feature by relabeling it; the template and routes received their own reviewed step. |
+
+This format pilot needed a delivery step within slice 01 rather than a new feat
+slice. A larger code prototype would use the same gap record to propose its
+own observable slice and fresh production validation.
+
+**Structural review:** The rule belongs in the feat workflow; this journal owns
+the historical evidence. No new shared term or refactor is needed.
+**Validation:** Bounded inspection passed for four changed documents, 76
+relative links and anchors, YAML metadata, preserved journal history, and
+unchanged approved spec/design bodies. `git diff --check` passed. Local full
+CI and application tests were not run for this docs-only draft; GitHub CI on
+the current review head remains the merge gate.
+**Decision requested:** Accept or correct the minimal discovery record and gap
+assessment. **Next:** After reviewed merge and authorization, decide whether
+rewrite migration guidance is the next bounded step. **Review effort:**
+Estimated four minutes; maintainer feedback pending.

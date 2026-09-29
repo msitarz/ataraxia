@@ -3,8 +3,8 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: awaiting-structural-review
-approved_revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
+stage: preparing-discovery-review
+approved_revision: "4491e751264767385b827ee15749550c9beec48b"
 issue: 30
 pr: 31
 branch: feat/reviewable-workflow-slice-01
@@ -52,6 +52,13 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-04
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "36edc546d33f63c130c930b65884c21f56fd3ec0"
+    stage: merged
+  - id: STEP-7
+    issue: 44
+    pr: 45
+    branch: feat/reviewable-workflow-slice-01-step-07
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "4491e751264767385b827ee15749550c9beec48b"
     stage: awaiting-review
 ---
 
@@ -114,11 +121,11 @@ the budget. Corrections reuse the step issue and PR.
 | 5 | Overhead-reduction planning amendment; review validation selection, evidence reuse and lighter publishing before changing active guidance | Recorded step 3 baseline and docs/code invalidation walkthrough; later checker fixtures for selection and evidence provenance |
 | 6 | Adopt the accepted overhead rules in workflow and contribution guidance; review whether draft publication and merge checks remain clear | Walk through navigation-only versus changed code inputs; affected document checks and current-head CI at merge |
 | 4 | Structural review rule and two cases: similar types and a misplaced helper | Inspect meaning, invariants, precision and ownership; record a justified no-refactor result where appropriate; affected document checks |
-| 7 | Discovery record and prototype promotion gap assessment, if agreed after step 4 | Walk through one bounded experiment and the gap to production; inspect links and metadata |
+| 7 | Discovery record and prototype promotion gap assessment | Walk through one bounded experiment and the gap to production; inspect links and metadata |
 | 8 | Rewrite migration guidance, if agreed after step 7 | Walk through preserved behavior, intentional changes, comparison, cutover and retirement; inspect links and metadata |
 
-Steps 5 and 6 preceded step 4. Rows 7 and 8 are outlines, not registered or
-authorized steps; preserve all identities.
+Steps 5 and 6 preceded step 4. Step 7 is now registered; row 8 remains an
+unregistered outline, not an authorized step. Preserve all identities.
 
 Follow [validation selection](../../../../CONTRIBUTING.md#validation-selection)
 for draft publication and current-head merge evidence. Until the new tools

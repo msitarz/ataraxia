@@ -250,6 +250,24 @@ especially for diagrams in Markdown documentation. Current approval and review
 rules remain in their owning sections above; this template presents evidence for
 those decisions.
 
+## Discovery and prototype promotion
+
+Use the [review artifact](#review-artifact-template) for a bounded discovery
+question. Record the hypothesis, alternatives, stopping condition, probe and
+versions, observed result, limits, and decision requested. Group related probes
+under one investigation; an experiment does not need its own feat or index row.
+An inconclusive or failed probe is still evidence, not permission to claim the
+idea works.
+
+Before promoting a prototype into a regular feat slice, compare what the
+prototype established with the production outcome. Identify missing observable
+contracts, architecture and ownership decisions, integration and failure cases,
+validation, and any cutover or retirement work that applies. State what can be
+reused and what must be rebuilt or checked. The maintainer reviews this gap and
+the proposed slice scope; changing a prototype's label never approves or
+validates production behavior. Keep detailed probe evidence in the relevant
+journal and follow the ordinary specification and delivery gates.
+
 ## Failures and boundaries
 
 Follow [validation procedure](../CONTRIBUTING.md#validation-selection) if network
