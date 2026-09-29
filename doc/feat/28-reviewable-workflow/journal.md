@@ -117,3 +117,23 @@ specification correction, not implementation of the proposed workflow.
 Validation: the bounded metadata/ID/link checks and whitespace check passed;
 `make ci` passed with 232 repository tests, 3 examples, type/import checks,
 installed-wheel smoke and audit. No executable behavior changed.
+
+## J-7: Acceptance namespaces and planned checks
+
+Date: 2026-09-29. Role/session: defining session, this conversation.
+
+The maintainer asked whether parent and child acceptance IDs were file-scoped
+and whether the intended `make docs-check` should enforce their scope. Made the
+owning feat/slice namespace contract explicit, including frontmatter resolution,
+qualified external references, uniqueness, file moves, and retired IDs. Added
+static namespace/reference checks to slice 03 and shared-index pytest checks to
+slice 04. These are requirements for future tooling, not an implemented target.
+
+Correction plan: update the owning contract and checker slices, verify and
+commit; advance the candidate revision in the overview, verify that handoff,
+commit and publish through the existing draft PR. Review remains pending.
+
+Validation: bounded package checks passed for 38 scoped acceptance rows and
+71 local links/anchors, including namespace ownership and uniqueness. `make ci`
+passed with 232 repository tests, 3 examples, type/import checks, wheel smoke
+and audit. Only proposal documents changed; no checker was implemented.

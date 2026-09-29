@@ -16,6 +16,13 @@ targeted criterion selection, and mechanical detection of missing or dangling
 references. Support explicit evidence from type checks, installed-wheel checks,
 other commands, and manual observations. Do not add Gherkin or a second runner.
 
+Use the namespace index from slice 03. Collected marker and targeted-selection
+checks must resolve the same identity as document references. Add these checks
+to `make docs-check`; no test reference may silently match a same-number
+criterion in another scope. Static checks cannot substitute for pytest collection.
+A valid reference to an unintended criterion still needs human review; the
+checker cannot infer which behavior a test was meant to establish.
+
 Proposed slices need valid IDs and evidence plans but no implementation tests.
 Validated delivered scope needs current relevant observed evidence. Maintain
 separate outcomes for reference coverage and passing execution; neither proves
@@ -25,8 +32,8 @@ that the assertions fully establish a requirement.
 
 | Step | Concrete artifact and decision | Verification and proposed checkers |
 | --- | --- | --- |
-| 1 | Stable ID rules and one example acceptance table with a retired ID; review readability and evidence ownership | YAML/ID checker fixtures, duplicate/dangling/retired references; rumdl table checks |
-| 2 | Registered `covers` marker and collected mapping for a tiny test set; review test-to-criterion links | Pytest collection tests for inherited, parametrized and multiple-AC markers; strict markers remain enabled |
+| 1 | Stable ID rules and one example acceptance table with a retired ID; review readability and evidence ownership | Shared namespace-index fixtures, duplicate/dangling/retired references and stable identity after file moves; rumdl table checks |
+| 2 | Registered `covers` marker and collected mapping for a tiny test set; review test-to-criterion links | Pytest collection tests for inherited, parametrized and multiple-AC markers, absent/unknown scopes and wrong-scope references; strict markers remain enabled |
 | 3 | Targeted selection, proposed as `pytest --covers F28-04:AC-1`; review selected and deselected item reports | Tests for valid/unknown scope and criteria, malformed arguments, no-match failure, and ordinary unfiltered collection |
 | 4 | Observed run and non-pytest evidence reporting; review one validated and one incomplete criterion | Tests for pass, fail, skipped, xfail, partial runs, evidence revision/context, and concrete manual/command records |
 | 5 | Enrollment/migration policy and one real new-slice example; review limits before broader retrofit | Full docs/trace checks, existing pytest suite and `make ci`; legacy records retain explicit historical treatment |
@@ -41,7 +48,7 @@ entire slice by implication.
 | ID | Preconditions and action | Observable outcome | Verified by |
 | --- | --- | --- | --- |
 | AC-1 | Add duplicate, retired or unknown acceptance references | Checker rejects invalid references; valid scoped IDs remain stable across edits | Docs-check fixtures |
-| AC-2 | Collect inherited, parametrized and multi-criterion tests | Mapping includes actual collected items and rejects dangling criteria under strict markers | Pytest integration tests |
+| AC-2 | Collect inherited, parametrized and multi-criterion tests, including missing or incorrect scope | Mapping resolves the same namespace index as docs; ambiguous/dangling references fail and cannot match another scope by local number alone | Pytest and `make docs-check` integration tests |
 | AC-3 | Select one scoped criterion or an unknown/no-match criterion | Intended tests run; invalid/no-match requests fail clearly; no option preserves normal pytest behavior | Selection integration tests |
 | AC-4 | Validate a slice with passing, skipped or stale evidence | Only relevant passing observations count; missing/stale evidence and bare manual claims remain incomplete | Result/evidence integration tests |
 | AC-5 | Introduce traceability while historical slices exist | New enrolled scope is enforced without rewriting old approved contracts or claiming old tests satisfy new evidence rules | Migration fixtures and reviewed example |

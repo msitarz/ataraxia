@@ -115,9 +115,10 @@ summary distinguishes findings, errors, and checks not performed.
 
 ## Acceptance evidence
 
-Keep readable precondition/action/outcome tables with `AC-n` IDs scoped by stable
-slice IDs such as `F28-04`. Do not renumber or reuse retired IDs. Register one
-plain pytest marker that can name several criteria:
+Keep readable precondition/action/outcome tables following the
+[acceptance ID scope contract](spec.md#acceptance-id-scope). Do not renumber or
+reuse retired IDs. Register one plain pytest marker that names the owning
+namespace as its first argument and can name several local criteria:
 
 ```python
 @pytest.mark.covers("F28-04", "AC-1", "AC-2")

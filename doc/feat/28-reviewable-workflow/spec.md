@@ -125,6 +125,30 @@ and a second documentation framework. Unslop is dropped from consideration.
 This proposal authorizes no reversal; slice 06 requires a separate reviewed plan
 after workflow adoption.
 
+## Acceptance ID scope
+
+A criterion's identity is its owning feat or feat slice ID plus its local `AC-n`
+ID. A textual reference outside that namespace uses `<scope>:AC-n`, such as
+`F28:AC-1` or `F28-04:AC-1`. Test markers supply the same scope explicitly through
+the [marker contract](design.md#acceptance-evidence).
+
+For `kind: spec`, the namespace is the frontmatter `owner`, which must resolve to
+a registered feat or feat slice. For `kind: slice`, it is the frontmatter `id`.
+A specification document's own ID, such as `F28-SPEC`, identifies the document,
+not its acceptance namespace. File paths do not determine criterion identity.
+
+Bare `AC-n` references are local to their owning namespace. Criterion definitions
+are unique within that namespace across all files; different namespaces can reuse
+the same local number. Moving files preserves IDs. Retired IDs remain reserved.
+
+`make docs-check` must validate namespace resolution, definition uniqueness,
+and references against the complete acceptance index. Unknown namespaces,
+duplicate definitions within a namespace, unqualified external references,
+dangling references, and retired-ID reuse produce findings. Collection-aware test
+reference checks join this target through slice 04; references do not prove tests
+passed or sufficiently assert the requirement. Incremental selection retains
+the relevant cross-file and test dependencies.
+
 ## Overall acceptance criteria
 
 IDs are scoped to `F28`, remain stable, and are never reused after retirement.
@@ -138,7 +162,7 @@ The evidence column names the intended method, not completed validation.
 | AC-4 | Revise approved contracts or applicable design | A material change is identified and reviewed before implementation; approval names a revision and covered documents | History-check fixtures and manual approval evidence |
 | AC-5 | Investigate rumdl, schemas, parsers, Ruff rules, and STE candidates | Bounded reproducible findings lead to reviewed choices; sourdough uv and package reports are investigated, not assumed fixed | Slice 02 evidence review |
 | AC-6 | Run full or selected documentation validation | Hygiene, metadata, references, history, and required capabilities have honest outcomes; dependency changes are not hidden by path selection | Slice 03 integration tests and CI |
-| AC-7 | Map acceptance criteria to tests or another evidence source | Unknown/uncovered IDs fail at the applicable stage; mapping and observed passing evidence are distinct; skipped tests do not validate criteria | Slice 04 pytest and checker tests |
+| AC-7 | Map acceptance criteria to tests or another evidence source | Namespace and reference checks reject invalid identities; uncovered IDs fail at the applicable stage; mapping and observed passing evidence are distinct; skipped tests do not validate criteria | Slice 03 namespace fixtures and slice 04 pytest/checker tests |
 | AC-8 | Complete a defining or execution step | Structural review is recorded; refactoring remains scoped and preserves meaning and boundaries | Step review and existing Ruff, type, Tach, and behavior checks |
 | AC-9 | Evaluate and pilot an STE checker | The maintainer sees compatibility, false positives, coverage, and maintenance costs; required language checks cannot silently skip | Slice 05 evidence and integration tests if adopted |
 | AC-10 | Adopt the workflow, then separately approve reversal and replay | Parallel contracts and original evidence are preserved; every replay step is reviewed; findings assess review burden and steering | Slice 06 manual report plus behavior checks |
