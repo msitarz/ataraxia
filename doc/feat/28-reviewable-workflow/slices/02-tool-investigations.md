@@ -87,3 +87,20 @@ Record findings and approved choices in the [journal](../journal.md). Revise
 affected design/slice contracts before implementing changed choices. If no
 suitable STE engine exists, propose a scoped deferral; do not make a missing
 required checker silently pass.
+
+## Optional future review aid
+
+Consider [calldiff](https://github.com/tanishqkancharla/calldiff) and its
+[agent skill](https://github.com/tanishqkancharla/calldiff/blob/main/skills/calldiff/SKILL.md)
+after the core workflow gates. It compares syntactic call relationships across
+Git revisions, supports Python, and exposes structured output. A future probe
+could assess whether that output supports a compact Mermaid view of code changes.
+
+Use a pinned version and exact reviewed commits. Test missing or incorrect edges
+for Python protocols, callbacks, decorators and process boundaries, plus changes
+inside functions that preserve their calls. Check entrypoint scoping, source
+locations, grammar setup and cold/offline operation. Measure whether the result
+helps the maintainer review one small change. This remains an optional candidate;
+it has not been installed or tried here and does not add a required delivery step.
+Keep outputs as revision-linked review artifacts for the maintainer's own tools,
+following the existing review entry-point contract.

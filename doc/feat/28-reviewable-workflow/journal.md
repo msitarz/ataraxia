@@ -226,3 +226,22 @@ workflow policy, and no browser setup or rendering attempt is part of this step.
 Validation: bounded checks passed for 39 scoped acceptance rows and 84 local
 links/anchors. `make ci` passed with 232 repository tests, 3 examples, type/import
 checks, installed-wheel smoke and audit. Earlier journal entries remain intact.
+
+## J-11: Note calldiff for future review
+
+Date: 2026-09-29
+Role: defining
+Session: S1
+
+The maintainer reaffirmed Mermaid for the workflow and suggested calldiff as a
+future code-review aid. Read its README and agent skill, then added an optional
+candidate note to slice 02 with a bounded probe for usefulness and missed edges.
+No installation, runtime evaluation, new gate or mandatory delivery step is
+authorized by this note.
+
+Plan: record the candidate and this event, check and commit the documentation,
+advance the candidate revision, then publish through the existing draft PR.
+
+Validation: bounded document and whitespace checks passed. `make ci` passed
+with 232 repository tests, 3 examples, type/import checks, installed-wheel smoke
+and audit. No calldiff runtime claims were tested.
