@@ -572,3 +572,50 @@ journal history, and 49 local links/anchors passed. `git diff --check` and
 `make ci` passed with 232 repository tests, 3 examples, type/import checks,
 installed-wheel smoke and audit. Earlier journal entries remain unchanged;
 maintainer review and dependent continuation remain pending.
+
+## J-19: Authorize continuation after step 1 merge
+
+```yaml
+id: J-19
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said, "ok, i merged that PR, lets move to the next step".
+Verified [PR #33](https://github.com/msitarz/ataraxia/pull/33) is merged into
+the slice at `588cde5ba881b6e20d1dfc0d558ae710e3b6d264`; fetched that revision
+and created `feat/reviewable-workflow-slice-01-step-02` from the updated slice.
+This authorizes only `F28-01:STEP-2`: continuation, material-change and step/slice
+PR guidance with boundary examples. Contract bodies remain at the revision above.
+The step has [issue #34](https://github.com/msitarz/ataraxia/issues/34).
+The same conversation performs defining and executor roles; no independent
+session review is claimed. Later steps and tool adoption remain unapproved.
+
+Plan and completion condition:
+
+1. Record the verified merge, scoped instruction and step tracking; check
+   identity, metadata, unchanged contracts and history, then commit the handoff.
+2. Replace conflicting single-branch guidance at its owner, route contribution
+   guidance to that owner, and record a compact boundary walkthrough. Check
+   consistency, links and history, run `make ci`, and commit the artifact.
+3. Pin the review range in the overview, publish a draft step PR to the slice,
+   verify its actual base/head, and update tracking. Stop for maintainer review
+   before step 3; corrections stay in this step PR.
+
+Initial review estimate: four minutes for the changed guidance and boundary table;
+actual maintainer feedback remains pending. This advances `F28-01:AC-2` and
+`F28-01:AC-5`; the full slice acceptance walkthrough is still outstanding.
+
+Handoff validation: bounded checks passed for 10 documents, 42 scoped acceptance
+IDs and 97 local links/anchors, including native identity, preserved journal and
+contract bodies, step tracking and updated slice ancestry. The merge is observed
+separately from the maintainer's explicit authorization to continue.
