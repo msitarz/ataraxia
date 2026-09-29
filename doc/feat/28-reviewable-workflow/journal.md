@@ -286,3 +286,59 @@ fields, verified its native identity, and preserved all earlier journal text.
 `make ci` passed with 232 repository tests, 3 examples, type/import checks,
 installed-wheel smoke and audit. The future documentation checker remains
 unimplemented; these bounded checks do not claim its delivery.
+
+## J-15: Relocate delivery to child PRs
+
+```yaml
+id: J-15
+date: "2026-09-29"
+kind: decision
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+The maintainer accepted separate issues, branches and PRs for each slice and
+delivery step, and instructed reversal of all slice 01 commits from the feat,
+an amendment of the relevant proposal files, and replay through a slice PR to
+the feat. The adopted hierarchy is step PR to slice, slice PR to feat, and feat
+PR to its declared integration base. Maintainer approval and merge precede
+dependent continuation. The current feat base remains `feat/parallel_execution`.
+
+Authorized source commits, retained in Git history:
+
+- Approval/handoff: `446f86e035738da057b80e13dfbcfb886db85440`.
+- Template/example: `efe5d17d06c5b1cd02bba593319ba92eb2b0449e`.
+- Review metadata: `f5f4e9e7a58d04f94b8e2384d405f716837d74f1`.
+
+Applied their inverse changes in reverse order at
+`a436d07973ad2236b139e2bae6d508d8d618384d`. Verified all four affected files
+exactly matched pre-iteration revision `6d1a864bad92ac439bbd1f70fe98ba1699e15abe`.
+This explicit migration also reverted J-13/J-14 additions; their IDs remain
+reserved. Replay appends their unchanged records to the receiving branches
+after this event, preserving identity without renumbering. The earlier J-1
+through J-12 text remains intact. The maintainer's instruction authorizes this
+specific history transition, not general rewriting of journal records.
+
+Remaining plan:
+
+1. Amend the tracking/review contract, design, relevant slices and handoff;
+   check schemas, links, event/criterion IDs, Git state and `make ci`, then commit
+   and publish the planning revision on the feat branch.
+2. Create a slice integration branch and issue. Replay the approval/handoff
+   there, adapting mutable state to the new hierarchy, and publish its draft PR
+   to the feat. Record the migration scope at the amended revision.
+3. Create a first-step issue/branch from that slice, replay the original
+   template/example commit, and publish its draft PR to the slice after checks.
+   Keep the slice PR draft until its steps and integration evidence complete.
+4. Publish tracking links and exact review revisions, verify actual PR bases,
+   and stop for maintainer review. Iteration 2 remains unstarted; agents merge
+   nothing. The same conversation performs defining and executor roles.
+
+Validation: reversal equality, whitespace and bounded checks passed for all
+10 proposal documents, 42 scoped acceptance rows and 112 local links/anchors.
+Checked preserved J-1 through J-12 text, reserved replay IDs and metadata.
+`make ci` passed with 232 repository tests, 3 examples, type/import checks,
+installed-wheel smoke and audit. The proposed checker remains unimplemented;
+the updated Mermaid views await maintainer visual review.

@@ -2,7 +2,7 @@
 id: F28
 kind: feat
 status: proposed
-stage: awaiting-specification-review
+stage: relocating-slice-01-delivery
 issue: 28
 pr: 29
 branch: feat/reviewable-workflow
@@ -19,16 +19,19 @@ project. Each iteration presents one concrete artifact designed for review in
 under five minutes. Discussion can take longer; the agent waits for explicit
 approval before the next dependent iteration.
 
-This is a proposal using the proposed file layout. The
-[current workflow](../../feat-workflow.md) still governs delivery. No future
-implementation, tool selection, or reversal of parallel execution is approved
-by publication of this package.
+The maintainer adopted the issue/branch/PR hierarchy for this feat and authorized
+relocating slice 01's first iteration to child review branches. Shared workflow
+guidance is still being delivered under the
+[current workflow](../../feat-workflow.md); this explicit instruction governs
+the relocation. Tool choices, later iterations and parallel reversal await their
+own decisions.
 
 ## Review entry point
 
-Start with the [six principles and overall acceptance criteria](spec.md).
-Then review one delivery slice at a time. Approving the direction does not
-approve unresolved tool choices or every later implementation step.
+Start with [tracking and merge boundaries](spec.md#delivery-tracking-and-merge-boundaries)
+and the [branch hierarchy](design.md#how-do-reviewed-changes-reach-the-integration-base).
+Slice and step PRs will provide their own review entry points. Approving the
+direction does not approve unresolved tool choices or later implementation steps.
 
 | Document | Authoritative content | Read when |
 | --- | --- | --- |
@@ -54,10 +57,15 @@ the changed contract or design returns for review before affected work proceeds.
 
 ## Current handoff
 
-Defining conversation: [native identity in J-12](journal.md#j-12-adopt-embedded-journal-metadata).
-No executor session has started.
-The next action is manual specification review, beginning with the six principles.
-There is no approved specification revision and no independent session review.
+Defining and executor roles share the
+[conversation in J-15](journal.md#j-15-relocate-delivery-to-child-prs).
+J-15 records the instruction and authorized reversal of the three slice 01
+commits. The next action is to replay the approval/handoff on a slice integration
+branch and the template/example on its first step branch, then publish separate
+draft PRs. The feat branch contains the proposal and relocation record while
+the implementation is reviewed in its child PRs. Iteration 2 has not started.
+Overall specification approval remains pending; there is no independent session
+review. Original commits and their evidence remain in Git history.
 The [journal](journal.md) owns drafting and validation evidence.
 The [visual companion format is accepted](journal.md#j-10-accept-the-visual-review-format);
 overall specification review remains pending.

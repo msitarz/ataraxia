@@ -47,6 +47,20 @@ contract, including dependency-aware selection and required inputs.
 
 ## Documents and revisions
 
+### How do reviewed changes reach the integration base?
+
+```mermaid
+flowchart LR
+    step["Delivery step<br/>Own issue and PR"] -->|Maintainer merges| slice["Slice branch<br/>Own issue and PR"]
+    slice -->|Maintainer merges| feat["Feat branch<br/>Own issue and PR"]
+    feat -->|Maintainer merges| base["Declared integration base<br/>Normally master"]
+```
+
+Each arrow is a reviewed merge boundary. For this feat, the final arrow targets
+`feat/parallel_execution` as already requested; that prerequisite has its own
+PR to `master`. See the
+[tracking contract](spec.md#delivery-tracking-and-merge-boundaries).
+
 Use `doc/feat/<issue>-<short-name>/README.md`, `spec.md`, and `journal.md`.
 Add `design.md` when relationships or architecture changes need explanation, and
 `slices/` when there are independently reviewable delivery outcomes. A small
@@ -65,6 +79,18 @@ and owner; their bodies do not contain mutable execution state. Child slices
 own their own specification status and approval scope when approved separately.
 Use today's `proposed`, `in progress`, and `validated` meanings; approval and
 stage remain separate. Validation never means merge approval.
+
+Each level owns its issue and PR. Slice frontmatter owns its delivery branch/base
+and registered `steps`; each step record supplies tracking and stage without a
+new document. Register only agreed steps, so discovery can change the remaining
+outline without creating unused issues. PRs and issues link to these owners.
+
+Create a slice integration branch from the feat and a delivery-step branch from
+the slice. Review the step's small diff against that slice. After its reviewed
+merge, create dependent steps from the updated slice. Keep slice PRs draft until
+their required children and integration evidence are complete. New changes
+discovered during integration become reviewed steps. The maintainer merges;
+agents prepare tracking, evidence and PRs.
 
 Derive repository-wide feat IDs and inventories from metadata when an overview
 is needed; avoid a separately maintained prefix registry. Generated indexes are
@@ -118,6 +144,7 @@ repository-specific contracts. The following are proposals pending slice 02.
 | Markdown hygiene | rumdl, pinned after a probe | Markdown structure, supported link/anchor checks, optional frontmatter key rules; verify actual pinned capabilities |
 | Metadata | Strict YAML parser plus JSON Schema or typed validation | Frontmatter and entry metadata placement, field types/enums, quoted SHAs, IDs, kind-specific fields; choose one schema source |
 | Workflow semantics | Custom Python runner under `script/docs_check/` | Ownership/routes, ADR reciprocity, acceptance references, approval/revision and append-only history rules |
+| Remote evidence by workflow gate | GitHub adapter with explicit availability results | Actual issue/PR parents, targets, heads, approvals and merges; separate from offline metadata and Git checks |
 | Language | Evaluated ASD-STE100 checker and a Markdown adapter if needed | Scoped procedure/description profiles, approved technical vocabulary, reproducible diagnostics; no claim of complete STE compliance |
 | Existing code gates | Ruff, Pyrefly, Tach, pytest | Code style, precise types, imports and behavior; human review still owns cohesion and architecture fit |
 | Optional network checks | Existing link checker such as lychee | Scheduled external link checks; separate from deterministic local gates |

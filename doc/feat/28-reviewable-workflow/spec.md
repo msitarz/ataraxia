@@ -25,8 +25,9 @@ Shared meanings belong to the [glossary](../../ubiquitous-language.md#delivery-w
 ```mermaid
 flowchart LR
     outcome["Agree one<br/>outcome"] --> artifact["Produce and verify<br/>Inspect structure and commit"]
-    artifact --> review{"Maintainer<br/>review"}
-    review -->|Approve the revision| next["Next dependent<br/>iteration"]
+    artifact --> review{"Maintainer<br/>reviews step PR"}
+    review -->|Approve the revision| merged["Maintainer merges<br/>step into slice"]
+    merged --> next["Next authorized step<br/>from updated slice"]
     review -->|Request correction| artifact
     review -->|Defer| deferred["Affected work<br/>waits"]
 ```
@@ -85,7 +86,9 @@ a green check summary alone does not satisfy the review contract.
 Agree the next outcome, produce it, verify it, inspect structure and refactor
 where needed, reverify changed behavior, commit any repository changes, and
 present the exact artifact. Discuss or revise it, then record explicit approval
-before starting the next dependent iteration. Unchanged research can use a
+and merge the step PR into its slice before starting the next dependent iteration.
+Follow the [tracking and merge boundaries](#delivery-tracking-and-merge-boundaries).
+Unchanged research can use a
 versioned evidence record; no empty code commit is needed.
 
 Approval identifies its scope and revision. A changed reviewed artifact needs
@@ -149,8 +152,61 @@ Review the rendered views for readability and consistency with those requirement
 Group independently usable outcomes into feat slices and review their smaller
 steps. Parent scope governs integration; child criteria do not repeat it. Use
 stable acceptance IDs and plain pytest coverage markers, with explicit evidence
-for criteria verified by other methods. Tracking links reuse issue and PR numbers;
-a step does not require a new issue, directory, or journal file.
+for criteria verified by other methods. Each feat, slice, and agreed delivery
+step has its own issue, branch and PR under the tracking contract below. A step
+can use its slice's metadata and journal; it need not create another directory
+or journal file. Corrections reuse the existing step issue and PR.
+
+## Delivery tracking and merge boundaries
+
+Use three levels, with explicit parent relationships and PR targets:
+
+| Level | Tracking and PR target | Review purpose |
+| --- | --- | --- |
+| Feat | Own issue and branch; PR to its declared integration base, normally `master` | Composition of accepted slices and overall acceptance evidence |
+| Feat slice | Own issue and branch; PR to its feat branch | Composition of accepted steps and slice acceptance evidence |
+| Delivery step | Own issue and branch; PR to its slice branch | One small artifact and its actual changes/evidence |
+
+Create a slice issue before its delivery and a step issue when agreeing that
+step's outcome. Issue and PR bodies link to their parent and authoritative
+contracts/evidence. Keep them short; agents maintain tracking. A correction or
+additional commit within a step does not need another issue or PR.
+
+Give delivery steps stable slice-local `STEP-n` IDs. External references qualify
+the slice, such as `F28-01:STEP-1`. Moving files preserves identity; never renumber
+or reuse an ID. Register an agreed step in its slice's frontmatter `steps` list;
+outline rows are provisional planning until selected. Step IDs do not create
+new acceptance namespaces: a step names the feat/slice criteria it advances.
+
+For enrolled slices, metadata records `issue`, `pr`, `branch`, `base_branch` and
+quoted `base_revision`, with `parent` naming the feat. Each registered step has
+`id`, `issue`, `pr`, `branch`, `base_branch`, quoted `base_revision`, and `stage`.
+Before publication, `pr` may be null with a preparing stage; review requires a
+real PR. The feat overview retains its own declared integration base. The
+current stacked base remains `feat/parallel_execution`; adopting this hierarchy
+does not retarget PR #29 or approve that prerequisite's merge into `master`.
+
+The maintainer approves and merges at each level; agents prepare PRs and never
+merge or enable automatic merging. Approval and merge are separate events.
+Start the next dependent step only after the previous step is merged into its
+slice and continuation for the next outcome is authorized. Base it on the
+updated slice. Once the slice's steps and acceptance evidence are complete,
+review and merge its PR into the feat; the feat reaches its integration base
+after overall acceptance and review.
+
+Slice and feat PRs expose integration evidence and links to reviewed child PRs.
+Changes added during integration receive their own bounded step review. A large
+aggregate diff does not establish a five-minute review; split new integration
+questions to preserve the review budget. Required CI runs for each published
+branch and against its actual parent before merge.
+
+`make docs-check` must validate declared parents, tracking IDs, stable step IDs,
+metadata completeness, and branch/base relationships. Local Git checks verify
+declared revisions and ancestry. Actual GitHub targets, head revisions, approval
+and merge state require a separately identified GitHub capability; offline
+schema checks do not prove them. Missing required remote evidence is incomplete.
+Do not assume issue closing keywords close issues when merging into a feat or
+slice branch; record completion and have the maintainer close accepted issues.
 
 ## Scope and exclusions
 
@@ -254,6 +310,14 @@ and any verified identity association or uncertainty, with Markdown links.
 Compatibility applies only to those identified historical entries, not new ones.
 Moving or splitting journals preserves event and native session identity.
 
+A maintainer-authorized delivery relocation may revert explicitly identified
+commits and their journal additions, retaining their original Git revisions
+and event IDs for replay. Record the instruction, affected commits, receiving
+branches and verification in a migration event. Replayed records keep their
+IDs and text and append to the receiving journal; event numbers need not be in
+physical order. This is a scoped migration boundary, not an agent-authored
+waiver of ordinary append-only history.
+
 `make docs-check` must validate journal owners, event uniqueness, metadata
 placement and heading agreement, dates, roles, kinds, provider identity fields,
 and revision/scope fields where required. Codex native thread IDs are UUIDs;
@@ -286,6 +350,7 @@ The evidence column names the intended method, not completed validation.
 | AC-8 | Complete a defining or execution step | Structural review is recorded; refactoring remains scoped and preserves meaning and boundaries | Step review and existing Ruff, type, Tach, and behavior checks |
 | AC-9 | Evaluate and pilot an STE checker | The maintainer sees compatibility, false positives, coverage, and maintenance costs; required language checks cannot silently skip | Slice 05 evidence and integration tests if adopted |
 | AC-10 | Adopt the workflow, then separately approve reversal and replay | Parallel contracts and original evidence are preserved; every replay step is reviewed; findings assess review burden and steering | Slice 06 manual report plus behavior checks |
+| AC-11 | Publish and merge a delivery step, then integrate its slice and feat | Each level has its own linked issue, branch and PR with the declared parent target; dependent work waits for merge and authorization; integration exposes accepted child reviews and actual checks | Slice 01 tracking walkthrough, slice 03 metadata/GitHub fixtures, and slice 06 manual evaluation |
 
 Completion requires the implemented guidance and required checks, a disposition
 for STE, and the maintainer's review of the replay evaluation. Publishing or
