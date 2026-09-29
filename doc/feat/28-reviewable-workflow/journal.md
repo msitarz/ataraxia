@@ -99,3 +99,21 @@ revision; this publication update changes navigation and historical evidence.
 No specification approval, executor session, independent defining-session review,
 STE runtime result, workflow adoption, or reversal has been recorded. The next
 decision is the maintainer's specification review, routed by the overview.
+
+## J-6: Review diffs in the maintainer's tools
+
+Date: 2026-09-29. Role/session: defining session, this conversation.
+
+The maintainer clarified item 2: the agent must not print the diff. Assume review
+in Magit or an editor/IDE, followed by discussion with the agent. Revised the
+contract to identify the revision/comparison range and affected files, keep the
+chat entry point concise, and explain changes in response to review questions.
+
+Correction plan: revise the contract and append this event; check and commit the
+change; update the candidate revision in the overview, check and commit that
+handoff, and publish to the existing draft PR. This instruction authorizes the
+specification correction, not implementation of the proposed workflow.
+
+Validation: the bounded metadata/ID/link checks and whitespace check passed;
+`make ci` passed with 232 repository tests, 3 examples, type/import checks,
+installed-wheel smoke and audit. No executable behavior changed.

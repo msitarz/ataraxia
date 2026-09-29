@@ -32,10 +32,16 @@ it meets the review budget. Questions and revisions can extend the conversation.
 
 ## 2. Present a concrete review artifact
 
-Present: the intended outcome; the exact revision and directly accessible diff,
-example, or investigation result; checks run and their limitations; consequential
-architecture, vocabulary, compatibility, or debt changes; and one proposed next
-step. State the decision requested. Keep the entry point short and link evidence.
+Present a concise review entry point: the intended outcome; the exact revision
+or comparison range and affected files, or an example or investigation result;
+checks run and their limitations; consequential architecture, vocabulary,
+compatibility, or debt changes; and one proposed next step. State the decision
+requested and link evidence.
+
+Assume the maintainer reviews repository changes in their own tools, such as
+Magit or an editor/IDE. The agent must not print or paste the diff into chat.
+Identify the changes for review in those tools, then explain them and answer
+questions as the maintainer examines them.
 
 The maintainer can ask for explanation, redirect, request a correction, accept,
 or defer. The artifact must expose the actual work. A convincing narrative or
