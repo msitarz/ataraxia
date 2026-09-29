@@ -9,5 +9,5 @@ code checks remain in their owners; documentation checks are separate work.
 
 ## Work units
 
-- [Draft and merge checks](children/draft-and-merge-checks/README.md)
-- [Documentation checks](children/docs-checks/README.md)
+- [Draft and merge checks](draft-and-merge-checks/README.md)
+- [Documentation checks](docs-checks/README.md)

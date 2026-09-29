@@ -10,6 +10,6 @@ pattern from commit `08fcd28` without importing parallel-execution changes.
 
 ## Work units
 
-- [Agent routes](children/agent-routes/README.md)
-- [Rule owners](children/rule-owners/README.md)
-- [Retire the old workflow](children/retire-old-workflow/README.md)
+- [Agent routes](agent-routes/README.md)
+- [Rule owners](rule-owners/README.md)
+- [Retire the old workflow](retire-old-workflow/README.md)

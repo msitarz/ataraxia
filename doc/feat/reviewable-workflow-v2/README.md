@@ -12,13 +12,13 @@ step list or journal.
 
 ## Work units
 
-- [Guidance and routing](children/guidance/README.md): move rules to their
+- [Guidance and routing](guidance/README.md): move rules to their
   owners and make agent reading selective.
-- [Review units](children/review-units/README.md): define local contracts,
+- [Review units](review-units/README.md): define local contracts,
   branches, PRs, approval, and parent checkpoints.
-- [Validation](children/validation/README.md): use focused draft checks and
+- [Validation](validation/README.md): use focused draft checks and
   evaluate mechanical documentation checks.
-- [Live trial](children/live-trial/README.md): use this workflow during its own
+- [Live trial](live-trial/README.md): use this workflow during its own
   delivery, then apply it to a familiar feature.
 
 These directories map known work, not a required execution order. New child

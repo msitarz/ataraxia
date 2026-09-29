@@ -10,6 +10,6 @@ Keep tool choices and integration separately reviewable.
 
 ## Work units
 
-- [Tool investigation](children/tool-investigation/README.md)
-- [Checker integration](children/checker-integration/README.md)
-- [Acceptance traceability](children/acceptance-traceability/README.md)
+- [Tool investigation](tool-investigation/README.md)
+- [Checker integration](checker-integration/README.md)
+- [Acceptance traceability](acceptance-traceability/README.md)

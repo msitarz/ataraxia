@@ -10,6 +10,6 @@ decision; aim for shallow trees and strongly discourage more than five levels.
 
 ## Work units
 
-- [Local contracts](children/local-contracts/README.md)
-- [PR review and merge gates](children/pr-gates/README.md)
-- [Experiments and rewrites](children/experiments-and-rewrites/README.md)
+- [Local contracts](local-contracts/README.md)
+- [PR review and merge gates](pr-gates/README.md)
+- [Experiments and rewrites](experiments-and-rewrites/README.md)
