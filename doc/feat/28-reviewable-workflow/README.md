@@ -8,10 +8,10 @@ pr: 29
 branch: feat/reviewable-workflow
 base_branch: feat/parallel_execution
 base_revision: "220e3f1f94ca910baee07984c10b483b4499dc6e"
-specification_revision: null
+specification_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
 approved_revision: null
 review_base_revision: "764e3e1f4cad43482c1847f78b88bc9153913bba"
-review_revision: null
+review_revision: "5d081802630fce38dbaeee3501665ab15636cc34"
 ---
 
 # Small reviewed iterations
@@ -33,8 +33,9 @@ own decisions.
 Review the [overhead amendment](slices/01-review-loop.md#overhead-reduction-amendment),
 [validation contract](spec.md#execution-effort-and-validation), and
 [evidence design](design.md#bounded-execution-and-evidence-reuse) as
-`F28-01:STEP-5`, tracked in [issue #38](https://github.com/msitarz/ataraxia/issues/38).
-The step PR will identify the published revision against slice merge
+`F28-01:STEP-5`, tracked in [issue #38](https://github.com/msitarz/ataraxia/issues/38)
+and [draft PR #39](https://github.com/msitarz/ataraxia/pull/39).
+The step PR identifies the published revision against slice merge
 `764e3e1f4cad43482c1847f78b88bc9153913bba`. Initial review estimate: three minutes
 for the proposed rules; actual feedback remains pending.
 
