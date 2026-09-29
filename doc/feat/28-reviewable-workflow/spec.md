@@ -157,6 +157,38 @@ step has its own issue, branch and PR under the tracking contract below. A step
 can use its slice's metadata and journal; it need not create another directory
 or journal file. Corrections reuse the existing step issue and PR.
 
+## Execution effort and validation
+
+Keep production effort proportional to the review artifact. For routine bounded
+work, start with a ten-minute execution target. At that threshold, report the
+concrete obstacle and propose a smaller outcome; it is a planning signal, not
+permission to rush, weaken checks or abandon authorized work. Record elapsed
+time and model request count when available, plus actual review feedback. Unknown
+usage stays unknown; token counts do not establish account-limit percentages.
+
+Select local validation by affected behavior and inputs, not filenames alone:
+
+| Change | Local evidence before publishing a draft |
+| --- | --- |
+| Non-executable prose, navigation or metadata | Affected document/link/history checks and normal commit hooks |
+| Application code, tests or executable examples | Relevant lint/type/architecture checks and focused behavior tests |
+| Dependencies, packaging, CI or checker logic | Broader affected checks, including the applicable full suite |
+
+Full CI remains required on the current review head before merge. A draft can
+be published while remote CI runs, with its pending state disclosed. Reuse
+passing evidence only when all relevant inputs, configuration, tool versions and
+environment remain unchanged; identify the source revision and applicability.
+Changed dependencies invalidate dependent evidence. Audit results retain their
+date and cannot establish current vulnerability status indefinitely.
+
+Reuse unchanged guidance already read within a session, subject to mandatory
+rereads after compaction or definition changes. Fetch remote state once per gate
+and reuse that observation; refresh actual head/merge state before relying on it.
+Keep tracking at its owner and use links in ancestor records. Prefer one artifact
+commit and one necessary tracking follow-up; do not split bookkeeping into extra
+delivery outcomes. These rules are proposed for [slice 01](slices/01-review-loop.md#overhead-reduction-amendment);
+the active contribution procedure remains unchanged until adopted.
+
 ## Delivery tracking and merge boundaries
 
 Use three levels, with explicit parent relationships and PR targets:
@@ -197,8 +229,9 @@ after overall acceptance and review.
 Slice and feat PRs expose integration evidence and links to reviewed child PRs.
 Changes added during integration receive their own bounded step review. A large
 aggregate diff does not establish a five-minute review; split new integration
-questions to preserve the review budget. Required CI runs for each published
-branch and against its actual parent before merge.
+questions to preserve the review budget. Required full CI covers the current
+review head and its actual parent before merge; draft publication follows the
+[proposed validation selection](#execution-effort-and-validation).
 
 `make docs-check` must validate declared parents, tracking IDs, stable step IDs,
 metadata completeness, and branch/base relationships. Local Git checks verify
