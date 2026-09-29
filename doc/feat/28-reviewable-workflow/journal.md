@@ -1015,3 +1015,26 @@ checks still await investigation; they do not replace semantic review.
 decisions. **Next:** After reviewed merge and authorization, select a bounded
 discovery/promotion outcome; rewrite guidance remains a separate outline row.
 **Review effort:** Estimated four minutes; actual maintainer feedback pending.
+
+## J-28: Clarify shared base types
+
+```yaml
+id: J-28
+date: "2026-09-29"
+kind: correction
+role: executor
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+During review of [J-27](#j-27-deliver-structural-review-guidance), the
+maintainer noted that distinct types can still share a base for common fields.
+The first case in J-27 omitted that option. In the current
+[parallel slice types](../../../src/ataraxia/shard_types.py), `ShardSuccess` and
+`ShardFailure` remain distinct while inheriting common path fields from
+`ShardInput`. The [engineering rule](../../engineering.md#structural-review)
+now covers this pattern without weakening variant-specific narrowing. STEP-4
+changes guidance only; its earlier walkthrough remains as recorded. Recheck
+the affected docs and publish the correction to
+[step PR #43](https://github.com/msitarz/ataraxia/pull/43).
