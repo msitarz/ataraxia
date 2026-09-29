@@ -803,3 +803,65 @@ discovery/promotion/migration guidance. Step 4 has not started.
 **Review effort:** Estimated four minutes for the format choices and owner map;
 actual maintainer feedback remains pending. Defining and executor roles share
 this conversation; no independent session review is claimed.
+
+
+## J-23: Propose overhead reduction
+
+```yaml
+id: J-23
+date: "2026-09-29"
+kind: decision
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+```
+
+**Outcome:** The maintainer requested another slice 01 step for the overhead
+findings, switched effort to medium, then said "proceed with the overhead-reduction
+step to slice 01". Verified PR #37 merged at
+`764e3e1f4cad43482c1847f78b88bc9153913bba`; step 5 starts from that updated slice
+and precedes unstarted step 4 without renumbering. [Issue #38](https://github.com/msitarz/ataraxia/issues/38)
+tracks this planning amendment. Changed contracts require review before adoption;
+previous approvals do not automatically cover them.
+
+**Inspect:** [Slice amendment](slices/01-review-loop.md#overhead-reduction-amendment),
+[contract](spec.md#execution-effort-and-validation), and
+[design](design.md#bounded-execution-and-evidence-reuse). The step PR identifies
+its actual head and comparison base. No active guidance, tooling or CI change.
+
+**Evidence:** The local step 3 recording spans 28 minutes 13 seconds, with 38
+model requests, one compaction, one full local CI run, nine temporary-check runs,
+four commits and 28 GitHub CLI attempts including six failed requests. Outer tool
+calls occupied about 77 seconds; tests took 32.5 seconds. Input caching was already
+about 95%; this cannot establish an exact weekly-allowance cost. These observations
+support reducing repeated reasoning and bookkeeping, not removing cheap whitespace
+checks or weakening merge evidence.
+
+Plan: draft this small amendment; inspect links, metadata, preserved history and
+the two cases below; run currently required CI once; commit, publish and register
+the real PR in one tracking follow-up. Reuse that remote result and update only
+the immediate parent pointer. Metadata, scoped IDs, local links and preserved
+history passed. `git diff --check` and one `make ci` run passed: 232 tests,
+3 examples, type/import checks, installed-wheel smoke and audit. The parser
+inspection needed a cache permission retry; no framework was added. Trial timing
+is reported in the PR at publication, rather than creating another journal commit.
+
+| Walkthrough | Proposed rule outcome |
+| --- | --- |
+| Only navigation changes; runtime inputs/configuration/tools/environment match earlier evidence | Rerun affected docs checks; identify the earlier runtime result and why it applies; full current-head merge CI still required |
+| Code, tests, checker logic or a relevant dependency changes | Invalidate dependent evidence and run applicable focused/broader checks; do not claim reuse solely because a path looks like documentation |
+
+These are rule inspections, not executed cache or selection fixtures. Proposed
+checkers: investigated Markdown/link tools; later selection/provenance fixtures
+that reject stale inputs and distinguish reused, pending and unrun checks.
+No temporary framework, persistent cache or new skill is adopted.
+
+**Consequences:** The proposed budget is a planning signal; existing approval,
+merge and scope gates stand. Publication tracking stays with its owner, with
+links above it. Medium effort is verified from runtime metadata for this trial.
+
+**Decision requested:** Accept or correct the validation and publishing amendment.
+**Next:** After reviewed merge and explicit authorization, deliver the adopted
+owner guidance as a separate bounded step. Structural step 4 remains pending.
+**Review effort:** Estimated three minutes; actual maintainer feedback pending.

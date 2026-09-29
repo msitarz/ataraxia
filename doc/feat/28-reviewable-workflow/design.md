@@ -199,6 +199,27 @@ unrun offline. Use `path:line:column: RULE message`, with owning-guidance links
 where helpful, and exit codes 0 clean, 1 findings, 2 usage/tool failure. An honest
 summary distinguishes findings, errors, and checks not performed.
 
+## Bounded execution and evidence reuse
+
+Slice 01's [overhead amendment](slices/01-review-loop.md#overhead-reduction-amendment)
+adds guidance before automation. Validation selection belongs to
+`CONTRIBUTING.md`; effort, context reuse and publishing belong to
+`feat-workflow.md`. Deliver those owner changes only after amendment review.
+
+Use a recorded validation result with its source revision, command, outcome and
+relevant input/tool/environment identity. Initially the agent explains reuse;
+no persistent cache, new skill or telemetry framework is required. Future
+checker work can test dependency invalidation and truthful reused/unrun outcomes.
+Budget and context warnings are review signals, not proofs of correctness.
+
+Store the published review head/range in the step PR. Approval events continue
+to pin full revisions and scope. An overview can route to that PR without a new
+commit solely to embed its own artifact SHA. One tracking follow-up can record
+the real PR number after creation. Parent issues/PRs link to the immediate child
+owner; update them at relevant gates rather than copy each changing handoff.
+Refresh merge/head observations at continuation and merge gates. Current CI
+recipes and remote jobs remain unchanged by this planning artifact.
+
 ## Acceptance evidence
 
 Keep readable precondition/action/outcome tables following the

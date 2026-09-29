@@ -3,8 +3,8 @@ id: F28-01
 kind: slice
 parent: F28
 status: in progress
-stage: awaiting-step-merge
-approved_revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
+stage: awaiting-overhead-amendment-review
+approved_revision: null
 issue: 30
 pr: 31
 branch: feat/reviewable-workflow-slice-01
@@ -31,7 +31,14 @@ steps:
     branch: feat/reviewable-workflow-slice-01-step-03
     base_branch: feat/reviewable-workflow-slice-01
     base_revision: "78a67e709c987d090c98b1aec671d0983e4f5811"
-    stage: awaiting-review
+    stage: merged
+  - id: STEP-5
+    issue: 38
+    pr: null
+    branch: feat/reviewable-workflow-slice-01-step-05
+    base_branch: feat/reviewable-workflow-slice-01
+    base_revision: "764e3e1f4cad43482c1847f78b88bc9153913bba"
+    stage: preparing-review
 ---
 
 # Adopt the review loop and document ownership
@@ -90,11 +97,34 @@ the budget. Corrections reuse the step issue and PR.
 | 1 | A one-screen review artifact template and one worked discovery example; review what information is sufficient | Manual five-minute navigation/readability review; proposed required artifact fields and stable revision references |
 | 2 | Continuation, material-change and step/slice PR rules in their owning guidance; review when an agent proceeds or stops | Walk through approval, correction, silence, changed revision, wrong PR base, pending merge and next-step examples; proposed tracking/approval/history checks |
 | 3 | Package template, ownership routes and Mermaid companions; review one small slice and one grouped feat | Relative links, rendered views and planned YAML schemas; proposed rumdl headings/metadata checks and route checks |
+| 5 | Overhead-reduction planning amendment; review validation selection, evidence reuse and lighter publishing before changing active guidance | Recorded step 3 baseline and docs/code invalidation walkthrough; later checker fixtures for selection and evidence provenance |
 | 4 | Structural review and discovery/promotion/migration guidance, reviewed as separate artifacts if needed | Check precise types, module ownership, scope and vocabulary; proposed rumdl/prose checks and investigated Ruff rules, with existing type/Tach checks unchanged |
+
+Step 5 is newly selected before the unstarted step 4; preserve both identities.
 
 `make verify-check` and `git diff --check` apply during guidance changes;
 `make ci` is required for publication. Until the new tools exist, inspect the
 proposed document checks explicitly rather than claim they ran.
+
+## Overhead-reduction amendment
+
+First deliver an accepted planning amendment to the
+[effort/validation contract](../spec.md#execution-effort-and-validation) and
+[evidence design](../design.md#bounded-execution-and-evidence-reuse). Proposed
+owner changes follow in a separately agreed delivery step. This amendment does
+not change Makefile, hooks, CI, dependencies or the active publication procedure.
+
+The initial execution target is ten minutes for routine bounded work, with an
+obstacle/split proposal when exceeded. Review effort remains separately measured
+through maintainer feedback. Use medium reasoning for this trial as requested;
+no repository rule forces a model or effort setting.
+
+Walk through two cases: a navigation-only edit can retain applicable application
+test evidence while document checks rerun; a changed code/test/tool input
+invalidates dependent evidence and triggers relevant checks. Exact check
+dependencies, generic Markdown support and provenance validation need later
+investigation/fixtures. Do not build temporary general checker infrastructure
+for each documentation step or claim unrun checks passed.
 
 ## Acceptance criteria
 
@@ -105,6 +135,7 @@ proposed document checks explicitly rather than claim they ran.
 | AC-3 | Open a new package and resume from its README | Authoritative contracts, design, consequential history, and next action are reachable without duplicate state | Link/schema checks once available; manual navigation |
 | AC-4 | Review similar types, misplaced helpers, an experiment, and a rewrite proposal | Guidance preserves semantic distinctions, permits no refactor, and requires explicit promotion/migration gaps | Recorded structural and discovery walkthrough |
 | AC-5 | Track a slice and two dependent delivery steps through review and integration | Own issues/PRs target the correct parents; corrections reuse tracking; the next step starts from the updated slice after reviewed merge and authorization; integration uses child review and acceptance evidence | Tracking walkthrough and actual initial PR hierarchy, followed by slice 03 fixtures |
+| AC-6 | Review the overhead baseline and navigation/code-change examples | Amendment separates draft checks from merge CI, bounds execution effort, identifies evidence invalidation and reduces duplicate tracking; adoption remains explicit | Recorded baseline and manual rule walkthrough; later selection/provenance fixtures |
 
 ## Boundaries and next review
 
