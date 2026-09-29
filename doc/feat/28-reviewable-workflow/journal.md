@@ -688,3 +688,52 @@ template and ownership routes. Step 3 has not started.
 **Review effort:** Estimated four minutes for the guidance and this table;
 actual maintainer feedback remains pending. The defining and executor roles share
 this conversation; no independent session review is claimed.
+
+## J-21: Authorize document template delivery
+
+```yaml
+id: J-21
+date: "2026-09-29"
+kind: approval
+role: defining
+session:
+  provider: codex
+  thread_id: "01a0ec64-dc47-77f2-940e-a825c88761f5"
+revision: "dd0a9c16665bef9490b0a0d550b8f43767d2eb16"
+scope:
+  - doc/feat/28-reviewable-workflow/spec.md
+  - doc/feat/28-reviewable-workflow/design.md
+  - doc/feat/28-reviewable-workflow/slices/01-review-loop.md
+```
+
+The maintainer said, "ok i merged, lets move to the next step". Verified
+[PR #35](https://github.com/msitarz/ataraxia/pull/35) merged into the slice at
+`78a67e709c987d090c98b1aec671d0983e4f5811`, fetched that revision and created
+`feat/reviewable-workflow-slice-01-step-03` from the updated slice.
+This authorizes only `F28-01:STEP-3`: package templates, ownership routes and
+Mermaid companions, using the unchanged candidate contract bodies above.
+The step has [issue #36](https://github.com/msitarz/ataraxia/issues/36).
+Step 4, tool adoption and checker implementation remain pending. Defining and
+executor roles share this native conversation; no independent review is claimed.
+
+Plan and completion condition:
+
+1. Record the verified merge, scoped instruction and step tracking; check
+   native identity, metadata, preserved contracts/history and ancestry, then
+   commit the handoff.
+2. Add one reusable template document for metadata and predictable document
+   bodies; update ownership and workflow routes. Walk through the current grouped
+   feat and a compact child slice, check examples and local links, run `make ci`,
+   and commit the artifact. Preserve all historical slices and journal records.
+3. Pin the review range and navigation, publish a draft step PR to the slice,
+   verify its actual parent/head and update tracking. Stop for maintainer review
+   before step 4. Corrections stay in this step PR.
+
+Initial review estimate: four minutes for the formats, ownership map and worked
+routes; actual feedback remains pending. This advances `F28-01:AC-1` and
+`F28-01:AC-3`; full slice acceptance remains pending.
+
+Handoff validation: bounded checks passed for 10 documents, 42 scoped acceptance
+IDs and 110 local links/anchors, including native identity, metadata, preserved
+contracts/history and updated slice ancestry. Observed merge and explicit
+continuation instruction remain separate evidence.
