@@ -7,7 +7,7 @@ entries relevant to the task; read it in full when defining shared terms or
 recovering context that requires them. For a Work, follow the route below and
 its relevant README and linked contracts.
 
-| Task | Read |
+| Task | Read or run |
 | --- | --- |
 | Any repository change | [Repair and scope rules](doc/engineering.md#fix-the-underlying-problem) |
 | Code or tests | [Engineering conventions](doc/engineering.md), [architecture](doc/architecture.md) for current contracts, and relevant [ADRs](doc/adr/) |
@@ -15,4 +15,6 @@ its relevant README and linked contracts.
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
-| Setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md); use [Makefile](Makefile) for commands and [CI workflow](.github/workflows/ci.yml) for CI jobs |
+| Running project tools | Run `make help` first. |
+| Setup, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md) |
+| Validation policy | [CONTRIBUTING.md](CONTRIBUTING.md#make-targets); use [CI workflow](.github/workflows/ci.yml) for CI jobs |
