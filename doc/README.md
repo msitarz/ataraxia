@@ -9,6 +9,7 @@ relevant guidance.
 | Information | Authoritative location |
 | --- | --- |
 | Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
+| Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
@@ -16,7 +17,8 @@ relevant guidance.
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
-| Setup, validation, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Choosing checks and reporting validation evidence | [Validation](validation.md) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
 | Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
@@ -26,9 +28,11 @@ relevant guidance.
 
 ## Placement and maintenance
 
-Find the owner before adding information. Update it and link from other
-documents to the relevant section. Navigation summaries may name a capability
-and its status, but must not repeat defaults, schemas, lifecycle rules, or
+Find the owner before adding information. Give independently triggered guidance
+a focused owner and clear reading trigger. Route directly to that owner, then
+link from broader documents without repeating its rules. Navigation summaries
+may name a capability and its status, but must not repeat defaults, schemas,
+lifecycle rules, or
 procedures. Examples may demonstrate a contract without becoming a second
 definition. Derive deterministic information from executable configuration
 where practical; documentation explains its use rather than maintaining another
@@ -80,7 +84,7 @@ Work, and when changing general guidance. Verify local links and anchors,
 distinguish history from current instructions, and walk through affected reading
 routes. Check that moved requirements remain discoverable and examples agree
 with their owning contracts. Check that prose, headings, and examples use the
-same glossary terms. Follow [repair and scope rules](engineering.md#fix-the-underlying-problem)
+same glossary terms. Follow [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 for cohesive changes.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),

@@ -42,40 +42,9 @@ also follow the [body structure below](#commits-and-pull-requests).
 
 Humans and agents should run `make help` before project tools to find supported
 targets. The [Makefile](Makefile) owns executable commands and descriptions;
-read recipes only when their details matter. This document owns validation
-policy and when checks are required.
-
-After setup, agents without network access must run `make verify` when `make ci`
-cannot run. It checks the locked environment without installing or resolving
-dependencies, then reuses the same local check recipes as CI with uv network
-access disabled. Missing or stale environments fail; rerun `make setup` with
-network access to prepare them. A passing verification does not include a
-vulnerability audit. Report the audit separately as unrun or failed, and report
-any checks that could not run.
-
-For code changes, run focused tests during development. Before pushing a branch
-or opening a PR, run all CI checks locally, including for an early draft PR
-containing only a specification:
-
-```sh
-make ci
-```
-
-Full `make ci` runs local verification before the required network-dependent audit.
-An audit failure still fails CI, while completed local results remain available.
-The CI check job also runs its local checks before auditing.
-
-CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent checks
-use the synchronized environment without updating dependency resolution. After
-intentional dependency changes, run `uv lock` and commit the updated lockfile.
-The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
-`.pre-commit-config.yaml` and inspect all tracked files.
-
-Run the sample strategy:
-
-```sh
-uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
-```
+read recipes only when their details matter. See the
+[validation policy](doc/validation.md) when choosing checks or reporting
+validation evidence.
 
 ## Toolchain policy
 
@@ -93,16 +62,12 @@ while other build frontends resolve the same backend version.
 Review these pins monthly and when a tooling bug or security advisory warrants
 an update. Update both pins and the `uv-pre-commit` revision in
 `.pre-commit-config.yaml` in one change, install the new uv version, run
-`uv lock`, and include any lockfile changes. Run `make ci` before accepting the
-update, including the installed-wheel smoke test. Dependabot's weekly uv and
-GitHub Actions updates complement this review; they do not replace reviewing
+`uv lock`, and include any lockfile changes. Follow the
+[validation policy](doc/validation.md) before accepting the update, including
+the installed-wheel smoke test. Dependabot's weekly uv and GitHub Actions
+updates complement this review; they do not replace reviewing
 the uv executable pin. Python remains supported at 3.14+; CI tests the 3.14
 minor series. OS images and Python patch releases are not pinned by this policy.
-
-`make ci-package` builds a wheel, installs it into a temporary isolated virtual
-environment, and runs the copied sample strategy and shards outside the checkout.
-It checks the installed console entry point, printed totals, and JSON accounts.
-The temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 

@@ -1,33 +1,14 @@
 # Engineering conventions
 
-Read [Fix the underlying problem](#fix-the-underlying-problem) for any repository
-change. Read the rest when changing or reviewing code or tests. Use
-[CONTRIBUTING.md](../CONTRIBUTING.md#make-targets) for validation procedure and
-[architecture](architecture.md) for current system contracts.
+Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
+for any repository change. Read the rest when changing or reviewing code or
+tests. Use [validation policy](validation.md) when choosing checks or reporting
+validation evidence and [architecture](architecture.md) for current system
+contracts.
 
 ## Fix the underlying problem
 
-Optimize for the user's complete outcome and maintenance cost across code, tooling,
-tests, and docs.
-
-- Trace the cause before adding instructions, exceptions, duplication, or workarounds;
-  fix it in the responsible component when possible. Existing behavior is evidence, not
-  automatically the intended contract: resolve mismatches against the task and accepted
-  decisions.
-- Prefer one authoritative implementation or definition; other paths call, derive from,
-  or link to it. Automate deterministic steps, such as running all required checks
-  through `make ci` and validating invariants at their owning boundary.
-- Make the smallest cohesive fix within scope. Preserve intentional differences and
-  compatibility; avoid speculative abstractions and unrelated refactors. Explain any
-  necessary workaround and its remaining limitation.
-- **Revert fundamentally wrong approaches before reimplementing.** If your change
-  violates an established contract or convention, revert it and compensating changes,
-  including unnecessary supporting code and docs. Preserve unrelated work. Reimplement
-  from the restored baseline using project conventions, then validate. Use a targeted
-  fix for an isolated defect in an otherwise sound design.
-- Update affected callers, tests, and docs together. Verify the actual command, API, or
-  user flow, including failures. Do not weaken tests or documented expectations to
-  accommodate defects, or leave the user compensating manually.
+See [Repair and scope rules](change-rules.md#fix-the-underlying-problem).
 
 ## Code style
 
@@ -126,6 +107,4 @@ exhaustion, error, and explicit generator closure; rolling-window ordering/warm-
 broker timing preventing same-bar exits for new positions. Use integration tests for
 real strategy loading and acceptance tests for CLI output/artifacts.
 
-Run focused tests during development, for example
-`uv run pytest test/unit/test_feature.py`. Follow [CONTRIBUTING.md](../CONTRIBUTING.md#make-targets)
-for full checks.
+Follow the [validation policy](validation.md) for focused and required checks.
