@@ -1,9 +1,9 @@
 # Work structure and review
 
-Use the same directory and review pattern recursively for a legacy feat slice,
-a larger Work, or a small delivery increment. Nest when it reduces the context
-needed for a decision; aim for shallow trees and strongly discourage more than
-five levels. Directory nesting does not choose a Git base.
+Apply this directory and review pattern recursively to Works of different sizes.
+Nest when it reduces the context needed for a decision; aim for shallow trees
+and strongly discourage more than five levels. Directory nesting does not
+choose a Git base.
 
 The parent README maps its immediate children with one list item per Work:
 
