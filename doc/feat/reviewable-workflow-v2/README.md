@@ -1,8 +1,9 @@
 # Reviewable workflow
 
 Build a delivery workflow around small PRs that the maintainer can inspect in
-about five minutes, discuss, and steer. See [Work lifecycle and contracts](../../workflow.md)
-for Work directories, local contracts, child discovery, status, and lifecycle.
+about five minutes, discuss, and steer. See
+[Work lifecycle and contracts](../../workflow.md) for Work directories, local
+contracts, child discovery, status, and lifecycle.
 
 ## Works
 

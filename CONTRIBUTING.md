@@ -10,12 +10,14 @@ be merged regardless of code quality.
 Follow the [legacy feat-slice workflow](doc/feat-workflow.md) for those
 deliveries; it owns their issue gate. Works use their local contracts and PRs
 without routine issues. Use the
-[issue template](.github/ISSUE_TEMPLATE/work-item.md) for bugs and collaboration.
+[issue template](.github/ISSUE_TEMPLATE/work-item.md) for bugs and
+collaboration.
 
 ## Prerequisites
 
 - Python 3.14+
-- [`uv`](https://github.com/astral-sh/uv), at the exact version required in `pyproject.toml`
+- [`uv`](https://github.com/astral-sh/uv), at the exact version required in
+  `pyproject.toml`
 - `make`
 - Git
 
@@ -27,7 +29,12 @@ cd ataraxia
 make setup
 ```
 
-`make setup` creates the `uv`-managed virtualenv, installs dependencies (including the dev group), prepares all pinned hook environments and the wheel build backend, and installs the `prek` pre-commit and commit-message hooks. Re-run it whenever `pyproject.toml`, `uv.lock`, or `.pre-commit-config.yaml` changes. Setup needs network access; caches live in `.cache/uv` and `.cache/prek` by default (override `UV_CACHE_DIR` or `PREK_HOME` if needed).
+`make setup` creates the `uv`-managed virtualenv, installs dependencies
+(including the dev group), prepares all pinned hook environments and the wheel
+build backend, and installs the `prek` pre-commit and commit-message hooks.
+Re-run it whenever `pyproject.toml`, `uv.lock`, or `.pre-commit-config.yaml`
+changes. Setup needs network access; caches live in `.cache/uv` and
+`.cache/prek` by default (override `UV_CACHE_DIR` or `PREK_HOME` if needed).
 
 Commitizen checks Conventional Commit syntax. The body-formatting hook allows
 messages without bodies; when a body is present, separate it from the subject
@@ -96,12 +103,14 @@ no dependent PR needs them. Retained branches and GitHub status queries are not
 routine Work tracking; use the [Work lifecycle](doc/workflow.md) for parent
 status rules.
 
-When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
-read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
-issue messages, specification guidance, manual review gates, and session handoffs.
-It requires manual specification approval before execution and both manual and
-defining-session review of implementation. Keep work in the same PR through
-review corrections. The maintainer makes the final merge or close decision.
+When defining, implementing, or reviewing a
+[feat slice](doc/ubiquitous-language.md), read the
+[feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
+issue messages, specification guidance, manual review gates, and session
+handoffs. It requires manual specification approval before execution and both
+manual and defining-session review of implementation. Keep work in the same PR
+through review corrections. The maintainer makes the final merge or close
+decision.
 
 ## Commits and pull requests
 

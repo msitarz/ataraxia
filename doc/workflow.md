@@ -46,6 +46,7 @@ A rewrite's contract states behavior to preserve, intended changes, comparison
 evidence, cutover, and retirement requirements. Split Prototypes and rewrites
 into small, independently reviewable Works when needed.
 
-See [CONTRIBUTING.md's Work review rules](../CONTRIBUTING.md#work-branches-review-and-merge)
+See
+[CONTRIBUTING.md's Work review rules](../CONTRIBUTING.md#work-branches-review-and-merge)
 for branch and PR exceptions. Do not introduce a separate tracking system,
 journal, or mandatory template.
