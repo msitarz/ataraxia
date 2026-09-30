@@ -1,32 +1,17 @@
 # Repository Guidelines
 
-## Start Every Task Here
+## Task routing
 
-Read [doc/ubiquitous-language.md](doc/ubiquitous-language.md) **in full at the start of every task**, before substantive discussion, planning, defining new terms, review, or implementation. Apply its vocabulary throughout. Reread after context loss or compaction and whenever definitions change. Every agent, including subagents, must do this; include the requirement and relevant vocabulary/contract references when delegating.
+Use this table to find the guidance that applies to the task. Read the glossary
+sections relevant to the task; read it in full when defining shared terms or
+recovering context that requires them. For a v2 work unit, follow the nearest
+unit README and its linked contracts.
 
-When defining, implementing, or reviewing a feat slice, read [doc/feat-workflow.md](doc/feat-workflow.md) **in full before starting that work**.
-
-Then inspect task-relevant code, tests, and ADRs. Read
-[doc/architecture.md](doc/architecture.md) for the repository map and current
-computation and backtesting contracts. Distinguish current behavior from intended
-changes and surface discrepancies affecting the task. Before changing
-architectural boundaries, follow the [ADR workflow](doc/adr-workflow.md).
-
-## Engineering Conventions
-
-For any repository change, follow
-[repair and scope rules](doc/engineering.md#fix-the-underlying-problem).
-Read the full [engineering conventions](doc/engineering.md) when changing or
-reviewing code or tests.
-
-## Contribution and Validation
-
-Follow [CONTRIBUTING.md](CONTRIBUTING.md) for setup, commands, validation,
-branches, commits, and PRs. The [Makefile](Makefile) defines executable checks;
-the [CI workflow](.github/workflows/ci.yml) invokes its shared targets.
-
-## Documentation
-
-Read [documentation ownership](doc/README.md) when creating, changing,
-or reviewing documentation. It owns placement, duplication, and shared-term
-maintenance rules.
+| Task | Read |
+| --- | --- |
+| Any repository change | [Repair and scope rules](doc/engineering.md#fix-the-underlying-problem) |
+| Code or tests | [Engineering conventions](doc/engineering.md), [architecture](doc/architecture.md) for current contracts, and relevant [ADRs](doc/adr/) |
+| Documentation | [Documentation ownership](doc/README.md) |
+| Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
+| Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
+| Setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md); use [Makefile](Makefile) for commands and [CI workflow](.github/workflows/ci.yml) for CI gates |
