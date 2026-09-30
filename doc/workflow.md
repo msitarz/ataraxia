@@ -18,6 +18,9 @@ human-facing and agent-facing versions of the same contract.
 A parent README maps its immediate child Works. `TODO` links to an active
 child's README, `DONE` names the delivered outcome, and `ABORT` records why the
 Work stopped. The child does not duplicate its parent-owned status.
+Status entries describe the checked-out branch; use `master` to determine
+integrated status. Merge a parent map to `master` before starting child PRs that
+edit it.
 
 Delivery or abandonment updates the parent's entry and removes the finished
 child directory in the same PR. Before removing a finished Work, promote
