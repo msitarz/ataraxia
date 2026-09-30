@@ -60,3 +60,48 @@ def test_validation_order_and_offline_environment(tmp_path, target, failure, exp
     else:
         assert not any(command[0] == "audit" for command in commands)
         assert not any("prepare-hooks" in command for command in commands)
+
+
+def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
+    log = tmp_path / "calls.jsonl"
+    uv = tmp_path / "uv"
+    uv.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "with open(os.environ['VALIDATION_LOG'], 'a') as log:\n"
+        "    log.write(json.dumps([sys.argv[1:], os.getenv('UV_OFFLINE'), "
+        "os.getenv('UV_NO_SYNC')]) + '\\n')\n",
+        encoding="utf-8",
+    )
+    uv.chmod(0o755)
+    env = os.environ.copy()
+    env.update(PATH=f"{tmp_path}:{env['PATH']}", VALIDATION_LOG=str(log))
+    env.pop("UV_OFFLINE", None)
+    env.pop("UV_NO_SYNC", None)
+
+    expected_doc_commands = [
+        ["run", "rumdl", "check", "."],
+        ["run", "rumdl", "fmt", "--check", "."],
+    ]
+    for target in ("verify-check", "ci-check"):
+        log.write_text("", encoding="utf-8")
+        result = subprocess.run(
+            ["make", target],
+            cwd=ROOT,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+
+        calls = [json.loads(line) for line in log.read_text().splitlines()]
+        doc_calls = [call for call in calls if call[0][:2] == ["run", "rumdl"]]
+        assert [call[0] for call in doc_calls] == expected_doc_commands
+        assert all(
+            offline == "true" and no_sync == "true" for _, offline, no_sync in doc_calls
+        )
+        assert not any(
+            call[0][:3] == ["run", "rumdl", "fmt"] and "--check" not in call[0]
+            for call in calls
+        )
