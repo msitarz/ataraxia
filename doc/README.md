@@ -12,7 +12,7 @@ relevant guidance.
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
-| V2 work-unit delivery contracts | The relevant [work unit](feat/reviewable-workflow-v2/README.md) |
+| Work hierarchy and local contracts | The [Reviewable workflow](feat/reviewable-workflow-v2/README.md) and the relevant Work README |
 | ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Setup, validation, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
@@ -59,8 +59,8 @@ Check the [glossary](ubiquitous-language.md) before introducing a term. Define
 new shared terms there before using them in specifications or implementation:
 state their meaning, responsibility, distinctions, relationships, and essential
 units or lifecycle rules. Keep delivery workflow language separate from
-computation and trading language. Legacy feat slices and v2 work units have
-distinct definitions; local rules belong in their own contracts, with glossary
+computation and trading language. Works and legacy feat slices have distinct
+definitions; local rules belong in their own contracts, with glossary
 entries linking rather than reproducing those rules.
 
 Reuse abstractions when their meaning fits. Qualify terms at boundary mappings.
@@ -72,7 +72,7 @@ approval.
 ## Review
 
 Check ownership and duplication when defining or reviewing a feat slice or
-work unit, and when changing general guidance. Verify local links and anchors,
+Work, and when changing general guidance. Verify local links and anchors,
 distinguish history from current instructions, and walk through affected reading
 routes. Check that moved requirements remain discoverable and examples agree
 with their owning contracts. Follow [repair and scope rules](engineering.md#fix-the-underlying-problem)

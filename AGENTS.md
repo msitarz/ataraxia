@@ -4,8 +4,8 @@
 
 Use this table to find the guidance that applies to the task. Read the glossary
 entries relevant to the task; read it in full when defining shared terms or
-recovering context that requires them. For a v2 work unit, follow the nearest
-unit README and its linked contracts.
+recovering context that requires them. For a Work, follow its nearest README
+and linked contracts.
 
 | Task | Read |
 | --- | --- |
