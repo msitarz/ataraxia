@@ -15,8 +15,10 @@ does not become unnecessary permanent regression coverage.
   A removed probe remains adoption evidence, not continuing regression coverage.
 - Coordinate with
   [Acceptance traceability](../docs-checks/acceptance-traceability/README.md) so
-  intentional removal of a verified temporary probe does not falsely mark its AC
-  incomplete. Changed acceptance requirements still need fresh evidence.
+  intentional removal of a temporary probe leaves an explicit one-time
+  verification method and PR reference, rather than falsely marking its AC
+  coverage incomplete. CI and review assess changed requirements; do not add
+  test-result snapshots or evidence-SHA tracking to the README.
 - Demonstrate the rule on the rumdl adoption tests: identify which belong to
   our integration and which only probe the upstream tool, then review any
   removals and rerun retained relevant tests.
