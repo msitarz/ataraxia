@@ -32,26 +32,8 @@ also follow the [body structure below](#commits-and-pull-requests).
 
 ## Make targets
 
-| Target           | What it does |
-|------------------|--------------|
-| `make setup`     | Sync locked dependencies, prepare hook/build environments, and install Git hooks |
-| `make verify`    | Verify the prepared environment and run every local CI check offline, including examples and the installed-wheel smoke test |
-| `make lint`      | Run `ruff check . --fix`; this can modify files |
-| `make format`    | Run `ruff format .`; this can modify files |
-| `make typecheck` | Run strict Pyrefly and positive/negative type expectations |
-| `make arch-check` | Run Tach internal and external dependency checks |
-| `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
-| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, check architecture, and run covered tests, examples, and an installed-wheel smoke test |
-| `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
-
-Additional commands:
-
-| Command | Purpose |
-| --- | --- |
-| `uv sync --locked --group dev` | Install locked development dependencies without hooks, as CI does |
-| `uv run pytest example/` | Run example tests outside default discovery |
-| `uv audit --frozen --preview-features audit` | Run the dependency audit alone |
-| `uv build` | Build distributions with the declared build backend |
+Run `make help` to find everyday targets. The [Makefile](Makefile) also owns the
+CI targets and their exact commands.
 
 After setup, agents without network access must run `make verify` when `make ci`
 cannot run. It checks the locked environment without installing or resolving
