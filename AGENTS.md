@@ -27,6 +27,6 @@ the [CI workflow](.github/workflows/ci.yml) invokes its shared targets.
 
 ## Documentation
 
-Read [documentation ownership](doc/documentation.md) when creating, changing,
+Read [documentation ownership](doc/README.md) when creating, changing,
 or reviewing documentation. It owns placement, duplication, and shared-term
 maintenance rules.
