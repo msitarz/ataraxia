@@ -10,8 +10,8 @@ for Work directories, local contracts, child discovery, status, and lifecycle.
   task, and retired the superseded workflow.
 - **DONE** Work structure and review — established permanent Work contracts,
   lifecycle, prototype, and PR review rules.
-- **TODO** [Focused guidance](focused-guidance/README.md): route agents directly
-  to independently triggered change and validation rules.
+- **DONE** Focused guidance — established focused owners and direct routes for
+  change and validation rules.
 - **TODO** [Validation](validation/README.md): use focused draft checks and
   evaluate mechanical documentation checks.
 - **TODO** [Live trial](live-trial/README.md): use this workflow during its own
