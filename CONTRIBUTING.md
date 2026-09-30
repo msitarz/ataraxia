@@ -117,16 +117,9 @@ imperative subject, aiming for 50 characters including type and scope. Separate
 the body with a blank line; hard-wrap prose and bullet continuations at 72
 columns, preserving unbreakable URLs and tokens.
 
-Every agent-created commit must include a succinct body with three labeled
-sections: `Why:`, `What:`, and `How:`, separated by blank lines. Explain the
-problem or motivation, the resulting change, and the implementation approach,
-respectively. Keep each section brief and include relevant validation in `How:`.
-Avoid repeating the subject, listing files, or narrating the work session.
-
-PRs explain the problem, resulting behavior, and validation, with relevant issue
-links. External contributions are gated pending CLA setup (see [Status](#status)).
-Determine the PR base from explicit task instructions or repository metadata,
-consistent with the guidance above.
+PRs explain the problem and resulting behavior. External contributions are gated
+pending CLA setup (see [Status](#status)). Determine the PR base from explicit
+task instructions or repository metadata, consistent with the guidance above.
 
 ## License
 
