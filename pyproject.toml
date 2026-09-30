@@ -43,6 +43,7 @@ respect-gitignore = true
 force-exclude = true
 cache-dir = ".cache/rumdl"
 exclude = [
+    "CHANGELOG.md",
     ".git/**",
     "**/.git/**",
     ".venv/**",

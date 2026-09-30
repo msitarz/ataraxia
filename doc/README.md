@@ -6,26 +6,26 @@ relevant guidance.
 
 ## Owners
 
-| Information | Authoritative location |
-| --- | --- |
-| Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
-| Repair and scope rules for repository changes | [Change rules](change-rules.md) |
-| Documentation placement, duplication, and shared terms | This file |
-| Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
-| Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
-| General Work rules | [Work workflow](workflow.md) |
-| A Work's local outcome and acceptance contract | The relevant Work README |
-| ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
-| Coding, typing, and testing conventions | [Engineering](engineering.md) |
-| Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| Choosing checks and reporting validation evidence | [Validation](validation.md) |
-| Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
-| Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
-| Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
-| Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
-| One architectural choice and its rationale | The relevant [ADR](adr/) |
-| Issue body format | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md) |
-| Machine-enforced settings and executable checks | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
+| Information                                               | Authoritative location                                                                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task startup and conditional reading routes               | [AGENTS.md](../AGENTS.md)                                                                                                                     |
+| Repair and scope rules for repository changes             | [Change rules](change-rules.md)                                                                                                               |
+| Documentation placement, duplication, and shared terms    | This file                                                                                                                                     |
+| Shared meanings and distinctions                          | [Ubiquitous language](ubiquitous-language.md)                                                                                                 |
+| Legacy feat-slice delivery and specification rules        | [Feat workflow](feat-workflow.md)                                                                                                             |
+| General Work rules                                        | [Work workflow](workflow.md)                                                                                                                  |
+| A Work's local outcome and acceptance contract            | The relevant Work README                                                                                                                      |
+| ADR eligibility, format, and amendments                   | [ADR workflow](adr-workflow.md)                                                                                                               |
+| Coding, typing, and testing conventions                   | [Engineering](engineering.md)                                                                                                                 |
+| Setup, toolchain, contribution, commit, and PR rules      | [CONTRIBUTING.md](../CONTRIBUTING.md)                                                                                                         |
+| Choosing checks and reporting validation evidence         | [Validation](validation.md)                                                                                                                   |
+| Markdown formatting and local-link checks                 | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml)                                                                      |
+| Current system relationships, boundaries, and limitations | [Architecture](architecture.md)                                                                                                               |
+| Introduction, runnable example, and roadmap priorities    | [README.md](../README.md)                                                                                                                     |
+| Legacy feat-slice scope and acceptance examples           | The relevant [feat slice](feat/)                                                                                                              |
+| One architectural choice and its rationale                | The relevant [ADR](adr/)                                                                                                                      |
+| Issue body format                                         | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md)                                                                                      |
+| Machine-enforced settings and executable checks           | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
 
 ## Placement and maintenance
 
@@ -80,15 +80,17 @@ approval.
 
 ## Review
 
-Check ownership and duplication when defining or reviewing a feat slice or
-Work, and when changing general guidance. Verify local links and anchors,
-distinguish history from current instructions, and walk through affected reading
-routes. Check that moved requirements remain discoverable and examples agree
-with their owning contracts. Run `make doc-check` to check Markdown formatting
-and local links; run `make doc-format` to apply the configured formatting. Check
-that prose, headings, and examples use the same glossary terms. Follow [repair
-and scope rules](change-rules.md#fix-the-underlying-problem) for cohesive changes.
+Check ownership and duplication when defining or reviewing a feat slice or Work,
+and when changing general guidance. Verify local links and anchors, distinguish
+history from current instructions, and walk through affected reading routes.
+Check that moved requirements remain discoverable and examples agree with their
+owning contracts. Run `make doc-check` to check Markdown formatting and local
+links; run `make doc-format` to apply the configured formatting. Check that
+prose, headings, and examples use the same glossary terms. Follow
+[repair and scope rules](change-rules.md#fix-the-underlying-problem) for
+cohesive changes.
 
-Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),
+Background:
+[Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),
 [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html),
 [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).

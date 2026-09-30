@@ -58,5 +58,5 @@ adopt other Markdown or prose engines in this Work.
 
 ## Works
 
-- **TODO** [Markdown formatting baseline](formatting-baseline/README.md): apply
-  the adopted formatter to all repository Markdown in a separate change.
+- **DONE** Markdown formatting baseline — applied the shared rumdl formatter
+  across repository Markdown and established a clean documentation check.

@@ -36,6 +36,7 @@ uv run ataraxia --sink example/crossover.py --shards-dir sample --output results
 ```
 
 `make ci-package` builds a wheel, installs it into a temporary isolated virtual
-environment, and runs the copied sample strategy and shards outside the checkout.
-It checks the installed console entry point, printed totals, and JSON accounts.
-The temporary environment and artifacts are removed when the check finishes.
+environment, and runs the copied sample strategy and shards outside the
+checkout. It checks the installed console entry point, printed totals, and JSON
+accounts. The temporary environment and artifacts are removed when the check
+finishes.

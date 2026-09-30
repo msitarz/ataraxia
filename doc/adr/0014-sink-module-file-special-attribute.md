@@ -8,11 +8,14 @@ Accepted
 
 ## Context
 
-Ataraxia is importing strategy as an external module specified by the user.  This means that it needs a reliable way to find which class is actually the computable sink node to compute.
+Ataraxia is importing strategy as an external module specified by the user. This
+means that it needs a reliable way to find which class is actually the
+computable sink node to compute.
 
 ## Decision
 
-Require by convention that the sink module assigns the class which ataraxia should process to the `__sink__` global variable.
+Require by convention that the sink module assigns the class which ataraxia
+should process to the `__sink__` global variable.
 
 ## Consequences
 
