@@ -2,8 +2,9 @@
 
 Read this file in full when defining, implementing, or reviewing a
 [feat slice](ubiquitous-language.md). It owns the delivery workflow and
-specification-writing guidance. General repository rules and validation commands
-remain in [AGENTS.md](../AGENTS.md); architectural decisions follow the
+specification-writing guidance. General task routing remains in
+[AGENTS.md](../AGENTS.md); validation guidance is in
+[CONTRIBUTING.md](../CONTRIBUTING.md). Architectural decisions follow the
 [ADR workflow](adr-workflow.md).
 
 ## Define and publish for specification review
