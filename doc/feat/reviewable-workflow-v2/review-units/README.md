@@ -8,5 +8,6 @@ local contracts, and lifecycle rules.
 
 - **DONE** Local contracts — established permanent Work contracts,
   lifecycle rules, and agent routing.
-- **TODO** [PR review and merge gates](pr-gates/README.md)
+- **DONE** PR review and merge gates — established permanent Work branch,
+  review, approval, merge, and cleanup rules.
 - **TODO** [Experiments and rewrites](experiments-and-rewrites/README.md)

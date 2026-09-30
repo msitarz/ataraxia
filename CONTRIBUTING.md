@@ -104,9 +104,30 @@ The temporary environment and artifacts are removed when the check finishes.
 
 ## Submitting a change
 
-Branch off `master` and open PRs against `master` unless the task explicitly
-requires another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md)
-for issue bodies and the [commit conventions](#commits-and-pull-requests).
+For changes outside a Work or legacy feat slice, branch off `master` and target
+PRs to `master` unless the task explicitly requires another base. Use the
+[issue template](.github/ISSUE_TEMPLATE/work-item.md) for issue bodies and the
+[commit conventions](#commits-and-pull-requests).
+
+### Work branches, review, and merge
+
+Start each Work branch from current `master` and target its PR to `master`. Only
+an explicit maintainer instruction permits another base and PR target, such as
+for a prototype or rewrite; identify the exception in the PR.
+
+Keep each delivery small enough for about five minutes of human review. Split
+larger changes into independently reviewable Works. Material changes to an
+approved direction or contract require explicit approval; smaller Works within
+that direction proceed to their own review. The maintainer reviews the current
+PR revision and performs the merge. Agents must not merge without an explicit
+instruction.
+
+PRs carry review discussion and rationale. Use the commit subject and concise
+PR description conventions below. Merged PRs and recorded approvals provide
+durable decisions across sessions. Remove merged remote and local branches when
+no dependent PR needs them. Retained branches and GitHub status queries are not
+routine Work tracking; use the [Work lifecycle](doc/workflow.md) for parent
+status rules.
 
 When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
 read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
