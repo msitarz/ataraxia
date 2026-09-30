@@ -10,6 +10,7 @@ help: ## display this command index
 	@awk 'BEGIN { FS = ":.*##" } \
 		/^##@/ { if (section++) printf "\n"; printf "%s\n", substr($$0, 5); next } \
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+	@echo "Prefer Make targets; direct tool invocation is allowed for targeted tests or diagnostics that existing targets do not expose."
 
 .PHONY: setup
 setup: ci-setup ## install development dependencies and hooks
@@ -45,8 +46,9 @@ clean: ## remove the virtual environment and test/lint caches
 .PHONY: ci ci-setup ci-check ci-test ci-examples ci-package ci-audit
 .PHONY: verify verify-setup verify-check verify-test verify-examples verify-package
 # Every check uses the prepared environment; only setup may install dependencies.
-ci ci-check ci-test ci-examples ci-package verify: export UV_NO_SYNC := true
-verify: export UV_OFFLINE := true
+ci ci-check ci-test ci-examples ci-package: export UV_NO_SYNC := true
+verify verify-setup verify-check verify-test verify-examples verify-package: export UV_OFFLINE := true
+verify verify-setup verify-check verify-test verify-examples verify-package: export UV_NO_SYNC := true
 ##@ Offline verification
 verify: verify-setup ## run all local checks offline (prepared environment required)
 	$(MAKE) verify-check verify-test verify-examples verify-package
