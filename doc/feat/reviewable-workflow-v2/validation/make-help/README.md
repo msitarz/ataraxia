@@ -1,12 +1,30 @@
 # Make help
 
-Use the Makefile as the command index after removing the duplicate command
-tables from `CONTRIBUTING.md`. Make `make help` show every supported human-facing
-target, including `clean`, with short descriptions that match the recipes.
-Identify the CI-only targets as such; the CI workflow still calls Makefile
-targets rather than duplicating their commands.
+Generate the command index from descriptions beside target definitions in the
+[Makefile](../../../../../Makefile), avoiding a separately maintained command
+list.
 
-Keep validation policy in `CONTRIBUTING.md`. This Work changes command
-discovery, not which checks are required or when they run. Completion means a
-reader can find the appropriate target with `make help` and no command list
-needs to be maintained in a second file.
+## Outcome
+
+`make` and `make help` display the same readable command index without running
+project tools, installing dependencies, or requiring setup.
+
+## Acceptance criteria
+
+- Group supported targets into everyday commands, offline verification, and CI
+  entry points identified as primarily for automation. Include `clean` and all
+  supported `verify-*` targets.
+- Describe actual behavior and side effects: `lint` applies fixes; `setup`
+  installs dependencies and hooks; `ci` includes a network audit; `clean`
+  removes the virtual environment and test caches.
+- The Makefile owns executable commands and descriptions.
+  [CONTRIBUTING.md](../../../../../CONTRIBUTING.md) owns validation policy and
+  when checks are required. Implementation updates its Make targets
+  introduction to direct humans and agents to `make help` before running
+  project tools; read recipes only when details matter.
+- Implementation extends the existing [AGENTS.md](../../../../../AGENTS.md)
+  route to cover running project tools and link to that contribution guidance.
+- Prefer supported Make targets. Direct tool invocation is allowed for targeted
+  tests or diagnostics that existing targets do not expose.
+- Preserve target behavior and validation policy. Do not recreate a command
+  table elsewhere.
