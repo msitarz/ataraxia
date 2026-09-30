@@ -43,13 +43,13 @@ direction (see ADR-0006, ADR-0007) but has no corresponding code here yet.
 
 ## Design goals & non-goals
 
-**Goals**
+### Goals
 
 - Look-ahead bias is prevented by construction, not by convention
 - Ataraxia is forked to a private repository by each user
 - Visual strategy and features debugging having each compute step saved
 
-**Non-goals**
+### Non-goals
 
 - Fully-autonomous trading agent.
 
