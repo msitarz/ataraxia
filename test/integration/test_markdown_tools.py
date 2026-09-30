@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exercise Markdown tool behavior and Make target wiring."""
 
-import json
 import os
 from pathlib import Path
 import shutil
 import subprocess
-import sys
+import tempfile
 
 import pytest
 
@@ -65,7 +64,10 @@ def test_rumdl_formats_prose_and_tables_preserving_literals(tmp_path: Path) -> N
     assert inline_code in result
     assert "| Key" in result and "| longer" in result
     assert "| a      | short" in result
-    assert "\n" in result[result.index("This sentence") : result.index(inline_code)]
+    wrapped_prose = result[result.index("This sentence") : result.index(link)].strip()
+    wrapped_lines = wrapped_prose.splitlines()
+    assert len(wrapped_lines) > 1
+    assert " ".join(line.strip() for line in wrapped_lines) == long_prose
 
     repeated = run_rumdl("fmt", str(path), cwd=tmp_path)
     assert repeated.returncode == 0, repeated.stdout + repeated.stderr
@@ -115,73 +117,98 @@ def test_rumdl_checks_offline_local_links_but_not_literal_or_external_links(
     assert "MD051" in invalid.stdout + invalid.stderr
 
 
-def test_make_markdown_targets_are_offline_and_respect_selection(
-    tmp_path: Path,
+def run_make(target: str, *args: str, env: dict[str, str] | None = None):
+    return subprocess.run(
+        ["make", target, *args],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+
+
+def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts() -> None:
+    with tempfile.TemporaryDirectory(prefix=".doc-tools-", dir=ROOT) as fixture:
+        fixture_dir = Path(fixture)
+        selected_dir = fixture_dir / "selected-dir"
+        nested = selected_dir / "nested"
+        nested.mkdir(parents=True)
+        selected_file = fixture_dir / "selected-file.md"
+        unselected = fixture_dir / "unselected.md"
+        excluded = selected_dir / ".cache" / "generated.md"
+        excluded.parent.mkdir()
+        source = "# Heading\n\n" + "Long prose " * 12 + "\n"
+        for path in (
+            selected_dir / "first.md",
+            nested / "second.md",
+            selected_file,
+            unselected,
+            excluded,
+        ):
+            path.write_text(source, encoding="utf-8")
+        unselected_before = unselected.read_bytes()
+        excluded_before = excluded.read_bytes()
+
+        result = run_make("doc-format", f"ARGS={selected_dir} {selected_file}")
+
+        assert result.returncode == 0, result.stdout + result.stderr
+        for path in (selected_dir / "first.md", nested / "second.md", selected_file):
+            assert path.read_text(encoding="utf-8") != source
+        assert unselected.read_bytes() == unselected_before
+        assert excluded.read_bytes() == excluded_before
+
+
+@pytest.mark.parametrize("mutation", ["rename", "delete"])
+def test_make_doc_check_finds_inbound_links_to_changed_heading(
+    tmp_path: Path, mutation: str
 ) -> None:
-    log = tmp_path / "calls.jsonl"
-    uv = tmp_path / "uv"
-    uv.write_text(
-        f"#!{sys.executable}\n"
-        "import json, os, sys\n"
-        "with open(os.environ['DOC_TOOLS_LOG'], 'a') as log:\n"
-        "    log.write(json.dumps([sys.argv[1:], os.getenv('UV_OFFLINE'), "
-        "os.getenv('UV_NO_SYNC')]) + '\\n')\n",
-        encoding="utf-8",
-    )
-    uv.chmod(0o755)
-    selected = tmp_path / "selected.md"
-    selected.write_text("# Selected\n", encoding="utf-8")
+    target = tmp_path / f"target-{mutation}.md"
+    source = tmp_path / f"source-{mutation}.md"
+    target.write_text("# Guide\n\n## Overview\n", encoding="utf-8")
+    source.write_text(f"[Overview]({target.name}#overview)\n", encoding="utf-8")
+    if mutation == "rename":
+        target.write_text("# Guide\n\n## Summary\n", encoding="utf-8")
+    else:
+        target.write_text("# Guide\n", encoding="utf-8")
+
+    result = run_make("doc-check", f"ARGS={source} {target}")
+    output = result.stdout + result.stderr
+
+    assert result.returncode != 0
+    assert "MD051" in output
+    assert source.name in output
+    assert target.name in output
+
+
+def test_make_doc_check_fails_visibly_when_rumdl_is_missing(tmp_path: Path) -> None:
+    tool_dirs = {
+        str(Path(path).parent)
+        for name in ("make", "uv")
+        if (path := shutil.which(name))
+    }
+    tool_dirs.update({"/usr/bin", "/bin", "/usr/sbin", "/sbin"})
     env = os.environ.copy()
-    env.update(PATH=f"{tmp_path}:{env['PATH']}", DOC_TOOLS_LOG=str(log))
-    env.pop("UV_OFFLINE", None)
-    env.pop("UV_NO_SYNC", None)
-
-    result = subprocess.run(
-        ["make", "doc-check", f"ARGS={selected}"],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=30,
+    env.update(
+        PATH=os.pathsep.join(sorted(tool_dirs)),
+        UV_PROJECT_ENVIRONMENT=str(tmp_path / "empty-venv"),
+        UV_CACHE_DIR=str(tmp_path / "uv-cache"),
+        UV_OFFLINE="true",
+        UV_NO_SYNC="true",
     )
+    env.pop("VIRTUAL_ENV", None)
+
+    result = run_make("doc-check", env=env)
+    output = result.stdout + result.stderr
+
+    assert result.returncode != 0
+    assert "rumdl" in output.lower()
+    assert "install" not in output.lower()
+
+
+def test_make_help_lists_markdown_targets() -> None:
+    result = run_make("help")
+
     assert result.returncode == 0, result.stdout + result.stderr
-    calls = [json.loads(line) for line in log.read_text().splitlines()]
-    assert [call[0] for call in calls] == [
-        ["run", "rumdl", "check", str(selected), "."],
-        ["run", "rumdl", "fmt", "--check", str(selected)],
-    ]
-    assert all(offline == no_sync == "true" for _, offline, no_sync in calls)
-
-    log.write_text("", encoding="utf-8")
-    formatted = subprocess.run(
-        ["make", "doc-format", f"ARGS={selected}"],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    assert formatted.returncode == 0, formatted.stdout + formatted.stderr
-    calls = [json.loads(line) for line in log.read_text().splitlines()]
-    assert [call[0] for call in calls] == [["run", "rumdl", "fmt", str(selected)]]
-    assert all(offline == no_sync == "true" for _, offline, no_sync in calls)
-
-    log.write_text("", encoding="utf-8")
-    format_all = subprocess.run(
-        ["make", "doc-format"],
-        cwd=ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    assert format_all.returncode == 0, format_all.stdout + format_all.stderr
-    calls = [json.loads(line) for line in log.read_text().splitlines()]
-    assert [call[0] for call in calls] == [["run", "rumdl", "fmt", "."]]
-
-    help_result = subprocess.run(
-        ["make", "help"], cwd=ROOT, capture_output=True, text=True, timeout=30
-    )
-    assert help_result.returncode == 0, help_result.stdout + help_result.stderr
-    assert "make doc-check" in help_result.stdout
-    assert "make doc-format" in help_result.stdout
+    assert "make doc-check" in result.stdout
+    assert "make doc-format" in result.stdout
