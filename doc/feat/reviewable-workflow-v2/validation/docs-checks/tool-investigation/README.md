@@ -1,6 +1,18 @@
 # Tool investigation
 
-Probe rumdl for Markdown hygiene and local link checks. Evaluate
-`sourdough-bread/asd-ste100-checker` and other ASD-STE100 candidates, including
-installation and operation with the pinned `uv` toolchain. Record reproducible
-results and a narrow adoption or deferral decision in the PR.
+Choose existing tools for Markdown formatting and link checks so agents no
+longer implement those operations with ad hoc scripts. Evaluate prose checks
+separately, including installation with the pinned uv/Python toolchain.
+
+Read the [recommendation](recommendation.md) for the proposed toolchain and
+integration requirements. Short pros/cons and probe notes:
+
+- [rumdl](rumdl.md)
+- [Mado](mado.md)
+- [Lychee](lychee.md)
+- [ASD-STE100 checker](asd-ste100-checker.md)
+- [stazelabs/ste](ste.md)
+
+Runtime-tested behavior is distinguished from documentation-only evidence.
+Tool adoption and permanent workflow rules remain separate from this
+investigation.
