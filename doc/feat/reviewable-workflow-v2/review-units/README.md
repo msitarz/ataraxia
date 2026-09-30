@@ -6,6 +6,7 @@ local contracts, and lifecycle rules.
 
 ## Works
 
-- **TODO** [Local contracts](local-contracts/README.md)
+- **DONE** Local contracts — established permanent Work contracts,
+  lifecycle rules, and agent routing.
 - **TODO** [PR review and merge gates](pr-gates/README.md)
 - **TODO** [Experiments and rewrites](experiments-and-rewrites/README.md)
