@@ -55,3 +55,8 @@ from tool/configuration integration. Complete this Work once that baseline and
 the common gate pass. Add repository-specific semantic rules, such as recursive
 README contracts and path identity, in later small Works when needed. Do not
 adopt other Markdown or prose engines in this Work.
+
+## Works
+
+- **TODO** [Markdown formatting baseline](formatting-baseline/README.md): apply
+  the adopted formatter to all repository Markdown in a separate change.
