@@ -6,7 +6,7 @@
 - **cli**: include shard and strategy paths in output file
 - **cli**: save results as json to file
 - **cli**: display_results function
-- **broker**: implement Account `__add__` and `__radd__`
+- **broker**: implement Account __add__ and __radd__
 - **cli**: init cli.py module
 - **backtest**: backtest_dir; backtest_shard; main backtest entry
 - **util**: import_file; is_type; is_sink
@@ -52,7 +52,7 @@
 - **bar**: tick fractional truncation error
 - **provider**: remove newline strip code smell
 - **broker**: remove leftover debug print
-- **provider**: BarProvider same `__exit__` as protocol
+- **provider**: BarProvider same __exit__ as protocol
 - **broker**: update old positions on signal
 - **broker**: position on_bar case when bar gapped
 - **broker**: do not use Boolean protocol in broker runner check
@@ -71,7 +71,7 @@
 - **compute**: multi-source single-sink computable DAG design (#5)
 - **compute**: remove old compute implementation
 - **compute**: rename protocols.py to protocol.py
-- **compute**: remove DependencyMapping from `__init__`
+- **compute**: remove DependencyMapping from __init__
 - **compute**: new compute function
 - **compute**: change kickstart_runners to prime_catalog
 - **compute**: kickstart_runners
