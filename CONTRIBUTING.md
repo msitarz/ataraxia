@@ -28,30 +28,24 @@ unbreakable URLs or tokens on their own lines; indentation, bullet markers, and
 trailer labels may precede them. The checker ignores Git comment lines and the
 verbose diff below Git's scissors marker (including Magit commits). It does
 not limit subject length or require section labels. Agent-created commits must
-also follow the body structure in [AGENTS.md](AGENTS.md#commits-and-pull-requests).
+also follow the [body structure below](#commits-and-pull-requests).
 
 ## Make targets
 
-| Target           | What it does |
-|------------------|--------------|
-| `make setup`     | Sync locked dependencies, prepare hook/build environments, and install Git hooks |
-| `make verify`    | Verify the prepared environment and run every local CI check offline, including examples and the installed-wheel smoke test |
-| `make lint`      | Run `ruff check . --fix`; this can modify files |
-| `make format`    | Run `ruff format .`; this can modify files |
-| `make typecheck` | Run strict Pyrefly and positive/negative type expectations |
-| `make arch-check` | Run Tach internal and external dependency checks |
-| `make test`      | Run `pytest --cov` against `test/`, including configured branch coverage |
-| `make ci`        | Verify and sync locked dependencies, audit packages, check YAML/conflict markers/private keys, check lint and formatting, type-check, check architecture, and run covered tests, examples, and an installed-wheel smoke test |
-| `make clean`     | Remove the virtual environment, Ruff and pytest caches, and `.coverage` |
+Run `make help` to find everyday targets. The [Makefile](Makefile) also owns the
+CI targets and their exact commands.
 
-After setup, agents without network access can run `make verify`. It checks the
-locked environment without installing or resolving dependencies, then reuses the
-same local check recipes as CI with uv network access disabled. Missing or stale
-environments fail; rerun `make setup` with network access to prepare them. A passing
-verification does not include a vulnerability audit.
+After setup, agents without network access must run `make verify` when `make ci`
+cannot run. It checks the locked environment without installing or resolving
+dependencies, then reuses the same local check recipes as CI with uv network
+access disabled. Missing or stale environments fail; rerun `make setup` with
+network access to prepare them. A passing verification does not include a
+vulnerability audit. Report the audit separately as unrun or failed, and report
+any checks that could not run.
 
-Before pushing a branch or opening a PR, run all CI checks locally, including for
-an early draft PR containing only a specification:
+For code changes, run focused tests during development. Before pushing a branch
+or opening a PR, run all CI checks locally, including for an early draft PR
+containing only a specification:
 
 ```sh
 make ci
@@ -66,6 +60,12 @@ use the synchronized environment without updating dependency resolution. After
 intentional dependency changes, run `uv lock` and commit the updated lockfile.
 The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
 `.pre-commit-config.yaml` and inspect all tracked files.
+
+Run the sample strategy:
+
+```sh
+uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
+```
 
 ## Toolchain policy
 
@@ -98,7 +98,7 @@ The temporary environment and artifacts are removed when the check finishes.
 
 Branch off `master` and open PRs against `master` unless the task explicitly
 requires another base. Use the [issue template](.github/ISSUE_TEMPLATE/work-item.md)
-for issue bodies and the general rules in [AGENTS.md](AGENTS.md) for commits.
+for issue bodies and the [commit conventions](#commits-and-pull-requests).
 
 When defining, implementing, or reviewing a [feat slice](doc/ubiquitous-language.md),
 read the [feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
@@ -106,6 +106,20 @@ issue messages, specification guidance, manual review gates, and session handoff
 It requires manual specification approval before execution and both manual and
 defining-session review of implementation. Keep work in the same PR through
 review corrections. The maintainer makes the final merge or close decision.
+
+## Commits and pull requests
+
+For small unrelated fixes or documentation edits, use `fix/`, `docs/`, or
+`chore/` branches with short lowercase, hyphen-separated names.
+
+Keep commits focused and use Conventional Commits (Commitizen enforced). Use an
+imperative subject, aiming for 50 characters including type and scope. Separate
+the body with a blank line; hard-wrap prose and bullet continuations at 72
+columns, preserving unbreakable URLs and tokens.
+
+PRs explain the problem and resulting behavior. External contributions are gated
+pending CLA setup (see [Status](#status)). Determine the PR base from explicit
+task instructions or repository metadata, consistent with the guidance above.
 
 ## License
 

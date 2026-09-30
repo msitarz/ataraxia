@@ -107,7 +107,7 @@ Passing tests does not satisfy either manual gate or authorize merging.
 
 ## Failures and boundaries
 
-Follow [Commands and Validation](../AGENTS.md#commands-and-validation) if network
+Follow [Make targets](../CONTRIBUTING.md#make-targets) if network
 access prevents `make ci`. Disclose missing checks and keep incomplete work draft.
 If GitHub access fails, report it, continue useful local work, and add external
 links once access returns. Don't claim an issue or PR exists without verifying
