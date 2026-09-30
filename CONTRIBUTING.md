@@ -40,8 +40,10 @@ also follow the [body structure below](#commits-and-pull-requests).
 
 ## Make targets
 
-Run `make help` to find everyday targets. The [Makefile](Makefile) also owns the
-CI targets and their exact commands.
+Humans and agents should run `make help` before project tools to find supported
+targets. The [Makefile](Makefile) owns executable commands and descriptions;
+read recipes only when their details matter. This document owns validation
+policy and when checks are required.
 
 After setup, agents without network access must run `make verify` when `make ci`
 cannot run. It checks the locked environment without installing or resolving

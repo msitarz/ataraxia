@@ -15,4 +15,4 @@ its relevant README and linked contracts.
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
-| Setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md); use [Makefile](Makefile) for commands and [CI workflow](.github/workflows/ci.yml) for CI jobs |
+| Running project tools, setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md), starting with [Make targets](CONTRIBUTING.md#make-targets) before running project tools; use [Makefile](Makefile) for the command index and [CI workflow](.github/workflows/ci.yml) for CI jobs |
