@@ -1,7 +1,7 @@
 # Documentation checks
 
 Investigate existing tools before writing custom rules. Adopt deterministic
-checks behind `make docs-check` only after their behavior fits this repository.
+checks behind `make doc-check` only after their behavior fits this repository.
 Keep tool choices and integration separately reviewable.
 
 ## Works
