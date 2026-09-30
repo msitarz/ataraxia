@@ -7,5 +7,6 @@ pattern from commit `08fcd28` without importing parallel-execution changes.
 ## Work units
 
 - **TODO** [Agent routes](agent-routes/README.md)
-- **TODO** [Rule owners](rule-owners/README.md)
+- **DONE** Rule owners — engineering, ADR, architecture, contribution, and
+  documentation guidance each have an authoritative owner.
 - **TODO** [Retire the old workflow](retire-old-workflow/README.md)

@@ -25,14 +25,8 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) for setup, commands, validation,
 branches, commits, and PRs. The [Makefile](Makefile) defines executable checks;
 the [CI workflow](.github/workflows/ci.yml) invokes its shared targets.
 
-## Ubiquitous Language
+## Documentation
 
-The [glossary](doc/ubiquitous-language.md) is the single source of truth for shared definitions; feat slices own local rules. Use its terms consistently and reuse abstractions when their meaning fits.
-
-- Keep concepts distinct; a runner is not an executor worker. Use "feat slice" as defined in the glossary, keeping it distinct from a trading Feature. Qualify terms and explain boundary mappings.
-- Resolve ambiguity from the request and repository. If meanings still imply materially different behavior, present concrete interpretations to the user before implementation. Do not invent domain rules; naming consistent with established meanings needs no confirmation.
-- Check for an existing term before introducing one. Define needed terms in the glossary **before using them in specifications or implementation**: meaning, responsibility, distinctions, relationships, and relevant units or lifecycle rules.
-- Link to definitions instead of duplicating them; update affected code, tests, and docs together. Follow the [ADR workflow](doc/adr-workflow.md) for architectural changes.
-- Verify meaning and module boundaries through observable examples and tests, including timing, units, state transitions, and failures.
-
-Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one), [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html), [Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
+Read [documentation ownership](doc/documentation.md) when creating, changing,
+or reviewing documentation. It owns placement, duplication, and shared-term
+maintenance rules.
