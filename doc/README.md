@@ -64,6 +64,9 @@ computation and trading language. Works and legacy feat slices have distinct
 definitions; local rules belong in their own contracts, with glossary
 entries linking rather than reproducing those rules.
 
+Use the glossary term consistently for each shared concept; avoid synonyms that
+suggest an undefined distinction.
+
 Reuse abstractions when their meaning fits. Qualify terms at boundary mappings.
 Resolve ambiguity from the request and repository; if interpretations still
 imply materially different behavior, present concrete alternatives before
@@ -76,7 +79,8 @@ Check ownership and duplication when defining or reviewing a feat slice or
 Work, and when changing general guidance. Verify local links and anchors,
 distinguish history from current instructions, and walk through affected reading
 routes. Check that moved requirements remain discoverable and examples agree
-with their owning contracts. Follow [repair and scope rules](engineering.md#fix-the-underlying-problem)
+with their owning contracts. Check that prose, headings, and examples use the
+same glossary terms. Follow [repair and scope rules](engineering.md#fix-the-underlying-problem)
 for cohesive changes.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),

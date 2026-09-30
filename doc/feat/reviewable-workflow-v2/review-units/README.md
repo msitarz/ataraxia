@@ -10,5 +10,5 @@ local contracts, and lifecycle rules.
   lifecycle rules, and agent routing.
 - **DONE** PR review and merge gates — established permanent Work branch,
   review, approval, merge, and cleanup rules.
-- **DONE** Experiments and rewrites — established permanent guidance for
-  experiments, prototypes, and rewrites.
+- **DONE** Prototypes and rewrites — established permanent guidance for
+  prototypes and rewrites.

@@ -113,7 +113,7 @@ PRs to `master` unless the task explicitly requires another base. Use the
 
 Start each Work branch from current `master` and target its PR to `master`. Only
 an explicit maintainer instruction permits another base and PR target, such as
-for a prototype or rewrite; identify the exception in the PR.
+for a Prototype or rewrite; identify the exception in the PR.
 
 Keep each delivery small enough for about five minutes of human review. Split
 larger changes into independently reviewable Works. Material changes to an

@@ -31,19 +31,19 @@ Discovery may add children without maintaining a fixed execution list. Nest
 when it reduces necessary context; strongly discourage more than five levels.
 Directory ancestry does not select a Git base.
 
-## Experiments and rewrites
+## Prototypes and rewrites
 
-An experiment answers a bounded question. Its Work contract states the question,
-limits, and observable evidence needed to answer it. Record the result in the PR,
-including when the experiment fails, and distinguish observed evidence from
-assumptions.
+A Prototype answers a bounded question through investigation or exploratory
+implementation. Its Work contract states the question, limits, and observable
+evidence needed to answer it. Record the result in the PR, including when the
+Prototype is unsuccessful, and distinguish observed evidence from assumptions.
 
-Promote a prototype to production Work only after reviewing missing contracts
+Promote a Prototype to production Work only after reviewing missing contracts
 and integration requirements. Prototype completion does not imply production
 readiness.
 
 A rewrite's contract states behavior to preserve, intended changes, comparison
-evidence, cutover, and retirement requirements. Split experiments and rewrites
+evidence, cutover, and retirement requirements. Split Prototypes and rewrites
 into small, independently reviewable Works when needed.
 
 See [CONTRIBUTING.md's Work review rules](../CONTRIBUTING.md#work-branches-review-and-merge)
