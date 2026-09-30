@@ -5,5 +5,6 @@ code checks remain in their owners; documentation checks are separate work.
 
 ## Work units
 
+- **TODO** [Make help](make-help/README.md)
 - **TODO** [Draft and merge checks](draft-and-merge-checks/README.md)
 - **TODO** [Documentation checks](docs-checks/README.md)
