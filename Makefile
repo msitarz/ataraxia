@@ -35,6 +35,20 @@ arch-check: ## check architecture boundaries
 	uv run tach check
 	uv run tach check-external
 
+.PHONY: doc-check doc-format
+doc-check doc-format: export UV_OFFLINE := true
+doc-check doc-format: export UV_NO_SYNC := true
+
+_DOC_PATHS = $(if $(strip $(ARGS)),$(ARGS),.)
+_DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(ARGS) .,.)
+
+doc-check: ## check Markdown formatting and local links (read only)
+	uv run rumdl check $(_DOC_GRAPH_PATHS)
+	uv run rumdl fmt --check $(_DOC_PATHS)
+
+doc-format: ## format Markdown; ARGS selects files or directories
+	uv run rumdl fmt $(_DOC_PATHS)
+
 .PHONY: test
 test: ## run tests with coverage
 	uv run pytest --cov

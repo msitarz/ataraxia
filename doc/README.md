@@ -19,6 +19,7 @@ relevant guidance.
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Choosing checks and reporting validation evidence | [Validation](validation.md) |
+| Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
 | Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
@@ -83,9 +84,10 @@ Check ownership and duplication when defining or reviewing a feat slice or
 Work, and when changing general guidance. Verify local links and anchors,
 distinguish history from current instructions, and walk through affected reading
 routes. Check that moved requirements remain discoverable and examples agree
-with their owning contracts. Check that prose, headings, and examples use the
-same glossary terms. Follow [repair and scope rules](change-rules.md#fix-the-underlying-problem)
-for cohesive changes.
+with their owning contracts. Run `make doc-check` to check Markdown formatting
+and local links; run `make doc-format` to apply the configured formatting. Check
+that prose, headings, and examples use the same glossary terms. Follow [repair
+and scope rules](change-rules.md#fix-the-underlying-problem) for cohesive changes.
 
 Background: [Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),
 [Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html),
