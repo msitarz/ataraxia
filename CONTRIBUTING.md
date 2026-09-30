@@ -2,7 +2,15 @@
 
 ## Status
 
-Ataraxia is at pre-alpha, single maintainer, architecture actively in flux. Interfaces, module boundaries, and even the DI/computation model may change without notice. If you're considering non-trivial work, create or reuse an issue before drafting the specification or implementing the change; PRs that don't match the current architectural direction won't be merged regardless of code quality.
+Ataraxia is pre-alpha, has a single maintainer, and its architecture is actively
+in flux. Interfaces, module boundaries, and the DI/computation model may change
+without notice. PRs that don't match the current architectural direction won't
+be merged regardless of code quality.
+
+Follow the [legacy feat-slice workflow](doc/feat-workflow.md) for those
+deliveries; it owns their issue gate. V2 work units use their local contracts
+and PRs without routine issues. Use the
+[issue template](.github/ISSUE_TEMPLATE/work-item.md) for bugs and collaboration.
 
 ## Prerequisites
 
