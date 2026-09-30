@@ -22,8 +22,7 @@ owning README or spec, preserving file-scoped AC identity:
 
 ```python
 @pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-8")
-def test_inbound_links():
-    ...
+def test_inbound_links(): ...
 ```
 
 Repeat the decorator when a test covers multiple ACs. The test docstring
