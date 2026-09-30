@@ -8,8 +8,8 @@ step list or journal.
 
 ## Work units
 
-- **TODO** [Guidance and routing](guidance/README.md): move rules to their
-  owners and make agent reading selective.
+- **DONE** Guidance and routing — moved rules to their owners, routed agents by
+  task, and retired the superseded workflow.
 - **TODO** [Review units](review-units/README.md): define local contracts,
   branches, PRs, approval, and trunk integration.
 - **TODO** [Validation](validation/README.md): use focused draft checks and
