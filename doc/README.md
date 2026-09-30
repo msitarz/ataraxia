@@ -12,7 +12,8 @@ relevant guidance.
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
-| Work hierarchy and local contracts | The [Reviewable workflow](feat/reviewable-workflow-v2/README.md) and the relevant Work README |
+| General Work rules | [Work workflow](workflow.md) |
+| A Work's local outcome and acceptance contract | The relevant Work README |
 | ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Setup, validation, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
