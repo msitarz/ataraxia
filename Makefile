@@ -74,6 +74,7 @@ verify-check: ## run static checks offline
 	uv run prek run --all-files check-yaml check-merge-conflict detect-private-key
 	uv run ruff check .
 	uv run ruff format --check .
+	$(MAKE) doc-check
 	$(MAKE) typecheck
 	$(MAKE) arch-check
 verify-test: ## run tests offline

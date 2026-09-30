@@ -87,6 +87,24 @@ def test_rumdl_format_check_does_not_modify_files(tmp_path: Path) -> None:
     assert path.read_bytes() == before
 
 
+def test_make_doc_check_rejects_formatting_without_modifying_files() -> None:
+    with tempfile.TemporaryDirectory(
+        prefix=".doc-format-failure-", dir=ROOT
+    ) as fixture:
+        path = Path(fixture) / "unformatted.md"
+        content = "# Heading\n\n" + "Long prose " * 12 + "\n"
+        path.write_text(content, encoding="utf-8")
+        before = path.read_bytes()
+
+        result = run_make("doc-check", f"ARGS={path}")
+        output = result.stdout + result.stderr
+
+        assert result.returncode != 0
+        assert "MD013" in output
+        assert path.name in output
+        assert path.read_bytes() == before
+
+
 def test_rumdl_checks_offline_local_links_but_not_literal_or_external_links(
     tmp_path: Path,
 ) -> None:
