@@ -3,7 +3,7 @@
 ## Task routing
 
 Use this table to find the guidance that applies to the task. Read the glossary
-sections relevant to the task; read it in full when defining shared terms or
+entries relevant to the task; read it in full when defining shared terms or
 recovering context that requires them. For a v2 work unit, follow the nearest
 unit README and its linked contracts.
 
@@ -14,4 +14,4 @@ unit README and its linked contracts.
 | Documentation | [Documentation ownership](doc/README.md) |
 | Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
-| Setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md); use [Makefile](Makefile) for commands and [CI workflow](.github/workflows/ci.yml) for CI gates |
+| Setup, validation, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md); use [Makefile](Makefile) for commands and [CI workflow](.github/workflows/ci.yml) for CI jobs |
