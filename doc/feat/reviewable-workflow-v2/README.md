@@ -8,8 +8,8 @@ for Work directories, local contracts, child discovery, status, and lifecycle.
 
 - **DONE** Guidance and routing — moved rules to their owners, routed agents by
   task, and retired the superseded workflow.
-- **TODO** [Work structure and review](review-units/README.md): define local contracts,
-  branches, PRs, approval, and trunk integration.
+- **DONE** Work structure and review — established permanent Work contracts,
+  lifecycle, prototype, and PR review rules.
 - **TODO** [Validation](validation/README.md): use focused draft checks and
   evaluate mechanical documentation checks.
 - **TODO** [Live trial](live-trial/README.md): use this workflow during its own
