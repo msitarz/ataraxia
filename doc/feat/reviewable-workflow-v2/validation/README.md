@@ -5,6 +5,6 @@ code checks remain in their owners; documentation checks are separate work.
 
 ## Works
 
-- **TODO** [Make help](make-help/README.md)
+- **DONE** Make help — generated a grouped target index and routed tool discovery.
 - **TODO** [Draft and merge checks](draft-and-merge-checks/README.md)
 - **TODO** [Documentation checks](docs-checks/README.md)
