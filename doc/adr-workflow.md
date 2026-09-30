@@ -37,8 +37,8 @@ one, or several ADRs; the number of implementation choices does not determine it
    and follow amendment/supersession links; reuse them instead of duplicating
    decisions. Read [architecture](architecture.md) before changing boundaries.
 2. Follow the applicable delivery workflow for tracking and approval. The
-   [legacy feat workflow](feat-workflow.md) retains its issue gate; proposed
-   v2 work units use branches and PRs without routine issues. Record uncovered
+   [legacy feat workflow](feat-workflow.md) retains its issue gate; Works use
+   branches and PRs without routine issues. Record uncovered
    decisions before implementing the affected design, and reassess when
    implementation reveals new choices.
 3. Use the next unused number and `NNNN-kebab-case-title.md`. Format:

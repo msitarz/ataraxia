@@ -8,8 +8,8 @@ without notice. PRs that don't match the current architectural direction won't
 be merged regardless of code quality.
 
 Follow the [legacy feat-slice workflow](doc/feat-workflow.md) for those
-deliveries; it owns their issue gate. V2 work units use their local contracts
-and PRs without routine issues. Use the
+deliveries; it owns their issue gate. Works use their local contracts and PRs
+without routine issues. Use the
 [issue template](.github/ISSUE_TEMPLATE/work-item.md) for bugs and collaboration.
 
 ## Prerequisites
