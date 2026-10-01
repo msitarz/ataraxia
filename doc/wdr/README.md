@@ -7,10 +7,10 @@ record syntax and changes.
 
 ## Initial retrospective selection
 
-These five records cover cross-Work choices about local Work contracts and
-lifecycle, maintainer review capacity, and delegated repository changes. This
-first set does not record every inventory finding. Narrower
-documentation, tool, test, and code-review practices remain with their
+These six records cover cross-Work choices about local Work contracts and
+lifecycle, maintainer review capacity, delegated repository changes, and
+delivery evidence. This first set does not record every inventory finding.
+Narrower documentation, tool, test, and code-review practices remain with their
 authoritative owners. Pending validation and acceptance-traceability Works
 remain proposals, not accepted decisions.
 
@@ -19,3 +19,4 @@ remain proposals, not accepted decisions.
 - [3. Size Works for maintainer review](0003-size-works-for-maintainer-review.md)
 - [4. Delegate repository changes for independent review](0004-delegate-repository-changes-for-independent-review.md)
 - [5. Review completed handoffs once](0005-review-completed-handoffs-once.md)
+- [6. Keep delivery evidence in PRs and Git](0006-keep-delivery-evidence-in-prs-and-git.md)
