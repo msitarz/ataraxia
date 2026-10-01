@@ -83,6 +83,13 @@ PRs to `master` unless the task explicitly requires another base. Use the
 [issue template](.github/ISSUE_TEMPLATE/work-item.md) for issue bodies and the
 [commit conventions](#commits-and-pull-requests).
 
+### Running Git commands
+
+Run each Git operation in a separate tool call; do not chain Git commands with
+shell operators. If an operation requiring escalation is denied, canceled, or
+fails, stop and report the exact command and result immediately. Do not retry
+silently or manipulate Git lock files.
+
 ### Work branches, review, and merge
 
 Start each Work branch from current `master` and target its PR to `master`. Only

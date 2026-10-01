@@ -54,6 +54,14 @@ Findings and candidate decisions:
   focused handoff, a completed artifact, then one consolidated review. Same-
   session context reuse may help token caching, but exact savings are
   unmeasured.
+- **Accepted for this Work; current after delivery:** A compound subagent Git
+  staging call was reported as aborted during root interruptions; that result
+  alone did not establish human denial. A real `git add` hit the sandbox's
+  `.git/index.lock` write restriction and required escalation. After an update
+  and restart, the maintainer confirmed seeing a fresh Luna permission prompt,
+  and an isolated escalated `git add --dry-run` succeeded. Whether command
+  chaining caused the earlier delay is unproven; the chosen convention runs
+  Git operations in separate tool calls to make approval outcomes clearer.
 - **Pending Work:** Focused development checks and the full CI merge gate. The
   draft-and-merge-checks Work is still pending; do not report its policy as
   adopted.
