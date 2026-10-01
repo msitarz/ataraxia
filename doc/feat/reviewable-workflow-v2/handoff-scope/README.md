@@ -14,9 +14,10 @@ child Works.
   quick human review, using the existing
   [Work scope and sizing rule](../../../workflow.md#scope-and-sizing)
   rather than restating its review-time guidance.
-- Specify that the agent and orchestrator stop adding the expanded scope,
-  describe a parent outcome and independently reviewable child Works, and
-  merge that planning parent before starting child execution.
+- Specify the stop-and-split response for both contexts: for an ad hoc handoff
+  without a Work, create a parent Work and small reviewable child Works; for an
+  existing Work, nest child Works in its hierarchy. Review and merge the
+  planning parent before continuing the expanded scope.
 - Preserve routine implementation choices within the agreed contract and the
   existing exception for explicit maintainer direction to add scope to the
   current PR; this policy must not add an approval gate for ordinary choices.
