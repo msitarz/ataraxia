@@ -31,10 +31,12 @@ human review duration were unavailable.
   evidence while preserving criterion coverage.
 - **TODO** [Workspace preparation](workspace-preparation/README.md): measure
   minimal preparation or safe reuse for docs-only agent workspaces.
+- **TODO** [Tree orchestration](tree-orchestration/README.md): define
+  orchestration roles and review ownership for Work trees.
 
-For the next bounded workflow change, use the already authorized flat
-parent-to-Luna arrangement at low effort, with independent orchestrator review
-and existing human review, merge, and CI gates.
+Use the already authorized direct parent-to-Luna arrangement at low effort at
+each leaf boundary; nodes with children have an orchestrator owner. Preserve
+independent review and existing human review, merge, and CI gates.
 
 ## Comparison
 
@@ -52,11 +54,11 @@ differently sized Works.
 
 ## Acceptance
 
-- **AC-1 TODO** Handoff guidance reflects the scoped findings while retaining
-  worktree isolation, consolidated review, evidence reuse, and independent
-  human and CI gates.
-  Verification: inspect the relevant owner guidance and
-  walk through one parallel and one sequential bounded Work plan.
+- **AC-1 TODO** Handoff and tree-orchestration guidance assign one owner per
+  subtree and leaf, while retaining worktree isolation, evidence reuse,
+  independent review, and human and CI gates.
+  Verification: inspect the owner guidance and walk through a bounded tree
+  with a direct leaf handoff and a child orchestrator.
 - **AC-2 TODO** PR evidence guidance covers CI-covered, manual, and removed
   contract cases, accounts for every criterion, and reports failures, pending,
   unrun, and material limitations accurately.
@@ -74,12 +76,7 @@ differently sized Works.
   Verification: review the
   next iteration's existing PR evidence or trial-contract record against the
   declared basis and available measurements.
-- **AC-5 TODO** The child Works are integrated and the comparison is captured
-  before this parent is completed.
-  Verification: check `master` status for
-  each mapped child and inspect the comparison record.
-
-This plan does not change policy or tooling. Promote lasting rules to their
-owners through the child Works; reconcile consequential delivery-workflow
-choices through the applicable WDR lifecycle without rewriting accepted
-records.
+- **AC-5 TODO** All four child Works are integrated and the bounded comparison
+  is captured before this parent is completed.
+  Verification: check `master` status for each mapped child and inspect the
+  comparison record.
