@@ -9,12 +9,12 @@ names parallel shard execution without specifying its behavioral contract or
 performance comparison. Five-minute individual reviews alone cannot establish
 that total maintainer effort is acceptable.
 
-Deliver [Completion evidence](../completion-evidence/README.md) and the
-[handoff recovery outcome](../README.md#works) first. Revise the live-trial
+Deliver the [completion evidence and handoff recovery outcomes](../README.md#works)
+first. Revise the live-trial
 contract to exercise those outcomes, fresh-agent context discovery, delegated
-implementation, independent review, and maintainer review. Separate workflow
-evaluation from the parallel feature's implementation contract so each delivery
-has a reviewable outcome.
+implementation, independent review, and maintainer review.
+Separate workflow evaluation from the parallel feature's implementation contract
+so each delivery has a reviewable outcome.
 
 ## Acceptance
 
