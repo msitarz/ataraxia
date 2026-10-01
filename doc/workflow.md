@@ -13,6 +13,18 @@ behavior, relationships, or design choices; small changes do not need one.
 Do not require fixed headings, YAML frontmatter, a journal, or separate
 human-facing and agent-facing versions of the same contract.
 
+## Scope and sizing
+
+Give each leaf Work one responsibility and an outcome a maintainer can
+understand and review quickly, aiming for about five minutes of human review.
+When a Work would accumulate unrelated responsibilities or take longer to
+understand, nest independently reviewable child Works under a parent that maps
+their outcomes. Do not push additional scope into a leaf just because it is
+nearby. An explicit maintainer request may add scope to the current Work PR so
+the maintainer can steer that revision; the ordinary manual review and merge
+gates still apply, and the request does not waive the maintainer's manual
+review or merge decision.
+
 ## Lifecycle
 
 A parent README maps its immediate child Works. `TODO` links to an active

@@ -89,12 +89,11 @@ Start each Work branch from current `master` and target its PR to `master`. Only
 an explicit maintainer instruction permits another base and PR target, such as
 for a Prototype or rewrite; identify the exception in the PR.
 
-Keep each delivery small enough for about five minutes of human review. Split
-larger changes into independently reviewable Works. Material changes to an
-approved direction or contract require explicit approval; smaller Works within
-that direction proceed to their own review. The maintainer reviews the current
-PR revision and performs the merge. Agents must not merge without an explicit
-instruction.
+Follow the [Work scope and sizing rules](doc/workflow.md#scope-and-sizing) for
+reviewable deliveries. Material changes to an approved direction or contract
+require explicit approval; smaller Works within that direction proceed to their
+own review. The maintainer reviews the current PR revision and performs the
+merge. Agents must not merge without an explicit instruction.
 
 PRs carry review discussion and rationale. Use the commit subject and concise
 PR description conventions below. Merged PRs and recorded approvals provide
