@@ -15,11 +15,10 @@ too broad for a quick human review into nested Works first,
 following [Work scope and sizing](workflow.md#scope-and-sizing).
 
 Before handoff, assess the complete expected change, including behavior,
-supporting changes, tests, and new concepts, against the human review target.
-Aim for one question or outcome that takes about five minutes of judgment; a
-single responsibility or small diff alone does not guarantee a quick review.
-If the expected review is larger, define independently reviewable child Works
-and review the plan before delegating.
+supporting changes, tests, and new concepts, against the target in
+[Work scope and sizing](workflow.md#scope-and-sizing). If the expected review
+is too large, define independently reviewable child Works and review the plan
+before delegating.
 
 For a Work, its README and linked contracts own acceptance and completion
 criteria. Handoff with the Work path and requested action, adding only steering
