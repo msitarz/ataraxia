@@ -1,25 +1,28 @@
 # PR evidence
 
-Clarify completion evidence in the
-[completion-evidence owner](../../../../../acceptance-tracing.md) and
+Clarify concise PR evidence under the stable
+[acceptance-tracing owner](../../../../../acceptance-tracing.md) and
 [contributor PR guidance](../../../../../../CONTRIBUTING.md#work-branches-review-and-merge).
-The [workflow-efficiency parent map](../README.md#works) tracks the outcome;
-[PR 108](https://github.com/msitarz/ataraxia/pull/108) is the integration
-prerequisite before changing the owner. Work owns requirements; CI owns
-automated results. A PR adds the problem, result, review attention, and evidence
-beyond CI. The owning orchestrator prepares or updates the PR description from
-the reviewed result and Luna's concise local evidence, following permanent
+The [workflow-efficiency parent map](../README.md#works) tracks this outcome.
+The integrated [PR 108](https://github.com/msitarz/ataraxia/pull/108) supplies
+the verified-contract delivery precedent; the mapped
+[GitHub-delivery Work](../README.md#works) owns its commit and publication
+protocol. Work owns requirements; CI owns automated results. A PR adds the
+problem, result, review attention, and evidence beyond CI. The owning
+orchestrator prepares or updates the PR description from the reviewed result
+and Luna's concise local evidence, following permanent
 [orchestrator guidance](../../../../../orchestrator.md) and the mapped
 [handoffs outcome](../README.md#works). Publish the description after review;
 there is no separate Luna PR-writing phase. Consolidate publication, while
 allowing later material corrections or accurate pending/failure updates. Avoid
 fixed headings, templates, and inventories of CI jobs, commands, or hooks.
 
-Account for every acceptance criterion. Link to the original Work by a stable
-PR diff or revision reference that remains usable after its directory is
-removed; include short result context where needed instead of copying each
-full criterion. Avoid routine successful-check inventories; retain concise
-material diagnostics and report failures, pending or unrun checks, and manual
+Account for every acceptance criterion in its retained, verified Work snapshot
+as described by [acceptance tracing](../../../../../acceptance-tracing.md).
+The PR description links to that stable pre-removal contract/evidence snapshot
+and adds short result context where needed; it does not duplicate criterion
+mapping. Avoid routine successful-check inventories; retain concise material
+diagnostics and report failures, pending or unrun checks, and manual
 limitations accurately. Do not remove evidence as a blanket rule.
 
 Clarify WDR status guidance in the
