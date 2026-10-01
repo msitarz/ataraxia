@@ -7,9 +7,9 @@ environments.
 
 Keep locked dependency synchronization, clear missing or stale environment
 failures, hooks and packaging for their actual consumers, offline verification
-promises, and the full audit intact. The existing
-[CI-preparation Work](../../ci-preparation/README.md) owns CI recipe
-optimization. Declare the dependency and order for overlapping Make edits:
+promises, and the full audit intact. The trial-preparation map tracks the
+existing CI-preparation outcome; [Make](../../../../../../Makefile) owns its
+recipes. Declare the dependency and order for overlapping Make edits:
 deliver CI preparation first or explicitly coordinate changes. Do not create a
 second CI optimizer. Measure cold and warm preparation where meaningful; do
 not promise unmeasured gains.

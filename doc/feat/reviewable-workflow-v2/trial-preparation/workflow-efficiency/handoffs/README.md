@@ -25,8 +25,7 @@ gates.
 - **AC-1 TODO** Owner guidance implements the handoff outcomes above, including
   prompt bounded execution, distinct layer responsibilities, edit-surface
   aware parallelization, and shared-reference coordination.
-  Verification: walk through
-  walk through a bounded parallel plan and inspect the resulting handoff.
+  Verification: inspect a bounded parallel plan and its resulting handoff.
 - **AC-2 TODO** The return includes observed acceptance evidence and usable PR
   prose, and the reviewer reuses it while completing one consolidated review.
   Verification: inspect a completed handoff, its cited checks, and the
