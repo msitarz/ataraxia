@@ -44,11 +44,10 @@ verification method. It does not inspect test results or query CI. Missing
 coverage remains `TODO`; document non-test methods beside the relevant AC.
 
 When a temporary probe is removed while its acceptance criterion remains
-active, keep that criterion covered by stating the one-time verification method
-and linking the delivery PR beside the criterion. The PR records the observed
-result and removal rationale. The method is adoption evidence, not continuing
-regression coverage, and lets coverage checks find the evidence without marking
-the criterion incomplete.
+active, follow [test ownership](../../../../../test-ownership.md) for the
+one-time verification method and delivery PR reference to place beside that
+criterion. This adoption evidence lets coverage checks find the method without
+claiming continuing regression coverage.
 
 When a delivery PR removes a Work directory, check its deleted contract against
 the tests and other verification methods in that PR. Keep markers and docstrings

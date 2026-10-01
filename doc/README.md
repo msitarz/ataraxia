@@ -17,6 +17,7 @@ relevant guidance.
 | A Work's local outcome and acceptance contract            | The relevant Work README                                                                                                                      |
 | ADR eligibility, format, and amendments                   | [ADR workflow](adr-workflow.md)                                                                                                               |
 | Coding, typing, and testing conventions                   | [Engineering](engineering.md)                                                                                                                 |
+| Test ownership and cleanup                                | [Test ownership](test-ownership.md)                                                                                                           |
 | Setup, toolchain, contribution, commit, and PR rules      | [CONTRIBUTING.md](../CONTRIBUTING.md)                                                                                                         |
 | Choosing checks and reporting validation evidence         | [Validation](validation.md)                                                                                                                   |
 | Markdown formatting and local-link checks                 | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml)                                                                      |

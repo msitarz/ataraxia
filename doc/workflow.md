@@ -27,9 +27,8 @@ child directory in the same PR. Before removing a finished Work, promote
 lasting contracts and decisions to their authoritative owners. PRs hold review
 discussion; Git preserves removed contracts and exact changes.
 
-Before completing a Work, review tests added during it. Follow
-[test ownership](engineering.md#test-ownership) for what to retain or remove
-and what to record in the delivery PR.
+Before completing a Work, review tests added during it. Read
+[test ownership](test-ownership.md) when completing a Work.
 
 Discovery may add children without maintaining a fixed execution list. Nest
 when it reduces necessary context; strongly discourage more than five levels.

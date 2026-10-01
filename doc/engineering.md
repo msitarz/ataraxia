@@ -113,14 +113,4 @@ Use integration tests for real strategy loading and acceptance tests for CLI
 output/artifacts.
 
 Follow the [validation policy](validation.md) for focused and required checks.
-
-### Test ownership
-
-When completing a Work, review the purpose of tests added during it. Remove
-temporary adoption probes that only verify upstream behavior. Retain tests for
-our integration, contracts, and concrete compatibility regressions, including
-tests that exercise a dependency through our own boundary. Record removed
-probes, the one-time verification method and result, and the removal rationale
-in the delivery PR. A removed probe is adoption evidence, not continuing
-regression coverage; its code and the recorded result remain available in Git
-history and the PR.
+For test ownership and cleanup, read [Test ownership](test-ownership.md).
