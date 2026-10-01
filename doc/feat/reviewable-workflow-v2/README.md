@@ -23,6 +23,6 @@ contracts, child discovery, status, and lifecycle.
 - **TODO** [Workflow Decision Records](workflow-decision-records/README.md):
   establish a lightweight workflow and inventory for consequential
   delivery-workflow decisions.
-- **DONE** Orchestrator handoffs — established role-triggered Luna delegation,
-  review corrections, and maintainer gates in
+- **DONE** Orchestrator handoffs — established role-triggered Luna change
+  delegation, review corrections, and maintainer gates in
   [orchestrator guidance](../../orchestrator.md).
