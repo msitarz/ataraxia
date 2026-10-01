@@ -105,11 +105,10 @@ merge. Agents must not merge without an explicit instruction.
 
 PRs carry review discussion and rationale. Use the commit subject and concise
 PR description conventions below. Merged PRs and recorded approvals provide
-durable decisions across sessions. Remove merged remote and local branches when
-no dependent PR needs them. After deleting a merged Work branch, remove empty
-local Work directories left by completed Works; preserve active or nonempty
-directories. Retained branches and GitHub status queries are not routine Work
-tracking; use the [Work lifecycle](doc/workflow.md) for parent status rules.
+durable decisions across sessions. After the maintainer confirms a Work PR
+merged, follow [post-merge branch cleanup](doc/branch-cleanup.md). Retained
+branches and GitHub status queries are not routine Work tracking; use the
+[Work lifecycle](doc/workflow.md) for parent status rules.
 
 ## Commits and pull requests
 
