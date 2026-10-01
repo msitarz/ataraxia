@@ -15,9 +15,8 @@ success criteria.
 
 ## Works
 
-- **TODO** [Completion evidence](completion-evidence/README.md): require
-  applicable checks, recorded per-criterion outcomes, and a preserved final
-  contract-removal commit.
+- **DONE** Completion evidence: verified per-criterion outcomes are recorded
+  with the retained Work commit; removal and parent update are separate.
 - **DONE** Handoff recovery: added return evidence, interrupted-session
   recovery, and scope-growth and stalled-correction stopping rules to
   [orchestrator guidance](../../../orchestrator.md); rationale is recorded in
