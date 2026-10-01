@@ -43,11 +43,12 @@ ACs and that each `DONE` criterion has test coverage or an explicit non-test
 verification method. It does not inspect test results or query CI. Missing
 coverage remains `TODO`; document non-test methods beside the relevant AC.
 
-When a Work removes a temporary probe, record its one-time verification method,
-observed result, and removal rationale in the delivery PR. The PR is the durable
-reference for this adoption evidence; the removed probe is not continuing
-regression coverage. This avoids falsely marking acceptance coverage
-incomplete.
+When a temporary probe is removed while its acceptance criterion remains
+active, keep that criterion covered by stating the one-time verification method
+and linking the delivery PR beside the criterion. The PR records the observed
+result and removal rationale. The method is adoption evidence, not continuing
+regression coverage, and lets coverage checks find the evidence without marking
+the criterion incomplete.
 
 When a delivery PR removes a Work directory, check its deleted contract against
 the tests and other verification methods in that PR. Keep markers and docstrings
