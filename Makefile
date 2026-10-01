@@ -10,25 +10,48 @@ help: ## display this command index
 	@awk 'BEGIN { FS = ":.*##" } \
 		/^##@/ { if (section++) printf "\n"; printf "%s\n", substr($$0, 5); next } \
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
-	@echo "Prefer Make targets; direct tool invocation is allowed for targeted tests or diagnostics that existing targets do not expose."
+	@echo "Run project tools through Make targets; use ARGS=repo/path for focused checks."
+
+singlequote := '
+# Quote caller selectors as literal, whitespace-separated shell words.
+_SHELL_WORDS = $(foreach arg,$(1),'$(subst $(singlequote),'"'"',$(arg))')
+_ARGS = $(call _SHELL_WORDS,$(ARGS))
+_CLI_ARGS = $(call _SHELL_WORDS,$(CLI_ARGS))
+_TARGET_PATHS = $(if $(strip $(ARGS)),$(_ARGS),.)
+ifneq ($(filter -%,$(ARGS)),)
+$(error ARGS accepts paths, not options)
+endif
 
 .PHONY: setup
 setup: ci-setup ## install development dependencies and hooks
 	uv run --no-sync prek install --hook-type pre-commit --hook-type commit-msg
 	@echo "✓ Dev environment ready. Run 'make verify' to verify offline."
 
-.PHONY: lint
-lint: ## lint and automatically apply fixes
-	uv run ruff check . --fix
+.PHONY: lint lint-check
+lint: ## lint and apply fixes; ARGS=paths narrows the files
+	uv run ruff check $(_TARGET_PATHS) --fix
 
-.PHONY: format
-format: ## format project files
-	uv run ruff format .
+lint-check: ## check lint without fixes; ARGS=paths narrows the files
+	uv run ruff check $(_TARGET_PATHS)
 
-.PHONY: typecheck
-typecheck: ## run type checks
+.PHONY: format format-check
+format: ## format project files; ARGS=paths narrows the files
+	uv run ruff format $(_TARGET_PATHS)
+
+format-check: ## check formatting; ARGS=paths narrows the files
+	uv run ruff format --check $(_TARGET_PATHS)
+
+.PHONY: typecheck typecheck-expectations
+typecheck: ## type-check source; default also checks all expectations
+ifneq ($(strip $(ARGS)),)
+	uv run pyrefly check $(_ARGS)
+else
 	uv run pyrefly check
-	uv run pyrefly check --expectations test/typecheck/*.py
+	$(MAKE) typecheck-expectations ARGS=
+endif
+
+typecheck-expectations: ## type-check assertion cases; ARGS=paths narrows the files
+	uv run pyrefly check --expectations $(if $(strip $(ARGS)),$(_ARGS),test/typecheck/*.py)
 
 .PHONY: arch-check
 arch-check: ## check architecture boundaries
@@ -39,8 +62,8 @@ arch-check: ## check architecture boundaries
 doc-check doc-format: export UV_OFFLINE := true
 doc-check doc-format: export UV_NO_SYNC := true
 
-_DOC_PATHS = $(if $(strip $(ARGS)),$(ARGS),.)
-_DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(ARGS) .,.)
+_DOC_PATHS = $(_TARGET_PATHS)
+_DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(_ARGS) . ,.)
 
 doc-check: ## check Markdown formatting and local links (read only)
 	uv run rumdl check $(_DOC_GRAPH_PATHS)
@@ -50,8 +73,24 @@ doc-format: ## format Markdown; ARGS selects files or directories
 	uv run rumdl fmt $(_DOC_PATHS)
 
 .PHONY: test
-test: ## run tests with coverage
+test: ## run full tests with coverage; ARGS=paths runs a focused selection
+ifeq ($(strip $(ARGS)),)
 	uv run pytest --cov
+else
+	uv run pytest $(_ARGS)
+endif
+
+.PHONY: run deps-lock
+run: ## run the project CLI; CLI_ARGS='options and values'
+ifeq ($(strip $(CLI_ARGS)),)
+	@echo "Set CLI_ARGS to the CLI options to run." >&2
+	@exit 2
+else
+	uv run ataraxia $(_CLI_ARGS)
+endif
+
+deps-lock: ## update uv.lock after dependency changes
+	uv lock
 
 .PHONY: ac-collect ac-test
 ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
@@ -79,16 +118,16 @@ verify-setup: ## check the prepared environment without network access
 
 verify-check: ## run static checks offline
 	uv run prek run --all-files check-yaml check-merge-conflict detect-private-key
-	uv run ruff check .
-	uv run ruff format --check .
-	$(MAKE) doc-check
-	$(MAKE) typecheck
+	$(MAKE) lint-check ARGS=
+	$(MAKE) format-check ARGS=
+	$(MAKE) doc-check ARGS=
+	$(MAKE) typecheck ARGS=
 	$(MAKE) arch-check
 verify-test: ## run tests offline
-	$(MAKE) test
+	$(MAKE) test ARGS=
 
 verify-examples: ## run example tests offline
-	uv run pytest example/
+	$(MAKE) test ARGS=example/
 
 verify-package: ## build and smoke-test a temporary package install
 	uv run python script/smoke_installed_package.py

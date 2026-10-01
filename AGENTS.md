@@ -18,7 +18,7 @@ its relevant README and linked contracts.
 | Work acceptance coverage | [Acceptance tracing](doc/acceptance-tracing.md) |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
-| Running project tools | Run `make help` first. |
+| Running project tools | Run `make help` first; invoke project tools through Make targets. |
 | Setup, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Choosing checks or reporting validation evidence | [Validation policy](doc/validation.md) |
 | CI jobs | [CI workflow](.github/workflows/ci.yml) |
