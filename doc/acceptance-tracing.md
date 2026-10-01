@@ -27,14 +27,23 @@ def test_inbound_links(): ...
 ```
 
 Repeat the decorator when a test covers multiple criteria. Include the covered
-criterion text in the test docstring. Collect matching tests without running
-them:
+criterion text in the test docstring.
+
+## Collecting and running selected tests
+
+Use the Make targets to list or run tests for an owning Work file. `WORK` is
+required and must be the repository-relative path to its `README.md` or
+`spec.md`. Omitting `AC` selects every marked criterion for that Work; setting
+it narrows the selection to one criterion:
 
 ```sh
-uv run pytest --collect-only -q \
-  -m "covers(work='doc/feat/example/README.md', ac='AC-8')"
+make ac-collect WORK=doc/feat/example/README.md
+make ac-collect WORK=doc/feat/example/README.md AC=AC-8
+make ac-test WORK=doc/feat/example/README.md AC=AC-8
 ```
 
-Remove `--collect-only` to run the selected tests. Use pytest and existing
-targeted-test tooling; do not introduce Gherkin, another runner, or a custom
-selection plugin.
+`ac-collect` lists selected tests without running them; `ac-test` runs them.
+Both return a nonzero status when no tests match. Criteria verified by manual
+or other non-test methods remain documented in the Work and are outside these
+targets. Use pytest and existing targeted-test tooling; do not introduce
+Gherkin, another runner, or a custom selection plugin.

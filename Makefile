@@ -53,6 +53,13 @@ doc-format: ## format Markdown; ARGS selects files or directories
 test: ## run tests with coverage
 	uv run pytest --cov
 
+.PHONY: ac-collect ac-test
+ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
+	uv run python script/acceptance_tests.py collect
+
+ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
+	uv run python script/acceptance_tests.py test
+
 .PHONY: clean
 clean: ## remove the virtual environment and test/lint caches
 	rm -rf .venv .ruff_cache .pytest_cache .coverage
