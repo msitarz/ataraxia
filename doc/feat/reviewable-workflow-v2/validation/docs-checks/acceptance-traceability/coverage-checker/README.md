@@ -1,7 +1,7 @@
 # Coverage checker
 
 Implement a small checker for coverage declarations on active Work contracts.
-Use the [pytest tracing conventions](../pytest-tracing/README.md); do not
+Use [acceptance tracing](../../../../../../acceptance-tracing.md); do not
 redefine marker or TODO/DONE syntax.
 
 ## Acceptance

@@ -5,8 +5,9 @@ verification methods, without confusing coverage with results or approval.
 
 ## Child Works
 
-- **TODO** [Pytest tracing](pytest-tracing/README.md): establish strict,
-  file-scoped acceptance markers and the TODO/DONE coverage convention.
+- **DONE** Pytest tracing — established strict, file-scoped acceptance markers,
+  the TODO/DONE coverage convention, and test lookup in
+  [acceptance tracing](../../../../../acceptance-tracing.md).
 - **TODO** [Coverage checker](coverage-checker/README.md): validate active
   references and coverage, including explicit non-test methods and historical
   markers. This depends on the tracing conventions.
