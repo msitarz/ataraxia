@@ -20,6 +20,7 @@ relevant guidance.
 | Workflow decision eligibility, routing, and index | [WDR workflow](wdr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
+| Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
 | Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Choosing checks and reporting validation evidence | [Validation](validation.md) |
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
