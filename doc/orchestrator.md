@@ -24,7 +24,15 @@ background instead of forwarding the full conversation by default.
 Check the changes against acceptance and owner guidance, then verify the
 appropriate evidence. Send concrete findings to the same Luna session and
 repeat until resolved. Reusing context may help token caching, but caching is
-not guaranteed. If Luna is unavailable, report it to the maintainer and wait
-for direction; do not silently switch agents or make the delegated changes as a
-fallback. Agent review does not replace the maintainer's manual review and
-merge decision.
+not guaranteed.
+
+When Luna completes the handoff, the orchestrator may review the branch
+directly or create a draft PR. Draft means the delegated changes are complete
+and await orchestrator review. After the independent review and correction loop
+pass, the orchestrator marks the PR ready for review. Ready means agent review
+passed and maintainer review is requested; it does not imply maintainer approval
+or merge, or successful CI. The maintainer retains the final review and merge
+decision.
+
+If Luna is unavailable, report it to the maintainer and wait for direction; do
+not silently switch agents or make the delegated changes as a fallback.
