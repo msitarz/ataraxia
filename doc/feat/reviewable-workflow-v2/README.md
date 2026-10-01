@@ -1,7 +1,7 @@
 # Reviewable workflow
 
-Build a delivery workflow around small PRs that the maintainer can inspect in
-about five minutes, discuss, and steer. See
+Build a delivery workflow around bounded Works that the maintainer can inspect,
+discuss, and steer. See
 [Work lifecycle and contracts](../../workflow.md) for Work directories, local
 contracts, child discovery, status, and lifecycle.
 
@@ -21,4 +21,7 @@ contracts, child discovery, status, and lifecycle.
   resolve active legacy guidance and preserve useful history as Works become
   authoritative.
 - **TODO** [Workflow Decision Records](workflow-decision-records/README.md):
-  define a lightweight way to record consequential delivery-workflow decisions.
+  establish a lightweight workflow and inventory for consequential
+  delivery-workflow decisions.
+- **TODO** [Orchestrator handoffs](orchestrator-handoffs/README.md): define how
+  orchestrators delegate implementation to Luna and review corrections.
