@@ -24,18 +24,19 @@ evidence does not show that setup dominated elapsed time. Token cost and actual
 human review duration were unavailable.
 
 For the later #107/#108 WDR-status and index amendment, one direct Luna session
-handled both worktrees sequentially without an intermediate Sol. The result
-was assessed as correct (9/10); efficiency was rated 5/10. Earlier reviewed
-heads had passing CI, root reused their check evidence, and the later
-documentation-only revisions passed doc checks; CI on the amended heads was
-pending. Each PR accumulated three commits. The work also needed an avoidable
-shared-index introduction correction, repeated documentation checks after
-revisions, repeated PR-description edits, and an early delegated metadata
-edit. Each branch added an Accepted index entry from the same base, so after
-the first merge the other branch needs rebase and index integration. See the
+handled both worktrees sequentially without an intermediate Sol. The result was
+assessed as correct (9/10); efficiency was rated 5/10. Both amended heads passed
+full CI ([#107](https://github.com/msitarz/ataraxia/actions/runs/36914292980),
+[#108](https://github.com/msitarz/ataraxia/actions/runs/36914277725)); root
+reused Luna's local check evidence. Each PR accumulated three commits. The work
+also needed an avoidable shared-index introduction correction, repeated
+documentation checks after revisions, repeated PR-description edits, and an
+early delegated metadata edit. Each branch added an Accepted index entry from
+the same base, so after the first merge the other branch must rebase and
+integrate the index. See the
 [latest #107 revision](https://github.com/msitarz/ataraxia/commit/c48b3663e32c59862ef7cfc5b761fc6a9fcdbd8e)
 and
-[#108 revision](https://github.com/msitarz/ataraxia/commit/2bbdd12d8fd39827b8f5650a6db0f211e3ee325f8).
+[#108 revision](https://github.com/msitarz/ataraxia/commit/2bbdd12d8fd39827b8f5650a6db0f211e3ee325f).
 These are qualitative observations: no exact elapsed time, token use, or cost
 was recorded for this small update. They do not establish a controlled
 comparison or prove a flatter topology is faster.
@@ -60,10 +61,11 @@ independent review and existing human review, merge, and CI gates.
 Use the existing [trial contract](../trial-contract/README.md) as evaluation
 owner. Before the next comparison, state the scope, measurement method, and
 success or reconsideration basis. Record dispatch, executor start, completed
-artifact, and PR-ready times; corrections and their causes; avoidable repeated
-checks; reporting and preparation effort; human interventions; and human
-review time or cost when available. Put concise results in existing PR
-evidence or the trial contract, without a per-revision journal or template.
+artifact, and PR-ready times; commit batches; PR-description edits; corrections
+and their causes; avoidable repeated checks; reporting and preparation effort;
+human interventions; and human review time or cost when available. Put concise
+results in existing PR evidence or the trial contract, without a per-revision
+journal or template.
 
 Separate observed outcomes from candidate rules and note missing or
 incomparable measurements. Do not infer a topology speedup from these

@@ -5,12 +5,16 @@ changes, then promote lasting guidance to
 [orchestrator handoffs](../../../../../orchestrator.md) and the relevant WDR
 process.
 
-Assess bounded scope and review size, then start the executor promptly. Before
-handoff, identify dependencies, shared owners, maps, and indexes; coordinate
-exact shared wording, formatter-valid snippets, and reserved WDR numbers where
-needed. Consider integration effects and expected shared edits. If overlap is
-unavoidable, sequence the Works or name the remaining merge resolution; do not
-invent index categories or ordering just to hide a conflict.
+Assess bounded scope and review size and identify required dependencies and
+shared edit surfaces before handoff, then start the executor promptly. The
+reviewer may read remaining context during execution when that does not defer
+necessary integration preflight. Coordinate shared owners, maps, indexes,
+exact wording, formatter-valid snippets, and reserved WDR numbers where needed.
+Consider integration effects. If overlap is unavoidable, sequence the Works
+or name the remaining merge resolution; do not invent index categories or
+ordering just to hide a conflict. The
+[parent map](../README.md#works) tracks child order; deliver tree-orchestration
+before handoffs when both edit the orchestrator owner.
 
 Promote this ownership boundary to permanent
 [orchestrator guidance](../../../../../orchestrator.md): Luna implements,
@@ -22,8 +26,8 @@ consolidated correction batch in the same session when needed. Only after that
 review does the orchestrator push, open or update the PR, mark it ready for
 maintainer review, and maintain its description and metadata. For amendments
 to existing PRs, the orchestrator reviews local changes before pushing or
-editing the description. Ready
-requests maintainer review; CI may still be pending. Readiness does not imply
+editing the description. Ready requests maintainer review; CI may still be
+pending. Readiness does not imply
 approval, and the maintainer retains merge control.
 
 Preserve worktree isolation and avoid repeating a full leaf review at each
@@ -41,12 +45,14 @@ every layer. Topology and review ownership follow the
   responsibilities.
   Verification: walk through a bounded new PR and an
   existing-PR amendment, including a shared index dependency, from handoff
-  through maintainer review.
+  through maintainer review; verify any tree-orchestration dependency is
+  delivered first when it shares the owner.
 - **AC-2 TODO** The owning orchestrator reuses Luna's acceptance evidence and
   sends one consolidated correction batch when needed; CI and human merge gates
   remain, with readiness not implying approval or completed CI.
   Verification: inspect one completed handoff and PR flow, checking evidence
-  reuse, reruns after changes only, and the ready-but-CI-pending state.
+  reuse, reruns only when a change, failure, or unresolved concern warrants
+  them, and the ready-but-CI-pending state.
 - **AC-3 TODO** Durable topology, handoff, and PR-ownership rules are promoted
   to their authoritative owners while preserving worktree isolation and
   maintainer control.
