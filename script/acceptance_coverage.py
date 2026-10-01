@@ -91,6 +91,31 @@ def _criterion_block(
     return block
 
 
+def _verification_for_criterion(
+    block: list[str], work: str, line_number: int, ac: str
+) -> tuple[bool, list[str]]:
+    """Validate the optional non-test verification annotation for one criterion.
+
+    Returns:
+        Whether a non-empty verification method is declared and any errors.
+    """
+    annotations = [
+        annotation.group(1).strip()
+        for candidate in block
+        if (annotation := _VERIFICATION.match(candidate))
+    ]
+    errors: list[str] = []
+    if any(not annotation for annotation in annotations):
+        errors.append(
+            f"{work}:{line_number}: {ac} Verification annotation needs a method"
+        )
+    if len(annotations) > 1:
+        errors.append(
+            f"{work}:{line_number}: {ac} has multiple Verification annotations"
+        )
+    return any(annotations), errors
+
+
 def parse_criteria(text: str, work: str) -> tuple[dict[str, Criterion], list[str]]:
     """Parse canonical AC list items and explicit non-test annotations.
 
@@ -121,21 +146,10 @@ def parse_criteria(text: str, work: str) -> tuple[dict[str, Criterion], list[str
 
         indent = len(line) - len(line.lstrip(" "))
         block = _criterion_block(lines, index, indent)
-        annotations = [
-            value.strip()
-            for candidate in block
-            if (annotation := _VERIFICATION.match(candidate))
-            for value in [annotation.group(1)]
-        ]
-        has_verification = any(annotations)
-        if any(not annotation for annotation in annotations):
-            errors.append(
-                f"{work}:{line_number}: {ac} Verification annotation needs a method"
-            )
-        if len(annotations) > 1:
-            errors.append(
-                f"{work}:{line_number}: {ac} has multiple Verification annotations"
-            )
+        has_verification, annotation_errors = _verification_for_criterion(
+            block, work, line_number, ac
+        )
+        errors.extend(annotation_errors)
         criteria[ac] = Criterion(status, has_verification)
 
     if not declarations:
@@ -170,6 +184,62 @@ def _test_functions(tree: ast.Module) -> list[ast.FunctionDef | ast.AsyncFunctio
     return functions
 
 
+def _test_candidate_files(test_root: Path) -> list[Path]:
+    """Return repository test files that may contain collected test functions."""
+    return sorted(
+        path
+        for path in test_root.rglob("*.py")
+        if path.name.startswith("test_") or path.name.endswith("_test.py")
+    )
+
+
+def _read_test_module(path: Path, root: Path) -> tuple[ast.Module | None, str | None]:
+    """Read and parse one test source.
+
+    Returns:
+        The parsed module and no error, or no module and a contextual error.
+    """
+    relative = path.relative_to(root).as_posix()
+    try:
+        return ast.parse(path.read_text(encoding="utf-8"), filename=relative), None
+    except (OSError, SyntaxError) as exc:
+        return None, f"{relative}: cannot inspect marker declarations: {exc}"
+
+
+def _selected_marker_criterion(
+    decorator: ast.Call, relative: str, work: str
+) -> tuple[str | None, str | None]:
+    """Validate one marker and return its criterion when it selects this Work.
+
+    Returns:
+        The selected criterion and no error, or no criterion and an error.
+    """
+    marker = f"{relative}:{decorator.lineno}"
+    work_args = [item.value for item in decorator.keywords if item.arg == "work"]
+    if len(work_args) != 1 or (selected_work := _literal_string(work_args[0])) is None:
+        return None, f"{marker}: covers marker needs one literal work path"
+    if selected_work != work:
+        return None, None
+
+    ac_args = [item.value for item in decorator.keywords if item.arg == "ac"]
+    has_unpacking = any(item.arg is None for item in decorator.keywords)
+    known_names = {"work", "ac"}
+    unsupported = (
+        decorator.args
+        or has_unpacking
+        or any(item.arg not in known_names for item in decorator.keywords)
+        or len(ac_args) != 1
+    )
+    if unsupported or (ac := _literal_string(ac_args[0])) is None:
+        return (
+            None,
+            f"{marker}: selected covers marker needs literal work and ac strings",
+        )
+    if not _AC_ID.fullmatch(ac):
+        return None, f"{marker}: invalid criterion ID {ac!r}"
+    return ac, None
+
+
 def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
     """Count literal covers markers for one Work across repository tests.
 
@@ -182,15 +252,13 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
     if not test_root.is_dir():
         return counts, errors
 
-    for path in sorted(test_root.rglob("*.py")):
-        if not (path.name.startswith("test_") or path.name.endswith("_test.py")):
-            continue
+    for path in _test_candidate_files(test_root):
         relative = path.relative_to(root).as_posix()
-        try:
-            tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative)
-        except (OSError, SyntaxError) as exc:
-            errors.append(f"{relative}: cannot inspect marker declarations: {exc}")
+        tree, read_error = _read_test_module(path, root)
+        if read_error:
+            errors.append(read_error)
             continue
+        assert tree is not None
 
         for function in _test_functions(tree):
             for decorator in function.decorator_list:
@@ -198,43 +266,37 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
                     decorator
                 ):
                     continue
-                marker = f"{relative}:{decorator.lineno}"
-                work_args = [
-                    item.value for item in decorator.keywords if item.arg == "work"
-                ]
-                if (
-                    len(work_args) != 1
-                    or (selected_work := _literal_string(work_args[0])) is None
-                ):
-                    errors.append(
-                        f"{marker}: covers marker needs one literal work path"
-                    )
-                    continue
-                if selected_work != work:
-                    continue
-
-                ac_args = [
-                    item.value for item in decorator.keywords if item.arg == "ac"
-                ]
-                has_unpacking = any(item.arg is None for item in decorator.keywords)
-                known_names = {"work", "ac"}
-                unsupported = (
-                    decorator.args
-                    or has_unpacking
-                    or any(item.arg not in known_names for item in decorator.keywords)
-                    or len(ac_args) != 1
-                )
-                if unsupported or (ac := _literal_string(ac_args[0])) is None:
-                    errors.append(
-                        f"{marker}: selected covers marker needs literal work "
-                        "and ac strings"
-                    )
-                    continue
-                if not _AC_ID.fullmatch(ac):
-                    errors.append(f"{marker}: invalid criterion ID {ac!r}")
+                ac, marker_error = _selected_marker_criterion(decorator, relative, work)
+                if marker_error:
+                    errors.append(marker_error)
+                if ac is None:
                     continue
                 counts[ac] = counts.get(ac, 0) + 1
     return counts, errors
+
+
+def _criterion_coverage(
+    work: str, ac: str, criterion: Criterion, marker_count: int
+) -> tuple[str | None, str]:
+    """Return one criterion's missing-coverage error and report line."""
+    if (
+        criterion.status == "DONE"
+        and not marker_count
+        and not criterion.has_verification
+    ):
+        error = (
+            f"{work}: {ac} is DONE without a matching test marker or "
+            "Verification method"
+        )
+    else:
+        error = None
+    if marker_count:
+        coverage = f"{marker_count} test marker(s)"
+    elif criterion.has_verification:
+        coverage = "Verification method declared"
+    else:
+        coverage = "coverage missing"
+    return error, f"{ac} {criterion.status}: {coverage}"
 
 
 def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
@@ -253,23 +315,10 @@ def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
 
     reports: list[str] = []
     for ac, criterion in criteria.items():
-        marker_count = markers.get(ac, 0)
-        if (
-            criterion.status == "DONE"
-            and not marker_count
-            and not criterion.has_verification
-        ):
-            errors.append(
-                f"{work}: {ac} is DONE without a matching test marker or "
-                "Verification method"
-            )
-        if marker_count:
-            coverage = f"{marker_count} test marker(s)"
-        elif criterion.has_verification:
-            coverage = "Verification method declared"
-        else:
-            coverage = "coverage missing"
-        reports.append(f"{ac} {criterion.status}: {coverage}")
+        error, report = _criterion_coverage(work, ac, criterion, markers.get(ac, 0))
+        if error:
+            errors.append(error)
+        reports.append(report)
     return errors, reports
 
 
