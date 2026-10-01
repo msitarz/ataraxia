@@ -16,8 +16,10 @@ Completion means:
   consequential-decision threshold and write an initial retrospective set of
   WDRs. Explain the selection; do not create a record for every candidate or
   imply that a candidate was separately approved.
-- Link to permanent WDR policy documents, not this planning Work's temporary
-  child README. On completion, update this Work's parent map to `DONE` with the
+- Link to the permanent [WDR workflow](../../../../wdr-workflow.md),
+  [shared record format](../../../../decision-records.md), and [WDR
+  index](../../../../wdr/README.md), not this planning Work's temporary child
+  README. On completion, update this Work's parent map to `DONE` with the
   delivered outcome and remove this child directory in the same PR, following
   the [Work lifecycle](../../../../workflow.md).
 

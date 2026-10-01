@@ -17,6 +17,7 @@ its relevant README and linked contracts.
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
+| Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
 | Running project tools | Run `make help` first. |
 | Setup, branches, commits, or pull requests | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Choosing checks or reporting validation evidence | [Validation policy](doc/validation.md) |

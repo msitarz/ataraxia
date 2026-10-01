@@ -8,10 +8,10 @@ turning each finding into an accepted decision.
 
 ## Works
 
-- **TODO** [Create the WDR workflow](workflow/README.md): define eligibility,
-  routing, record lifecycle, and its relationship to the shared ADR/WDR record
-  format. On delivery, retain a link to the permanent policy owner here and
-  remove the child directory.
+- **DONE** [Create the WDR workflow](../../../wdr-workflow.md): established
+  eligibility, routing, and lifecycle, with a shared
+  [ADR/WDR record format](../../../decision-records.md) and [WDR
+  index](../../../wdr/README.md).
 - **TODO** [Inventory workflow findings](inventory/README.md): classify the
   existing findings and candidate decisions, then select and record qualifying
   retrospective WDRs without implying that every candidate needs one.
