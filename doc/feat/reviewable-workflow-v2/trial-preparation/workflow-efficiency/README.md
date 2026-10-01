@@ -64,6 +64,9 @@ general duplication rule.
   guidance as a whole and consolidate repeated explanations within owners.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
+- **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): investigate
+  when documentation and code leaf tasks warrant Luna low, Luna medium, or Sol
+  low.
 
 Use the already authorized direct parent-to-Luna arrangement at low effort at
 each leaf boundary; nodes with children have an orchestrator owner. Preserve
