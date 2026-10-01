@@ -31,5 +31,5 @@ contracts, child discovery, status, and lifecycle.
 - **TODO** [Human review effort](human-review-effort/README.md): make reviewer
   effort part of Work sizing and add orchestrator checkpoints before handoff and
   before requesting human review.
-- **TODO** [Function-size guardrails](function-size-guardrails/README.md): add
-  advisory and blocking function-size feedback through existing lint workflows.
+- **DONE** Function-size guardrails — added advisory and blocking Ruff
+  statement-count checks to the existing Make lint workflows.

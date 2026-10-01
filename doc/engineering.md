@@ -20,7 +20,10 @@ strict Pyrefly and add `# SPDX-License-Identifier: Apache-2.0` to new source
 files.
 
 - Prefer function composition, focused functions, guard clauses, and early
-  returns. Roughly 25 executable lines is a review signal; extract cohesive
+  returns. Ruff's PLR0915 counts statements in source, scripts, and tests:
+  26–50 statements are advisory and more than 50 blocks lint. Treat about 25
+  statements as a review signal; these counts guide readability review, not
+  function shape. Don't split code only to lower a count. Extract cohesive
   helpers that improve readability.
 - Inject dependencies through arguments or constructor/dataclass fields. Tests
   use the same points with small fakes/stubs. Only if injection is impractical
