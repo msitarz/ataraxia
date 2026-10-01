@@ -85,9 +85,11 @@ after this recovery; it must return the recovered state and evidence with its
 result.
 
 If implementation reveals work outside the assigned contract, stop before
-expanding scope and report the finding, evidence, and a bounded proposed scope
-for approval. Do not change delegated agent or reasoning effort without the
-maintainer's approval. For corrections, send one consolidated finding list to
+expanding scope and report the finding and evidence. Apply the stop-and-split
+rule above when it adds an independent responsibility or exceeds the review
+target. Preserve the stated maintainer scope exception; higher reasoning effort
+or a different delegated agent still needs the maintainer's explicit approval.
+For corrections, send one consolidated finding list to
 the same Luna session and wait for a corrected result or blocker. If the same
 finding remains unresolved after a correction attempt, or the session cannot
 continue, stop the loop and report attempts, current evidence, and the specific

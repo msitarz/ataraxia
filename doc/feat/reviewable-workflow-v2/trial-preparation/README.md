@@ -20,7 +20,7 @@ success criteria.
 - **DONE** Handoff recovery: added return evidence, interrupted-session
   recovery, and scope-growth and stalled-correction stopping rules to
   [orchestrator guidance](../../../orchestrator.md); rationale is proposed in
-  [WDR 9](../../../wdr/0009-recover-delegated-handoffs.md).
+  [WDR 10](../../../wdr/0010-recover-delegated-handoffs.md).
 - **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
   decision status, contract authority, and contributor examples.
 - **DONE** Acceptance tool scope: added support for
