@@ -5,12 +5,13 @@ gaps in acceptance evidence, handoff recovery, guidance consistency, acceptance
 tool scope, and CI feedback. Address them before starting the
 [Live trial](../live-trial/README.md).
 
-The current acceptance checker validates declarations rather than completed
-outcomes; completion deletes the contract that the tools require. Handoffs have
-no defined return or recovery procedure. Decision statuses and entry-point
-instructions disagree. Acceptance tools omit example tests, while CI delays the
-main tests behind the network audit and repeats preparation across jobs. The
-live trial itself lacks acceptance declarations and measurable success criteria.
+At review time, the acceptance checker validated declarations rather than
+completed outcomes, and completion deleted the contract its tools required.
+Handoffs had no defined return or recovery procedure. Decision statuses and
+entry-point instructions disagreed. Acceptance tools omitted example tests, and
+CI delayed the main tests behind the network audit and repeated preparation
+across jobs. The live trial lacked acceptance declarations and measurable
+success criteria.
 
 ## Works
 
@@ -21,8 +22,8 @@ live trial itself lacks acceptance declarations and measurable success criteria.
   steering.
 - **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
   decision status, contract authority, and contributor examples.
-- **DONE** Acceptance tool scope: acceptance tools now check and select Work
-  tests under both `test/` and `example/` while preserving normal test scopes.
+- **DONE** Acceptance tool scope: added support for
+  Work tests under both `test/` and `example/` consistently.
 - **TODO** [CI scheduling](ci-scheduling/README.md): return main test evidence
   even when static checks or the network audit fail.
 - **TODO** [CI preparation](ci-preparation/README.md): measure and remove
