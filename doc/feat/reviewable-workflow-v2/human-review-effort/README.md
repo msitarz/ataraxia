@@ -24,8 +24,10 @@ Read the [Work workflow](../../../workflow.md), especially
   diff. If either assessment exceeds a quick review, propose independently
   reviewable child Works and review the plan before expanding the delivery.
 - Preserve the current scope-steering rule: an explicit maintainer request may
-  authorize more scope in the current PR, but it does not waive human review or
-  merge. Approval of a Work plan alone does not authorize later scope growth.
+  authorize a larger review in the current PR, but it does not waive human
+  review or merge. Approval of a Work plan alone does not waive the review-
+  effort target when delivery proves harder to assess, even if its scope has not
+  changed.
 - Keep the guidance concise and in its existing owners; do not add a required
   estimate field or duplicate Work and orchestrator procedures.
 
