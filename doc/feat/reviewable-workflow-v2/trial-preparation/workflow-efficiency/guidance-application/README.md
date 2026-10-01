@@ -9,6 +9,11 @@ interpretation, application, and review failures. The
 [parent Work](../README.md#works) links findings and coordinates related
 owner changes.
 
+The first bounded reasoning-effort pair is recorded in the
+[prose trial report](prose-trial.md). Both executors were fresh; this pair does
+not satisfy AC-2's fresh-versus-long-session or intervention comparison. All
+Investigation criteria remain TODO.
+
 ## Comparison
 
 Compare the current guidance and independent-review baseline with consultation
