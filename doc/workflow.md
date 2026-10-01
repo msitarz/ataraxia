@@ -56,6 +56,9 @@ child directory in the same PR. Before removing a finished Work, promote
 lasting contracts and decisions to their authoritative owners. PRs hold review
 discussion; Git preserves removed contracts and exact changes.
 
+After a Work PR merges, follow the
+[post-merge branch cleanup](branch-cleanup.md) procedure.
+
 Before completing a Work, review tests added during it. Read
 [test ownership](test-ownership.md) when completing a Work.
 

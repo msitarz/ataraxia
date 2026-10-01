@@ -13,6 +13,7 @@ relevant guidance.
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | General Work rules | [Work workflow](workflow.md) |
+| Post-merge Work branch cleanup | [Branch cleanup](branch-cleanup.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
 | ADR eligibility and architectural decision process | [ADR workflow](adr-workflow.md) |
