@@ -11,15 +11,50 @@ each criterion as one Markdown list item beginning `- **AC-1 TODO**` or
 `- **AC-1 DONE**`, followed by its criterion text. Use the same status labels as
 Work maps:
 
-- `TODO` means required test coverage or a stated non-test verification method
-  is missing.
-- `DONE` means tests are implemented and linked, or the non-test method is
-  stated. It does not mean tests passed, review approved, or merge is
-  authorized.
+- `TODO` means the criterion's outcome is not yet verified and recorded. This
+  includes missing coverage or method declarations, declared methods or
+  implemented tests without observed results, and failed, skipped, pending, or
+  unrun verification.
+- `DONE` means the criterion's outcome has been verified and the evidence is
+  recorded; a declared method or implemented test alone is insufficient. A
+  `DONE` status does not mean review approved or merge is authorized.
 
-When a criterion uses a non-test verification method, add it as an indented
-continuation of that list item: `Verification: <specific method>`. If a
-temporary probe is removed while its criterion remains active, retain the
+## Work delivery commits
+
+1. Verify every criterion while its Work README or spec still exists. Run
+   applicable declaration and selected-test checks before removal, as well as
+   required manual or other verification. Keep unverified outcomes `TODO`.
+2. Record each result beside its criterion. Every active manual or other
+   non-test criterion must have an indented `Verification: <specific method>`;
+   when complete, add the observed result there. Mark a criterion `DONE` only
+   after its outcome and evidence are recorded.
+3. Commit implementation and verification with the contract retained and all
+   completed criteria recorded as `DONE`. A delivery PR for a Work with
+   acceptance criteria has at least two commits: one or more
+   implementation/verification commits, then the final removal commit.
+4. In the separate final commit, remove the contract and update the parent map.
+   Review tests under [test ownership](test-ownership.md) and retain regression
+   tests.
+
+A later correction to implementation or evidence invalidates the affected
+result. Rerun applicable checks and refresh its `TODO` status, verification
+method, and result before removal. If the contract was already removed, restore
+it in a corrective evidence commit, then make a separate final removal commit.
+
+## Limits
+
+- Declaration checks, tests, and CI establish only the outcomes they verify;
+  none establishes a manual or otherwise unrun result.
+- Any required `TODO` criterion prevents completion. If the Work stops
+  unsatisfied,
+  follow the abandonment lifecycle in [Work contracts](workflow.md#lifecycle).
+- `covers` markers may remain after removal for test provenance; Work-targeted
+  acceptance commands require the owning file. Use Git history to review the
+  retained contract and recorded results.
+- Preserve the implementation/evidence and removal commits when merging; do
+  not squash this delivery class.
+
+If a temporary probe is removed while its criterion remains active, retain its
 one-time method and delivery PR link beside the criterion as described in
 [test ownership](test-ownership.md).
 

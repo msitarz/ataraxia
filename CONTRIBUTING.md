@@ -103,6 +103,10 @@ require explicit approval; smaller Works within that direction proceed to their
 own review. The maintainer reviews the current PR revision and performs the
 merge. Agents must not merge without an explicit instruction.
 
+For Work PRs with acceptance criteria, follow the
+[commit-preservation rule](doc/acceptance-tracing.md#work-delivery-commits);
+do not squash.
+
 PRs carry review discussion and rationale. Use the commit subject and concise
 PR description conventions below. Merged PRs and recorded approvals provide
 durable decisions across sessions. After the maintainer confirms a Work PR

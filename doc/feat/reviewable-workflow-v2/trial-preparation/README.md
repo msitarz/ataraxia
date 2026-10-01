@@ -15,11 +15,12 @@ success criteria.
 
 ## Works
 
-- **TODO** [Completion evidence](completion-evidence/README.md): establish how
-  every criterion is verified and its evidence survives Work removal.
+- **TODO** [Completion evidence](completion-evidence/README.md): require
+  applicable checks, recorded per-criterion outcomes, and a preserved final
+  contract-removal commit.
 - **DONE** Handoff recovery: added return evidence, interrupted-session
   recovery, and scope-growth and stalled-correction stopping rules to
-  [orchestrator guidance](../../../orchestrator.md); rationale is proposed in
+  [orchestrator guidance](../../../orchestrator.md); rationale is recorded in
   [WDR 10](../../../wdr/0010-recover-delegated-handoffs.md).
 - **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
   decision status, contract authority, and contributor examples.
