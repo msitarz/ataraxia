@@ -10,6 +10,7 @@ its relevant README and linked contracts.
 | Task                                             | Read or run                                                                                                                             |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Any repository change                            | [Repair and scope rules](doc/change-rules.md#fix-the-underlying-problem)                                                                |
+| Acting as orchestrator for implementation        | [Orchestrator handoffs](doc/orchestrator.md)                                                                                            |
 | Code or tests                                    | [Engineering conventions](doc/engineering.md), [architecture](doc/architecture.md) for current contracts, and relevant [ADRs](doc/adr/) |
 | Test cleanup                                     | [Test ownership](doc/test-ownership.md), including documentation tool probes                                                            |
 | Documentation                                    | [Documentation ownership](doc/README.md); use `make doc-check` and `make doc-format` for Markdown formatting and local links            |

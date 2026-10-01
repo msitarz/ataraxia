@@ -15,6 +15,7 @@ relevant guidance.
 | Legacy feat-slice delivery and specification rules        | [Feat workflow](feat-workflow.md)                                                                                                             |
 | General Work rules                                        | [Work workflow](workflow.md)                                                                                                                  |
 | A Work's local outcome and acceptance contract            | The relevant Work README                                                                                                                      |
+| Orchestration and delegated implementation handoffs       | [Orchestrator handoffs](orchestrator.md)                                                                                                      |
 | ADR eligibility, format, and amendments                   | [ADR workflow](adr-workflow.md)                                                                                                               |
 | Coding, typing, and testing conventions                   | [Engineering](engineering.md)                                                                                                                 |
 | Test ownership and cleanup                                | [Test ownership](test-ownership.md)                                                                                                           |
