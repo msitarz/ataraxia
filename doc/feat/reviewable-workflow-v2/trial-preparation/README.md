@@ -1,0 +1,65 @@
+# Trial preparation
+
+Make the current workflow ready for an observable live trial. The review found
+gaps in acceptance evidence, handoff recovery, guidance consistency, acceptance
+tool scope, and CI feedback. Address them before starting the
+[Live trial](../live-trial/README.md).
+
+The current acceptance checker validates declarations rather than completed
+outcomes; completion deletes the contract that the tools require. Handoffs have
+no defined return or recovery procedure. Decision statuses and entry-point
+instructions disagree. Acceptance tools omit example tests, while CI delays the
+main tests behind the network audit and repeats preparation across jobs. The
+live trial itself lacks acceptance declarations and measurable success criteria.
+
+## Works
+
+- **TODO** [Completion evidence](completion-evidence/README.md): establish how
+  every criterion is verified and its evidence survives Work removal.
+- **TODO** [Handoff recovery](handoff-recovery/README.md): define useful
+  returns, interrupted-session recovery, and when stalled corrections need
+  steering.
+- **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
+  decision status, contract authority, and contributor examples.
+- **TODO** [Acceptance tool scope](acceptance-tool-scope/README.md): support
+  Work tests under both `test/` and `example/` consistently.
+- **TODO** [CI scheduling](ci-scheduling/README.md): return main test evidence
+  even when static checks or the network audit fail.
+- **TODO** [CI preparation](ci-preparation/README.md): measure and remove
+  unnecessary preparation without weakening setup or offline verification.
+- **TODO** [Trial contract](trial-contract/README.md): define the trial's
+  acceptance, total effort measurements, and parallel-feature preparation.
+
+Each child owns a separate review outcome. Complete the trial contract after
+completion evidence and handoff recovery so it exercises the delivered rules.
+CI scheduling and CI preparation share files; deliver scheduling first to keep
+their changes independently reviewable.
+
+## Acceptance
+
+Criterion labels follow [acceptance tracing](../../../acceptance-tracing.md):
+`DONE` records a declared verification method, while the parent map owns
+delivery status. Actual results belong in the delivery PR.
+
+- **AC-1 DONE** Every child outcome is integrated into `master`, with its
+  acceptance results available in its delivery PR and lasting contracts in
+  their owners.
+  Verification: review the integrated child outcomes and their delivery PRs
+  against the map above before closing this parent Work.
+- **AC-2 DONE** The live trial has a usable acceptance contract and explicitly
+  depends on this preparation; it has not started before preparation completes.
+  Verification: inspect the live-trial contract, run its declaration check,
+  and verify the dependency against integrated parent status.
+- **AC-3 DONE** The preparation addresses all review findings: trial acceptance,
+  completion evidence, recovery, decision status, contract authority, CI
+  scheduling and setup, example-test tracing, delegation cost, total maintainer
+  effort, and misleading contributor instructions.
+  Verification: map each finding to the delivered child outcome or to an
+  explicit measurement and decision in the live-trial contract.
+
+This Work prepares the trial; it does not implement parallel shard execution or
+claim that the workflow's efficiency has already been demonstrated. Preserve
+independent agent review, maintainer approval and merge control, full CI gates,
+and the existing approval requirement for delegation changes. Consequential
+policy changes belong in [WDRs](../../../wdr-workflow.md), with proposed choices
+distinguished from accepted ones.

@@ -16,8 +16,10 @@ contracts, child discovery, status, and lifecycle.
 - **DONE** Validation — focused preparation and full-CI merge gates live in
   the [validation policy](../../validation.md); Work acceptance coverage is
   owned by [acceptance tracing](../../acceptance-tracing.md).
-- **TODO** [Live trial](live-trial/README.md): use this workflow during its own
-  delivery, then apply it to a familiar feature.
+- **TODO** [Trial preparation](trial-preparation/README.md): resolve completion,
+  recovery, guidance, and tooling gaps before the live trial.
+- **TODO** [Live trial](live-trial/README.md): after trial preparation, evaluate
+  the workflow during delivery and on a familiar feature.
 - **DONE** Retire the feat-slice workflow — removed unused legacy routes and
   session roles after confirming no legacy slices remained outside this Work;
   retained ADR/WDR history and the distinct trading Feature term.
