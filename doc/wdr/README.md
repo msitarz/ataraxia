@@ -19,6 +19,7 @@ authoritative owners.
 - [4. Delegate repository changes for independent review](0004-delegate-repository-changes-for-independent-review.md)
 - [5. Review completed handoffs once](0005-review-completed-handoffs-once.md)
 - [6. Keep delivery evidence in PRs and Git](0006-keep-delivery-evidence-in-prs-and-git.md)
+- [9. Require verified evidence for Work completion](0009-require-verified-work-completion.md)
 - [10. Recover delegated handoffs](0010-recover-delegated-handoffs.md)
 
 ## Proposal

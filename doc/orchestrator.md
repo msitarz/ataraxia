@@ -50,6 +50,12 @@ steering. If Luna is unavailable, report that and wait; do not silently switch
 agents or implement its changes as a fallback. Keep independent review and
 human review, merge, and CI gates.
 
+Before removing a completing Work's contract, review its verified criterion
+statuses and recorded evidence using the
+[Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).
+Confirm manual results are beside their criteria and retain full CI and
+maintainer review and merge gates.
+
 If a Luna session is cancelled or lost, recover from the Work contract, parent
 map, branch or PR, and available check results. Establish which changes remain,
 which evidence applies to the current revision, and which criteria are

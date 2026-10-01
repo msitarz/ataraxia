@@ -6,6 +6,9 @@ Date: 2026-09-30
 
 Accepted
 
+Amended by
+[9. Require verified evidence for Work completion](0009-require-verified-work-completion.md).
+
 ## Context
 
 The maintainer reported that earlier evidence-SHA snapshots and append-only
