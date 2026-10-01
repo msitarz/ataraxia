@@ -21,7 +21,10 @@ make ci
 
 Full `make ci` runs local verification before the required network-dependent
 audit. An audit failure still fails CI, while completed local results remain
-available. The CI check job also runs its local checks before auditing.
+available. In the CI workflow, the main test, example-test, and installed-
+package jobs run independently of the check job, so their evidence remains
+available when static checks or the audit fail. The check job runs its local
+checks before auditing, and all jobs must pass for the full CI merge gate.
 
 After setup, agents without network access can run `make verify` for local
 evidence. It checks the locked environment without installing or resolving

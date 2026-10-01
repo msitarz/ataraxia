@@ -23,8 +23,8 @@ live trial itself lacks acceptance declarations and measurable success criteria.
   decision status, contract authority, and contributor examples.
 - **TODO** [Acceptance tool scope](acceptance-tool-scope/README.md): support
   Work tests under both `test/` and `example/` consistently.
-- **TODO** [CI scheduling](ci-scheduling/README.md): return main test evidence
-  even when static checks or the network audit fail.
+- **DONE** CI scheduling: made the main test job independent of static checks
+  and the network audit while preserving the full CI gate.
 - **TODO** [CI preparation](ci-preparation/README.md): measure and remove
   unnecessary preparation without weakening setup or offline verification.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
