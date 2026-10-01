@@ -84,5 +84,5 @@ See
 for branch and PR exceptions. Do not introduce a separate tracking system,
 journal, or mandatory template.
 
-When acting as orchestrator for repository implementation, follow the
+When acting as orchestrator for repository changes, follow the
 [Orchestrator handoffs](orchestrator.md).
