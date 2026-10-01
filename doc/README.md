@@ -6,28 +6,28 @@ relevant guidance.
 
 ## Owners
 
-| Information                                               | Authoritative location                                                                                                                        |
+| Information | Authoritative location |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Task startup and conditional reading routes               | [AGENTS.md](../AGENTS.md)                                                                                                                     |
-| Repair and scope rules for repository changes             | [Change rules](change-rules.md)                                                                                                               |
-| Documentation placement, duplication, and shared terms    | This file                                                                                                                                     |
-| Shared meanings and distinctions                          | [Ubiquitous language](ubiquitous-language.md)                                                                                                 |
-| Legacy feat-slice delivery and specification rules        | [Feat workflow](feat-workflow.md)                                                                                                             |
-| General Work rules                                        | [Work workflow](workflow.md)                                                                                                                  |
-| A Work's local outcome and acceptance contract            | The relevant Work README                                                                                                                      |
-| Orchestration and delegated repository changes            | [Orchestrator handoffs](orchestrator.md)                                                                                                      |
-| ADR eligibility, format, and amendments                   | [ADR workflow](adr-workflow.md)                                                                                                               |
-| Coding, typing, and testing conventions                   | [Engineering](engineering.md)                                                                                                                 |
-| Test ownership and cleanup                                | [Test ownership](test-ownership.md)                                                                                                           |
-| Setup, toolchain, contribution, commit, and PR rules      | [CONTRIBUTING.md](../CONTRIBUTING.md)                                                                                                         |
-| Choosing checks and reporting validation evidence         | [Validation](validation.md)                                                                                                                   |
-| Markdown formatting and local-link checks                 | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml)                                                                      |
-| Current system relationships, boundaries, and limitations | [Architecture](architecture.md)                                                                                                               |
-| Introduction, runnable example, and roadmap priorities    | [README.md](../README.md)                                                                                                                     |
-| Legacy feat-slice scope and acceptance examples           | The relevant [feat slice](feat/)                                                                                                              |
-| One architectural choice and its rationale                | The relevant [ADR](adr/)                                                                                                                      |
-| Issue body format                                         | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md)                                                                                      |
-| Machine-enforced settings and executable checks           | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
+| Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
+| Repair and scope rules for repository changes | [Change rules](change-rules.md) |
+| Documentation placement, duplication, and shared terms | This file |
+| Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
+| Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
+| General Work rules | [Work workflow](workflow.md) |
+| A Work's local outcome and acceptance contract | The relevant Work README |
+| Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
+| ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
+| Coding, typing, and testing conventions | [Engineering](engineering.md) |
+| Test ownership and cleanup | [Test ownership](test-ownership.md) |
+| Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Choosing checks and reporting validation evidence | [Validation](validation.md) |
+| Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
+| Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
+| Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
+| Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
+| One architectural choice and its rationale | The relevant [ADR](adr/) |
+| Issue body format | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md) |
+| Machine-enforced settings and executable checks | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
 
 ## Placement and maintenance
 

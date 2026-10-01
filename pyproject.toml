@@ -84,7 +84,7 @@ absolute-links = "ignore"
 
 [tool.rumdl.MD060]
 enabled = true
-style = "aligned"
+style = "compact"
 
 [project.scripts]
 ataraxia = "ataraxia.cli:main"
