@@ -44,7 +44,8 @@ receive CI.
 - B's initial version repeated consolidated-correction and approval/scope
   reminders, and omitted requested UTC timestamps. Its first correction removed
   the stop condition for an unresolved finding after correction; a second pass
-  restored it and supplied the missing times.
+  restored it. Correction-pass times were recorded, while initial timestamps
+  remained unavailable.
 - Neither initial artifact was accepted unchanged. Both final artifacts were
   reviewed for meaning and passed the listed local checks. #107's baseline was
   unchanged.
@@ -54,9 +55,9 @@ receive CI.
 Medium effort consolidated more and needed one correction; low effort needed
 two. No reliable elapsed-time or cost winner can be selected: B's initial
 duration is missing, exact dispatch times and token/cost data are unavailable,
-and final B review timing is incomplete. This single unblinded pair also shared
-an environment/cache, had different correction scopes, and involved a reviewer
-who knew the effort mapping. It cannot establish a general effort effect.
+and final B review timing is incomplete. This single pair also shared
+an environment/cache and had different correction scopes. It cannot establish
+a general effort effect.
 Make no global effort-default change from this evidence; continue the broader
 Investigation. Raw patch snapshots remain available locally if inspection is
 needed; they are not copied into the Work or PR.
