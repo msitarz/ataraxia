@@ -41,6 +41,13 @@ decorators only on top-level `test_` functions and `test_` methods of top-level
 infer collection or count marker assignments, calls inside function bodies,
 nested helpers, or decorated helpers.
 
+Acceptance tooling checks and selects tests from both `test/` and `example/`.
+The checker statically inspects Python test candidates in those roots, while
+the selector passes both roots to pytest and filters by the `covers` marker.
+This shared acceptance scope does not change ordinary test discovery:
+`make test` remains scoped by pytest's configured `test/` path, and the
+dedicated example target continues to run `example/` separately.
+
 ## Collecting and running selected tests
 
 Use the Make targets to list or run tests for an owning Work file. `WORK` is
