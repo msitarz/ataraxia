@@ -83,3 +83,6 @@ See
 [CONTRIBUTING.md's Work review rules](../CONTRIBUTING.md#work-branches-review-and-merge)
 for branch and PR exceptions. Do not introduce a separate tracking system,
 journal, or mandatory template.
+
+When acting as orchestrator for repository changes, follow the
+[Orchestrator handoffs](orchestrator.md).
