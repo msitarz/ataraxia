@@ -4,12 +4,16 @@ Refine how bounded workflow changes are handed off, evidenced, and prepared,
 using the two completed nested-agent experiments as observations rather than a
 controlled comparison of topologies.
 
-The first nested batch took about 34 minutes from dispatch to final handoff;
-the second took about 38 minutes. They covered different Works, so the timings
-do not establish a speedup. In the latest session, seven total slots removed
-slot waiting, while initial executor phases still overlapped by about 13
-seconds (their starts were 3 minutes 25 seconds apart). Drafting completion PR
-evidence took about 11 minutes. These are observed durations, not a cost model.
+The agent-reported first nested batch took about 34 minutes from dispatch to
+final handoff ([PR 105](https://github.com/msitarz/ataraxia/pull/105) and
+[PR 106](https://github.com/msitarz/ataraxia/pull/106)); the second took about
+38 minutes ([PR 107](https://github.com/msitarz/ataraxia/pull/107) and
+[PR 108](https://github.com/msitarz/ataraxia/pull/108)). They covered different
+Works, so the timings do not establish a speedup. In the latest session, seven
+total slots removed slot waiting, while initial executor phases still
+overlapped by about 13 seconds (their starts were 3 minutes 25 seconds apart).
+Drafting completion PR evidence took about 11 minutes. These are reported
+observations, not a cost model.
 
 In the second experiment, Sol reused Luna's checks and ran no Make validation.
 The orchestrator checked the combined documentation and declarations; CI
@@ -28,10 +32,9 @@ human review duration were unavailable.
 - **TODO** [Workspace preparation](workspace-preparation/README.md): measure
   minimal preparation or safe reuse for docs-only agent workspaces.
 
-The parent owns this child map. The three children have no separate status.
-Apply the already authorized flat parent-to-Luna, low-effort arrangement to
-the next bounded workflow change; the orchestrator reviews independently and
-the human retains review and merge decisions. Existing CI remains a gate.
+For the next bounded workflow change, use the already authorized flat
+parent-to-Luna arrangement at low effort, with independent orchestrator review
+and existing human review, merge, and CI gates.
 
 ## Comparison
 
@@ -43,11 +46,9 @@ checks; reporting and preparation effort; human interventions; and human
 review time or cost when available. Put concise results in existing PR
 evidence or the trial contract, without a per-revision journal or template.
 
-Separate observed outcomes from candidate rules. Note missing or incomparable
-measurements, and do not infer a topology speedup from these differently sized
-Works. Complete this Work only after the three child outcomes are integrated
-and a bounded comparison is captured; defining criteria or check methods alone
-does not complete it.
+Separate observed outcomes from candidate rules and note missing or
+incomparable measurements. Do not infer a topology speedup from these
+differently sized Works.
 
 ## Acceptance
 

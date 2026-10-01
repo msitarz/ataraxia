@@ -1,16 +1,20 @@
 # PR evidence
 
-Clarify completion evidence in the owning Work and validation guidance, with
-the [completion-evidence Work](../../completion-evidence/README.md) and
-[WDR lifecycle](../../../../../wdr-workflow.md) as applicable. Work owns
-requirements; CI owns automated results. A PR adds the problem, result,
-review attention, and evidence beyond CI. Do not impose fixed headings,
-templates, or inventories of CI jobs, commands, and hooks.
+Clarify completion evidence in the
+[completion-evidence owner](../../../../../acceptance-tracing.md) and
+[contributor PR guidance](../../../../../../CONTRIBUTING.md#work-branches-review-and-merge).
+The trial-preparation map tracks the outcome;
+[PR 108](https://github.com/msitarz/ataraxia/pull/108) is the integration
+prerequisite before changing the owner. Work owns requirements; CI owns
+automated results. A PR adds the problem, result, review attention, and evidence
+beyond CI. Avoid fixed headings, templates, and inventories of CI jobs,
+commands, or hooks.
 
 Account for every acceptance criterion. Link to the original Work by a stable
 PR diff or revision reference that remains usable after its directory is
-removed; include a short result where needed instead of copying each full
-criterion. Report material failures, pending or unrun checks, and manual
+removed; include short result context where needed instead of copying each
+full criterion. Avoid routine successful-check inventories; retain concise
+material diagnostics and report failures, pending or unrun checks, and manual
 limitations accurately. Do not remove evidence as a blanket rule.
 
 Define how evidence works when all criteria are covered by CI, when a criterion
