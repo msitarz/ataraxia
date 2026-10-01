@@ -3,12 +3,15 @@
 Clarify completion evidence in the
 [completion-evidence owner](../../../../../acceptance-tracing.md) and
 [contributor PR guidance](../../../../../../CONTRIBUTING.md#work-branches-review-and-merge).
-The trial-preparation map tracks the outcome;
+The [trial-preparation map](../README.md#works) tracks the outcome;
 [PR 108](https://github.com/msitarz/ataraxia/pull/108) is the integration
 prerequisite before changing the owner. Work owns requirements; CI owns
 automated results. A PR adds the problem, result, review attention, and evidence
-beyond CI. Avoid fixed headings, templates, and inventories of CI jobs,
-commands, or hooks.
+beyond CI. The owning orchestrator prepares or updates the PR description from
+the reviewed result and Luna's concise local evidence, following permanent
+[orchestrator guidance](../../../../../orchestrator.md) and the mapped
+[handoffs outcome](../README.md#works). Avoid fixed headings, templates, and
+inventories of CI jobs, commands, or hooks.
 
 Account for every acceptance criterion. Link to the original Work by a stable
 PR diff or revision reference that remains usable after its directory is
@@ -59,3 +62,10 @@ preserve accepted records without rewriting them.
   Verification: review an adoption-ready PR after merge and a proposal-only or
   Investigation case, checking record status, index, reciprocal metadata, and
   the relevant owner guidance.
+- **AC-5 TODO** PR-description ownership stays with the owning orchestrator
+  after review for both a new PR and an existing-PR amendment; it uses Luna's
+  concise evidence without duplicating routine check inventories, while
+  retaining material diagnostics and accurate CI-pending status.
+  Verification: walk through a new PR and an amendment from Luna's local
+  return to the reviewed description, checking evidence reuse and truthful
+  pending/failure reporting.

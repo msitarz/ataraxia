@@ -23,6 +23,23 @@ hook and build preparation than documentation work needed, but available
 evidence does not show that setup dominated elapsed time. Token cost and actual
 human review duration were unavailable.
 
+For the later #107/#108 WDR-status and index amendment, one direct Luna session
+handled both worktrees sequentially without an intermediate Sol. The result
+was assessed as correct (9/10); efficiency was rated 5/10. Earlier reviewed
+heads had passing CI, root reused their check evidence, and the later
+documentation-only revisions passed doc checks; CI on the amended heads was
+pending. Each PR accumulated three commits. The work also needed an avoidable
+shared-index introduction correction, repeated documentation checks after
+revisions, repeated PR-description edits, and an early delegated metadata
+edit. Each branch added an Accepted index entry from the same base, so after
+the first merge the other branch needs rebase and index integration. See the
+[latest #107 revision](https://github.com/msitarz/ataraxia/commit/c48b3663e32c59862ef7cfc5b761fc6a9fcdbd8e)
+and
+[#108 revision](https://github.com/msitarz/ataraxia/commit/2bbdd12d8fd39827b8f5650a6db0f211e3ee325f8).
+These are qualitative observations: no exact elapsed time, token use, or cost
+was recorded for this small update. They do not establish a controlled
+comparison or prove a flatter topology is faster.
+
 ## Works
 
 - **TODO** [Handoffs](handoffs/README.md): improve scope, delegation, parallel
@@ -56,7 +73,8 @@ differently sized Works.
 
 - **AC-1 TODO** Handoff and tree-orchestration guidance assign one owner per
   subtree and leaf, while retaining worktree isolation, evidence reuse,
-  independent review, and human and CI gates.
+  local executor artifacts, owning-orchestrator PR responsibility, independent
+  review, and human and CI gates.
   Verification: inspect the owner guidance and walk through a bounded tree
   with a direct leaf handoff and a child orchestrator.
 - **AC-2 TODO** PR evidence guidance covers CI-covered, manual, and removed
