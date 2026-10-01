@@ -25,4 +25,5 @@ gate.
 Review can begin with focused evidence, while failures in broader checks may
 surface later. Keep the CI workflow and offline verification limitations in
 their owners: [validation policy](../validation.md) and
-[CI workflow](../../.github/workflows/ci.yml).
+[CI workflow](../../.github/workflows/ci.yml). See
+[PR 89](https://github.com/msitarz/ataraxia/pull/89).
