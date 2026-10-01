@@ -13,8 +13,9 @@ contracts, child discovery, status, and lifecycle.
   lifecycle, prototype, and PR review rules.
 - **DONE** Focused guidance — established focused owners and direct routes for
   change and validation rules.
-- **TODO** [Validation](validation/README.md): use focused draft checks and
-  evaluate mechanical documentation checks.
+- **DONE** Validation — focused preparation and full-CI merge gates live in
+  the [validation policy](../../validation.md); Work acceptance coverage is
+  owned by [acceptance tracing](../../acceptance-tracing.md).
 - **TODO** [Live trial](live-trial/README.md): use this workflow during its own
   delivery, then apply it to a familiar feature.
 - **DONE** Retire the feat-slice workflow — removed unused legacy routes and
