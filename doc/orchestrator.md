@@ -23,6 +23,15 @@ changes without a Work contract, state acceptance and exit criteria in the
 handoff. Link to background instead of forwarding the full conversation by
 default.
 
+If new scope adds an independent responsibility or no longer fits a quick,
+single-responsibility review, stop adding that scope. For an ad hoc handoff
+without a Work, define a parent Work and small reviewable child Works; for an
+existing Work, nest children in its hierarchy and update the parent map. Review
+and merge that plan before implementing the expanded child scope. Routine
+choices within the agreed contract need no approval; preserve the explicit
+maintainer scope exception in
+[Work scope and sizing](workflow.md#scope-and-sizing).
+
 ## Review and return
 
 Use the handoff guidance above, then wait for the completed artifact or a
