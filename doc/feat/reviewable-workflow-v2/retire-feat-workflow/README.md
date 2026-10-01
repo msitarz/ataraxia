@@ -4,11 +4,9 @@ Replace the active legacy feat-slice delivery workflow with the Work workflow
 wherever no active legacy delivery depends on it. The repository currently has
 no legacy slice directories outside this reviewable-workflow Work tree; verify
 that status and inspect all references before deciding what to remove, migrate,
-or preserve. Complete
-[Workflow Decision Records](../workflow-decision-records/README.md) first so
-consequential workflow decisions and useful history are preserved before
-legacy guidance is pruned. After that Work removes its own directory, replace
-this dependency link with the resulting permanent WDR guidance route.
+or preserve. The [WDR workflow](../../../wdr-workflow.md) and its initial
+retrospective records are established. Use them to preserve consequential
+choices and useful history before pruning legacy guidance.
 
 Completion means:
 

@@ -20,9 +20,9 @@ contracts, child discovery, status, and lifecycle.
 - **TODO** [Retire the feat-slice workflow](retire-feat-workflow/README.md):
   resolve active legacy guidance and preserve useful history as Works become
   authoritative.
-- **TODO** [Workflow Decision Records](workflow-decision-records/README.md):
-  establish a lightweight workflow and inventory for consequential
-  delivery-workflow decisions.
+- **DONE** Workflow Decision Records — established eligibility and shared
+  record policy, with an initial retrospective set in the
+  [WDR index](../../wdr/README.md).
 - **DONE** Orchestrator handoffs — established role-triggered Luna change
   delegation, review corrections, and maintainer gates in
   [orchestrator guidance](../../orchestrator.md).
