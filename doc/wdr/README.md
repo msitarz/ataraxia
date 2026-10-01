@@ -7,13 +7,12 @@ record syntax and changes.
 
 ## Accepted
 
-The six initial retrospective records cover cross-Work choices about local
-Work contracts and lifecycle, maintainer review capacity, delegated repository
-changes, and delivery evidence. This set does not record every inventory
-finding.
-Narrower documentation, tool, test, and code-review practices remain with their
-authoritative owners. WDR 10 was later proposed to complete the delegated
-handoff decision and is now accepted.
+The six initial retrospective records were accepted and cover cross-Work choices
+about local Work contracts and lifecycle, maintainer review capacity, delegated
+repository changes, and delivery evidence. This set does not record every
+inventory finding. Narrower documentation, tool, test, and code-review practices
+remain with their authoritative owners. WDR 10 was later proposed to complete
+the delegated handoff decision and is now accepted.
 
 - [1. Use Work directories as delivery contracts](0001-use-work-directories-as-delivery-contracts.md)
 - [2. Let parent maps track Work lifecycle](0002-let-parent-maps-track-work-lifecycle.md)
