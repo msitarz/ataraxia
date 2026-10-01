@@ -8,5 +8,5 @@ Keep tool choices and integration separately reviewable.
 
 - **DONE** Tool investigation — selected rumdl 0.2.78 for Markdown formatting
   and offline link checks; deferred other tools.
-- **TODO** [Checker integration](checker-integration/README.md)
+- **DONE** [Checker integration](checker-integration/README.md)
 - **TODO** [Acceptance traceability](acceptance-traceability/README.md)
