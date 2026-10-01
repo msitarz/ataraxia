@@ -33,8 +33,8 @@ runtime wrapper.
 Deliver this Work before any handoffs Work that edits the same orchestrator
 owner. Its delivery must create a WDR through the
 [WDR lifecycle](../../../../../wdr-workflow.md), recording the rationale and
-recording the rationale and tradeoffs for tree ownership and direct leaf
-delegation. The comparison must cover tree routing against the earlier
+tradeoffs for tree ownership and direct leaf delegation. The comparison must
+cover tree routing against the earlier
 per-leaf wrapper arrangement and cite durable PR or revision references for
 timing evidence. The [parent's observations](../README.md) are planning input:
 agent-reported batches of about 34 and 38 minutes; delayed launches and about
