@@ -21,10 +21,17 @@ background instead of forwarding the full conversation by default.
 
 ## Review and return
 
-Check the changes against acceptance and owner guidance, then verify the
-appropriate evidence. Send concrete findings to the same Luna session and
-repeat until resolved. Reusing context may help token caching, but caching is
-not guaranteed.
+Give Luna one focused handoff with acceptance and exit criteria, then wait for
+the completed artifact or a blocker that needs maintainer steering. Do not poll
+for routine status, inspect partial diffs, or send fragmented mid-task
+corrections.
+
+Review the completed diff once against acceptance and owner guidance, using the
+reported evidence. Send one consolidated finding list to the same Luna session
+and review again after corrections only as needed. Reuse reported check
+evidence; rerun focused checks when a change, failure, or unresolved concern
+warrants it. Context reuse may help token caching, but caching is not
+guaranteed. Keep independent review and human review, merge, and CI gates.
 
 When Luna completes the handoff, the orchestrator may review the branch
 directly or create a draft PR. Draft means the delegated changes are complete

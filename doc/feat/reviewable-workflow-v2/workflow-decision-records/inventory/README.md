@@ -46,6 +46,12 @@ Findings and candidate decisions:
   tables reduce width-driven whole-table diffs, at the cost of source columns
   no longer aligning. The maintainer explicitly chose this, reversing the
   previous aligned-table preference.
+- **Accepted for this Work; current after delivery:** Repeated status polling,
+  partial-diff inspections, fragmented corrections, and duplicate checks add
+  coordination and context overhead to small Works. The chosen loop is one
+  focused handoff, a completed artifact, then one consolidated review. Same-
+  session context reuse may help token caching, but exact savings are
+  unmeasured.
 - **Pending Work:** Focused development checks and the full CI merge gate. The
   draft-and-merge-checks Work is still pending; do not report its policy as
   adopted.
