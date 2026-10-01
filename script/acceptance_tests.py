@@ -9,8 +9,9 @@ import re
 import subprocess
 import sys
 
+from work_paths import resolve_work_file
+
 ROOT = Path(__file__).resolve().parents[1]
-_WORK_PATH = re.compile(r"[A-Za-z0-9._/-]+\Z")
 _AC_ID = re.compile(r"AC-[1-9][0-9]*\Z")
 
 
@@ -25,21 +26,7 @@ def build_command(action: str, work: str, ac: str = "") -> list[str]:
     """
     if action not in {"collect", "test"}:
         raise ValueError("action must be 'collect' or 'test'")
-    if not work:
-        raise ValueError(
-            "WORK is required; provide a repo-relative README.md or spec.md path"
-        )
-    if not _WORK_PATH.fullmatch(work) or work.startswith("/"):
-        raise ValueError("WORK must be a repo-relative README.md or spec.md path")
-
-    path = Path(work)
-    if path.as_posix() != work or ".." in path.parts:
-        raise ValueError("WORK must be a normalized repo-relative path")
-    if path.name not in {"README.md", "spec.md"}:
-        raise ValueError("WORK must name an owning README.md or spec.md")
-    resolved = (ROOT / path).resolve()
-    if not resolved.is_relative_to(ROOT) or not resolved.is_file():
-        raise ValueError(f"WORK does not identify an existing repository file: {work}")
+    resolve_work_file(ROOT, work)
 
     if ac and not _AC_ID.fullmatch(ac):
         raise ValueError("AC must be a criterion ID such as AC-8")

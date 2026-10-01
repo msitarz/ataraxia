@@ -48,6 +48,54 @@ def run_target(target: str, work: str, cases: str, ac: str = ""):
     )
 
 
+@contextmanager
+def coverage_fixture(root: Path, contract: str | None = None):
+    """Create one selected Work and a static marker source under test/."""
+    test_root = root / "test"
+    with tempfile.TemporaryDirectory(prefix="coverage-fixture-", dir=test_root) as temp:
+        fixture = Path(temp)
+        work_file = fixture / "README.md"
+        work = work_file.relative_to(root).as_posix()
+        work_file.write_text(
+            contract
+            or (
+                "# Temporary acceptance contract\n\n"
+                "- **AC-1 DONE** Output remains stable.\n"
+                "- **AC-2 TODO** A later behavior.\n\n"
+                "```markdown\n"
+                "- **AC-99 DONE** This is only an example.\n"
+                "```\n"
+            ),
+            encoding="utf-8",
+        )
+        cases = fixture / "test_coverage_markers.py"
+        cases.write_text(
+            "import pytest\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+            "def test_output_remains_stable():\n"
+            "    raise AssertionError('ac-check executed a test')\n\n"
+            "@pytest.mark.covers(work='other/README.md', ac='AC-9')\n"
+            "def test_other_work_is_historical_or_unrelated():\n    pass\n",
+            encoding="utf-8",
+        )
+        yield work
+
+
+def run_coverage_target(work: str = "", ac: str = ""):
+    """Run ac-check without inheriting Work selectors from the caller."""
+    env = os.environ.copy()
+    env.pop("WORK", None)
+    env.pop("AC", None)
+    args = ["make", "ac-check"]
+    if work:
+        args.append(f"WORK={work}")
+    if ac:
+        args.append(f"AC={ac}")
+    return subprocess.run(
+        args, cwd=ROOT, env=env, capture_output=True, text=True, timeout=30
+    )
+
+
 @pytest.mark.parametrize(
     ("target", "ac", "selected", "excluded"),
     [
@@ -97,3 +145,37 @@ def test_make_targets_fail_when_no_criterion_matches(target):
     output = result.stdout + result.stderr
     assert result.returncode != 0
     assert "no tests" in output.lower() or "deselected" in output.lower(), output
+
+
+def test_make_ac_check_reports_selected_coverage_without_running_tests():
+    with coverage_fixture(ROOT) as work:
+        result = run_coverage_target(work)
+
+    output = result.stdout + result.stderr
+    assert result.returncode == 0, output
+    assert "AC-1 DONE: 1 test marker(s)" in output
+    assert "AC-2 TODO: coverage missing" in output
+    assert "AC-99" not in output
+
+
+def test_make_ac_check_requires_a_work_and_rejects_ac_selector():
+    missing = run_coverage_target()
+    assert missing.returncode != 0
+    assert "WORK is required" in (missing.stdout + missing.stderr)
+
+    absent = run_coverage_target("doc/absent/README.md")
+    assert absent.returncode != 0
+    assert "existing repository file" in (absent.stdout + absent.stderr)
+
+    with coverage_fixture(ROOT) as work:
+        selected = run_coverage_target(work, "AC-1")
+    assert selected.returncode != 0
+    assert "AC is not supported" in (selected.stdout + selected.stderr)
+
+
+def test_make_ac_check_rejects_work_without_criteria():
+    with coverage_fixture(ROOT, "# Empty Work\n") as work:
+        result = run_coverage_target(work)
+
+    assert result.returncode != 0
+    assert "no AC declarations" in (result.stdout + result.stderr)

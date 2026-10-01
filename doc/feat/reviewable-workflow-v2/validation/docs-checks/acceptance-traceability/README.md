@@ -8,9 +8,8 @@ verification methods, without confusing coverage with results or approval.
 - **DONE** Pytest tracing — established strict, file-scoped acceptance markers,
   the TODO/DONE coverage convention, and test lookup in
   [acceptance tracing](../../../../../acceptance-tracing.md).
-- **TODO** [Coverage checker](coverage-checker/README.md): validate active
-  references and coverage, including explicit non-test methods and historical
-  markers. This depends on the tracing conventions.
+- **DONE** Coverage checker — added `make ac-check` for selected Work coverage
+  declarations in [acceptance tracing](../../../../../acceptance-tracing.md).
 
 The parent remains TODO until both outcomes and required review gates are met.
 Delivery evidence follows
