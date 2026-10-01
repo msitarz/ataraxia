@@ -55,6 +55,22 @@ def build_command(action: str, work: str, ac: str = "") -> list[str]:
     return command
 
 
+def has_no_selected_tests(output: str) -> bool:
+    """Recognize pytest summaries that contain no selected test items.
+
+    Returns:
+        Whether the output reports an empty selection.
+    """
+    return any(
+        re.search(pattern, output, flags=re.MULTILINE)
+        for pattern in (
+            r"^no tests collected\b",
+            r"^no tests ran\b",
+            r"^\d+ deselected in \d+(?:\.\d+)?s$",
+        )
+    )
+
+
 def main() -> int:
     """Validate Make inputs and run the corresponding pytest selection.
 
@@ -65,24 +81,18 @@ def main() -> int:
         sys.stderr.write("usage: acceptance_tests.py {collect|test}\n")
         return 2
     action = sys.argv[1]
+    work, ac = os.environ.get("WORK", ""), os.environ.get("AC", "")
     try:
-        command = build_command(
-            action, os.environ.get("WORK", ""), os.environ.get("AC", "")
-        )
+        command = build_command(action, work, ac)
     except ValueError as error:
         sys.stderr.write(f"{error}\n")
         return 2
-    if action != "collect":
-        return subprocess.run(command, cwd=ROOT, check=False).returncode
-
     result = subprocess.run(
         command, cwd=ROOT, check=False, capture_output=True, text=True
     )
     sys.stdout.write(result.stdout)
     sys.stderr.write(result.stderr)
-    if result.returncode == 0 and re.search(
-        r"^no tests collected\b", result.stdout, flags=re.MULTILINE
-    ):
+    if result.returncode == 0 and has_no_selected_tests(result.stdout):
         return 5
     return result.returncode
 

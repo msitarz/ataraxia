@@ -1,53 +1,99 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Verify Make acceptance targets dispatch validated selection inputs."""
+"""Verify Make targets select pytest markers against a temporary Work."""
 
-import json
+from contextlib import contextmanager
 import os
 from pathlib import Path
 import subprocess
-import sys
+import tempfile
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-WORK = (
-    "doc/feat/reviewable-workflow-v2/validation/docs-checks/"
-    "acceptance-traceability/coverage-checker/README.md"
-)
 
 
-@pytest.mark.parametrize(
-    ("target", "ac", "action"),
-    [("ac-collect", "", "collect"), ("ac-test", "AC-8", "test")],
-)
-def test_make_acceptance_targets_dispatch_work_and_criterion(
-    tmp_path, target, ac, action
-):
-    log = tmp_path / "calls.json"
-    uv = tmp_path / "uv"
-    uv.write_text(
-        f"#!{sys.executable}\n"
-        "import json, os, sys\n"
-        "with open(os.environ['ACCEPTANCE_TARGET_LOG'], 'w') as log:\n"
-        "    json.dump([sys.argv[1:], os.getenv('WORK'), os.getenv('AC')], log)\n",
-        encoding="utf-8",
-    )
-    uv.chmod(0o755)
+@contextmanager
+def make_fixture(root: Path):
+    """Create a temporary contract and marked cases beneath the repository."""
+    with tempfile.TemporaryDirectory(prefix="acceptance-fixture-", dir=root) as temp:
+        fixture = Path(temp)
+        work = (fixture / "README.md").relative_to(root).as_posix()
+        (fixture / "README.md").write_text(
+            "# Temporary acceptance contract\n", encoding="utf-8"
+        )
+        cases = fixture / "selection_cases.py"
+        cases.write_text(
+            "import pytest\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+            "def test_work_first_criterion():\n    pass\n\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-2')\n"
+            "def test_work_second_criterion():\n    pass\n\n"
+            "@pytest.mark.covers(work='other/README.md', ac='AC-1')\n"
+            "def test_other_work_is_excluded():\n"
+            "    raise AssertionError('a different Work was selected')\n",
+            encoding="utf-8",
+        )
+        yield work, cases.relative_to(root).as_posix()
+
+
+def run_target(target: str, work: str, cases: str, ac: str = ""):
+    """Run one Make target against only the temporary marked cases."""
     env = os.environ.copy()
-    env.update(
-        PATH=f"{tmp_path}:{env['PATH']}",
-        ACCEPTANCE_TARGET_LOG=str(log),
-    )
-
-    args = ["make", target, f"WORK={WORK}"]
+    env["PYTEST_ADDOPTS"] = cases
+    args = ["make", target, f"WORK={work}"]
     if ac:
         args.append(f"AC={ac}")
-    result = subprocess.run(
+    return subprocess.run(
         args, cwd=ROOT, env=env, capture_output=True, text=True, timeout=30
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
-    command, received_work, received_ac = json.loads(log.read_text(encoding="utf-8"))
-    assert command == ["run", "python", "script/acceptance_tests.py", action]
-    assert received_work == WORK
-    assert received_ac == ac or received_ac is None
+
+@pytest.mark.parametrize(
+    ("target", "ac", "selected", "excluded"),
+    [
+        (
+            "ac-collect",
+            "",
+            ("test_work_first_criterion", "test_work_second_criterion"),
+            ("test_other_work_is_excluded",),
+        ),
+        (
+            "ac-collect",
+            "AC-1",
+            ("test_work_first_criterion",),
+            ("test_work_second_criterion", "test_other_work_is_excluded"),
+        ),
+        (
+            "ac-test",
+            "",
+            ("2 passed",),
+            ("a different Work was selected",),
+        ),
+        (
+            "ac-test",
+            "AC-1",
+            ("1 passed",),
+            ("a different Work was selected", "test_work_second_criterion"),
+        ),
+    ],
+)
+def test_make_targets_select_work_and_optional_criterion(
+    target, ac, selected, excluded
+):
+    with make_fixture(ROOT) as (work, cases):
+        result = run_target(target, work, cases, ac)
+
+    output = result.stdout + result.stderr
+    assert result.returncode == 0, output
+    assert all(text in output for text in selected), output
+    assert all(text not in output for text in excluded), output
+
+
+@pytest.mark.parametrize("target", ["ac-collect", "ac-test"])
+def test_make_targets_fail_when_no_criterion_matches(target):
+    with make_fixture(ROOT) as (work, cases):
+        result = run_target(target, work, cases, "AC-9")
+
+    output = result.stdout + result.stderr
+    assert result.returncode != 0
+    assert "no tests" in output.lower() or "deselected" in output.lower(), output

@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Test safe construction and failure handling for acceptance test targets."""
+"""Test input validation for acceptance test targets."""
 
 import importlib.util
 from pathlib import Path
-import subprocess
 import sys
 from unittest.mock import patch
 
@@ -15,32 +14,32 @@ assert SPEC is not None and SPEC.loader is not None
 acceptance_tests = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(acceptance_tests)
 
-WORK = (
-    "doc/feat/reviewable-workflow-v2/validation/docs-checks/"
-    "acceptance-traceability/coverage-checker/README.md"
-)
+
+def make_work_fixture(root: Path) -> str:
+    """Create an isolated owning README and return its root-relative path."""
+    work_file = root / "work" / "README.md"
+    work_file.parent.mkdir(parents=True)
+    work_file.write_text("# Temporary test Work\n", encoding="utf-8")
+    return work_file.relative_to(root).as_posix()
 
 
 @pytest.mark.parametrize(
     ("action", "ac", "expected"),
     [
-        (
-            "collect",
-            "",
-            ["-m", f"covers(work='{WORK}')"],
-        ),
-        (
-            "test",
-            "AC-8",
-            ["-m", f"covers(work='{WORK}', ac='AC-8')"],
-        ),
+        ("collect", "", "covers(work='work/README.md')"),
+        ("test", "AC-8", "covers(work='work/README.md', ac='AC-8')"),
     ],
 )
-def test_build_command_scopes_work_and_optional_criterion(action, ac, expected):
-    command = acceptance_tests.build_command(action, WORK, ac)
+def test_build_command_scopes_work_and_optional_criterion(
+    tmp_path, action, ac, expected
+):
+    work = make_work_fixture(tmp_path)
+
+    with patch.object(acceptance_tests, "ROOT", tmp_path):
+        command = acceptance_tests.build_command(action, work, ac)
 
     assert command[:4] == [sys.executable, "-m", "pytest", "-q"]
-    assert command[-2:] == expected
+    assert command[-2:] == ["-m", expected]
     assert ("--collect-only" in command) is (action == "collect")
 
 
@@ -50,53 +49,52 @@ def test_build_command_scopes_work_and_optional_criterion(action, ac, expected):
         ("", "", "WORK is required"),
         ("../README.md", "", "repo-relative"),
         ("/tmp/README.md", "", "repo-relative"),
-        ("Makefile", "", "README.md or spec.md"),
-        ("doc/not-present/README.md", "", "existing repository file"),
-        (WORK, "AC-0", "criterion ID"),
+        ("work.txt", "", "README.md or spec.md"),
+        ("absent/README.md", "", "existing repository file"),
     ],
 )
-def test_invalid_inputs_fail_before_running_pytest(work, ac, message):
+def test_invalid_inputs_are_rejected(tmp_path, work, ac, message):
     with (
-        patch.object(acceptance_tests.subprocess, "run") as run,
+        patch.object(acceptance_tests, "ROOT", tmp_path),
         pytest.raises(ValueError, match=message),
     ):
         acceptance_tests.build_command("test", work, ac)
-    run.assert_not_called()
 
 
-def test_no_matching_tests_preserves_pytest_failure_status(monkeypatch):
-    monkeypatch.setattr(sys, "argv", [str(SCRIPT), "test"])
-    monkeypatch.setenv("WORK", WORK)
-    monkeypatch.setenv("AC", "AC-999")
-    completed = subprocess.CompletedProcess([], 5)
+def test_invalid_criterion_is_rejected_for_a_temporary_work(tmp_path):
+    work = make_work_fixture(tmp_path)
 
-    with patch.object(
-        acceptance_tests.subprocess, "run", return_value=completed
-    ) as run:
+    with (
+        patch.object(acceptance_tests, "ROOT", tmp_path),
+        pytest.raises(ValueError, match="criterion ID"),
+    ):
+        acceptance_tests.build_command("test", work, "AC-0")
+
+
+def test_main_reports_missing_work_clearly(capsys):
+    with (
+        patch.object(sys, "argv", [str(SCRIPT), "collect"]),
+        patch.dict(acceptance_tests.os.environ, {"WORK": ""}),
+    ):
         result = acceptance_tests.main()
 
-    assert result == 5
-    assert "covers(work=" in run.call_args.args[0][-1]
-    assert "ac='AC-999'" in run.call_args.args[0][-1]
-
-
-def test_collect_only_no_match_becomes_pytest_no_tests_status(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", [str(SCRIPT), "collect"])
-    monkeypatch.setenv("WORK", WORK)
-    completed = subprocess.CompletedProcess(
-        [], 0, stdout="no tests collected (161 deselected)\n", stderr=""
-    )
-
-    with patch.object(acceptance_tests.subprocess, "run", return_value=completed):
-        result = acceptance_tests.main()
-
-    assert result == 5
-    assert "no tests collected" in capsys.readouterr().out
-
-
-def test_main_reports_missing_work_clearly(monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", [str(SCRIPT), "collect"])
-    monkeypatch.delenv("WORK", raising=False)
-
-    assert acceptance_tests.main() == 2
+    assert result == 2
     assert "WORK is required" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    "output",
+    [
+        "no tests collected (2 deselected)\n",
+        "2 deselected in 0.04s\n",
+        "no tests ran in 0.04s\n",
+    ],
+)
+def test_empty_pytest_summaries_are_recognized(output):
+    assert acceptance_tests.has_no_selected_tests(output)
+
+
+def test_summary_with_a_selected_test_is_not_empty():
+    assert not acceptance_tests.has_no_selected_tests(
+        "1 passed, 2 deselected in 0.04s\n"
+    )
