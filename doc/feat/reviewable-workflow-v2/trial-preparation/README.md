@@ -30,6 +30,8 @@ success criteria.
   unnecessary preparation without weakening setup or offline verification.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
+- **TODO** [Workflow efficiency](workflow-efficiency/README.md): use a bounded
+  comparison to refine handoffs, PR evidence, and workspace preparation.
 
 Each child owns a separate review outcome. Complete the trial contract after
 completion evidence and handoff recovery so it exercises the delivered rules.

@@ -46,3 +46,8 @@ has a reviewable outcome.
 
 The trial starts only after the preparation parent is complete and integrated.
 This child defines evaluation; the trial supplies its actual results.
+
+The [workflow-efficiency comparison](../workflow-efficiency/README.md) is
+another bounded input to this evaluation. Capture its observations and limits
+in existing PR evidence; do not claim topology speedup from Works of different
+size.
