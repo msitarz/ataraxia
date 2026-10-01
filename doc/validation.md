@@ -3,9 +3,17 @@
 Read this file when choosing checks or reporting validation evidence. The
 [Makefile](../Makefile) owns the available commands and their behavior.
 
-For code changes, run focused tests during development. Before pushing a branch
-or opening a PR, run all CI checks locally, including for an early draft PR
-containing only a specification:
+While preparing a draft PR, run the checks affected by the change, including
+focused tests for code changes. A local full `make ci` run is optional; it is
+not a prerequisite for opening every draft PR. Report relevant failures,
+pending checks, reused evidence, and checks not run accurately.
+
+Before merge, require the full CI workflow to pass on the latest reviewed PR
+head. A result from an earlier revision does not cover later changes. The
+[CI workflow](../.github/workflows/ci.yml) owns its jobs and required commands.
+Local focused checks do not replace this merge gate.
+
+Run `make ci` when a full local run is useful:
 
 ```sh
 make ci
@@ -15,13 +23,13 @@ Full `make ci` runs local verification before the required network-dependent
 audit. An audit failure still fails CI, while completed local results remain
 available. The CI check job also runs its local checks before auditing.
 
-After setup, agents without network access must run `make verify` when `make ci`
-cannot run. It checks the locked environment without installing or resolving
+After setup, agents without network access can run `make verify` for local
+evidence. It checks the locked environment without installing or resolving
 dependencies, then reuses the same local check recipes as CI with uv network
 access disabled. Missing or stale environments fail; rerun `make setup` with
-network access to prepare them. A passing verification does not include a
-vulnerability audit. Report the audit separately as unrun or failed, and report
-any checks that could not run.
+network access to prepare them. A passing verification does not include the
+vulnerability audit and cannot satisfy the full CI merge gate. Report an audit
+as unrun or failed, and report any checks that could not run.
 
 CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent
 checks use the synchronized environment without updating dependency resolution.

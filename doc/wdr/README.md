@@ -20,3 +20,7 @@ remain proposals, not accepted decisions.
 - [4. Delegate repository changes for independent review](0004-delegate-repository-changes-for-independent-review.md)
 - [5. Review completed handoffs once](0005-review-completed-handoffs-once.md)
 - [6. Keep delivery evidence in PRs and Git](0006-keep-delivery-evidence-in-prs-and-git.md)
+
+## Proposal
+
+- [7. Require CI on the reviewed head](0007-require-ci-on-the-reviewed-head.md)
