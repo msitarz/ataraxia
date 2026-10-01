@@ -48,9 +48,9 @@ also follow the [body structure below](#commits-and-pull-requests).
 Humans and agents should run `make help` before project tools and invoke those
 tools through Make targets. Use space-separated repo paths in `ARGS` to narrow
 lint, format, test, and type-check runs; full-suite targets keep their full
-defaults. The
-[Makefile](Makefile) owns executable commands and descriptions; read recipes
-only when their details matter. See the
+defaults. If a required project invocation is not exposed, add or extend a
+Make target instead of bypassing Make. The [Makefile](Makefile) owns executable
+commands and descriptions; read recipes only when their details matter. See the
 [validation policy](doc/validation.md) when choosing checks or reporting
 validation evidence.
 
