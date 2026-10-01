@@ -9,7 +9,9 @@ Accepted
 ## Context
 
 Repository changes need bounded execution while the orchestrator retains
-independent review and the maintainer retains the final human decision.
+independent review and the maintainer retains the final human decision. Having
+the orchestrator make each change directly avoids a handoff but combines
+execution and review.
 
 ## Decision
 
@@ -21,7 +23,7 @@ agents or implementing the change as fallback.
 
 ## Consequences
 
-Implementation and review remain separate responsibilities, with the
+Changes and review remain separate responsibilities, with the
 maintainer's manual review and merge gates intact. See
 [orchestrator handoffs](../orchestrator.md) and
 [PR #81](https://github.com/msitarz/ataraxia/pull/81).

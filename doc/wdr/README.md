@@ -8,8 +8,8 @@ record syntax and changes.
 ## Initial retrospective selection
 
 These five records cover cross-Work choices about local Work contracts and
-tracking, Work lifecycle, maintainer review capacity, and delegated repository
-changes. This first set does not record every inventory finding. Narrower
+lifecycle, maintainer review capacity, and delegated repository changes. This
+first set does not record every inventory finding. Narrower
 documentation, tool, test, and code-review practices remain with their
 authoritative owners. Pending validation and acceptance-traceability Works
 remain proposals, not accepted decisions.

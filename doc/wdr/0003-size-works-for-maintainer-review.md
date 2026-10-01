@@ -9,8 +9,8 @@ Accepted
 ## Context
 
 The maintainer identified their understanding and review capacity as the
-bottleneck. A Work that takes too long to understand holds up steering and
-manual review.
+bottleneck. A broad batch may reduce handoffs, but takes longer to understand
+and steer.
 
 ## Decision
 
@@ -21,8 +21,9 @@ steering, but the ordinary manual review and merge gates still apply.
 
 ## Consequences
 
-Work boundaries protect review time while leaving the maintainer able to steer
-an active PR. See [Work scope and sizing](../workflow.md#scope-and-sizing),
+Separate Works add handoffs and parent-map upkeep, but keep each human review
+narrow while leaving the maintainer able to steer an active PR. See
+[Work scope and sizing](../workflow.md#scope-and-sizing),
 [contribution review gates](../../CONTRIBUTING.md#work-branches-review-and-merge),
 [PR #62](https://github.com/msitarz/ataraxia/pull/62), and
 [PR #80](https://github.com/msitarz/ataraxia/pull/80).

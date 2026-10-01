@@ -8,9 +8,9 @@ Accepted
 
 ## Context
 
-Nested Works need a visible status in their owning parent. Completed Work
-contracts should not become a permanent second tracking system when PRs and Git
-preserve the review history.
+Nested Works need visible status in their owning parent. Retained child
+directories or remote branch status can avoid parent edits, but split active
+status from the hierarchy or depend on GitHub queries for tracking.
 
 ## Decision
 
@@ -21,6 +21,8 @@ discussion and Git for review history instead of retaining journals.
 
 ## Consequences
 
-Parent maps show current delivery state while active, and finished Work
-contracts leave the active guidance tree. See [Work lifecycle](../workflow.md)
-and [PR #60](https://github.com/msitarz/ataraxia/pull/60).
+Parent maps require edits when children finish, and integrated status is checked
+against `master`. In return, current status stays beside the hierarchy and
+finished contracts leave the active guidance tree. See
+[Work lifecycle](../workflow.md) and
+[PR #60](https://github.com/msitarz/ataraxia/pull/60).
