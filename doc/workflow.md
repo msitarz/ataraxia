@@ -7,6 +7,16 @@ Each Work lives in a directory identified by its repository path. Its short
 the reviewer can tell when it is complete. Add `spec.md` or `design.md` only
 when useful, and link to it from the README.
 
+Explain the problem and verified current behavior when relevant. Define
+completion with observable examples, including preconditions, action, and
+expected outcomes; cover boundaries, failures, or behavior to preserve when
+they matter. State scope, non-goals, dependencies, assumptions, and open risks
+as useful, separating required contracts from provisional design. Use an
+[Investigation](#investigations) or [Prototype](#prototypes-and-rewrites) when
+feasibility needs checking. For performance claims, give a representative
+workload, baseline, measurement method, and success threshold. Scale detail to
+the Work; these are prompts, not mandatory fields or headings.
+
 Use standard relative Markdown links. Use Mermaid when a diagram helps explain
 behavior, relationships, or design choices; small changes do not need one.
 

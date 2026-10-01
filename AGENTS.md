@@ -15,7 +15,6 @@ its relevant README and linked contracts.
 | Test cleanup | [Test ownership](doc/test-ownership.md), including documentation tool probes |
 | Documentation | [Documentation ownership](doc/README.md); use `make doc-check` and `make doc-format` for Markdown formatting and local links |
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
-| Legacy feat slice | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
 | Running project tools | Run `make help` first. |

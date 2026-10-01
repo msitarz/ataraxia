@@ -7,9 +7,7 @@ in flux. Interfaces, module boundaries, and the DI/computation model may change
 without notice. PRs that don't match the current architectural direction won't
 be merged regardless of code quality.
 
-Follow the [legacy feat-slice workflow](doc/feat-workflow.md) for those
-deliveries; it owns their issue gate. Works use their local contracts and PRs
-without routine issues. Use the
+Works use their local contracts and PRs without routine issues. Use the
 [issue template](.github/ISSUE_TEMPLATE/work-item.md) for bugs and
 collaboration.
 
@@ -78,8 +76,8 @@ minor series. OS images and Python patch releases are not pinned by this policy.
 
 ## Submitting a change
 
-For changes outside a Work or legacy feat slice, branch off `master` and target
-PRs to `master` unless the task explicitly requires another base. Use the
+For changes outside a Work, branch off `master` and target PRs to `master`
+unless the task explicitly requires another base. Use the
 [issue template](.github/ISSUE_TEMPLATE/work-item.md) for issue bodies and the
 [commit conventions](#commits-and-pull-requests).
 
@@ -108,15 +106,6 @@ durable decisions across sessions. Remove merged remote and local branches when
 no dependent PR needs them. Retained branches and GitHub status queries are not
 routine Work tracking; use the [Work lifecycle](doc/workflow.md) for parent
 status rules.
-
-When defining, implementing, or reviewing a
-[feat slice](doc/ubiquitous-language.md), read the
-[feat slice workflow](doc/feat-workflow.md) in full. It owns branch naming,
-issue messages, specification guidance, manual review gates, and session
-handoffs. It requires manual specification approval before execution and both
-manual and defining-session review of implementation. Keep work in the same PR
-through review corrections. The maintainer makes the final merge or close
-decision.
 
 ## Commits and pull requests
 

@@ -13,11 +13,11 @@ module boundaries, resource ownership, and durable storage or external contracts
 can qualify; their importance must be explained, not inferred from the category.
 
 Return types, helper classes, signatures, and internal representations
-ordinarily belong in code, tests, or the feat slice. Mention code when it
-explains a qualifying decision, not to turn every implementation choice into an
-ADR. [ADR 16](adr/0016-source-manages-its-own-provider-lifecycle.md) qualifies
-because it changes resource ownership and cleanup guarantees after a lifecycle
-finding, not merely because it moves a context manager.
+ordinarily belong in code, tests, or the relevant Work contract. Mention code
+when it explains a qualifying decision, not to turn every implementation choice
+into an ADR. [ADR 16](adr/0016-source-manages-its-own-provider-lifecycle.md)
+qualifies because it changes resource ownership and cleanup guarantees after a
+lifecycle finding, not merely because it moves a context manager.
 
 Corrections that conform to an established contract need no new ADR. Do not turn
 recovery from an implementation mistake into an architectural decision. Preserve
@@ -27,7 +27,7 @@ older accepted records even when today's eligibility guidance would differ.
 
 Apply the shared
 [one decision per record](decision-records.md#one-decision-per-record) rule to
-qualifying architectural choices. A feat slice may create zero, one, or several
+qualifying architectural choices. A Work may create zero, one, or several
 ADRs; the number of implementation choices does not determine it.
 
 ## Record and change decisions
@@ -36,14 +36,13 @@ ADRs; the number of implementation choices does not determine it.
    records and follow amendment/supersession links; reuse them instead of
    duplicating decisions. Read [architecture](architecture.md) before changing
    boundaries.
-2. Follow the applicable delivery workflow for tracking and approval. The
-   [legacy feat workflow](feat-workflow.md) retains its issue gate; Works use
-   branches and PRs without routine issues. Record uncovered
-   decisions before implementing the affected design, and reassess when
-   implementation reveals new choices.
+2. Follow the applicable delivery workflow for tracking and approval. For a
+   Work, use its local contract and the [Work workflow](workflow.md). Record
+   uncovered decisions before implementing the affected design, and reassess
+   when implementation reveals new choices.
 3. Use the shared [decision record format and lifecycle](decision-records.md)
    for numbering, status, and amendment or supersession links.
-4. Update affected slice links and architecture's status references. Link to
+4. Update affected Work links and architecture's status references. Link to
    the decision; do not copy its rationale or local specification into them.
 
 ## Writing

@@ -15,15 +15,13 @@ Add scope boundaries or open questions if they affect the decision. -->
 
 ## Outcome
 
-<!-- State observable completion conditions. Say whether completion delivers
-an accepted specification or an implemented capability. Keep this brief; detailed
-scope, acceptance examples, and validation belong in the linked feat slice. -->
+<!-- State the observable outcome and completion conditions. Link a Work README
+for detailed acceptance when one exists; ADRs record architectural rationale. -->
 
 ## Links
 
-<!-- Add the feat slice, applicable ADRs, dependencies, branch, and PR as they
-become available. For feat slices, link the current handoff and review evidence
-instead of copying them here. Follow doc/feat-workflow.md for approval gates.
-No ADR is needed for work that makes no architectural decision.
+<!-- Add the relevant Work README, applicable ADRs, dependencies, branch, and
+PR as they become available. No ADR is needed when no architectural decision
+is involved.
 For CLI creation, omit this file's front matter and comments and pass the filled
 body with gh issue create --title ... --body-file <file>. -->
