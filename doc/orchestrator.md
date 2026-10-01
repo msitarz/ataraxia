@@ -68,5 +68,29 @@ passed and maintainer review is requested; it does not imply maintainer approval
 or merge, or successful CI. The maintainer retains the final review and merge
 decision.
 
-If Luna is unavailable, report it to the maintainer and wait for direction; do
-not silently switch agents or make the delegated changes as a fallback.
+Return the reviewable artifact (branch and revision or PR), outcome, acceptance
+evidence, checks and results, unrun checks, unresolved criteria, and blockers.
+Use the owning Work contract's stated evidence method; see
+[acceptance tracing](acceptance-tracing.md) for criterion status and coverage
+semantics. A blocked return names what remains and what input or decision is
+needed. A completed return identifies changes awaiting orchestrator review.
+
+If a Luna session is cancelled or lost, recover from the Work contract, its
+parent map, the branch or PR, and available check results. Establish which
+changes are retained, which evidence still applies to the current revision,
+and which criteria remain unresolved before continuing. If any of that is
+uncertain, state the uncertainty and ask for steering rather than treating the
+handoff as complete. A fresh Luna session may continue the same assigned scope
+after this recovery; it must return the recovered state and evidence with its
+result.
+
+If implementation reveals work outside the assigned contract, stop before
+expanding scope and report the finding, evidence, and a bounded proposed scope
+for approval. Do not change delegated agent or reasoning effort without the
+maintainer's approval. For corrections, send one consolidated finding list to
+the same Luna session and wait for a corrected result or blocker. If the same
+finding remains unresolved after a correction attempt, or the session cannot
+continue, stop the loop and report attempts, current evidence, and the specific
+decision or help needed. Resume only after the orchestrator or maintainer gives
+steering. If Luna is unavailable, report that and wait for direction; do not
+silently switch agents or make the delegated changes as a fallback.

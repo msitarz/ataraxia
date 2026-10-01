@@ -25,3 +25,4 @@ remain proposals, not accepted decisions.
 
 - [7. Require CI on the reviewed head](0007-require-ci-on-the-reviewed-head.md)
 - [8. Use Make as the project tool interface](0008-use-make-as-the-project-tool-interface.md)
+- [9. Recover delegated handoffs](0009-recover-delegated-handoffs.md)

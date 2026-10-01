@@ -17,9 +17,10 @@ success criteria.
 
 - **TODO** [Completion evidence](completion-evidence/README.md): establish how
   every criterion is verified and its evidence survives Work removal.
-- **TODO** [Handoff recovery](handoff-recovery/README.md): define useful
-  returns, interrupted-session recovery, and when stalled corrections need
-  steering.
+- **DONE** Handoff recovery: added return evidence, interrupted-session
+  recovery, and scope-growth and stalled-correction stopping rules to
+  [orchestrator guidance](../../../orchestrator.md); rationale is proposed in
+  [WDR 9](../../../wdr/0009-recover-delegated-handoffs.md).
 - **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
   decision status, contract authority, and contributor examples.
 - **DONE** Acceptance tool scope: added support for
