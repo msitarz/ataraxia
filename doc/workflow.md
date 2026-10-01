@@ -25,15 +25,22 @@ human-facing and agent-facing versions of the same contract.
 
 ## Scope and sizing
 
-Give each leaf Work one responsibility and an outcome a maintainer can
-understand and review quickly, aiming for about five minutes of human review.
-When a Work would accumulate unrelated responsibilities or take longer to
-understand, nest independently reviewable child Works under a parent that maps
-their outcomes. Do not push additional scope into a leaf just because it is
-nearby. An explicit maintainer request may add scope to the current Work PR so
-the maintainer can steer that revision; the ordinary manual review and merge
-gates still apply, and the request does not waive the maintainer's manual
-review or merge decision.
+Keep each leaf Work focused on one responsibility and outcome, then size it for
+the human judgment needed to review the complete expected change, including
+behavior, tests, supporting changes, and concepts to understand. Aim for one
+reviewable question or outcome a maintainer can assess in a short sitting of
+about five minutes. Responsibility count and lines of code alone do not predict
+review effort. Prompts such as what decision or new behavior is under review,
+which concepts the reviewer must understand, and whether the result fits one
+sitting can help; they are optional guidance, not required fields or headings.
+
+When the expected change needs more review, nest independently reviewable child
+Works under a parent that maps their outcomes. Do not push additional scope into
+a leaf just because it is nearby. An explicit maintainer request may authorize
+a larger review in the current Work PR so the maintainer can steer that
+revision; ordinary manual review and merge gates still apply. Approval of a
+Work plan alone does not waive the review-effort target if delivery proves
+harder to assess, even when scope has not changed.
 
 ## Lifecycle
 
