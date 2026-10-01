@@ -13,9 +13,12 @@ to formatter-valid completed artifacts.
 Preserve worktree isolation, consolidated completed-artifact review, and reuse
 of reported check evidence. The executor returns concise observed acceptance
 results and ready-to-review PR prose so the reviewer does not reconstruct
-them. Topology and review ownership are defined in the
-[tree-orchestration contract](../tree-orchestration/README.md). Keep
-independent orchestrator review and human review, merge, and CI gates.
+them. Topology and review ownership are defined by the
+[tree-orchestration outcome](../README.md) in permanent
+[orchestrator guidance](../../../../../orchestrator.md). Deliver
+tree-orchestration before handoffs if both update that owner, and coordinate
+the shared edits. Keep independent orchestrator review and human review,
+merge, and CI gates.
 
 ## Acceptance
 
