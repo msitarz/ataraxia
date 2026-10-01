@@ -41,6 +41,15 @@ These are qualitative observations: no exact elapsed time, token use, or cost
 was recorded for this small update. They do not establish a controlled
 comparison or prove a flatter topology is faster.
 
+Review of the
+[latest #107](https://github.com/msitarz/ataraxia/commit/c48b3663e32c59862ef7cfc5b761fc6a9fcdbd8e)
+and
+[#108](https://github.com/msitarz/ataraxia/commit/2bbdd12d8fd39827b8f5650a6db0f211e3ee325f)
+revisions also found repeated explanations inside existing owners despite the
+current [documentation review rule](../../../../README.md#review). This points
+to an application gap and missing whole-section instruction, not an absent
+general duplication rule.
+
 ## Works
 
 - **TODO** [Handoffs](handoffs/README.md): improve scope, delegation, parallel
@@ -51,6 +60,8 @@ comparison or prove a flatter topology is faster.
   minimal preparation or safe reuse for docs-only agent workspaces.
 - **TODO** [Tree orchestration](tree-orchestration/README.md): define
   orchestration roles and review ownership for Work trees.
+- **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
+  guidance as a whole and consolidate repeated explanations within owners.
 
 Use the already authorized direct parent-to-Luna arrangement at low effort at
 each leaf boundary; nodes with children have an orchestrator owner. Preserve
@@ -96,7 +107,13 @@ differently sized Works.
   Verification: review the
   next iteration's existing PR evidence or trial-contract record against the
   declared basis and available measurements.
-- **AC-5 TODO** All four child Works are integrated and the bounded comparison
-  is captured before this parent is completed.
+- **AC-5 TODO** All mapped child Works are integrated and the bounded
+  comparison is captured before this parent is completed.
   Verification: check `master` status for each mapped child and inspect the
   comparison record.
+- **AC-6 TODO** The existing documentation review owner requires a whole-section
+  pass and consolidation within owners while preserving distinct requirements,
+  routes, anchors, and useful examples.
+  Verification: walk through the bounded #107 return/recovery and #108
+  acceptance-guidance examples after integration, checking retained
+  requirements and valid reading routes.
