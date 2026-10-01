@@ -28,3 +28,6 @@ contracts, child discovery, status, and lifecycle.
   [orchestrator guidance](../../orchestrator.md).
 - **DONE** Handoff scope growth — added a stop-and-split rule for delegated
   scope in [orchestrator guidance](../../orchestrator.md).
+- **TODO** [Human review effort](human-review-effort/README.md): make reviewer
+  effort part of Work sizing and add orchestrator checkpoints before handoff and
+  before requesting human review.
