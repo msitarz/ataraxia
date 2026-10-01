@@ -46,6 +46,12 @@ a route only when existing routes cannot discover it. Do not split files just
 to move their size elsewhere or create a chain of indexes agents must read for
 every task.
 
+When adding or changing a reading route, check whether its target contains
+guidance unrelated to the triggering task. Extract independently triggered rules
+into a focused owner before routing there. Follow linked guidance only when its
+stated reading trigger applies; a link alone does not require reading the
+target.
+
 Separate current guidance, proposed behavior, accepted decisions, implemented
 behavior, and evidence. Accepted ADRs explain decisions, not implementation
 status. Verify current behavior in code and tests. If behavior conflicts with
