@@ -56,6 +56,9 @@ general duplication rule.
   work selection, and artifact review.
 - **TODO** [PR evidence](pr-evidence/README.md): clarify useful completion
   evidence while preserving criterion coverage.
+- **TODO** [GitHub delivery](github-delivery/README.md): define a reviewable
+  Work commit sequence, preserved acceptance evidence, and safe PR publication
+  and merge boundaries.
 - **TODO** [Workspace preparation](workspace-preparation/README.md): measure
   minimal preparation or safe reuse for docs-only agent workspaces.
 - **TODO** [Tree orchestration](tree-orchestration/README.md): define
