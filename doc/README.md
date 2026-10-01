@@ -17,6 +17,7 @@ relevant guidance.
 | A Work's local outcome and acceptance contract            | The relevant Work README                                                                                                                      |
 | ADR eligibility, format, and amendments                   | [ADR workflow](adr-workflow.md)                                                                                                               |
 | Coding, typing, and testing conventions                   | [Engineering](engineering.md)                                                                                                                 |
+| Test ownership and cleanup                                | [Test ownership](test-ownership.md)                                                                                                           |
 | Setup, toolchain, contribution, commit, and PR rules      | [CONTRIBUTING.md](../CONTRIBUTING.md)                                                                                                         |
 | Choosing checks and reporting validation evidence         | [Validation](validation.md)                                                                                                                   |
 | Markdown formatting and local-link checks                 | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml)                                                                      |
@@ -44,6 +45,12 @@ a document only for a distinct responsibility with a clear reading trigger; add
 a route only when existing routes cannot discover it. Do not split files just
 to move their size elsewhere or create a chain of indexes agents must read for
 every task.
+
+When adding or changing a reading route, check whether its target contains
+guidance unrelated to the triggering task. Extract independently triggered rules
+into a focused owner before routing there. Follow linked guidance only when its
+stated reading trigger applies; a link alone does not require reading the
+target.
 
 Separate current guidance, proposed behavior, accepted decisions, implemented
 behavior, and evidence. Accepted ADRs explain decisions, not implementation

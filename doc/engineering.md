@@ -113,3 +113,4 @@ Use integration tests for real strategy loading and acceptance tests for CLI
 output/artifacts.
 
 Follow the [validation policy](validation.md) for focused and required checks.
+For test ownership and cleanup, read [Test ownership](test-ownership.md).

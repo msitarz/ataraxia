@@ -1,0 +1,16 @@
+# Test ownership
+
+Read this file when completing a Work or reviewing tests for cleanup, including
+documentation tool probes.
+
+Review the purpose of tests added during a Work. Remove temporary adoption
+probes that only verify upstream behavior. Retain tests for our integration,
+contracts, and concrete compatibility regressions, including tests that
+exercise a dependency through our own boundary.
+
+Record removed probes, their one-time verification method and result, and the
+removal rationale in the delivery PR. When removal affects an active acceptance
+criterion, state the one-time method and link the delivery PR beside that
+criterion so coverage checks can find the evidence. A removed probe is adoption
+evidence, not continuing regression coverage; its code and result remain
+available in Git history and the PR.

@@ -11,6 +11,7 @@ its relevant README and linked contracts.
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | Any repository change                            | [Repair and scope rules](doc/change-rules.md#fix-the-underlying-problem)                                                                |
 | Code or tests                                    | [Engineering conventions](doc/engineering.md), [architecture](doc/architecture.md) for current contracts, and relevant [ADRs](doc/adr/) |
+| Test cleanup                                     | [Test ownership](doc/test-ownership.md), including documentation tool probes                                                            |
 | Documentation                                    | [Documentation ownership](doc/README.md); use `make doc-check` and `make doc-format` for Markdown formatting and local links            |
 | Work                                             | [Work workflow](doc/workflow.md) and the relevant Work README                                                                           |
 | Legacy feat slice                                | [Glossary](doc/ubiquitous-language.md) and [feat-slice workflow](doc/feat-workflow.md) in full                                          |
