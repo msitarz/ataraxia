@@ -12,6 +12,21 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 
 
+def expected_size_advisory(*paths: str) -> list[str]:
+    """Return the Make lint target's advisory Ruff invocation."""
+    return [
+        "run",
+        "ruff",
+        "check",
+        "--select",
+        "too-many-statements",
+        "--config",
+        "lint.pylint.max-statements=25",
+        "--exit-zero",
+        *paths,
+    ]
+
+
 def fake_uv_environment(tmp_path):
     """Return a fake uv executable environment and its captured-call log."""
     log = tmp_path / "uv-calls.jsonl"
@@ -20,7 +35,9 @@ def fake_uv_environment(tmp_path):
         f"#!{sys.executable}\n"
         "import json, os, sys\n"
         "with open(os.environ['FAKE_UV_LOG'], 'a') as log:\n"
-        "    log.write(json.dumps(sys.argv[1:]) + '\\n')\n",
+        "    log.write(json.dumps(sys.argv[1:]) + '\\n')\n"
+        "if '--exit-zero' in sys.argv:\n"
+        "    sys.exit(int(os.getenv('FAKE_UV_ADVISORY_EXIT', '0')))\n",
         encoding="utf-8",
     )
     uv.chmod(0o755)
@@ -34,9 +51,10 @@ def fake_uv_environment(tmp_path):
     return env, log
 
 
-def run_make_with_fake_uv(tmp_path, *args):
+def run_make_with_fake_uv(tmp_path, *args, advisory_exit=0):
     """Run Make against a fake uv executable and return output and calls."""
     env, log = fake_uv_environment(tmp_path)
+    env["FAKE_UV_ADVISORY_EXIT"] = str(advisory_exit)
     result = subprocess.run(
         ["make", *args], cwd=ROOT, env=env, capture_output=True, text=True, timeout=30
     )
@@ -156,16 +174,29 @@ def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
 @pytest.mark.parametrize(
     ("target", "args", "expected"),
     [
-        ("lint", (), [["run", "ruff", "check", ".", "--fix"]]),
+        (
+            "lint",
+            (),
+            [
+                ["run", "ruff", "check", ".", "--fix"],
+                expected_size_advisory("."),
+            ],
+        ),
         (
             "lint",
             ("ARGS=src/feature.py",),
-            [["run", "ruff", "check", "src/feature.py", "--fix"]],
+            [
+                ["run", "ruff", "check", "src/feature.py", "--fix"],
+                expected_size_advisory("src/feature.py"),
+            ],
         ),
         (
             "lint-check",
             ("ARGS=src/feature.py src/provider.py",),
-            [["run", "ruff", "check", "src/feature.py", "src/provider.py"]],
+            [
+                ["run", "ruff", "check", "src/feature.py", "src/provider.py"],
+                expected_size_advisory("src/feature.py", "src/provider.py"),
+            ],
         ),
         ("format", (), [["run", "ruff", "format", "."]]),
         (
@@ -227,6 +258,14 @@ def test_make_tool_targets_preserve_defaults_and_route_selectors(
     assert calls == expected
 
 
+def test_lint_target_does_not_suppress_advisory_tool_failures(tmp_path):
+    result, calls = run_make_with_fake_uv(tmp_path, "lint-check", advisory_exit=2)
+
+    assert result.returncode != 0
+    assert len(calls) == 2
+    assert "--exit-zero" in calls[1]
+
+
 def test_markdown_targets_pass_selected_paths_to_both_checkers(tmp_path):
     result, calls = run_make_with_fake_uv(
         tmp_path, "doc-check", "ARGS=doc/acceptance-tracing.md"
@@ -255,7 +294,10 @@ def test_make_selectors_quote_shell_metacharacters(tmp_path):
     result, calls = run_make_with_fake_uv(tmp_path, "lint-check", f"ARGS={selector}")
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert calls == [["run", "ruff", "check", "src/example.py;", "touch", str(marker)]]
+    assert calls == [
+        ["run", "ruff", "check", "src/example.py;", "touch", str(marker)],
+        expected_size_advisory("src/example.py;", "touch", str(marker)),
+    ]
     assert not marker.exists()
 
 

@@ -123,6 +123,7 @@ extend-ignore = [
   "undocumented-magic-method",
   "undocumented-public-init",
 ]
+extend-select = ["too-many-statements"] # Ruff PLR0915 statement count
 ignore = [
   "missing-trailing-comma",                    # REQUIRED: conflicts with ruff format
   "single-line-implicit-string-concatenation", # REQUIRED: conflicts with ruff format
@@ -141,6 +142,10 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.pylint]
+# Lint blocks above 50; Make adds an advisory-only pass above 25.
+max-statements = 50
 
 [tool.ruff.lint.isort]
 known-first-party = ["ataraxia"]
