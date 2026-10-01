@@ -16,16 +16,16 @@ for repeated unsuccessful corrections and the steering needed to resume.
 
 ## Acceptance
 
-- **AC-1 DONE** A return identifies the reviewable artifact and sufficient
+- **AC-1 TODO** A return identifies the reviewable artifact and sufficient
   evidence for the orchestrator to distinguish completion from a blocker.
   Verification: review example successful and blocked returns against the
   required contents, including unrun checks and unresolved criteria.
-- **AC-2 DONE** After cancellation or loss of a Luna session, the recovery
+- **AC-2 TODO** After cancellation or loss of a Luna session, the recovery
   procedure identifies retained changes, reusable evidence, and remaining work
   before a replacement session continues; uncertainty is surfaced.
   Verification: walk through recovery from a partial implementation and from
   completed changes awaiting review using a fresh-session context.
-- **AC-3 DONE** Scope expansion and stalled correction loops have explicit
+- **AC-3 TODO** Scope expansion and stalled correction loops have explicit
   stopping and escalation behavior, preserving approval for a different agent
   or higher reasoning effort.
   Verification: walk through an out-of-scope discovery, repeated failure to

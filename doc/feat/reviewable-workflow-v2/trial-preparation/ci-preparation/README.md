@@ -16,7 +16,7 @@ result or an evidence-based decision to retain the existing setup.
 
 ## Acceptance
 
-- **AC-1 DONE** The delivery PR reports a representative baseline, the proposed
+- **AC-1 TODO** The delivery PR reports a representative baseline, the proposed
   preparation change, a declared success threshold, and comparable results;
   any decision to retain existing behavior explains the measured tradeoff.
   Verification: review measurements for cold and warm preparation, including

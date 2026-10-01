@@ -14,11 +14,11 @@ example checks. Update affected descriptions in
 
 ## Acceptance
 
-- **AC-1 DONE** Main tests, example tests, and installed-package checks can run
+- **AC-1 TODO** Main tests, example tests, and installed-package checks can run
   when the static-check job or its network audit fails.
   Verification: inspect the workflow dependency graph and commands; confirm
   independent job scheduling and that a check-job failure cannot skip them.
-- **AC-2 DONE** Audit or static-check failure still prevents satisfying the full
+- **AC-2 TODO** Audit or static-check failure still prevents satisfying the full
   CI merge gate; all previous verification responsibilities remain covered.
   Verification: compare the workflow and Make commands before and after the
   change, review validation policy, and report a full CI run on the PR head.
