@@ -68,7 +68,7 @@ def coverage_fixture(root: Path, contract: str | None = None):
             ),
             encoding="utf-8",
         )
-        cases = fixture / "coverage_markers.py"
+        cases = fixture / "test_coverage_markers.py"
         cases.write_text(
             "import pytest\n"
             f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"

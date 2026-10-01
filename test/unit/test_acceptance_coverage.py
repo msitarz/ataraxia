@@ -61,6 +61,37 @@ def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
     ]
 
 
+def test_only_decorated_static_test_candidates_count_as_coverage(tmp_path):
+    work = write_work(
+        tmp_path,
+        "# Work\n\n"
+        "- **AC-1 DONE** A collected test covers this.\n"
+        "- **AC-2 DONE** Helpers and ordinary calls do not cover this.\n",
+    )
+    write_tests(
+        tmp_path,
+        "import pytest\n\n"
+        f"unused = pytest.mark.covers(work={work!r}, ac='AC-2')\n\n"
+        f"@pytest.mark.covers(work={work!r}, ac='AC-2')\n"
+        "def helper():\n    pass\n\n"
+        "def test_body_call_is_not_a_decorator():\n"
+        f"    pytest.mark.covers(work={work!r}, ac='AC-2')\n\n"
+        "class TestHelpers:\n"
+        f"    @pytest.mark.covers(work={work!r}, ac='AC-2')\n"
+        "    def helper(self):\n        pass\n\n"
+        f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+        "def test_supported_candidate():\n    pass\n",
+    )
+
+    errors, reports = check_work(tmp_path, work)
+
+    assert reports == [
+        "AC-1 DONE: 1 test marker(s)",
+        "AC-2 DONE: coverage missing",
+    ]
+    assert any(f"{work}: AC-2 is DONE" in error for error in errors)
+
+
 def test_done_accepts_a_specific_non_test_verification(tmp_path):
     work = write_work(
         tmp_path,
@@ -140,3 +171,17 @@ def test_empty_verification_annotation_is_rejected():
 
     assert len(errors) == 1
     assert "Verification annotation needs a method" in errors[0]
+
+
+def test_outdented_verification_does_not_cover_done_criterion(tmp_path):
+    work = write_work(
+        tmp_path,
+        "# Work\n"
+        "- **AC-1 DONE** Output is stable.\n"
+        "Verification: compare generated output with the committed fixture.\n",
+    )
+
+    errors, reports = check_work(tmp_path, work)
+
+    assert reports == ["AC-1 DONE: coverage missing"]
+    assert any(f"{work}: AC-1 is DONE" in error for error in errors)

@@ -35,7 +35,11 @@ def test_inbound_links(): ...
 ```
 
 Repeat the decorator when a test covers multiple criteria. Include the covered
-criterion text in the test docstring.
+criterion text in the test docstring. The checker counts direct `covers`
+decorators only on top-level `test_` functions and `test_` methods of top-level
+`Test` classes in pytest-style `test_*.py` or `*_test.py` files. It does not
+infer collection or count marker assignments, calls inside function bodies,
+nested helpers, or decorated helpers.
 
 ## Collecting and running selected tests
 

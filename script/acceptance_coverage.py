@@ -83,6 +83,10 @@ def _criterion_block(
         item = _LIST_ITEM.match(line)
         if block and item and len(item.group(1)) <= indent:
             break
+        if block and line.strip() and not item:
+            leading = len(line) - len(line.lstrip(" "))
+            if leading < indent + 2:
+                break
         block.append(line)
     return block
 
@@ -149,6 +153,23 @@ def _literal_string(node: ast.expr) -> str | None:
     return None
 
 
+def _test_functions(tree: ast.Module) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Return only statically recognizable pytest test functions."""
+    functions: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if node.name.startswith("test_"):
+                functions.append(node)
+        elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
+            functions.extend(
+                child
+                for child in node.body
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and child.name.startswith("test_")
+            )
+    return functions
+
+
 def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
     """Count literal covers markers for one Work across repository tests.
 
@@ -162,6 +183,8 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
         return counts, errors
 
     for path in sorted(test_root.rglob("*.py")):
+        if not (path.name.startswith("test_") or path.name.endswith("_test.py")):
+            continue
         relative = path.relative_to(root).as_posix()
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=relative)
@@ -169,39 +192,48 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
             errors.append(f"{relative}: cannot inspect marker declarations: {exc}")
             continue
 
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Call) or not _is_covers_call(node):
-                continue
-            marker = f"{relative}:{node.lineno}"
-            work_args = [item.value for item in node.keywords if item.arg == "work"]
-            if (
-                len(work_args) != 1
-                or (selected_work := _literal_string(work_args[0])) is None
-            ):
-                errors.append(f"{marker}: covers marker needs one literal work path")
-                continue
-            if selected_work != work:
-                continue
+        for function in _test_functions(tree):
+            for decorator in function.decorator_list:
+                if not isinstance(decorator, ast.Call) or not _is_covers_call(
+                    decorator
+                ):
+                    continue
+                marker = f"{relative}:{decorator.lineno}"
+                work_args = [
+                    item.value for item in decorator.keywords if item.arg == "work"
+                ]
+                if (
+                    len(work_args) != 1
+                    or (selected_work := _literal_string(work_args[0])) is None
+                ):
+                    errors.append(
+                        f"{marker}: covers marker needs one literal work path"
+                    )
+                    continue
+                if selected_work != work:
+                    continue
 
-            ac_args = [item.value for item in node.keywords if item.arg == "ac"]
-            has_unpacking = any(item.arg is None for item in node.keywords)
-            known_names = {"work", "ac"}
-            unsupported = (
-                node.args
-                or has_unpacking
-                or any(item.arg not in known_names for item in node.keywords)
-                or len(ac_args) != 1
-            )
-            if unsupported or (ac := _literal_string(ac_args[0])) is None:
-                errors.append(
-                    f"{marker}: selected covers marker needs literal work "
-                    "and ac strings"
+                ac_args = [
+                    item.value for item in decorator.keywords if item.arg == "ac"
+                ]
+                has_unpacking = any(item.arg is None for item in decorator.keywords)
+                known_names = {"work", "ac"}
+                unsupported = (
+                    decorator.args
+                    or has_unpacking
+                    or any(item.arg not in known_names for item in decorator.keywords)
+                    or len(ac_args) != 1
                 )
-                continue
-            if not _AC_ID.fullmatch(ac):
-                errors.append(f"{marker}: invalid criterion ID {ac!r}")
-                continue
-            counts[ac] = counts.get(ac, 0) + 1
+                if unsupported or (ac := _literal_string(ac_args[0])) is None:
+                    errors.append(
+                        f"{marker}: selected covers marker needs literal work "
+                        "and ac strings"
+                    )
+                    continue
+                if not _AC_ID.fullmatch(ac):
+                    errors.append(f"{marker}: invalid criterion ID {ac!r}")
+                    continue
+                counts[ac] = counts.get(ac, 0) + 1
     return counts, errors
 
 
