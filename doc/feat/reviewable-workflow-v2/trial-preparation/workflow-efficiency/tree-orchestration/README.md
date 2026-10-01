@@ -32,12 +32,12 @@ runtime wrapper.
 
 Deliver this Work before any handoffs Work that edits the same orchestrator
 owner. Its delivery must create a WDR through the
-[WDR lifecycle](../../../../../wdr-workflow.md) and
-[status guidance](../pr-evidence/README.md), recording the rationale and
-tradeoffs for tree ownership and direct leaf delegation. When the ready PR
-adopts the decision, the WDR's intended merged state is `Accepted`; maintainer
-acceptance occurs through merge. Include matching index and reciprocal
-amendment or supersession metadata in that PR. The comparison must
+[WDR lifecycle](../../../../../wdr-workflow.md), recording the rationale and
+tradeoffs for tree ownership and direct leaf delegation. The
+[mapped PR-evidence Work](../README.md#works) clarifies status and same-PR
+metadata requirements. When this delivery adopts its decision, its WDR targets
+`Accepted` on merge with consistent index and reciprocal metadata. The
+comparison must
 cover tree routing against the earlier
 per-leaf wrapper arrangement and cite durable PR or revision references for
 timing evidence. The [parent's observations](../README.md) are planning input:
@@ -46,11 +46,9 @@ agent-reported batches of about 34 and 38 minutes; delayed launches and about
 11 minutes spent drafting PR evidence; shared-file conflicts; and formatting
 rework. These observations came from different scopes and do not establish
 causal attribution or controlled speedup. Token cost and actual human review
-time remain unavailable. At delivery, use the next unused WDR number and
-follow the lifecycle for status. Preserve accepted history; if the eventual
-choice amends or replaces an accepted decision, follow the amendment or
-supersession lifecycle. A proposal-only delivery whose merge does not adopt
-the decision remains `Proposed`.
+time remain unavailable. At delivery, use the next unused WDR number and follow
+the lifecycle. Preserve accepted history; if the eventual choice amends or
+replaces an accepted decision, follow the amendment or supersession lifecycle.
 
 This plan requires the WDR as a child delivery outcome; it does not create a
 record or accept a decision.
@@ -65,9 +63,9 @@ record or accept a decision.
 - **AC-2 TODO** A WDR compares tree routing with the prior per-leaf wrapper
   arrangement, records rationale and tradeoffs, cites durable PR or revision
   evidence, and distinguishes reports from causal claims and unknown costs or
-  review time. Delivery uses the next unused number and lifecycle status. If
-  the ready PR adopts the decision, it intends `Accepted` on merge and carries
-  matching index and reciprocal metadata; proposal-only work may remain
-  `Proposed`. Preserve accepted history.
+  review time. Delivery uses the next unused number. If this delivery adopts
+  the decision, its WDR targets `Accepted` on merge with consistent index and
+  reciprocal metadata, following status clarification in the mapped
+  PR-evidence Work. Preserve accepted history.
   Verification: inspect the proposed record, its index entry, linked guidance,
   and lifecycle status.
