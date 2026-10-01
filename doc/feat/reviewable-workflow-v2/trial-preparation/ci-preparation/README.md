@@ -7,12 +7,13 @@ synchronizes development dependencies, prepares all hook environments, and
 builds a wheel. Test and example jobs do not invoke hooks or package checks;
 the package smoke check builds its own wheel.
 
-Deliver [CI scheduling](../ci-scheduling/README.md) first. Record a baseline
-before changing preparation, separating cold and warm caches and stating the
-environment, commands, repetitions, and variability. Allocate dependency,
-hook, and build preparation to their actual consumers. Define the success
-threshold from that baseline before accepting the optimization, and report the
-result or an evidence-based decision to retain the existing setup.
+With CI scheduling delivered in the [trial-preparation map](../README.md),
+record a baseline before changing preparation, separating cold and warm
+caches and stating the environment, commands, repetitions, and variability.
+Allocate dependency, hook, and build preparation to their actual consumers.
+Define the success threshold from that baseline before accepting the
+optimization, and report the result or an evidence-based decision to retain
+the existing setup.
 
 ## Acceptance
 
