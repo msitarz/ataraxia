@@ -7,8 +7,8 @@ contracts, child discovery, status, and lifecycle.
 
 ## Works
 
-- **DONE** Guidance and routing — moved rules to their owners, routed agents by
-  task, and retired the superseded workflow.
+- **DONE** Guidance and routing — moved rules to their owners and routed
+  agents by task.
 - **DONE** Work structure and review — established permanent Work contracts,
   lifecycle, prototype, and PR review rules.
 - **DONE** Focused guidance — established focused owners and direct routes for
@@ -17,5 +17,8 @@ contracts, child discovery, status, and lifecycle.
   evaluate mechanical documentation checks.
 - **TODO** [Live trial](live-trial/README.md): use this workflow during its own
   delivery, then apply it to a familiar feature.
-
-No active repository guidance changes in this first artifact.
+- **TODO** [Retire the feat-slice workflow](retire-feat-workflow/README.md):
+  resolve active legacy guidance and preserve useful history as Works become
+  authoritative.
+- **TODO** [Workflow Decision Records](workflow-decision-records/README.md):
+  define a lightweight way to record consequential delivery-workflow decisions.
