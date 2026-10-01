@@ -43,12 +43,11 @@ ACs and that each `DONE` criterion has test coverage or an explicit non-test
 verification method. It does not inspect test results or query CI. Missing
 coverage remains `TODO`; document non-test methods beside the relevant AC.
 
-For temporary probes removed under
-[Acceptance test lifecycle](../../acceptance-test-lifecycle/README.md), retain
-an explicit one-time adoption verification method and PR reference so removing
-unnecessary tests does not falsely mark coverage incomplete. Git preserves the
-probe code; the PR records the result and removal rationale. This is not a claim
-of retained regression coverage.
+When a Work removes a temporary probe, record its one-time verification method,
+observed result, and removal rationale in the delivery PR. The PR is the durable
+reference for this adoption evidence; the removed probe is not continuing
+regression coverage. This avoids falsely marking acceptance coverage
+incomplete.
 
 When a delivery PR removes a Work directory, check its deleted contract against
 the tests and other verification methods in that PR. Keep markers and docstrings

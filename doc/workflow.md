@@ -27,6 +27,11 @@ child directory in the same PR. Before removing a finished Work, promote
 lasting contracts and decisions to their authoritative owners. PRs hold review
 discussion; Git preserves removed contracts and exact changes.
 
+Before completing a Work, review tests added during it. Remove temporary probes
+that only verify upstream behavior; retain tests for our integration, contracts,
+and concrete compatibility regressions. Record the removal rationale and
+one-time verification evidence in the delivery PR.
+
 Discovery may add children without maintaining a fixed execution list. Nest
 when it reduces necessary context; strongly discourage more than five levels.
 Directory ancestry does not select a Git base.
