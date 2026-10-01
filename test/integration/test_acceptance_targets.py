@@ -15,31 +15,47 @@ ROOT = Path(__file__).resolve().parents[2]
 @contextmanager
 def make_fixture(root: Path):
     """Create a temporary contract and marked cases beneath the repository."""
-    with tempfile.TemporaryDirectory(prefix="acceptance-fixture-", dir=root) as temp:
+    example_root = root / "example"
+    example_root.mkdir(exist_ok=True)
+    test_root = root / "test"
+    with (
+        tempfile.TemporaryDirectory(
+            prefix="acceptance-fixture-", dir=test_root
+        ) as temp,
+        tempfile.TemporaryDirectory(
+            prefix="acceptance-fixture-", dir=example_root
+        ) as example_temp,
+    ):
         fixture = Path(temp)
         work = (fixture / "README.md").relative_to(root).as_posix()
         (fixture / "README.md").write_text(
             "# Temporary acceptance contract\n", encoding="utf-8"
         )
-        cases = fixture / "selection_cases.py"
-        cases.write_text(
+        test_cases = fixture / "test_selection_cases.py"
+        test_cases.write_text(
             "import pytest\n"
             f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
-            "def test_work_first_criterion():\n    pass\n\n"
-            f"@pytest.mark.covers(work={work!r}, ac='AC-2')\n"
-            "def test_work_second_criterion():\n    pass\n\n"
+            "def test_work_first_criterion_test_root():\n    pass\n\n"
             "@pytest.mark.covers(work='other/README.md', ac='AC-1')\n"
             "def test_other_work_is_excluded():\n"
             "    raise AssertionError('a different Work was selected')\n",
             encoding="utf-8",
         )
-        yield work, cases.relative_to(root).as_posix()
+        (Path(example_temp) / "test_selection_cases.py").write_text(
+            "import pytest\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+            "def test_work_first_criterion_example_root():\n    pass\n\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-2')\n"
+            "def test_work_second_criterion_example_root():\n    pass\n",
+            encoding="utf-8",
+        )
+        yield work
 
 
-def run_target(target: str, work: str, cases: str, ac: str = ""):
+def run_target(target: str, work: str, ac: str = ""):
     """Run one Make target against only the temporary marked cases."""
     env = os.environ.copy()
-    env["PYTEST_ADDOPTS"] = cases
+    env.pop("PYTEST_ADDOPTS", None)
     args = ["make", target, f"WORK={work}"]
     if ac:
         args.append(f"AC={ac}")
@@ -78,7 +94,18 @@ def coverage_fixture(root: Path, contract: str | None = None):
             "def test_other_work_is_historical_or_unrelated():\n    pass\n",
             encoding="utf-8",
         )
-        yield work
+        example_root = root / "example"
+        example_root.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(
+            prefix="coverage-fixture-", dir=example_root
+        ) as example_temp:
+            (Path(example_temp) / "test_coverage_markers.py").write_text(
+                "import pytest\n"
+                f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+                "def test_output_remains_stable_in_example():\n    pass\n",
+                encoding="utf-8",
+            )
+            yield work
 
 
 def run_coverage_target(work: str = "", ac: str = ""):
@@ -102,34 +129,44 @@ def run_coverage_target(work: str = "", ac: str = ""):
         (
             "ac-collect",
             "",
-            ("test_work_first_criterion", "test_work_second_criterion"),
+            (
+                "test_work_first_criterion_test_root",
+                "test_work_first_criterion_example_root",
+                "test_work_second_criterion_example_root",
+            ),
             ("test_other_work_is_excluded",),
         ),
         (
             "ac-collect",
             "AC-1",
-            ("test_work_first_criterion",),
-            ("test_work_second_criterion", "test_other_work_is_excluded"),
+            (
+                "test_work_first_criterion_test_root",
+                "test_work_first_criterion_example_root",
+            ),
+            ("test_work_second_criterion_example_root", "test_other_work_is_excluded"),
         ),
         (
             "ac-test",
             "",
-            ("2 passed",),
+            ("3 passed",),
             ("a different Work was selected",),
         ),
         (
             "ac-test",
             "AC-1",
-            ("1 passed",),
-            ("a different Work was selected", "test_work_second_criterion"),
+            ("2 passed",),
+            (
+                "a different Work was selected",
+                "test_work_second_criterion_example_root",
+            ),
         ),
     ],
 )
 def test_make_targets_select_work_and_optional_criterion(
     target, ac, selected, excluded
 ):
-    with make_fixture(ROOT) as (work, cases):
-        result = run_target(target, work, cases, ac)
+    with make_fixture(ROOT) as work:
+        result = run_target(target, work, ac)
 
     output = result.stdout + result.stderr
     assert result.returncode == 0, output
@@ -139,8 +176,8 @@ def test_make_targets_select_work_and_optional_criterion(
 
 @pytest.mark.parametrize("target", ["ac-collect", "ac-test"])
 def test_make_targets_fail_when_no_criterion_matches(target):
-    with make_fixture(ROOT) as (work, cases):
-        result = run_target(target, work, cases, "AC-9")
+    with make_fixture(ROOT) as work:
+        result = run_target(target, work, "AC-9")
 
     output = result.stdout + result.stderr
     assert result.returncode != 0
@@ -153,7 +190,7 @@ def test_make_ac_check_reports_selected_coverage_without_running_tests():
 
     output = result.stdout + result.stderr
     assert result.returncode == 0, output
-    assert "AC-1 DONE: 1 test marker(s)" in output
+    assert "AC-1 DONE: 2 test marker(s)" in output
     assert "AC-2 TODO: coverage missing" in output
     assert "AC-99" not in output
 

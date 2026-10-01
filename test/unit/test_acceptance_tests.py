@@ -21,6 +21,8 @@ def make_work_fixture(root: Path) -> str:
     work_file = root / "work" / "README.md"
     work_file.parent.mkdir(parents=True)
     work_file.write_text("# Temporary test Work\n", encoding="utf-8")
+    (root / "test").mkdir()
+    (root / "example").mkdir()
     return work_file.relative_to(root).as_posix()
 
 
@@ -41,6 +43,7 @@ def test_build_command_scopes_work_and_optional_criterion(
 
     assert command[:4] == [sys.executable, "-m", "pytest", "-q"]
     assert command[-2:] == ["-m", expected]
+    assert "test" in command and "example" in command
     assert ("--collect-only" in command) is (action == "collect")
 
 

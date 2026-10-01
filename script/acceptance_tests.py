@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 
+from test_roots import existing_test_roots
 from work_paths import resolve_work_file
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,6 +39,7 @@ def build_command(action: str, work: str, ac: str = "") -> list[str]:
     command = [sys.executable, "-m", "pytest", "-q"]
     if action == "collect":
         command.append("--collect-only")
+    command.extend(existing_test_roots(ROOT))
     command.extend(["-m", marker])
     return command
 

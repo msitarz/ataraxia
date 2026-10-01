@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import sys
 
+from test_roots import existing_test_roots
 from work_paths import resolve_work_file
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -248,30 +249,29 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
     """
     counts: dict[str, int] = {}
     errors: list[str] = []
-    test_root = root / "test"
-    if not test_root.is_dir():
-        return counts, errors
+    for name in existing_test_roots(root):
+        for path in _test_candidate_files(root / name):
+            relative = path.relative_to(root).as_posix()
+            tree, read_error = _read_test_module(path, root)
+            if read_error:
+                errors.append(read_error)
+                continue
+            assert tree is not None
 
-    for path in _test_candidate_files(test_root):
-        relative = path.relative_to(root).as_posix()
-        tree, read_error = _read_test_module(path, root)
-        if read_error:
-            errors.append(read_error)
-            continue
-        assert tree is not None
-
-        for function in _test_functions(tree):
-            for decorator in function.decorator_list:
-                if not isinstance(decorator, ast.Call) or not _is_covers_call(
-                    decorator
-                ):
-                    continue
-                ac, marker_error = _selected_marker_criterion(decorator, relative, work)
-                if marker_error:
-                    errors.append(marker_error)
-                if ac is None:
-                    continue
-                counts[ac] = counts.get(ac, 0) + 1
+            for function in _test_functions(tree):
+                for decorator in function.decorator_list:
+                    if not isinstance(decorator, ast.Call) or not _is_covers_call(
+                        decorator
+                    ):
+                        continue
+                    ac, marker_error = _selected_marker_criterion(
+                        decorator, relative, work
+                    )
+                    if marker_error:
+                        errors.append(marker_error)
+                    if ac is None:
+                        continue
+                    counts[ac] = counts.get(ac, 0) + 1
     return counts, errors
 
 
