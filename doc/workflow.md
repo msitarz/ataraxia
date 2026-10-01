@@ -31,10 +31,28 @@ Discovery may add children without maintaining a fixed execution list. Nest
 when it reduces necessary context; strongly discourage more than five levels.
 Directory ancestry does not select a Git base.
 
+## Investigations
+
+An Investigation produces a recommendation for a bounded question. Its README
+states the question, constraints, and decision needed. For each serious
+candidate, record its fit for the problem, pros and cons, and what was checked
+versus what remains uncertain. Conclude with a short comparison and
+recommendation that explains the choice.
+
+Use one file for a small comparison; use linked candidate files when they make
+review easier. A supporting Prototype can answer a question that documentation
+alone cannot resolve. An Investigation recommends a direction; a Prototype
+demonstrates feasibility through exploratory implementation.
+
+Follow the common Work lifecycle and review rules. On completion, promote the
+chosen policy or lasting decision to its authoritative owner. Git and the PR
+preserve the comparison artifacts when the finished Work directory is removed.
+Do not introduce a separate lifecycle or mandatory template.
+
 ## Prototypes and rewrites
 
-A Prototype answers a bounded question through investigation or exploratory
-implementation. Its Work contract states the question, limits, and observable
+A Prototype answers a bounded question through exploratory implementation.
+Its Work contract states the question, limits, and observable
 evidence needed to answer it. Record the result in the PR, including when the
 Prototype is unsuccessful, and distinguish observed evidence from assumptions.
 
