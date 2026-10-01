@@ -33,14 +33,18 @@ Plan one reviewable delivery protocol for a Work with acceptance criteria:
    the expected remote head, refreshes evidence links, then reviews the final
    head and waits for its required full CI results.
 4. Require explicit maintainer authorization for the final merge. Agents do
-   not merge PRs. Do not change repository settings or bypass review or CI
-   gates to make the sequence work.
+   not merge autonomously; they may merge only with that explicit instruction.
+   Do not change repository settings, use an admin override, or bypass review
+   or CI gates to make the sequence work.
 
 Current GitHub observations for this repository are rebase merge enabled,
 required approval disabled for its single-maintainer configuration, and
 required CI gates retained. GitHub does not allow an author to approve their
 own PR; the local workflow still requires human review. These observations do
 not authorize an administrator override or branch-policy change.
+Preserve accepted WDR9; if delivery changes its decision, follow the
+[WDR lifecycle](../pr-evidence/README.md) rather than silently editing the
+accepted record.
 
 ## Acceptance
 
@@ -55,8 +59,9 @@ not authorize an administrator override or branch-policy change.
   Verification: walk through an already-published branch with a changed base
   and verify stale-head protection, updated links, review, and CI gates.
 - **AC-3 TODO** The delivery distinguishes GitHub merge settings from local
-  human-review and maintainer-merge requirements; no agent merges or changes
-  settings/bypasses gates.
+  human-review and maintainer-merge requirements; agents merge only with
+  explicit maintainer instruction and do not change settings, use admin
+  overrides, or bypass gates.
   Verification: inspect the documented settings and walk through an author
   PR where approval is unavailable to the author but human review and explicit
   maintainer merge authorization remain required.
