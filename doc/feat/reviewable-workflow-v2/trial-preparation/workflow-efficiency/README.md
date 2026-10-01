@@ -62,6 +62,8 @@ general duplication rule.
   orchestration roles and review ownership for Work trees.
 - **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
   guidance as a whole and consolidate repeated explanations within owners.
+- **TODO** [Guidance application](guidance-application/README.md): investigate
+  consistent application in fresh and long-running sessions.
 
 Use the already authorized direct parent-to-Luna arrangement at low effort at
 each leaf boundary; nodes with children have an orchestrator owner. Preserve
