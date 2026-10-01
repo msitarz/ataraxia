@@ -14,17 +14,20 @@ effort needs the maintainer's explicit approval. Split work that is
 too broad for a quick review of one responsibility into nested Works first,
 following [Work scope and sizing](workflow.md#scope-and-sizing).
 
-Give Luna only the context needed: outcome, scope, acceptance criteria,
-exclusions, relevant decisions and constraints, baseline or branch relationship,
-links to applicable Work and owner guidance, and evidence to return. Link to
-background instead of forwarding the full conversation by default.
+For a Work, its README and linked contracts own acceptance and completion
+criteria. Handoff with the Work path and requested action, adding only steering
+or constraints absent from the contract plus necessary branch and delivery
+context. Luna reads the Work and applicable linked contracts; read ancestor
+Work READMEs only when needed, without recursively loading every parent. For
+changes without a Work contract, state acceptance and exit criteria in the
+handoff. Link to background instead of forwarding the full conversation by
+default.
 
 ## Review and return
 
-Give Luna one focused handoff with acceptance and exit criteria, then wait for
-the completed artifact or a blocker that needs maintainer steering. Do not poll
-for routine status, inspect partial diffs, or send fragmented mid-task
-corrections.
+Use the handoff guidance above, then wait for the completed artifact or a
+blocker that needs maintainer steering. Do not poll for routine status, inspect
+partial diffs, or send fragmented mid-task corrections.
 
 Review the completed diff once against acceptance and owner guidance, using the
 reported evidence. Send one consolidated finding list to the same Luna session
