@@ -86,3 +86,7 @@ journal, or mandatory template.
 
 When acting as orchestrator for repository changes, follow the
 [Orchestrator handoffs](orchestrator.md).
+
+When a Work proposes or reviews a consequential delivery-workflow choice,
+follow the [WDR workflow](wdr-workflow.md). Routine Work tasks do not need to
+read it.

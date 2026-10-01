@@ -23,14 +23,12 @@ Corrections that conform to an established contract need no new ADR. Do not turn
 recovery from an implementation mistake into an architectural decision. Preserve
 older accepted records even when today's eligibility guidance would differ.
 
-## One decision per record
+## ADRs per delivery
 
-Each ADR records one qualifying architectural decision. If one choice could be
-accepted, rejected, or replaced while retaining another, assess each separately
-and create separate ADRs only for those that qualify. Supporting mechanics and
-consequences of one decision can stay together. A feat slice may create zero,
-one, or several ADRs; the number of implementation choices does not determine
-it.
+Apply the shared
+[one decision per record](decision-records.md#one-decision-per-record) rule to
+qualifying architectural choices. A feat slice may create zero, one, or several
+ADRs; the number of implementation choices does not determine it.
 
 ## Record and change decisions
 
@@ -43,18 +41,9 @@ it.
    branches and PRs without routine issues. Record uncovered
    decisions before implementing the affected design, and reassess when
    implementation reveals new choices.
-3. Use the next unused number and `NNNN-kebab-case-title.md`. Format:
-   `# N. Title`, `Date: YYYY-MM-DD`, then `Status`, `Context`, `Decision`, and
-   `Consequences`. Use `Proposed` while unsettled and `Accepted` once decided.
-4. Change accepted decisions through new records, preserving earlier context,
-   decision, and consequences. For a partial change, the new status says
-   `Amends [N. Title](NNNN-title.md)` and explains what still applies. On
-   acceptance, add reciprocal `Amended by [M. Title](MMMM-title.md)` to the
-   earlier record, following ADRs 0010/0011. For replacement, use `Supersedes`
-   on the new record and `Superseded by` on the earlier one, following
-   [adr-tools](https://github.com/npryce/adr-tools). Use relative Markdown
-   links.
-5. Update affected slice links and architecture's status references. Link to
+3. Use the shared [decision record format and lifecycle](decision-records.md)
+   for numbering, status, and amendment or supersession links.
+4. Update affected slice links and architecture's status references. Link to
    the decision; do not copy its rationale or local specification into them.
 
 ## Writing

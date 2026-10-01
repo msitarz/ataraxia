@@ -16,7 +16,9 @@ relevant guidance.
 | General Work rules | [Work workflow](workflow.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
-| ADR eligibility, format, and amendments | [ADR workflow](adr-workflow.md) |
+| ADR eligibility and architectural decision process | [ADR workflow](adr-workflow.md) |
+| Shared ADR/WDR record format and lifecycle | [Decision record format](decision-records.md) |
+| Workflow decision eligibility, routing, and index | [WDR workflow](wdr-workflow.md) |
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
 | Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
@@ -26,6 +28,7 @@ relevant guidance.
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
 | Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
 | One architectural choice and its rationale | The relevant [ADR](adr/) |
+| One delivery-workflow choice and its rationale | The relevant [WDR](wdr/) |
 | Issue body format | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md) |
 | Machine-enforced settings and executable checks | Their configuration and implementation, including [pyproject.toml](../pyproject.toml), [Makefile](../Makefile), and [tach.toml](../tach.toml) |
 
@@ -54,18 +57,19 @@ stated reading trigger applies; a link alone does not require reading the
 target.
 
 Separate current guidance, proposed behavior, accepted decisions, implemented
-behavior, and evidence. Accepted ADRs explain decisions, not implementation
-status. Verify current behavior in code and tests. If behavior conflicts with
-an approved contract, surface the mismatch rather than treating implementation
-as the intended design. Resolve inconsistent copies at the owner and remove or
-link the others; do not add an exception to reconcile them.
+behavior, and evidence. Accepted ADRs and WDRs explain decisions, not
+implementation status. Verify current behavior in code and tests. If behavior
+conflicts with an approved contract, surface the mismatch rather than treating
+implementation as the intended design. Resolve inconsistent copies at the owner
+and remove or link the others; do not add an exception to reconcile them.
 
-Keep accepted ADR history intact, using the [ADR workflow](adr-workflow.md) to
-change decisions. Validated feat slices preserve the scope and evidence of
-their delivery; add a brief historical note when needed instead of rewriting
-their acceptance criteria to match later guidance. A new change owns its own
-evidence. Issue and PR records link to detailed scope and evidence rather than
-copying it.
+Keep accepted ADR and WDR history intact, using the [ADR
+workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
+decisions. Validated feat slices preserve the scope and evidence of their
+delivery; add a brief historical note when needed instead of rewriting their
+acceptance criteria to match later guidance. A new change owns its own evidence.
+Issue and PR records link to detailed scope and evidence rather than copying
+it.
 
 ## Vocabulary
 
