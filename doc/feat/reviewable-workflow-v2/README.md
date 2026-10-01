@@ -17,9 +17,9 @@ contracts, child discovery, status, and lifecycle.
   evaluate mechanical documentation checks.
 - **TODO** [Live trial](live-trial/README.md): use this workflow during its own
   delivery, then apply it to a familiar feature.
-- **TODO** [Retire the feat-slice workflow](retire-feat-workflow/README.md):
-  resolve active legacy guidance and preserve useful history as Works become
-  authoritative.
+- **DONE** Retire the feat-slice workflow — removed unused legacy routes and
+  session roles after confirming no legacy slices remained outside this Work;
+  retained ADR/WDR history and the distinct trading Feature term.
 - **DONE** Workflow Decision Records — established eligibility and shared
   record policy, with an initial retrospective set in the
   [WDR index](../../wdr/README.md).

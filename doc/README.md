@@ -12,7 +12,6 @@ relevant guidance.
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
-| Legacy feat-slice delivery and specification rules | [Feat workflow](feat-workflow.md) |
 | General Work rules | [Work workflow](workflow.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
@@ -26,7 +25,6 @@ relevant guidance.
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
-| Legacy feat-slice scope and acceptance examples | The relevant [feat slice](feat/) |
 | One architectural choice and its rationale | The relevant [ADR](adr/) |
 | One delivery-workflow choice and its rationale | The relevant [WDR](wdr/) |
 | Issue body format | [Issue template](../.github/ISSUE_TEMPLATE/work-item.md) |
@@ -65,11 +63,8 @@ and remove or link the others; do not add an exception to reconcile them.
 
 Keep accepted ADR and WDR history intact, using the [ADR
 workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
-decisions. Validated feat slices preserve the scope and evidence of their
-delivery; add a brief historical note when needed instead of rewriting their
-acceptance criteria to match later guidance. A new change owns its own evidence.
-Issue and PR records link to detailed scope and evidence rather than copying
-it.
+decisions. A new change owns its own evidence. Issue and PR records link to
+detailed scope and evidence rather than copying it.
 
 ## Vocabulary
 
@@ -77,8 +72,8 @@ Check the [glossary](ubiquitous-language.md) before introducing a term. Define
 new shared terms there before using them in specifications or implementation:
 state their meaning, responsibility, distinctions, relationships, and essential
 units or lifecycle rules. Keep delivery workflow language separate from
-computation and trading language. Works and legacy feat slices have distinct
-definitions; local rules belong in their own contracts, with glossary
+computation and trading language. Works and trading Features have distinct
+definitions; local Work rules belong in their own contracts, with glossary
 entries linking rather than reproducing those rules.
 
 Use the glossary term consistently for each shared concept; avoid synonyms that
@@ -92,8 +87,8 @@ approval.
 
 ## Review
 
-Check ownership and duplication when defining or reviewing a feat slice or Work,
-and when changing general guidance. Verify local links and anchors, distinguish
+Check ownership and duplication when defining or reviewing a Work, and when
+changing general guidance. Verify local links and anchors, distinguish
 history from current instructions, and walk through affected reading routes.
 Check that moved requirements remain discoverable and examples agree with their
 owning contracts. Run `make doc-check` to check Markdown formatting and local
