@@ -27,8 +27,8 @@ interventions.
 | Condition | Words/lines, initial → final | Corrections | Agent-recorded executor time (UTC) |
 | --- | --- | --- | --- |
 | Baseline #107 | 851 / 98 | — | Not measured |
-| A, Luna medium | 643 / 74 → 681 / 78 (20.0% below baseline) | 1 | Initial 20:39:38–20:40:04 (26s); correction 20:43:35–20:43:49 (14s) |
-| B, Luna low | 776 / 88 → 755 / 87 (11.3% below baseline) | 2 | Initial missing; corrections 20:43:42–20:44:03 (21s) and 20:45:11–20:45:28 (17s) |
+| A, GPT-6 Luna medium | 643 / 74 → 681 / 78 (20.0% below baseline) | 1 | Initial 20:39:38–20:40:04 (26s); correction 20:43:35–20:43:49 (14s) |
+| B, GPT-6 Luna low | 776 / 88 → 755 / 87 (11.3% below baseline) | 2 | Initial missing; corrections 20:43:42–20:44:03 (21s) and 20:45:11–20:45:28 (17s) |
 | C, GPT-6 Luna high | 821 / 95 → 804 / 94 (5.5% below baseline) | 1 editorial | Initial 21:04:06–21:05:48 (102s); correction 21:07:35–21:08:21 (46s) |
 | D, GPT-6.1 Sol low | 752 / 88 → 752 / 88 (11.6% below baseline) | 0 | Initial 21:04:21–21:05:24 (63s) |
 
@@ -49,7 +49,7 @@ A/B initial and correction artifacts passed `make doc-format` and full
 `make doc-check` over 53 Markdown files; `git diff --check` also passed. C
 passed scoped doc-format/doc-check and diff checks. D passed scoped
 doc-format and full doc-check; the parent supplied its missing diff check. The
-parent reused Luna's local check evidence. None of these local artifacts
+parent reused executor check evidence. None of these local artifacts
 received CI.
 
 ## Review findings
@@ -76,8 +76,9 @@ received CI.
 ## Recommendation and limits
 
 Among these four first drafts, only D was accepted unchanged; Luna high retained
-duplication that Luna medium had consolidated. More effort did not
-monotonically improve concision or correction count. No complete time or cost
+duplication that Luna medium had consolidated. Concision was not monotonic
+across effort settings, and Luna high did not reduce correction rounds further
+than Luna medium. No complete time or cost
 ranking is supported: B's initial duration and token/cost data are missing,
 final B review timing is incomplete, C/D batches differ from A/B, and effort
 labels across models are not equivalent compute budgets. The shared cache,

@@ -9,7 +9,7 @@ interpretation, application, and review failures. The
 [parent Work](../README.md#works) links findings and coordinates related
 owner changes.
 
-The first two bounded reasoning-effort batches are recorded in the
+The first two bounded model/effort batches are recorded in the
 [prose trial report](prose-trial.md). All four executors were fresh; these
 trials do not satisfy AC-2's fresh-versus-long-session or intervention
 comparison. All Investigation criteria remain TODO.
