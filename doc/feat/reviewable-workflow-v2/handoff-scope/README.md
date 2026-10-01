@@ -1,8 +1,7 @@
 # Handoff scope growth
 
-Plan a rule for delegated repository changes that grow beyond their agreed
-responsibility while work is underway. This Work defines the policy and its
-owner; it does not implement or route the policy yet.
+Establish and route a rule for delegated repository changes that grow beyond
+their agreed responsibility while work is underway.
 
 PR #93 adds Make selectors and targets, tests, contributor and agent guidance,
 and a proposed WDR for the project-tool interface. This is a concrete case for
@@ -25,6 +24,4 @@ child Works.
   [orchestrator handoff](../../../orchestrator.md) and
   [Work lifecycle](../../../workflow.md) instead of copying their rules.
 
-The result should leave a concise policy contract ready for a separate
-implementation Work. Do not update permanent guidance or execute that future
-Work here.
+Promote the rule to its authoritative owner and add any needed reading route.
