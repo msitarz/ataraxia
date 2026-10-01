@@ -92,12 +92,15 @@ endif
 deps-lock: ## update uv.lock after dependency changes
 	uv lock
 
-.PHONY: ac-collect ac-test
+.PHONY: ac-collect ac-test ac-check
 ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
 	uv run python script/acceptance_tests.py collect
 
 ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
 	uv run python script/acceptance_tests.py test
+
+ac-check: ## check declared coverage for WORK=path/to/README.md
+	uv run python script/acceptance_coverage.py check
 
 .PHONY: clean
 clean: ## remove the virtual environment and test/lint caches

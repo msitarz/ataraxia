@@ -12,7 +12,8 @@ SCRIPT = Path(__file__).resolve().parents[2] / "script" / "acceptance_tests.py"
 SPEC = importlib.util.spec_from_file_location("acceptance_tests", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 acceptance_tests = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(acceptance_tests)
+with patch.object(sys, "path", [str(SCRIPT.parent), *sys.path]):
+    SPEC.loader.exec_module(acceptance_tests)
 
 
 def make_work_fixture(root: Path) -> str:
