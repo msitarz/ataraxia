@@ -24,3 +24,4 @@ remain proposals, not accepted decisions.
 ## Proposal
 
 - [7. Require CI on the reviewed head](0007-require-ci-on-the-reviewed-head.md)
+- [8. Use Make as the project tool interface](0008-use-make-as-the-project-tool-interface.md)

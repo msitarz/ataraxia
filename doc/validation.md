@@ -31,16 +31,17 @@ network access to prepare them. A passing verification does not include the
 vulnerability audit and cannot satisfy the full CI merge gate. Report an audit
 as unrun or failed, and report any checks that could not run.
 
-CI rejects a missing or stale `uv.lock` with `uv sync --locked`. Subsequent
-checks use the synchronized environment without updating dependency resolution.
-After intentional dependency changes, run `uv lock` and commit the updated
-lockfile. The YAML, conflict-marker, and private-key checks reuse the pinned
+CI rejects a missing or stale `uv.lock` through the locked environment setup in
+`make ci-setup`. Subsequent checks use the synchronized environment without
+updating dependency resolution. After intentional dependency changes, run
+`make deps-lock` and commit the updated lockfile. The YAML, conflict-marker,
+and private-key checks reuse the pinned
 hooks in `.pre-commit-config.yaml` and inspect all tracked files.
 
 For a manual example run, use:
 
 ```sh
-uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
+make run CLI_ARGS='--sink example/crossover.py --shards-dir sample --output results.json'
 ```
 
 `make ci-package` builds a wheel, installs it into a temporary isolated virtual

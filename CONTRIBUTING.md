@@ -45,9 +45,12 @@ also follow the [body structure below](#commits-and-pull-requests).
 
 ## Make targets
 
-Humans and agents should run `make help` before project tools to find supported
-targets. The [Makefile](Makefile) owns executable commands and descriptions;
-read recipes only when their details matter. See the
+Humans and agents should run `make help` before project tools and invoke those
+tools through Make targets. Use space-separated repo paths in `ARGS` to narrow
+lint, format, test, and type-check runs; full-suite targets keep their full
+defaults. The
+[Makefile](Makefile) owns executable commands and descriptions; read recipes
+only when their details matter. See the
 [validation policy](doc/validation.md) when choosing checks or reporting
 validation evidence.
 
@@ -67,7 +70,7 @@ while other build frontends resolve the same backend version.
 Review these pins monthly and when a tooling bug or security advisory warrants
 an update. Update both pins and the `uv-pre-commit` revision in
 `.pre-commit-config.yaml` in one change, install the new uv version, run
-`uv lock`, and include any lockfile changes. Follow the
+`make deps-lock`, and include any lockfile changes. Follow the
 [validation policy](doc/validation.md) before accepting the update, including
 the installed-wheel smoke test. Dependabot's weekly uv and GitHub Actions
 updates complement this review; they do not replace reviewing
