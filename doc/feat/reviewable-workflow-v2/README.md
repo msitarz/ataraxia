@@ -26,3 +26,5 @@ contracts, child discovery, status, and lifecycle.
 - **DONE** Orchestrator handoffs — established role-triggered Luna change
   delegation, review corrections, and maintainer gates in
   [orchestrator guidance](../../orchestrator.md).
+- **TODO** [Handoff scope growth](handoff-scope/README.md): define when a
+  delegated change must stop expanding and split into child Works.
