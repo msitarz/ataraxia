@@ -42,6 +42,10 @@ Findings and candidate decisions:
   focused conditional reading route. A link alone does not require recursively
   reading its target. `make help` discovers tools and the Makefile owns
   executable commands.
+- **Accepted for this Work; current after delivery:** Compact Markdown source
+  tables reduce width-driven whole-table diffs, at the cost of source columns
+  no longer aligning. The maintainer explicitly chose this, reversing the
+  previous aligned-table preference.
 - **Pending Work:** Focused development checks and the full CI merge gate. The
   draft-and-merge-checks Work is still pending; do not report its policy as
   adopted.
