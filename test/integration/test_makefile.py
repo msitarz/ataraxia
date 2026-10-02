@@ -37,13 +37,20 @@ def fake_uv_environment(tmp_path):
         "import json, os, sys\n"
         "with open(os.environ['FAKE_UV_LOG'], 'a') as log:\n"
         "    log.write(json.dumps(sys.argv[1:]) + '\\n')\n"
+        "with open(os.environ['FAKE_UV_ENV_LOG'], 'a') as log:\n"
+        "    log.write(json.dumps([os.getenv('UV_OFFLINE'), "
+        "os.getenv('UV_NO_SYNC')]) + '\\n')\n"
         "if '--exit-zero' in sys.argv:\n"
         "    sys.exit(int(os.getenv('FAKE_UV_ADVISORY_EXIT', '0')))\n",
         encoding="utf-8",
     )
     uv.chmod(0o755)
     env = os.environ.copy()
-    env.update(PATH=f"{tmp_path}:{env['PATH']}", FAKE_UV_LOG=str(log))
+    env.update(
+        PATH=f"{tmp_path}:{env['PATH']}",
+        FAKE_UV_LOG=str(log),
+        FAKE_UV_ENV_LOG=str(tmp_path / "uv-env-calls.jsonl"),
+    )
     env.pop("MAKEFLAGS", None)
     env.pop("MAKEOVERRIDES", None)
     env.pop("MFLAGS", None)
@@ -448,10 +455,29 @@ def test_ci_preparation_is_allocated_to_its_consumers(tmp_path):
         ["build", "--wheel", "--out-dir", ".cache/build"],
     ]
 
-    result, calls = run_make_with_fake_uv(tmp_path / "ci-package", "ci-package")
+    package_dir = tmp_path / "ci-package"
+    env, log = fake_uv_environment(package_dir)
+    env.pop("UV_OFFLINE", None)
+    result = subprocess.run(
+        ["make", "ci-package"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert calls == [["run", "python", "script/smoke_installed_package.py"]]
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+    env_calls = [
+        json.loads(line)
+        for line in (package_dir / "uv-env-calls.jsonl").read_text().splitlines()
+    ]
+    assert calls == [
+        ["python", "install", "3.14"],
+        ["run", "python", "script/smoke_installed_package.py"],
+    ]
+    assert env_calls == [[None, "true"], ["true", "true"]]
 
     result, calls = run_make_with_fake_uv(tmp_path / "ci-check", "ci-check")
 
