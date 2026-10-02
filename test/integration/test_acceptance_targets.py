@@ -113,6 +113,8 @@ def run_coverage_target(work: str = "", ac: str = ""):
     env = os.environ.copy()
     env.pop("WORK", None)
     env.pop("AC", None)
+    env.pop("MAKEFLAGS", None)
+    env.pop("MAKEOVERRIDES", None)
     args = ["make", "ac-check"]
     if work:
         args.append(f"WORK={work}")
@@ -184,14 +186,24 @@ def test_make_targets_fail_when_no_criterion_matches(target):
     assert "no tests" in output.lower() or "deselected" in output.lower(), output
 
 
-def test_make_ac_check_reports_selected_coverage_without_running_tests():
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_make_ac_check_reports_declarations_without_running_tests():
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     with coverage_fixture(ROOT) as work:
         result = run_coverage_target(work)
 
     output = result.stdout + result.stderr
     assert result.returncode == 0, output
-    assert "AC-1 DONE: 2 test marker(s)" in output
-    assert "AC-2 TODO: coverage missing" in output
+    assert "AC-1 DONE: 2 test marker(s) declared" in output
+    assert "AC-2 TODO: no test marker or Verification method declared" in output
     assert "AC-99" not in output
 
 
@@ -210,7 +222,17 @@ def test_make_ac_check_requires_a_work_and_rejects_ac_selector():
     assert "AC is not supported" in (selected.stdout + selected.stderr)
 
 
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
 def test_make_ac_check_rejects_work_without_criteria():
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     with coverage_fixture(ROOT, "# Empty Work\n") as work:
         result = run_coverage_target(work)
 

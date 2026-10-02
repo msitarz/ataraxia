@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Check declared Work acceptance coverage without executing tests."""
+"""Validate Work acceptance declarations without executing tests."""
 
 from __future__ import annotations
 
@@ -275,35 +275,26 @@ def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
     return counts, errors
 
 
-def _criterion_coverage(
-    work: str, ac: str, criterion: Criterion, marker_count: int
-) -> tuple[str | None, str]:
-    """Return one criterion's missing-coverage error and report line."""
-    if (
-        criterion.status == "DONE"
-        and not marker_count
-        and not criterion.has_verification
-    ):
-        error = (
-            f"{work}: {ac} is DONE without a matching test marker or "
-            "Verification method"
-        )
-    else:
-        error = None
+def _criterion_report(ac: str, criterion: Criterion, marker_count: int) -> str:
+    """Describe declarations for one criterion without judging its outcome.
+
+    Returns:
+        A neutral summary of the criterion's declared markers or method.
+    """
     if marker_count:
-        coverage = f"{marker_count} test marker(s)"
+        declaration = f"{marker_count} test marker(s) declared"
     elif criterion.has_verification:
-        coverage = "Verification method declared"
+        declaration = "Verification method declared"
     else:
-        coverage = "coverage missing"
-    return error, f"{ac} {criterion.status}: {coverage}"
+        declaration = "no test marker or Verification method declared"
+    return f"{ac} {criterion.status}: {declaration}"
 
 
 def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
     """Validate declarations for one selected Work.
 
     Returns:
-        Validation errors and one coverage summary per declared criterion.
+        Validation errors and one declaration summary per criterion.
     """
     contract = resolve_work_file(root, work)
     criteria, errors = parse_criteria(contract.read_text(encoding="utf-8"), work)
@@ -313,12 +304,10 @@ def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
     for ac in markers.keys() - criteria.keys():
         errors.append(f"{work}: marker refers to undeclared criterion {ac}")
 
-    reports: list[str] = []
-    for ac, criterion in criteria.items():
-        error, report = _criterion_coverage(work, ac, criterion, markers.get(ac, 0))
-        if error:
-            errors.append(error)
-        reports.append(report)
+    reports = [
+        _criterion_report(ac, criterion, markers.get(ac, 0))
+        for ac, criterion in criteria.items()
+    ]
     return errors, reports
 
 
@@ -326,7 +315,7 @@ def main() -> int:
     """Check the Work selected by Make without running tests.
 
     Returns:
-        A process status: zero on success, one for coverage errors, or two for
+        A process status: zero on success, one for declaration errors, or two for
         invalid invocation arguments.
     """
     if len(sys.argv) != 2 or sys.argv[1] != "check":

@@ -109,7 +109,7 @@ ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
 ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
 	uv run python script/acceptance_tests.py test
 
-ac-check: ## check declared coverage for WORK=path/to/README.md
+ac-check: ## validate AC declarations/references (WORK=path/to/README.md)
 	uv run python script/acceptance_coverage.py check
 
 .PHONY: clean

@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Check static Work acceptance coverage declarations."""
+"""Check static Work acceptance declarations."""
 
 import importlib.util
 from pathlib import Path
 import sys
 from unittest.mock import patch
+
+import pytest
 
 SCRIPT = Path(__file__).resolve().parents[2] / "script" / "acceptance_coverage.py"
 SPEC = importlib.util.spec_from_file_location("acceptance_coverage", SCRIPT)
@@ -33,7 +35,17 @@ def write_tests(root: Path, content: str) -> None:
     (tests / "test_markers.py").write_text(content, encoding="utf-8")
 
 
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
 def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
         "# Work\n\n"
@@ -56,17 +68,27 @@ def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
 
     assert errors == []
     assert reports == [
-        "AC-1 DONE: 1 test marker(s)",
-        "AC-2 TODO: coverage missing",
+        "AC-1 DONE: 1 test marker(s) declared",
+        "AC-2 TODO: no test marker or Verification method declared",
     ]
 
 
-def test_only_decorated_static_test_candidates_count_as_coverage(tmp_path):
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_only_decorated_static_test_candidates_are_reported(tmp_path):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
         "# Work\n\n"
         "- **AC-1 DONE** A collected test covers this.\n"
-        "- **AC-2 DONE** Helpers and ordinary calls do not cover this.\n",
+        "- **AC-2 TODO** Helpers and ordinary calls do not add declarations.\n",
     )
     write_tests(
         tmp_path,
@@ -86,36 +108,74 @@ def test_only_decorated_static_test_candidates_count_as_coverage(tmp_path):
     errors, reports = check_work(tmp_path, work)
 
     assert reports == [
-        "AC-1 DONE: 1 test marker(s)",
-        "AC-2 DONE: coverage missing",
+        "AC-1 DONE: 1 test marker(s) declared",
+        "AC-2 TODO: no test marker or Verification method declared",
     ]
-    assert any(f"{work}: AC-2 is DONE" in error for error in errors)
+    assert errors == []
 
 
-def test_done_accepts_a_specific_non_test_verification(tmp_path):
+@pytest.mark.parametrize(
+    ("status", "has_verification", "has_marker"),
+    [
+        (status, has_verification, has_marker)
+        for status in ("TODO", "DONE")
+        for has_verification in (False, True)
+        for has_marker in (False, True)
+    ],
+)
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_declaration_reports_do_not_require_status_or_method(
+    tmp_path, status, has_verification, has_marker
+):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
+    verification = (
+        "  Verification: compare generated output with the fixture.\n"
+        if has_verification
+        else ""
+    )
     work = write_work(
         tmp_path,
-        "# Work\n\n"
-        "- **AC-1 DONE** Output matches the saved fixture.\n"
-        "  Verification: compare generated output with the committed fixture.\n",
+        f"# Work\n\n- **AC-1 {status}** Output remains stable.\n{verification}",
     )
+    if has_marker:
+        write_tests(
+            tmp_path,
+            "import pytest\n"
+            f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
+            "def test_output_remains_stable():\n    pass\n",
+        )
 
     errors, reports = check_work(tmp_path, work)
 
+    if has_marker:
+        declaration = "1 test marker(s) declared"
+    elif has_verification:
+        declaration = "Verification method declared"
+    else:
+        declaration = "no test marker or Verification method declared"
     assert errors == []
-    assert reports == ["AC-1 DONE: Verification method declared"]
+    assert reports == [f"AC-1 {status}: {declaration}"]
 
 
-def test_done_without_marker_or_method_fails_with_work_and_ac(tmp_path):
-    work = write_work(tmp_path, "# Work\n\n- **AC-1 DONE** Output is stable.\n")
-
-    errors, _ = check_work(tmp_path, work)
-
-    assert len(errors) == 1
-    assert f"{work}: AC-1 is DONE" in errors[0]
-
-
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
 def test_unknown_marker_reference_fails_with_work_and_ac(tmp_path):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     work = write_work(tmp_path, "# Work\n\n- **AC-1 TODO** Output is stable.\n")
     write_tests(
         tmp_path,
@@ -129,7 +189,17 @@ def test_unknown_marker_reference_fails_with_work_and_ac(tmp_path):
     assert errors == [f"{work}: marker refers to undeclared criterion AC-9"]
 
 
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
 def test_selected_marker_with_dynamic_ac_fails_clearly(tmp_path):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     work = write_work(tmp_path, "# Work\n\n- **AC-1 TODO** Output is stable.\n")
     write_tests(
         tmp_path,
@@ -145,43 +215,80 @@ def test_selected_marker_with_dynamic_ac_fails_clearly(tmp_path):
     assert "selected covers marker needs literal work and ac strings" in errors[0]
 
 
-def test_duplicate_malformed_and_empty_declarations_are_reported():
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_duplicate_and_malformed_criterion_declarations_are_reported():
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     criteria, errors = parse_criteria(
         "# Work\n"
         "- **AC-1 TODO** First criterion.\n"
         "- **AC-1 DONE** Duplicate criterion.\n"
         "- **AC-0 DONE** Invalid ID.\n"
-        "- **AC1 DONE** Malformed ID syntax.\n",
+        "- **AC1 DONE** Malformed ID syntax.\n"
+        "- **AC-2 REVIEW** Invalid status.\n"
+        "- **AC-3 TODO**   \n",
         "doc/example/README.md",
     )
 
-    assert list(criteria) == ["AC-1"]
+    assert list(criteria) == ["AC-1", "AC-3"]
     assert any("duplicate criterion AC-1" in error for error in errors)
     assert any("malformed AC declaration" in error for error in errors)
+    assert any("AC-3 needs criterion text" in error for error in errors)
 
     _, empty_errors = parse_criteria("# Empty Work\n", "doc/empty/README.md")
     assert "no AC declarations" in empty_errors[0]
 
 
-def test_empty_verification_annotation_is_rejected():
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_empty_and_duplicate_verification_annotations_are_rejected():
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     _, errors = parse_criteria(
-        "# Work\n- **AC-1 DONE** Output.\n  Verification:\n",
+        "# Work\n"
+        "- **AC-1 TODO** Output.\n  Verification:\n"
+        "- **AC-2 DONE** Output.\n"
+        "  Verification: inspect the result.\n"
+        "  Verification: compare the result.\n",
         "doc/example/README.md",
     )
 
-    assert len(errors) == 1
-    assert "Verification annotation needs a method" in errors[0]
+    assert len(errors) == 2
+    assert any("Verification annotation needs a method" in error for error in errors)
+    assert any("multiple Verification annotations" in error for error in errors)
 
 
-def test_outdented_verification_does_not_cover_done_criterion(tmp_path):
+@pytest.mark.covers(
+    work=(
+        "doc/feat/reviewable-workflow-v2/trial-preparation/"
+        "workflow-efficiency/verification-plan/README.md"
+    ),
+    ac="AC-4",
+)
+def test_outdented_verification_is_not_reported_as_declared(tmp_path):
+    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
+    marker references without requiring markers or `Verification:` based on TODO/DONE
+    status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
         "# Work\n"
         "- **AC-1 DONE** Output is stable.\n"
         "Verification: compare generated output with the committed fixture.\n",
     )
-
     errors, reports = check_work(tmp_path, work)
 
-    assert reports == ["AC-1 DONE: coverage missing"]
-    assert any(f"{work}: AC-1 is DONE" in error for error in errors)
+    assert errors == []
+    assert reports == ["AC-1 DONE: no test marker or Verification method declared"]
