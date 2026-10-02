@@ -72,6 +72,8 @@ general duplication rule.
 - **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): investigate
   when documentation and code leaf tasks warrant Luna low, Luna medium, or Sol
   low.
+- **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
+  one leaf executor through corrections with replacing it at each correction.
 - **TODO** [Single-agent execution](single-agent-execution/README.md): compare
   direct execution with the current orchestrator-to-executor topology.
 
