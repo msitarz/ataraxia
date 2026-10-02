@@ -74,6 +74,9 @@ general duplication rule.
   low.
 - **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
   one leaf executor through corrections with replacing it at each correction.
+- **TODO** [Work context](work-context/README.md): route a small applicable
+  completion definition, gather bounded Work context for both roles, and
+  investigate optional acceptance snapshot provenance.
 - **TODO** [Single-agent execution](single-agent-execution/README.md): split
   plan drafted; protocol and fixture work precedes an explicitly authorized
   direct-versus-orchestrated comparison.
