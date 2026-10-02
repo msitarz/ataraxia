@@ -56,14 +56,8 @@ child directory in the same PR. Before removing a finished Work, promote
 lasting contracts and decisions to their authoritative owners. PRs hold review
 discussion; Git preserves removed contracts and exact changes.
 
-Follow the
-[Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits)
-and its
-[evidence rules](acceptance-tracing.md#planned-verification-and-evidence) to
-verify criterion outcomes against inspectable evidence and record verified
-statuses and planned methods in the retained contract before removing it and
-updating the parent map in a separate commit. Keep evidence locatable in the
-PR, check results, Git, or existing artifacts.
+Before removing a completed Work, follow the
+[Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).
 
 After a Work PR merges, follow the
 [post-merge branch cleanup](branch-cleanup.md) procedure.
