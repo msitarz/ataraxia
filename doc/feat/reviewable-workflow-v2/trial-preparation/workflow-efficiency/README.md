@@ -74,8 +74,9 @@ general duplication rule.
   low.
 - **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
   one leaf executor through corrections with replacing it at each correction.
-- **TODO** [Single-agent execution](single-agent-execution/README.md): compare
-  direct execution with the current orchestrator-to-executor topology.
+- **TODO** [Single-agent execution](single-agent-execution/README.md): protocol
+  and fixture prepared; compare direct execution with the current
+  orchestrator-to-executor topology after explicit trial authorization.
 
 Use the already authorized direct parent-to-Luna arrangement at low effort at
 each leaf boundary; nodes with children have an orchestrator owner. Preserve
