@@ -2,8 +2,13 @@
 
 This document describes how Ataraxia is put together and why. It's the "current
 mental model" doc — for the history of individual decisions (including rejected
-alternatives), see [doc/adr/](adr/). When this doc and an ADR disagree, the ADR
-is the historical record and this doc should be updated to match reality.
+alternatives), see [doc/adr/](adr/). It describes implemented behavior and
+labels planned capabilities that await implementation. ADRs record accepted
+architectural contracts and rationale. An implementation that violates an
+applicable accepted contract is a deviation to surface and resolve; a planned,
+unimplemented capability remains pending. Update this document when behavior
+changes consistently with an accepted contract, or when a new decision changes
+that contract.
 
 ## System overview
 
