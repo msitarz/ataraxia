@@ -67,8 +67,8 @@ general duplication rule.
   guidance as a whole and consolidate repeated explanations within owners.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
-- **DONE** Verification plan: distinguished planned methods from observed,
-  independently reviewed evidence and amended WDR 9 through WDR 11.
+- **TODO** [Verification plan](verification-plan/README.md): distinguish
+  planned verification methods from observed evidence and reviewed outcomes.
 - **TODO** [Guidance format](guidance-format/README.md): compare itemized and
   paragraph formats for applying semantically equivalent guidance.
 - **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): investigate
