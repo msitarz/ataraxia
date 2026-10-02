@@ -29,11 +29,12 @@ recorded; do not add a redundant report, template, or status ledger.
 
 ## Acceptance
 
-- **AC-1 TODO** The completion route is integrated and the context-tool Work
-  reports its selected Work context and applicable Definition of Done before
-  implementation proceeds.
-  Verification: inspect the two integrated contracts and their delivery
-  evidence, confirming context-tool dependency and source ownership.
+- **AC-1 TODO** Completion routing is integrated before the context tool, and
+  the tool consumes the same authoritative route and applicable Definition of
+  Done.
+  Verification: inspect both integrated outcomes and delivery evidence,
+  confirming dependency order and that the tool selects the routed DoD from its
+  owner.
 - **AC-2 TODO** Snapshot tracing follows the completed routing and context
   outcomes and recommends change, no change, or an inconclusive result without
   adopting a marker or policy.
