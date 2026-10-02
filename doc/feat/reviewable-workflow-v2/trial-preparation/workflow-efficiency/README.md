@@ -59,8 +59,9 @@ general duplication rule.
 - **TODO** [GitHub delivery](github-delivery/README.md): define a reviewable
   Work commit sequence, preserved acceptance evidence, and safe PR publication
   and merge boundaries.
-- **TODO** [Workspace preparation](workspace-preparation/README.md): measure
-  minimal preparation or safe reuse for docs-only agent workspaces.
+- **DONE** Workspace preparation: added Make-owned isolated worktree creation
+  with full cache copy, locked offline setup, environment validation, and
+  measured evidence.
 - **TODO** [Tree orchestration](tree-orchestration/README.md): define
   orchestration roles and review ownership for Work trees.
 - **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
