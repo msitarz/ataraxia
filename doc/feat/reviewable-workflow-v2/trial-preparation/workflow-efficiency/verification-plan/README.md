@@ -6,24 +6,24 @@ results or independent review. Align affected guidance and preserve WDR history.
 
 ## Acceptance
 
-- **AC-1 TODO** Acceptance guidance states that `Verification:` is a planned
+- **AC-1 DONE** Acceptance guidance states that `Verification:` is a planned
   method for executor and reviewer, unchanged across TODO-to-DONE, and its
   prose, presence, or edits never establish coverage or completion. Applicable
   observed evidence must be independently reviewed before DONE; review
   completion remains distinct from maintainer approval or merge.
   Verification: compare the acceptance owner with the WDR amendment and walk
   through a planned method, an observed outcome, and an independent review.
-- **AC-2 TODO** Affected orchestration, test-ownership, and Work lifecycle
+- **AC-2 DONE** Affected orchestration, test-ownership, and Work lifecycle
   guidance link to the acceptance owner and align manual judgment, automated
   criteria, measurements, declaration checks, and retained-evidence/removal
   routes without requiring new result fields or reports.
   Verification: trace manual, automated, measurement, and temporary-probe
   cases through the linked owners and delivery procedure.
-- **AC-3 TODO** Accepted WDR 11 amends WDR 9 with reciprocal links, the index
+- **AC-3 DONE** Accepted WDR 11 amends WDR 9 with reciprocal links, the index
   places it under Accepted, and WDR 9's historical decision text is preserved.
   Verification: inspect WDR numbering, status, reciprocal links, index
   headings, and the retained WDR 9 text.
-- **AC-4 TODO** `ac-check` validates AC declarations, `Verification:`
+- **AC-4 DONE** `ac-check` validates AC declarations, `Verification:`
   annotations, and literal marker references without requiring markers or
   `Verification:` based on TODO/DONE status; neutral summaries do not claim
   coverage or completion.
