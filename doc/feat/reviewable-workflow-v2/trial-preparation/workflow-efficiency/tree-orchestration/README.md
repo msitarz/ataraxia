@@ -69,3 +69,9 @@ record or accept a decision.
   PR-evidence Work. Preserve accepted history.
   Verification: inspect the proposed record, its index entry, linked guidance,
   and lifecycle status.
+- **AC-3 TODO** Orchestrator guidance always instructs each leaf executor to
+  create and use an isolated Git worktree with
+  `make worktree-create WORKTREE=/path BRANCH=work/example`. Before edits begin,
+  the leaf handoff identifies the command, destination path, and branch.
+  Verification: inspect the owner guidance and a leaf handoff example to confirm
+  it gives the command, branch, and path before work begins.

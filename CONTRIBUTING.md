@@ -34,6 +34,13 @@ Re-run it whenever `pyproject.toml`, `uv.lock`, or `.pre-commit-config.yaml`
 changes. Setup needs network access; caches live in `.cache/uv` and
 `.cache/prek` by default (override `UV_CACHE_DIR` or `PREK_HOME` if needed).
 
+To create an isolated agent workspace from local `master`, run
+`make worktree-create WORKTREE=/path/to/worktree BRANCH=work/example`. The
+target copies `.cache` when present, creates a fresh `.venv` with offline
+`ci-setup`, and runs `verify-setup` before reporting readiness. If setup fails,
+the worktree remains available for recovery; follow the printed instructions
+from inside that worktree.
+
 Commitizen checks Conventional Commit syntax. The body-formatting hook allows
 messages without bodies; when a body is present, separate it from the subject
 with a blank line and wrap prose and bullet continuations at 72 columns. Put

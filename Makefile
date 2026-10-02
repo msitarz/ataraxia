@@ -15,6 +15,8 @@ help: ## display this command index
 singlequote := '
 # Quote caller selectors as literal, whitespace-separated shell words.
 _SHELL_WORDS = $(foreach arg,$(1),'$(subst $(singlequote),'"'"',$(arg))')
+# Quote one shell value while preserving embedded spaces and apostrophes.
+_SHELL_VALUE = '$(subst $(singlequote),'"'"',$(1))'
 _ARGS = $(call _SHELL_WORDS,$(ARGS))
 _CLI_ARGS = $(call _SHELL_WORDS,$(CLI_ARGS))
 _TARGET_PATHS = $(if $(strip $(ARGS)),$(_ARGS),.)
@@ -176,3 +178,46 @@ ci-package: ci-package-setup ## build and smoke-test the installed package
 
 ci-package-setup:
 	uv python install
+
+##@ Workspaces
+.PHONY: worktree-create
+worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path BRANCH=work/name
+	@set -eu; \
+	source=$(call _SHELL_VALUE,$(CURDIR)); destination=$(call _SHELL_VALUE,$(WORKTREE)); branch=$(call _SHELL_VALUE,$(BRANCH)); \
+	if [ -z "$$destination" ] || [ -z "$$branch" ]; then \
+		echo "Usage: make worktree-create WORKTREE=/path BRANCH=work/name" >&2; exit 2; \
+	fi; \
+	case "$$destination" in /*) ;; *) destination="$$source/$$destination" ;; esac; \
+	if [ -e "$$destination" ] || [ -L "$$destination" ]; then \
+		echo "Worktree destination already exists: $$destination" >&2; exit 2; \
+	fi; \
+	if ! git check-ref-format --branch "$$branch" >/dev/null 2>&1; then \
+		echo "Invalid branch name: $$branch" >&2; exit 2; \
+	fi; \
+	if git -C "$$source" show-ref --verify --quiet "refs/heads/$$branch"; then \
+		echo "Branch already exists: $$branch" >&2; exit 2; \
+	fi; \
+	git -C "$$source" worktree add -b "$$branch" "$$destination" master || exit $$?; \
+	if [ -d "$$source/.cache" ]; then \
+		mkdir -p "$$destination/.cache"; \
+		if ! cp -R "$$source/.cache/." "$$destination/.cache/"; then \
+			echo "Cache copy failed; worktree retained at $$destination. Retry by copying .cache contents there, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit 1; \
+		fi; \
+	fi; \
+	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
+		$(MAKE) --no-print-directory -C "$$destination" ci-setup \
+			UV_CACHE_DIR="$$destination/.cache/uv" PREK_HOME="$$destination/.cache/prek" \
+			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=false; then \
+		:; \
+	else \
+		status=$$?; echo "Offline setup failed (status $$status); worktree retained at $$destination. Repair its .cache or provide the missing cached artifact, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit $$status; \
+	fi; \
+	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
+		$(MAKE) --no-print-directory -C "$$destination" verify-setup \
+			UV_CACHE_DIR="$$destination/.cache/uv" PREK_HOME="$$destination/.cache/prek" \
+			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=true; then \
+		:; \
+	else \
+		status=$$?; echo "Environment verification failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
+	fi; \
+	echo "✓ Worktree ready: $$destination (branch $$branch)"
