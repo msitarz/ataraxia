@@ -48,17 +48,17 @@ accepted record.
 
 ## Acceptance
 
-- **AC-1 TODO** The delivery contract keeps a verified Work/evidence snapshot
+- **AC-1 DONE** The delivery contract keeps a verified Work/evidence snapshot
   before a distinct cleanup commit, permits development fixups, and preserves
   both snapshots through a rebase without requiring every intermediate SHA.
   Verification: walk through a Work delivery with a correction, completed
   criteria, cleanup, and regression tests, then inspect the two-commit order.
-- **AC-2 TODO** A published rewrite uses the expected remote head, refreshes
+- **AC-2 DONE** A published rewrite uses the expected remote head, refreshes
   evidence references, and receives final-head review and required CI before
   merge consideration.
   Verification: walk through an already-published branch with a changed base
   and verify stale-head protection, updated links, review, and CI gates.
-- **AC-3 TODO** The delivery distinguishes GitHub merge settings from local
+- **AC-3 DONE** The delivery distinguishes GitHub merge settings from local
   human-review and maintainer-merge requirements; agents merge only with
   explicit maintainer instruction and do not change settings, use admin
   overrides, or bypass gates.

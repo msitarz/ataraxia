@@ -43,16 +43,26 @@ maintainer approval and merge remain separate.
    other planned verification. Keep failed, skipped, pending, unrun, or
    otherwise unsupported criteria `TODO`.
 2. After independent review, commit the implementation and retained contract
-   with verified criteria marked `DONE`. Preserve the inspectable evidence and
-   this commit before the separate cleanup commit. Work deliveries with
-   acceptance criteria require both commits and must not be squashed.
+   with verified criteria marked `DONE`. Preserve inspectable evidence in its
+   source records; do not duplicate manual outcomes beside criteria. Keep this
+   verified implementation/evidence snapshot before the separate cleanup
+   commit. Work deliveries with acceptance criteria require both commits and
+   must not be squashed.
 3. In the cleanup commit, remove the contract and update the parent map. Review
    tests under [test ownership](test-ownership.md) and retain regression tests.
 
-A later implementation or evidence correction invalidates the affected result.
-Return its criterion to `TODO`, rerun applicable verification, and refresh the
-source evidence. If the contract was removed, restore it in a corrective
-evidence commit before making a separate cleanup commit.
+Development fixups may be folded into the verified implementation/evidence
+snapshot; retaining every intermediate commit or SHA is not required. A later
+implementation or evidence correction invalidates the affected result. Return
+its criterion to `TODO`, rerun applicable verification, and refresh the source
+evidence before marking it `DONE` again. If the contract was removed, restore
+it in a corrective evidence commit before making a separate cleanup commit.
+
+Rebase the completed sequence onto current `master` as linear history while
+preserving the verified implementation/evidence snapshot and the later cleanup
+commit in that order. Refresh commit references in their existing evidence
+records when a rebase changes the referenced commits. The rebase may replace
+commit IDs; it must not combine or discard either required snapshot.
 
 ## Limits
 

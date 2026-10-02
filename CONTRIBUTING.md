@@ -107,12 +107,36 @@ for a Prototype or rewrite; identify the exception in the PR.
 Follow the [Work scope and sizing rules](doc/workflow.md#scope-and-sizing) for
 reviewable deliveries. Material changes to an approved direction or contract
 require explicit approval; smaller Works within that direction proceed to their
-own review. The maintainer reviews the current PR revision and performs the
-merge. Agents must not merge without an explicit instruction.
+own review.
 
 For Work PRs with acceptance criteria, follow the
 [commit-preservation rule](doc/acceptance-tracing.md#work-delivery-commits);
 do not squash.
+
+The owning orchestrator is responsible for publishing a Work branch and any
+rewrite to its PR. Before starting a rebase of an already-published branch,
+inspect the remote branch and record its commit ID. Verify that this is the
+published head whose work the rewrite will replace; reconcile unexpected remote
+commits before starting. Keep this expected ID through the rewrite and use it
+in an explicit lease when publishing, for example:
+
+```sh
+git push --force-with-lease=refs/heads/<branch>:<expected-remote-oid> origin HEAD:refs/heads/<branch>
+```
+
+If the remote branch no longer points to that expected commit, the push must
+fail. Inspect and reconcile the new remote work before rewriting and
+publishing again; do not refresh the expected ID just to make the push succeed
+or replace the lease with an unconditional force push. After publishing,
+review the final PR head and require its full CI result before merge
+consideration, following the [orchestrator handoffs](doc/orchestrator.md) and
+[validation policy](doc/validation.md).
+
+Repository merge settings do not replace human review or maintainer authority.
+The maintainer reviews the current PR revision and performs the merge. Agents
+must not merge autonomously; an agent may merge only with explicit maintainer
+instruction. Do not change repository settings, use an admin override, or
+bypass review or CI requirements.
 
 PRs carry review discussion and rationale. Use the commit subject and concise
 PR description conventions below. Merged PRs and recorded approvals provide
