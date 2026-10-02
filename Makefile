@@ -23,8 +23,10 @@ $(error ARGS accepts paths, not options)
 endif
 
 .PHONY: setup
-setup: ci-setup ## install development dependencies and hooks
+setup: ci-setup ## prepare development dependencies, hooks, and build tooling
+	uv run --no-sync prek prepare-hooks
 	uv run --no-sync prek install --hook-type pre-commit --hook-type commit-msg
+	uv build --wheel --out-dir .cache/build
 	@echo "✓ Dev environment ready. Run 'make verify' to verify offline."
 
 .PHONY: lint lint-check
@@ -114,7 +116,7 @@ ac-check: ## check declared coverage for WORK=path/to/README.md
 clean: ## remove the virtual environment and test/lint caches
 	rm -rf .venv .ruff_cache .pytest_cache .coverage
 
-.PHONY: ci ci-setup ci-check ci-test ci-examples ci-package ci-audit
+.PHONY: ci ci-setup ci-check-setup ci-check ci-test ci-examples ci-package ci-audit
 .PHONY: verify verify-setup verify-check verify-test verify-examples verify-package
 # Every check uses the prepared environment; only setup may install dependencies.
 ci ci-check ci-test ci-examples ci-package: export UV_NO_SYNC := true
@@ -145,16 +147,17 @@ verify-package: ## build and smoke-test a temporary package install
 
 ##@ CI entry points (primarily for automation)
 # Run local evidence before the network-dependent audit, even with make -j.
-ci: ci-setup ## run CI checks, including the network audit
+ci: ci-check-setup ## run CI checks, including the network audit
 	$(MAKE) verify
 	$(MAKE) ci-audit
 
-ci-setup: ## install CI dependencies and prepare build tooling
+ci-setup: ## install locked CI dependencies
 	uv sync --locked --group dev
-	uv run --no-sync prek prepare-hooks
-	uv build --wheel --out-dir .cache/build
 
-ci-check: ci-setup ## run CI checks and the network audit
+ci-check-setup: ci-setup
+	uv run --no-sync prek prepare-hooks
+
+ci-check: ci-check-setup ## run CI checks and the network audit
 	$(MAKE) verify-check
 	$(MAKE) ci-audit
 
@@ -167,5 +170,5 @@ ci-test: ci-setup ## run the CI test suite
 ci-examples: ci-setup ## run CI example tests
 	$(MAKE) verify-examples
 
-ci-package: ci-setup ## build and smoke-test the installed package
+ci-package: ## build and smoke-test the installed package
 	$(MAKE) verify-package

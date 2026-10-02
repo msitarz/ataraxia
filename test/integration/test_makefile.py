@@ -29,6 +29,7 @@ def expected_size_advisory(*paths: str) -> list[str]:
 
 def fake_uv_environment(tmp_path):
     """Return a fake uv executable environment and its captured-call log."""
+    tmp_path.mkdir(parents=True, exist_ok=True)
     log = tmp_path / "uv-calls.jsonl"
     uv = tmp_path / "uv"
     uv.write_text(
@@ -111,10 +112,12 @@ def test_validation_order_and_offline_environment(tmp_path, target, failure, exp
     assert ["run", "pytest", "--cov"] in commands
     assert ["run", "pytest", "example/"] in commands
     assert ["run", "python", "script/smoke_installed_package.py"] in commands
-    local = calls if target == "verify" else calls[3:-1]
+    local = calls if target == "verify" else calls[2:-1]
     assert all(offline == "true" and no_sync == "true" for _, offline, no_sync in local)
     if target == "ci":
-        assert commands[-1][0] == "audit"
+        assert commands[1] == ["run", "--no-sync", "prek", "prepare-hooks"] and (
+            commands[-1][0] == "audit"
+        )
         assert calls[-1][1] is None
     else:
         assert not any(command[0] == "audit" for command in commands)
@@ -397,3 +400,64 @@ def test_full_example_verification_ignores_targeted_path_selector(tmp_path):
 
     assert result.returncode == 0, result.stdout + result.stderr
     assert calls == [["run", "pytest", "example/"]]
+
+
+def test_ci_preparation_is_allocated_to_its_consumers(tmp_path):
+    result, calls = run_make_with_fake_uv(tmp_path / "ci-setup", "ci-setup")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls == [["sync", "--locked", "--group", "dev"]]
+
+    result, calls = run_make_with_fake_uv(tmp_path / "ci-test", "ci-test")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls == [
+        ["sync", "--locked", "--group", "dev"],
+        ["run", "pytest", "--cov"],
+    ]
+
+    result, calls = run_make_with_fake_uv(tmp_path / "ci-examples", "ci-examples")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls == [
+        ["sync", "--locked", "--group", "dev"],
+        ["run", "pytest", "example/"],
+    ]
+
+    result, calls = run_make_with_fake_uv(tmp_path / "setup", "setup")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls == [
+        ["sync", "--locked", "--group", "dev"],
+        [
+            "run",
+            "--no-sync",
+            "prek",
+            "prepare-hooks",
+        ],
+        [
+            "run",
+            "--no-sync",
+            "prek",
+            "install",
+            "--hook-type",
+            "pre-commit",
+            "--hook-type",
+            "commit-msg",
+        ],
+        ["build", "--wheel", "--out-dir", ".cache/build"],
+    ]
+
+    result, calls = run_make_with_fake_uv(tmp_path / "ci-package", "ci-package")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls == [["run", "python", "script/smoke_installed_package.py"]]
+
+    result, calls = run_make_with_fake_uv(tmp_path / "ci-check", "ci-check")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert calls[:2] == [
+        ["sync", "--locked", "--group", "dev"],
+        ["run", "--no-sync", "prek", "prepare-hooks"],
+    ]
+    assert calls[-1] == ["audit", "--frozen", "--preview-features", "audit"]
