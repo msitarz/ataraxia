@@ -175,4 +175,4 @@ ci-package: ci-package-setup ## build and smoke-test the installed package
 	$(MAKE) verify-package
 
 ci-package-setup:
-	uv python install 3.14
+	uv python install
