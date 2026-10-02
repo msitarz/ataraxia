@@ -509,7 +509,7 @@ def test_ci_preparation_is_allocated_to_its_consumers(tmp_path):
         for line in (package_dir / "uv-env-calls.jsonl").read_text().splitlines()
     ]
     assert calls == [
-        ["python", "install", "3.14"],
+        ["python", "install"],
         ["run", "python", "script/smoke_installed_package.py"],
     ]
     assert env_calls == [[None, "true"], ["true", "true"]]
