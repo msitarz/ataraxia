@@ -73,9 +73,9 @@ general duplication rule.
   evidence and made `ac-check` declaration-only.
 - **TODO** [Guidance format](guidance-format/README.md): compare itemized and
   paragraph formats for applying semantically equivalent guidance.
-- **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): investigate
-  when documentation and code leaf tasks warrant Luna low, Luna medium, or Sol
-  low.
+- **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): freeze
+  documentation and code fixtures and a matched protocol before an explicitly
+  authorized Luna-low/Luna-medium/Sol-low comparison.
 - **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
   one leaf executor through corrections with replacing it at each correction.
 - **TODO** [Work context](work-context/README.md): route a small applicable

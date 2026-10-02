@@ -12,22 +12,36 @@ model/effort condition fits a task; its
 [prose trial](../guidance-application/prose-trial.md) is preliminary evidence
 from one documentation task, not a general selection recommendation.
 
+## Works
+
+- **TODO** [Protocol and fixtures](protocol-and-fixtures/README.md): freeze
+  bounded documentation and code fixtures, the matched protocol, review and
+  preservation gates, measures, thresholds, and a bounded authorization
+  request. No trial runs in this Work.
+- **TODO** [Controlled comparison](controlled-comparison/README.md): after the
+  protocol is reviewed and integrated, run only the Luna-low, Luna-medium, and
+  Sol-low conditions with explicit maintainer authorization, then report
+  evidence and a recommendation. No policy is adopted.
+
+The current Luna-low default and the direct parent-to-leaf topology remain in
+force throughout this Investigation. The controlled comparison cannot start
+until the protocol child is integrated and the maintainer explicitly
+authorizes its named conditions and bounded dispatch budget.
+Integrate this revised parent plan before starting either child. The protocol
+child still needs to settle exact fixtures, evaluator, repetitions, numeric
+thresholds, and the dispatch cap; this preparation records no trial results or
+authorization.
+
 ## Comparison
 
-Compare representative bounded documentation and code leaf tasks under
-matched baseline, scope, guidance, tools, and session conditions. Declare task
-classes, repetitions, same review rubric, quality and preservation gates,
-material-improvement threshold, and acceptable overhead before trials. Vary
-the model/effort condition only where possible and record remaining
-confounds.
-
-For each condition, assess first-artifact acceptance, correctness and
-requirement preservation, correction rounds, elapsed time through reviewed
-artifact including parent review, human steering, and check reuse. Record
-token use or cost when available; otherwise mark it unknown and make no cost
-claim. Conclude with a task-sensitive recommendation, the current default, or
-an inconclusive/no-change result, distinguishing observed evidence from
-uncertainty.
+The protocol child owns the fixtures and predeclared evaluation method. The
+comparison varies only the model/effort condition where possible and records
+remaining confounds. It includes first-artifact acceptance, correctness and
+requirement preservation, correction rounds, elapsed time through parent
+review, separate parent review effort, human steering, check reuse, and token
+or cost availability. Unavailable values remain explicitly unknown. The
+decision rule permits only a threshold-supported recommendation; otherwise it
+retains the default or reports an inconclusive result.
 
 This Investigation recommends but does not adopt policy. A consequential
 change must follow the authoritative owner and
@@ -36,17 +50,18 @@ change must follow the authoritative owner and
 ## Acceptance
 
 - **AC-1 TODO** The protocol defines representative documentation and code
-  task classes, matched conditions, repetitions, quality/preservation gates,
-  material improvement, acceptable overhead, and the review rubric before
-  execution.
-  Verification: inspect the declared protocol against an example of each task
-  class and all three model/effort conditions.
+  fixtures, matched conditions, repetitions and order, quality and preservation
+  gates, review rubric, measurements, material-improvement and overhead
+  thresholds, correction and stall handling, and a bounded authorization
+  request before execution.
+  Verification: inspect the frozen protocol and fixture revisions against both
+  task classes and all three model/effort conditions.
 - **AC-2 TODO** Trial results account for first-artifact acceptance,
-  correctness/preservation, correction rounds, time through parent-reviewed
-  artifact, human steering, check reuse, and token/cost availability for each
-  condition.
-  Verification: trace each measurement and unavailable value through the
-  recorded results and compare it with the declared protocol.
+  correctness and preservation, correction rounds, executor and parent effort,
+  time through parent-reviewed artifact, human steering, check reuse, and
+  token/cost availability for each condition.
+  Verification: trace every measure and unavailable value in the results to
+  the frozen protocol.
 - **AC-3 TODO** The recommendation follows the declared basis, distinguishes
   evidence from uncertainty, permits default/no-change or inconclusive
   outcomes, and does not imply policy adoption or authorization for further
