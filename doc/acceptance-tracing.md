@@ -15,29 +15,30 @@ Work maps:
   includes missing coverage or method declarations, declared methods or
   implemented tests without observed results, and failed, skipped, pending, or
   unrun verification.
-- `DONE` means the criterion's outcome has been verified and the evidence is
-  recorded; a declared method or implemented test alone is insufficient. A
-  `DONE` status does not mean review approved or merge is authorized.
+- `DONE` means an independent reviewer verified the criterion's outcome from
+  inspectable evidence. A declared method or implemented test alone is
+  insufficient. `DONE` does not itself mean maintainer approval or merge.
 
 ## Planned verification and evidence
 
 An indented `Verification:` clause names the planned method and guides the
 executor and reviewer. Its wording, presence, or edits are not coverage,
 observed evidence, or proof of completion. Keep it unchanged when moving a
-criterion from `TODO` to `DONE`; record the actual outcome alongside the
-criterion as required by the delivery procedure below.
+criterion from `TODO` to `DONE` unless the planned method itself changes.
 
 Evidence depends on the criterion. Automated behavior requires applicable
-criterion-marked tests and their selected execution results. The current
-`ac-check` is declaration-only and accepts a nonempty `Verification:` clause as
-a fallback for an unmarked criterion; passing it does not establish actual
-test coverage, execution, or observed or reviewed results. Measurements and
-trials require actual recorded observations or artifacts. Manual judgment
-requires an independent review of the actual changed artifact, with the result
-recorded in the PR and beside its criterion. A declaration, plan, or author's
-assertion cannot substitute for the applicable evidence. An independent
-reviewer must review the recorded evidence before the criterion becomes
-`DONE`. Review completion remains separate from maintainer approval and merge.
+criterion-marked tests and their selected execution results in check or CI
+artifacts. The current `ac-check` is declaration-only and accepts a nonempty
+`Verification:` clause as a fallback for an unmarked criterion; passing it does
+not establish actual test coverage, execution, or observed or reviewed results.
+Measurements and trials require actual recorded observations or artifacts in
+their existing reports or outputs. Manual judgment requires an independent
+review of the actual changed artifact, recorded in the PR. A declaration, plan,
+or author's assertion cannot substitute for applicable evidence. The reviewer
+checks evidence where it was produced and verifies that it accounts for the
+criteria; do not copy results into the Work as per-criterion narratives or
+create a separate evidence ledger. Review completion remains separate from
+maintainer approval and merge.
 
 ## Work delivery commits
 
@@ -46,13 +47,14 @@ reviewer must review the recorded evidence before the criterion becomes
    required manual or other verification. Keep unverified outcomes `TODO`.
 2. Every active manual or other non-test criterion must have an indented
    `Verification: <specific method>` describing the planned method. Perform
-   that method and record its actual result beside the criterion without
-   changing the `Verification:` clause. Record automated execution results and
-   measurement or trial observations beside their criteria as well. Mark a
-   criterion `DONE` only after an independent reviewer has reviewed the
-   applicable evidence and the outcome is recorded.
+   that method and retain inspectable evidence in the suitable PR, check result,
+   report, or artifact. Do not replace or edit the planned method to report an
+   outcome. Mark a criterion `DONE` only after an independent reviewer has
+   reviewed the applicable evidence and confirmed it accounts for the
+   criterion.
 3. Commit implementation and verification with the contract retained and all
-   completed criteria recorded as `DONE`. A delivery PR for a Work with
+   verified criteria marked `DONE`. Keep evidence locatable in its PR, Git,
+   check results, or existing artifacts. A delivery PR for a Work with
    acceptance criteria has at least two commits: one or more
    implementation/verification commits, then the final removal commit.
 4. In the separate final commit, remove the contract and update the parent map.
@@ -60,10 +62,11 @@ reviewer must review the recorded evidence before the criterion becomes
    tests.
 
 A later correction to implementation or evidence invalidates the affected
-result. Rerun applicable checks and refresh its `TODO` status and recorded
-result before removal; retain the planned `Verification:` clause unless the
-planned method itself changes. If the contract was already removed, restore it
-in a corrective evidence commit, then make a separate final removal commit.
+result. Return the affected criterion to `TODO`, rerun applicable checks, and
+refresh evidence in the record where it was produced before removal. Retain the
+planned `Verification:` clause unless the method itself changes. If the contract
+was already removed, restore it in a corrective evidence commit, then make a
+separate final removal commit.
 
 ## Limits
 
@@ -74,13 +77,14 @@ in a corrective evidence commit, then make a separate final removal commit.
   follow the abandonment lifecycle in [Work contracts](workflow.md#lifecycle).
 - `covers` markers may remain after removal for test provenance; Work-targeted
   acceptance commands require the owning file. Use Git history to review the
-  retained contract and recorded results.
+  retained contract and use the PR, check results, and linked artifacts to
+  inspect the evidence without duplicating it in the contract.
 - Preserve the implementation/evidence and removal commits when merging; do
   not squash this delivery class.
 
 If a temporary probe is removed while its criterion remains active, retain its
-one-time method and delivery PR link beside the criterion as described in
-[test ownership](test-ownership.md).
+one-time method and result in the delivery PR with the criterion identified, as
+described in [test ownership](test-ownership.md).
 
 ## Pytest markers and lookup
 

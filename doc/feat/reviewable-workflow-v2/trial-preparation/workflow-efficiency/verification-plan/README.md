@@ -19,8 +19,7 @@ results or independent review. Align affected guidance and preserve WDR history.
   routes without requiring new result fields or reports.
   Verification: trace manual, automated, measurement, and temporary-probe
   cases through the linked owners and delivery procedure.
-- **AC-3 TODO** The WDR history remains intact and a concise proposed amendment
-  uses the next available number with reciprocal amendment links and index
-  placement reserved for acceptance.
+- **AC-3 TODO** Accepted WDR 11 amends WDR 9 with reciprocal links, the index
+  places it under Accepted, and WDR 9's historical decision text is preserved.
   Verification: inspect WDR numbering, status, reciprocal links, index
   headings, and the retained WDR 9 text.

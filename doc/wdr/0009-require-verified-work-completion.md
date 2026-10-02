@@ -9,6 +9,9 @@ Accepted
 Amends
 [6. Keep delivery evidence in PRs and Git](0006-keep-delivery-evidence-in-prs-and-git.md).
 
+Amended by
+[11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md).
+
 ## Context
 
 Acceptance declarations describe intended coverage and verification methods,

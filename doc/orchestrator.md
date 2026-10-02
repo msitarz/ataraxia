@@ -55,8 +55,9 @@ statuses and recorded evidence using the
 [Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits)
 and the
 [evidence rules](acceptance-tracing.md#planned-verification-and-evidence).
-Confirm manual results are beside their criteria and in the PR, and retain full
-CI and maintainer review and merge gates.
+Confirm each criterion is accounted for by inspectable evidence in the PR,
+check results, or existing artifacts; record manual judgment of the changed
+artifact in the PR. Retain full CI and maintainer review and merge gates.
 
 If a Luna session is cancelled or lost, recover from the Work contract, parent
 map, branch or PR, and available check results. Establish which changes remain,
