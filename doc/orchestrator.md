@@ -9,6 +9,19 @@ review and verification. Luna makes the bounded changes and returns the
 artifact and evidence; it works directly within scope and does not recursively
 delegate the same task.
 
+For a Work tree, the orchestrator that owns a Work node with children owns
+planning and integration for that subtree and manages its immediate child
+agents. Delegate each leaf directly to Luna at low reasoning effort; the
+leaf's owning parent reviews it. A child node with children has its own
+orchestrator owner for that subtree. Each leaf has one responsible orchestrator;
+do not add a dedicated Sol wrapper around a leaf by default. Work-tree nodes
+mark responsibility boundaries, not required runtime layers. Parent and
+subtree reviews own integration and interfaces, and reuse leaf check evidence
+instead of repeating a full leaf review. Schedule work by dependency readiness,
+available concurrency, and expected shared edits rather than launching the
+entire tree at once. Do not invent intermediary Work nodes solely to justify
+runtime layers.
+
 Delegate repository changes to Luna at low reasoning effort. Higher effort
 requires the maintainer's explicit approval. Before handoff, assess the full
 expected change—including behavior, supporting changes, tests, and new
@@ -27,6 +40,14 @@ contracts; consult ancestor READMEs only as needed, without recursively loading
 every parent. Without a Work contract, state acceptance and exit criteria in
 the handoff. Link background instead of forwarding the full conversation by
 default. Routine choices within the agreed contract need no approval.
+
+Every leaf executor creates and uses an isolated Git worktree before editing.
+Before work begins, the handoff names the destination path and branch and gives
+the command, for example:
+
+```sh
+make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
+```
 
 If implementation reveals out-of-scope work, stop before expanding and report
 the finding and evidence. Apply the split rule when it adds an independent

@@ -55,12 +55,17 @@ record or accept a decision.
 
 ## Acceptance
 
-- **AC-1 TODO** Current guidance defines the tree roles, direct low-effort leaf
+- **AC-1 DONE** Current guidance defines the tree roles, direct low-effort leaf
   delegation, single leaf review owner, subtree integration review, evidence
   reuse, and dependency-aware scheduling while preserving all stated gates.
   Verification: inspect the owner guidance and trace the diagram's handoffs
   and review responsibilities.
-- **AC-2 TODO** A WDR compares tree routing with the prior per-leaf wrapper
+  Evidence: independent review traced P's direct Luna low-effort leaf L and
+  sole leaf-review ownership, C's ownership and review of G1/G2, and P's
+  integration/interface review using reported checks. It also confirmed
+  dependency-, concurrency-, and shared-edit-aware scheduling and the
+  independent review, model approval, human merge, and full CI gates.
+- **AC-2 DONE** A WDR compares tree routing with the prior per-leaf wrapper
   arrangement, records rationale and tradeoffs, cites durable PR or revision
   evidence, and distinguishes reports from causal claims and unknown costs or
   review time. Delivery uses the next unused number. If this delivery adopts
@@ -69,9 +74,19 @@ record or accept a decision.
   PR-evidence Work. Preserve accepted history.
   Verification: inspect the proposed record, its index entry, linked guidance,
   and lifecycle status.
-- **AC-3 TODO** Orchestrator guidance always instructs each leaf executor to
+  Evidence: independent review checked WDR 12 against the guidance and prior
+  wrapper arrangement, including its tradeoff, durable experiment references,
+  missing token and human-review data, and lack of causal speedup claims. It
+  confirmed 12 was next unused, `Accepted` is the intended adopted state on
+  maintainer merge, the index and reciprocal WDR 4 Status metadata are in this
+  delivery, and accepted decision text is preserved.
+- **AC-3 DONE** Orchestrator guidance always instructs each leaf executor to
   create and use an isolated Git worktree with
   `make worktree-create WORKTREE=/path BRANCH=work/example`. Before edits begin,
   the leaf handoff identifies the command, destination path, and branch.
   Verification: inspect the owner guidance and a leaf handoff example to confirm
   it gives the command, branch, and path before work begins.
+  Evidence: independent review checked the pre-edit handoff naming
+  `/private/tmp/ataraxia-tree-orchestration` and branch
+  `work/tree-orchestration`; the Make worktree command created and prepared that
+  isolated workspace before edits.

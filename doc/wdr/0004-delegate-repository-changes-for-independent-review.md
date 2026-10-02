@@ -6,6 +6,9 @@ Date: 2026-10-01
 
 Accepted
 
+Amended by
+[12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md).
+
 ## Context
 
 Repository changes need bounded execution while the orchestrator retains

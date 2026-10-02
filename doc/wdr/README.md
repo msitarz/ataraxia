@@ -24,6 +24,7 @@ authoritative owners.
 - [9. Require verified evidence for Work completion](0009-require-verified-work-completion.md)
 - [10. Recover delegated handoffs](0010-recover-delegated-handoffs.md)
 - [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md)
+- [12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md)
 
 ## Proposal
 
