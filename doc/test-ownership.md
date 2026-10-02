@@ -11,6 +11,8 @@ exercise a dependency through our own boundary.
 Record removed probes, their one-time verification method and result, and the
 removal rationale in the delivery PR. When removal affects an active acceptance
 criterion, state the one-time method and link the delivery PR beside that
-criterion so coverage checks can find the evidence. A removed probe is adoption
-evidence, not continuing regression coverage; its code and result remain
-available in Git history and the PR.
+criterion so coverage checks can find the evidence. Keep the planned
+`Verification:` clause unchanged when recording the result; see the
+[acceptance evidence rules](acceptance-tracing.md#planned-verification-and-evidence).
+A removed probe is adoption evidence, not continuing regression coverage; its
+code and result remain available in Git history and the PR.
