@@ -78,7 +78,18 @@ def run_make_with_fake_uv(tmp_path, *args, advisory_exit=0):
     ("target", "failure", "expected"),
     [("verify", "", 0), ("verify", "sync-check", 2), ("ci", "audit", 2)],
 )
+@pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
+    ac="AC-3",
+)
 def test_validation_order_and_offline_environment(tmp_path, target, failure, expected):
+    """AC-3: Prepared verification is offline, checks stale envs, and audits CI.
+
+    Prepared offline verification remains network-free, rejects a missing or
+    stale environment, and exercises the installed package outside the
+    checkout. Dependency synchronization stays locked and audit remains
+    required by full CI.
+    """
     log = tmp_path / "calls.jsonl"
     uv = tmp_path / "uv"
     uv.write_text(
@@ -409,11 +420,35 @@ def test_full_example_verification_ignores_targeted_path_selector(tmp_path):
     assert calls == [["run", "pytest", "example/"]]
 
 
+@pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
+    ac="AC-2",
+)
+@pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
+    ac="AC-3",
+)
 def test_ci_preparation_is_allocated_to_its_consumers(tmp_path):
+    """AC-2 and AC-3: CI setup and offline verification contracts.
+
+    Each CI target prepares what its checks require, and missing required
+    environments fail clearly. `make setup` still prepares hooks and build
+    tooling for subsequent offline verification.
+
+    Prepared offline verification remains network-free, rejects a missing or
+    stale environment, and exercises the installed package outside the
+    checkout. Dependency synchronization stays locked and audit remains
+    required by full CI.
+
+    This fake-uv test checks Make routing and environment flags, not actual
+    network behavior.
+    """
     result, calls = run_make_with_fake_uv(tmp_path / "ci-setup", "ci-setup")
 
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert calls == [["sync", "--locked", "--group", "dev"]]
+    assert (result.returncode, calls) == (
+        0,
+        [["sync", "--locked", "--group", "dev"]],
+    )
 
     result, calls = run_make_with_fake_uv(tmp_path / "ci-test", "ci-test")
 
