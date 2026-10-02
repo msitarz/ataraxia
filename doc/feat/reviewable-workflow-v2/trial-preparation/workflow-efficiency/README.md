@@ -56,9 +56,8 @@ general duplication rule.
   work selection, and artifact review.
 - **TODO** [PR evidence](pr-evidence/README.md): clarify useful completion
   evidence while preserving criterion coverage.
-- **TODO** [GitHub delivery](github-delivery/README.md): define a reviewable
-  Work commit sequence, preserved acceptance evidence, and safe PR publication
-  and merge boundaries.
+- **DONE** GitHub delivery: defined evidence-preserving Work commits, safe
+  leased rewrites, final-head CI, and maintainer-controlled merge.
 - **DONE** Workspace preparation: added Make-owned isolated worktree creation
   with full cache copy, locked offline setup, environment validation, and
   measured evidence.
