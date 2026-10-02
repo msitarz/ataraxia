@@ -19,9 +19,9 @@ establish completion.
 ## Decision
 
 Keep `Verification:` as the planned method that guides the executor and
-reviewer, unchanged when a criterion moves from `TODO` to `DONE` unless the
-method itself changes. It does not establish coverage, observed results, or
-completion. Independently review applicable evidence before `DONE`.
+reviewer, unchanged when a criterion moves from `TODO` to `DONE`. It does not
+establish coverage, observed results, or completion. Independently review
+applicable evidence before `DONE`.
 
 Evidence stays where it is produced: applicable marked tests and selected
 execution results in check or CI artifacts; measurement and trial observations
