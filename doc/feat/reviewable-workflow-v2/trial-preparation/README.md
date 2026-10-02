@@ -27,8 +27,9 @@ success criteria.
   Work tests under both `test/` and `example/` consistently.
 - **DONE** CI scheduling: made the main test job independent of static checks
   and the network audit while preserving the full CI gate.
-- **TODO** CI preparation: use `.python-version` as the package interpreter
-  source and rerun marked acceptance checks.
+- **DONE** CI preparation: measured and reduced unused CI setup work, prepared
+  the package job's managed Python from `.python-version` before offline smoke
+  verification, and traced Make regressions to their acceptance criteria.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **TODO** [Workflow efficiency](workflow-efficiency/README.md): use a bounded
