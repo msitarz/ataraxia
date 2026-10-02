@@ -36,7 +36,7 @@ human review time remain unavailable. This Work carries the change:
 
 The orchestrator that owns a Work node with children owns planning and
 integration for that subtree and manages its immediate child agents. Delegate
-each leaf directly to Luna at low reasoning effort, with its owning parent as
+each leaf directly to Luna, with its owning parent as
 the single responsible reviewer. A child node with children owns its own
 subtree orchestration. Do not add a dedicated Sol wrapper around a leaf by
 default. Work nodes mark responsibility boundaries, not required runtime
