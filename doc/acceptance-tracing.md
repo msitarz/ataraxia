@@ -24,7 +24,7 @@ Work maps:
 An indented `Verification:` clause names the planned method and guides the
 executor and reviewer. Its wording, presence, or edits are not coverage,
 observed evidence, or proof of completion. Keep it unchanged when moving a
-criterion from `TODO` to `DONE` unless the planned method itself changes.
+criterion from `TODO` to `DONE`.
 
 Evidence depends on the criterion. Automated behavior requires applicable
 criterion-marked tests and their selected execution results in check or CI
