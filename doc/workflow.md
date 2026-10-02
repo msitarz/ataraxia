@@ -60,8 +60,10 @@ Follow the
 [Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits)
 and its
 [evidence rules](acceptance-tracing.md#planned-verification-and-evidence) to
-verify and record criterion outcomes beside a retained contract before removing
-it and updating the parent map in a separate commit.
+verify criterion outcomes against inspectable evidence and record verified
+statuses and planned methods in the retained contract before removing it and
+updating the parent map in a separate commit. Keep evidence locatable in the
+PR, check results, Git, or existing artifacts.
 
 After a Work PR merges, follow the
 [post-merge branch cleanup](branch-cleanup.md) procedure.
