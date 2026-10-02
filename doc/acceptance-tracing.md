@@ -19,15 +19,38 @@ Work maps:
   recorded; a declared method or implemented test alone is insufficient. A
   `DONE` status does not mean review approved or merge is authorized.
 
+## Planned verification and evidence
+
+An indented `Verification:` clause names the planned method and guides the
+executor and reviewer. Its wording, presence, or edits are not coverage,
+observed evidence, or proof of completion. Keep it unchanged when moving a
+criterion from `TODO` to `DONE`; record the actual outcome alongside the
+criterion as required by the delivery procedure below.
+
+Evidence depends on the criterion. Automated behavior requires applicable
+criterion-marked tests and their selected execution results. The current
+`ac-check` is declaration-only and accepts a nonempty `Verification:` clause as
+a fallback for an unmarked criterion; passing it does not establish actual
+test coverage, execution, or observed or reviewed results. Measurements and
+trials require actual recorded observations or artifacts. Manual judgment
+requires an independent review of the actual changed artifact, with the result
+recorded in the PR and beside its criterion. A declaration, plan, or author's
+assertion cannot substitute for the applicable evidence. An independent
+reviewer must review the recorded evidence before the criterion becomes
+`DONE`. Review completion remains separate from maintainer approval and merge.
+
 ## Work delivery commits
 
 1. Verify every criterion while its Work README or spec still exists. Run
    applicable declaration and selected-test checks before removal, as well as
    required manual or other verification. Keep unverified outcomes `TODO`.
-2. Record each result beside its criterion. Every active manual or other
-   non-test criterion must have an indented `Verification: <specific method>`;
-   when complete, add the observed result there. Mark a criterion `DONE` only
-   after its outcome and evidence are recorded.
+2. Every active manual or other non-test criterion must have an indented
+   `Verification: <specific method>` describing the planned method. Perform
+   that method and record its actual result beside the criterion without
+   changing the `Verification:` clause. Record automated execution results and
+   measurement or trial observations beside their criteria as well. Mark a
+   criterion `DONE` only after an independent reviewer has reviewed the
+   applicable evidence and the outcome is recorded.
 3. Commit implementation and verification with the contract retained and all
    completed criteria recorded as `DONE`. A delivery PR for a Work with
    acceptance criteria has at least two commits: one or more
@@ -37,9 +60,10 @@ Work maps:
    tests.
 
 A later correction to implementation or evidence invalidates the affected
-result. Rerun applicable checks and refresh its `TODO` status, verification
-method, and result before removal. If the contract was already removed, restore
-it in a corrective evidence commit, then make a separate final removal commit.
+result. Rerun applicable checks and refresh its `TODO` status and recorded
+result before removal; retain the planned `Verification:` clause unless the
+planned method itself changes. If the contract was already removed, restore it
+in a corrective evidence commit, then make a separate final removal commit.
 
 ## Limits
 
