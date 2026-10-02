@@ -28,9 +28,9 @@ force throughout this Investigation. The controlled comparison cannot start
 until the protocol child is integrated and the maintainer explicitly
 authorizes its named conditions and bounded dispatch budget.
 Integrate this revised parent plan before starting either child. The protocol
-child still needs to settle exact fixtures, evaluator, repetitions, numeric
-thresholds, and the dispatch cap; this preparation records no trial results or
-authorization.
+child still needs to settle exact fixtures, fixed reviewer, repetitions,
+numeric thresholds, and the dispatch cap; this preparation records no trial
+results or authorization.
 
 ## Comparison
 

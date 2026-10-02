@@ -22,16 +22,19 @@ default.
 
 Before any run, the protocol must state exact repetitions per fixture and
 condition, balanced or randomized run order, the common independent review
-rubric, correctness and requirement-preservation gates, and the applicable
-local checks. Identify one independent evaluator, separate from the owning
-parent, to review every initial artifact and correction under that rubric; the
-owning parent review is separately timed and included in end-to-end time.
-Freeze severity levels and acceptance rules so all conditions receive the same
-evaluation.
+rubric for the owning parent's review, correctness and requirement-preservation
+gates, and the applicable local
+checks. The same owning parent, independent of each leaf executor, is the fixed
+reviewer for all conditions and reviews every initial artifact and correction
+under that rubric. Measure the parent's review effort separately and include it
+in end-to-end time. Apply the rubric without condition labels where practical;
+otherwise record whether review was unblinded, which condition and prior results
+the parent knew, and the resulting confounds. Freeze severity levels and
+acceptance rules so all conditions receive the same evaluation.
 
-Predeclare first-artifact acceptance, correction rounds, evaluator and parent
-effort, elapsed time from dispatch through parent-reviewed artifact, human
-steering, check reuse or repetition, and token/cost availability. Define a
+Predeclare first-artifact acceptance, correction rounds, parent review effort,
+elapsed time from dispatch through parent-reviewed artifact, human steering,
+check reuse or repetition, and token/cost availability. Define a
 material-improvement threshold, acceptable overhead ceiling, and conservative
 decision rule with numeric cutoffs and their rationale. The rule must account
 for variation across task classes, require all quality and preservation gates
@@ -49,11 +52,15 @@ successful outcomes.
 
 Conclude with an explicit authorization request that names the three exact
 conditions, fixtures and revision, repetitions, total maximum dispatch count,
-owning parent and independent evaluator, estimated human effort where
-available, and unknown costs or unavailable capabilities. Ask for explicit
-authorization for that bounded plan. The request itself does not authorize
-execution. The protocol and fixture commit must be reviewed and integrated
-before the controlled comparison begins.
+fixed owning parent/reviewer, estimated human effort where available, and
+unknown costs or unavailable capabilities. Ask for explicit authorization for
+that bounded plan. The request itself does not authorize execution. Preserve
+the replayable protocol and fixture assets at the protocol Work's evidence
+commit. Before its separate cleanup commit removes this Work directory,
+update the controlled-comparison contract with durable commit permalinks to
+the protocol and fixture assets. Git preserves that evidence; do not create a
+second archive or tracking record. The evidence commit must be reviewed and
+integrated before the controlled comparison begins.
 
 ## Acceptance
 
@@ -64,18 +71,21 @@ before the controlled comparison begins.
   condition can use the same inputs.
 - **AC-2 TODO** The pre-run protocol fixes the three conditions, direct
   parent-to-leaf topology, fresh sessions, matched controls, repetitions and
-  balanced order, fixed independent rubric and evaluator, preservation and
-  quality gates, correction/stall rules, measures, numeric improvement and
-  overhead thresholds, and conservative decision rule.
+  balanced order, fixed owning parent/reviewer, rubric and label-blinding or
+  unblinded-confound recording, preservation and quality gates, correction/
+  stall rules, measures, numeric improvement and overhead thresholds, and
+  conservative decision rule.
   Verification: walk the protocol against both fixtures and a hypothetical
   passing, failing, and inconclusive outcome; confirm no result is needed to
   determine the rule.
 - **AC-3 TODO** A bounded authorization request names the conditions, total
-  dispatch cap, owning parent, independent evaluator, estimated effort and
-  unknown costs, and makes clear that execution waits for reviewed integration
-  and explicit maintainer authorization.
-  Verification: inspect the request and confirm it grants no dispatch or policy
-  authority by itself.
+  dispatch cap, fixed owning parent/reviewer, estimated effort and unknown
+  costs; the replayable protocol and fixtures are preserved at an evidence
+  commit and this sibling contract is updated with durable permalinks before
+  cleanup.
+  Verification: inspect the request and evidence links; confirm execution
+  waits for reviewed integration and explicit maintainer authorization, and
+  that the evidence remains reachable after protocol cleanup.
 
 No measured result or policy change belongs in this Work. Keep the current
 Luna-low default until a later reviewed decision follows the applicable WDR
