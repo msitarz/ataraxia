@@ -21,8 +21,8 @@ success criteria.
   recovery, and scope-growth and stalled-correction stopping rules to
   [orchestrator guidance](../../../orchestrator.md); rationale is recorded in
   [WDR 10](../../../wdr/0010-recover-delegated-handoffs.md).
-- **TODO** [Guidance consistency](guidance-consistency/README.md): reconcile
-  decision status, contract authority, and contributor examples.
+- **DONE** Guidance consistency: aligned WDR status and index, clarified
+  accepted-contract authority, and corrected Make and contributor guidance.
 - **DONE** Acceptance tool scope: added support for
   Work tests under both `test/` and `example/` consistently.
 - **DONE** CI scheduling: made the main test job independent of static checks
