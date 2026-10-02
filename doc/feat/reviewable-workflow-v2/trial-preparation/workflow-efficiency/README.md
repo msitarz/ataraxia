@@ -62,8 +62,9 @@ general duplication rule.
 - **DONE** Workspace preparation: added Make-owned isolated worktree creation
   with full cache copy, locked offline setup, environment validation, and
   measured evidence.
-- **TODO** [Tree orchestration](tree-orchestration/README.md): define
-  orchestration roles and review ownership for Work trees.
+- **DONE** Tree orchestration: assigned subtree and leaf owners, direct
+  low-effort leaf delegation, isolated leaf worktrees, and dependency-aware
+  scheduling with review and evidence reuse.
 - **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
   guidance as a whole and consolidate repeated explanations within owners.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
