@@ -40,8 +40,8 @@ with a blank line and wrap prose and bullet continuations at 72 columns. Put
 unbreakable URLs or tokens on their own lines; indentation, bullet markers, and
 trailer labels may precede them. The checker ignores Git comment lines and the
 verbose diff below Git's scissors marker (including Magit commits). It does
-not limit subject length or require section labels. Agent-created commits must
-also follow the [body structure below](#commits-and-pull-requests).
+not limit subject length or require section labels. Agent-created commits
+follow the same [commit conventions](#commits-and-pull-requests).
 
 ## Make targets
 

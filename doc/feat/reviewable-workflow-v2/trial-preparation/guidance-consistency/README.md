@@ -21,16 +21,16 @@ without inventing a new requirement.
 
 ## Acceptance
 
-- **AC-1 TODO** The WDR index agrees with record statuses and current owner
+- **AC-1 DONE** The WDR index agrees with record statuses and current owner
   guidance; WDR 7 is explicitly accepted or identified as a candidate policy
   under evaluation, with the decision basis recorded in the delivery PR.
   Verification: compare the index, WDRs 7 and 8, and validation policy; inspect
   approval evidence or the maintainer's resolution.
-- **AC-2 TODO** Guidance requires an implementation deviation from an approved
+- **AC-2 DONE** Guidance requires an implementation deviation from an approved
   contract to be surfaced rather than silently adopted as intended behavior.
   Verification: compare architecture and documentation ownership using a
   hypothetical implementation defect and a planned unimplemented decision.
-- **AC-3 TODO** The root runnable example uses the documented Make target and
+- **AC-3 DONE** The root runnable example uses the documented Make target and
   contributor guidance has no dangling promise of a commit body structure.
   Verification: compare the example with the Make recipe and inspect the commit
   guidance; run Markdown formatting and local-link checks.

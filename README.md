@@ -46,7 +46,7 @@ make setup
 Run the example strategy against the sample data:
 
 ```sh
-uv run ataraxia --sink example/crossover.py --shards-dir sample --output results.json
+make run CLI_ARGS='--sink example/crossover.py --shards-dir sample --output results.json'
 ```
 
 A sink is a computable graph concept, read more in the
