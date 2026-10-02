@@ -21,6 +21,7 @@ authoritative owners.
 - [6. Keep delivery evidence in PRs and Git](0006-keep-delivery-evidence-in-prs-and-git.md)
 - [9. Require verified evidence for Work completion](0009-require-verified-work-completion.md)
 - [10. Recover delegated handoffs](0010-recover-delegated-handoffs.md)
+- [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md)
 
 ## Proposal
 

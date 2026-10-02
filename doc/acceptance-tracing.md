@@ -15,31 +15,44 @@ Work maps:
   includes missing coverage or method declarations, declared methods or
   implemented tests without observed results, and failed, skipped, pending, or
   unrun verification.
-- `DONE` means the criterion's outcome has been verified and the evidence is
-  recorded; a declared method or implemented test alone is insufficient. A
-  `DONE` status does not mean review approved or merge is authorized.
+- `DONE` means an independent reviewer verified the criterion's outcome from
+  inspectable evidence. A declared method or implemented test alone is
+  insufficient. `DONE` does not itself mean maintainer approval or merge.
+
+## Planned verification and evidence
+
+An indented `Verification:` clause states the planned method for the executor
+and reviewer; every manual or other non-test criterion needs one. It is not
+coverage, evidence, or proof of completion. Keep it unchanged when marking a
+criterion `DONE`. While a criterion remains `TODO`, its plan may change; perform
+the revised method before completion.
+
+Inspect evidence where it is produced. Automated behavior needs criterion-
+marked tests and selected execution results. `ac-check` checks declarations
+and references but requires neither a marker nor a `Verification:` method;
+passing it does not establish actual test coverage, selected execution,
+observed results, or review. Measurements and trials use observations in
+existing reports or artifacts. Manual judgment requires
+independent review of the changed artifact, recorded in the PR. Before `DONE`,
+an independent reviewer confirms applicable evidence supports the criterion;
+maintainer approval and merge remain separate.
 
 ## Work delivery commits
 
-1. Verify every criterion while its Work README or spec still exists. Run
-   applicable declaration and selected-test checks before removal, as well as
-   required manual or other verification. Keep unverified outcomes `TODO`.
-2. Record each result beside its criterion. Every active manual or other
-   non-test criterion must have an indented `Verification: <specific method>`;
-   when complete, add the observed result there. Mark a criterion `DONE` only
-   after its outcome and evidence are recorded.
-3. Commit implementation and verification with the contract retained and all
-   completed criteria recorded as `DONE`. A delivery PR for a Work with
-   acceptance criteria has at least two commits: one or more
-   implementation/verification commits, then the final removal commit.
-4. In the separate final commit, remove the contract and update the parent map.
-   Review tests under [test ownership](test-ownership.md) and retain regression
-   tests.
+1. While the contract exists, run `ac-check`, applicable selected tests, and
+   other planned verification. Keep failed, skipped, pending, unrun, or
+   otherwise unsupported criteria `TODO`.
+2. After independent review, commit the implementation and retained contract
+   with verified criteria marked `DONE`. Preserve the inspectable evidence and
+   this commit before the separate cleanup commit. Work deliveries with
+   acceptance criteria require both commits and must not be squashed.
+3. In the cleanup commit, remove the contract and update the parent map. Review
+   tests under [test ownership](test-ownership.md) and retain regression tests.
 
-A later correction to implementation or evidence invalidates the affected
-result. Rerun applicable checks and refresh its `TODO` status, verification
-method, and result before removal. If the contract was already removed, restore
-it in a corrective evidence commit, then make a separate final removal commit.
+A later implementation or evidence correction invalidates the affected result.
+Return its criterion to `TODO`, rerun applicable verification, and refresh the
+source evidence. If the contract was removed, restore it in a corrective
+evidence commit before making a separate cleanup commit.
 
 ## Limits
 
@@ -48,15 +61,10 @@ it in a corrective evidence commit, then make a separate final removal commit.
 - Any required `TODO` criterion prevents completion. If the Work stops
   unsatisfied,
   follow the abandonment lifecycle in [Work contracts](workflow.md#lifecycle).
-- `covers` markers may remain after removal for test provenance; Work-targeted
-  acceptance commands require the owning file. Use Git history to review the
-  retained contract and recorded results.
-- Preserve the implementation/evidence and removal commits when merging; do
-  not squash this delivery class.
-
-If a temporary probe is removed while its criterion remains active, retain its
-one-time method and delivery PR link beside the criterion as described in
-[test ownership](test-ownership.md).
+- Coverage markers may remain as provenance; Work-targeted commands require
+  the owning file. After removal, Git retains the contract and the PR, checks,
+  or linked artifacts retain the evidence.
+See [test ownership](test-ownership.md) for removed-probe evidence.
 
 ## Pytest markers and lookup
 

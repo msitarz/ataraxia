@@ -8,9 +8,8 @@ probes that only verify upstream behavior. Retain tests for our integration,
 contracts, and concrete compatibility regressions, including tests that
 exercise a dependency through our own boundary.
 
-Record removed probes, their one-time verification method and result, and the
-removal rationale in the delivery PR. When removal affects an active acceptance
-criterion, state the one-time method and link the delivery PR beside that
-criterion so coverage checks can find the evidence. A removed probe is adoption
-evidence, not continuing regression coverage; its code and result remain
-available in Git history and the PR.
+Record removed upstream-adoption probes, their one-time method and result, and
+the removal rationale in the delivery PR; identify any affected active
+criterion. Their code and result remain in Git and the PR, but are not ongoing
+regression coverage. See [acceptance tracing](acceptance-tracing.md) for
+criterion status and completion evidence.

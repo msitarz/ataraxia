@@ -67,6 +67,8 @@ general duplication rule.
   guidance as a whole and consolidate repeated explanations within owners.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
+- **DONE** Verification plan: distinguished planned methods from reviewed
+  evidence and made `ac-check` declaration-only.
 - **TODO** [Guidance format](guidance-format/README.md): compare itemized and
   paragraph formats for applying semantically equivalent guidance.
 - **TODO** [Leaf-agent selection](leaf-agent-selection/README.md): investigate

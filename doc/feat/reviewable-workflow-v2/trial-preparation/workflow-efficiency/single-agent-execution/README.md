@@ -23,9 +23,10 @@ ownership, maintainer approval, merge control, or CI requirements.
 
 ## Works
 
-- **TODO** [Protocol and fixture](protocol-and-fixture/README.md): freeze a
-  separate, bounded documentation task, prompts, conditions, rubric, measures,
-  and decision thresholds. This is protocol planning, not trial evidence.
+- **DONE** Protocol and fixture: froze a bounded documentation task, matched
+  nine-session protocol, rubric, measures, thresholds, and dispatch request in
+  evidence commit `7e33df59e29160655e1145e50a03a1353acdf36d`. No trial has run;
+  explicit maintainer authorization is still required.
 - **TODO** [Controlled comparison](controlled-comparison/README.md): only after
   the protocol Work is reviewed and integrated, request explicit authorization
   for the nine fresh sessions, execute three matched pairs, and report results.
