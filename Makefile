@@ -116,7 +116,8 @@ ac-check: ## check declared coverage for WORK=path/to/README.md
 clean: ## remove the virtual environment and test/lint caches
 	rm -rf .venv .ruff_cache .pytest_cache .coverage
 
-.PHONY: ci ci-setup ci-check-setup ci-check ci-test ci-examples ci-package ci-audit
+.PHONY: ci ci-setup ci-check-setup ci-check ci-test ci-examples ci-package
+.PHONY: ci-package-setup ci-audit
 .PHONY: verify verify-setup verify-check verify-test verify-examples verify-package
 # Every check uses the prepared environment; only setup may install dependencies.
 ci ci-check ci-test ci-examples ci-package: export UV_NO_SYNC := true
@@ -170,5 +171,8 @@ ci-test: ci-setup ## run the CI test suite
 ci-examples: ci-setup ## run CI example tests
 	$(MAKE) verify-examples
 
-ci-package: ## build and smoke-test the installed package
+ci-package: ci-package-setup ## build and smoke-test the installed package
 	$(MAKE) verify-package
+
+ci-package-setup:
+	uv python install 3.14
