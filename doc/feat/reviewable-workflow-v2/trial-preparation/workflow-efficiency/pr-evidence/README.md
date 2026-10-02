@@ -14,16 +14,22 @@ and Luna's concise local evidence, following permanent
 [orchestrator guidance](../../../../../orchestrator.md) and the mapped
 [handoffs outcome](../README.md#works). Publish the description after review;
 there is no separate Luna PR-writing phase. Consolidate publication, while
-allowing later material corrections or accurate pending/failure updates. Avoid
-fixed headings, templates, and inventories of CI jobs, commands, or hooks.
+allowing later material corrections or accurate pending/failure updates. Use
+the repository pull request template, whose concise Change and Limitations
+sections keep the description focused on the problem and result and on
+limitations decided when creating that PR. Do not add evidence links or copy
+acceptance criteria, evidence, or check inventories into the description;
+evidence remains available in PR commits, checks, and review records. Published
+descriptions retain only the top-level heading and Change and Limitations
+sections; do not add Review, Evidence, Verification, or other sections.
 
 Account for every acceptance criterion in its retained, verified Work snapshot
 as described by [acceptance tracing](../../../../../acceptance-tracing.md).
-The PR description links to that stable pre-removal contract/evidence snapshot
-and adds short result context where needed; it does not duplicate criterion
-mapping. Avoid routine successful-check inventories; retain concise material
-diagnostics and report failures, pending or unrun checks, and manual
-limitations accurately. Do not remove evidence as a blanket rule.
+Keep criterion mapping and evidence in inspectable PR commits, checks, and
+review records, not as links or copied inventories in the description. Retain
+concise material diagnostics in those records and report failures, pending or
+unrun checks, and manual limitations accurately. Do not remove evidence as a
+blanket rule.
 
 Clarify WDR status guidance in the
 [WDR workflow](../../../../../wdr-workflow.md) and
@@ -46,7 +52,7 @@ preserve accepted records without rewriting them.
 
 - **AC-1 TODO** Evidence guidance accounts for all criteria, reports failures,
   pending, unrun, and manual limitations, and gives the three cases above
-  usable treatment without fixed formats or redundant inventories.
+  usable treatment in PR records without redundant description inventories.
   Verification: walk through a CI-only Work, a manual criterion, and a
   removed Work contract using a completed PR.
 - **AC-2 TODO** Original criteria remain reviewable through stable PR or
@@ -69,9 +75,22 @@ preserve accepted records without rewriting them.
   the relevant owner guidance.
 - **AC-5 TODO** PR-description ownership stays with the owning orchestrator
   after review for both a new PR and an existing-PR amendment, with no separate
-  executor PR-writing phase. It uses Luna's concise evidence without
-  duplicating routine check inventories, permits material corrections and
-  truthful pending/failure updates, and publishes a consolidated description.
+  executor PR-writing phase. It uses Luna's concise local result to prepare a
+  consolidated description, permits material corrections and truthful
+  pending/failure updates, and keeps evidence in PR commits, checks, and review
+  records without description links or copied evidence/check inventories.
   Verification: walk through a new PR and an amendment from Luna's local
-  return to the reviewed description, checking evidence reuse and truthful
-  pending/failure reporting.
+  return to the reviewed description, checking template use, evidence location,
+  and truthful pending/failure reporting.
+- **AC-6 TODO** A repository `.github/pull_request_template.md` is created and
+  used for Work PR descriptions. It has a top-level `#` heading for rumdl and
+  exactly the itemized `## Change` and `## Limitations` sections; Change
+  concisely states the problem and result, and Limitations lists only
+  limitations decided when creating that PR (using `- None.` when there are
+  none). Instruction comments explain how authors prefill the sections and
+  tell them to remove the comments before submitting. Published descriptions
+  contain only the top-level heading and those two sections.
+
+  Verification: inspect the template and a Work PR description prepared from
+  it, confirm it has no additional sections, and run the applicable rumdl
+  check.
