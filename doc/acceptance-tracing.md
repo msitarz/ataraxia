@@ -28,11 +28,11 @@ criterion `DONE`. While a criterion remains `TODO`, its plan may change; perform
 the revised method before completion.
 
 Inspect evidence where it is produced. Automated behavior needs criterion-
-marked tests and selected execution results. The current `ac-check` checks
-declarations and accepts nonempty `Verification:` text as a fallback for an
-unmarked criterion; passing it does not establish actual test coverage,
-selected execution, observed results, or review. Measurements and trials use
-observations in existing reports or artifacts. Manual judgment requires
+marked tests and selected execution results. `ac-check` checks declarations
+and references but requires neither a marker nor a `Verification:` method;
+passing it does not establish actual test coverage, selected execution,
+observed results, or review. Measurements and trials use observations in
+existing reports or artifacts. Manual judgment requires
 independent review of the changed artifact, recorded in the PR. Before `DONE`,
 an independent reviewer confirms applicable evidence supports the criterion;
 maintainer approval and merge remain separate.
