@@ -27,9 +27,9 @@ success criteria.
   Work tests under both `test/` and `example/` consistently.
 - **DONE** CI scheduling: made the main test job independent of static checks
   and the network audit while preserving the full CI gate.
-- **TODO** [CI preparation](ci-preparation/README.md): install the package
-  job's managed Python before offline smoke verification while preserving the
-  measured setup reduction and full CI gates.
+- **DONE** CI preparation: measured and reduced unused CI setup work, then
+  installed the package job's managed Python before offline smoke verification
+  while preserving dependency, offline, package, and full audit gates.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **TODO** [Workflow efficiency](workflow-efficiency/README.md): use a bounded
