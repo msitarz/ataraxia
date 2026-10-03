@@ -102,7 +102,7 @@ general duplication rule.
   adopted Sol-low for all leaf executors while preserving independent review and
   evidence.
 - **DONE** Evaluation workflow: defined reusable empirical evaluation guidance,
-  Work-kind ownership and reading routes, with a proposed decision record under
+  Work-kind ownership and reading routes, with an adoption-ready decision under
   the normal Work lifecycle.
 - **TODO** [Shallow executor clones](shallow-executor-clones/README.md): develop
   a tested recommendation through sandbox-isolation, communication, and

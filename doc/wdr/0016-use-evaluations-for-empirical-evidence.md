@@ -4,7 +4,7 @@ Date: 2026-10-03
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -16,7 +16,7 @@ assign ownership of evidence from a declared empirical protocol.
 
 ## Decision
 
-Propose Evaluation as a Work kind owning empirical evidence, with reusable
+Use Evaluation as a Work kind owning empirical evidence, with reusable
 methods in [empirical evaluation guidance](../evaluation.md) and relationships
 in [Work workflow](../workflow.md#evaluations). A specific Work and protocol own
 the question, inputs, limits, thresholds, and observations. Keep the normal
@@ -34,7 +34,7 @@ improving the ownership boundary.
 Reviewers can distinguish observations, recommendations, and adoption while
 checking conditions, contamination, and missing measurements. Protocol detail
 still scales to the question; no universal budget, model choice, threshold,
-agent requirement, or trial authorization follows. This record remains a
-proposal under the
-[maintainer acceptance lifecycle](../decision-records.md#record-format); its
-merge does not adopt a policy or complete an evaluation.
+agent requirement, or trial authorization follows. The maintainer accepts this
+choice through merge under the
+[decision-record lifecycle](../decision-records.md#record-format); readiness
+alone does not establish acceptance or complete an evaluation.
