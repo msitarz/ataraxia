@@ -21,6 +21,6 @@ its relevant README and linked contracts.
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
 | Running project tools | Run `make help` first; invoke project tools through Make targets. |
 | Setup, branches, or commits | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Publishing, describing, or reviewing pull requests | [Pull requests](doc/pull-requests.md) |
+| Publishing or describing pull requests | [Pull requests](doc/pull-requests.md) |
 | Choosing checks or reporting validation evidence | [Validation policy](doc/validation.md) |
 | CI jobs | [CI workflow](.github/workflows/ci.yml) |
