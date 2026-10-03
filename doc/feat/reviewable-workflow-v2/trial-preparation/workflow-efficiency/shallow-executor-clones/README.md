@@ -85,9 +85,9 @@ permitted resources, contamination, and verified isolation. That Work owns
 general evaluation guidance; this Work contributes the concrete clone and
 history-access requirements without creating a second evaluation owner. Until
 that owner exists, preserve the requirements here for integration rather than
-claiming that Evaluation is already an adopted Work kind. Coordinate with
-[Worktree language](../worktree-language/README.md) so independent clones are
-not described as linked worktrees.
+claiming that Evaluation is already an adopted Work kind. Use the
+[glossary's Worktree meaning](../../../../../ubiquitous-language.md) so
+independent clones are not described as linked worktrees.
 
 ## Acceptance
 
