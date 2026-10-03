@@ -28,17 +28,17 @@ clarification depend on unrelated Works. The
 
 ## Acceptance
 
-- **AC-1 TODO** The vocabulary owner directs authors to reuse the same
+- **AC-1 DONE** The vocabulary owner directs authors to reuse the same
   established term for the same concept as often as necessary, without varying
   it solely to avoid repeated words.
   Verification: inspect the updated owner and review the PR 117 commit/snapshot
   example to confirm that repeated commit wording follows the rule.
-- **AC-2 TODO** The clarification distinguishes repeated terms from duplicated
+- **AC-2 DONE** The clarification distinguishes repeated terms from duplicated
   definitions or instructions and preserves documentation ownership rules.
   Verification: review an example that repeats commit for the same Git object
   and an example that repeats its definition, checking that the former retains
   the term and the latter is consolidated or linked to its owner.
-- **AC-3 TODO** The owner clarification and bounded example preserve existing
+- **AC-3 DONE** The owner clarification and bounded example preserve existing
   meanings, links, anchors, and distinct concepts without broad renaming or
   changes to accepted decisions.
   Verification: independently review the complete diff and bounded example,
