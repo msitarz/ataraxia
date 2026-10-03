@@ -11,9 +11,11 @@ Compare three leaf conditions on two bounded fixtures: A = GPT-6 Luna low
 (current baseline), B = GPT-6 Luna medium, and C = GPT-6.1 Sol low. Run 18
 fresh sessions in total: two fixtures × three conditions × three repetitions.
 Run them sequentially, with one isolated worktree from the same frozen fixture
-revision for each session. Record and freeze fixture execution order before
-dispatch. Do not reuse conversation context, artifacts, or branches between
-runs. Use the exact current guidance and tools at runtime base
+revision for each session. Run the nine documentation sessions first, then the
+nine code sessions. Within each fixture, use the rotation below in order; this
+fully fixes the execution sequence before dispatch. Do not reuse conversation
+context, artifacts, or branches between runs. Use the exact current guidance
+and tools at runtime base
 [`f7e03b6`](https://github.com/msitarz/ataraxia/commit/f7e03b6237ac240b41e784d1e9cdd4dac1118ccd).
 Within each fixture, keep the owning parent, executor prompt, setup, checks,
 and expected outcomes fixed for its nine runs; change only the model/effort
@@ -21,13 +23,17 @@ condition. Each run gets an isolated worktree at that same base, with only the
 fixture-specific input preparation documented in its owning-parent-only
 section.
 
-For each fixture, use the same order rotation:
+Repeat the following condition order within each fixture:
 
 | Repetition | Condition order |
 | --- | --- |
 | 1 | A, B, C |
 | 2 | B, C, A |
 | 3 | C, A, B |
+
+Thus dispatch documentation A1, B1, C1, B2, C2, A2, C3, A3, B3, followed by
+code A1, B1, C1, B2, C2, A2, C3, A3, B3. The same rotation controls both
+fixtures; no randomization or post-result reordering is allowed.
 
 The same owning parent dispatches directly to the leaf and independently
 reviews each initial and corrected artifact. The owning parent/reviewer is
@@ -65,16 +71,19 @@ Minor findings may be recorded without requesting a correction.
 
 ## Measures and boundaries
 
-For every run, record condition, fixture revision, order, dispatch time, initial
-artifact time, each review/correction exchange, final review time, and final
-gate outcomes. End-to-end time starts at dispatch and ends when the owning
-parent completes final review; it includes executor and wait time. Separately
-record the parent's active review minutes, first-artifact acceptance, finding
-counts by severity, correction rounds, human steering, and whether checks
-were reused or repeated. Record token/cost values only if available; otherwise
-mark them unknown, never zero. Record protocol deviations and missing
-measurements. Report protocol/fixture preparation effort separately from the
-18 run results.
+For every run, record condition, fixture revision, order, dispatch time, leaf
+start and initial submission times, each consolidated finding delivery and
+leaf resumption time, each corrected submission time, final review time, and
+final gate outcomes. These intervals support executor active/wall effort
+reporting; if the session surface does not expose a timestamp or active-time
+measure, record that field as unknown rather than infer it. End-to-end time
+starts at dispatch and ends when the owning parent completes final review; it
+includes executor and wait time. Separately record the parent's active review
+minutes, first-artifact acceptance, finding counts by severity, correction
+rounds, human steering, and whether checks were reused or repeated. Record
+token/cost values only if available; otherwise mark them unknown, never zero.
+Record protocol deviations and missing measurements. Report protocol/fixture
+preparation effort separately from the 18 run results.
 
 ## Decision rule
 
@@ -98,6 +107,27 @@ class; it does not support a global default or policy change. The owning parent
 will apply this rule as written and report per-fixture medians, ranges, and
 failures; no cutoff may be changed after seeing results.
 
+The first cutoff demands a two-run advantage out of only three repetitions,
+plus a bounded time cost, because this small sample should support only a
+large, repeatable signal. The second requires a 20% median-time reduction with
+no loss in initial acceptance or added correction rounds. Any lesser, mixed,
+or quality-failing pattern remains inconclusive; three repetitions are not
+enough to justify a small apparent difference.
+
+Walkthrough against one fixture (the other is judged separately):
+
+- **Passing:** all nine final artifacts pass every gate; Luna-low has 1/3
+  unchanged initial accepts; Luna-medium has 3/3 and median end-to-end time is
+  at most 1.25× Luna-low. This meets cutoff 1 and recommends only a broader
+  comparison for that task class.
+- **Failing:** one final artifact fails preservation or a required check. The
+  all-nine gate fails regardless of timing or initial acceptance; no candidate
+  is recommended.
+- **Inconclusive:** all final artifacts pass, but a candidate has 2/3 initial
+  accepts versus Luna-low's 2/3 and is only 10% faster, or a run is incomplete
+  or protocol-invalid. Neither cutoff is met with reliable complete evidence;
+  retain Luna-low for now and report the uncertainty.
+
 ## Frozen inputs and authorization request
 
 The documentation fixture uses `doc/orchestrator.md` blob
@@ -109,22 +139,33 @@ Its overlay command, blob identities, reference-only evidence, and verified
 checks are in the code fixture contract. This keeps modern guidance, Make
 targets, and locked tools while replaying the historical task inputs.
 
-Before dispatch, prepare each fresh worktree from the integrated f7e03b6 base.
-For documentation, verify the exact doc blob before handoff. For code, apply
-the documented two-file overlay, verify exactly those two paths differ, and
-verify their exact historical blobs. Use `UV_PYTHON=3.14.7` for setup and all
-18 worktrees; stop if that interpreter or the locked f7 setup is unavailable.
-The preparation probe passed `make verify-setup`, focused provider tests (6
-passed), focused lint and format checks, and `make typecheck` on this exact
-overlay. Run each fixture's declared checks against every trial artifact.
+For each run, call `make worktree-create` with a unique temporary setup branch
+and path, for example
+`WORKTREE=/private/tmp/leaf-doc-A1 BRANCH=work/leaf-doc-A1-setup`. That target
+creates from local `master`. In the new isolated worktree, run
+`git switch --detach f7e03b6237ac240b41e784d1e9cdd4dac1118ccd`, then
+`git switch -c work/leaf-doc-A1`; use unique fixture/condition/repetition
+identifiers for every run. Confirm `git status --porcelain` is empty before
+fixture preparation. Re-run the locked setup in that checkout with
+`UV_PYTHON=3.14.7 make ci-setup UV_OFFLINE=true`, then
+`UV_PYTHON=3.14.7 make verify-setup`; this ensures the environment matches
+f7e03b6 rather than local master, which is used only to create the worktree. Do
+not advance to a later master revision. For documentation, verify the exact doc
+blob before handoff. For code, apply the documented two-file overlay, verify
+exactly those two paths differ, and verify their exact historical blobs. Stop if
+that interpreter or the f7 lock/tool setup is unavailable. The preparation probe
+passed `make verify-setup`, focused provider tests (6 passed), focused lint and
+format checks, and `make typecheck` on this exact overlay. Run each fixture's
+declared checks against every trial artifact.
 
 Leaf handoffs contain only that fixture's exact executor prompt and the
-prepared tree. Never provide the full fixture file, parent-only sections,
-commit references, historical patches, or other reviewer answers. Instruct
-the leaf not to inspect Git history, refs, or tags; the owning parent prepares
-the input overlay without exposing its source. This is necessary because the
-repository history contains the expected code change. Record the prepared
-tree's input identities and setup evidence in the run record.
+prepared tree. Never provide parent-only sections, historical patches, or
+reference answers. For the code task, instruct the leaf not to inspect Git
+history, refs, or tags; the owning parent prepares the input overlay without
+including its source in the handoff. This is an instruction, not access
+isolation: the repository objects and other tracked files remain accessible,
+so there is residual reference-leakage risk. Record the prepared tree's input
+identities and setup evidence in the run record.
 
 **Authorization request to make after independent review and integration:**
 authorize exactly 18 sequential, fresh leaf dispatches: two fixtures
