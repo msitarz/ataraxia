@@ -7,8 +7,9 @@ behavior is preferable. This is an
 to adopt a marker or change acceptance policy. It follows
 [completion routing](../completion-routing/README.md) and the
 [context tool](../context-tool/README.md). Coordinate any owner implications
-with [PR evidence](../../pr-evidence/README.md) and
-[handoffs](../../handoffs/README.md); do not rewrite their contracts.
+with [handoffs](../../handoffs/README.md); do not rewrite its contract. Preserve
+the completed [PR guidance](../../../../../../pull-requests.md) and
+[acceptance tracing](../../../../../../acceptance-tracing.md).
 
 ## Acceptance
 

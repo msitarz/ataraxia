@@ -54,8 +54,9 @@ general duplication rule.
 
 - **TODO** [Handoffs](handoffs/README.md): improve scope, delegation, parallel
   work selection, and artifact review.
-- **TODO** [PR evidence](pr-evidence/README.md): clarify useful completion
-  evidence while preserving criterion coverage.
+- **DONE** PR evidence: clarified concise orchestrator-owned PR descriptions,
+  CI check evidence, and decision adoption status; retained the current
+  Purpose, Outcome, and Limitations template.
 - **DONE** GitHub delivery: defined evidence-preserving Work commits, safe
   leased rewrites, final-head CI, and maintainer-controlled merge.
 - **DONE** Worktree preparation: added Make-owned isolated worktree creation
