@@ -3,23 +3,15 @@
 **Status:** frozen draft, pending independent review. The source and task scope
 are identified; no trial has run and no dispatch is authorized.
 
-## Executor-facing draft
+## Executor handoff
 
-**Proposed file:** `doc/orchestrator.md`.
+**Frozen file:** `doc/orchestrator.md` at the fixture input prepared by the
+owning parent.
 
-**Task:** consolidate the repeated Luna-low effort wording in `## Roles and
-delegation`. The Work-tree paragraph says to delegate each leaf to Luna at low
-reasoning effort; the following general paragraph says to delegate repository
-changes to Luna at low reasoning effort. Keep the tree's direct parent-to-leaf
-assignment and owning-parent review in the first paragraph, and leave the
-general Luna-low default and higher-effort approval in the second. Change only
-`doc/orchestrator.md`; preserve every other rule. Return the patch and check
-results. Do not commit, push, or create a PR.
+**Exact executor prompt:**
 
-**Prompt to finalize:**
-
-> At base revision `f7e03b6237ac240b41e784d1e9cdd4dac1118ccd`, edit only
-> `doc/orchestrator.md`. Consolidate the repeated Luna-low reasoning-effort
+> In the prepared checkout, edit only `doc/orchestrator.md`. Consolidate the
+> repeated Luna-low reasoning-effort
 > statement between the paragraph beginning “For a Work tree” and the
 > following paragraph beginning “Delegate repository changes”. Keep the
 > direct parent-to-leaf assignment and owning-parent review; retain the
@@ -33,9 +25,9 @@ results. Do not commit, push, or create a PR.
 > commit history, refs, tags, historical patches, or parent-only fixture
 > material. Do not commit, push, or create a PR.
 
-Use this exact prompt for all nine runs of this fixture. The trial worktree
-must contain the frozen `doc/orchestrator.md` blob listed below; stop if it
-does not.
+Use this exact prompt for all nine runs of this fixture. The parent verifies
+the frozen `doc/orchestrator.md` blob before handoff; stop if it does not
+match.
 
 **Expected outcome:** only the named subsection changes; redundant explanation
 is reduced; the reviewer confirms all baseline requirements and links remain
@@ -67,9 +59,10 @@ run against the fixture base; rerun them for every trial artifact.
   and stall handling; interruption recovery; PR/evidence reporting; and human,
   merge, and CI gates. Only the repeated effort phrase is consolidation scope.
 - **Fixture integrity:** before each trial worktree is handed off, verify that
-  `doc/orchestrator.md` has this exact blob. If current `master` changes it,
-  restore the frozen input from f7e03b6 and record that overlay, or stop and
-  re-freeze if restoration conflicts with current behavior.
+  `doc/orchestrator.md` has this exact blob. Create from the frozen f7e03b6
+  base even if local `master` has advanced; do not mix later guidance into a
+  trial checkout. The executor prompt omits commit identifiers; the owning
+  parent verifies the blob before handoff.
 - **Setup:** use the guidance and locked tools from the trial base. The
   formatter and link check passed on the identified input.
 

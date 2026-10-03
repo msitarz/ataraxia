@@ -4,19 +4,9 @@
 blobs, overlay, and replay checks are verified; no trial has run and no
 dispatch is authorized.
 
-## Executor-facing draft
+## Executor handoff
 
-**Task:** implement bounded `BarProvider` CSV validation in the prepared
-checkout. Malformed row shape, invalid numeric values, and invalid CSV syntax
-must raise `ProviderError` with the shard path and original parse exception
-preserved as `__cause__`. Invalid or missing headers must also identify the
-shard. Preserve valid rows and ordering, blank-row skipping, normal exhaustion,
-context-manager requirements, and provider cleanup on success and failure.
-Add focused tests for malformed input and those preserved behaviors. Change
-only `src/ataraxia/provider.py` and `test/unit/test_provider.py`. Return the
-patch and check results. Do not commit, push, or create a PR.
-
-**Prompt to finalize:**
+**Exact executor prompt:**
 
 > Work from the prepared checkout only. In `src/ataraxia/provider.py`, make
 > malformed CSV row shapes, invalid numeric values, and invalid CSV syntax raise
@@ -38,11 +28,42 @@ Use this exact prompt for all nine runs of this fixture. The parent prepares the
 historical overlay before handoff; the leaf receives no reference commit or
 parent-only material.
 
-**Expected outcome:** malformed rows and CSV syntax raise contextual
-`ProviderError` with `ValueError` or `csv.Error` as the cause; invalid and
-missing headers identify the shard; valid records, blanks, exhaustion, and
-context-manager behavior remain correct; handles close on success and failure;
-focused tests cover these cases and pass.
+## Owning-parent rubric and preservation inventory
+
+Keep these baseline behaviors distinct from the new requirements. The frozen
+f4 source/tests establish valid single-bar parsing, numeric normalization and
+values, row order, normal `StopIteration`, blank-row skipping by `DictReader`,
+`ProviderError` when iterated outside a context manager, filepath-based
+hashability, and file closure when the context manager exits. Preserve these
+behaviors. The reference-focused replay probe below identifies which new
+requirements fail on this baseline; it does not prove the implementation.
+
+The following examples define the new acceptance criteria. `P` means the
+fixture's concrete shard path. For each malformed row or CSV syntax case,
+iteration must raise `ProviderError` whose message includes `P`; its `__cause__`
+must be the underlying exception shown. The open file must be closed after the
+provider context exits, including when iteration raises.
+
+| Input after the canonical header | Required outcome |
+| --- | --- |
+| `1,100` | `ProviderError` includes P; `ValueError` cause (too few columns) |
+| `1,100,200,50,150,1,extra` | `ProviderError` includes P; `ValueError` cause (too many columns) |
+| `1,bad,200,50,150,1` | `ProviderError` includes P; `ValueError` cause (invalid integer) |
+| `1,,200,50,150,1` | `ProviderError` includes P; `ValueError` cause (empty numeric value) |
+| `1,1.0e999,200,50,150,1` | `ProviderError` includes P; `OverflowError` cause (non-finite normalization) |
+| `1,"100,200,50,150,1` | `ProviderError` includes P; `csv.Error` cause (unterminated quote) |
+
+An incorrect header such as `timing,open,high,low,close,volume`, a headerless
+row `1,2,3,4,5,6`, and a zero-byte file must each raise `ProviderError` whose
+message includes P; the file closes on context exit. No parse cause is
+required for header rejection. A file
+containing only `timestamp,open,high,low,close,volume` followed by newline is
+valid and empty: iteration reaches normal exhaustion and the handle closes on
+context exit. With canonical header plus blank lines around rows
+`1,100,200,50,150,1` and `2,100,200,50,150,1`, yielded timestamps must be
+`[1, 2]`, in that order, with no blank record; the handle closes on context
+exit. A valid single row must retain the baseline parsed values and must then
+exhaust normally.
 
 **Checks:** `make test ARGS=test/unit/test_provider.py`,
 `make lint-check ARGS='src/ataraxia/provider.py test/unit/test_provider.py'`,
@@ -78,13 +99,22 @@ for every trial artifact.
   succeeds. This overlay restores historical task inputs only; it does not copy
   the answer patch or historical tooling/guidance. Keep these identifiers and
   commands out of the leaf handoff.
-- **Preservation inventory:** the baseline has tests for valid single-bar
-  reads, `StopIteration`, bad/missing headers, use outside a context manager,
-  and path-based hashability. The reference adds malformed field-count/value
-  tests with path context, chained `ValueError`, and cleanup; blank-row
-  skipping; empty-header exhaustion and cleanup; and unterminated-quote
-  `csv.Error` chaining and cleanup. Preserve these observed behaviors; no
-  historical patch is included in the executor context.
+- **Reference gap probe:** the immutable 3dd reference tests were temporarily
+  supplied to the f4 baseline in the probe worktree, without changing source.
+  `UV_PYTHON=3.14.7 make test ARGS=test/unit/test_provider.py` reported 8
+  passed and 5 failed: missing and extra columns escaped as `TypeError`, bad
+  and empty numeric fields escaped as `ValueError`, and an unterminated quote
+  escaped as `ValueError` instead of `ProviderError`. The exact f4 test blob
+  was restored immediately afterward and verified; no reference tests remain
+  in the fixture. Header-only exhaustion, blank-row skipping, and cleanup
+  reference tests passed. Keep the new error requirements above separate from
+  the verified baseline-preservation list.
+- **Exception scope:** match the historical reference behavior by wrapping
+  `ValueError`, `OverflowError`, and `csv.Error` as `ProviderError` with the
+  shard path and original exception as cause. The overflow example above
+  exercises `round(float("1.0e999") * 4)`. Header validation raises
+  `ProviderError` with the shard path; the reference does not chain a parse
+  exception for header failures.
 - **Environment and replay proof:** a probe worktree was prepared from f7.
   An unpinned setup selected Python 3.14.6; setting `UV_PYTHON=3.14.7` before
   `make ci-setup UV_OFFLINE=true` recreated the environment on CPython 3.14.7.
@@ -93,10 +123,10 @@ for every trial artifact.
   `make typecheck` exited 0 (strict check clean; expected negative cases
   reported). Pin `UV_PYTHON=3.14.7` for all 18 worktrees and stop if that
   interpreter or the f7 lock/tool setup is unavailable.
-- **Evidence links:** the direct commit permalinks above are parent-only
-  references. The executor sees only the task prompt and prepared tree and is
-  explicitly instructed not to inspect history, refs, tags, or parent-only
-  material.
+- **Evidence boundary:** the executor sees the exact task prompt and prepared
+  tree, and is instructed not to inspect history, refs, tags, or parent-only
+  material. This instruction does not prevent repository-object or other-file
+  access; reference leakage remains a documented confound.
 
 This is a frozen draft for independent review. It does not authorize dispatch;
 the controlled comparison remains blocked on protocol approval and explicit
