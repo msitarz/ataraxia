@@ -4,10 +4,11 @@ Freeze the protocol and two bounded fixtures needed to compare Luna low, Luna
 medium, and Sol low for leaf execution. This Work prepares an authorization
 request; it does not dispatch trial agents or make a selection recommendation.
 
-The current scaffolds are [protocol.md](protocol.md),
+The contracts are [protocol.md](protocol.md),
 [fixtures/documentation.md](fixtures/documentation.md), and
-[fixtures/coding.md](fixtures/coding.md). They are provisional planning
-material; none is a frozen fixture or authorization to run trials.
+[fixtures/coding.md](fixtures/coding.md). They record frozen draft inputs and
+replay evidence pending independent review and integration; this status is not
+authorization to run trials.
 
 ## Scope
 
@@ -25,17 +26,13 @@ declared model/effort condition where possible. Record remaining confounds.
 Do not add a Sol wrapper, transfer session context, or change the Luna-low
 default.
 
-Before any run, the protocol must state exact repetitions per fixture and
-condition, balanced or randomized run order, the common independent review
-rubric for the owning parent's review, correctness and requirement-preservation
-gates, and the applicable local
-checks. The same owning parent, independent of each leaf executor, is the fixed
-reviewer for all conditions and reviews every initial artifact and correction
-under that rubric. Measure the parent's review effort separately and include it
-in end-to-end time. Apply the rubric without condition labels where practical;
-otherwise record whether review was unblinded, which condition and prior results
-the parent knew, and the resulting confounds. Freeze severity levels and
-acceptance rules so all conditions receive the same evaluation.
+The protocol specifies repetitions, balanced order, a common owning-parent
+review rubric, correctness and preservation gates, and checks. The same owning
+parent, independent of each leaf executor, reviews every initial artifact and
+correction. Measure parent review effort separately and include it in
+end-to-end time. Apply the rubric without condition labels where practical;
+otherwise record whether review was unblinded, which condition and prior
+results the parent knew, and the resulting confounds.
 
 Predeclare first-artifact acceptance, correction rounds, parent review effort,
 elapsed time from dispatch through parent-reviewed artifact, human steering,
@@ -47,25 +44,22 @@ to pass, and allow only a supported conditional recommendation; otherwise
 retain the default or report an inconclusive result. Missing token or cost
 data is recorded as unknown, never as zero or as a basis for a cost claim.
 
-Set a correction-round cap and handling for stalled work or a repeated
-unresolved finding. Use consolidated reviewer findings and the existing
-orchestrator stop-and-report rules. State whether an invalid or stalled run
-blocks its matched comparison and whether a replacement is permitted within
-the declared dispatch cap; do not improvise replacement runs after seeing
-results. Record deviations and incomplete runs without treating them as
+The protocol sets a two-round correction cap, handling for stalled work or a
+repeated unresolved finding, and prohibits replacement dispatches. It uses
+consolidated reviewer findings and existing orchestrator stop-and-report
+rules. Record deviations and incomplete runs without treating them as
 successful outcomes.
 
-Conclude with an explicit authorization request that names the three exact
-conditions, fixtures and revision, repetitions, total maximum dispatch count,
-fixed owning parent/reviewer, estimated human effort where available, and
-unknown costs or unavailable capabilities. Ask for explicit authorization for
-that bounded plan. The request itself does not authorize execution. Preserve
-the replayable protocol and fixture assets at the protocol Work's evidence
-commit. Before its separate cleanup commit removes this Work directory,
-update the controlled-comparison contract with durable commit permalinks to
-the protocol and fixture assets. Git preserves that evidence; do not create a
-second archive or tracking record. The evidence commit must be reviewed and
-integrated before the controlled comparison begins.
+The protocol includes an explicit request for 18 dispatches across the three
+exact conditions and two fixtures, fixed reviewer, and order. Preparation is
+reported separately; expected total human effort and token/cost availability
+remain unknown. It does not authorize execution. Preserve replayable protocol
+and fixture assets at the protocol Work's evidence commit. Before its separate
+cleanup commit removes this Work directory, update the controlled-comparison
+contract with durable commit permalinks to the protocol and fixture assets. Git
+preserves that evidence; do not create a second archive or tracking record. The
+evidence commit must be reviewed and integrated before the controlled
+comparison begins.
 
 ## Acceptance
 

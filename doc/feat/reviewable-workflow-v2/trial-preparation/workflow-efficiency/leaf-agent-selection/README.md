@@ -27,10 +27,9 @@ The current Luna-low default and the direct parent-to-leaf topology remain in
 force throughout this Investigation. The controlled comparison cannot start
 until the protocol child is integrated and the maintainer explicitly
 authorizes its named conditions and bounded dispatch budget.
-Integrate this revised parent plan before starting either child. The protocol
-child still needs to settle exact fixtures, fixed reviewer, repetitions,
-numeric thresholds, and the dispatch cap; this preparation records no trial
-results or authorization.
+The protocol child has a frozen draft of its fixtures, reviewer, repetitions,
+numeric thresholds, and dispatch cap, pending independent review and
+integration. This preparation records no trial results or authorization.
 
 ## Comparison
 
