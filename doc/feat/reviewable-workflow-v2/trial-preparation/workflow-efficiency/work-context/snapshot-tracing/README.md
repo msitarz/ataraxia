@@ -6,8 +6,8 @@ behavior is preferable. This is an
 [Investigation](../../../../../../workflow.md#investigations), not authorization
 to adopt a marker or change acceptance policy. It follows
 [completion routing](../completion-routing/README.md) and the
-[context tool](../context-tool/README.md). Coordinate any owner implications
-with [handoffs](../../handoffs/README.md); do not rewrite its contract. Preserve
+[context tool](../context-tool/README.md). Preserve completed
+[handoff guidance](../../../../../../orchestrator.md) and
 the completed [PR guidance](../../../../../../pull-requests.md) and
 [acceptance tracing](../../../../../../acceptance-tracing.md).
 

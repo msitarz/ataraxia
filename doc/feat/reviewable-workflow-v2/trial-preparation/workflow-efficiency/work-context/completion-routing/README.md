@@ -5,9 +5,9 @@ owner so it can be selected for a Work without copying policy into each
 contract. The
 [Work-context parent](../README.md#works) tracks this outcome. Coordinate
 guidance-file edits with the
-[handoffs](../../handoffs/README.md) and
-[guidance-application](../../guidance-application/README.md) Works; do not
-change their contracts or claim their outcomes.
+[guidance-application Work](../../guidance-application/README.md); do not
+change its contract or claim its outcome. Preserve completed
+[handoff guidance](../../../../../../orchestrator.md).
 
 ## Acceptance
 

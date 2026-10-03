@@ -20,9 +20,9 @@ review.
 Completion routing precedes the context tool, which consumes the same selected
 Definition of Done. Snapshot tracing starts after those two Works and remains
 an Investigation. Coordinate shared owner-file edits with the existing
-[guidance-application](../guidance-application/README.md),
-[handoffs](../handoffs/README.md) Works; these Works do not replace or
-rewrite their contracts. Preserve the completed
+[guidance-application Work](../guidance-application/README.md); do not rewrite
+its contract. Preserve completed
+[handoff guidance](../../../../../orchestrator.md). Preserve the completed
 [PR guidance](../../../../../pull-requests.md) and
 [acceptance tracing](../../../../../acceptance-tracing.md). Link existing
 guidance at its owner instead of
