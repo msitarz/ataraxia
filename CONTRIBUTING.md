@@ -58,8 +58,8 @@ lint, format, test, and type-check runs; full-suite targets keep their full
 defaults. If a required project invocation is not exposed, add or extend a
 Make target instead of bypassing Make. The [Makefile](Makefile) owns executable
 commands and descriptions; read recipes only when their details matter. See the
-[validation policy](doc/validation.md) when choosing checks or reporting
-validation evidence.
+[check and evidence policy](doc/validation.md) when choosing checks or reporting
+evidence.
 
 ## Toolchain policy
 
@@ -78,11 +78,11 @@ Review these pins monthly and when a tooling bug or security advisory warrants
 an update. Update both pins and the `uv-pre-commit` revision in
 `.pre-commit-config.yaml` in one change, install the new uv version, run
 `make deps-lock`, and include any lockfile changes. Follow the
-[validation policy](doc/validation.md) before accepting the update, including
-the installed-wheel smoke test. Dependabot's weekly uv and GitHub Actions
-updates complement this review; they do not replace reviewing
-the uv executable pin. Python remains supported at 3.14+; CI tests the 3.14
-minor series. OS images and Python patch releases are not pinned by this policy.
+[check and evidence policy](doc/validation.md) before accepting the update,
+including the installed-wheel smoke test. Dependabot's weekly uv and GitHub
+Actions updates complement this review; they do not replace reviewing the uv
+executable pin. Python remains supported at 3.14+; CI tests the 3.14 minor
+series. OS images and Python patch releases are not pinned by this policy.
 
 ## Submitting a change
 

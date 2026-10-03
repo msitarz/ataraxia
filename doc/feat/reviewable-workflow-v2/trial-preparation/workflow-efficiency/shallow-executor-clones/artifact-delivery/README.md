@@ -36,7 +36,8 @@ Compare through real Git commands:
 - Have the orchestrator review and push directly from the clone outside the
   executor's restricted command policy. Test both a receiver with the base
   ancestry and one missing it; do not enable shallow updates to hide missing
-  history. Main-checkout import is a candidate, not inherently required.
+  history. Import into the main worktree is a candidate, not inherently
+  required.
 
 Preserve the verified implementation/evidence commit followed by separate
 cleanup under
@@ -67,18 +68,18 @@ destination and cleanup. This Work grants no executor push authority.
   inspectable revisions, metadata, trees, and ancestry at the unchanged base.
   Demonstrate the integrated executor path when dependencies permit; otherwise
   record the dependency blocker and independent fixture limits.
-  Verification: inspect the available executor or fixture artifact and receiver;
-  compare candidate results and record rejected or lossy transfers.
+  Validation: inspect the available executor or fixture artifact and receiver;
+  compare candidate evidence and record rejected or lossy transfers.
 - **AC-2 TODO** Advanced-base, conflict, correction, and missing-ancestry probes
   report observed success or failure, source exposure, and preservation or loss
   of commit and evidence boundaries; unavailable integrated checks cite the
   established dependency blocker.
-  Verification: inspect rebase fixtures, source-denial probes after publication
+  Validation: inspect rebase fixtures, source-denial probes after publication
   setup, and the receiver's rejection when base ancestry is missing.
 - **AC-3 TODO** A recommendation explains whether main-repository import is
   needed and selects a commit and publication path accounting for PR ownership,
   credentials, CI, recovery, and untested GitHub behavior.
-  Verification: trace generation through review, transfer or direct push, and
+  Validation: trace generation through review, transfer or direct push, and
   the PR procedure; review candidate pros, cons, and limitations.
 
 Preserve reports and promote lasting findings to the parent's named owners.

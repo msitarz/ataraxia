@@ -12,10 +12,10 @@ contracts, child discovery, status, and lifecycle.
 - **DONE** Work structure and review — established permanent Work contracts,
   lifecycle, prototype, and PR review rules.
 - **DONE** Focused guidance — established focused owners and direct routes for
-  change and validation rules.
-- **DONE** Validation — focused preparation and full-CI merge gates live in
-  the [validation policy](../../validation.md); Work acceptance coverage is
-  owned by [acceptance tracing](../../acceptance-tracing.md).
+  change and check rules.
+- **DONE** Checks and evidence — focused preparation and full-CI merge gates
+  live in the [check and evidence policy](../../validation.md); Work acceptance
+  coverage is owned by [acceptance tracing](../../acceptance-tracing.md).
 - **TODO** [Trial preparation](trial-preparation/README.md): resolve completion,
   recovery, guidance, and tooling gaps before the live trial.
 - **TODO** [Live trial](live-trial/README.md): after trial preparation, evaluate
@@ -31,7 +31,7 @@ contracts, child discovery, status, and lifecycle.
   [orchestrator guidance](../../orchestrator.md).
 - **DONE** Handoff scope growth — added a stop-and-split rule for delegated
   scope in [orchestrator guidance](../../orchestrator.md).
-- **DONE** Human review effort — sized Works around the complete change and
+- **DONE** Maintainer review effort — sized Works around the complete change and
   added expected-scope and actual-diff review checkpoints for orchestrators.
 - **DONE** Function-size guardrails — added advisory and blocking Ruff
   statement-count checks to the existing Make lint workflows.

@@ -41,16 +41,16 @@ inconclusive result.
 - **AC-1 TODO** The protocol distinguishes discovery, interpretation,
   application, and review failures; compares the baseline with the three
   candidates; and declares its evaluation basis before trials.
-  Verification: classify the known read-but-violated handoff-brevity rule and
+  Validation: classify the known read-but-violated handoff-brevity rule and
   review that missed its repeated explanations by failure stage.
 - **AC-2 TODO** Comparable fresh and long-running trials report the specified
   violation, correction, repetition, elapsed-time, reviewer-effort, overhead,
   preservation, and limitation evidence.
-  Verification: compare the trial records against the declared controls and
+  Validation: compare the trial records against the declared controls and
   measurement set for both session conditions.
 - **AC-3 TODO** The recommendation follows the evidence and stated basis,
   permits no-change or inconclusive outcomes, and does not itself adopt policy.
-  Verification: compare the recorded recommendation with the evidence and
+  Validation: compare the recorded recommendation with the evidence and
   thresholds declared before the trials.
 
 Follow [Investigation guidance](../../../../../workflow.md#investigations),

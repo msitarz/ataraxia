@@ -25,9 +25,9 @@ If the remote branch no longer points to that expected commit, the push must
 fail. Inspect and reconcile the new remote work before rewriting and
 publishing again; do not refresh the expected ID just to make the push succeed
 or replace the lease with an unconditional force push. After publishing,
-review the final PR head and require its full CI result before merge
+review the final PR head and require its passing full CI evidence before merge
 consideration, following the [orchestrator handoffs](orchestrator.md) and
-[validation policy](validation.md).
+[check and evidence policy](validation.md).
 
 ## Descriptions
 
@@ -40,8 +40,8 @@ relevant tradeoff.
 
 Use the [PR description template](../.github/pull_request_template.md) and
 remove its instruction comments before publishing. Include material limitations
-that help assess the change. Keep validation prose, results, and inventories
-out of descriptions; evidence remains in commits, checks, and review records.
-Link to detailed scope and evidence in their source records rather than copying
-them into the description. PRs carry review discussion and rationale; merged
-PRs and recorded approvals provide durable decisions across sessions.
+that help assess the change. Keep evidence prose and check inventories
+out of descriptions; evidence remains in commits, CI records, and review
+records. Link to detailed scope and evidence in their source records rather than
+copying them into the description. PRs carry review discussion and rationale;
+merged PRs and recorded approvals provide durable decisions across sessions.

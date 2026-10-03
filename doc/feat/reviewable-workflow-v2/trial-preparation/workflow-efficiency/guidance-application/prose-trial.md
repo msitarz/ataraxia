@@ -22,7 +22,7 @@ findings; word reduction alone was not success. These four runs sample
 model/effort conditions on one task, not session age or the three planned
 interventions.
 
-## Results
+## Evidence
 
 | Condition | Words/lines, initial → final | Corrections | Agent-recorded executor time (UTC) |
 | --- | --- | --- | --- |
@@ -49,7 +49,7 @@ A/B initial and correction artifacts passed `make doc-format` and full
 `make doc-check` over 53 Markdown files; `git diff --check` also passed. C
 passed scoped doc-format/doc-check and diff checks. D passed scoped
 doc-format and full doc-check; the parent supplied its missing diff check. The
-parent reused executor check evidence. None of these local artifacts
+parent reused executor evidence. None of these local artifacts
 received CI.
 
 ## Review findings

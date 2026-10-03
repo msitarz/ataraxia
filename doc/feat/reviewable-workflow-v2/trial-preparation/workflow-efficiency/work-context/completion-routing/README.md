@@ -14,19 +14,19 @@ change their contracts or claim their outcomes.
 - **AC-1 TODO** One existing owner defines a concise executor-finish DoD route
   that applies only relevant rules to the selected Work and is generated or
   selected for that Work instead of duplicated in each Work contract.
-  Verification: inspect the owning guidance and walk through two Works with
+  Validation: inspect the owning guidance and walk through two Works with
   different applicable completion requirements, confirming irrelevant rules
   are omitted.
 - **AC-2 TODO** The route distinguishes executor completion from review and
   merge, and covers active acceptance markers, observed evidence, affected
-  checks, retained `DONE` results before cleanup, and local return of the
+  checks, retained `DONE` evidence before cleanup, and local return of the
   artifact and evidence.
-  Verification: walk a sample executor completion through its active criteria,
-  results, retained contract, and local return; confirm review and merge remain
+  Validation: walk a sample executor completion through its active criteria,
+  evidence, retained contract, and local return; confirm review and merge remain
   later gates.
 - **AC-3 TODO** The final wording links existing authoritative guidance and
   coordinates changes with mapped neighboring Works without duplicating or
   superseding their contracts.
-  Verification: inspect changed owner sections and follow links to the
+  Validation: inspect changed owner sections and follow links to the
   handoff, PR-evidence, and guidance-application contracts, checking each
   requirement still has one owner.

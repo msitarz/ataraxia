@@ -22,15 +22,15 @@ _POSSIBLE_DECLARATION = re.compile(r"^ {0,3}[-*+]\s+\*\*AC(?=[-\s0-9*])")
 _LIST_ITEM = re.compile(r"^( *)([-*+])\s+")
 _HEADING = re.compile(r"^ {0,3}#{1,6}(?:\s|$)")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
-_VERIFICATION = re.compile(r"^\s*Verification:\s*(.*)$")
+_VALIDATION = re.compile(r"^\s*Validation:\s*(.*)$")
 
 
 @dataclass(frozen=True)
 class Criterion:
-    """A declared Work criterion and its declared verification method."""
+    """A declared Work criterion and its declared validation method."""
 
     status: str
-    has_verification: bool
+    has_validation: bool
 
 
 def _is_covers_call(node: ast.Call) -> bool:
@@ -92,28 +92,26 @@ def _criterion_block(
     return block
 
 
-def _verification_for_criterion(
+def _validation_for_criterion(
     block: list[str], work: str, line_number: int, ac: str
 ) -> tuple[bool, list[str]]:
-    """Validate the optional non-test verification annotation for one criterion.
+    """Validate the optional non-test validation annotation for one criterion.
 
     Returns:
-        Whether a non-empty verification method is declared and any errors.
+        Whether a non-empty validation method is declared and any errors.
     """
     annotations = [
         annotation.group(1).strip()
         for candidate in block
-        if (annotation := _VERIFICATION.match(candidate))
+        if (annotation := _VALIDATION.match(candidate))
     ]
     errors: list[str] = []
     if any(not annotation for annotation in annotations):
         errors.append(
-            f"{work}:{line_number}: {ac} Verification annotation needs a method"
+            f"{work}:{line_number}: {ac} Validation annotation needs a method"
         )
     if len(annotations) > 1:
-        errors.append(
-            f"{work}:{line_number}: {ac} has multiple Verification annotations"
-        )
+        errors.append(f"{work}:{line_number}: {ac} has multiple Validation annotations")
     return any(annotations), errors
 
 
@@ -147,11 +145,11 @@ def parse_criteria(text: str, work: str) -> tuple[dict[str, Criterion], list[str
 
         indent = len(line) - len(line.lstrip(" "))
         block = _criterion_block(lines, index, indent)
-        has_verification, annotation_errors = _verification_for_criterion(
+        has_validation, annotation_errors = _validation_for_criterion(
             block, work, line_number, ac
         )
         errors.extend(annotation_errors)
-        criteria[ac] = Criterion(status, has_verification)
+        criteria[ac] = Criterion(status, has_validation)
 
     if not declarations:
         errors.append(
@@ -283,10 +281,10 @@ def _criterion_report(ac: str, criterion: Criterion, marker_count: int) -> str:
     """
     if marker_count:
         declaration = f"{marker_count} test marker(s) declared"
-    elif criterion.has_verification:
-        declaration = "Verification method declared"
+    elif criterion.has_validation:
+        declaration = "Validation method declared"
     else:
-        declaration = "no test marker or Verification method declared"
+        declaration = "no test marker or Validation method declared"
     return f"{ac} {criterion.status}: {declaration}"
 
 
@@ -294,7 +292,7 @@ def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
     """Validate declarations for one selected Work.
 
     Returns:
-        Validation errors and one declaration summary per criterion.
+        Declaration errors and one declaration summary per criterion.
     """
     contract = resolve_work_file(root, work)
     criteria, errors = parse_criteria(contract.read_text(encoding="utf-8"), work)

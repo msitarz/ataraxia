@@ -32,16 +32,16 @@ recorded; do not add a redundant report, template, or status ledger.
 - **AC-1 TODO** Completion routing is integrated before the context tool, and
   the tool consumes the same authoritative route and applicable Definition of
   Done.
-  Verification: inspect both integrated outcomes and delivery evidence,
+  Validation: inspect both integrated outcomes and delivery evidence,
   confirming dependency order and that the tool selects the routed DoD from its
   owner.
 - **AC-2 TODO** Snapshot tracing follows the completed routing and context
   outcomes and recommends change, no change, or an inconclusive result without
   adopting a marker or policy.
-  Verification: inspect the Investigation result and verify the two dependency
+  Validation: inspect the Investigation result and verify the two dependency
   outcomes are integrated first.
 - **AC-3 TODO** All mapped outcomes are integrated with verified criteria and
   evidence at their owners, and shared guidance changes remain coordinated
   with the linked Works.
-  Verification: check integrated parent status and delivery evidence for each
+  Validation: check integrated parent status and delivery evidence for each
   child, then inspect shared-owner changes against their existing contracts.

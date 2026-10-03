@@ -34,13 +34,14 @@ a default format.
 
 - **AC-1 TODO** Trial variants are semantically equivalent before runs and
   differ in format only, with task conditions and evaluation basis declared.
-  Verification: compare each variant against its source for obligations,
+  Validation: compare each variant against its source for obligations,
   exceptions, routes, and ordering, then inspect the declared trial plan.
-- **AC-2 TODO** Results compare the declared quality, preservation, violation,
-  correction, elapsed-time, review-effort, and overhead measures, including
-  length and unavailable cost limitations.
-  Verification: trace each result and limitation to its predeclared measure.
+- **AC-2 TODO** Evidence records compare the declared quality, preservation,
+  violation, correction, elapsed-time, review-effort, and overhead measures,
+  including length and unavailable cost limitations.
+
+  Validation: trace each observation and limitation to its predeclared measure.
 - **AC-3 TODO** The recommendation follows the predeclared thresholds and does
   not treat readability or one task as evidence for a default-format change.
-  Verification: compare conclusion, evidence, and limitations against the
+  Validation: compare conclusion, evidence, and limitations against the
   review rubric and trial basis.

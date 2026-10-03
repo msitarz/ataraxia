@@ -5,18 +5,18 @@ Read when acting as orchestrator for repository changes.
 ## Roles and delegation
 
 The orchestrator owns scope, planning, read-only investigation, and independent
-review and verification. The executor makes the bounded changes and returns the
-artifact and evidence; it works directly within scope and does not recursively
-delegate the same task.
+review and evidence assessment. The executor makes the bounded changes and
+returns the artifact and evidence; it works directly within scope and does not
+recursively delegate the same task.
 
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
 agents. Delegate each leaf directly to the executor; the
 leaf's owning parent reviews it. A child node with children has its own
 orchestrator owner for that subtree. Each leaf has one responsible orchestrator;
-do not add a dedicated wrapper around a leaf by default. Work-tree nodes
+do not add a dedicated wrapper around a leaf by default. Work tree nodes
 mark responsibility boundaries, not required runtime layers. Parent and
-subtree reviews own integration and interfaces, and reuse leaf check evidence
+subtree reviews own integration and interfaces, and reuse leaf evidence
 instead of repeating a full leaf review. Schedule work by dependency readiness,
 available concurrency, and expected shared edits rather than launching the
 entire tree at once. Do not invent intermediary Work nodes solely to justify
@@ -28,7 +28,7 @@ implementation leaves.
 Any other model or effort requires the maintainer's explicit approval.
 Before handoff, assess the full
 expected change—including behavior, supporting changes, tests, and new
-concepts—against the quick human-review target in
+concepts—against the quick maintainer review target in
 [Work scope and sizing](workflow.md#scope-and-sizing). If it is too large, split
 it into independently reviewable nested Works first. For an ad hoc handoff,
 define a parent Work and child Works; for an existing Work, nest children and
@@ -36,11 +36,11 @@ update its parent map. Review and merge the revised plan before expanded work
 begins. Preserve the explicit maintainer scope exception; plan approval alone
 does not waive the review target.
 
-A Work README and its linked contracts define acceptance and completion. Give
+A Work README and its linked contracts define acceptance criteria. Give
 the executor the Work path and requested action, plus only missing steering and
 necessary branch or delivery context. The executor reads the Work and applicable
 contracts; consult ancestor READMEs only as needed, without recursively loading
-every parent. Without a Work contract, state acceptance and exit criteria in
+every parent. Without a Work contract, state acceptance criteria in
 the handoff. Link background instead of forwarding the full conversation by
 default. Routine choices within the agreed contract need no approval.
 
@@ -63,7 +63,7 @@ After handoff, wait for the completed artifact or a blocker needing maintainer
 steering. Do not poll for routine status, inspect partial diffs, or send
 fragmented corrections. Review the completed diff once against acceptance and
 owner guidance, using reported evidence. Send one consolidated finding list to
-the same executor session; review corrections as needed. Reuse reported checks
+the same executor session; review corrections as needed. Reuse reported evidence
 and rerun focused checks only when a change, failure, or unresolved concern
 warrants it. Wait for the corrected completed result or a blocker before
 reviewing again. Context reuse may help token caching, but caching is not
@@ -72,14 +72,14 @@ session cannot continue, stop and report attempts, current evidence, and the
 specific decision or help needed. Resume only with orchestrator or maintainer
 steering. If the executor is unavailable, report that and wait; do not silently
 switch agents or implement its changes as a fallback. Keep independent review
-and human review, merge, and CI gates.
+and maintainer review, merge, and CI gates.
 
 Before removing a completing Work's contract, independently review its
 criterion statuses and evidence using the
 [Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).
 
 If an executor session is cancelled or lost, recover from the Work contract,
-parent map, branch or PR, and available check results. Establish which changes
+parent map, branch or PR, and available evidence. Establish which changes
 remain, which evidence applies to the current revision, and which criteria are
 unresolved before continuing. If uncertain, state that and ask for steering
 rather than treating the handoff as complete. A fresh executor session may
@@ -95,20 +95,20 @@ Ready means agent review passed and maintainer review is requested; it does not
 mean maintainer approval, merge, or successful CI. The orchestrator owns
 publication of the Work branch and any rewrite to its PR.
 
-Before publishing, reassess human review effort from the actual diff, including
-tests, supporting changes, and concepts. If it exceeds the target, stop and
-revise the split plan, then get the revised parent plan reviewed and merged
-before child work continues. An explicit maintainer request may authorize a
-larger review under [Work scope and sizing](workflow.md#scope-and-sizing).
+Before publishing, reassess maintainer review effort from the actual diff,
+including tests, supporting changes, and concepts. If it exceeds the target,
+stop and revise the split plan, then get the revised parent plan reviewed and
+merged before child work continues. An explicit maintainer request may authorize
+a larger review under [Work scope and sizing](workflow.md#scope-and-sizing).
 
-Repository merge settings do not replace human review or maintainer authority.
-The maintainer reviews the current PR revision and performs the merge. Agents
-must not merge autonomously; an agent may merge only with explicit maintainer
-instruction. Do not change repository settings, use an admin override, or
-bypass review or CI requirements.
+Repository merge settings do not replace maintainer review or maintainer
+authority. The maintainer reviews the current PR revision and performs the
+merge. Agents must not merge autonomously; an agent may merge only with explicit
+maintainer instruction. Do not change repository settings, use an admin
+override, or bypass review or CI requirements.
 
 Return the reviewable artifact (branch and revision or PR), outcome, acceptance
-evidence, checks and results, unrun checks, unresolved criteria, and blockers.
+evidence, commands run, unrun checks, unresolved criteria, and blockers.
 Use the Work contract's evidence method; see
 [acceptance tracing](acceptance-tracing.md) for criterion status and coverage
 semantics. A blocked return states what remains and what input or decision is

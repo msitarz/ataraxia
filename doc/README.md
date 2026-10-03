@@ -25,7 +25,7 @@ relevant guidance.
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | PR publication and description guidance | [Pull requests](pull-requests.md) |
 | PR description format | [PR template](../.github/pull_request_template.md) |
-| Choosing checks and reporting validation evidence | [Validation](validation.md) |
+| Choosing checks and reporting evidence | [Checks and evidence](validation.md) |
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |

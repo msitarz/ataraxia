@@ -3,7 +3,7 @@
 Define reusable guidance for empirical evaluations before local trial methods
 disappear with completed Works. The
 [leaf-agent comparison PR](https://github.com/msitarz/ataraxia/pull/122) and its
-[preserved results](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md)
+[preserved evidence](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md)
 provide motivating evidence, including indexed-answer exposure and derived
 change-size measures that need explicit treatment. The PR remains a separate
 Work; this plan neither assumes its merge nor adopts its findings as policy.
@@ -27,7 +27,7 @@ for review before expanding if that target cannot be met.
 - A new `doc/evaluation.md` owns independently triggered guidance for designing,
   running, and interpreting empirical evaluations.
 - Each specific Work README and linked protocol owns its question, inputs,
-  conditions, budget, metrics and checks, thresholds, completion, and results.
+  conditions, budget, metrics and checks, thresholds, completion, and evidence.
 - A WDR owns concise decision rationale, alternatives, and tradeoffs. The
   [WDR workflow](../../../../../wdr-workflow.md) retains eligibility, and the
   [decision-record format](../../../../../decision-records.md) retains status
@@ -39,7 +39,7 @@ for review before expanding if that target cannot be met.
 
 Reuse [orchestration](../../../../../orchestrator.md),
 [acceptance tracing](../../../../../acceptance-tracing.md), and
-[validation](../../../../../validation.md) through links. The existing
+[checks and evidence](../../../../../validation.md) through links. The existing
 [trial-contract Work](../../trial-contract/README.md) remains the specific
 live-trial owner; it may link general evaluation guidance without a broad
 rewrite.
@@ -50,7 +50,7 @@ rewrite.
   empirical evidence from Investigation recommendations and Prototype
   feasibility. Conditional reading reaches the focused evaluation owner;
   normal Work lifecycle and review apply without compulsory nesting or agents.
-  Verification: inspect the glossary, Work guidance, owner inventory, and
+  Validation: inspect the glossary, Work guidance, owner inventory, and
   reading route; walk through an independent Evaluation, an Investigation using
   one, and a small inline comparison.
 - **AC-2 TODO** Reusable guidance requires a predeclared question, conditions,
@@ -60,28 +60,27 @@ rewrite.
   repetitions, order, freshness, bounded dispatch and correction limits, and
   stop handling.
 
-  Verification: walk through matched comparison and contamination
+  Validation: walk through matched comparison and contamination
   examples, checking that conditions and limits are inspectable before
   execution.
 - **AC-3 TODO** Guidance makes initial and final artifacts, severity findings,
   executor and parent checks and evidence reuse, timestamps and timing
   boundaries inspectable. It distinguishes preparation effort, source and test
   change sizes, test counts, and available active time, token use, and cost;
-  unknown measurements stay unknown. Results disclose deviations, contamination,
-  confounds, reviewer identity, and blinding status. Comparisons match tasks
-  rather than pooling unlike workloads, and distinguish observations,
-  recommendations, and policy adoption.
+  unknown measurements stay unknown. Evidence records disclose deviations,
+  contamination, confounds, reviewer identity, and blinding status. Comparisons
+  match tasks rather than pooling unlike workloads, and distinguish
+  observations, recommendations, and policy adoption.
 
-  Verification: review example results
-  with missing cost data, indexed-answer exposure, derived change sizes, and
-  unlike tasks; confirm conclusions remain bounded by their declared protocol
-  and available evidence.
+  Validation: review example evidence with missing cost data, indexed-answer
+  exposure, derived change sizes, and unlike tasks; confirm conclusions remain
+  bounded by their declared protocol and available evidence.
 - **AC-4 TODO** A concise proposed WDR explains the choice and meaningful
   alternatives under the existing maintainer acceptance lifecycle. Guidance
   preserves empirical artifacts through existing Git and PR evidence procedures,
   without routine per-revision bookkeeping or a second lifecycle.
-  Verification: inspect the WDR and links against the shared decision-record
-  format and Work evidence procedure; walk through result preservation and
+  Validation: inspect the WDR and links against the shared decision-record
+  format and Work evidence procedure; walk through evidence preservation and
   distinguish plan merge, decision acceptance, and implementation completion.
 
 ## Execution gate and limits
@@ -99,4 +98,4 @@ implementation adds owner guidance and decision rationale; it does not run
 trials, select a winning model, or generalize a particular 18-run budget, model
 set, or cutoff into global policy. Do not add mandatory templates, journals,
 schemas, agents, or lifecycle machinery. Preserve existing live-trial ownership
-and human review, merge, and CI gates.
+and maintainer review, merge, and CI gates.

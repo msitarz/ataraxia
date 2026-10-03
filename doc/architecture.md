@@ -207,6 +207,6 @@ ataraxia needs a horizontally scalable data processing pipeline.
 
 ## See also
 
-- [doc/adr/](adr/) — decision log, in actual-decision order
+- [doc/adr/](adr/) — ADR index, in actual-decision order
 - [README.md](../README.md) — quickstart, roadmap
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — dev workflow, project status

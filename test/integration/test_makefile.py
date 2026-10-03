@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Check validation orchestration without installing tools or using the network."""
+"""Check local and CI orchestration without installing tools or using the network."""
 
 import json
 import os
@@ -82,12 +82,12 @@ def run_make_with_fake_uv(tmp_path, *args, advisory_exit=0):
     work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
     ac="AC-3",
 )
-def test_validation_order_and_offline_environment(tmp_path, target, failure, expected):
-    """AC-3: Prepared verification is offline, checks stale envs, and audits CI.
+def test_check_order_and_offline_environment(tmp_path, target, failure, expected):
+    """AC-3: Prepared checks run offline, check stale envs, and audit CI.
 
-    Prepared offline verification remains network-free, rejects a missing or
-    stale environment, and exercises the installed package outside the
-    checkout. Dependency synchronization stays locked and audit remains
+    Prepared offline checks remain network-free, reject a missing or
+    stale environment, and exercise the installed package outside the
+    worktree. Dependency synchronization stays locked and audit remains
     required by full CI.
     """
     log = tmp_path / "calls.jsonl"
@@ -96,10 +96,10 @@ def test_validation_order_and_offline_environment(tmp_path, target, failure, exp
         f"#!{sys.executable}\n"
         "import json, os, sys\n"
         "args = sys.argv[1:]\n"
-        "with open(os.environ['VALIDATION_LOG'], 'a') as log:\n"
+        "with open(os.environ['CHECK_LOG'], 'a') as log:\n"
         "    log.write(json.dumps([args, os.getenv('UV_OFFLINE'), "
         "os.getenv('UV_NO_SYNC')]) + '\\n')\n"
-        "failure = os.environ['VALIDATION_FAILURE']\n"
+        "failure = os.environ['CHECK_FAILURE']\n"
         "sys.exit(1 if (failure == 'audit' and args[0] == 'audit') or "
         "(failure == 'sync-check' and '--check' in args) else 0)\n"
     )
@@ -107,8 +107,8 @@ def test_validation_order_and_offline_environment(tmp_path, target, failure, exp
     env = os.environ.copy()
     env.update(
         PATH=f"{tmp_path}:{env['PATH']}",
-        VALIDATION_LOG=str(log),
-        VALIDATION_FAILURE=failure,
+        CHECK_LOG=str(log),
+        CHECK_FAILURE=failure,
     )
     env.pop("UV_OFFLINE", None)
     env.pop("MAKEFLAGS", None)
@@ -148,14 +148,14 @@ def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
     uv.write_text(
         f"#!{sys.executable}\n"
         "import json, os, sys\n"
-        "with open(os.environ['VALIDATION_LOG'], 'a') as log:\n"
+        "with open(os.environ['CHECK_LOG'], 'a') as log:\n"
         "    log.write(json.dumps([sys.argv[1:], os.getenv('UV_OFFLINE'), "
         "os.getenv('UV_NO_SYNC')]) + '\\n')\n",
         encoding="utf-8",
     )
     uv.chmod(0o755)
     env = os.environ.copy()
-    env.update(PATH=f"{tmp_path}:{env['PATH']}", VALIDATION_LOG=str(log))
+    env.update(PATH=f"{tmp_path}:{env['PATH']}", CHECK_LOG=str(log))
     env.pop("UV_OFFLINE", None)
     env.pop("UV_NO_SYNC", None)
     env.pop("MAKEFLAGS", None)
@@ -467,7 +467,7 @@ def test_worktree_create_preserves_worktree_when_offline_cache_is_unusable(
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
     ac="AC-1",
 )
-def test_worktree_create_preserves_worktree_when_environment_verification_fails(
+def test_worktree_create_preserves_worktree_when_environment_check_fails(
     tmp_path,
 ):
     """AC-1: A failed post-setup check does not remove the prepared worktree."""
@@ -476,7 +476,7 @@ def test_worktree_create_preserves_worktree_when_environment_verification_fails(
     cache = repo / ".cache/uv"
     cache.mkdir(parents=True)
     (cache / "ready").write_text("cached")
-    destination = tmp_path / "verification-failed"
+    destination = tmp_path / "check-failed"
 
     result = subprocess.run(
         ["make", "worktree-create", f"WORKTREE={destination}", "BRANCH=work/verify"],
@@ -490,7 +490,7 @@ def test_worktree_create_preserves_worktree_when_environment_verification_fails(
     assert result.returncode != 0
     assert destination.is_dir()
     assert (destination / ".venv").is_dir()
-    assert "Environment verification failed" in result.stderr
+    assert "Environment check failed" in result.stderr
     assert "worktree retained" in result.stderr
 
 
@@ -622,7 +622,7 @@ def test_dependency_lock_target_uses_uv_lock(tmp_path):
     assert calls == [["lock"]]
 
 
-def test_full_verification_ignores_targeted_test_selector(tmp_path):
+def test_full_checks_ignores_targeted_test_selector(tmp_path):
     result, calls = run_make_with_fake_uv(
         tmp_path, "verify-test", "ARGS=test/unit/test_cli.py"
     )
@@ -631,7 +631,7 @@ def test_full_verification_ignores_targeted_test_selector(tmp_path):
     assert calls == [["run", "pytest", "--cov"]]
 
 
-def test_full_static_verification_ignores_targeted_path_selector(tmp_path):
+def test_full_static_checks_ignores_targeted_path_selector(tmp_path):
     result, calls = run_make_with_fake_uv(
         tmp_path, "verify-check", "ARGS=src/ataraxia/feature.py"
     )
@@ -645,7 +645,7 @@ def test_full_static_verification_ignores_targeted_path_selector(tmp_path):
     assert not any("src/ataraxia/feature.py" in command for command in calls)
 
 
-def test_full_example_verification_ignores_targeted_path_selector(tmp_path):
+def test_full_example_checks_ignores_targeted_path_selector(tmp_path):
     result, calls = run_make_with_fake_uv(
         tmp_path, "verify-examples", "ARGS=example/crossover.py"
     )
@@ -663,15 +663,15 @@ def test_full_example_verification_ignores_targeted_path_selector(tmp_path):
     ac="AC-3",
 )
 def test_ci_preparation_is_allocated_to_its_consumers(tmp_path):
-    """AC-2 and AC-3: CI setup and offline verification contracts.
+    """AC-2 and AC-3: CI setup and offline checks contracts.
 
     Each CI target prepares what its checks require, and missing required
     environments fail clearly. `make setup` still prepares hooks and build
-    tooling for subsequent offline verification.
+    tooling for subsequent offline checks.
 
-    Prepared offline verification remains network-free, rejects a missing or
-    stale environment, and exercises the installed package outside the
-    checkout. Dependency synchronization stays locked and audit remains
+    Prepared offline checks remain network-free, reject a missing or
+    stale environment, and exercise the installed package outside the
+    worktree. Dependency synchronization stays locked and audit remains
     required by full CI.
 
     This fake-uv test checks Make routing and environment flags, not actual

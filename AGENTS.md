@@ -22,5 +22,5 @@ its relevant README and linked contracts.
 | Running project tools | Run `make help` first; invoke project tools through Make targets. |
 | Setup, branches, or commits | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | Publishing or describing pull requests | [Pull requests](doc/pull-requests.md) |
-| Choosing checks or reporting validation evidence | [Validation policy](doc/validation.md) |
+| Choosing checks or reporting evidence | [Check and evidence policy](doc/validation.md) |
 | CI jobs | [CI workflow](.github/workflows/ci.yml) |

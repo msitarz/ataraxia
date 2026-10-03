@@ -26,7 +26,7 @@ human-facing and agent-facing versions of the same contract.
 ## Scope and sizing
 
 Keep each leaf Work focused on one responsibility and outcome, then size it for
-the human judgment needed to review the complete expected change, including
+the maintainer judgment needed to review the complete expected change, including
 behavior, tests, supporting changes, and concepts to understand. Aim for one
 reviewable question or outcome a maintainer can assess in a short sitting of
 about five minutes. Responsibility count and lines of code alone do not predict

@@ -10,7 +10,7 @@ before publishing. Keep only the template heading and sections. -->
 ## Outcome
 
 <!-- Write one short paragraph describing the resulting behavior. Do not include
-validation prose, results, or check inventories. -->
+evidence prose or check inventories. -->
 
 ## Limitations
 

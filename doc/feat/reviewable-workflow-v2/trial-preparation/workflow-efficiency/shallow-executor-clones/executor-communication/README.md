@@ -50,18 +50,18 @@ controller or general messaging framework belongs in this Work.
   session retains context and returns attributed commits, reports, and events.
   Where a usable isolation boundary exists, verify it before both turns;
   otherwise disclose the dependency failure and limits of independent probes.
-  Verification: inspect transcripts and revisions or the established blocker;
+  Validation: inspect transcripts and revisions or the established blocker;
   rerun [source-denial probes](../sandbox-isolation/README.md) when a usable
   restricted path exists.
 - **AC-2 TODO** Routing and failure cases return a recoverable artifact or
   explicit blocker without silent fallback, cross-session correction,
   unapproved permissions, or false completion.
-  Verification: inspect the routing control, failed-operation, missing-output,
+  Validation: inspect the routing control, failed-operation, missing-output,
   and unavailable-session cases against the declared protocol.
 - **AC-3 TODO** The recommendation selects exec/resume, app-server control,
   or further investigation, with observed versus documentation-only evidence
   and required preparation and recovery effort.
-  Verification: compare the candidates against actual communication needs,
+  Validation: compare the candidates against actual communication needs,
   review gates, and any untested live-control claims.
 
 Return the demonstrated handoff and correction path for

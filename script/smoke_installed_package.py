@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Build a wheel and exercise its installed CLI outside the source checkout."""
+"""Build a wheel and exercise its installed CLI outside the source worktree."""
 
 import json
 import os
@@ -14,7 +14,7 @@ def main() -> None:
     """Verify installation, the console entry point, and sample backtest results."""
     root = Path(__file__).resolve().parents[1]
     env = os.environ.copy()
-    # Prevent caller configuration from exposing checkout modules to the CLI.
+    # Prevent caller configuration from exposing worktree modules to the CLI.
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
     env.pop("VIRTUAL_ENV", None)
