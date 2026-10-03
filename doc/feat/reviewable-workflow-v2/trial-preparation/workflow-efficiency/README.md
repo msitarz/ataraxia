@@ -71,8 +71,8 @@ general duplication rule.
   scheduling with review and evidence reuse.
 - **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
   guidance as a whole and consolidate repeated explanations within owners.
-- **TODO** [Work-type simplification](work-type-simplification/README.md):
-  remove Rewrite as a special Work type and use ordinary Work contracts.
+- **DONE** Work-type simplification: removed Rewrite as a special Work type
+  and repaired Prototype links while retaining ordinary Work rules.
 - **TODO** [Vocabulary guidance](vocabulary-guidance/README.md): reuse
   established terms for the same concepts without confusing repeated words
   with duplicated definitions or instructions.
