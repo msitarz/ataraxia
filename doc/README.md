@@ -97,12 +97,18 @@ approval.
 ## Review
 
 Check ownership and duplication when defining or reviewing a Work, and when
-changing general guidance. Verify local links and anchors, distinguish
-history from current instructions, and walk through affected reading routes.
-Check that moved requirements remain discoverable and examples agree with their
-owning contracts. Run `make doc-check` to check Markdown formatting and local
-links; run `make doc-format` to apply the configured formatting. Check that
-prose, headings, and examples use the same glossary terms. Follow
+changing general guidance. Review the affected surrounding section and directly
+related rules as a whole, including neighboring explanations affected by the
+change. Integrate requirements at their owner, consolidate repeated explanations
+within it, and replace cross-owner repetition with links. Preserve substantive
+requirements, reading routes, anchors, distinct exceptions, and useful examples;
+do not shorten guidance at the expense of meaning. Verify local links and
+anchors, distinguish history from current instructions, and walk through
+affected reading routes. Check that moved requirements remain discoverable and
+examples agree with their owning contracts. Run `make doc-check` to check
+Markdown formatting and local links; run `make doc-format` to apply the
+configured formatting. Check that prose, headings, and examples use the same
+glossary terms. Follow
 [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
 cohesive changes.
 
