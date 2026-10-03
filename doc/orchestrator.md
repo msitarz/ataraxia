@@ -36,6 +36,14 @@ update its parent map. Review and merge the revised plan before expanded work
 begins. Preserve the explicit maintainer scope exception; plan approval alone
 does not waive the review target.
 
+Before dispatch, identify dependencies and shared edit surfaces. Coordinate
+shared owners, parent maps, indexes, exact wording, formatter-valid snippets,
+and reserved WDR numbers where needed. If overlap is unavoidable, sequence the
+Works or name the remaining merge resolution; do not invent index categories or
+ordering to hide a conflict. Start the executor promptly once necessary
+preflight is complete; remaining reviewer reading may overlap execution when
+it does not defer integration preflight.
+
 A Work README and its linked contracts define acceptance criteria. Give
 the executor the Work path and requested action, plus only missing steering and
 necessary branch or delivery context. The executor reads the Work and applicable
@@ -92,9 +100,14 @@ ready-PR meaning, and publication ownership.
 
 Before publishing, reassess maintainer review effort from the actual diff,
 including tests, supporting changes, and concepts. If it exceeds the target,
-stop and revise the split plan, then get the revised parent plan reviewed and
-merged before child work continues. An explicit maintainer request may authorize
-a larger review under [Work scope and sizing](workflow.md#scope-and-sizing).
+stop publication and partition the completed work into at least two cohesive,
+independently reviewable child Work PRs within the target. Define their
+contracts and dependencies, update the parent map, and get the revised parent
+plan reviewed and merged before child delivery continues. Preserve and reuse
+completed implementation and valid evidence, identify remaining merge
+resolution, and reassess each child diff before publication. An explicit
+maintainer request may authorize a larger review under
+[Work scope and sizing](workflow.md#scope-and-sizing).
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the

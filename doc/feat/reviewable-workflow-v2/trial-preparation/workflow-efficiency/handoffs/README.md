@@ -49,7 +49,7 @@ every layer. Topology and review ownership follow the
 
 ## Acceptance
 
-- **AC-1 TODO** Handoff guidance coordinates dependencies and shared surfaces
+- **AC-1 DONE** Handoff guidance coordinates dependencies and shared surfaces
   before execution, and defines the executor's local artifact/evidence/blocker
   return and the owning orchestrator's review, correction, push, and PR
   responsibilities.
@@ -59,13 +59,13 @@ every layer. Topology and review ownership follow the
   diff. For the oversized case, verify publication stops while retained work
   is partitioned and child diffs are reassessed; include a shared index
   dependency and deliver tree-orchestration first when it shares the owner.
-- **AC-2 TODO** The owning orchestrator reuses the executor's acceptance
+- **AC-2 DONE** The owning orchestrator reuses the executor's acceptance
   evidence and sends one consolidated correction batch when needed; CI and human
   merge gates remain, with readiness not implying approval or completed CI.
   Validation: inspect one completed handoff and PR flow, checking evidence
   reuse, reruns only when a change, failure, or unresolved concern warrants
   them, and the ready-but-CI-pending state.
-- **AC-3 TODO** Durable topology, handoff, and PR-ownership rules are promoted
+- **AC-3 DONE** Durable topology, handoff, and PR-ownership rules are promoted
   to their authoritative owners while preserving worktree isolation and
   maintainer control.
   Validation: follow the reading routes and review the updated owner

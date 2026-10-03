@@ -9,6 +9,9 @@ Accepted
 Amended by
 [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md).
 
+Amended by
+[17. Review local artifacts before PR publication](0017-review-local-artifacts-before-pr-publication.md).
+
 ## Context
 
 Continuous polling and partial review can surface issues earlier, but status
