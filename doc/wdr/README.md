@@ -27,6 +27,7 @@ authoritative owners.
 - [12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md)
 - [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md)
 - [14. Remove mandatory PR records for manual judgment](0014-remove-mandatory-pr-records-for-manual-judgment.md)
+- [15. Use CI results as evidence of mechanical checks](0015-use-ci-results-as-evidence-of-mechanical-checks.md)
 
 ## Proposal
 

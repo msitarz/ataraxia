@@ -9,6 +9,9 @@ Accepted
 Amended by
 [9. Require verified evidence for Work completion](0009-require-verified-work-completion.md).
 
+Amended by
+[15. Use CI results as evidence of mechanical checks](0015-use-ci-results-as-evidence-of-mechanical-checks.md).
+
 ## Context
 
 The maintainer reported that earlier evidence-SHA snapshots and append-only

@@ -9,6 +9,9 @@ Accepted
 Amends
 [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md).
 
+Amended by
+[15. Use CI results as evidence of mechanical checks](0015-use-ci-results-as-evidence-of-mechanical-checks.md).
+
 ## Context
 
 WDR 11 requires recording manual judgment of a changed artifact in the PR. This
