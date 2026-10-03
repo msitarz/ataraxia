@@ -28,7 +28,8 @@ authoritative owners.
 - [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md)
 - [14. Remove mandatory PR records for manual judgment](0014-remove-mandatory-pr-records-for-manual-judgment.md)
 - [15. Use CI results as evidence of mechanical checks](0015-use-ci-results-as-evidence-of-mechanical-checks.md)
+- [16. Use Evaluations for empirical evidence](0016-use-evaluations-for-empirical-evidence.md)
 
 ## Proposal
 
-- [16. Use Evaluations for empirical evidence](0016-use-evaluations-for-empirical-evidence.md)
+None.
