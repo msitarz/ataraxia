@@ -42,24 +42,24 @@ cleanup distinct from deleting branches and empty Work contract directories.
 
 ## Acceptance
 
-- **AC-1 TODO** Make exposes discoverable worktree listing, explicit removal,
+- **AC-1 DONE** Make exposes discoverable worktree listing, explicit removal,
   and prune preview/execution proxies. Removing a clean completed linked
   worktree removes its directory and registration while retaining its branch
   for the subsequent verified branch-deletion step.
   Verification: exercise actual Make targets against a disposable repository;
   inspect `git worktree list`, directory existence, and surviving branch refs.
-- **AC-2 TODO** Missing input and failed or unsafe removals preserve data and
+- **AC-2 DONE** Missing input and failed or unsafe removals preserve data and
   report failure without force or filesystem fallback. Main, dirty, untracked,
   locked, and unrelated live worktrees remain intact; paths with spaces and
   shell metacharacters are handled literally.
   Verification: use focused integration tests for actual target invocations,
   statuses, refs, registrations, and file contents in those cases.
-- **AC-3 TODO** A directory removed outside Git has its stale registration
+- **AC-3 DONE** A directory removed outside Git has its stale registration
   previewed and pruned through Make with explicit expiry handling, while live
   and locked registrations survive. Repository-wide effects are disclosed.
   Verification: create live, missing, and locked fixture worktrees; compare
   preview with execution under the same expiry and inspect retained entries.
-- **AC-4 TODO** The post-merge procedure removes verified linked worktrees
+- **AC-4 DONE** The post-merge procedure removes verified linked worktrees
   before local branch deletion, handles already-removed directories, and
   preserves existing review, dependency, uncertainty, and remote-branch gates.
   Verification: walk through normal, squash-merged, later-commit, dirty,

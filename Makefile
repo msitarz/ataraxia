@@ -180,6 +180,29 @@ ci-package-setup:
 	uv python install
 
 ##@ Workspaces
+# Cleanup selectors are literal values, not recursively expanded Make expressions.
+unexport WORKTREE EXPIRE
+.PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
+worktree-list: ## list linked worktrees, branches, locks, and stale registrations
+	git worktree list --porcelain
+
+worktree-remove: ## remove one clean linked worktree; requires WORKTREE=/path (keeps branch)
+	@destination=$(call _SHELL_VALUE,$(value WORKTREE)); \
+	if [ -z "$$destination" ]; then \
+		echo "Usage: make worktree-remove WORKTREE=/path" >&2; exit 2; \
+	fi; \
+	git worktree remove -- "$$destination"
+
+worktree-prune-preview: ## preview repository-wide stale registration pruning; requires EXPIRE=date
+worktree-prune: ## apply repository-wide stale registration pruning; requires EXPIRE=date
+worktree-prune-preview worktree-prune:
+	@expiry=$(call _SHELL_VALUE,$(value EXPIRE)); \
+	if [ -z "$$expiry" ]; then \
+		echo "Usage: make $@ EXPIRE=date (repository-wide; use the same expiry for preview and execution)" >&2; exit 2; \
+	fi; \
+	echo "Repository-wide stale registration cleanup; expiry: $$expiry"; \
+	git worktree prune --verbose $(if $(filter worktree-prune-preview,$@),--dry-run) --expire="$$expiry"
+
 .PHONY: worktree-create
 worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path BRANCH=work/name
 	@set -eu; \
