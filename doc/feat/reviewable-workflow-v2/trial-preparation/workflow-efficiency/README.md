@@ -101,9 +101,9 @@ general duplication rule.
   [Leaf-agent policy](../../../../wdr/0013-use-sol-low-for-all-leaves.md):
   adopted Sol-low for all leaf executors while preserving independent review and
   evidence.
-- **TODO** [Evaluation workflow](evaluation-workflow/README.md): define reusable
-  empirical evaluation guidance and its ownership within the normal Work
-  lifecycle.
+- **DONE** Evaluation workflow: defined reusable empirical evaluation guidance,
+  Work-kind ownership and reading routes, with a proposed decision record under
+  the normal Work lifecycle.
 - **TODO** [Shallow executor clones](shallow-executor-clones/README.md): develop
   a tested recommendation through sandbox-isolation, communication, and
   artifact-delivery Investigations before adopting local depth-one clones.

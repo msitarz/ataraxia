@@ -80,12 +80,10 @@ and artifact return. Follow the [WDR workflow](../../../../../wdr-workflow.md)
 for any consequential policy adoption; Investigations recommend rather than
 approve that policy. Current guidance remains authoritative until adoption.
 
-Coordinate with [Evaluation workflow](../evaluation-workflow/README.md) for
-permitted resources, contamination, and verified isolation. That Work owns
-general evaluation guidance; this Work contributes the concrete clone and
-history-access requirements without creating a second evaluation owner. Until
-that owner exists, preserve the requirements here for integration rather than
-claiming that Evaluation is already an adopted Work kind. Use the
+Follow [empirical evaluation guidance](../../../../../evaluation.md) for
+permitted resources, contamination, and verified isolation. This Work
+contributes the concrete clone and history-access requirements without creating
+a second evaluation owner. Use the
 [glossary's Worktree meaning](../../../../../ubiquitous-language.md) so
 independent clones are not described as linked worktrees.
 
