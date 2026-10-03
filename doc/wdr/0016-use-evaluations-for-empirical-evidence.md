@@ -9,7 +9,7 @@ Proposed
 ## Context
 
 The
-[Evaluation workflow Work](../feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/evaluation-workflow/README.md)
+[Evaluation workflow Work](https://github.com/msitarz/ataraxia/blob/f5f2e1e15ccb97899d2c21dee2f4109214e4109b/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/evaluation-workflow/README.md)
 identifies reusable methods that otherwise disappear with local comparisons.
 Investigation recommendations and Prototype feasibility results do not clearly
 assign ownership of evidence from a declared empirical protocol.
