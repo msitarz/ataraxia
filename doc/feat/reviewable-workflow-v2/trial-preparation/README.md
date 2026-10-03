@@ -67,5 +67,5 @@ This Work prepares the trial; it does not implement parallel shard execution or
 claim that the workflow's efficiency has already been demonstrated. Preserve
 independent agent review, maintainer approval and merge control, full CI gates,
 and the existing approval requirement for delegation changes. Consequential
-policy changes belong in [WDRs](../../../wdr-workflow.md), with proposed choices
-distinguished from accepted ones.
+policy changes belong in [WDRs](../../../wdr-workflow.md), following the shared
+[decision-record lifecycle](../../../decision-records.md#record-format).
