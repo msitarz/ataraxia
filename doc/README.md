@@ -81,7 +81,11 @@ definitions; local Work rules belong in their own contracts, with glossary
 entries linking rather than reproducing those rules.
 
 Use the glossary term consistently for each shared concept; avoid synonyms that
-suggest an undefined distinction.
+suggest an undefined distinction. Reuse the same established term for the same
+concept as often as necessary; do not vary it solely to avoid repeating a word.
+Repeating a term is distinct from duplicating its definition or instructions;
+follow the [placement and maintenance rules](#placement-and-maintenance) for
+those.
 
 Reuse abstractions when their meaning fits. Qualify terms at boundary mappings.
 Resolve ambiguity from the request and repository; if interpretations still
