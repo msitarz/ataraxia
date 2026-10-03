@@ -9,7 +9,7 @@ from duplicating definitions or instructions.
 
 In [PR 117](https://github.com/msitarz/ataraxia/pull/117), acceptance-tracing
 prose described the same Git commit as both a commit and a snapshot. The
-[bounded correction](https://github.com/msitarz/ataraxia/commit/6770903)
+[bounded correction](https://github.com/msitarz/ataraxia/commit/0ac0655bd9c9e5f6bf64fd40653ee7c75b41497c)
 uses commit consistently. Use this as a review example of one concept retaining
 one established term, without implying that every use of snapshot is wrong.
 
