@@ -91,6 +91,9 @@ general duplication rule.
   [Leaf-agent policy](../../../../wdr/0013-use-sol-low-for-all-leaves.md):
   adopted Sol-low for all leaf executors while preserving independent review and
   evidence.
+- **TODO** [Evaluation workflow](evaluation-workflow/README.md): define reusable
+  empirical evaluation guidance and its ownership within the normal Work
+  lifecycle.
 
 Use the direct parent-to-leaf arrangement under
 [orchestrator guidance](../../../../orchestrator.md); nodes with children have
