@@ -115,14 +115,15 @@ independent review and existing maintainer review, merge, and CI gates.
 
 ## Comparison
 
-Use the existing [trial contract](../trial-contract/README.md) as evaluation
-owner. Before the next comparison, state the scope, measurement method, and
-success or reconsideration basis. Record dispatch, executor start, completed
-artifact, and PR-ready times; commit batches; PR-description edits; corrections
-and their causes; avoidable repeated checks; reporting and preparation effort;
-human interventions; and maintainer review time or cost when available. Put
-concise evidence in existing PR records or the trial contract, without a
-per-revision journal or template.
+Use [empirical evaluation guidance](../../../../evaluation.md) for reusable
+methods; the existing [trial contract](../trial-contract/README.md) owns the
+specific live-trial evaluation. Before the next comparison, state the scope,
+measurement method, and success or reconsideration basis. Record dispatch,
+executor start, completed artifact, and PR-ready times; commit batches;
+PR-description edits; corrections and their causes; avoidable repeated checks;
+reporting and preparation effort; human interventions; and maintainer review
+time or cost when available. Put concise evidence in existing PR records or the
+trial contract, without a per-revision journal or template.
 
 Separate observed outcomes from candidate rules and note missing or
 incomparable measurements. Do not infer a topology speedup from these
