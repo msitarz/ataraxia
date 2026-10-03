@@ -78,14 +78,28 @@ versus what remains uncertain. Conclude with a short comparison and
 recommendation that explains the choice.
 
 Use one file for a small comparison; use linked candidate files when they make
-review easier. A supporting Prototype can answer a question that documentation
-alone cannot resolve. An Investigation recommends a direction; a Prototype
-demonstrates feasibility through exploratory implementation.
+review easier. A supporting Evaluation can supply empirical evidence; a
+Prototype can answer a question that documentation alone cannot resolve. An
+Investigation recommends a direction; a Prototype demonstrates feasibility
+through exploratory implementation.
 
 Follow the common Work lifecycle and review rules. On completion, promote the
 chosen policy or lasting decision to its authoritative owner. Git and the PR
 preserve the comparison artifacts when the finished Work directory is removed.
 Do not introduce a separate lifecycle or mandatory template.
+
+## Evaluations
+
+An Evaluation owns empirical evidence for a bounded question from a declared
+protocol. It may stand alone or support an Investigation's recommendation;
+a small comparison may stay inline without a separate Work. A Prototype
+answers feasibility through exploratory implementation. None requires nesting
+or agents simply because of its kind.
+
+Follow [empirical evaluation guidance](evaluation.md) for protocol,
+observations, and interpretation, and the common Work scope, lifecycle, review,
+and evidence rules. Evaluation completion does not adopt a recommendation as
+policy.
 
 ## Prototypes
 

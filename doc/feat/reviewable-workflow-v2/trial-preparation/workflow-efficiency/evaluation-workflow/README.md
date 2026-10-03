@@ -46,14 +46,14 @@ rewrite.
 
 ## Acceptance
 
-- **AC-1 TODO** The owner documents define Evaluation and distinguish its
+- **AC-1 DONE** The owner documents define Evaluation and distinguish its
   empirical evidence from Investigation recommendations and Prototype
   feasibility. Conditional reading reaches the focused evaluation owner;
   normal Work lifecycle and review apply without compulsory nesting or agents.
   Validation: inspect the glossary, Work guidance, owner inventory, and
   reading route; walk through an independent Evaluation, an Investigation using
   one, and a small inline comparison.
-- **AC-2 TODO** Reusable guidance requires a predeclared question, conditions,
+- **AC-2 DONE** Reusable guidance requires a predeclared question, conditions,
   common quality and preservation rubric, and decision thresholds. Protocols
   identify frozen fixtures, guidance, tools, prompts, permitted resource and
   reference access, and verified isolation where needed; they define
@@ -63,7 +63,7 @@ rewrite.
   Validation: walk through matched comparison and contamination
   examples, checking that conditions and limits are inspectable before
   execution.
-- **AC-3 TODO** Guidance makes initial and final artifacts, severity findings,
+- **AC-3 DONE** Guidance makes initial and final artifacts, severity findings,
   executor and parent checks and evidence reuse, timestamps and timing
   boundaries inspectable. It distinguishes preparation effort, source and test
   change sizes, test counts, and available active time, token use, and cost;
@@ -75,7 +75,7 @@ rewrite.
   Validation: review example evidence with missing cost data, indexed-answer
   exposure, derived change sizes, and unlike tasks; confirm conclusions remain
   bounded by their declared protocol and available evidence.
-- **AC-4 TODO** A concise proposed WDR explains the choice and meaningful
+- **AC-4 DONE** A concise proposed WDR explains the choice and meaningful
   alternatives under the existing maintainer acceptance lifecycle. Guidance
   preserves empirical artifacts through existing Git and PR evidence procedures,
   without routine per-revision bookkeeping or a second lifecycle.

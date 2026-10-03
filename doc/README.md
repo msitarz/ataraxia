@@ -12,6 +12,7 @@ relevant guidance.
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
+| Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
 | General Work rules | [Work workflow](workflow.md) |
 | Post-merge Work branch cleanup | [Branch cleanup](branch-cleanup.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
