@@ -14,7 +14,7 @@ from one documentation task, not a general selection recommendation.
 
 ## Works
 
-- **TODO** [Protocol and fixtures](protocol-and-fixtures/README.md): freeze
+- **DONE** [Protocol and fixtures](protocol-and-fixtures/README.md): freeze
   bounded documentation and code fixtures, the matched protocol, review and
   preservation gates, measures, thresholds, and a bounded authorization
   request. No trial runs in this Work.
@@ -23,13 +23,13 @@ from one documentation task, not a general selection recommendation.
   Sol-low conditions with explicit maintainer authorization, then report
   evidence and a recommendation. No policy is adopted.
 
-The current Luna-low default and the direct parent-to-leaf topology remain in
-force throughout this Investigation. The controlled comparison cannot start
-until the protocol child is integrated and the maintainer explicitly
-authorizes its named conditions and bounded dispatch budget.
-The protocol child has a frozen draft of its fixtures, reviewer, repetitions,
-numeric thresholds, and dispatch cap, pending independent review and
-integration. This preparation records no trial results or authorization.
+The current Luna-low default and direct parent-to-leaf topology remain in force
+throughout this Investigation. The reviewed protocol and fixture inputs are
+preserved at
+[evidence revision `efdc21a`](https://github.com/msitarz/ataraxia/commit/efdc21a1316fd381d29ab5002bd818233e7fbb43).
+The comparison cannot start until that revision is integrated and the maintainer
+explicitly authorizes its named conditions and bounded dispatch budget. This
+preparation records no trial results or authorization.
 
 ## Comparison
 
@@ -48,7 +48,7 @@ change must follow the authoritative owner and
 
 ## Acceptance
 
-- **AC-1 TODO** The protocol defines representative documentation and code
+- **AC-1 DONE** The protocol defines representative documentation and code
   fixtures, matched conditions, repetitions and order, quality and preservation
   gates, review rubric, measurements, material-improvement and overhead
   thresholds, correction and stall handling, and a bounded authorization
