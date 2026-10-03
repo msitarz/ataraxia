@@ -4,6 +4,11 @@ Freeze the protocol and two bounded fixtures needed to compare Luna low, Luna
 medium, and Sol low for leaf execution. This Work prepares an authorization
 request; it does not dispatch trial agents or make a selection recommendation.
 
+The current scaffolds are [protocol.md](protocol.md),
+[fixtures/documentation.md](fixtures/documentation.md), and
+[fixtures/coding.md](fixtures/coding.md). They are provisional planning
+material; none is a frozen fixture or authorization to run trials.
+
 ## Scope
 
 Select one representative, bounded documentation task and one representative,
