@@ -1,7 +1,8 @@
 # Documentation fixture draft
 
-**Status:** frozen draft, pending independent review. The source and task scope
-are identified; no trial has run and no dispatch is authorized.
+**Status:** independently reviewed frozen fixture, pending integration and
+explicit maintainer authorization. The source and task scope are identified;
+no trial has run and no dispatch is authorized.
 
 ## Executor handoff
 
@@ -66,6 +67,6 @@ run against the fixture base; rerun them for every trial artifact.
 - **Setup:** use the guidance and locked tools from the trial base. The
   formatter and link check passed on the identified input.
 
-This is a frozen draft for independent review. It does not authorize dispatch;
-the controlled comparison remains blocked on protocol approval and explicit
-maintainer authorization.
+This reviewed frozen fixture does not authorize dispatch. The controlled
+comparison remains blocked on integration and explicit maintainer
+authorization.

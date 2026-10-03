@@ -1,8 +1,8 @@
 # Code fixture draft
 
-**Status:** frozen draft, pending independent review. Historical source/test
-blobs, overlay, and replay checks are verified; no trial has run and no
-dispatch is authorized.
+**Status:** independently reviewed frozen fixture, pending integration and
+explicit maintainer authorization. Historical source/test blobs, overlay, and
+replay checks are verified; no trial has run and no dispatch is authorized.
 
 ## Executor handoff
 
@@ -128,6 +128,6 @@ for every trial artifact.
   material. This instruction does not prevent repository-object or other-file
   access; reference leakage remains a documented confound.
 
-This is a frozen draft for independent review. It does not authorize dispatch;
-the controlled comparison remains blocked on protocol approval and explicit
-maintainer authorization.
+This reviewed frozen fixture does not authorize dispatch. The controlled
+comparison remains blocked on integration and explicit maintainer
+authorization.

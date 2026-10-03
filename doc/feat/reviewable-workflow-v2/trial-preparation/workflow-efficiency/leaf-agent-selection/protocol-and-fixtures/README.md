@@ -6,9 +6,9 @@ request; it does not dispatch trial agents or make a selection recommendation.
 
 The contracts are [protocol.md](protocol.md),
 [fixtures/documentation.md](fixtures/documentation.md), and
-[fixtures/coding.md](fixtures/coding.md). They record frozen draft inputs and
-replay evidence pending independent review and integration; this status is not
-authorization to run trials.
+[fixtures/coding.md](fixtures/coding.md). Their frozen inputs and replay
+evidence passed independent review; integration and explicit maintainer
+authorization remain pending. No trial is authorized or has run.
 
 ## Scope
 
@@ -53,22 +53,22 @@ successful outcomes.
 The protocol includes an explicit request for 18 dispatches across the three
 exact conditions and two fixtures, fixed reviewer, and order. Preparation is
 reported separately; expected total human effort and token/cost availability
-remain unknown. It does not authorize execution. Preserve replayable protocol
-and fixture assets at the protocol Work's evidence commit. Before its separate
-cleanup commit removes this Work directory, update the controlled-comparison
-contract with durable commit permalinks to the protocol and fixture assets. Git
-preserves that evidence; do not create a second archive or tracking record. The
-evidence commit must be reviewed and integrated before the controlled
-comparison begins.
+remain unknown. It does not authorize execution. The controlled-comparison
+contract links the replayable protocol and fixture assets at their evidence
+revision. This child is removed by the separate cleanup commit after the
+protocol evidence commit. The comparison itself remains blocked until that
+evidence is integrated and a maintainer explicitly authorizes the 18-dispatch
+request. Git preserves the evidence, so no second archive or tracking record is
+needed.
 
 ## Acceptance
 
-- **AC-1 TODO** Two replayable bounded fixtures are frozen: one documentation
+- **AC-1 DONE** Two replayable bounded fixtures are frozen: one documentation
   task and one code task, each with its exact revision, prompt, scope, expected
   outcome, guidance, tools, setup, and check policy.
   Verification: inspect both fixture definitions and confirm that each
   condition can use the same inputs.
-- **AC-2 TODO** The pre-run protocol fixes the three conditions, direct
+- **AC-2 DONE** The pre-run protocol fixes the three conditions, direct
   parent-to-leaf topology, fresh sessions, matched controls, repetitions and
   balanced order, fixed owning parent/reviewer, rubric and label-blinding or
   unblinded-confound recording, preservation and quality gates, correction/
@@ -77,7 +77,7 @@ comparison begins.
   Verification: walk the protocol against both fixtures and a hypothetical
   passing, failing, and inconclusive outcome; confirm no result is needed to
   determine the rule.
-- **AC-3 TODO** A bounded authorization request names the conditions, total
+- **AC-3 DONE** A bounded authorization request names the conditions, total
   dispatch cap, fixed owning parent/reviewer, estimated effort and unknown
   costs; the replayable protocol and fixtures are preserved at an evidence
   commit and this sibling contract is updated with durable permalinks before

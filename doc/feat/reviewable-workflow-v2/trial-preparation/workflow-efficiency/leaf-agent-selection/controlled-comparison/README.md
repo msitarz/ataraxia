@@ -1,13 +1,19 @@
 # Leaf-agent selection controlled comparison
 
-Run the frozen protocol and fixtures from the protocol Work's evidence commit
-after it is reviewed and integrated. During that Work's delivery, add direct
-commit permalinks to the protocol README and replayable fixture assets here,
-before its separate cleanup commit removes the protocol directory. Git
-preserves that evidence; do not create a second archive or tracking record.
-Compare Luna low, Luna medium, and Sol low on those bounded documentation and
-code fixtures. This Work records evidence and a recommendation; it does not
-adopt policy or change delegation authorization.
+Run the reviewed protocol and fixtures at evidence revision
+[efdc21a1316fd381d29ab5002bd818233e7fbb43](https://github.com/msitarz/ataraxia/commit/efdc21a1316fd381d29ab5002bd818233e7fbb43):
+
+- [Protocol](https://github.com/msitarz/ataraxia/blob/efdc21a1316fd381d29ab5002bd818233e7fbb43/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/protocol-and-fixtures/protocol.md)
+- [Documentation fixture](https://github.com/msitarz/ataraxia/blob/efdc21a1316fd381d29ab5002bd818233e7fbb43/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/protocol-and-fixtures/fixtures/documentation.md)
+- [Code fixture](https://github.com/msitarz/ataraxia/blob/efdc21a1316fd381d29ab5002bd818233e7fbb43/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/protocol-and-fixtures/fixtures/coding.md)
+
+Protocol preparation dispatched no trial sessions. Do not begin the
+comparison until the evidence revision above is integrated and a maintainer
+explicitly authorizes the exact 18-dispatch request in the protocol. Compare
+Luna low, Luna medium, and Sol low
+on those bounded documentation and code fixtures. This Work records evidence
+and a recommendation; it does not adopt policy or change delegation
+authorization.
 
 ## Preconditions and limits
 

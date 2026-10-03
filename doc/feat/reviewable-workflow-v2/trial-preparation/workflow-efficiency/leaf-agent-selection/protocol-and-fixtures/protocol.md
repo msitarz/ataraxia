@@ -1,9 +1,10 @@
 # Leaf-agent selection protocol
 
-**Status:** frozen draft pending independent review and integration. The two
-fixtures, prompts, source identities, current guidance/tool base, replay
-commands, reviewer assignment, and environment are specified below and in the
-fixture contracts. No trial is authorized or has run.
+**Status:** independently reviewed frozen protocol draft, pending integration
+and explicit maintainer authorization. The two fixtures, prompts, source
+identities, current guidance/tool base, replay commands, reviewer assignment,
+and environment are specified below and in the fixture contracts. No trial is
+authorized or has run.
 
 ## Design
 
