@@ -88,8 +88,10 @@ general duplication rule.
 - **TODO** [Single-agent execution](single-agent-execution/README.md): split
   plan drafted; protocol and fixture work precedes an explicitly authorized
   direct-versus-orchestrated comparison.
-- **TODO** [Leaf-agent policy](leaf-agent-policy/README.md): adopt the
-  maintainer-selected executor and preserve independent review and evidence.
+- **DONE**
+  [Leaf-agent policy](../../../../wdr/0013-use-sol-low-for-all-leaves.md):
+  adopted Sol-low for all leaf executors while preserving independent review and
+  evidence.
 
 Use the direct parent-to-leaf arrangement under
 [orchestrator guidance](../../../../orchestrator.md); nodes with children have

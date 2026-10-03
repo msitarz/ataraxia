@@ -65,5 +65,5 @@ Current procedure remains with orchestrator guidance. The
 [WDR workflow](../wdr-workflow.md) and
 [decision-record format](../decision-records.md) retain eligibility, status,
 and lifecycle ownership. The delivery has its own
-[Work contract](../feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-policy/README.md);
+[Work contract](https://github.com/msitarz/ataraxia/blob/744e205907c10eab38997fcda40c38a815b1cea8/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-policy/README.md);
 the existing trial evidence and cleanup commits remain preserved.
