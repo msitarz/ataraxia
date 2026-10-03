@@ -7,8 +7,8 @@ correction exchanges, or should each correction use a fresh executor? Current
 guidance favors the same Luna session. Unlike the
 [guidance-application Investigation](../guidance-application/README.md) on
 orchestrator sessions or
-[leaf-agent selection](../leaf-agent-selection/README.md) on model and effort,
-this tests correction continuity within one leaf Work.
+[completed leaf-agent selection comparison](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md)
+on model and effort, this tests correction continuity within one leaf Work.
 
 ## Comparison
 

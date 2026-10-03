@@ -6,8 +6,8 @@ Does an itemized format help agents apply repository guidance more consistently
 than paragraph prose? This is distinct from the
 [guidance-application Investigation](../guidance-application/README.md), which
 tests interventions and session conditions, and the
-[leaf-agent-selection Investigation](../leaf-agent-selection/README.md), which
-compares model and effort choices.
+[completed leaf-agent selection comparison](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md),
+which compares model and effort choices.
 
 ## Comparison
 
