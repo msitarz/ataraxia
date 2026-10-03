@@ -19,19 +19,18 @@ from one documentation task, not a general selection recommendation.
   bounded documentation and code fixtures, matched conditions, review and
   preservation gates, measures, thresholds, and an authorization request. No
   trial runs in this Work.
-- **TODO** [Controlled comparison](controlled-comparison/README.md): after the
-  evidence revision is integrated and explicitly authorized, run only the
-  Luna-low, Luna-medium, and
-  Sol-low conditions with explicit maintainer authorization, then report
-  evidence and a recommendation. No policy is adopted.
+- **DONE** [Controlled comparison](controlled-comparison/README.md), with
+  [results](controlled-comparison/results.md): the completed authorized
+  comparison recommends only a broader coding comparison after input isolation
+  and prompt/rubric alignment; Luna-low remains the default.
 
 The current Luna-low default and direct parent-to-leaf topology remain in force
 throughout this Investigation. The reviewed protocol and fixture inputs are
 preserved at
 [evidence revision `efdc21a`](https://github.com/msitarz/ataraxia/commit/efdc21a1316fd381d29ab5002bd818233e7fbb43).
-The comparison cannot start until that revision is integrated and the maintainer
-explicitly authorizes its named conditions and bounded dispatch budget. This
-preparation records no trial results or authorization.
+That evidence was integrated at master `617fe22`; the maintainer authorized the
+18-run comparison, whose results and raw evidence are in
+[results](controlled-comparison/results.md). No policy change is adopted here.
 
 ## Comparison
 
@@ -59,13 +58,13 @@ change must follow the authoritative owner and
   request before execution.
   Verification: inspect the frozen protocol and fixture revisions against both
   task classes and all three model/effort conditions.
-- **AC-2 TODO** Trial results account for first-artifact acceptance,
+- **AC-2 DONE** Trial results account for first-artifact acceptance,
   correctness and preservation, correction rounds, executor and parent effort,
   time through parent-reviewed artifact, human steering, check reuse, and
   token/cost availability for each condition.
   Verification: trace every measure and unavailable value in the results to
   the frozen protocol.
-- **AC-3 TODO** The recommendation follows the declared basis, distinguishes
+- **AC-3 DONE** The recommendation follows the declared basis, distinguishes
   evidence from uncertainty, permits default/no-change or inconclusive
   outcomes, and does not imply policy adoption or authorization for further
   model/effort changes.
