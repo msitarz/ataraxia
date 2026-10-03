@@ -194,8 +194,8 @@ def test_make_targets_fail_when_no_criterion_matches(target):
     ac="AC-4",
 )
 def test_make_ac_check_reports_declarations_without_running_tests():
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     with coverage_fixture(ROOT) as work:
         result = run_coverage_target(work)
@@ -203,7 +203,7 @@ def test_make_ac_check_reports_declarations_without_running_tests():
     output = result.stdout + result.stderr
     assert result.returncode == 0, output
     assert "AC-1 DONE: 2 test marker(s) declared" in output
-    assert "AC-2 TODO: no test marker or Verification method declared" in output
+    assert "AC-2 TODO: no test marker or Validation method declared" in output
     assert "AC-99" not in output
 
 
@@ -230,11 +230,48 @@ def test_make_ac_check_requires_a_work_and_rejects_ac_selector():
     ac="AC-4",
 )
 def test_make_ac_check_rejects_work_without_criteria():
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     with coverage_fixture(ROOT, "# Empty Work\n") as work:
         result = run_coverage_target(work)
 
     assert result.returncode != 0
     assert "no AC declarations" in (result.stdout + result.stderr)
+
+
+@pytest.mark.parametrize(
+    ("annotations", "success", "message"),
+    [
+        (
+            "  Validation: inspect generated output.\n",
+            True,
+            "Validation method declared",
+        ),
+        ("  Validation:\n", False, "Validation annotation needs a method"),
+        (
+            "  Validation: inspect output.\n  Validation: compare output.\n",
+            False,
+            "multiple Validation annotations",
+        ),
+        (
+            "Validation: inspect generated output.\n",
+            True,
+            "no test marker or Validation method declared",
+        ),
+    ],
+)
+def test_make_ac_check_uses_canonical_validation_annotation(
+    annotations, success, message
+):
+    """The Make boundary reports planned methods and malformed annotations."""
+    contract = (
+        "# Work\n\n- **AC-1 DONE** Covered output stays stable.\n"
+        "- **AC-2 TODO** Output stays stable.\n" + annotations
+    )
+    with coverage_fixture(ROOT, contract) as work:
+        result = run_coverage_target(work)
+
+    output = result.stdout + result.stderr
+    assert (result.returncode == 0) is success, output
+    assert message in output

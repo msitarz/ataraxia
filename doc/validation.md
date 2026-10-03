@@ -1,6 +1,6 @@
-# Validation policy
+# Check and evidence policy
 
-Read this file when choosing checks or reporting validation evidence. The
+Read this file when choosing checks or reporting evidence. The
 [Makefile](../Makefile) owns the available commands and their behavior.
 
 While preparing a PR, run the checks affected by the change, including
@@ -9,7 +9,7 @@ not a prerequisite for publishing every PR. Report relevant failures,
 pending checks, reused evidence, and checks not run accurately.
 
 Before merge, require the full CI workflow to pass on the latest reviewed PR
-head. A result from an earlier revision does not cover later changes. The
+head. Evidence from an earlier revision does not cover later changes. The
 [CI workflow](../.github/workflows/ci.yml) owns its jobs and required commands.
 Local focused checks do not replace this merge gate.
 
@@ -19,8 +19,8 @@ Run `make ci` when a full local run is useful:
 make ci
 ```
 
-Full `make ci` runs local verification before the required network-dependent
-audit. An audit failure still fails CI, while completed local results remain
+Full `make ci` runs local checks before the required network-dependent
+audit. An audit failure still fails CI, while completed local evidence remains
 available. In the CI workflow, the main test, example-test, and installed-
 package jobs run independently of the check job, so their evidence remains
 available when static checks or the audit fail. The check job runs its local
@@ -30,7 +30,7 @@ After setup, agents without network access can run `make verify` for local
 evidence. It checks the locked environment without installing or resolving
 dependencies, then reuses the same local check recipes as CI with uv network
 access disabled. Missing or stale environments fail; rerun `make setup` with
-network access to prepare them. A passing verification does not include the
+network access to prepare them. A passing local run does not include the
 vulnerability audit and cannot satisfy the full CI merge gate. Report an audit
 as unrun or failed, and report any checks that could not run.
 
@@ -49,6 +49,6 @@ make run CLI_ARGS='--sink example/crossover.py --shards-dir sample --output resu
 
 `make ci-package` builds a wheel, installs it into a temporary isolated virtual
 environment, and runs the copied sample strategy and shards outside the
-checkout. It checks the installed console entry point, printed totals, and JSON
+worktree. It checks the installed console entry point, printed totals, and JSON
 accounts. The temporary environment and artifacts are removed when the check
 finishes.

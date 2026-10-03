@@ -13,34 +13,33 @@ Work maps:
 
 - `TODO` means the criterion's outcome is not yet verified and recorded. This
   includes missing coverage or method declarations, declared methods or
-  implemented tests without observed results, and failed, skipped, pending, or
-  unrun verification.
+  implemented tests without observed evidence, and failed, skipped, pending, or
+  unrun methods.
 - `DONE` means an independent reviewer verified the criterion's outcome from
   inspectable evidence. A declared method or implemented test alone is
   insufficient. `DONE` does not itself mean maintainer approval or merge.
 
-## Planned verification and evidence
+## Planned validation and evidence
 
-An indented `Verification:` clause states the planned method for the executor
+An indented `Validation:` clause states the planned method for the executor
 and reviewer; every manual or other non-test criterion needs one. It is not
 coverage, evidence, or proof of completion. Keep it unchanged when marking a
 criterion `DONE`. While a criterion remains `TODO`, its plan may change; perform
 the revised method before completion.
 
 Inspect evidence where it is produced. Automated behavior needs criterion-
-marked tests and selected execution results. `ac-check` checks declarations
-and references but requires neither a marker nor a `Verification:` method;
-passing it does not establish actual test coverage, selected execution,
-observed results, or review. Measurements and trials use observations in
-existing reports or artifacts. Manual judgment requires
-independent review of the changed artifact. Before `DONE`,
-an independent reviewer confirms applicable evidence supports the criterion;
-maintainer approval and merge remain separate.
+marked tests and selected test execution evidence. `ac-check` checks
+declarations and references but requires neither a marker nor a `Validation:`
+method; passing it does not establish actual test coverage, selected execution,
+observed evidence, or review. Measurements and trials use observations in
+existing reports or artifacts. Manual judgment requires independent review of
+the changed artifact. Before `DONE`, an independent reviewer confirms applicable
+evidence supports the criterion; maintainer approval and merge remain separate.
 
 ## Work delivery commits
 
 1. While the contract exists, run `ac-check`, applicable selected tests, and
-   other planned verification. Keep failed, skipped, pending, unrun, or
+   other planned validation methods. Keep failed, skipped, pending, unrun, or
    otherwise unsupported criteria `TODO`.
 2. After independent review, commit the implementation and retained contract
    with verified criteria marked `DONE`. Preserve inspectable evidence in its
@@ -53,10 +52,11 @@ maintainer approval and merge remain separate.
 
 Development fixups may be folded into the verified implementation/evidence
 commit; retaining every intermediate commit or SHA is not required. A later
-implementation or evidence correction invalidates the affected result. Return
-its criterion to `TODO`, rerun applicable verification, and refresh the source
-evidence before marking it `DONE` again. If the contract was removed, restore
-it in a corrective evidence commit before making a separate cleanup commit.
+implementation or evidence correction invalidates the affected evidence. Return
+its criterion to `TODO`, repeat applicable validation methods, and refresh the
+source evidence before marking it `DONE` again. If the contract was removed,
+restore it in a corrective evidence commit before making a separate cleanup
+commit.
 
 Rebase the completed sequence onto current `master` as linear history while
 preserving the verified implementation/evidence commit and the later cleanup
@@ -67,12 +67,12 @@ commit IDs; it must not combine or discard either required commit.
 ## Limits
 
 - Declaration checks, tests, and CI establish only the outcomes they verify;
-  none establishes a manual or otherwise unrun result.
+  none establishes a manual or otherwise unrun outcome.
 - Any required `TODO` criterion prevents completion. If the Work stops
   unsatisfied,
   follow the abandonment lifecycle in [Work contracts](workflow.md#lifecycle).
-- Coverage markers may remain as provenance; Work-targeted commands require
-  the owning file. After removal, Git retains the contract and the PR, checks,
+- Coverage markers may remain as provenance; Work-targeted commands require the
+  owning file. After removal, Git retains the contract and the PR, CI records,
   or linked artifacts retain the evidence.
 See [test ownership](test-ownership.md) for removed-probe evidence.
 

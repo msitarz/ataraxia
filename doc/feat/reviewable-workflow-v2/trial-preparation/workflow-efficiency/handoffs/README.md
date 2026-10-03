@@ -21,15 +21,15 @@ Promote this ownership boundary to permanent
 implements, checks, and commits locally, then returns the artifact, concise
 evidence, and blockers. In ordinary delegation, the executor does not push, open
 a draft or ready PR, or edit its description. The owning orchestrator reviews
-acceptance, scope, integration, and evidence, reuses reported checks, and sends
-one consolidated correction batch in the same session when needed. Before
-publishing, assess human review effort from the actual completed diff against
-[Work scope and sizing](../../../../../workflow.md#scope-and-sizing). If it
-exceeds the target, stop publication and partition the completed work into at
+acceptance, scope, integration, and evidence, reuses reported evidence, and
+sends one consolidated correction batch in the same session when needed. Before
+publishing, assess maintainer review effort from the actual completed diff
+against [Work scope and sizing](../../../../../workflow.md#scope-and-sizing). If
+it exceeds the target, stop publication and partition the completed work into at
 least two cohesive, independently reviewable child Work PRs within the target.
 Define their contracts and dependencies, update the parent map, and get the
 revised parent plan reviewed and merged before child delivery continues.
-Preserve and reuse completed implementation and valid check evidence, then
+Preserve and reuse completed implementation and valid evidence, then
 reassess each child diff. An explicit maintainer request may authorize a larger
 review under Work scope and sizing.
 
@@ -43,7 +43,7 @@ retains merge control.
 Preserve worktree isolation and avoid repeating a full leaf review at each
 tree layer. Aim for one coherent checked batch and focused commit per PR when
 feasible, without a fixed commit-count rule. Rerun checks when changed scope,
-failure, or an unresolved concern warrants it; do not repeat full validation at
+failure, or an unresolved concern warrants it; do not repeat all checks at
 every layer. Topology and review ownership follow the
 [tree-orchestration outcome](../README.md) and this contract.
 
@@ -54,7 +54,7 @@ every layer. Topology and review ownership follow the
   return and the owning orchestrator's review, correction, push, and PR
   responsibilities.
 
-  Verification: walk through a bounded new PR ready after independent review
+  Validation: walk through a bounded new PR ready after independent review
   without a draft phase, an existing-PR amendment, and an oversized completed
   diff. For the oversized case, verify publication stops while retained work
   is partitioned and child diffs are reassessed; include a shared index
@@ -62,11 +62,11 @@ every layer. Topology and review ownership follow the
 - **AC-2 TODO** The owning orchestrator reuses the executor's acceptance
   evidence and sends one consolidated correction batch when needed; CI and human
   merge gates remain, with readiness not implying approval or completed CI.
-  Verification: inspect one completed handoff and PR flow, checking evidence
+  Validation: inspect one completed handoff and PR flow, checking evidence
   reuse, reruns only when a change, failure, or unresolved concern warrants
   them, and the ready-but-CI-pending state.
 - **AC-3 TODO** Durable topology, handoff, and PR-ownership rules are promoted
   to their authoritative owners while preserving worktree isolation and
   maintainer control.
-  Verification: follow the reading routes and review the updated owner
+  Validation: follow the reading routes and review the updated owner
   guidance against the new-PR and amendment walkthroughs.

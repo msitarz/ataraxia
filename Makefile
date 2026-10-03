@@ -125,7 +125,7 @@ clean: ## remove the virtual environment and test/lint caches
 ci ci-check ci-test ci-examples ci-package: export UV_NO_SYNC := true
 verify verify-setup verify-check verify-test verify-examples verify-package: export UV_OFFLINE := true
 verify verify-setup verify-check verify-test verify-examples verify-package: export UV_NO_SYNC := true
-##@ Offline verification
+##@ Offline checks
 verify: verify-setup ## run all local checks offline (prepared environment required)
 	$(MAKE) verify-check verify-test verify-examples verify-package
 
@@ -241,6 +241,6 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=true; then \
 		:; \
 	else \
-		status=$$?; echo "Environment verification failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
+		status=$$?; echo "Environment check failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
 	fi; \
 	echo "✓ Worktree ready: $$destination (branch $$branch)"

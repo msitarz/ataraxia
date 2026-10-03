@@ -29,7 +29,7 @@ success criteria.
   and the network audit while preserving the full CI gate.
 - **DONE** CI preparation: measured and reduced unused CI setup work, prepared
   the package job's managed Python from `.python-version` before offline smoke
-  verification, and traced Make regressions to their acceptance criteria.
+  checks, and traced Make regressions to their acceptance criteria.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **TODO** [Workflow efficiency](workflow-efficiency/README.md): use a bounded
@@ -43,23 +43,24 @@ their changes independently reviewable.
 ## Acceptance
 
 Acceptance criteria remain `TODO` until their outcomes are verified. The
-Verification annotations below describe planned checks; passing a declaration
-check does not establish completion. Record actual results in the delivery PR.
+Validation annotations below describe planned checks; passing a declaration
+check does not establish completion. Record observed evidence in the delivery
+PR.
 
 - **AC-1 TODO** Every child outcome is integrated into `master`, with its
-  acceptance results available in its delivery PR and lasting contracts in
+  acceptance evidence available in its delivery PR and lasting contracts in
   their owners.
-  Verification: review the integrated child outcomes and their delivery PRs
+  Validation: review the integrated child outcomes and their delivery PRs
   against the map above before closing this parent Work.
 - **AC-2 TODO** The live trial has a usable acceptance contract and explicitly
   depends on this preparation; it has not started before preparation completes.
-  Verification: inspect the live-trial contract, run its declaration check,
+  Validation: inspect the live-trial contract, run its declaration check,
   and verify the dependency against integrated parent status.
 - **AC-3 TODO** The preparation addresses all review findings: trial acceptance,
   completion evidence, recovery, decision status, contract authority, CI
   scheduling and setup, example-test tracing, delegation cost, total maintainer
   effort, and misleading contributor instructions.
-  Verification: map each finding to the delivered child outcome or to an
+  Validation: map each finding to the delivered child outcome or to an
   explicit measurement and decision in the live-trial contract.
 
 This Work prepares the trial; it does not implement parallel shard execution or

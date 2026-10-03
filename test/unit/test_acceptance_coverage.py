@@ -43,8 +43,8 @@ def write_tests(root: Path, content: str) -> None:
     ac="AC-4",
 )
 def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
@@ -69,7 +69,7 @@ def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
     assert errors == []
     assert reports == [
         "AC-1 DONE: 1 test marker(s) declared",
-        "AC-2 TODO: no test marker or Verification method declared",
+        "AC-2 TODO: no test marker or Validation method declared",
     ]
 
 
@@ -81,8 +81,8 @@ def test_check_work_ignores_fenced_examples_and_other_work_markers(tmp_path):
     ac="AC-4",
 )
 def test_only_decorated_static_test_candidates_are_reported(tmp_path):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
@@ -109,17 +109,17 @@ def test_only_decorated_static_test_candidates_are_reported(tmp_path):
 
     assert reports == [
         "AC-1 DONE: 1 test marker(s) declared",
-        "AC-2 TODO: no test marker or Verification method declared",
+        "AC-2 TODO: no test marker or Validation method declared",
     ]
     assert errors == []
 
 
 @pytest.mark.parametrize(
-    ("status", "has_verification", "has_marker"),
+    ("status", "has_validation", "has_marker"),
     [
-        (status, has_verification, has_marker)
+        (status, has_validation, has_marker)
         for status in ("TODO", "DONE")
-        for has_verification in (False, True)
+        for has_validation in (False, True)
         for has_marker in (False, True)
     ],
 )
@@ -131,19 +131,19 @@ def test_only_decorated_static_test_candidates_are_reported(tmp_path):
     ac="AC-4",
 )
 def test_declaration_reports_do_not_require_status_or_method(
-    tmp_path, status, has_verification, has_marker
+    tmp_path, status, has_validation, has_marker
 ):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
-    verification = (
-        "  Verification: compare generated output with the fixture.\n"
-        if has_verification
+    validation = (
+        "  Validation: compare generated output with the fixture.\n"
+        if has_validation
         else ""
     )
     work = write_work(
         tmp_path,
-        f"# Work\n\n- **AC-1 {status}** Output remains stable.\n{verification}",
+        f"# Work\n\n- **AC-1 {status}** Output remains stable.\n{validation}",
     )
     if has_marker:
         write_tests(
@@ -157,10 +157,10 @@ def test_declaration_reports_do_not_require_status_or_method(
 
     if has_marker:
         declaration = "1 test marker(s) declared"
-    elif has_verification:
-        declaration = "Verification method declared"
+    elif has_validation:
+        declaration = "Validation method declared"
     else:
-        declaration = "no test marker or Verification method declared"
+        declaration = "no test marker or Validation method declared"
     assert errors == []
     assert reports == [f"AC-1 {status}: {declaration}"]
 
@@ -173,8 +173,8 @@ def test_declaration_reports_do_not_require_status_or_method(
     ac="AC-4",
 )
 def test_unknown_marker_reference_fails_with_work_and_ac(tmp_path):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     work = write_work(tmp_path, "# Work\n\n- **AC-1 TODO** Output is stable.\n")
     write_tests(
@@ -197,8 +197,8 @@ def test_unknown_marker_reference_fails_with_work_and_ac(tmp_path):
     ac="AC-4",
 )
 def test_selected_marker_with_dynamic_ac_fails_clearly(tmp_path):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     work = write_work(tmp_path, "# Work\n\n- **AC-1 TODO** Output is stable.\n")
     write_tests(
@@ -223,8 +223,8 @@ def test_selected_marker_with_dynamic_ac_fails_clearly(tmp_path):
     ac="AC-4",
 )
 def test_duplicate_and_malformed_criterion_declarations_are_reported():
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     criteria, errors = parse_criteria(
         "# Work\n"
@@ -253,22 +253,22 @@ def test_duplicate_and_malformed_criterion_declarations_are_reported():
     ),
     ac="AC-4",
 )
-def test_empty_and_duplicate_verification_annotations_are_rejected():
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+def test_empty_and_duplicate_validation_annotations_are_rejected():
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     _, errors = parse_criteria(
         "# Work\n"
-        "- **AC-1 TODO** Output.\n  Verification:\n"
+        "- **AC-1 TODO** Output.\n  Validation:\n"
         "- **AC-2 DONE** Output.\n"
-        "  Verification: inspect the result.\n"
-        "  Verification: compare the result.\n",
+        "  Validation: inspect the result.\n"
+        "  Validation: compare the result.\n",
         "doc/example/README.md",
     )
 
     assert len(errors) == 2
-    assert any("Verification annotation needs a method" in error for error in errors)
-    assert any("multiple Verification annotations" in error for error in errors)
+    assert any("Validation annotation needs a method" in error for error in errors)
+    assert any("multiple Validation annotations" in error for error in errors)
 
 
 @pytest.mark.covers(
@@ -278,17 +278,29 @@ def test_empty_and_duplicate_verification_annotations_are_rejected():
     ),
     ac="AC-4",
 )
-def test_outdented_verification_is_not_reported_as_declared(tmp_path):
-    """`ac-check` validates AC declarations, `Verification:` annotations, and literal
-    marker references without requiring markers or `Verification:` based on TODO/DONE
+def test_outdented_validation_is_not_reported_as_declared(tmp_path):
+    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
+    marker references without requiring markers or `Validation:` based on TODO/DONE
     status; neutral summaries do not claim coverage or completion."""
     work = write_work(
         tmp_path,
         "# Work\n"
         "- **AC-1 DONE** Output is stable.\n"
-        "Verification: compare generated output with the committed fixture.\n",
+        "Validation: compare generated output with the committed fixture.\n",
     )
     errors, reports = check_work(tmp_path, work)
 
     assert errors == []
-    assert reports == ["AC-1 DONE: no test marker or Verification method declared"]
+    assert reports == ["AC-1 DONE: no test marker or Validation method declared"]
+
+
+def test_legacy_annotation_does_not_declare_validation():
+    """Only the canonical Validation annotation declares a planned method."""
+    criteria, errors = parse_criteria(
+        "- **AC-1 TODO** Output stays stable.\n"
+        "  Verification: inspect generated output.\n",
+        "doc/example/README.md",
+    )
+
+    assert errors == []
+    assert not criteria["AC-1"].has_validation

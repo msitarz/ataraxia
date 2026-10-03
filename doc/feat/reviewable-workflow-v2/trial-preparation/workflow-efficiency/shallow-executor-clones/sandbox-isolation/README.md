@@ -56,12 +56,12 @@ scope.
   clone work, source denial, and resumed-session enforcement succeed or fail,
   with a control and inspectable settings and outputs. Unsupported execution
   records the failing boundary rather than requiring a successful candidate.
-  Verification: rerun the declared fixture probes and inspect canary exposure,
-  preparation failure cases, commit output, and resumed-session results.
+  Validation: rerun the declared fixture probes and inspect canary exposure,
+  preparation failure cases, commit output, and resumed-session evidence.
 - **AC-2 TODO** A comparison recommends a supported boundary or reports
   infeasibility, accounting for inheritance, legacy settings, hooks, caches,
   alternate tools, network, and evaluation contamination.
-  Verification: review candidate pros and cons against observations and confirm
+  Validation: review candidate pros and cons against observations and confirm
   that every untested boundary is disclosed.
 
 Return the tested configuration and evidence for

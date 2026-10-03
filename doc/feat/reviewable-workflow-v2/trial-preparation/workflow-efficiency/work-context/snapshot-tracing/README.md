@@ -16,19 +16,19 @@ with [PR evidence](../../pr-evidence/README.md) and
   reference using existing acceptance collection, checking, and selection
   tools, and identifies whether those tools can use a contract SHA after its
   path is removed.
-  Verification: run or inspect the existing acceptance tooling against a
+  Validation: run or inspect the existing acceptance tooling against a
   retained and removed-contract scenario, recording the exact commands or
   source paths examined and observed behavior.
 - **AC-2 TODO** The comparison addresses preservation of Work and AC selection,
   rejection of unknown SHA, path, or AC values, self-reference, rebases and
   reachability, and limits marker metadata so it cannot establish `DONE` or
   current test success.
-  Verification: evaluate each listed case against the existing checker and
+  Validation: evaluate each listed case against the existing checker and
   selector behavior or a bounded proposed behavior, recording observed facts
   separately from assumptions.
 - **AC-3 TODO** The recommendation states tradeoffs, unresolved questions, and
   a clear change, no-change, or inconclusive outcome without adopting behavior
   or claiming historical provenance proves completion or current test
   success.
-  Verification: compare the recommendation with the evidence and uncertainty
+  Validation: compare the recommendation with the evidence and uncertainty
   recorded for AC-1 and AC-2.

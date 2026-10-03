@@ -32,16 +32,16 @@ quick review, split rather than broaden this leaf.
 
 - **AC-1 TODO** The existing review owner explicitly requires a whole-section
   pass over the affected surrounding content and directly related rules.
-  Verification: inspect the updated `doc/README.md#review` rule and walk
+  Validation: inspect the updated `doc/README.md#review` rule and walk
   through a guidance change that also affects a neighboring explanation.
 - **AC-2 TODO** A bounded consolidation preserves identifiable requirements,
   routes, anchors, and distinct useful examples while removing repetition in
   the #107 and #108 scenarios.
-  Verification: after the referenced Works are integrated, trace the
+  Validation: after the referenced Works are integrated, trace the
   return/recovery and acceptance-evidence scenarios before and after editing,
   including a pending manual criterion and a completed return.
 - **AC-3 TODO** The updated guidance and examples retain valid local links and
   explanations of CI, declarations, approval, and recovery without relying on
   word-count reduction or changing accepted decisions.
-  Verification: run the documentation checks and walk the relevant reading
+  Validation: run the documentation checks and walk the relevant reading
   routes, including CI and maintainer approval gates.

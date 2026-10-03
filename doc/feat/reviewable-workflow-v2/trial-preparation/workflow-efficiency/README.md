@@ -15,20 +15,20 @@ overlapped by about 13 seconds (their starts were 3 minutes 25 seconds apart).
 Drafting completion PR evidence took about 11 minutes. These are reported
 observations, not a cost model.
 
-In the second experiment, Sol reused Luna's checks and ran no Make validation.
+In the second experiment, Sol reused Luna's evidence and ran no Make checks.
 The orchestrator checked the combined documentation and declarations; CI
 remained mandatory. Three shared-document merge conflicts and overly long,
 source-wrapping instructions caused extra corrections. Setup included broader
 hook and build preparation than documentation work needed, but available
 evidence does not show that setup dominated elapsed time. Token cost and actual
-human review duration were unavailable.
+maintainer review duration were unavailable.
 
 For the later #107/#108 WDR-status and index amendment, one direct Luna session
 handled both worktrees sequentially without an intermediate Sol. The result was
 assessed as correct (9/10); efficiency was rated 5/10. Both amended heads passed
 full CI ([#107](https://github.com/msitarz/ataraxia/actions/runs/36914292980),
 [#108](https://github.com/msitarz/ataraxia/actions/runs/36914277725)); root
-reused Luna's local check evidence. Each PR accumulated three commits. The work
+reused Luna's local evidence. Each PR accumulated three commits. The work
 also needed an avoidable shared-index introduction correction, repeated
 documentation checks after revisions, repeated PR-description edits, and an
 early delegated metadata edit. Each branch added an Accepted index entry from
@@ -59,7 +59,7 @@ general duplication rule.
 - **DONE** GitHub delivery: defined evidence-preserving Work commits, safe
   leased rewrites, final-head CI, and maintainer-controlled merge.
 - **DONE** Worktree preparation: added Make-owned isolated worktree creation
-  with full cache copy, locked offline setup, environment validation, and
+  with full cache copy, locked offline setup, environment checking, and
   measured evidence.
 - **DONE** Worktree language: defined canonical Git Worktree meaning and
   aligned current guidance and Make help with it.
@@ -77,7 +77,7 @@ general duplication rule.
   definitions or instructions.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
-- **DONE** Verification plan: distinguished planned methods from reviewed
+- **DONE** Validation plan: distinguished planned methods from reviewed
   evidence and made `ac-check` declaration-only.
 - **TODO** [Guidance format](guidance-format/README.md): compare itemized and
   paragraph formats for applying semantically equivalent guidance.
@@ -110,7 +110,7 @@ general duplication rule.
 Use the direct parent-to-leaf arrangement under
 [orchestrator guidance](../../../../orchestrator.md); nodes with children have
 an orchestrator owner. Preserve
-independent review and existing human review, merge, and CI gates.
+independent review and existing maintainer review, merge, and CI gates.
 
 ## Comparison
 
@@ -119,9 +119,9 @@ owner. Before the next comparison, state the scope, measurement method, and
 success or reconsideration basis. Record dispatch, executor start, completed
 artifact, and PR-ready times; commit batches; PR-description edits; corrections
 and their causes; avoidable repeated checks; reporting and preparation effort;
-human interventions; and human review time or cost when available. Put concise
-results in existing PR evidence or the trial contract, without a per-revision
-journal or template.
+human interventions; and maintainer review time or cost when available. Put
+concise evidence in existing PR records or the trial contract, without a
+per-revision journal or template.
 
 Separate observed outcomes from candidate rules and note missing or
 incomparable measurements. Do not infer a topology speedup from these
@@ -132,33 +132,33 @@ differently sized Works.
 - **AC-1 TODO** Handoff and tree-orchestration guidance assign one owner per
   subtree and leaf, while retaining worktree isolation, evidence reuse,
   local executor artifacts, owning-orchestrator PR responsibility, independent
-  review, and human and CI gates.
-  Verification: inspect the owner guidance and walk through a bounded tree
+  review, and maintainer and CI gates.
+  Validation: inspect the owner guidance and walk through a bounded tree
   with a direct leaf handoff and a child orchestrator.
 - **AC-2 TODO** PR evidence guidance covers CI-covered, manual, and removed
   contract cases, accounts for every criterion, and reports failures, pending,
   unrun, and material limitations accurately.
-  Verification: walk through
+  Validation: walk through
   all three cases against completion evidence and a PR after contract removal.
 - **AC-3 TODO** Worktree preparation guidance has a measured minimal path or
   evidence-based reuse approach without unchecked mutable virtual-environment
   sharing, and preserves locked dependencies, stale/missing failures, actual
   consumer setup, and offline/full-audit guarantees.
-  Verification: inspect
+  Validation: inspect
   the Make-owned path and compare cold/warm preparation where meaningful.
 - **AC-4 TODO** A bounded comparison records the observations listed above,
   separates facts from proposed rules, and states limitations without claiming
   that the two different Works prove a speedup.
-  Verification: review the
+  Validation: review the
   next iteration's existing PR evidence or trial-contract record against the
   declared basis and available measurements.
 - **AC-5 TODO** All mapped child Works are integrated and the bounded
   comparison is captured before this parent is completed.
-  Verification: check `master` status for each mapped child and inspect the
+  Validation: check `master` status for each mapped child and inspect the
   comparison record.
 - **AC-6 TODO** The existing documentation review owner requires a whole-section
   pass and consolidation within owners while preserving distinct requirements,
   routes, anchors, and useful examples.
-  Verification: walk through the bounded #107 return/recovery and #108
+  Validation: walk through the bounded #107 return/recovery and #108
   acceptance-guidance examples after integration, checking retained
   requirements and valid reading routes.

@@ -20,7 +20,7 @@ effort, tools, check policy, handoff information, and reviewer conditions.
 Use common independent review and consolidated findings.
 
 For a replacement executor, provide the current Work, artifact and branch,
-check evidence, and the same consolidated findings, but not the conversation
+evidence, and the same consolidated findings, but not the conversation
 history. Measure the handoff and recovery effort inherent in replacement.
 Declare correction scenarios, repetitions, order balance, rubric, quality and
 preservation gates, material improvement, and acceptable overhead before
@@ -42,16 +42,16 @@ change.
 - **AC-1 TODO** The protocol isolates correction-session continuity within a
   Work, defines both conditions and their information boundaries, matches the
   listed controls, and predeclares scenarios and thresholds.
-  Verification: inspect paired handoffs and a natural no-correction case.
-- **AC-2 TODO** Results report first-correction acceptance, violations,
+  Validation: inspect paired handoffs and a natural no-correction case.
+- **AC-2 TODO** Evidence records report first-correction acceptance, violations,
   omissions, preservation, corrections, steering, review time, recovery effort,
   repeated work, and cost availability.
-  Verification: trace both conditions to the declared measures, including a
+  Validation: trace both conditions to the declared measures, including a
   paired artifact/finding where available.
 - **AC-3 TODO** The recommendation follows its predeclared basis, notes
   limitations, allows no-change or inconclusive results, and does not imply
   trial authorization or policy adoption.
-  Verification: compare the conclusion with the evidence, thresholds, and
+  Validation: compare the conclusion with the evidence, thresholds, and
   existing guidance and authorization route.
 
 Follow [Investigation guidance](../../../../../workflow.md#investigations).

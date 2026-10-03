@@ -1,6 +1,6 @@
 ---
 name: Work item
-about: Describe a problem or desired capability and its completion conditions.
+about: Describe a problem or desired capability and its acceptance criteria.
 ---
 
 <!-- Use a descriptive sentence-case title. No type prefix is required. -->
@@ -15,7 +15,7 @@ Add scope boundaries or open questions if they affect the decision. -->
 
 ## Outcome
 
-<!-- State the observable outcome and completion conditions. Link a Work README
+<!-- State the observable outcome and acceptance criteria. Link a Work README
 for detailed acceptance when one exists; ADRs record architectural rationale. -->
 
 ## Links

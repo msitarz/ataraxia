@@ -30,7 +30,7 @@ The main ideas:
 - Immutable input and output artifacts to avoid running the same backtest twice.
 
 Read [doc/architecture.md](doc/architecture.md) for current behavior and planned
-capabilities, and the [ADR log](doc/adr/) for the decisions behind them.
+capabilities, and the [ADR index](doc/adr/) for the decisions behind them.
 
 ## Development quickstart
 

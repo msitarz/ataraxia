@@ -53,12 +53,12 @@ production implementation is outside these Investigations.
   Preserve the required evidence and cleanup commit order under
   [acceptance tracing](../../../../../acceptance-tracing.md#work-delivery-commits).
 - Preserve cache reuse, a fresh virtual environment, locked offline setup,
-  environment verification, and recoverable setup failures. Do not share a
+  environment checking, and recoverable setup failures. Do not share a
   mutable virtual environment or silently fall back to a full-history clone.
 - For an evaluation that excludes history, declare its frozen base, permitted
   files and references, session freshness, and filesystem and network access.
   Check current-tree reports, answer fixtures, and links for prohibited prior
-  results; shallow history does not remove them. Prepare fresh sessions without
+  evidence; shallow history does not remove them. Prepare fresh sessions without
   inherited answers. Verify the declared restrictions before the run; if they
   cannot be established, report the blocker rather than claim isolation.
 
@@ -92,18 +92,18 @@ independent clones are not described as linked worktrees.
 ## Acceptance
 
 - **AC-1 TODO** All three Investigations are integrated with inspectable actual
-  results, candidate tradeoffs, recommendations, and unresolved limits.
-  Verification: check `master` for the child outcomes and review retained
+  evidence, candidate tradeoffs, recommendations, and unresolved limits.
+  Validation: check `master` for the child outcomes and review retained
   evidence; distinguish documented capabilities from tested behavior.
 - **AC-2 TODO** The combined recommendation selects or rejects a concrete path
   from isolated handoff through corrections to reviewable publication, preserves
   review and commit gates, and identifies any further implementation Work.
-  Verification: trace the proposed flow against the reports, including denied
+  Validation: trace the proposed flow against the reports, including denied
   source access, unchanged and advanced bases, and failed execution.
 - **AC-3 TODO** Lasting findings are promoted to authoritative owners before
   this parent is removed, without presenting recommendations as adopted policy
   or introducing a second evaluation lifecycle.
-  Verification: inspect owner links, the parent map, and any follow-up Work or
+  Validation: inspect owner links, the parent map, and any follow-up Work or
   WDR against [documentation ownership](../../../../../README.md).
 
 ## Execution gate and limits

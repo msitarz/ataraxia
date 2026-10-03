@@ -23,12 +23,12 @@ this task class.
 
 - **AC-1 TODO** All authorized sessions use the same frozen fixture, matched
   prompts and tools, Luna-low implementation effort, and randomized pair order.
-  Verification: compare dispatch records and initial handoffs.
+  Validation: compare dispatch records and initial handoffs.
 - **AC-2 TODO** All six artifacts receive independent quality and preservation
-  evaluation, and results report the declared role-level effort, checks,
+  evaluation, and evidence reports the declared role-level effort, checks,
   corrections, steering, review time, and available or unknown cost data.
-  Verification: trace every result field to run evidence and the protocol.
+  Validation: trace every reported observation to run evidence and the protocol.
 - **AC-3 TODO** The conclusion follows the declared thresholds, reports
   limitations, and makes no policy or authorization change.
-  Verification: compare the recommendation with paired results and the
+  Validation: compare the recommendation with paired evidence and the
   existing delegation and review owners.

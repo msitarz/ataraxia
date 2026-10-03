@@ -2,8 +2,8 @@
 
 Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 for any repository change. Read the rest when changing or reviewing code or
-tests. Use [validation policy](validation.md) when choosing checks or reporting
-validation evidence and [architecture](architecture.md) for current system
+tests. Use [check and evidence policy](validation.md) when choosing checks or
+reporting evidence and [architecture](architecture.md) for current system
 contracts.
 
 ## Fix the underlying problem
@@ -115,5 +115,6 @@ ordering/warm-up; and broker timing preventing same-bar exits for new positions.
 Use integration tests for real strategy loading and acceptance tests for CLI
 output/artifacts.
 
-Follow the [validation policy](validation.md) for focused and required checks.
-For test ownership and cleanup, read [Test ownership](test-ownership.md).
+Follow the [check and evidence policy](validation.md) for focused and required
+checks. For test ownership and cleanup, read
+[Test ownership](test-ownership.md).

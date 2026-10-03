@@ -6,19 +6,19 @@ Keep either branch if an active PR depends on it. Before deleting a local or
 remote branch, verify that its tip contains no changes beyond the revision that
 was reviewed and merged. A squash merge may make Git's ancestry check
 inconclusive; inspect the branch's later commits and compare its changes with
-the merged revision. Check local and remote tips separately. If the working
-tree is dirty or any comparison is uncertain, preserve the branch and ask the
+the merged revision. Check local and remote tips separately. If the worktree is
+dirty or any comparison is uncertain, preserve the branch and ask the
 maintainer.
 
-Identify the completed branch's checkout with `make worktree-list`. Check its
+Identify the completed branch's worktree with `make worktree-list`. Check its
 status, including untracked files, and verify its tip against the reviewed and
 merged revision as above. Preserve unrelated active worktrees. Independent
 clones are separate repositories and are outside this linked-worktree procedure.
 
-Run cleanup from a surviving checkout outside the worktree being removed.
-When that checkout is clean and the local tip is verified, update `master`
+Run cleanup from a surviving worktree outside the worktree being removed.
+When that worktree is clean and the local tip is verified, update `master`
 with these separate commands. If `master` is checked out elsewhere, use that
-surviving checkout:
+surviving worktree:
 
 ```sh
 git switch master
@@ -27,7 +27,7 @@ git merge --ff-only origin/master
 ```
 
 Before deleting a branch checked out in a linked worktree, remove its verified
-clean checkout:
+clean worktree:
 
 ```sh
 make worktree-list
@@ -40,8 +40,8 @@ dirty, untracked, locked, and unsupported submodule worktrees; it never forces
 removal, unlocks a worktree, or falls back to filesystem deletion. On failure,
 stop before branch deletion, inspect the reported cause, and preserve or deliver
 remaining work. Resolve the cause with the maintainer before retrying. If the
-completed branch is in the main checkout, switch away from it there instead;
-the main checkout cannot be removed with this target.
+completed branch is in the main worktree, switch away from it there instead;
+the main worktree cannot be removed with this target.
 
 If a directory was already removed outside Git, normal removal may fail. After
 confirming it is abandoned rather than temporarily unavailable, preview stale
@@ -53,7 +53,7 @@ make worktree-prune EXPIRE=now
 make worktree-list
 ```
 
-Pruning removes administrative records, not existing checkout directories. Both
+Pruning removes administrative records, not existing worktree directories. Both
 targets require an explicit Git expiry date; `now` includes newly missing
 directories, while an older cutoff retains newer records. Preview and execution
 must use the same expiry. Pruning is repository-wide: inspect every proposed

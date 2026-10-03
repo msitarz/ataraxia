@@ -62,7 +62,7 @@ def make(repo, target, **values):
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
     ac="AC-2",
 )
-def test_remove_literal_path_retains_branch_and_unrelated_checkout(
+def test_remove_literal_path_retains_branch_and_unrelated_worktree(
     repository, tmp_path
 ):
     """AC-1/AC-2: Clean removal is literal and retains branches and other worktrees."""
@@ -98,7 +98,7 @@ def test_remove_literal_path_retains_branch_and_unrelated_checkout(
     ac="AC-2",
 )
 def test_unsafe_remove_preserves_data_and_registration(repository, tmp_path, condition):
-    """AC-2: Git refusal preserves main, dirty, untracked, and locked checkouts."""
+    """AC-2: Git refusal preserves main, dirty, untracked, and locked worktrees."""
     destination = repository if condition == "main" else tmp_path / "completed"
     if condition != "main":
         git(repository, "worktree", "add", "-b", "completed", str(destination))
