@@ -58,7 +58,7 @@ general duplication rule.
   evidence while preserving criterion coverage.
 - **DONE** GitHub delivery: defined evidence-preserving Work commits, safe
   leased rewrites, final-head CI, and maintainer-controlled merge.
-- **DONE** Workspace preparation: added Make-owned isolated worktree creation
+- **DONE** Worktree preparation: added Make-owned isolated worktree creation
   with full cache copy, locked offline setup, environment validation, and
   measured evidence.
 - **TODO** [Worktree language](worktree-language/README.md): define the
@@ -141,7 +141,7 @@ differently sized Works.
   unrun, and material limitations accurately.
   Verification: walk through
   all three cases against completion evidence and a PR after contract removal.
-- **AC-3 TODO** Workspace preparation guidance has a measured minimal path or
+- **AC-3 TODO** Worktree preparation guidance has a measured minimal path or
   evidence-based reuse approach without unchecked mutable virtual-environment
   sharing, and preserves locked dependencies, stale/missing failures, actual
   consumer setup, and offline/full-audit guarantees.

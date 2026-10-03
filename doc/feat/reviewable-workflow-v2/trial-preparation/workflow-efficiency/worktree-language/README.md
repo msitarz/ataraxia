@@ -29,13 +29,13 @@ new owner.
 
 ## Acceptance
 
-- **AC-1 TODO** The existing glossary contains one Worktree entry with the
+- **AC-1 DONE** The existing glossary contains one Worktree entry with the
   distinctions and Git sharing boundaries above, linked to procedure owners.
   Current guidance uses that meaning without aliases or isolation overclaims.
 
   Verification: inspect the glossary and owner routes; classify examples of
   a linked checkout, Work directory, branch, repository, and temporary venv.
-- **AC-2 TODO** Active authoritative guidance, retained Work contracts, and
+- **AC-2 DONE** Active authoritative guidance, retained Work contracts, and
   navigation use canonical worktree language, and Make help says “Worktrees.”
   No Workspace alias remains in current guidance. Existing vocabulary and
   review rules make the single glossary meaning discoverable to future authors.
@@ -44,7 +44,7 @@ new owner.
   classify leftovers as current aliases, historical identities, external
   verbatim references, or unrelated concepts, and inspect reading routes.
   Run `make help`, scoped `make doc-format` and `make doc-check`.
-- **AC-3 TODO** Terminology changes preserve `worktree-create`, `WORKTREE`,
+- **AC-3 DONE** Terminology changes preserve `worktree-create`, `WORKTREE`,
   creation, working-tree separation, cache/environment setup, validation, and
   CI guarantees. Historical evidence and decision identities stay intact;
   unrelated code variables and removed-contract provenance are not relabeled.

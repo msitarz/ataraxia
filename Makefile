@@ -179,7 +179,7 @@ ci-package: ci-package-setup ## build and smoke-test the installed package
 ci-package-setup:
 	uv python install
 
-##@ Workspaces
+##@ Worktrees
 # Cleanup selectors are literal values, not recursively expanded Make expressions.
 unexport WORKTREE EXPIRE
 .PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
