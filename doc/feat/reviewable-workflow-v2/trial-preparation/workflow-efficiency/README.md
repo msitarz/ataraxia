@@ -69,8 +69,8 @@ general duplication rule.
 - **DONE** Tree orchestration: assigned subtree and leaf owners, direct
   low-effort leaf delegation, isolated leaf worktrees, and dependency-aware
   scheduling with review and evidence reuse.
-- **TODO** [Guidance editing](guidance-editing/README.md): review surrounding
-  guidance as a whole and consolidate repeated explanations within owners.
+- **DONE** Guidance editing: required whole-section review and consolidated
+  repeated explanations within owners while preserving requirements and routes.
 - **DONE** Work-type simplification: removed Rewrite as a special Work type
   and repaired Prototype links while retaining ordinary Work rules.
 - **DONE** Vocabulary guidance: clarified reuse of established terms for the
