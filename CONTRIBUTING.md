@@ -113,8 +113,9 @@ For Work PRs with acceptance criteria, follow the
 [commit-preservation rule](doc/acceptance-tracing.md#work-delivery-commits);
 do not squash.
 
-Follow [Pull requests](doc/pull-requests.md) for publication, descriptions,
-review states, and merge authority.
+Follow [Pull requests](doc/pull-requests.md) for publication and descriptions,
+and [orchestrator handoffs](doc/orchestrator.md#review-and-return) for agent
+review, publication ownership, and merge authority.
 
 After the maintainer confirms a Work PR merged, follow
 [post-merge branch cleanup](doc/branch-cleanup.md). Retained branches and GitHub

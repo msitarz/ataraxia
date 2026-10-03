@@ -1,7 +1,6 @@
 # Pull requests
 
-Read when publishing or updating a PR, writing its description, or interpreting
-its review state and merge authority.
+Read when publishing or updating a PR or writing its description.
 
 ## Publishing
 
@@ -39,23 +38,10 @@ change. When scope changes, update the title and description to describe the
 final implementation, omitting abandoned approaches unless they explain a
 relevant tradeoff.
 
-Include validation results and material limitations that help assess the
-change, following the [validation policy](validation.md). Link to detailed
-scope and evidence in their source records rather than copying them into the
-description. PRs carry review discussion and rationale; merged PRs and recorded
-approvals provide durable decisions across sessions.
-
-## Review and merge
-
-Draft means changes are complete and await orchestrator review. Once independent
-review and any correction loop pass, the owning orchestrator marks the PR ready.
-Ready means agent review passed and maintainer review is requested; it does not
-mean maintainer approval, merge, or successful CI. Follow
-[orchestrator handoffs](orchestrator.md#review-and-return) for the review scope
-and human review effort assessment before marking ready.
-
-Repository merge settings do not replace human review or maintainer authority.
-The maintainer reviews the current PR revision and performs the merge. Agents
-must not merge autonomously; an agent may merge only with explicit maintainer
-instruction. Do not change repository settings, use an admin override, or
-bypass review or CI requirements.
+Use the [PR description template](../.github/pull_request_template.md) and
+remove its instruction comments before publishing. Include material limitations
+that help assess the change. Keep validation prose, results, and inventories
+out of descriptions; evidence remains in commits, checks, and review records.
+Link to detailed scope and evidence in their source records rather than copying
+them into the description. PRs carry review discussion and rationale; merged
+PRs and recorded approvals provide durable decisions across sessions.

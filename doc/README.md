@@ -23,7 +23,8 @@ relevant guidance.
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
 | Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
-| PR publication, descriptions, review states, and merge authority | [Pull requests](pull-requests.md) |
+| PR publication and description guidance | [Pull requests](pull-requests.md) |
+| PR description format | [PR template](../.github/pull_request_template.md) |
 | Choosing checks and reporting validation evidence | [Validation](validation.md) |
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |

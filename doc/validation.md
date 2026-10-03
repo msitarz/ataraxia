@@ -3,9 +3,9 @@
 Read this file when choosing checks or reporting validation evidence. The
 [Makefile](../Makefile) owns the available commands and their behavior.
 
-While preparing a draft PR, run the checks affected by the change, including
+While preparing a PR, run the checks affected by the change, including
 focused tests for code changes. A local full `make ci` run is optional; it is
-not a prerequisite for opening every draft PR. Report relevant failures,
+not a prerequisite for publishing every PR. Report relevant failures,
 pending checks, reused evidence, and checks not run accurately.
 
 Before merge, require the full CI workflow to pass on the latest reviewed PR

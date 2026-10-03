@@ -70,9 +70,9 @@ reviewing again. Context reuse may help token caching, but caching is not
 guaranteed. If the same finding remains after a correction attempt, or the
 session cannot continue, stop and report attempts, current evidence, and the
 specific decision or help needed. Resume only with orchestrator or maintainer
-steering. If Sol is unavailable, report that and wait; do not silently switch
-agents or implement its changes as a fallback. Keep independent review and human
-review, merge, and CI gates.
+steering. If the executor is unavailable, report that and wait; do not silently
+switch agents or implement its changes as a fallback. Keep independent review
+and human review, merge, and CI gates.
 
 Before removing a completing Work's contract, independently review its
 criterion statuses and evidence using the
@@ -86,15 +86,26 @@ rather than treating the handoff as complete. A fresh executor session may
 continue the same scope after recovery and must return the recovered state and
 evidence.
 
-The owning orchestrator publishes a Work branch and any rewrite to its PR,
-following [Pull requests](pull-requests.md). It may review the branch directly
-or create a draft PR when the executor completes the handoff. Follow the
-[PR review lifecycle](pull-requests.md#review-and-merge). Before marking ready,
-reassess human review effort from the actual diff, including tests, supporting
-changes, and concepts. If it exceeds the target, stop and revise the split plan,
-then get the revised parent plan reviewed and merged before child work
-continues. An explicit maintainer request may authorize a larger review under
-[Work scope and sizing](workflow.md#scope-and-sizing).
+The executor returns local changes and evidence. The owning orchestrator
+independently reviews the local artifact and completes any correction loop
+before publishing a ready PR, following [Pull requests](pull-requests.md).
+Amendments to an existing PR also receive local independent review and any
+corrections before the orchestrator pushes them. Do not publish draft PRs.
+Ready means agent review passed and maintainer review is requested; it does not
+mean maintainer approval, merge, or successful CI. The orchestrator owns
+publication of the Work branch and any rewrite to its PR.
+
+Before publishing, reassess human review effort from the actual diff, including
+tests, supporting changes, and concepts. If it exceeds the target, stop and
+revise the split plan, then get the revised parent plan reviewed and merged
+before child work continues. An explicit maintainer request may authorize a
+larger review under [Work scope and sizing](workflow.md#scope-and-sizing).
+
+Repository merge settings do not replace human review or maintainer authority.
+The maintainer reviews the current PR revision and performs the merge. Agents
+must not merge autonomously; an agent may merge only with explicit maintainer
+instruction. Do not change repository settings, use an admin override, or
+bypass review or CI requirements.
 
 Return the reviewable artifact (branch and revision or PR), outcome, acceptance
 evidence, checks and results, unrun checks, unresolved criteria, and blockers.
