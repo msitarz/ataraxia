@@ -9,6 +9,9 @@ Accepted
 Amended by
 [12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md).
 
+Amended by
+[13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md).
+
 ## Context
 
 Repository changes need bounded execution while the orchestrator retains

@@ -10,10 +10,10 @@ the verified-contract delivery precedent; the mapped
 protocol. Work owns requirements; CI owns automated results. A PR adds the
 problem, result, review attention, and evidence beyond CI. The owning
 orchestrator prepares or updates the PR description from the reviewed result
-and Luna's concise local evidence, following permanent
+and the executor's concise local evidence, following permanent
 [orchestrator guidance](../../../../../orchestrator.md) and the mapped
 [handoffs outcome](../README.md#works). Publish the description after review;
-there is no separate Luna PR-writing phase. Consolidate publication, while
+there is no separate executor PR-writing phase. Consolidate publication, while
 allowing later material corrections or accurate pending/failure updates. Use
 the repository pull request template, whose concise Change and Limitations
 sections keep the description focused on the problem and result and on
@@ -75,11 +75,11 @@ preserve accepted records without rewriting them.
   the relevant owner guidance.
 - **AC-5 TODO** PR-description ownership stays with the owning orchestrator
   after review for both a new PR and an existing-PR amendment, with no separate
-  executor PR-writing phase. It uses Luna's concise local result to prepare a
-  consolidated description, permits material corrections and truthful
+  executor PR-writing phase. It uses the executor's concise local result to
+  prepare a consolidated description, permits material corrections and truthful
   pending/failure updates, and keeps evidence in PR commits, checks, and review
   records without description links or copied evidence/check inventories.
-  Verification: walk through a new PR and an amendment from Luna's local
+  Verification: walk through a new PR and an amendment from the executor's local
   return to the reviewed description, checking template use, evidence location,
   and truthful pending/failure reporting.
 - **AC-6 TODO** A repository `.github/pull_request_template.md` is created and

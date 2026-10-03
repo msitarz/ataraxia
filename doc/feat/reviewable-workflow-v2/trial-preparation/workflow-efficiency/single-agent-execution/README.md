@@ -13,7 +13,8 @@ on model and effort.
 ## Scope
 
 Compare fresh direct-agent runs with the current direct orchestrator-to-leaf
-Luna-low arrangement, which remains the default. Keep implementing model and
+arrangement defined by [orchestrator guidance](../../../../../orchestrator.md).
+Keep implementing model and
 effort comparable; report any model mix separately. Hold task, guidance, tools,
 and session freshness constant. Measure executor and orchestrator effort,
 checks, repeated work, corrections, human steering, reviewable-artifact time,
@@ -36,6 +37,11 @@ The child Works need their own reviewed parent plan integrated before
 execution. No trial dispatch is authorized by this Investigation or its earlier
 protocol draft. Do not use this Investigation as the fixture: completing it
 depends on the same trial and authorization decisions being evaluated.
+
+The preserved nine-run protocol still pins Luna-low. Before dispatch, review
+and align its conditions with current policy, or obtain explicit maintainer
+authorization for those frozen conditions. The policy change does not rewrite
+the protocol or authorize new sessions.
 
 ## Acceptance
 

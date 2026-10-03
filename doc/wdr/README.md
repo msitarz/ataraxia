@@ -25,6 +25,7 @@ authoritative owners.
 - [10. Recover delegated handoffs](0010-recover-delegated-handoffs.md)
 - [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md)
 - [12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md)
+- [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md)
 
 ## Proposal
 

@@ -6,6 +6,9 @@ Date: 2026-10-01
 
 Accepted
 
+Amended by
+[13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md).
+
 ## Context
 
 Continuous polling and partial review can surface issues earlier, but status

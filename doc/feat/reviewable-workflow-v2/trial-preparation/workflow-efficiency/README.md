@@ -76,8 +76,10 @@ general duplication rule.
 - **DONE**
   [Leaf-agent selection results](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md):
   documentation missed the thresholds; code Sol-low is a numerical candidate for
-  a broader comparison, but reference exposure requires fixture repair. Luna-low
-  remains the default.
+  a broader comparison, but reference exposure requires fixture repair. The
+  report recommended retaining Luna-low; the later
+  [policy decision](../../../../wdr/0013-use-sol-low-for-all-leaves.md)
+  records the maintainer's adoption of Sol-low.
 - **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
   one leaf executor through corrections with replacing it at each correction.
 - **TODO** [Work context](work-context/README.md): route a small applicable
@@ -86,9 +88,12 @@ general duplication rule.
 - **TODO** [Single-agent execution](single-agent-execution/README.md): split
   plan drafted; protocol and fixture work precedes an explicitly authorized
   direct-versus-orchestrated comparison.
+- **TODO** [Leaf-agent policy](leaf-agent-policy/README.md): adopt the
+  maintainer-selected executor and preserve independent review and evidence.
 
-Use the already authorized direct parent-to-Luna arrangement at low effort at
-each leaf boundary; nodes with children have an orchestrator owner. Preserve
+Use the direct parent-to-leaf arrangement under
+[orchestrator guidance](../../../../orchestrator.md); nodes with children have
+an orchestrator owner. Preserve
 independent review and existing human review, merge, and CI gates.
 
 ## Comparison
