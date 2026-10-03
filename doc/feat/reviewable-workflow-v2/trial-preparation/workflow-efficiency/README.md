@@ -89,8 +89,7 @@ general duplication rule.
   report recommended retaining Luna-low; the later
   [policy decision](../../../../wdr/0013-use-sol-low-for-all-leaves.md)
   records the maintainer's adoption of Sol-low.
-- **TODO** [Leaf-session reuse](leaf-session-reuse/README.md): compare keeping
-  one leaf executor through corrections with replacing it at each correction.
+- **ABORT** Leaf-session reuse: stopped at maintainer request.
 - **TODO** [Work context](work-context/README.md): route a small applicable
   completion definition, gather bounded Work context for both roles, and
   investigate optional acceptance snapshot provenance.
