@@ -11,10 +11,10 @@ Amends
 
 ## Context
 
-WDR 11 requires recording manual judgment of a changed artifact in the PR.
-This creates a separate recording obligation even when the independent review
-has already occurred. This ad hoc documentation change removes that obligation
-from [acceptance tracing](../acceptance-tracing.md).
+WDR 11 requires recording manual judgment of a changed artifact in the PR. This
+creates a separate recording obligation even when the independent review has
+already occurred. [PR 131](https://github.com/msitarz/ataraxia/pull/131) removes
+that obligation from [acceptance tracing](../acceptance-tracing.md).
 
 ## Decision
 
