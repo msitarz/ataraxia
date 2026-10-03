@@ -72,9 +72,9 @@ general duplication rule.
   guidance as a whole and consolidate repeated explanations within owners.
 - **DONE** Work-type simplification: removed Rewrite as a special Work type
   and repaired Prototype links while retaining ordinary Work rules.
-- **TODO** [Vocabulary guidance](vocabulary-guidance/README.md): reuse
-  established terms for the same concepts without confusing repeated words
-  with duplicated definitions or instructions.
+- **DONE** Vocabulary guidance: clarified reuse of established terms for the
+  same concepts while distinguishing repeated words from duplicated
+  definitions or instructions.
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
 - **DONE** Verification plan: distinguished planned methods from reviewed
