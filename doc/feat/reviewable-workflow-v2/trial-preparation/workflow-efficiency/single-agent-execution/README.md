@@ -6,8 +6,9 @@ For a bounded Work, does direct execution by one agent improve the path to a
 reviewable artifact compared with the current orchestrator-to-executor
 topology? This differs from
 [guidance application](../guidance-application/README.md) on compliance
-interventions and [leaf-agent selection](../leaf-agent-selection/README.md) on
-model and effort.
+interventions and the completed
+[leaf-agent selection comparison](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md)
+on model and effort.
 
 ## Scope
 
