@@ -52,8 +52,8 @@ general duplication rule.
 
 ## Works
 
-- **TODO** [Handoffs](handoffs/README.md): improve scope, delegation, parallel
-  work selection, and artifact review.
+- **DONE** Handoffs: coordinated integration preflight, local artifact review,
+  and evidence-preserving partition of oversized completed work.
 - **DONE** PR evidence: clarified concise orchestrator-owned PR descriptions,
   CI check evidence, and decision adoption status; retained the current
   Purpose, Outcome, and Limitations template.

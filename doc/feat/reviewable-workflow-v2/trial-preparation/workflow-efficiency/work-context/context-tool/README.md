@@ -8,8 +8,9 @@ fall back to a default worktree. This depends on
 presents from its owner. The
 [Work-context parent](../README.md#works) maps the result. Coordinate shared
 guidance-owner edits with
-[guidance application](../../guidance-application/README.md),
-[handoffs](../../handoffs/README.md); do not rewrite their contracts. Preserve
+[guidance application](../../guidance-application/README.md); do not rewrite
+its contract. Preserve completed
+[handoff guidance](../../../../../../orchestrator.md) and
 the completed [PR guidance](../../../../../../pull-requests.md) and
 [acceptance tracing](../../../../../../acceptance-tracing.md).
 
