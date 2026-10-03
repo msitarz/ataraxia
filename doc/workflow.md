@@ -12,7 +12,7 @@ completion with observable examples, including preconditions, action, and
 expected outcomes; cover boundaries, failures, or behavior to preserve when
 they matter. State scope, non-goals, dependencies, assumptions, and open risks
 as useful, separating required contracts from provisional design. Use an
-[Investigation](#investigations) or [Prototype](#prototypes-and-rewrites) when
+[Investigation](#investigations) or [Prototype](#prototypes) when
 feasibility needs checking. For performance claims, give a representative
 workload, baseline, measurement method, and success threshold. Scale detail to
 the Work; these are prompts, not mandatory fields or headings.
@@ -87,7 +87,7 @@ chosen policy or lasting decision to its authoritative owner. Git and the PR
 preserve the comparison artifacts when the finished Work directory is removed.
 Do not introduce a separate lifecycle or mandatory template.
 
-## Prototypes and rewrites
+## Prototypes
 
 A Prototype answers a bounded question through exploratory implementation.
 Its Work contract states the question, limits, and observable
@@ -97,10 +97,6 @@ Prototype is unsuccessful, and distinguish observed evidence from assumptions.
 Promote a Prototype to production Work only after reviewing missing contracts
 and integration requirements. Prototype completion does not imply production
 readiness.
-
-A rewrite's contract states behavior to preserve, intended changes, comparison
-evidence, cutover, and retirement requirements. Split Prototypes and rewrites
-into small, independently reviewable Works when needed.
 
 See
 [CONTRIBUTING.md's Work review rules](../CONTRIBUTING.md#work-branches-review-and-merge)

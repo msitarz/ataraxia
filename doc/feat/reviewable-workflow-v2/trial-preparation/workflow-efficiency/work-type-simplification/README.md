@@ -26,20 +26,20 @@ publication and editing contracts, are outside the type removal.
 
 ## Acceptance
 
-- **AC-1 TODO** Current guidance has no Rewrite Work type, special process,
+- **AC-1 DONE** Current guidance has no Rewrite Work type, special process,
   type-specific base exception, or alias. Ordinary Work contracts can express
   relevant preservation and migration outcomes without a separate checklist.
 
   Verification: inspect the Work and contribution owners and walk through an
   ordinary replacement delivery with preserved behavior and migration needs.
-- **AC-2 TODO** The Prototypes heading and all active links use the repaired
+- **AC-2 DONE** The Prototypes heading and all active links use the repaired
   anchor; Prototype and Investigation meanings and ordinary Work lifecycle,
   review, preservation, and explicit base-approval rules remain intact.
 
   Verification: follow internal and glossary links, scan active guidance for
   the old anchor and type references, and run `make doc-format` and
   `make doc-check`.
-- **AC-3 TODO** Historical accepted decisions and immutable evidence remain
+- **AC-3 DONE** Historical accepted decisions and immutable evidence remain
   intact; unrelated Git and contract-editing uses of “rewrite” retain their
   meaning. Overlapping owner changes are reconciled against current master.
 
