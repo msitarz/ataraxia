@@ -101,8 +101,8 @@ silently or manipulate Git lock files.
 ### Work branches, review, and merge
 
 Start each Work branch from current `master` and target its PR to `master`. Only
-an explicit maintainer instruction permits another base and PR target, such as
-for a Prototype or rewrite; identify the exception in the PR.
+an explicit maintainer instruction permits another base and PR target; identify
+the exception in the PR.
 
 Follow the [Work scope and sizing rules](doc/workflow.md#scope-and-sizing) for
 reviewable deliveries. Material changes to an approved direction or contract
