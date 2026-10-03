@@ -22,7 +22,8 @@ relevant guidance.
 | Coding, typing, and testing conventions | [Engineering](engineering.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
 | Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
-| Setup, toolchain, contribution, commit, and PR rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
+| PR publication, descriptions, review states, and merge authority | [Pull requests](pull-requests.md) |
 | Choosing checks and reporting validation evidence | [Validation](validation.md) |
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |

@@ -86,12 +86,10 @@ rather than treating the handoff as complete. A fresh executor session may
 continue the same scope after recovery and must return the recovered state and
 evidence.
 
-The orchestrator may review the branch directly or create a draft PR when the
-executor completes the handoff. Draft means changes are complete and await
-orchestrator review. Once independent review and any correction loop pass, mark
-the PR ready. Ready means agent review passed and maintainer review is
-requested; it does not mean maintainer approval, merge, or successful CI. The
-maintainer retains final review and merge decisions. Before marking ready,
+The owning orchestrator publishes a Work branch and any rewrite to its PR,
+following [Pull requests](pull-requests.md). It may review the branch directly
+or create a draft PR when the executor completes the handoff. Follow the
+[PR review lifecycle](pull-requests.md#review-and-merge). Before marking ready,
 reassess human review effort from the actual diff, including tests, supporting
 changes, and concepts. If it exceeds the target, stop and revise the split plan,
 then get the revised parent plan reviewed and merged before child work
