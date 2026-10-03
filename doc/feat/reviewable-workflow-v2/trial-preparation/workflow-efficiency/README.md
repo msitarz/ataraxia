@@ -61,6 +61,9 @@ general duplication rule.
 - **DONE** Workspace preparation: added Make-owned isolated worktree creation
   with full cache copy, locked offline setup, environment validation, and
   measured evidence.
+- **TODO** [Worktree language](worktree-language/README.md): define the
+  canonical Git Worktree term and remove Workspace aliases from current
+  guidance.
 - **DONE** Tree orchestration: assigned subtree and leaf owners, direct
   low-effort leaf delegation, isolated leaf worktrees, and dependency-aware
   scheduling with review and evidence reuse.
