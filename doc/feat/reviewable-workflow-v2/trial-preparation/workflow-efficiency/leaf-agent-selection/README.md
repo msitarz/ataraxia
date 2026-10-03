@@ -14,12 +14,14 @@ from one documentation task, not a general selection recommendation.
 
 ## Works
 
-- **DONE** [Protocol and fixtures](protocol-and-fixtures/README.md): freeze
-  bounded documentation and code fixtures, the matched protocol, review and
-  preservation gates, measures, thresholds, and a bounded authorization
-  request. No trial runs in this Work.
+- **DONE**
+  [Frozen protocol and replay fixtures at evidence revision `3867c58`](https://github.com/msitarz/ataraxia/commit/3867c58):
+  bounded documentation and code fixtures, matched conditions, review and
+  preservation gates, measures, thresholds, and an authorization request. No
+  trial runs in this Work.
 - **TODO** [Controlled comparison](controlled-comparison/README.md): after the
-  protocol is reviewed and integrated, run only the Luna-low, Luna-medium, and
+  evidence revision is integrated and explicitly authorized, run only the
+  Luna-low, Luna-medium, and
   Sol-low conditions with explicit maintainer authorization, then report
   evidence and a recommendation. No policy is adopted.
 
@@ -33,9 +35,11 @@ preparation records no trial results or authorization.
 
 ## Comparison
 
-The protocol child owns the fixtures and predeclared evaluation method. The
-comparison varies only the model/effort condition where possible and records
-remaining confounds. It includes first-artifact acceptance, correctness and
+The preserved protocol and fixtures at evidence revision
+[3867c58](https://github.com/msitarz/ataraxia/commit/3867c58) own the evaluation
+method. The comparison varies only the model/effort condition where possible
+and records remaining confounds. It includes first-artifact acceptance,
+correctness and
 requirement preservation, correction rounds, elapsed time through parent
 review, separate parent review effort, human steering, check reuse, and token
 or cost availability. Unavailable values remain explicitly unknown. The

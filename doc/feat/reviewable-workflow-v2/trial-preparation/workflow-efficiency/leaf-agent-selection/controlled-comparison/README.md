@@ -10,10 +10,9 @@ Run the reviewed protocol and fixtures at evidence revision
 Protocol preparation dispatched no trial sessions. Do not begin the
 comparison until the evidence revision above is integrated and a maintainer
 explicitly authorizes the exact 18-dispatch request in the protocol. Compare
-Luna low, Luna medium, and Sol low
-on those bounded documentation and code fixtures. This Work records evidence
-and a recommendation; it does not adopt policy or change delegation
-authorization.
+the three conditions on the bounded documentation and code fixtures. This Work
+records evidence and a recommendation, without adopting policy or changing
+delegation authorization.
 
 ## Preconditions and limits
 
