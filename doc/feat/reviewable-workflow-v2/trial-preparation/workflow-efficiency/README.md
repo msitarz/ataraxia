@@ -64,8 +64,8 @@ general duplication rule.
 - **TODO** [Worktree language](worktree-language/README.md): define the
   canonical Git Worktree term and remove Workspace aliases from current
   guidance.
-- **TODO** [Worktree cleanup](worktree-cleanup/README.md): add Make proxies and
-  post-merge removal of completed linked worktrees and stale registration.
+- **DONE** Worktree cleanup: added Make proxies and verified post-merge removal
+  of completed linked worktrees and explicit-expiry stale registration cleanup.
 - **DONE** Tree orchestration: assigned subtree and leaf owners, direct
   low-effort leaf delegation, isolated leaf worktrees, and dependency-aware
   scheduling with review and evidence reuse.
