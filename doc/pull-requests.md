@@ -55,8 +55,13 @@ ADRs and WDRs before publication. Follow the
 evidence and the latest-head CI gate.
 
 Use the [PR description template](../.github/pull_request_template.md) and
-remove its instruction comments before publishing. Keep only the template's
-heading and sections. Include material limitations that help assess the change.
+remove its instruction comments before publishing. Write the description to a
+temporary Markdown file. From the repository, run
+`make doc-format ARGS=/absolute/path/to/pr-description.md` to format it with
+the repository's rumdl configuration. Inspect the formatted result and use that
+file for PR creation or updates with `gh pr create --body-file` or
+`gh pr edit --body-file`. Keep only the template's heading and sections. Include
+material limitations that help assess the change.
 Do not add evidence links, evidence prose, acceptance criteria, or check
 inventories. Do not add PR comments or discussion to record review or report
 checks.

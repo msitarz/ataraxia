@@ -82,7 +82,7 @@ doc-check: ## check Markdown formatting and local links (read only)
 	uv run rumdl fmt --check $(_DOC_PATHS)
 
 doc-format: ## format Markdown; ARGS selects files or directories
-	uv run rumdl fmt $(_DOC_PATHS)
+	uv run rumdl fmt --config pyproject.toml $(_DOC_PATHS)
 
 .PHONY: test
 test: ## run full tests with coverage; ARGS=paths runs a focused selection

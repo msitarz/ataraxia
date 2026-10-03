@@ -539,7 +539,16 @@ def test_markdown_format_target_passes_selected_paths(tmp_path):
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert calls == [["run", "rumdl", "fmt", "doc/acceptance-tracing.md"]]
+    assert calls == [
+        [
+            "run",
+            "rumdl",
+            "fmt",
+            "--config",
+            "pyproject.toml",
+            "doc/acceptance-tracing.md",
+        ]
+    ]
 
 
 def test_make_selectors_quote_shell_metacharacters(tmp_path):
