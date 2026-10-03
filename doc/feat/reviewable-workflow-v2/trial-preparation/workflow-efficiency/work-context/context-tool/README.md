@@ -9,8 +9,9 @@ presents from its owner. The
 [Work-context parent](../README.md#works) maps the result. Coordinate shared
 guidance-owner edits with
 [guidance application](../../guidance-application/README.md),
-[handoffs](../../handoffs/README.md), and
-[PR evidence](../../pr-evidence/README.md); do not rewrite their contracts.
+[handoffs](../../handoffs/README.md); do not rewrite their contracts. Preserve
+the completed [PR guidance](../../../../../../pull-requests.md) and
+[acceptance tracing](../../../../../../acceptance-tracing.md).
 
 ## Acceptance
 
