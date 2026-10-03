@@ -34,8 +34,8 @@ declarations and references but requires neither a marker nor a `Validation:`
 method; passing it does not establish actual test coverage, selected execution,
 observed evidence, or review. Measurements and trials use observations in
 existing reports or artifacts. Manual judgment requires independent review of
-the changed artifact. Before `DONE`, an independent reviewer confirms applicable
-evidence supports the criterion; maintainer approval and merge remain separate.
+the changed artifact. Apply the [criterion status rules](#criteria-and-coverage)
+to these evidence sources.
 
 ## Work delivery commits
 
@@ -117,9 +117,9 @@ make ac-check WORK=doc/feat/example/README.md
 ```
 
 `ac-collect` lists selected tests without running them; `ac-test` runs them.
-Both return a nonzero status when no tests match. Criteria verified by manual
-or other non-test methods remain documented in the Work and are outside these
-test-selection targets. `ac-check` validates their declarations but does not
-run the method. It checks declarations for the selected Work only and does not
-execute tests or query CI. Use pytest and existing targeted-test tooling; do
-not introduce Gherkin, another runner, or a custom selection plugin.
+Both return a nonzero status when no tests match. Criteria verified by manual or
+other non-test methods remain documented in the Work and are outside these
+test-selection targets. `ac-check` checks declarations for the selected Work
+only; see its [evidence limits](#planned-validation-and-evidence). It does not
+query CI. Use pytest and existing targeted-test tooling; do not introduce
+Gherkin, another runner, or a custom selection plugin.

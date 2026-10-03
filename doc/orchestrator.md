@@ -67,14 +67,14 @@ requires the maintainer's explicit approval.
 
 ## Review and return
 
-After handoff, wait for the completed artifact or a blocker needing maintainer
-steering. Do not poll for routine status, inspect partial diffs, or send
+After handoff and each correction request, wait for the completed artifact or a
+blocker needing maintainer steering before reviewing. Do not poll for routine
+status, inspect partial diffs, or send
 fragmented corrections. Review the completed diff once against acceptance and
 owner guidance, using reported evidence. Send one consolidated finding list to
 the same executor session; review corrections as needed. Reuse reported evidence
 and rerun focused checks only when a change, failure, or unresolved concern
-warrants it. Wait for the corrected completed result or a blocker before
-reviewing again. Context reuse may help token caching, but caching is not
+warrants it. Context reuse may help token caching, but caching is not
 guaranteed. If the same finding remains after a correction attempt, or the
 session cannot continue, stop and report attempts, current evidence, and the
 specific decision or help needed. Resume only with orchestrator or maintainer
@@ -91,8 +91,7 @@ parent map, branch or PR, and available evidence. Establish which changes
 remain, which evidence applies to the current revision, and which criteria are
 unresolved before continuing. If uncertain, state that and ask for steering
 rather than treating the handoff as complete. A fresh executor session may
-continue the same scope after recovery and must return the recovered state and
-evidence.
+continue the same scope after recovery.
 
 Follow [Pull requests](pull-requests.md#descriptions) for executor returns,
 local review before new or amended PR publication, description preparation,
@@ -105,9 +104,9 @@ independently reviewable child Work PRs within the target. Define their
 contracts and dependencies, update the parent map, and get the revised parent
 plan reviewed and merged before child delivery continues. Preserve and reuse
 completed implementation and valid evidence, identify remaining merge
-resolution, and reassess each child diff before publication. An explicit
-maintainer request may authorize a larger review under
-[Work scope and sizing](workflow.md#scope-and-sizing).
+resolution, and reassess each child diff before publication. The explicit
+maintainer scope exception in
+[Work scope and sizing](workflow.md#scope-and-sizing) still applies.
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the
@@ -116,7 +115,8 @@ maintainer instruction. Do not change repository settings, use an admin
 override, or bypass review or CI requirements.
 
 Return the reviewable artifact (branch and revision or PR), outcome, acceptance
-evidence, commands run, unrun checks, unresolved criteria, and blockers.
+evidence, commands run, unrun checks, unresolved criteria, and blockers. After
+session recovery, include the recovered state.
 Use the Work contract's evidence method; see
 [acceptance tracing](acceptance-tracing.md) for criterion status and coverage
 semantics. A blocked return states what remains and what input or decision is
