@@ -4,7 +4,8 @@
 
 For one bounded leaf Work, should the implementing executor handle all
 correction exchanges, or should each correction use a fresh executor? Current
-guidance favors the same Luna session. Unlike the
+guidance favors the same executor session under
+[orchestrator guidance](../../../../../orchestrator.md). Unlike the
 [guidance-application Investigation](../guidance-application/README.md) on
 orchestrator sessions or
 [completed leaf-agent selection comparison](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md)

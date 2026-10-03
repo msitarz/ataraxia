@@ -29,7 +29,8 @@ so each delivery has a reviewable outcome.
   Verification: review the measurement protocol and thresholds against example
   outcomes, including short reviews with excessive total effort. Confirm the
   results fit in existing PR evidence without per-revision journals.
-- **AC-3 TODO** The trial exercises Luna at low effort and specifies how
+- **AC-3 TODO** The trial exercises the default leaf executor from
+  [orchestrator guidance](../../../../orchestrator.md) and specifies how
   observed correction cost or stalled work informs an escalation recommendation,
   while preserving maintainer approval for model or reasoning changes.
   Verification: inspect the trial scenarios against handoff recovery and walk
