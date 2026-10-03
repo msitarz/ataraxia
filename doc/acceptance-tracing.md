@@ -33,7 +33,7 @@ and references but requires neither a marker nor a `Verification:` method;
 passing it does not establish actual test coverage, selected execution,
 observed results, or review. Measurements and trials use observations in
 existing reports or artifacts. Manual judgment requires
-independent review of the changed artifact, recorded in the PR. Before `DONE`,
+independent review of the changed artifact. Before `DONE`,
 an independent reviewer confirms applicable evidence supports the criterion;
 maintainer approval and merge remain separate.
 

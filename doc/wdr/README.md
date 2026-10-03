@@ -29,4 +29,4 @@ authoritative owners.
 
 ## Proposal
 
-None.
+- [14. Remove mandatory PR records for manual judgment](0014-remove-mandatory-pr-records-for-manual-judgment.md)
