@@ -72,6 +72,22 @@ def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts() 
         assert excluded.read_bytes() == excluded_before
 
 
+def test_make_doc_format_reflows_external_file_with_repository_config(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "pr-description.md"
+    source = "# Description\n\n" + "Long prose " * 12 + "\n"
+    path.write_text(source, encoding="utf-8")
+
+    result = run_make("doc-format", f"ARGS={path}")
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    formatted = path.read_text(encoding="utf-8")
+    assert formatted != source
+    assert max(map(len, formatted.splitlines())) <= 80
+    assert formatted.split() == source.split()
+
+
 @pytest.mark.parametrize("mutation", ["rename", "delete"])
 def test_make_doc_check_finds_inbound_links_to_changed_heading(
     mutation: str,
