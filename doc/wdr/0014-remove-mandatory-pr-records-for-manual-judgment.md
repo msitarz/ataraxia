@@ -4,7 +4,7 @@ Date: 2026-10-03
 
 ## Status
 
-Proposed
+Accepted
 
 Amends
 [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md).

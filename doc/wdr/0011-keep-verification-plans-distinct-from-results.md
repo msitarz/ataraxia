@@ -9,6 +9,9 @@ Accepted
 Amends
 [9. Require verified evidence for Work completion](0009-require-verified-work-completion.md).
 
+Amended by
+[14. Remove mandatory PR records for manual judgment](0014-remove-mandatory-pr-records-for-manual-judgment.md).
+
 ## Context
 
 WDR 9 places manual evidence beside criteria. This can conflate the planned
