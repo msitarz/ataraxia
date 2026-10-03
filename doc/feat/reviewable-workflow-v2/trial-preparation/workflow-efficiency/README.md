@@ -102,9 +102,9 @@ general duplication rule.
 - **TODO** [Evaluation workflow](evaluation-workflow/README.md): define reusable
   empirical evaluation guidance and its ownership within the normal Work
   lifecycle.
-- **TODO** [Shallow executor clones](shallow-executor-clones/README.md): prepare
-  executors from local depth-one clones and define history-access boundaries
-  for evaluations that exclude prior answers.
+- **TODO** [Shallow executor clones](shallow-executor-clones/README.md): develop
+  a tested recommendation through sandbox-isolation, communication, and
+  artifact-delivery Investigations before adopting local depth-one clones.
 
 Use the direct parent-to-leaf arrangement under
 [orchestrator guidance](../../../../orchestrator.md); nodes with children have
