@@ -49,7 +49,9 @@ any rewrite to its PR.
 
 Do not publish draft PRs. Ready means agent review passed and maintainer review
 is requested; it does not mean maintainer approval, merge, or successful CI.
-Follow the [check and evidence policy](validation.md) for mechanical-check
+Apply the [decision-record status rule](decision-records.md#record-format) to
+ADRs and WDRs before publication. Follow the
+[check and evidence policy](validation.md) for mechanical-check
 evidence and the latest-head CI gate.
 
 Use the [PR description template](../.github/pull_request_template.md) and

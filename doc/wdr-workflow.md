@@ -25,6 +25,7 @@ changes that simply bring behavior into line with accepted guidance.
 4. Verify delivery status from the current owner and relevant PR, Work, or
    implementation evidence. An `Accepted` WDR alone does not mean the guidance
    or implementation is complete.
-5. Follow the shared [record status](decision-records.md#record-format) and
+5. Follow the shared [ready-PR record status](decision-records.md#record-format)
+   and
    [amendment and supersession lifecycle](decision-records.md#amendments-and-supersession)
    for the intended merged status and same-PR index and reciprocal metadata.

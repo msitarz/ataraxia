@@ -41,7 +41,8 @@ ADRs; the number of implementation choices does not determine it.
    uncovered decisions before implementing the affected design, and reassess
    when implementation reveals new choices.
 3. Use the shared [decision record format and lifecycle](decision-records.md)
-   for numbering, status, and amendment or supersession links.
+   for numbering, [ready-PR status](decision-records.md#record-format), and
+   amendment or supersession links.
 4. Update affected Work links and architecture's status references. Link to
    the decision; do not copy its rationale or local specification into them.
 

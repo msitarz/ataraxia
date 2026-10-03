@@ -20,7 +20,7 @@ YYYY-MM-DD`, then these sections:
 ```markdown
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -35,12 +35,13 @@ Proposed
 ...
 ```
 
-Use `Proposed` while unsettled. An adoption-ready decision PR carries
-`Accepted` as its intended merged state; the maintainer accepts the decision
-through merge, not through readiness alone. Keep a proposal-only PR or an
-Investigation recommendation `Proposed` when its merge does not adopt the
-decision. Work type alone does not determine status; an Investigation PR can
-adopt a decision if it explicitly does so.
+Every ADR or WDR in a ready PR carries `Accepted` as its intended merged state,
+including records delivered by an Investigation. The maintainer accepts the
+decision through merge; ready status alone does not establish maintainer
+approval, acceptance, or completed implementation. Use `Proposed` only during
+unpublished drafting. Follow
+[PR publication rules](pull-requests.md#descriptions) for readiness; draft PRs
+are not published.
 
 Keep records concise. Put meaningful alternatives, tradeoffs, links to current
 guidance, and the relevant PR or Work in the appropriate section. Use relative
