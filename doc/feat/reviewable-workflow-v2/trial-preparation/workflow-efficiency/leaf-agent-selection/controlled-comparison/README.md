@@ -1,5 +1,7 @@
 # Leaf-agent selection controlled comparison
 
+[Results](results.md) report the 18 authorized runs and retained evidence.
+
 Run the reviewed protocol and fixtures at evidence revision
 [efdc21a1316fd381d29ab5002bd818233e7fbb43](https://github.com/msitarz/ataraxia/commit/efdc21a1316fd381d29ab5002bd818233e7fbb43):
 
@@ -7,20 +9,21 @@ Run the reviewed protocol and fixtures at evidence revision
 - [Documentation fixture](https://github.com/msitarz/ataraxia/blob/efdc21a1316fd381d29ab5002bd818233e7fbb43/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/protocol-and-fixtures/fixtures/documentation.md)
 - [Code fixture](https://github.com/msitarz/ataraxia/blob/efdc21a1316fd381d29ab5002bd818233e7fbb43/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/protocol-and-fixtures/fixtures/coding.md)
 
-Protocol preparation dispatched no trial sessions. Do not begin the
-comparison until the evidence revision above is integrated and a maintainer
-explicitly authorizes the exact 18-dispatch request in the protocol. Compare
-the three conditions on the bounded documentation and code fixtures. This Work
-records evidence and a recommendation, without adopting policy or changing
-delegation authorization.
+After the protocol evidence revision was integrated, the maintainer explicitly
+authorized the 18-dispatch comparison recorded in [results](results.md). No
+replacements were dispatched. The report records evidence and a bounded
+recommendation; it does not adopt policy or change delegation authorization.
+Any further comparison requires a new reviewed protocol and explicit
+maintainer authorization.
 
 ## Preconditions and limits
 
-Do not dispatch until the protocol is integrated at a recorded revision and
-the maintainer explicitly authorizes all three named model/effort conditions,
-the stated maximum total dispatch count, and the fixed reviewer arrangement.
-Use the frozen fixture revisions, prompts, guidance, tools, checks, fresh
-sessions, repetition count, and run-order method without unplanned variation.
+The reported comparison used the integrated evidence revision and explicit
+maintainer authorization for all three named model/effort conditions, the 18-run
+cap, and fixed reviewer arrangement. It used the frozen fixture revisions,
+prompts, guidance, tools, checks, fresh sessions, repetition count, and run
+order without unplanned variation. Any further comparison requires a new
+reviewed protocol and authorization.
 The same owning parent dispatches directly to each leaf and reviews every
 artifact; do not insert a Sol wrapper or transfer session context. The current
 Luna-low default remains in force outside the authorized comparison.
@@ -47,18 +50,18 @@ proposal uses the applicable WDR lifecycle and maintainer approval path.
 
 ## Acceptance
 
-- **AC-1 TODO** Every authorized run follows the integrated protocol and uses
+- **AC-1 DONE** Every authorized run follows the integrated protocol and uses
   the frozen fixture, prompt, guidance, tools, fresh-session topology, and
   model/effort condition within the explicit total dispatch cap.
   Verification: compare authorization, dispatch records, run order, and
   artifact revisions with the protocol.
-- **AC-2 TODO** The fixed owning parent reviews every artifact under the common
+- **AC-2 DONE** The fixed owning parent reviews every artifact under the common
   quality and preservation rubric, applying it label-blind where practical or
   recording unblinded-review confounds; results report all predeclared
   measures, parent review time, deviations, and unavailable costs.
   Verification: trace each result field and gate outcome to inspectable run and
   review evidence and the frozen evidence commit.
-- **AC-3 TODO** The recommendation follows the declared thresholds, covers
+- **AC-3 DONE** The recommendation follows the declared thresholds, covers
   both task classes and limitations, allows default/no-change or inconclusive
   results, and makes no policy or authorization change.
   Verification: compare the recommendation with the full authorized run set,
