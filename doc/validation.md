@@ -5,8 +5,13 @@ Read this file when choosing checks or reporting evidence. The
 
 While preparing a PR, run the checks affected by the change, including
 focused tests for code changes. A local full `make ci` run is optional; it is
-not a prerequisite for publishing every PR. Report relevant failures,
-pending checks, reused evidence, and checks not run accurately.
+not a prerequisite for publishing every PR.
+
+Actual automated execution and results in CI on the latest reviewed PR head
+are authoritative for mechanical-check outcomes. Required mechanical checks
+must be covered by CI; agent-written summaries, inventories, and review
+comments cannot establish passing checks. Local focused checks remain useful
+preparation. Independent review assesses judgments CI cannot establish.
 
 Before merge, require the full CI workflow to pass on the latest reviewed PR
 head. Evidence from an earlier revision does not cover later changes. The
@@ -31,8 +36,7 @@ evidence. It checks the locked environment without installing or resolving
 dependencies, then reuses the same local check recipes as CI with uv network
 access disabled. Missing or stale environments fail; rerun `make setup` with
 network access to prepare them. A passing local run does not include the
-vulnerability audit and cannot satisfy the full CI merge gate. Report an audit
-as unrun or failed, and report any checks that could not run.
+vulnerability audit and cannot satisfy the full CI merge gate.
 
 CI rejects a missing or stale `uv.lock` through the locked environment setup in
 `make ci-setup`. Subsequent checks use the synchronized environment without

@@ -35,10 +35,16 @@ Proposed
 ...
 ```
 
-Use `Proposed` while unsettled and `Accepted` after the maintainer accepts the
-decision through its applicable review process. Keep records concise. Put
-meaningful alternatives, tradeoffs, links to current guidance, and the relevant
-PR or Work in the appropriate section. Use relative Markdown links.
+Use `Proposed` while unsettled. An adoption-ready decision PR carries
+`Accepted` as its intended merged state; the maintainer accepts the decision
+through merge, not through readiness alone. Keep a proposal-only PR or an
+Investigation recommendation `Proposed` when its merge does not adopt the
+decision. Work type alone does not determine status; an Investigation PR can
+adopt a decision if it explicitly does so.
+
+Keep records concise. Put meaningful alternatives, tradeoffs, links to current
+guidance, and the relevant PR or Work in the appropriate section. Use relative
+Markdown links.
 
 ## Amendments and supersession
 
@@ -47,4 +53,6 @@ links back to it. For a partial change, use `Amends [N. Title](NNNN-title.md)`
 under Status and explain what remains in force. On acceptance, add reciprocal
 `Amended by [M. Title](MMMM-title.md)` to the earlier record. For replacement,
 use `Supersedes` in the new record and `Superseded by` in the earlier record.
-Keep records in their respective collections and update the relevant index.
+Keep records in their respective collections. Ship the matching index entry and
+any reciprocal amendment or supersession metadata in the same adoption PR, so
+the intended merged state is consistent without a follow-up.

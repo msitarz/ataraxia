@@ -8,8 +8,8 @@ Determine the PR base from explicit task instructions or repository metadata,
 following [contribution branch rules](../CONTRIBUTING.md#submitting-a-change).
 For Work deliveries with acceptance criteria, follow the
 [commit-preservation procedure](acceptance-tracing.md#work-delivery-commits).
-The owning orchestrator's responsibilities are defined in
-[orchestrator handoffs](orchestrator.md#review-and-return).
+The owning orchestrator's publication and description responsibilities are
+defined [below](#descriptions).
 
 Before starting a rebase of an already-published branch, inspect the remote
 branch and record its commit ID. Verify that this is the
@@ -38,10 +38,23 @@ change. When scope changes, update the title and description to describe the
 final implementation, omitting abandoned approaches unless they explain a
 relevant tradeoff.
 
+The executor returns local changes and a concise local result. The owning
+orchestrator independently reviews the artifact and completes corrections before
+publishing a ready PR or an amendment to an existing PR. After review, the
+orchestrator prepares or updates the description from the reviewed artifact and
+the executor's concise local result; there is no separate executor PR-writing
+phase. Consolidate publication of the reviewed description, allowing later
+material corrections. The orchestrator owns publication of the Work branch and
+any rewrite to its PR.
+
+Do not publish draft PRs. Ready means agent review passed and maintainer review
+is requested; it does not mean maintainer approval, merge, or successful CI.
+Follow the [check and evidence policy](validation.md) for mechanical-check
+evidence and the latest-head CI gate.
+
 Use the [PR description template](../.github/pull_request_template.md) and
-remove its instruction comments before publishing. Include material limitations
-that help assess the change. Keep evidence prose and check inventories
-out of descriptions; evidence remains in commits, CI records, and review
-records. Link to detailed scope and evidence in their source records rather than
-copying them into the description. PRs carry review discussion and rationale;
-merged PRs and recorded approvals provide durable decisions across sessions.
+remove its instruction comments before publishing. Keep only the template's
+heading and sections. Include material limitations that help assess the change.
+Do not add evidence links, evidence prose, acceptance criteria, or check
+inventories. Do not add PR comments or discussion to record review or report
+checks.

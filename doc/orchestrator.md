@@ -86,14 +86,9 @@ rather than treating the handoff as complete. A fresh executor session may
 continue the same scope after recovery and must return the recovered state and
 evidence.
 
-The executor returns local changes and evidence. The owning orchestrator
-independently reviews the local artifact and completes any correction loop
-before publishing a ready PR, following [Pull requests](pull-requests.md).
-Amendments to an existing PR also receive local independent review and any
-corrections before the orchestrator pushes them. Do not publish draft PRs.
-Ready means agent review passed and maintainer review is requested; it does not
-mean maintainer approval, merge, or successful CI. The orchestrator owns
-publication of the Work branch and any rewrite to its PR.
+Follow [Pull requests](pull-requests.md#descriptions) for executor returns,
+local review before new or amended PR publication, description preparation,
+ready-PR meaning, and publication ownership.
 
 Before publishing, reassess maintainer review effort from the actual diff,
 including tests, supporting changes, and concepts. If it exceeds the target,

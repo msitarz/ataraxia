@@ -28,7 +28,8 @@ criterion `DONE`. While a criterion remains `TODO`, its plan may change; perform
 the revised method before completion.
 
 Inspect evidence where it is produced. Automated behavior needs criterion-
-marked tests and selected test execution evidence. `ac-check` checks
+marked tests and selected test execution evidence, following the
+[check and evidence policy](validation.md). `ac-check` checks
 declarations and references but requires neither a marker nor a `Validation:`
 method; passing it does not establish actual test coverage, selected execution,
 observed evidence, or review. Measurements and trials use observations in
