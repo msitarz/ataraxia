@@ -12,7 +12,8 @@ Reject or exclude unrelated refs/objects, project payloads, answers/source
 references, old hook environments, interpreter/environment metadata and external
 links. Do not mutate the raw cache, rewrite opaque metadata, fetch missing
 sources, or overwrite a destination. Registry resolver dependencies belong to
-the independent [registry selector](../registry-cache-selection/README.md).
+the independent
+[registry selector](../../../../../../../../../CONTRIBUTING.md#optional-reviewed-registry-selection).
 
 Use the parent's linked tested recipe to define the initial pinned
 tool/platform/cache-layout condition; unsupported conditions fail closed with no
