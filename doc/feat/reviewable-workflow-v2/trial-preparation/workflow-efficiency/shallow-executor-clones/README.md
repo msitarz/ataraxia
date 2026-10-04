@@ -32,6 +32,12 @@ blocked boundary as evidence against a candidate rather than bypassing it.
 Combine the reports into one adoption recommendation and identify further Work;
 production implementation is outside these Investigations.
 
+## Implementation follow-up
+
+- **TODO** [Optional shallow executor tooling](implementation/README.md):
+  implement the selected preparation/runtime/import path without changing the
+  current linked-worktree policy. Retained Investigation criteria remain TODO.
+
 ## Proposed outcome and boundaries
 
 - A Make-owned preparation target creates an independent shallow clone from the
@@ -106,12 +112,13 @@ independent clones are not described as linked worktrees.
 
 ## Execution gate and limits
 
-This PR adds plans and maps only; it runs no sandbox probes or model-backed
-trials and changes no current preparation policy. Merge the reviewed plan before
-child execution. Before any model-backed trial, declare fixtures, prompts,
-conditions, selected model and effort, maximum runs and corrections, a time or
-token budget, and stop handling; obtain applicable maintainer approval. Use the
-existing leaf policy and reassess each delivery against the
+The retained child reports and audit preserve completed bounded probes and
+trials, including failed attempts. The implementation follow-up is planning only
+and changes no current preparation policy. Merge its reviewed parent map before
+implementation child execution. Before any model-backed trial, declare fixtures,
+prompts, conditions, selected model and effort, maximum runs and corrections, a
+time or token budget, and stop handling; obtain applicable maintainer approval.
+Use the existing leaf policy and reassess each delivery against the
 [review target](../../../../../workflow.md#scope-and-sizing).
 
 Do not change model selection, review topology, current-code reuse policy, or
