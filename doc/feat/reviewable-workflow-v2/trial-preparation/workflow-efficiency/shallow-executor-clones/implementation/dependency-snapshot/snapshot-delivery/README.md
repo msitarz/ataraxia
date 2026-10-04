@@ -1,8 +1,8 @@
 # Frozen offline snapshot delivery
 
 Compose the independently reviewed
-[registry selection](../registry-cache-selection/README.md) and
-[hook source selection](../pinned-hook-sources/README.md) into an optional
+[registry selection](../../../../../../../../../CONTRIBUTING.md#optional-reviewed-registry-selection)
+and [hook source selection](../pinned-hook-sources/README.md) into an optional
 Make-owned snapshot utility under the parent's [cache boundary](../README.md).
 This Work depends on both selectors. Bind the delivered hash/provenance manifest
 to their verified entries, dependency declarations and supported conditions;
