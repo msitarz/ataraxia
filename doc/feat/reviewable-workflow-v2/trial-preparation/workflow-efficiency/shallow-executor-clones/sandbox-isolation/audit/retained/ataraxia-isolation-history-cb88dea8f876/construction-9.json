@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "git",
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "commit.gpgSign=false",
+    "-c",
+    "tag.gpgSign=false",
+    "-c",
+    "core.hooksPath=/private/tmp/ataraxia-isolation-history-cb88dea8f876/empty-hooks",
+    "-C",
+    "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+    "commit",
+    "-m",
+    "fixture-H1"
+  ],
+  "exit_code": 0,
+  "stdout": "[master 83bc854] fixture-H1\n 2 files changed, 1 insertion(+), 1 deletion(-)\n create mode 100644 current.txt\n delete mode 100644 historical.txt\n",
+  "stderr": ""
+}

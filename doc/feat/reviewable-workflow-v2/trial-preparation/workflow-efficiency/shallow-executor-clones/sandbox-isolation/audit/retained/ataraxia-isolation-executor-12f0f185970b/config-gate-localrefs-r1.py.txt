@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+import hashlib,json,os,pathlib,subprocess,tomllib,time
+E=pathlib.Path(__file__).resolve().parent
+P=json.loads((E/'model-plan.json').read_text());R=pathlib.Path(P['root']);STATE=R/'state'
+def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(__file__)==P['gate_runner_sha256']
+assert sha(E/'runtime.config.toml')==P['profile_sha256']
+for path in [E/'config-overrides.json',E/'skill-paths.json']:assert sha(path)==P['hashes'][str(path)]
+assert sha('/usr/local/bin/codex')==P['cli_binary_sha256']
+assert not (STATE/'auth.json').exists() and not (STATE/'sessions').exists()
+config=tomllib.loads((E/'runtime.config.toml').read_text());assert not any(k in config for k in ['sandbox_mode','sandbox_workspace_write','sandbox_permissions'])
+assert config['permissions']['isolation']['network']['enabled'] is False and config['approval_policy']=='never'
+assert not config.get('mcp_servers',{})
+paths=json.loads((E/'skill-paths.json').read_text());found=sorted({str(p.resolve()) for root in paths['roots'] if pathlib.Path(root).exists() for p in pathlib.Path(root).rglob('SKILL.md')});assert found==paths['skill_paths'];assert {x['path'] for x in config['skills']['config'] if x['enabled'] is False}==set(found)
+for path,present in P['managed_path_metadata'].items():assert pathlib.Path(path).exists()==present
+args=json.loads((E/'config-overrides.json').read_text());env=os.environ.copy()
+for k in list(env):
+ if k.startswith(('CODEX_','OPENAI_')):env.pop(k,None)
+env['CODEX_HOME']=str(STATE);records=[];start=time.monotonic()
+def call(argv):
+ remaining=90-(time.monotonic()-start);assert remaining>0
+ q=subprocess.run(argv,cwd='/private/tmp/ataraxia-shallow-isolation',env=env,capture_output=True,timeout=min(30,remaining));assert q.returncode==0,q.stderr.decode(errors='replace');records.append({'argv':argv,'exit':q.returncode,'stdout_sha256':hashlib.sha256(q.stdout).hexdigest(),'stderr_sha256':hashlib.sha256(q.stderr).hexdigest()});return q
+q=call(['/usr/local/bin/codex']+args+['features','list']);states={line.split()[0]:line.split()[-1] for line in q.stdout.decode().splitlines() if line.split()}
+for key,value in config['features'].items():assert states.get(key)==str(value).lower(),key
+base=['/usr/local/bin/codex','exec','--strict-config','--ignore-user-config','--ignore-rules','--json','-C',str(R/'clone')]+args
+call(base+['--help']);call(base+['resume','00000000-0000-0000-0000-000000000001','--help'])
+record={'passed':True,'model_plan_sha256':sha(E/'model-plan.json'),'gate_runner_sha256':sha(__file__),'records':records,'observed':{'config_parsed':True,'feature_states_match':True,'initial_resume_parser_supported':True,'skill_paths_explicitly_disabled':True},'runtime_tool_schema_dump_available':False,'remaining_actual_session_gate':'independent tool/schema/rollout and command-boundary review','model_calls':0,'auth_copied':False,'network_requested':False}
+with (E/'config-gate-localrefs-r1-passed.json').open('x') as f:f.write(json.dumps(record,indent=2)+'\n')
+print('Configuration gates passed; actual session tool review remains required.')

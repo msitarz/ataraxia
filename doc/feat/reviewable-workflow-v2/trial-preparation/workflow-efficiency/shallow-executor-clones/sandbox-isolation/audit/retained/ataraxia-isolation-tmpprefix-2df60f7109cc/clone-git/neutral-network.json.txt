@@ -1,0 +1,21 @@
+[
+  [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone",
+    "fetch",
+    "http://127.0.0.1:55320/",
+    "refs/tags/H0",
+    "refs/heads/side"
+  ],
+  [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone",
+    "fetch",
+    "--no-write-fetch-head",
+    "http://127.0.0.1:55320/",
+    "refs/tags/H0",
+    "refs/heads/side"
+  ]
+]

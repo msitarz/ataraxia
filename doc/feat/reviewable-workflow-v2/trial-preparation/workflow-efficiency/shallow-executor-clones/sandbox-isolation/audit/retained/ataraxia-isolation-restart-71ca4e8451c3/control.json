@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/bin/cat",
+    "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/source/current.txt"
+  ],
+  "exit_code": 0,
+  "canary_matched": true,
+  "stdout_sha256": "4d8a57645a651faacb5934bb6a6d64982380edbf6f7b6f8deee23ee978aa08ca",
+  "stderr": "",
+  "timestamp": "2026-10-03T20:46:43.231820+00:00"
+}

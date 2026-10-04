@@ -1,0 +1,9 @@
+{
+  "UUID": "01a10622-312d-7332-88f8-fddda82dda94",
+  "events_sha256": "abeb527bbbf7062c3b8eea5fcba885cfdfec8db1686006345c7dcac69cc015d2",
+  "rollout_hashes": {
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/state/sessions/2026/10/04/rollout-2026-10-04T04-57-46-01a10622-312d-7332-88f8-fddda82dda94.jsonl": "56edc307d5115c58c71e4b93a920472eebd522ad3677331026532d2bfd0b267b"
+  },
+  "plan_sha256": "f1c9a359a134df5ddda19d4de9dfbc37694b22ff4ede38af3db67a1872ae6f1e",
+  "commit": "efefa0ed26c20eb532c94990f0019f2b7c53a531"
+}

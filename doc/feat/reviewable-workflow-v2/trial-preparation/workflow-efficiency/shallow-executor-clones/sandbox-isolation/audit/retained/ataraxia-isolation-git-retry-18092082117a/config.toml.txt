@@ -1,0 +1,13 @@
+default_permissions = "isolation"
+approval_policy = "never"
+[permissions.isolation]
+extends = ":workspace"
+[permissions.isolation.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"
+"/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone" = "write"
+"/private/tmp/ataraxia-isolation-git-retry-18092082117a/source" = "deny"
+[permissions.isolation.network]
+enabled = false

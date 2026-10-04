@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+    "cat-file",
+    "-t",
+    "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+  ],
+  "exit_code": 128,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr": "fatal: git cat-file: could not get object info\n"
+}

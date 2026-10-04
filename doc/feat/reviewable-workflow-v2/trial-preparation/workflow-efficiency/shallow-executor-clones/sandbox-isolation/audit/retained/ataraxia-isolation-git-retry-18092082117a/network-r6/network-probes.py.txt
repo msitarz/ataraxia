@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+import functools, hashlib, http.server, json, os, pathlib, subprocess, threading, time, uuid
+E=pathlib.Path(__file__).resolve().parent
+PLAN_HASH='fe4f5d166ce7c6e8916487d7bb52d02bcd6b537e5118136847fc301ed8abdb7d'
+def sha(p): return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'plan.json') == PLAN_HASH
+P=json.loads((E/'plan.json').read_text()); R=pathlib.Path(P['root']); C=R/'clone'
+log=(E/('launch-'+uuid.uuid4().hex+'.jsonl')).open('x'); start=time.monotonic(); requests=[]
+def record(**v):
+ v['utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()); log.write(json.dumps(v)+'\n'); log.flush()
+env=os.environ.copy()
+for k in list(env):
+ if k.lower() in ('http_proxy','https_proxy','all_proxy','no_proxy') or k.startswith('GIT_CONFIG_') or k in ('GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES'): env.pop(k,None)
+env.update(P['env']); env['CODEX_HOME']=str(E/'state')
+G=[P['git'],'-c','credential.helper=','-c','http.proxy=','-c','core.hooksPath='+str(R/'empty-hooks')]
+def run(name,argv):
+ remaining=P['total_seconds']-(time.monotonic()-start)
+ if remaining<=0: raise RuntimeError('shared deadline')
+ try: q=subprocess.run(argv,cwd=P['cwd'],env=env,capture_output=True,timeout=min(30,remaining))
+ except subprocess.TimeoutExpired: record(name=name,argv=argv,timeout=True); raise
+ record(name=name,argv=argv,exit=q.returncode,stdout_bytes=len(q.stdout),stdout_sha256=hashlib.sha256(q.stdout).hexdigest(),stderr=q.stderr.decode(errors='replace'))
+ return q
+def ok(name,argv,expected=None):
+ q=run(name,argv); assert q.returncode==0 and (expected is None or q.stdout.strip()==expected), name
+ return q
+def child(args): return ['/usr/local/bin/codex','sandbox','-P','isolation','--include-managed-config','-C',str(C)]+args
+def absent(name,obj):
+ q=run(name,child(G+['-C',str(C),'cat-file','-t',obj])); assert q.returncode==128 and b'could not get object info' in q.stderr and not q.stdout,name
+class Handler(http.server.SimpleHTTPRequestHandler):
+ def log_message(self,fmt,*args):
+  requests.append({'path':self.path,'message':fmt%args}); record(name='http-request',path=self.path,message=fmt%args)
+ def do_GET(self):
+  # Serve only frozen files, not directory listings or traversal outside endpoint.
+  from urllib.parse import unquote, urlsplit
+  path=unquote(urlsplit(self.path).path).lstrip('/')
+  if path not in P['endpoint_files']: self.send_error(404); return
+  super().do_GET()
+class Server(http.server.HTTPServer):
+ def get_request(self):
+  sock,addr=super().get_request(); sock.settimeout(5); return sock,addr
+server=None; thread=None
+try:
+ for path,digest in P['hashes'].items(): assert sha(path)==digest,path
+ assert not (C/'.git/objects/info/alternates').exists()
+ record(name='preflight',hashes_passed=True,plan_sha256=PLAN_HASH)
+ ok('observer-HEAD',G+['-C',str(C),'rev-parse','HEAD'],P['HEAD'].encode())
+ ok('runtime-version',child(G+['--version']),b'git version 2.55.0')
+ ok('runtime-HEAD',child(G+['-C',str(C),'cat-file','-t',P['HEAD']]),b'commit')
+ for key in ('H0','side'): absent('absent-'+key+'-before',P['ids'][key])
+ server=Server(('127.0.0.1',0),functools.partial(Handler,directory=str(E/'endpoint.git')))
+ thread=threading.Thread(target=server.serve_forever,kwargs={'poll_interval':0.05},daemon=True); thread.start()
+ url='http://127.0.0.1:'+str(server.server_port)+'/'
+ record(name='endpoint',url=url,bind='127.0.0.1',scope='frozen dumb Git tree')
+ # Each matching variant must work unrestricted before its child observation.
+ for i,variant in enumerate(P['variants']):
+  control=E/('control-'+uuid.uuid4().hex)
+  ok('control-init-'+str(i),G+['init',str(control)])
+  ok('control-fetch-'+str(i),G+['-C',str(control),'fetch']+variant+[url]+P['fetch_args'])
+  for key in ('H0','side'): ok('control-object-'+str(i)+'-'+key,G+['-C',str(control),'cat-file','-t',P['ids'][key]],b'commit')
+  n=len(requests)
+  q=run('child-fetch-'+str(i),child(G+['-C',str(C),'fetch']+variant+[url]+P['fetch_args']))
+  added=len(requests)-n
+  record(name='child-network-assessment-'+str(i),requests=added,nonzero=q.returncode!=0,connection_diagnostic=b'connect' in q.stderr.lower(),interpretation='requires live controls and absent objects; no generic error alone proves denial')
+  assert q.returncode!=0 and added==0 and b'connect' in q.stderr.lower(), 'exposure or inconclusive transport diagnostic'
+  # Recheck endpoint availability immediately after the child attempt.
+  ok('control-fetch-after-'+str(i),G+['-C',str(control),'fetch']+variant+[url]+P['fetch_args'])
+ for key in ('H0','side'): absent('absent-'+key+'-after',P['ids'][key])
+ ok('final-HEAD',G+['-C',str(C),'rev-parse','HEAD'],P['HEAD'].encode())
+ for name in ['task.txt','.git/index','hook-marker']:
+  assert sha(C/name)==P['hashes'][str(C/name)],name
+ record(name='completed',bounded_local_transport_denial=True,fixture_task_index_HEAD_unchanged=True)
+except Exception as exc:
+ record(name='stopped',error=repr(exc)); raise
+finally:
+ if server is not None: server.shutdown(); server.server_close()
+ if thread is not None:
+  thread.join(timeout=2); record(name='server-close',thread_stopped=not thread.is_alive())
+ log.close()

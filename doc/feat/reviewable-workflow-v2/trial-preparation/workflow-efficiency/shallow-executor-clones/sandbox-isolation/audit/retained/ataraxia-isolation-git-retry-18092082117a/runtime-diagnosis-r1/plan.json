@@ -1,0 +1,119 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-git-retry-18092082117a",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "config_paths": [
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/config.toml",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/state/config.toml"
+  ],
+  "config_sha256": "ebb50558322d6523db93beacbc2fe20637c2b5b1a90e5e35b2dd1957d68e2e37",
+  "hook_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+  "H1": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+  "env": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_EXEC_PATH": "/usr/local/opt/git/libexec/git-core"
+  },
+  "codex_environment": {
+    "CODEX_HOME": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/state"
+  },
+  "phases": [
+    {
+      "name": "opt-byte",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/bin/head",
+        "-c",
+        "1",
+        "/usr/local/opt/pcre2/lib/libpcre2-8.0.dylib"
+      ]
+    },
+    {
+      "name": "resolved-byte",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/bin/head",
+        "-c",
+        "1",
+        "/usr/local/Cellar/pcre2/10.48/lib/libpcre2-8.0.dylib"
+      ]
+    },
+    {
+      "name": "opt-directory-metadata",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/bin/stat",
+        "-f",
+        "%HT %Sp",
+        "/usr/local/opt/pcre2"
+      ]
+    },
+    {
+      "name": "opt-readlink",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/bin/readlink",
+        "/usr/local/opt/pcre2"
+      ]
+    },
+    {
+      "name": "resolved-file-metadata",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/bin/stat",
+        "-f",
+        "%HT %Sp",
+        "/usr/local/Cellar/pcre2/10.48/lib/libpcre2-8.0.dylib"
+      ]
+    },
+    {
+      "name": "git-version-denials",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "--log-denials",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "--version"
+      ]
+    }
+  ],
+  "command_seconds": 30,
+  "total_seconds": 180,
+  "notes": "unchanged profile; log-denials is supported logger diagnostic, not model inference or rule modification"
+}

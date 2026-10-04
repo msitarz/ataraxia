@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-delivery-9f2b7c18db15/conflict",
+    "log",
+    "--reverse",
+    "--format=fuller",
+    "--binary",
+    "-p",
+    "0d3d10559af80d20dbb1c34a97b4de5886b79c2e..065b070dfc099a8b5a6cb55b4b2be65383fefffe"
+  ],
+  "exit": 0,
+  "sha256": "4ba2fab4bc42b89d7175ff0aef164c2334309fcca6e8eb14d0353fdb7b271746",
+  "source": "read-only accepted disposable repository; no auth/model/sandbox access"
+}

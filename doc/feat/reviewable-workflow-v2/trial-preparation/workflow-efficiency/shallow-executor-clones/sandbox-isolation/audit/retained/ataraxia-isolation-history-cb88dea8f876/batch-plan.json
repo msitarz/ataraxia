@@ -1,0 +1,284 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-history-cb88dea8f876",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "env": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "git_options": [
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "commit.gpgSign=false",
+    "-c",
+    "tag.gpgSign=false",
+    "-c",
+    "core.hooksPath=/private/tmp/ataraxia-isolation-history-cb88dea8f876/empty-hooks"
+  ],
+  "ids": {
+    "H1": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+    "H0": "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+    "side": "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+  },
+  "config_sha256": "b77cb4f3242b3a4578678ecb9c11c9e6ec047470d855d8eb7dbca6a084131ad7",
+  "hook_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+  "codex_environment": {
+    "CODEX_HOME": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/state"
+  },
+  "phases": [
+    {
+      "name": "absent-H0-before",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "cat-file",
+        "-e",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+      ]
+    },
+    {
+      "name": "absent-side-before",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "cat-file",
+        "-e",
+        "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+      ]
+    },
+    {
+      "name": "source-file",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source/current.txt"
+      ]
+    },
+    {
+      "name": "source-git-file",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source/.git/HEAD"
+      ]
+    },
+    {
+      "name": "source-git-show",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+        "show",
+        "H0:historical.txt"
+      ]
+    },
+    {
+      "name": "source-symlink",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/source-link/current.txt"
+      ]
+    },
+    {
+      "name": "fetch-H0-side",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "fetch",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+        "refs/heads/side"
+      ]
+    },
+    {
+      "name": "unshallow",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "fetch",
+        "--unshallow",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+        "master"
+      ]
+    },
+    {
+      "name": "absent-H0-after",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "cat-file",
+        "-e",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+      ]
+    },
+    {
+      "name": "absent-side-after",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "cat-file",
+        "-e",
+        "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+      ]
+    },
+    {
+      "name": "read-task",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/task.txt"
+      ]
+    },
+    {
+      "name": "edit-check",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/bin/sh",
+        "-c",
+        "printf ready > task.txt; test \"$(cat task.txt)\" = ready"
+      ]
+    },
+    {
+      "name": "stage",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "add",
+        "task.txt"
+      ]
+    },
+    {
+      "name": "commit",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "/usr/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone",
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "-c",
+        "commit.gpgSign=false",
+        "-c",
+        "core.hooksPath=/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/.git/hooks",
+        "commit",
+        "-m",
+        "fixture-executor-change"
+      ]
+    }
+  ],
+  "timeout_seconds": 30,
+  "batch_seconds": 300,
+  "preparation_verified": {
+    "only_master_ref": true,
+    "shallow_H1": true,
+    "no_alternates": true,
+    "no_remote": true,
+    "dirty_input_excluded": true
+  }
+}

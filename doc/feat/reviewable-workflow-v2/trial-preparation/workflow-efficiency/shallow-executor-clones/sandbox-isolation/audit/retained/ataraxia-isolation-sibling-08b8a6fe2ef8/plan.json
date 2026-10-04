@@ -1,0 +1,154 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "launcher_tmpdir": "/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/",
+  "git": "/usr/local/Cellar/git/2.55.0/bin/git",
+  "HEAD": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+  "excluded": [
+    "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+    "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+  ],
+  "config_sha256": "e1bf8b7b4b405be8189cebff0bbdd0173ada9e2320aabfe42a41621681ed9031",
+  "hashes": {
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/current.txt": "5f4c7a3df738ef0d9e308f7bc7dcf1d3bbca76ca2838543c00071f0f6dad2880",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/dirty.txt": "92d92c179b33d6c5b6c4a2bbd36260b2ae51a2f011013306fe99164de0883495",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/.git": "3deab3a7dff651a81fbd34a620349f01c7f3a57b714ee5fec13165b68f03c386",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git/HEAD": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+    "/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/ataraxia-sibling-8df387f410584bee8a65f5d9190956cb.txt": "5a9c15344e323e8179a91e3692532bcb37dabe3f2c0384e704ce064b96f31501",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-current": "5f4c7a3df738ef0d9e308f7bc7dcf1d3bbca76ca2838543c00071f0f6dad2880",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-dirty": "92d92c179b33d6c5b6c4a2bbd36260b2ae51a2f011013306fe99164de0883495",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-git-pointer": "3deab3a7dff651a81fbd34a620349f01c7f3a57b714ee5fec13165b68f03c386",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/common-head": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/.git/index": "009f473893ca67070e5feb612212ae7200c1857542692585f33acdbf87bb4e8d",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/task.txt": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/side.txt": "e2aa2ed6e46c0fb4684c76b7c876348d567e2855520c294f1c48bb790810ff26",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-side.json": "b7ac1971a59d08a02c7b0b40a23c9e62b94bcf3c4a7f3702146a9e3058265c1f",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-H0.json": "6351ddc5972d0f0b434783e6d9fe27ef7207be5371491de33c5ae671924f9dd6",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-sibling-show.json": "3ed342759fbc900a716277182265441d5b4b4050a1144f9d4035a2e6c230fa4d",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-common-show.json": "cd7e996bc9d54d133e05c8fe10792a2978ad1f8d1896adbff5b4bcb531346f8e",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-common-symlink-show.json": "45b8ac1d2a72adc8e1cdc81ad6babe0c8ca86dbc57e55eb3803d61170f5c69a5"
+  },
+  "tool_hashes": {
+    "/usr/local/Cellar/git/2.55.0/bin/git": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116",
+    "/usr/local/bin/codex": "78dc6d28fa52d0ee89205c383f2caaf596d2fb7ef2847c076c6da7cc3ac46d66"
+  },
+  "symlinks": {
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/common-storage": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/common-head": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git/HEAD",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-current": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/current.txt",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-dirty": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/dirty.txt",
+    "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-git-pointer": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/.git"
+  },
+  "denials": [
+    {
+      "name": "deny-read-0",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/current.txt"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-1",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/dirty.txt"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-2",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/.git"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-3",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git/HEAD"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-4",
+      "argv": [
+        "/bin/cat",
+        "/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/ataraxia-sibling-8df387f410584bee8a65f5d9190956cb.txt"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-5",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-current"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-6",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-dirty"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-7",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/sibling-git-pointer"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-read-8",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/common-head"
+      ],
+      "kind": "file-read"
+    },
+    {
+      "name": "deny-sibling-show",
+      "argv": [
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling",
+        "show",
+        "HEAD:side.txt"
+      ],
+      "kind": "git-history",
+      "control": "control-exact-sibling-show.json"
+    },
+    {
+      "name": "deny-common-show",
+      "argv": [
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "--git-dir=/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git",
+        "show",
+        "H0:historical.txt"
+      ],
+      "kind": "git-history",
+      "control": "control-exact-common-show.json"
+    },
+    {
+      "name": "deny-common-symlink-show",
+      "argv": [
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "--git-dir=/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/common-storage",
+        "show",
+        "H0:historical.txt"
+      ],
+      "kind": "git-history",
+      "control": "control-exact-common-symlink-show.json"
+    }
+  ],
+  "timeout_seconds": 30,
+  "total_seconds": 300,
+  "scope": "one shallow assigned clone only; no sibling/reviewer/control/missingcache write grants; no setup/model/network trial",
+  "git_diagnostic_rule": "zero output/nonzero with same-argv successful control and prior explicit direct storage/file denial supports inferred inability; generic Git discovery is not direct permission proof"
+}

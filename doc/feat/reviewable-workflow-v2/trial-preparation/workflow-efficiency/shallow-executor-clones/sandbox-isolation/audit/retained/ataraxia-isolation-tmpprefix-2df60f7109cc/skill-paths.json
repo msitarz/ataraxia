@@ -1,0 +1,22 @@
+{
+  "roots": [
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/state/skills",
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/state/skills/.system",
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.agents/skills",
+    "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.codex/skills",
+    "/Users/nzs/.agents/skills",
+    "/Users/nzs/.codex/skills",
+    "/etc/codex/skills"
+  ],
+  "skill_paths": [
+    "/Users/nzs/.codex/skills/.system/imagegen/SKILL.md",
+    "/Users/nzs/.codex/skills/.system/openai-docs/SKILL.md",
+    "/Users/nzs/.codex/skills/.system/review-agent/SKILL.md",
+    "/Users/nzs/.codex/skills/.system/skill-creator/SKILL.md",
+    "/Users/nzs/.codex/skills/.system/skill-installer/SKILL.md",
+    "/Users/nzs/.codex/skills/pdf/SKILL.md",
+    "/Users/nzs/.codex/skills/playwright/SKILL.md"
+  ],
+  "contents_read": false,
+  "original_codex_home_included_conservatively": true
+}

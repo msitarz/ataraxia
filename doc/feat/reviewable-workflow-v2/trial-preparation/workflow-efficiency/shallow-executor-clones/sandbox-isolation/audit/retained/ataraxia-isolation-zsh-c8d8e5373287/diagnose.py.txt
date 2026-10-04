@@ -1,0 +1,28 @@
+import pathlib,json,os,subprocess,hashlib,time,uuid,datetime
+E=pathlib.Path(__file__).resolve().parent
+PLAN_HASH='6eb137a9a934f3adf50865a99458cbf0010037e817ad52b7731fb45553d66299'
+sha=lambda p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'plan.json')==PLAN_HASH
+P=json.loads((E/'plan.json').read_text());start=time.monotonic();env=dict(os.environ)
+assert env.get('TMPDIR')==P['host_tmpdir']
+for k in list(env):
+ if k.startswith(('CODEX_','OPENAI_')):env.pop(k)
+env['CODEX_HOME']=P['state']
+for path,digest in P['hashes'].items():assert sha(path)==digest
+with (E/('launch-'+uuid.uuid4().hex+'.jsonl')).open('x') as log:
+ def record(v):v['utc']=datetime.datetime.now(datetime.timezone.utc).isoformat();log.write(json.dumps(v)+'\n');log.flush()
+ def call(name,argv):
+  remaining=P['shared_seconds']-(time.monotonic()-start);assert remaining>0
+  q=subprocess.run(argv,cwd=P['cwd'],env=env,capture_output=True,timeout=min(30,remaining))
+  record(dict(name=name,argv=argv,exit=q.returncode,stdout_bytes=len(q.stdout),stdout_sha256=hashlib.sha256(q.stdout).hexdigest(),stderr_sha256=hashlib.sha256(q.stderr).hexdigest(),permission=any(x in q.stderr.lower() for x in [b'operation not permitted',b'permission denied']),stderr=q.stderr.decode(errors='replace')))
+  assert not any(x in q.stderr.lower() for x in [b'sandbox-exec:',b'dyld',b'xcode-select',b'command not found']),'unsupported startup'
+  return q
+ for case in P['cases']:
+  q=call(case['name']+'-unrestricted-control',case['argv']);assert q.returncode==0
+  restricted=call(case['name']+'-sandbox',['/usr/local/bin/codex','sandbox','-P','isolation','--include-managed-config','-C',P['clone']]+case['argv'])
+  if case['expect']=='metadata':
+   assert restricted.returncode==0 and restricted.stdout==q.stdout;record(dict(name=case['name'],variables=restricted.stdout.decode()))
+  elif case['expect']=='pass':assert restricted.returncode==0 and restricted.stdout==q.stdout
+  else:assert restricted.returncode!=0 and not restricted.stdout and any(x in restricted.stderr.lower() for x in [b'operation not permitted',b'permission denied'])
+ for path,digest in P['hashes'].items():assert sha(path)==digest
+ record(dict(name='completed',all_controls_passed=True,no_model=True))

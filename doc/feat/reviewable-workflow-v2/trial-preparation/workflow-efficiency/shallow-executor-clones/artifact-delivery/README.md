@@ -61,6 +61,30 @@ and maintainer merge. Local transport is not proof of GitHub behavior; disclose
 that limit. A live GitHub smoke test needs separate maintainer approval naming
 destination and cleanup. This Work grants no executor push authority.
 
+## Selected delivery preparation
+
+The maintainer authorized the
+[bounded reviewed fork import/rebase packet](delivery-protocol.md). Its
+[completed selected path](delivery-protocol.md#completed-reviewed-importrebase-and-local-delivery)
+passed actual shallow executor import, independent advanced/conflict rebase and
+reviewed local Work-ref publication after one retained editor harness
+correction. The recommendation is approved executor commits → explicit
+full-history import → Work-branch rebase/evidence refresh → reviewed
+orchestrator PR with usual CI and maintainer gates. Live PR/CI, alternative
+transports, missing ancestry and post-publication sandbox replay remain unrun.
+This is no production adoption; acceptance remains TODO.
+
+## Preservation evidence
+
+The maintainer's one-commit preservation request includes the
+[stable in-repository audit](../sandbox-isolation/audit/README.md), including
+[delivery recovery log](../sandbox-isolation/audit/retained/ataraxia-delivery-9f2b7c18db15/recovery-launch-46589f3a7e194d64a83bdda64c193ee5.jsonl)
+and
+[commit extracts](../sandbox-isolation/audit/git-extracts/conflict-commits.patch.txt).
+No cleanup or production adoption is included. Ordinary orchestrator PR/CI and
+maintainer review remain downstream responsibilities, not a separate live smoke
+test prerequisite for preservation.
+
 ## Acceptance
 
 - **AC-1 TODO** Actual transfer and direct-publication probes record whether

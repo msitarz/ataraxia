@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "--git-dir=/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/common-storage",
+    "show",
+    "H0:historical.txt"
+  ],
+  "exit": 0,
+  "stdout_sha256": "9bad433db79ff238fafc952cf5b7f2d155fabca5fc8dba0c199bcdadc37ecd8d",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

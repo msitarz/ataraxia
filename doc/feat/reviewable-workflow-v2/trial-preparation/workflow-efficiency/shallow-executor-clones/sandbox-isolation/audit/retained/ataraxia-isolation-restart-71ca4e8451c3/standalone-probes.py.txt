@@ -1,0 +1,87 @@
+"""Disposable reproduction only; execute after specific launcher approval."""
+
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import uuid
+
+ROOT = Path("/private/tmp/ataraxia-isolation-restart-71ca4e8451c3")
+MANIFEST_HASH = "39cb6e8badd2b04a10bed5f632d5ca62247775364ba7b02c5c28c526453b0836"
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    path = ROOT / "evidence" / ("external-launch-" + uuid.uuid4().hex + ".jsonl")
+    with path.open("x") as log:
+        def record(item):
+            item["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            log.write(json.dumps(item) + "\n")
+            log.flush()
+
+        manifest = (ROOT / "evidence/frozen-plan.json").read_bytes()
+        if digest(manifest) != MANIFEST_HASH:
+            record({"phase": "preflight", "result": "manifest mismatch"})
+            return 2
+        plan = json.loads(manifest)
+        for config in (ROOT / "evidence/config.toml", ROOT / "codex-state/config.toml"):
+            if digest(config.read_bytes()) != plan["config_sha256"]:
+                record({"phase": "preflight", "result": "configuration mismatch"})
+                return 2
+        source = (ROOT / "source/current.txt").read_bytes()
+        if digest(source) != plan["canary_sha256"]:
+            record({"phase": "preflight", "result": "source control mismatch"})
+            return 2
+        task = ROOT / "clone/task.txt"
+        if task.read_bytes() != b"pending\n":
+            record({"phase": "preflight", "result": "task is stale"})
+            return 2
+        record({"phase": "preflight", "result": "passed", "manifest_sha256": MANIFEST_HASH,
+                "configuration_sha256": plan["config_sha256"],
+                "source_sha256": digest(source), "cwd": plan["cwd"]})
+        environment = dict(os.environ)
+        environment.update(plan["codex_environment"])
+        for phase in ("write", "deny"):
+            record({"phase": phase, "event": "launch", "argv": plan[phase],
+                    "codex_environment": plan["codex_environment"], "timeout_seconds": 30})
+            try:
+                result = subprocess.run(plan[phase], env=environment, cwd=plan["cwd"],
+                                        capture_output=True, timeout=30)
+            except subprocess.TimeoutExpired:
+                record({"phase": phase, "result": "timeout"})
+                return 1
+            except OSError as error:
+                record({"phase": phase, "result": "launcher error", "error": str(error)})
+                return 1
+            stderr = result.stderr.decode("utf-8", errors="replace")
+            stderr = stderr.replace(source.decode().strip(), "[canary redacted]")
+            item = {"phase": phase, "exit_code": result.returncode,
+                    "stdout_sha256": digest(result.stdout), "stdout_bytes": len(result.stdout),
+                    "stderr": stderr}
+            if phase == "write":
+                success = result.returncode == 0 and task.read_bytes() == b"ready"
+                item["write_observed"] = success
+                record(item)
+                if not success:
+                    return 1
+            else:
+                diagnostic = "Permission denied" in stderr or "Operation not permitted" in stderr
+                child_ran = "cat:" in stderr and str(ROOT / "source/current.txt") in stderr
+                denied = (result.returncode != 0 and diagnostic and child_ran
+                          and "sandbox-exec:" not in stderr and len(result.stdout) == 0)
+                item["source_read_denied"] = denied
+                item["source_output_matched"] = digest(result.stdout) == plan["canary_sha256"]
+                record(item)
+                if not denied:
+                    return 1
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

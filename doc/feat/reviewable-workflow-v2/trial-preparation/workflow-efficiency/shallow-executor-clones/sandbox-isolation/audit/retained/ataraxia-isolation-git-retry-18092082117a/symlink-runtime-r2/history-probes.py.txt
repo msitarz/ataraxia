@@ -1,0 +1,137 @@
+"""Disposable host-launch reproduction; review and approve before executing."""
+
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import uuid
+
+ROOT = Path("/private/tmp/ataraxia-isolation-git-retry-18092082117a")
+PLAN_HASH = "b8f72a706020c4cd7c77f757f71b93e924ca836e0fbdc4f2bafb06c08c033f6d"
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    started = time.monotonic()
+    log_path = ROOT / "evidence" / ("batch-launch-" + uuid.uuid4().hex + ".jsonl")
+    with log_path.open("x") as log:
+        def record(item):
+            item["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            log.write(json.dumps(item) + "\n")
+            log.flush()
+
+        raw = (ROOT / "evidence/symlink-runtime-r2/batch-plan.json").read_bytes()
+        if digest(raw) != PLAN_HASH:
+            record({"result": "manifest mismatch"})
+            return 2
+        plan = json.loads(raw)
+        for path in (ROOT / "evidence/symlink-runtime-r2/config.toml", ROOT / "evidence/symlink-runtime-r2/state/config.toml"):
+            if digest(path.read_bytes()) != plan["config_sha256"]:
+                record({"result": "configuration mismatch"})
+                return 2
+        clone = ROOT / "clone"
+        hook = clone / ".git/hooks/pre-commit"
+        fresh = (digest(hook.read_bytes()) == plan["hook_sha256"]
+                 and clone.joinpath("task.txt").read_bytes() == b"pending\n"
+                 and not clone.joinpath("hook-marker").exists()
+                 and clone.joinpath(".git/shallow").read_text().strip() == plan["ids"]["H1"]
+                 and not clone.joinpath(".git/objects/info/alternates").exists()
+                 and not clone.joinpath("dirty.txt").exists())
+        if not fresh:
+            record({"result": "fixture not fresh"})
+            return 2
+        for resource, expected in plan["runtime_read_revision"]["resource_hashes"].items():
+            if digest(Path(resource).read_bytes()) != expected:
+                record({"result": "runtime resource mismatch", "path": resource})
+                return 2
+        for path, expected in plan["symlink_runtime_revision"]["symlink_targets"].items():
+            if os.readlink(path) != expected:
+                record({"result": "runtime symlink changed", "path": path})
+                return 2
+        for path, expected in plan["symlink_runtime_revision"]["source_control_hashes"].items():
+            if digest(Path(path).read_bytes()) != expected:
+                record({"result": "source control changed", "path": path})
+                return 2
+        record({"result": "preflight passed", "manifest_sha256": PLAN_HASH,
+                "config_sha256": plan["config_sha256"], "hook_sha256": plan["hook_sha256"]})
+        environment = dict(os.environ)
+        environment.update(plan["env"])
+        environment.update(plan["codex_environment"])
+        failures = False
+        stage_passed = False
+        for phase in plan["phases"]:
+            name = phase["name"]
+            remaining = 300 - (time.monotonic() - started)
+            if remaining <= 0:
+                record({"result": "batch time cap reached", "next_phase": name})
+                return 1
+            if name == "commit" and not stage_passed:
+                record({"phase": name, "result": "unrun: staging failed"})
+                failures = True
+                continue
+            record({"phase": name, "event": "launch", "argv": phase["argv"]})
+            try:
+                result = subprocess.run(phase["argv"], cwd=plan["cwd"], env=environment,
+                                        capture_output=True, timeout=min(30, remaining))
+            except (subprocess.TimeoutExpired, OSError) as error:
+                record({"phase": name, "result": type(error).__name__})
+                return 1
+            stderr = result.stderr.decode("utf-8", errors="replace")
+            item = {"phase": name, "exit_code": result.returncode,
+                    "stdout_sha256": digest(result.stdout), "stdout_bytes": len(result.stdout),
+                    "stderr": stderr}
+            if (any(marker in stderr for marker in ("sandbox-exec:", "xcode-select:", "dyld[", "Library not loaded", "not a git repository"))
+                    or ("cannot change to" in stderr and not name.startswith("source-"))):
+                item["result"] = "unsupported runtime or launch prerequisite; stop"
+                record(item)
+                return 1
+            if name in ("runtime-version", "runtime-H1"):
+                expected = b"git version 2.55.0\n" if name == "runtime-version" else b"commit\n"
+                if result.returncode != 0 or result.stdout != expected:
+                    item["result"] = "tool prerequisite inconclusive; stop"
+                    record(item)
+                    return 1
+            elif name.startswith("source-"):
+                denied = (result.returncode != 0 and not result.stdout
+                          and ("Operation not permitted" in stderr or "Permission denied" in stderr))
+                item["permission_diagnostic"] = denied
+                if result.returncode == 0 or result.stdout:
+                    item["result"] = "source exposure; stop"
+                    record(item)
+                    return 1
+                failures |= not denied
+            elif name.startswith("absent-"):
+                item["object_absent"] = result.returncode == 128 and "fatal: git cat-file: could not get object info" in stderr
+                if not item["object_absent"]:
+                    record(item)
+                    return 1
+            elif name in ("fetch-H0-side", "unshallow"):
+                item["fetch_failed"] = result.returncode != 0
+                item["interpretation"] = "Diagnose source-read vs protected Git-write failure; failure alone is not denial proof"
+                failures |= result.returncode == 0
+            else:
+                failures |= result.returncode != 0
+                if name == "edit-check":
+                    item["write_observed"] = clone.joinpath("task.txt").read_bytes() == b"ready"
+                    if result.returncode != 0 or not item["write_observed"]:
+                        record(item)
+                        return 1
+                if name == "stage":
+                    stage_passed = result.returncode == 0
+                if name == "commit":
+                    marker = clone / "hook-marker"
+                    item["hook_invoked"] = marker.exists() and marker.read_bytes() == b"invoked"
+                    failures |= not item["hook_invoked"]
+            record(item)
+        return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

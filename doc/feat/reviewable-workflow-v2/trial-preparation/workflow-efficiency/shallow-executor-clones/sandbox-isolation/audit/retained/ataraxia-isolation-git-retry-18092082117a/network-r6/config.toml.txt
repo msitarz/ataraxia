@@ -1,0 +1,25 @@
+default_permissions = "isolation"
+approval_policy = "never"
+[permissions.isolation]
+extends = ":workspace"
+[permissions.isolation.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"
+"/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone" = "write"
+"/private/tmp/ataraxia-isolation-git-retry-18092082117a/source" = "deny"
+"/usr/local/opt/pcre2/lib/libpcre2-8.0.dylib" = "read"
+"/usr/local/Cellar/pcre2/10.48/lib/libpcre2-8.0.dylib" = "read"
+"/usr/local/opt/gettext/lib/libintl.8.dylib" = "read"
+"/usr/local/Cellar/gettext/1.0/lib/libintl.8.dylib" = "read"
+"/usr/local/opt/git/libexec/git-core/git-upload-pack" = "read"
+"/usr/local/Cellar/git/2.55.0/libexec/git-core/git-upload-pack" = "read"
+"/usr/local/Cellar/git/2.55.0/bin/git" = "read"
+"/usr/local/opt/pcre2" = "read"
+"/usr/local/opt/gettext" = "read"
+"/usr/local/opt/git" = "read"
+"/usr" = "read"
+"/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git" = "write"
+[permissions.isolation.network]
+enabled = false

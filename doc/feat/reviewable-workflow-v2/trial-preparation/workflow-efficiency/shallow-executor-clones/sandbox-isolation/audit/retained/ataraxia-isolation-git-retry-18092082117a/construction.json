@@ -1,0 +1,22 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-git-retry-18092082117a",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "env": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_TERMINAL_PROMPT": "0"
+  },
+  "git_options": [
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "commit.gpgSign=false",
+    "-c",
+    "tag.gpgSign=false",
+    "-c",
+    "core.hooksPath=/private/tmp/ataraxia-isolation-git-retry-18092082117a/empty-hooks"
+  ]
+}

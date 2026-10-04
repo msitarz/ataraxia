@@ -1,0 +1,195 @@
+{
+  "root": "/private/tmp/ataraxia-delivery-9f2b7c18db15",
+  "evidence": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "git": "/usr/local/Cellar/git/2.55.0/bin/git",
+  "git_sha256": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116",
+  "approved_clone": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone",
+  "approved_ref": "refs/heads/master",
+  "approved_base": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+  "approved_commits": [
+    "efefa0ed26c20eb532c94990f0019f2b7c53a531",
+    "dcc22b3f7596dc01789c8eac59531b2b0e669672"
+  ],
+  "excluded_objects": [
+    "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+    "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+  ],
+  "approved_snapshot": {
+    "common-storage": {
+      "symlink": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git"
+    },
+    "source-link": {
+      "symlink": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source"
+    },
+    "task.txt": {
+      "sha256": "1c34f88707b55e6104c4eb20e71ffa3d33e414b71ef689a15fad0640d0ac58cb"
+    },
+    "sibling-pointer": {
+      "symlink": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/.git"
+    },
+    "sibling-current": {
+      "symlink": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/current.txt"
+    },
+    "current.txt": {
+      "sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071"
+    },
+    "sibling-dirty": {
+      "symlink": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling/dirty.txt"
+    },
+    ".scratch/probe-control": {
+      "sha256": "0fcd568a5cb9bdb4677b69354b11ee415af8f784519cff3da49a26f84eaee7f2"
+    },
+    ".git/neutral-probes.json": {
+      "sha256": "0981d8a592f009f36a9ce0df58dd871413b68e95fd3aa9babfd23862c28e3454"
+    },
+    ".git/config": {
+      "sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda"
+    },
+    ".git/shallow": {
+      "sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8"
+    },
+    ".git/hook-marker": {
+      "sha256": "a6037795ea7a9121a22859fcf0bd717dce27a8feac748e8c04a3a253ef15aba6"
+    },
+    ".git/HEAD": {
+      "sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10"
+    },
+    ".git/neutral-network.json": {
+      "sha256": "7aead855fb8ea1e0b37817dde1637b4730ed784a7f9ddee5d7ae5de4378ad803"
+    },
+    ".git/description": {
+      "sha256": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee"
+    },
+    ".git/index": {
+      "sha256": "476e02edf18e1425d654de11aacd216e35a38e3ffd12d20604ddcfe6c97dd1ec"
+    },
+    ".git/packed-refs": {
+      "sha256": "6110899c7adc374885f9552bddfb76fa28a7f7ca3c05fb8b74471a457e1e57c8"
+    },
+    ".git/COMMIT_EDITMSG": {
+      "sha256": "7b3f81be70edc5e3cb4c5cea8b5e03274a5cf86380778b75d272873b552c7af4"
+    },
+    ".git/neutral-probes.py": {
+      "sha256": "585b3cd9e84d8968ff4fd01071bd2df68dc755979598ee539f46e82ea04839bb"
+    },
+    ".git/FETCH_HEAD": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    ".git/info/exclude": {
+      "sha256": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1"
+    },
+    ".git/logs/HEAD": {
+      "sha256": "9976c993395b787bbaf8b47541228f118524f2960cd3ce2bfb7362be94a3b9e1"
+    },
+    ".git/hooks/commit-msg.sample": {
+      "sha256": "efc1401b0e99d1ff51494d154d98b46c1e99059bcd8bf9f73cecde19fd3eb23b"
+    },
+    ".git/hooks/pre-rebase.sample": {
+      "sha256": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3"
+    },
+    ".git/hooks/sendemail-validate.sample": {
+      "sha256": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92"
+    },
+    ".git/hooks/pre-commit.sample": {
+      "sha256": "57185b7b9f05239d7ab52db045f5b89eb31348d7b2177eab214f5eb872e1971b"
+    },
+    ".git/hooks/applypatch-msg.sample": {
+      "sha256": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7"
+    },
+    ".git/hooks/fsmonitor-watchman.sample": {
+      "sha256": "9159720099ad5595b8e66645cbfd47763c1e920f46e0b50ae75e642bbec57ef0"
+    },
+    ".git/hooks/pre-receive.sample": {
+      "sha256": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989"
+    },
+    ".git/hooks/prepare-commit-msg.sample": {
+      "sha256": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619"
+    },
+    ".git/hooks/post-update.sample": {
+      "sha256": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5"
+    },
+    ".git/hooks/pre-merge-commit.sample": {
+      "sha256": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53"
+    },
+    ".git/hooks/pre-applypatch.sample": {
+      "sha256": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475"
+    },
+    ".git/hooks/pre-commit": {
+      "sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630"
+    },
+    ".git/hooks/pre-push.sample": {
+      "sha256": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a"
+    },
+    ".git/hooks/update.sample": {
+      "sha256": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106"
+    },
+    ".git/hooks/push-to-checkout.sample": {
+      "sha256": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f"
+    },
+    ".git/refs/heads/master": {
+      "sha256": "20c25061cf109f71335e8080ef8532d5822c76f2431a89376d73e6304b559a94"
+    },
+    ".git/logs/refs/heads/master": {
+      "sha256": "9976c993395b787bbaf8b47541228f118524f2960cd3ce2bfb7362be94a3b9e1"
+    },
+    ".git/objects/61/88798aa87d2fab4851fdaa06d16bd8b636222d": {
+      "sha256": "b5ee27f6fff111e653344f5eef8a59eba5c350041f7594d479c4f4d954fdac3b"
+    },
+    ".git/objects/ad/50b53407197828b2a130a6ba58b9a4a4a62617": {
+      "sha256": "d5f499c2d338c015efed7cd9056a19fca4b3eb104486e7a7361c8c1af42a07bf"
+    },
+    ".git/objects/pack/pack-54b2a0f3dcc39aa460f3f13cd79c7c7fcab0bf2a.idx": {
+      "sha256": "77be30725f245e6a2b07ce58c17ba10eb8e6e1f4ee577cc1e26f7c7abd2f887b"
+    },
+    ".git/objects/pack/pack-54b2a0f3dcc39aa460f3f13cd79c7c7fcab0bf2a.pack": {
+      "sha256": "2ffff37a1f32b8801f796232ead9d149784815bc1772542811bf85c8b18a81c4"
+    },
+    ".git/objects/pack/pack-54b2a0f3dcc39aa460f3f13cd79c7c7fcab0bf2a.rev": {
+      "sha256": "5b2a5d0bf70785bb980e618bdfbf1b0e88c694693bd0afa8f35e92cb708ce9ff"
+    },
+    ".git/objects/bf/1030ad1aa7ddc2e6b744b3205d97832486bc7a": {
+      "sha256": "7f574952b66142b1923561c49c73b782daa45e559656f185527352fe7ae48dd7"
+    },
+    ".git/objects/dc/c22b3f7596dc01789c8eac59531b2b0e669672": {
+      "sha256": "89ba6621192bd78a8ac5f82e86c478c8048d496e594fa6385b7a8f7a621692b1"
+    },
+    ".git/objects/ef/efa0ed26c20eb532c94990f0019f2b7c53a531": {
+      "sha256": "0ca334924d15c28c9ad16194ca269debe122c3d6852d95eb7f52559bb0953efb"
+    },
+    ".git/objects/79/0d94b51b25b420d9cc7567ebf2f99b5b157367": {
+      "sha256": "71c7d601ffab06fad6c25723c9497f31ef2464cfb392bc37c7f12d2ba1097f89"
+    }
+  },
+  "full_source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+  "work_ref": "refs/heads/work/delivery",
+  "command_seconds": 30,
+  "shared_seconds": 900,
+  "runtime_git_environment": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_SEQUENCE_EDITOR": "/usr/bin/false",
+    "GIT_AUTHOR_NAME": "Fixture Author",
+    "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
+    "GIT_COMMITTER_NAME": "Orchestrator Fixture",
+    "GIT_COMMITTER_EMAIL": "reviewer@example.invalid"
+  },
+  "scope": "Disposable local integrated import, deterministic unchanged/advanced/conflict sequences, reviewer checkpoint and local bare Work-ref publication only; no GitHub/PR/CI/model/sandbox replay",
+  "publication_gate": "Root-only sentinel binds review request hash; requires refreshed conflict/evidence/commit boundaries and accepted source invariants. No publication before it.",
+  "review_checkpoints": [
+    "fixture criteria review of staged implementation before fixture DONE/evidence commit and separate cleanup",
+    "post-rebase/conflict evidence refresh and publication review before local bare push"
+  ],
+  "fixture_expected": {
+    "text": "changed newline",
+    "binary_hex": "00ff0a0304",
+    "rename": "old-name.txt to new-name.txt preserving rename-base newline",
+    "delete": "deleted.txt",
+    "executable": "run.sh mode100755",
+    "sequence": "verified implementation/evidence then cleanup",
+    "clean_advanced": "upstream.txt retained; work authors/dates/subjects/order preserved; IDs rewritten",
+    "conflict": "text conflict causes rebase exit1; orchestrator-owned declared resolved-upstream+work newline; evidence refresh acceptance before publication"
+  }
+}

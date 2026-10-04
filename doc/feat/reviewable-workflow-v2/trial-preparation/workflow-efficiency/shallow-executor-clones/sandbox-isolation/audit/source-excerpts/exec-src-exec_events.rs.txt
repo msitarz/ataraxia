@@ -1,0 +1,39 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original exec/src/exec_events.rs
+104: /// Typed payloads for each supported thread item type.
+105: #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+106: #[serde(tag = "type", rename_all = "snake_case")]
+107: pub enum ThreadItemDetails {
+108:     /// Response from the agent.
+109:     /// Either a natural-language response or a JSON string when structured output is requested.
+110:     AgentMessage(AgentMessageItem),
+111:     /// Agent's reasoning summary.
+112:     Reasoning(ReasoningItem),
+113:     /// Tracks a command executed by the agent. The item starts when the command is
+114:     /// spawned, and completes when the process exits with an exit code.
+115:     CommandExecution(CommandExecutionItem),
+116:     /// Represents a set of file changes by the agent. The item is emitted only as a
+117:     /// completed event once the patch succeeds or fails.
+118:     FileChange(FileChangeItem),
+119:     /// Represents a call to an MCP tool. The item starts when the invocation is
+120:     /// dispatched and completes when the MCP server reports success or failure.
+121:     McpToolCall(McpToolCallItem),
+122:     /// Represents a call to a collab tool. The item starts when the collab tool is
+123:     /// invoked and completes when the collab tool reports success or failure.
+124:     CollabToolCall(CollabToolCallItem),
+125:     /// Captures a web search request. It starts when the search is kicked off
+126:     /// and completes when results are returned to the agent.
+127:     WebSearch(WebSearchItem),
+128:     /// Tracks the agent's running to-do list. It starts when the plan is first
+129:     /// issued, updates as steps change state, and completes when the turn ends.
+130:     TodoList(TodoListItem),
+131:     /// Describes a non-fatal error surfaced as an item.
+132:     Error(ErrorItem),
+133: }
+134:
+135: /// Response from the agent.
+136: /// Either a natural-language response or a JSON string when structured output is requested.
+137: #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+138: pub struct AgentMessageItem {
+139:     pub text: String,
+140: }

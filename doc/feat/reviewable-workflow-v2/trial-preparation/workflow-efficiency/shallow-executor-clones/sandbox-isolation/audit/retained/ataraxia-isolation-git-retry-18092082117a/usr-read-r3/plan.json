@@ -1,0 +1,73 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-git-retry-18092082117a",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "prior_manifest_sha256": "b8f72a706020c4cd7c77f757f71b93e924ca836e0fbdc4f2bafb06c08c033f6d",
+  "config_paths": [
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/config.toml",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/state/config.toml"
+  ],
+  "config_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+  "H1": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+  "hook_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+  "source_sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+  "env": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_EXEC_PATH": "/usr/local/opt/git/libexec/git-core"
+  },
+  "codex_environment": {
+    "CODEX_HOME": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/state"
+  },
+  "phases": [
+    {
+      "name": "git-version",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "--version"
+      ]
+    },
+    {
+      "name": "clone-HEAD",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "rev-parse",
+        "HEAD"
+      ]
+    },
+    {
+      "name": "source-denial",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/current.txt"
+      ]
+    }
+  ],
+  "command_seconds": 30,
+  "total_seconds": 90,
+  "concession": "/usr read includes its entire subtree; diagnostic only, not production design"
+}

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+case "$(cat task.txt)" in ready|verified) ;; *) exit 1;; esac
+printf invoked >> .git/hook-marker

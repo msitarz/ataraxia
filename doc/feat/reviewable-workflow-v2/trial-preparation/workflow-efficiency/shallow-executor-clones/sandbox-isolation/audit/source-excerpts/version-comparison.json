@@ -1,0 +1,43 @@
+{
+  "revision01593": "01fc69f4026735edfdf6789820549727a4867b11",
+  "revision01600": "a956835d020762cb2b570053af06f643a11c0ecc",
+  "files": [
+    {
+      "file": "sandboxing/src/seatbelt.rs",
+      "v01593_sha256": "03beaaaac24b6b856d4860ba4c1a6e3818e8cd2432dac7f23eddaef77e745ab5",
+      "v01600_sha256": "03beaaaac24b6b856d4860ba4c1a6e3818e8cd2432dac7f23eddaef77e745ab5",
+      "identical": true
+    },
+    {
+      "file": "sandboxing/src/seatbelt_read_only_platform_defaults.sbpl",
+      "v01593_sha256": "6c5c0ae4361e738053f172b635f4e1ab6287087f3d9b6e5882b0bc06922a7199",
+      "v01600_sha256": "6c5c0ae4361e738053f172b635f4e1ab6287087f3d9b6e5882b0bc06922a7199",
+      "identical": true
+    },
+    {
+      "file": "protocol/src/permissions/local_aliases.rs",
+      "v01593_sha256": "42b473a82680c70027df1ab0d8fd880878c5b13aa7d7932ee9e64bdc6277384b",
+      "v01600_sha256": "42b473a82680c70027df1ab0d8fd880878c5b13aa7d7932ee9e64bdc6277384b",
+      "identical": true
+    },
+    {
+      "file": "core/src/config/permissions.rs",
+      "v01593_sha256": "cda9109f6a5405dbf2abbe7d53883b755419c5b6d0b3e7f5834c65710db3479a",
+      "v01600_sha256": "cda9109f6a5405dbf2abbe7d53883b755419c5b6d0b3e7f5834c65710db3479a",
+      "identical": true
+    },
+    {
+      "file": "config/src/permissions_toml.rs",
+      "v01593_sha256": "f410e2da8b23102c3236ea47d37637666b2e07ea37d4dbb8be5ad0566b632810",
+      "v01600_sha256": "f410e2da8b23102c3236ea47d37637666b2e07ea37d4dbb8be5ad0566b632810",
+      "identical": true
+    },
+    {
+      "file": "cli/src/debug_sandbox/seatbelt.rs",
+      "v01593_sha256": "f66b9c094212dc83bc06e5c573a849ec4685961cae77721e92e7c0b407e87553",
+      "v01600_sha256": "f66b9c094212dc83bc06e5c573a849ec4685961cae77721e92e7c0b407e87553",
+      "identical": true
+    }
+  ],
+  "no_binary_execution": true
+}

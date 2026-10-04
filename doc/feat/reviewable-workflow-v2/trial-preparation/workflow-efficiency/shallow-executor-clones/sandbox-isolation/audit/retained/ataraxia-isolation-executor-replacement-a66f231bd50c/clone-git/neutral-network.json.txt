@@ -1,0 +1,21 @@
+[
+  [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone",
+    "fetch",
+    "http://127.0.0.1:55051/",
+    "refs/tags/H0",
+    "refs/heads/side"
+  ],
+  [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone",
+    "fetch",
+    "--no-write-fetch-head",
+    "http://127.0.0.1:55051/",
+    "refs/tags/H0",
+    "refs/heads/side"
+  ]
+]

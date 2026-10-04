@@ -1,0 +1,80 @@
+"""Reviewed diagnostic only. Requires specific orchestrator host approval."""
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import uuid
+
+DIRECTORY = Path("/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-diagnosis-r1")
+PLAN_HASH = "18813800ba9f499c19fe9cdb6de85a476c06e633a313c640a1f3006c69b3dab5"
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    started = time.monotonic()
+    with (DIRECTORY / ("diagnostic-" + uuid.uuid4().hex + ".jsonl")).open("x") as log:
+        def record(item):
+            item["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            log.write(json.dumps(item) + "\n")
+            log.flush()
+
+        raw = (DIRECTORY / "plan.json").read_bytes()
+        if digest(raw) != PLAN_HASH:
+            record({"result": "plan mismatch"})
+            return 2
+        plan = json.loads(raw)
+        for path in plan["config_paths"]:
+            if digest(Path(path).read_bytes()) != plan["config_sha256"]:
+                record({"result": "configuration mismatch"})
+                return 2
+        clone = Path(plan["root"]) / "clone"
+        if (clone.joinpath("task.txt").read_bytes() != b"pending\n"
+                or clone.joinpath(".git/shallow").read_text().strip() != plan["H1"]
+                or digest(clone.joinpath(".git/hooks/pre-commit").read_bytes()) != plan["hook_sha256"]):
+            record({"result": "fixture changed"})
+            return 2
+        env = dict(os.environ)
+        env.update(plan["env"])
+        env.update(plan["codex_environment"])
+        metadata = {key: env.get(key) for key in (
+            "CODEX_HOME", "CODEX_PERMISSION_PROFILE", "CODEX_SANDBOX", "CODEX_SANDBOX_NETWORK_DISABLED")}
+        record({"result": "preflight passed", "plan_sha256": PLAN_HASH,
+                "config_sha256": plan["config_sha256"], "environment_metadata": metadata,
+                "effective_profile_rules": "not exposed by inspected CLI help"})
+        failures = False
+        for phase in plan["phases"]:
+            remaining = 180 - (time.monotonic() - started)
+            if remaining <= 0:
+                record({"result": "time cap reached"})
+                return 1
+            record({"phase": phase["name"], "argv": phase["argv"], "event": "launch"})
+            try:
+                result = subprocess.run(phase["argv"], env=env, cwd=plan["cwd"],
+                                        capture_output=True, timeout=min(30, remaining))
+            except (subprocess.TimeoutExpired, OSError) as error:
+                record({"phase": phase["name"], "result": type(error).__name__})
+                return 1
+            stderr = result.stderr.decode("utf-8", errors="replace")
+            item = {"phase": phase["name"], "exit_code": result.returncode,
+                    "stdout_sha256": digest(result.stdout), "stdout_bytes": len(result.stdout),
+                    "stderr": stderr}
+            if phase["name"] not in ("opt-byte", "resolved-byte"):
+                item["stdout"] = result.stdout.decode("utf-8", errors="replace")
+            record(item)
+            failures |= result.returncode != 0
+            if "sandbox-exec:" in stderr:
+                return 1
+        record({"result": "diagnostic complete; interpret commands separately",
+                "fixture_unchanged": clone.joinpath("task.txt").read_bytes() == b"pending\n"})
+        return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
