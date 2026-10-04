@@ -9,9 +9,27 @@ caches remain unchanged; selection is filter-on-copy, never blind metadata
 rewriting. See the
 [cache recipe](../../sandbox-isolation/successful-recipe.md#project-setup-through-make-with-fresh-offline-environments).
 
-Keep this leaf within a five-minute review; split before oversized execution.
-Automated tests use criterion markers scoped to this README; manual judgments
-remain independent review. All criteria are planned, not observed evidence.
+## Child Works and composition
+
+- **TODO** [Registry cache selection](registry-cache-selection/README.md):
+  verify pinned registry payloads and preserve their complete resolver metadata.
+- **TODO** [Pinned hook sources](pinned-hook-sources/README.md): verify and
+  select only the required pinned third-party hook sources.
+- **TODO** [Snapshot delivery](snapshot-delivery/README.md): compose both
+  selections into a frozen snapshot with safe copying and recoverable failures.
+
+Registry and hook selection can proceed independently. Each returns its selected
+relative entries, dependency provenance and supported condition to snapshot
+delivery; that child depends on both reviewed results. Define concrete formats
+with implementation rather than introducing a general cache framework. Delivery
+must validate the composed snapshot through actual fresh offline Make setup;
+hashes and path scans alone cannot establish safe provenance or completeness.
+
+Each child owns criterion-marked tests and aims at a five-minute review
+including tests and documentation. Reassess and split before oversized
+execution. Merge this revised map before production implementation. This
+planning correction changes no preparation policy and authorizes no network or
+model launch. All criteria are planned, not observed evidence.
 
 ## Acceptance
 
@@ -20,13 +38,15 @@ remain independent review. All criteria are planned, not observed evidence.
   metadata; project payloads, source references, old environments and external
   links are rejected or excluded without changing the input cache.
 
-  Validation: Criterion-marked selection tests cover contaminated inputs, pinned
-  hook origins/revisions, links, metadata retention and input immutability;
-  independently review provenance and the allowed dependency boundary.
+  Validation: Reuse reviewed child selection tests and provenance evidence;
+  criterion-marked composition tests and actual fresh offline Make setup verify
+  the delivered snapshot. Independently review the composed allowed dependency
+  boundary and retained input-immutability evidence.
 - **AC-2 TODO** Missing, stale or unsupported cache/index inputs produce a
   recoverable diagnostic and retained destination/evidence without network
   fallback or destructive overwrite.
 
-  Validation: Criterion-marked failure tests
-  include absent artifacts, changed manifest and an existing destination;
-  independently review the supported cache/platform condition.
+  Validation: Reuse reviewed child failure tests for absent artifacts, changed
+  manifest, unsupported conditions and an existing destination. Independently
+  review supported conditions and retained recovery evidence, including the
+  composed snapshot's actual offline missing-artifact failure.
