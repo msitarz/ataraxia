@@ -6,6 +6,14 @@ pinned Make setup/hook contracts, under the parent's
 condition, including the project and hook resolver caches. Do not build a
 generic cache framework or prepare dependencies online.
 
+The selector validates an independently accepted preparation record, with the
+expected record digest supplied separately by its orchestrator owner. Actual
+successful Make preparation evidence grounds package origins and complete
+inventories, including frozen dependencies outside the project lock. Hash and
+METADATA checks preserve that reviewed provenance; they do not authenticate
+arbitrary caches or substitute for independent allowed-boundary review. See
+[usage](../../../../../../../../../CONTRIBUTING.md#optional-reviewed-registry-selection).
+
 Return selected relative files/links, pinned package provenance and the
 supported tool/index/platform/layout condition for
 [snapshot delivery](../snapshot-delivery/README.md). Preserve complete necessary
@@ -21,11 +29,14 @@ explicitly reject different or unsupported inputs without network fallback.
 Pinned hook Git sources belong to the independent
 [hook selector](../pinned-hook-sources/README.md). Each leaf delivery, including
 tests and usage documentation, must fit a five-minute review; split before
-expansion. Production execution awaits the revised plan's review and merge.
+expansion.
 
 ## Acceptance
 
-- **AC-1 TODO** A prepared supported cache yields only declared pinned registry
+See [local evidence and replayable derivation](evidence.md) for independent
+review and the supported preparation boundary.
+
+- **AC-1 DONE** A prepared supported cache yields only declared pinned registry
   payloads with inspectable provenance and complete necessary resolver metadata
   from both resolver caches, excluding contaminated project/environment inputs
   without modifying the raw cache.
@@ -35,7 +46,7 @@ expansion. Production execution awaits the revised plan's review and merge.
   external links and input immutability. Independently review how provenance and
   metadata completeness are established; snapshot delivery validates actual
   offline resolution of the composed result.
-- **AC-2 TODO** Absent artifacts, stale dependency declarations and unsupported
+- **AC-2 DONE** Absent artifacts, stale dependency declarations and unsupported
   tool/index/platform/layout conditions fail with recoverable diagnostics and
   retained evidence, without online fallback or destination overwrite.
 

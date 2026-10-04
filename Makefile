@@ -31,6 +31,17 @@ setup: ci-setup ## prepare development dependencies, hooks, and build tooling
 	uv build --wheel --out-dir .cache/build
 	@echo "✓ Dev environment ready. Run 'make verify' to verify offline."
 
+.PHONY: registry-select
+unexport CACHE RECORD PREPARATION_SHA256 DESTINATION
+registry-select: export UV_OFFLINE := true
+registry-select: export UV_NO_SYNC := true
+registry-select: ## validate a reviewed registry cache selection into a new destination
+
+	uv run python script/registry_selection.py \
+		--cache $(call _SHELL_VALUE,$(value CACHE)) --record $(call _SHELL_VALUE,$(value RECORD)) \
+		--expected $(call _SHELL_VALUE,$(value PREPARATION_SHA256)) \
+		--destination $(call _SHELL_VALUE,$(value DESTINATION))
+
 .PHONY: lint lint-check
 # --exit-zero is limited to this advisory-only rule; the normal lint command
 # retains its failure behavior and the blocking threshold is 50.
