@@ -34,7 +34,7 @@
       "trace": "prek/cache/uv/archive-v0/dependency/dependency-1.0.dist-info/METADATA"
     }
   ],
-  "preparation_sha256": "62867e5b2cb87bcfd3ecece9c73525ac78c755f9e9c3a49bd18377fd1480fb87",
+  "preparation_sha256": "86a0bd7e2b6004ca8deaaf776b1f344fa65b1531ccf3585a423635d14f559cff",
   "condition": {
     "uv": "0.12.19",
     "prek": "0.5.3",
