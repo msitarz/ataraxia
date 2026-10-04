@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "git",
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "commit.gpgSign=false",
+    "-c",
+    "tag.gpgSign=false",
+    "-c",
+    "core.hooksPath=/private/tmp/ataraxia-isolation-history-cb88dea8f876/empty-hooks",
+    "-C",
+    "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+    "checkout",
+    "-b",
+    "side"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "Switched to a new branch 'side'\n"
+}

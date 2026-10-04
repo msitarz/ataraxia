@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-delivery-9f2b7c18db15/fixture",
+    "log",
+    "--reverse",
+    "--format=fuller",
+    "--binary",
+    "-p",
+    "refs/heads/assigned"
+  ],
+  "exit": 0,
+  "sha256": "9ed86c9cef4e1e1f347c96da97938f3dfa195de3dd0a60d621826d0911c02644",
+  "source": "read-only accepted disposable repository; no auth/model/sandbox access"
+}

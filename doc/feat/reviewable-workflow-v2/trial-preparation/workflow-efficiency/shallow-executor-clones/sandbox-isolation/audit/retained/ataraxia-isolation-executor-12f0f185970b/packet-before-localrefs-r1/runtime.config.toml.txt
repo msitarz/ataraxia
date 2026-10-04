@@ -1,0 +1,65 @@
+model="gpt-6.1-sol"
+model_reasoning_effort="low"
+web_search="disabled"
+project_doc_max_bytes=0
+allow_login_shell=false
+default_permissions = "isolation"
+approval_policy = "never"
+[permissions.isolation]
+extends = ":workspace"
+[permissions.isolation.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"
+"/usr" = "read"
+"/Library/Frameworks/Python.framework/Versions/3.14" = "read"
+"/Users/nzs/Code/ataraxia" = "deny"
+"/private/tmp/ataraxia-shallow-isolation" = "deny"
+"/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone" = "write"
+"/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git" = "write"
+[permissions.isolation.network]
+enabled = false
+
+[agents]
+enabled=false
+[apps._default]
+enabled=false
+[skills]
+include_instructions=false
+config=[{path="/Users/nzs/.codex/skills/.system/imagegen/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/.system/openai-docs/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/.system/review-agent/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/.system/skill-creator/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/.system/skill-installer/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/pdf/SKILL.md",enabled=false},{path="/Users/nzs/.codex/skills/playwright/SKILL.md",enabled=false}]
+[skills.bundled]
+enabled=false
+[features]
+plugins=false
+remote_plugin=false
+plugin_hooks=false
+image_generation=false
+view_image=false
+goals=false
+js_repl=false
+tool_suggest=false
+multi_agent=false
+multi_agent_v2=false
+apps=false
+enable_mcp_apps=false
+tool_search=false
+skip_host_skill_discovery=true
+skill_search=false
+skill_mcp_dependency_install=false
+browser_use=false
+browser_use_external=false
+in_app_browser=false
+computer_use=false
+[shell_environment_policy]
+inherit="none"
+[shell_environment_policy.set]
+PATH="/usr/local/Cellar/git/2.55.0/bin:/usr/local/bin:/usr/bin:/bin"
+TMPDIR="/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.scratch/tmp"
+GIT_CONFIG_NOSYSTEM="1"
+GIT_CONFIG_GLOBAL="/dev/null"
+GIT_EDITOR="/usr/bin/false"
+GIT_TERMINAL_PROMPT="0"
+
+[cloud.skills]
+enabled=false

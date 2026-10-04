@@ -1,0 +1,96 @@
+import pathlib,json,hashlib,os,subprocess,time,uuid,datetime
+E=pathlib.Path(__file__).resolve().parent
+PLAN_HASH='2d351e439c2c8f33d810cee296af0afb6a358ee0af6549b0fb1387a91457b667'
+sha=lambda p:hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'plan.json')==PLAN_HASH
+P=json.loads((E/'plan.json').read_text());R=pathlib.Path(P['root']);G=P['git'];assert sha(G)==P['git_sha256']
+env=dict(os.environ)
+for key in list(env):
+ if key.startswith(('GIT_','CODEX_','OPENAI_')) or key.lower() in ['http_proxy','https_proxy','all_proxy','no_proxy']:env.pop(key)
+env.update(P['runtime_git_environment']);runid=uuid.uuid4().hex;started=time.monotonic();log=(E/('recovery-launch-'+runid+'.jsonl')).open('x')
+def record(**v):v['utc']=datetime.datetime.now(datetime.timezone.utc).isoformat();log.write(json.dumps(v)+'\n');log.flush()
+def git(repo,*args,expect=0,diagnostic=None,continuation_editor=False):
+ remaining=P['shared_seconds']-(time.monotonic()-started);assert remaining>0,'shared deadline'
+ argv=[G,'-c','commit.gpgsign=false','-c','tag.gpgsign=false','-c','core.hooksPath=/dev/null']+(['-C',str(repo)] if repo else [])+list(args)
+ call_env=env.copy()
+ if continuation_editor:
+  assert tuple(args)==('-c','core.editor=true','rebase','--continue') and str(repo)==str(R/'conflict');call_env['GIT_EDITOR']='/usr/bin/true'
+ q=subprocess.run(argv,cwd=P['cwd'],env=call_env,capture_output=True,timeout=min(30,remaining));record(name='git',argv=argv,GIT_EDITOR=call_env['GIT_EDITOR'],exit=q.returncode,stdout_sha256=hashlib.sha256(q.stdout).hexdigest(),stderr_sha256=hashlib.sha256(q.stderr).hexdigest(),stderr=q.stderr.decode(errors='replace'))
+ assert q.returncode==expect,(args,q.returncode)
+ if diagnostic is not None:assert diagnostic in q.stderr,'unexpected Git diagnostic'
+ return q.stdout
+def oid(repo,ref='HEAD'):return git(repo,'rev-parse',ref).decode().strip()
+def refs(repo):return git(repo,'for-each-ref','--format=%(refname) %(objectname)').decode().splitlines()
+def snapshot():
+ found={};root=pathlib.Path(P['approved_clone'])
+ for f in root.rglob('*'):
+  if f.is_symlink():found[str(f.relative_to(root))]={'symlink':os.readlink(f)}
+  elif f.is_file():found[str(f.relative_to(root))]={'sha256':sha(f)}
+ return found
+
+def source_gate():
+ assert snapshot()==P['approved_snapshot'],'approved clone mutated'
+ assert oid(P['approved_clone'])==P['approved_commits'][-1]
+ assert not (pathlib.Path(P['approved_clone'])/'.git/objects/info/alternates').exists()
+ assert not git(P['approved_clone'],'remote')
+ for obj in P['excluded_objects']:
+  result=git(P['approved_clone'],'cat-file','-t',obj,expect=128,diagnostic=b'could not get object info');assert not result
+ record(name='approved-output-invariants',passed=True)
+def commit(repo,message):git(repo,'add','--all');git(repo,'commit','-m',message);return oid(repo)
+def clone_full(name,source):
+ dst=R/name;assert not dst.exists();git(None,'clone','--no-local','--single-branch','--branch','master','--no-tags',str(source),str(dst));assert not(dst/'.git/shallow').exists();return dst
+def fetch_assigned(receiver,source,ref):
+ before=refs(receiver);git(receiver,'fetch','--no-tags','--no-write-fetch-head',str(source),ref+':refs/remotes/executor/assigned');after=refs(receiver)
+ assert [x for x in after if not x.startswith('refs/remotes/executor/assigned ')]==before,'unrelated refs imported'
+ assert not(receiver/'.git/shallow').exists();return oid(receiver,'refs/remotes/executor/assigned')
+def metadata(repo,heads):return [git(repo,'show','-s','--format=%an <%ae>|%aI|%s',head).decode().strip() for head in heads]
+def boundaries(repo,base,heads,text=b'changed\n'):
+ assert git(repo,'show',heads[-1]+':text.txt')==text
+ order=git(repo,'rev-list','--reverse',base+'..'+heads[-1]).decode().splitlines();assert order==heads
+ authors=[git(repo,'show','-s','--format=%an <%ae>',head).decode().strip() for head in heads];assert authors==['Fixture Author <fixture@example.invalid>']*len(heads)
+ assert git(repo,'show',heads[0]+':Work.md').startswith(b'fixture DONE')
+ assert git(repo,'ls-tree',heads[-1],'Work.md')==b''
+ assert git(repo,'show',heads[-1]+':parent-map.txt')==b'complete\n'
+ assert git(repo,'show',heads[-1]+':payload.bin')==bytes([0,255,10,3,4])
+ assert git(repo,'show',heads[-1]+':new-name.txt')==b'rename-base\n'
+ assert not git(repo,'ls-tree',heads[-1],'old-name.txt','deleted.txt')
+ assert git(repo,'ls-tree',heads[-1],'run.sh').startswith(b'100755 ')
+ assert not git(repo,'status','--porcelain');record(name='boundaries',repo=str(repo),base=base,heads=heads,authors=authors,tree=oid(repo,heads[-1]+'^{tree}'))
+def checkpoint(details,publication=True):
+ checkpoint_id=uuid.uuid4().hex
+ request=E/('review-request-'+checkpoint_id+'.json');request.write_text(json.dumps(dict(plan_sha256=PLAN_HASH,**details),indent=2)+'\n');digest=sha(request);sentinel=E/('review-approved-'+checkpoint_id+'.json');record(name='review-checkpoint',request=str(request),request_sha256=digest,sentinel=str(sentinel));print('REVIEW CHECKPOINT '+str(request)+' SHA '+digest+' SENTINEL '+str(sentinel),flush=True)
+ while not sentinel.exists():assert time.monotonic()-started<P['shared_seconds'];time.sleep(.5)
+ approved=json.loads(sentinel.read_text());assert approved.get('request_sha256')==digest and approved.get('reviewed') is True and approved.get('evidence_refreshed') is True and (approved.get('publication_approved') is True if publication else approved.get('fixture_criteria_reviewed') is True)
+Q_HASH='09d2121b612c1d035c4434707f6393166dcfa632dc57ed5e471eb83d5c3f2f16'
+assert sha(E/'recovery-plan.json')==Q_HASH
+Q=json.loads((E/'recovery-plan.json').read_text())
+try:
+ assert sha(E/'plan.json')==Q['original_plan_sha256'] and sha(E/'delivery.py')==Q['original_runner_sha256'] and sha(Q['old_log'])==Q['old_log_sha256']
+ for path,digest in Q['review_gate_files'].items():assert sha(path)==digest
+ for name,expected in Q['snapshots'].items():
+  found={}
+  for f in (R/name).rglob('*'):
+   if f.is_symlink():found[str(f.relative_to(R/name))]={'symlink':os.readlink(f)}
+   elif f.is_file():found[str(f.relative_to(R/name))]={'sha256':sha(f)}
+  assert found==expected,'recovery state changed: '+name
+ assert not(R/'publication.git').exists()
+ source_gate();fixture=R/'fixture';original=Q['boundaries']['fixture'];base=original['base'];first,second=original['heads'];original_metadata=metadata(fixture,[first,second]);boundaries(fixture,base,[first,second]);outcomes={}
+ integrated=R/'integrated';assert oid(integrated)==P['approved_commits'][-1];assert not(integrated/'.git/shallow').exists();assert git(integrated,'rev-list','--reverse',P['approved_base']+'..HEAD').decode().splitlines()==P['approved_commits'];assert git(integrated,'show','HEAD:task.txt')==b'verified'
+ outcomes['integrated']={'repo':str(integrated),'head':oid(integrated),'tree':oid(integrated,'HEAD^{tree}'),'base':P['approved_base']}
+ for name in ['unchanged','advanced']:
+  receiver=R/name;old=Q['boundaries'][name];assert oid(receiver)==old['heads'][-1];assert oid(receiver,'HEAD^{tree}')==old['tree'];boundaries(receiver,old['base'],old['heads']);assert metadata(receiver,old['heads'])==original_metadata
+  outcomes[name]={'repo':str(receiver),'head':old['heads'][-1],'tree':old['tree'],'base':old['base']}
+ conflict=R/'conflict';assert oid(conflict)==Q['conflict_HEAD'];assert (conflict/'.git/rebase-merge/onto').read_text().strip()==Q['conflict_upstream'];assert not git(conflict,'ls-files','--unmerged');assert (conflict/'text.txt').read_bytes()==b'resolved-upstream+work\n'
+ record(name='frozen-recovery-preflight',passed=True,recovery_plan_sha256=Q_HASH)
+ git(conflict,'-c','core.editor=true','rebase','--continue',continuation_editor=True)
+ assert not(conflict/'.git/rebase-merge').exists();upstream=Q['conflict_upstream'];heads=git(conflict,'rev-list','--reverse',upstream+'..HEAD').decode().splitlines();assert len(heads)==2 and heads!=[first,second];boundaries(conflict,upstream,heads,text=b'resolved-upstream+work\n');assert metadata(conflict,heads)==original_metadata
+ git(conflict,'update-ref',P['work_ref'],heads[-1],upstream);git(conflict,'checkout','work/delivery');outcomes['conflict']={'repo':str(conflict),'head':heads[-1],'tree':oid(conflict,'HEAD^{tree}'),'base':upstream,'rewritten_commits':heads,'evidence_refresh_required':True}
+ source_gate();checkpoint({'recovery_plan_sha256':Q_HASH,'outcomes':outcomes,'fixture_original_commits':[first,second],'conflict_resolution':'retained staged reviewer resolution; repeated metadata/tree/boundary checks; root evidence refresh review required','no_live_publication':True})
+ publication=R/'publication.git';git(None,'init','--bare','--initial-branch=master',str(publication));git(fixture,'push',str(publication),'refs/heads/master:refs/heads/master');master=oid(publication,'refs/heads/master');assert master==base
+ for name,outcome in outcomes.items():git(outcome['repo'],'push',str(publication),'refs/heads/work/delivery:refs/heads/work/delivery/'+name)
+ assert oid(publication,'refs/heads/master')==master and len(refs(publication))==5
+ for name,outcome in outcomes.items():
+  ref='refs/heads/work/delivery/'+name;assert oid(publication,ref)==outcome['head'];assert oid(publication,ref+'^{tree}')==outcome['tree'];git(publication,'merge-base','--is-ancestor',outcome['base'],ref)
+ assert not(publication/'shallow').exists();source_gate();record(name='completed',recovery=True,local_bare_only=True,master_unchanged=True,outcomes=outcomes)
+except BaseException as exc:record(name='stopped',error=repr(exc));raise
+finally:log.close()

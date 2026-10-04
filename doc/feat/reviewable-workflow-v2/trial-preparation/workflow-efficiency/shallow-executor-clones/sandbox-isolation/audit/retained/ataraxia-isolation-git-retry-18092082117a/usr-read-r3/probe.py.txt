@@ -1,0 +1,87 @@
+"""Three read-only sandbox probes; host execution requires specific approval."""
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+import time
+import uuid
+
+DIRECTORY = Path("/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3")
+PLAN_HASH = "0a45c554ca4c178448b39487d4510604727f799b068e311aaf3bb1adf96188d9"
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    started = time.monotonic()
+    with (DIRECTORY / ("probe-" + uuid.uuid4().hex + ".jsonl")).open("x") as log:
+        def record(item):
+            item["timestamp"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            log.write(json.dumps(item) + "\n")
+            log.flush()
+
+        raw = DIRECTORY.joinpath("plan.json").read_bytes()
+        if digest(raw) != PLAN_HASH:
+            record({"result": "plan mismatch"})
+            return 2
+        plan = json.loads(raw)
+        for path in plan["config_paths"]:
+            if digest(Path(path).read_bytes()) != plan["config_sha256"]:
+                record({"result": "config mismatch"})
+                return 2
+        root = Path(plan["root"])
+        clone = root / "clone"
+        if (clone.joinpath("task.txt").read_bytes() != b"pending\n"
+                or clone.joinpath(".git/shallow").read_text().strip() != plan["H1"]
+                or digest(clone.joinpath(".git/hooks/pre-commit").read_bytes()) != plan["hook_sha256"]
+                or digest(root.joinpath("source/current.txt").read_bytes()) != plan["source_sha256"]):
+            record({"result": "fixture mismatch"})
+            return 2
+        env = dict(os.environ)
+        env.update(plan["env"])
+        env.update(plan["codex_environment"])
+        record({"result": "preflight passed", "plan_sha256": PLAN_HASH,
+                "config_sha256": plan["config_sha256"], "source_sha256": plan["source_sha256"],
+                "concession": plan["concession"]})
+        for phase in plan["phases"]:
+            remaining = 90 - (time.monotonic() - started)
+            if remaining <= 0:
+                record({"result": "total timeout"})
+                return 1
+            record({"phase": phase["name"], "event": "launch", "argv": phase["argv"]})
+            try:
+                result = subprocess.run(phase["argv"], cwd=plan["cwd"], env=env,
+                                        capture_output=True, timeout=min(30, remaining))
+            except (subprocess.TimeoutExpired, OSError) as error:
+                record({"phase": phase["name"], "result": type(error).__name__})
+                return 1
+            stderr = result.stderr.decode("utf-8", errors="replace")
+            item = {"phase": phase["name"], "exit_code": result.returncode,
+                    "stdout_sha256": digest(result.stdout), "stdout_bytes": len(result.stdout),
+                    "stderr": stderr}
+            if phase["name"] == "source-denial":
+                passed = (result.returncode != 0 and not result.stdout and "cat:" in stderr
+                          and str(root / "source/current.txt") in stderr
+                          and ("Operation not permitted" in stderr or "Permission denied" in stderr)
+                          and "sandbox-exec:" not in stderr)
+                item["source_denied"] = passed
+                item["source_output_matched"] = digest(result.stdout) == plan["source_sha256"]
+            else:
+                expected = b"git version 2.55.0\n" if phase["name"] == "git-version" else (plan["H1"] + "\n").encode()
+                passed = result.returncode == 0 and result.stdout == expected
+                item["positive_control_passed"] = passed
+            record(item)
+            if not passed:
+                return 1
+        record({"result": "three read-only probes passed",
+                "task_unchanged": clone.joinpath("task.txt").read_bytes() == b"pending\n"})
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

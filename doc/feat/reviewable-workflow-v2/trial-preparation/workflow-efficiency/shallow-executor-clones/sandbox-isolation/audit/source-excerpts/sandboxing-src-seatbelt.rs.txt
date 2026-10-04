@@ -1,0 +1,112 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original sandboxing/src/seatbelt.rs
+200:             network
+201:                 .apply_to_env_for_optional_environment(&mut env, environment_id)
+202:                 .map_err(|err| err.to_string())?;
+203:             Ok(ProxyPolicyInputs {
+204:                 ports: proxy_loopback_ports_from_env(&env),
+205:                 has_proxy_config: has_proxy_url_env_vars(&env),
+206:                 allow_local_binding: network.allow_local_binding(),
+207:                 unix_domain_socket_policy,
+208:             })
+209:         }
+210:         None => Ok(ProxyPolicyInputs {
+211:             unix_domain_socket_policy,
+212:             ..Default::default()
+213:         }),
+214:     }
+215: }
+216:
+217: fn normalize_path_for_sandbox(path: &Path) -> Option<AbsolutePathBuf> {
+218:     // `AbsolutePathBuf::from_absolute_path()` normalizes relative paths against the current
+219:     // working directory, so keep the explicit check to avoid silently accepting relative entries.
+220:     if !path.is_absolute() {
+221:         return None;
+222:     }
+223:
+224:     let absolute_path = AbsolutePathBuf::from_absolute_path(path).ok()?;
+225:     let normalized_path = absolute_path
+226:         .as_path()
+227:         .canonicalize()
+228:         .ok()
+229:         .and_then(|canonical_path| AbsolutePathBuf::from_absolute_path(canonical_path).ok());
+230:     normalized_path.or(Some(absolute_path))
+231: }
+232:
+233: fn unix_socket_path_params(proxy: &ProxyPolicyInputs) -> Vec<UnixSocketPathParam> {
+234:     let mut deduped_paths: BTreeMap<String, AbsolutePathBuf> = BTreeMap::new();
+235:     let UnixDomainSocketPolicy::Restricted { allowed } = &proxy.unix_domain_socket_policy else {
+236:         return vec![];
+430:     path: AbsolutePathBuf,
+431: ) -> Result<AbsolutePathBuf, SeatbeltPreparationError> {
+432:     path.normalize_system_aliases().map_err(|err| {
+433:         SeatbeltPreparationError::FileSystem(format!(
+434:             "failed to normalize top-level alias for path {}: {err}",
+435:             path.display()
+436:         ))
+437:     })
+438: }
+439:
+440: fn normalize_writable_root_for_sandbox(
+441:     root: AbsolutePathBuf,
+442:     allowed_symlinked_codex_home: Option<&AbsolutePathBuf>,
+443: ) -> Result<NormalizedWritableRoot, SeatbeltPreparationError> {
+444:     let allow_symlinks = allowed_symlinked_codex_home.is_some_and(|home| {
+445:         root.as_path().starts_with(home.as_path())
+446:             || normalize_path_for_sandbox(home.as_path())
+447:                 .is_some_and(|target| root.as_path().starts_with(target.as_path()))
+448:     });
+449:     if !allow_symlinks && let Some(symlink) = nested_symlink_component(root.as_path()) {
+450:         return Err(SeatbeltPreparationError::FileSystem(format!(
+451:             "writable root {} contains symlink component {}; symlinked writable roots are not supported.\n\
+452:              If this writable root is at or beneath CODEX_HOME and you trust its symlink targets, \
+453:              set `allow_symlinked_codex_home = true` at the top level of `$CODEX_HOME/config.toml` \
+454:              (normally `~/.codex/config.toml`) on the execution host, then restart Codex or its executor. \
+455:              This opt-out trusts targets outside CODEX_HOME and targets changed between commands. \
+456:              It does not apply to other writable roots.",
+457:             root.display(),
+458:             symlink.display()
+459:         )));
+460:     }
+461:
+462:     let normalized = if allow_symlinks {
+463:         // This explicit opt-out trusts the current target, including targets
+464:         // outside CODEX_HOME and links changed by an earlier command.
+465:         normalize_path_for_sandbox(root.as_path()).unwrap_or(root)
+499:         SeatbeltAccessKind::Read => ("file-read*", "READABLE_ROOT"),
+500:         SeatbeltAccessKind::Write => ("file-write*", "WRITABLE_ROOT"),
+501:     };
+502:
+503:     for (index, access_root) in roots.into_iter().enumerate() {
+504:         let (root, path_match) = match access_kind {
+505:             SeatbeltAccessKind::Read => {
+506:                 let root = normalize_path_for_sandbox(access_root.root.as_path())
+507:                     .unwrap_or(access_root.root);
+508:                 (root, SeatbeltPathMatch::Subpath)
+509:             }
+510:             SeatbeltAccessKind::Write => {
+511:                 match normalize_writable_root_for_sandbox(
+512:                     access_root.root,
+513:                     allowed_symlinked_codex_home,
+514:                 )? {
+515:                     NormalizedWritableRoot::Subpath(root) => (root, SeatbeltPathMatch::Subpath),
+516:                     NormalizedWritableRoot::Literal(root) => (root, SeatbeltPathMatch::Literal),
+517:                 }
+518:             }
+519:         };
+520:         let root_param = format!("{param_prefix}_{index}");
+521:         params.push((root_param.clone(), root.clone().into_path_buf()));
+522:         if access_kind == SeatbeltAccessKind::Write {
+523:             // A sandboxed process must not be able to replace an authority
+524:             // boundary that will be reused to build the next sandbox policy.
+525:             root_anchor_denies.push(format!(
+526:                 "(deny file-write-unlink (require-all (literal (param \"{root_param}\")) (vnode-type DIRECTORY)))"
+527:             ));
+528:         }
+529:         let root_filter = match path_match {
+530:             SeatbeltPathMatch::Literal => format!("(literal (param \"{root_param}\"))"),
+531:             SeatbeltPathMatch::Subpath => format!("(subpath (param \"{root_param}\"))"),
+532:         };
+533:
+534:         if access_root.excluded_subpaths.is_empty()
+535:             && access_root.protected_metadata_names.is_empty()

@@ -1,0 +1,22 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original app-server-protocol/src/protocol/item_builders.rs
+45:
+46: /// Client-facing command and parsed actions projected from a raw command.
+47: pub struct CommandExecutionPresentation {
+48:     /// Shell-formatted command with recognizable secrets redacted.
+49:     pub command: String,
+50:     /// Parsed command actions with recognizable secrets redacted.
+51:     pub command_actions: Vec<CommandAction>,
+52: }
+53:
+54: impl CommandExecutionPresentation {
+55:     /// Projects a raw command into its client-facing representation.
+56:     pub fn from_raw(command: &[String], parsed_cmd: &[ParsedCommand], cwd: &PathUri) -> Self {
+57:         Self {
+58:             command: redact_secrets(shlex_join(command)),
+59:             command_actions: command_actions_for_path_uri(parsed_cmd, cwd),
+60:         }
+61:     }
+62: }
+63:
+64: pub(crate) fn review_output_text(output: Option<&ReviewOutputEvent>) -> String {

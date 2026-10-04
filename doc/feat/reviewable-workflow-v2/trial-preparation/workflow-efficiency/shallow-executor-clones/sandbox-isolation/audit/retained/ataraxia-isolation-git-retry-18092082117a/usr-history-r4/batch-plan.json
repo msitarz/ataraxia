@@ -1,0 +1,469 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-git-retry-18092082117a",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "env": {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_EDITOR": "/usr/bin/false",
+    "GIT_TERMINAL_PROMPT": "0",
+    "GIT_EXEC_PATH": "/usr/local/opt/git/libexec/git-core"
+  },
+  "git_options": [
+    "-c",
+    "user.name=Fixture",
+    "-c",
+    "user.email=fixture@example.invalid",
+    "-c",
+    "commit.gpgSign=false",
+    "-c",
+    "tag.gpgSign=false",
+    "-c",
+    "core.hooksPath=/private/tmp/ataraxia-isolation-git-retry-18092082117a/empty-hooks"
+  ],
+  "ids": {
+    "H1": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+    "H0": "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+    "side": "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+  },
+  "config_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+  "hook_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+  "codex_environment": {
+    "CODEX_HOME": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/state"
+  },
+  "phases": [
+    {
+      "name": "runtime-version",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "--version"
+      ]
+    },
+    {
+      "name": "runtime-H1",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "cat-file",
+        "-t",
+        "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb"
+      ]
+    },
+    {
+      "name": "absent-H0-before",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "cat-file",
+        "-t",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+      ]
+    },
+    {
+      "name": "absent-side-before",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "cat-file",
+        "-t",
+        "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+      ]
+    },
+    {
+      "name": "source-file",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/current.txt"
+      ]
+    },
+    {
+      "name": "source-dirty",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/dirty.txt"
+      ]
+    },
+    {
+      "name": "source-git-file",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/.git/HEAD"
+      ]
+    },
+    {
+      "name": "source-git-show",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+        "show",
+        "H0:historical.txt"
+      ]
+    },
+    {
+      "name": "source-symlink",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/source-link/current.txt"
+      ]
+    },
+    {
+      "name": "fetch-H0-side",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "fetch",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67",
+        "refs/heads/side"
+      ]
+    },
+    {
+      "name": "unshallow",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "fetch",
+        "--unshallow",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+        "master"
+      ]
+    },
+    {
+      "name": "absent-H0-after",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "cat-file",
+        "-t",
+        "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+      ]
+    },
+    {
+      "name": "absent-side-after",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "cat-file",
+        "-t",
+        "f94babc03e49cb823e8688ff5cd7fa4e359efb19"
+      ]
+    },
+    {
+      "name": "read-task",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/task.txt"
+      ]
+    },
+    {
+      "name": "edit-check",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/bin/sh",
+        "-c",
+        "printf ready > task.txt; test \"$(cat task.txt)\" = ready"
+      ]
+    },
+    {
+      "name": "stage",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "add",
+        "task.txt"
+      ]
+    },
+    {
+      "name": "commit",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.invalid",
+        "-c",
+        "commit.gpgSign=false",
+        "-c",
+        "core.hooksPath=/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git/hooks",
+        "commit",
+        "-m",
+        "fixture-executor-change"
+      ]
+    },
+    {
+      "name": "final-HEAD",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "rev-parse",
+        "HEAD"
+      ]
+    },
+    {
+      "name": "final-index",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "diff",
+        "--cached",
+        "--name-only"
+      ]
+    },
+    {
+      "name": "final-assigned-diff",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "diff",
+        "--name-only",
+        "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb"
+      ]
+    },
+    {
+      "name": "final-status",
+      "argv": [
+        "/usr/local/bin/codex",
+        "sandbox",
+        "-P",
+        "isolation",
+        "--include-managed-config",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "/usr/local/Cellar/git/2.55.0/bin/git",
+        "-C",
+        "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+        "status",
+        "--porcelain"
+      ]
+    }
+  ],
+  "timeout_seconds": 30,
+  "batch_seconds": 300,
+  "preparation_verified": {
+    "only_master_ref": true,
+    "shallow_H1": true,
+    "no_alternates": true,
+    "no_remote": true,
+    "dirty_input_excluded": true
+  },
+  "tool": {
+    "binary": "/usr/local/Cellar/git/2.55.0/bin/git",
+    "version": "git version 2.55.0",
+    "exec_path": "/usr/local/opt/git/libexec/git-core",
+    "prior_fixture": "/private/tmp/ataraxia-isolation-history-cb88dea8f876",
+    "controls": "fresh control-0..3.json"
+  },
+  "runtime_read_revision": {
+    "prior_manifest_sha256": "12c2355ecb2cd39c98380f7289e70035652da7b774780d23e0383bbf5c237e29",
+    "added_read_paths": [
+      "/usr/local/opt/pcre2/lib/libpcre2-8.0.dylib",
+      "/usr/local/Cellar/pcre2/10.48/lib/libpcre2-8.0.dylib",
+      "/usr/local/opt/gettext/lib/libintl.8.dylib",
+      "/usr/local/Cellar/gettext/1.0/lib/libintl.8.dylib",
+      "/usr/local/opt/git/libexec/git-core/git-upload-pack",
+      "/usr/local/Cellar/git/2.55.0/libexec/git-core/git-upload-pack",
+      "/usr/local/Cellar/git/2.55.0/bin/git"
+    ],
+    "resource_hashes": {
+      "/usr/local/opt/pcre2/lib/libpcre2-8.0.dylib": "55464be8757e27bfc655c9995df1e4ac2fe1cfe4529959a272407a5946351360",
+      "/usr/local/Cellar/pcre2/10.48/lib/libpcre2-8.0.dylib": "55464be8757e27bfc655c9995df1e4ac2fe1cfe4529959a272407a5946351360",
+      "/usr/local/opt/gettext/lib/libintl.8.dylib": "56e85bfeae93c23765ca77ef584f753d13fa909eb0fb0d622c5e34211c0519fe",
+      "/usr/local/Cellar/gettext/1.0/lib/libintl.8.dylib": "56e85bfeae93c23765ca77ef584f753d13fa909eb0fb0d622c5e34211c0519fe",
+      "/usr/local/opt/git/libexec/git-core/git-upload-pack": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116",
+      "/usr/local/Cellar/git/2.55.0/libexec/git-core/git-upload-pack": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116",
+      "/usr/local/Cellar/git/2.55.0/bin/git": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116"
+    },
+    "provenance": "same verified untouched H1 fixture; prior attempt stopped at dynamic loader"
+  },
+  "symlink_runtime_revision": {
+    "prior_manifest_sha256": "eefb5b4146dea270859a2b9e06c98d2c9736832adc234ed72bc03a247374e104",
+    "added_package_reads": [
+      "/usr/local/opt/pcre2",
+      "/usr/local/opt/gettext",
+      "/usr/local/opt/git"
+    ],
+    "semantics": "read permits named package contents, not metadata-only; no general opt/Cellar grants",
+    "symlink_targets": {
+      "/usr/local/opt/pcre2": "../Cellar/pcre2/10.48",
+      "/usr/local/opt/gettext": "../Cellar/gettext/1.0",
+      "/usr/local/opt/git": "../Cellar/git/2.55.0"
+    },
+    "source_control_hashes": {
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/current.txt": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/.git/HEAD": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10"
+    }
+  },
+  "condition": "usr-history-r4; identical working usr-read-r3 profile semantics",
+  "controls": {
+    "local_fetch_records": {
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-0.json": "850d6792d0ef1b1a1451879f9099d7e094524e4189eeab0ca289cdb02bdd4c66",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-1.json": "7fc16c60562a0a3ce7745acd4c4821ba151d56298a60ab95a1f603a7fab1566d",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-2.json": "653a64045eea35e78c19633086530edc96ad94f7afafaf4f9616df3bdca66f62",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-3.json": "d9ac20bb97cf51a3b770dd1046a47bf4b6dca84d64df53e7d33710849151bcc0",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-4.json": "2980dc05f9e845d4fe5a40d169601613bb5fd24d48faecad7bf9f82fb9683b0a"
+    },
+    "source_file_hashes": {
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/current.txt": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/dirty.txt": "3cd68fced7f6dafa370071b849b47c3ac783392ead36f6073312215a9e0c2676",
+      "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source/.git/HEAD": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10"
+    }
+  },
+  "initial_state": {
+    "HEAD": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb",
+    "index_sha256": "e90db8ddd83eb2f8bf325a455f1d804d32e3c7057364799c5fd84c49de0aaba2",
+    "task_sha256": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+    "hook_marker_present": false
+  }
+}

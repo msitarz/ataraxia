@@ -1,0 +1,19 @@
+default_permissions = "isolation"
+approval_policy = "never"
+[permissions.isolation]
+extends = ":workspace"
+[permissions.isolation.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"
+"/usr" = "read"
+"/Users/nzs/Code/ataraxia" = "deny"
+"/private/tmp/ataraxia-shallow-isolation" = "deny"
+"/Library/Frameworks/Python.framework/Versions/3.14" = "read"
+"/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone" = "write"
+"/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone/.git" = "write"
+"/private/tmp/ataraxia-isolation-offline-c2afe48e926a/missing-cache-clone" = "write"
+"/private/tmp/ataraxia-isolation-offline-c2afe48e926a/missing-cache-clone/.git" = "write"
+[permissions.isolation.network]
+enabled = false

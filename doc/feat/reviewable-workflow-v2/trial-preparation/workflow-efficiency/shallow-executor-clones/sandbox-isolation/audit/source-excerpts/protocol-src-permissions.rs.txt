@@ -1,0 +1,23 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original protocol/src/permissions.rs
+2258:         FileSystemSpecialPath::ProjectRoots { subpath } => {
+2259:             let cwd = cwd?;
+2260:             match subpath.as_ref() {
+2261:                 Some(subpath) => Some(AbsolutePathBuf::resolve_path_against_base(
+2262:                     subpath,
+2263:                     cwd.as_path(),
+2264:                 )),
+2265:                 None => Some(cwd.clone()),
+2266:             }
+2267:         }
+2268:         FileSystemSpecialPath::Tmpdir => {
+2269:             let tmpdir = std::env::var_os("TMPDIR")?;
+2270:             if tmpdir.is_empty() {
+2271:                 None
+2272:             } else {
+2273:                 let tmpdir = AbsolutePathBuf::from_absolute_path(PathBuf::from(tmpdir)).ok()?;
+2274:                 Some(tmpdir)
+2275:             }
+2276:         }
+2277:         FileSystemSpecialPath::SlashTmp => {
+2278:             if !cfg!(unix) {

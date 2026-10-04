@@ -1,0 +1,1 @@
+{"argv": ["/usr/local/Cellar/git/2.55.0/bin/git", "--git-dir=/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/reviewer-repo/.git", "show", "H0:historical.txt"], "exit": 0, "stdout_bytes": 47, "stdout_sha256": "9bad433db79ff238fafc952cf5b7f2d155fabca5fc8dba0c199bcdadc37ecd8d"}

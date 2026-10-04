@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+    "show",
+    "side:side.txt"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "e2aa2ed6e46c0fb4684c76b7c876348d567e2855520c294f1c48bb790810ff26",
+  "stderr": ""
+}

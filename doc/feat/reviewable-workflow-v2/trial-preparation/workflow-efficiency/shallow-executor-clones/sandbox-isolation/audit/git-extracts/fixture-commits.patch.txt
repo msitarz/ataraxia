@@ -1,0 +1,153 @@
+commit 32d448ccd5777f5d40ed6f4133380a4ac4cd1b9e
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:04 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:21:04 2026 -0400
+
+    history
+
+diff --git a/history.txt b/history.txt
+new file mode 100644
+index 0000000..de14025
+--- /dev/null
++++ b/history.txt
+@@ -0,0 +1 @@
++older-history
+
+commit 73499b181812ca211cc3a7e46d668d1f550b4637
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:04 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:21:04 2026 -0400
+
+    selected base
+
+diff --git a/Work.md b/Work.md
+new file mode 100644
+index 0000000..cbe4732
+--- /dev/null
++++ b/Work.md
+@@ -0,0 +1 @@
++fixture TODO
+diff --git a/deleted.txt b/deleted.txt
+new file mode 100644
+index 0000000..53c7376
+--- /dev/null
++++ b/deleted.txt
+@@ -0,0 +1 @@
++delete-base
+diff --git a/old-name.txt b/old-name.txt
+new file mode 100644
+index 0000000..812a55d
+--- /dev/null
++++ b/old-name.txt
+@@ -0,0 +1 @@
++rename-base
+diff --git a/parent-map.txt b/parent-map.txt
+new file mode 100644
+index 0000000..8a43550
+--- /dev/null
++++ b/parent-map.txt
+@@ -0,0 +1 @@
++pending
+diff --git a/payload.bin b/payload.bin
+new file mode 100644
+index 0000000000000000000000000000000000000000..8352675d67aed6625ece79af41c27fdb4ee2e867
+GIT binary patch
+literal 3
+KcmZQzWC8#H2LJ>B
+
+literal 0
+HcmV?d00001
+
+diff --git a/run.sh b/run.sh
+new file mode 100644
+index 0000000..039e4d0
+--- /dev/null
++++ b/run.sh
+@@ -0,0 +1,2 @@
++#!/bin/sh
++exit 0
+diff --git a/text.txt b/text.txt
+new file mode 100644
+index 0000000..df967b9
+--- /dev/null
++++ b/text.txt
+@@ -0,0 +1 @@
++base
+
+commit f3d9b9d621d0479e6d514b5d91391248ae34c6b3
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:46 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:21:46 2026 -0400
+
+    implementation and evidence
+
+diff --git a/Work.md b/Work.md
+index cbe4732..7a3afd5 100644
+--- a/Work.md
++++ b/Work.md
+@@ -1 +1 @@
+-fixture TODO
++fixture DONE: expected bytes, names and mode retained
+diff --git a/deleted.txt b/deleted.txt
+deleted file mode 100644
+index 53c7376..0000000
+--- a/deleted.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-delete-base
+diff --git a/evidence.txt b/evidence.txt
+new file mode 100644
+index 0000000..e1ee361
+--- /dev/null
++++ b/evidence.txt
+@@ -0,0 +1 @@
++frozen deterministic checks; reviewer gate before publication
+diff --git a/old-name.txt b/new-name.txt
+similarity index 100%
+rename from old-name.txt
+rename to new-name.txt
+diff --git a/payload.bin b/payload.bin
+index 8352675d67aed6625ece79af41c27fdb4ee2e867..5dcca95949e63e3bf3f8e96dbb00feb873596766 100644
+GIT binary patch
+literal 5
+McmZSh&&A9F00b!k5dZ)H
+
+literal 3
+KcmZQzWC8#H2LJ>B
+
+diff --git a/run.sh b/run.sh
+old mode 100644
+new mode 100755
+diff --git a/text.txt b/text.txt
+index df967b9..5ea2ed4 100644
+--- a/text.txt
++++ b/text.txt
+@@ -1 +1 @@
+-base
++changed
+
+commit aabeba11af69c8d1cecc8487f212121f1775c739
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:46 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:21:46 2026 -0400
+
+    separate cleanup
+
+diff --git a/Work.md b/Work.md
+deleted file mode 100644
+index 7a3afd5..0000000
+--- a/Work.md
++++ /dev/null
+@@ -1 +0,0 @@
+-fixture DONE: expected bytes, names and mode retained
+diff --git a/parent-map.txt b/parent-map.txt
+index 8a43550..c591978 100644
+--- a/parent-map.txt
++++ b/parent-map.txt
+@@ -1 +1 @@
+-pending
++complete

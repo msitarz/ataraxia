@@ -1,0 +1,33 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original exec/src/event_processor_with_jsonl_output.rs
+430:                         format!("{} ({details})", notification.summary)
+431:                     }
+432:                     _ => notification.summary,
+433:                 };
+434:                 events.push(ThreadEvent::ItemCompleted(ItemCompletedEvent {
+435:                     item: ExecThreadItem {
+436:                         id: self.next_item_id(),
+437:                         details: ThreadItemDetails::Error(ErrorItem { message }),
+438:                     },
+439:                 }));
+440:                 CodexStatus::Running
+441:             }
+442:             ServerNotification::Warning(notification) => {
+443:                 let warning = self.collect_warning(notification.message);
+444:                 events.extend(warning.events);
+445:                 warning.status
+446:             }
+447:             ServerNotification::Error(notification) => {
+448:                 let message = match notification.error.additional_details {
+449:                     Some(details) if !details.is_empty() => {
+450:                         format!("{} ({details})", notification.error.message)
+451:                     }
+452:                     _ => notification.error.message,
+453:                 };
+454:                 let error = ThreadErrorEvent { message };
+455:                 self.last_critical_error = Some(error.clone());
+456:                 events.push(ThreadEvent::Error(error));
+457:                 CodexStatus::Running
+458:             }
+459:             ServerNotification::DeprecationNotice(notification) => {
+460:                 let message = match notification.details {

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+test "$(cat task.txt)" = ready
+printf invoked > hook-marker

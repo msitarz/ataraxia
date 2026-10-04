@@ -1,0 +1,297 @@
+{
+  "source_master": "6c8720287aa121592ba2b3506221593b182c70f8",
+  "clone": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/clone",
+  "cache_source": "/private/tmp/ataraxia-shallow-isolation/.cache",
+  "copied": false,
+  "entries": {
+    "uv": {
+      "files": 3790
+    },
+    "prek": {
+      "files": 921
+    }
+  },
+  "editable_artifacts": [
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/gu6waR9C0O4ar_LZ/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/uhNmULkPcNyJnx_u/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/48yRmUh4f5va9fCN/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ZheTRoCY2QH3aE89/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ZheTRoCY2QH3aE89/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/v3-FOuMXbFI8WAYk/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/LsQC_gK7r57ugy_1/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/LsQC_gK7r57ugy_1/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/OwFBbiKPmfJTX98n/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/HxIaeiwpSk1b_Rb1/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6jF4fcMBPNHONYEk/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6jF4fcMBPNHONYEk/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/DoXlJ5DKbla8ou1t/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/CcF-rhWiNXCyVZyO/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/QSRuGFymV9epXl19/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/fJhw76ZYpmnrLttV/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6yS5nqEGAlYUnty8/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6yS5nqEGAlYUnty8/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/MW5H77gEF3znv_7S/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/8MTV09a0_TD_pgqw/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/oYQmPkrCURjtsU6D/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/TxaqcDdmapvKsmH-/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/W2mlHjrwc181jAtJ/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/NQf41CpetIZBdBeA/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/HBn-hZB2CabwPDfQ/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/O_3wazYCxNo5D54_/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/EjOFKeT1QtPDqJNn/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/R2-5L21xB8T6U_yU/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/R2-5L21xB8T6U_yU/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Au83BQXPexrMCUj1/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Au83BQXPexrMCUj1/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ID2NIxDl_xxBJUBs/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ID2NIxDl_xxBJUBs/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/5XP7qMIJloN1T34H/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/5XP7qMIJloN1T34H/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/TkLPYJi5QIQT2FL_/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/TkLPYJi5QIQT2FL_/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ovpbnc_kgyb5ZSjp/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6Xgo3mJ9azbBkg1C/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/STpo6Zh__Jt8LRal/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/t-MfTgD5fCum5Tnr/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/KnY2YIe02FQ1uOLh/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/eh1pnK70H_lw9-K5/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/fP-wep1XoapdaR3D/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/OOOMxwhmDKkywwpM/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Fr3rj-OwSuocltRp/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/x4daXg57-1_SoIYR/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/KKxRszUxx5-XduL_/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/UGqTZclpmmi5OsPY/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/MLVWBUZGP1Qd8xWz/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/cJLh_22Yk_hvwVBj/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ODVmM5uOw_0Uq89t/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ODVmM5uOw_0Uq89t/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/te3PdqV28EfB_Mk7/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/GPCZI38rG2NaIx-L/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/CQdyNWkvI1Jz5B8U/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/RwrITP3R_vHSP6rk/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/L3bmCwCED7sy_yf9/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/UXbYR2G2ZpUZJ7da/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/UXbYR2G2ZpUZJ7da/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/gWXZjpgWN49rah6P/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/gWXZjpgWN49rah6P/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/M3sHiLYewaSufgOk/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/oIHLjH9t2jswaj_D/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/NR6CDfiwnBmkDnpT/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/RXUxhpIb6crMBtiJ/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/2JkMaTllpKq0grm4/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/AVnchpCuxCSwZYND/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/cRVrzyE6IaYzS1YL/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/beEpWz8AIFlE8Qb8/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Mx9ajysPy5CAYGNF/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Ihp0JMyouTJCh2El/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/TnspOg8IfT1Xoe6h/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/9nRc6TQxE9I6qp48/ataraxia.pth",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/9nRc6TQxE9I6qp48/ataraxia-0.1.0.dist-info/METADATA",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/cCz4OozR_ZcUNimu/ataraxia-0.1.0.dist-info/METADATA"
+  ],
+  "external_symlinks": [
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/O7Q3rZyuylJx6ypB/bin/python3",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/O7Q3rZyuylJx6ypB/bin/python",
+      "target": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/O7Q3rZyuylJx6ypB/bin/python3.14",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-VL2ovP5Okyk2EmkY5JG4/bin/python3",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-VL2ovP5Okyk2EmkY5JG4/bin/python",
+      "target": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-VL2ovP5Okyk2EmkY5JG4/bin/python3.14",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-zzyT1A4vFwGJZ4X6hNFW/bin/python3",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-zzyT1A4vFwGJZ4X6hNFW/bin/python",
+      "target": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-zzyT1A4vFwGJZ4X6hNFW/bin/python3.14",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-N6xZy9EkHjQaE6rxLwKL/bin/python3",
+      "target": "python"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-N6xZy9EkHjQaE6rxLwKL/bin/python",
+      "target": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-N6xZy9EkHjQaE6rxLwKL/bin/python3.14",
+      "target": "python"
+    }
+  ],
+  "git_repositories": [
+    "/private/tmp/ataraxia-shallow-isolation/.cache/prek/repos/75365f2ed6dbcff3/.git",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/prek/repos/7c6bbb6e8bf13231/.git",
+    "/private/tmp/ataraxia-shallow-isolation/.cache/prek/repos/0321a11f464e05f4/.git"
+  ],
+  "source_reference_files": [
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/5e44469dbb003121.msgpack",
+      "sha256": "97795c50ab583121f90d5e98d79e2f4a8cc2587c0c441ba392250646cebe6400"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/d074af11f83e4ef3.msgpack",
+      "sha256": "fd2cb819b0fa39a834c6405a1d1ba475b4ffed40b1ad9c80bcf0751d36dc000d"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/cb573516ec45b054.msgpack",
+      "sha256": "3ab6b8c611c800fbe251914c7c61cdc7ca69ad53cfdc4b9f5992a3b9f30485f9"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/db7e9f0aca519579.msgpack",
+      "sha256": "41a61d571dbeaf0a428ffe28a10c308eced1d01e90725dd2c7b830ad387115a4"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/8e1c9414f7219093.msgpack",
+      "sha256": "ab941e974bbd3221070bb2c2296c817620364db4508f0ea8026e80d7da073b3f"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/654779951ae3c0c9.msgpack",
+      "sha256": "6df5d30d71b6c1694a71dc542e611fdfe2e136cd6356019fd02d6a5ae17562e8"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/0c5767b4b2a5b888.msgpack",
+      "sha256": "c05dc27bad867c3f55a6bb3ab88c590b05b15d8f5304ca0dd7558474099e0e7c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/1609af47a6f5891c.msgpack",
+      "sha256": "497db728d64fae68e94fb51c7c5d392def45de32e8e887e7acb2af057bed663a"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/interpreter-v4/13d0300639fb5014/4ea848c6837b4519.msgpack",
+      "sha256": "387295bb68825e7373dee3e7791bb93c5f2c6b81a04b8d172ca18eeaafbf8783"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ZheTRoCY2QH3aE89/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/LsQC_gK7r57ugy_1/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6jF4fcMBPNHONYEk/ataraxia.pth",
+      "sha256": "72550bb121bde46ed1ea2d00993c98c6a9d8bee9ee13a36ed7af7e2f0b00d951"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/6yS5nqEGAlYUnty8/ataraxia.pth",
+      "sha256": "fe2e7c38daad6fc8bcbf666635513eaebaf23af570c0d7613898e6eb08737b02"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/R2-5L21xB8T6U_yU/ataraxia.pth",
+      "sha256": "80eee71e823cd9071ea0f7223ff940e5308f314bfac3904c2de58548c149d8c8"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/Au83BQXPexrMCUj1/ataraxia.pth",
+      "sha256": "6c5eda98192a3e4f3657756584b7045a4693362f8c93c55b42692d94fce065c0"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ID2NIxDl_xxBJUBs/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/5XP7qMIJloN1T34H/ataraxia.pth",
+      "sha256": "2cf8e4d1cf6ed46007a7afa6cc21cee905c291b053fa39692626ada4f0428c4c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/TkLPYJi5QIQT2FL_/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/ODVmM5uOw_0Uq89t/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/UXbYR2G2ZpUZJ7da/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/gWXZjpgWN49rah6P/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/uv/archive-v0/9nRc6TQxE9I6qp48/ataraxia.pth",
+      "sha256": "bde87b217032dfd703db9e5e8fed20081d0e73d3d089267db7765c398b42204c"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/config-tracking.json",
+      "sha256": "cfc1c85fc92db7a8c22560afd1472db5b97438434f6ce7b1b8f6014da8926587"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/cb573516ec45b054.msgpack",
+      "sha256": "3ab6b8c611c800fbe251914c7c61cdc7ca69ad53cfdc4b9f5992a3b9f30485f9"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/e236657e68bd0be9.msgpack",
+      "sha256": "c189e826e11f9c61044f2f2ea281c1d47f9826dca338722d309428928aef39d8"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/6d345b65486082e9.msgpack",
+      "sha256": "ee38a20ce09a5d92794bc2b6d744df1a65345eea73d8854b5a51ba48c69b9fdc"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/cf6b0510c5613d2c.msgpack",
+      "sha256": "66160ae1041063fc42b1429f45e50fa45b1dbae283e63252a1950b7f12f688eb"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/5c7b0940177c8fc3.msgpack",
+      "sha256": "89a1803b480cf88fe3d521d7e4b4fb3ac8e06904cc4b8c70c71b3a8cd0b8bf6d"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/cache/uv/interpreter-v4/13d0300639fb5014/c8fe2b6d64febbc2.msgpack",
+      "sha256": "7ea39e8029eb7c234e2f62173e77e9e217dc8d84c78008b830dbae13f72af7c6"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-VL2ovP5Okyk2EmkY5JG4/.prek-hook.json",
+      "sha256": "44c4442fb189bc71f2c66a44db67902d76b5dd7085e18bf8654f85d283890d19"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-VL2ovP5Okyk2EmkY5JG4/lib/python3.14/site-packages/uv_pre_commit-0.0.0.dist-info/direct_url.json",
+      "sha256": "4b51b12988e6cf26e419f9f092b4fe10284bd84f7044a181bf8e7a0d17e308a9"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-zzyT1A4vFwGJZ4X6hNFW/.prek-hook.json",
+      "sha256": "cd3af00dfdfdd7a8925304e0d45312d3777f849b324b2863a32157a6b66cbd36"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-zzyT1A4vFwGJZ4X6hNFW/lib/python3.14/site-packages/uv_pre_commit-0.0.0.dist-info/direct_url.json",
+      "sha256": "3bb2de642abbc65d6639d8988939aa93b31e9da4b58f8572578269655e79ea6e"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-N6xZy9EkHjQaE6rxLwKL/.prek-hook.json",
+      "sha256": "94deacb1b1d03f11ba79e17027753e165394cb19c3db4ec35623e96841064bee"
+    },
+    {
+      "path": "/private/tmp/ataraxia-shallow-isolation/.cache/prek/hooks/python-N6xZy9EkHjQaE6rxLwKL/lib/python3.14/site-packages/pre_commit_hooks-6.0.0.dist-info/direct_url.json",
+      "sha256": "2c5df192f6534c65b15e340029b85f6286798c5274c5898251ce1d167b238493"
+    }
+  ],
+  "clone_checks": {
+    "HEAD": "6c8720287aa121592ba2b3506221593b182c70f8",
+    "shallow": "6c8720287aa121592ba2b3506221593b182c70f8",
+    "no_alternates": true,
+    "fresh_venv": true,
+    "no_cache_copied": true,
+    "remote_removed": true
+  }
+}

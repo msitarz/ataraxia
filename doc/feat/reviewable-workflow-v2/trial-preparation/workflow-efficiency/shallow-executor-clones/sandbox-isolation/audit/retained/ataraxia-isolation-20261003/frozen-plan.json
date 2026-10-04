@@ -1,0 +1,62 @@
+{
+  "platform": "macOS",
+  "client": "0.159.3",
+  "model_calls": 0,
+  "timeout_seconds": 30,
+  "total_cap_minutes": 30,
+  "environment": {
+    "CODEX_HOME": "/private/tmp/ataraxia-isolation-20261003/codex-state"
+  },
+  "prefix": [
+    "/usr/local/bin/codex",
+    "sandbox",
+    "-P",
+    "isolation",
+    "--include-managed-config",
+    "-C",
+    "/private/tmp/ataraxia-isolation-20261003/clone"
+  ],
+  "probes": [
+    [
+      "/bin/cat",
+      "/private/tmp/ataraxia-isolation-20261003/clone/task.txt"
+    ],
+    [
+      "/bin/cat",
+      "/private/tmp/ataraxia-isolation-20261003/source/current.txt"
+    ],
+    [
+      "/bin/cat",
+      "/private/tmp/ataraxia-isolation-20261003/source/.git/HEAD"
+    ],
+    [
+      "git",
+      "-C",
+      "/private/tmp/ataraxia-isolation-20261003/source",
+      "show",
+      "H0:historical.txt"
+    ],
+    [
+      "/bin/cat",
+      "/private/tmp/ataraxia-isolation-20261003/clone/source-link/current.txt"
+    ],
+    [
+      "git",
+      "-C",
+      "/private/tmp/ataraxia-isolation-20261003/clone",
+      "cat-file",
+      "-e",
+      "H0^{commit}"
+    ],
+    [
+      "git",
+      "-C",
+      "/private/tmp/ataraxia-isolation-20261003/clone",
+      "fetch",
+      "--unshallow",
+      "/private/tmp/ataraxia-isolation-20261003/source",
+      "master"
+    ]
+  ],
+  "stop": "Stop on unsupported startup, exposure or policy weakening; no retry or escalation"
+}

@@ -1,0 +1,2731 @@
+{
+  "schema": 1,
+  "policy": "No auth/credential values or hashes; no cache/venv/session-system-content copying; original evidence paths are provenance only",
+  "entries": [
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/delivery.py",
+      "source_sha256": "123361cacbaf109fe6214ad214f91bb50c2c99474299c26ba44031044bf1f96f",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/delivery.py.txt",
+      "retained_sha256": "123361cacbaf109fe6214ad214f91bb50c2c99474299c26ba44031044bf1f96f",
+      "bytes": 11677,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/launch-a82276367bc0482a82f7cacfcc4a31ce.jsonl",
+      "source_sha256": "4748e240a409046f884c32a710edd9696d419c09e399afee8ba9933c4f092595",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/launch-a82276367bc0482a82f7cacfcc4a31ce.jsonl",
+      "retained_sha256": "4748e240a409046f884c32a710edd9696d419c09e399afee8ba9933c4f092595",
+      "bytes": 72049,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/plan.json",
+      "source_sha256": "2d351e439c2c8f33d810cee296af0afb6a358ee0af6549b0fb1387a91457b667",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/plan.json",
+      "retained_sha256": "2d351e439c2c8f33d810cee296af0afb6a358ee0af6549b0fb1387a91457b667",
+      "bytes": 8743,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/recover.py",
+      "source_sha256": "7b67f720b549235bb434b2981cd21ac669898e09dc79c8c2466bec91ac86d749",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/recover.py.txt",
+      "retained_sha256": "7b67f720b549235bb434b2981cd21ac669898e09dc79c8c2466bec91ac86d749",
+      "bytes": 9533,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/recovery-launch-46589f3a7e194d64a83bdda64c193ee5.jsonl",
+      "source_sha256": "b3864b0e9651cc7f44818de1873a1f35d0f3437d85bfb103834c0e4ec57adb79",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/recovery-launch-46589f3a7e194d64a83bdda64c193ee5.jsonl",
+      "retained_sha256": "b3864b0e9651cc7f44818de1873a1f35d0f3437d85bfb103834c0e4ec57adb79",
+      "bytes": 65443,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/recovery-plan.json",
+      "source_sha256": "09d2121b612c1d035c4434707f6393166dcfa632dc57ed5e471eb83d5c3f2f16",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/recovery-plan.json",
+      "retained_sha256": "09d2121b612c1d035c4434707f6393166dcfa632dc57ed5e471eb83d5c3f2f16",
+      "bytes": 40557,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/review-approved-cc46e8c42b68487a89a55915cd034d56.json",
+      "source_sha256": "07f59ac84e1f0b7d66a95e5c7bdde45fbea7ed6f14b00c5a19918d606ce6d69d",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/review-approved-cc46e8c42b68487a89a55915cd034d56.json",
+      "retained_sha256": "07f59ac84e1f0b7d66a95e5c7bdde45fbea7ed6f14b00c5a19918d606ce6d69d",
+      "bytes": 173,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/review-approved-d03110fbaf174ab8a25c7be533b206c1.json",
+      "source_sha256": "afe461512451e3c3be747f72b971b16aa065edd802b5d254d00b7d142a058308",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/review-approved-d03110fbaf174ab8a25c7be533b206c1.json",
+      "retained_sha256": "afe461512451e3c3be747f72b971b16aa065edd802b5d254d00b7d142a058308",
+      "bytes": 178,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/review-request-cc46e8c42b68487a89a55915cd034d56.json",
+      "source_sha256": "da10cc5069cf008dbafc86c24d2930b864300947f57dc360b6305328ad354a75",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/review-request-cc46e8c42b68487a89a55915cd034d56.json",
+      "retained_sha256": "da10cc5069cf008dbafc86c24d2930b864300947f57dc360b6305328ad354a75",
+      "bytes": 1768,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-delivery-9f2b7c18db15/evidence/review-request-d03110fbaf174ab8a25c7be533b206c1.json",
+      "source_sha256": "b5af614c64f074210136c33a116cd98fbc63275afb928cd92b96d9c385251b2f",
+      "retained": "retained/ataraxia-delivery-9f2b7c18db15/review-request-d03110fbaf174ab8a25c7be533b206c1.json",
+      "retained_sha256": "b5af614c64f074210136c33a116cd98fbc63275afb928cd92b96d9c385251b2f",
+      "bytes": 515,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-20261003/evidence/config.toml",
+      "source_sha256": "64ba67b3a7d343fcd5a5b7430111b59e7d1060dcb3bd16e850f5363b75cef276",
+      "retained": "retained/ataraxia-isolation-20261003/config.toml.txt",
+      "retained_sha256": "64ba67b3a7d343fcd5a5b7430111b59e7d1060dcb3bd16e850f5363b75cef276",
+      "bytes": 386,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-20261003/evidence/frozen-plan.json",
+      "source_sha256": "909645968836ff8fc267506b6a76df458c56ca250a09908ecf570a14630c3103",
+      "retained": "retained/ataraxia-isolation-20261003/frozen-plan.json",
+      "retained_sha256": "909645968836ff8fc267506b6a76df458c56ca250a09908ecf570a14630c3103",
+      "bytes": 1397,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/config-gate-localrefs-r1-passed.json",
+      "source_sha256": "fc6e8eccd904ba872881f79f9c5c366043f929dab89b9268cf961833d4140d85",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/config-gate-localrefs-r1-passed.json",
+      "retained_sha256": "fc6e8eccd904ba872881f79f9c5c366043f929dab89b9268cf961833d4140d85",
+      "bytes": 9976,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/config-gate-localrefs-r1.py",
+      "source_sha256": "9729cc0bd6ccce772eb9fd5cd5e1da027de5f36835c1ecea66722303d8834415",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/config-gate-localrefs-r1.py.txt",
+      "retained_sha256": "9729cc0bd6ccce772eb9fd5cd5e1da027de5f36835c1ecea66722303d8834415",
+      "bytes": 3148,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/config-gate-passed.json",
+      "source_sha256": "86f3dba23def3e8fee0b1ca7f22bd48cf9f349f07e71743f5f28ce2b013157b2",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/config-gate-passed.json",
+      "retained_sha256": "86f3dba23def3e8fee0b1ca7f22bd48cf9f349f07e71743f5f28ce2b013157b2",
+      "bytes": 9976,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/config-gate.py",
+      "source_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/config-gate.py.txt",
+      "retained_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "bytes": 3135,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/config-overrides.json",
+      "source_sha256": "6c4685ec6d015eabe21c059809446ceadb9be3541d426805340463c13bf15296",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/config-overrides.json",
+      "retained_sha256": "6c4685ec6d015eabe21c059809446ceadb9be3541d426805340463c13bf15296",
+      "bytes": 2507,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/control-exact-common-show.json",
+      "source_sha256": "d214fc32127f9d8ca69579276f20086c20f0a161e74687373abc9534838ba4f3",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/control-exact-common-show.json",
+      "retained_sha256": "d214fc32127f9d8ca69579276f20086c20f0a161e74687373abc9534838ba4f3",
+      "bytes": 379,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/events-f557b8550e234392ad4a3814ce8dffa8-initial.jsonl",
+      "source_sha256": "124529b7926a98e8ec57baf2a0a847dc2e2a598f17b029dc052ebecdf6968e5b",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/events-f557b8550e234392ad4a3814ce8dffa8-initial.jsonl",
+      "retained_sha256": "dd5613b65632d09d11b553be1987ac18fd556057fc08d864d22abb9579e621bc",
+      "bytes": 449,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/feature-validation.json",
+      "source_sha256": "2889af13ed91960d2a8b66d29bf57ed7c20601119c07fec8397a7003839a7fba",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/feature-validation.json",
+      "retained_sha256": "2889af13ed91960d2a8b66d29bf57ed7c20601119c07fec8397a7003839a7fba",
+      "bytes": 3388,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/initial-prompt.txt",
+      "source_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/initial-prompt.txt",
+      "retained_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "bytes": 948,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/model-launch-a5096a1045f745fe9f62bd82b8309baf.jsonl",
+      "source_sha256": "460961fb99d1011e47c3c5e8362d3f77a327a4f4f35d0c8e692701db3da1dc5b",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/model-launch-a5096a1045f745fe9f62bd82b8309baf.jsonl",
+      "retained_sha256": "460961fb99d1011e47c3c5e8362d3f77a327a4f4f35d0c8e692701db3da1dc5b",
+      "bytes": 8014,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/model-launch-f557b8550e234392ad4a3814ce8dffa8.jsonl",
+      "source_sha256": "e004035a0d032ef688d3e1f373cd48153c195d8d3dea4f8fcbbfcd730af64b57",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/model-launch-f557b8550e234392ad4a3814ce8dffa8.jsonl",
+      "retained_sha256": "e004035a0d032ef688d3e1f373cd48153c195d8d3dea4f8fcbbfcd730af64b57",
+      "bytes": 10318,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/model-plan.json",
+      "source_sha256": "2c350e4ac829f0a0f8077300d418468af0a4788a51bf867b5259c82e81333474",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/model-plan.json",
+      "retained_sha256": "2c350e4ac829f0a0f8077300d418468af0a4788a51bf867b5259c82e81333474",
+      "bytes": 22911,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/model-trial-localrefs-r1.py",
+      "source_sha256": "077a5fca92f13f4865d2ab80ffaf66b15b1411fa8f8db1ad02cbf1511059cc86",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/model-trial-localrefs-r1.py.txt",
+      "retained_sha256": "077a5fca92f13f4865d2ab80ffaf66b15b1411fa8f8db1ad02cbf1511059cc86",
+      "bytes": 14331,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/model-trial.py",
+      "source_sha256": "0fad95d4a5b212bb58a51929655188f0cb3322e4d1a32502fb512da403347a95",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/model-trial.py.txt",
+      "retained_sha256": "0fad95d4a5b212bb58a51929655188f0cb3322e4d1a32502fb512da403347a95",
+      "bytes": 14305,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/resume-prompt.txt",
+      "source_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/resume-prompt.txt",
+      "retained_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "bytes": 965,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/runtime.config.toml",
+      "source_sha256": "ec328a3cdfc21143fb731a4b06a8c1e01f09d7cb8a8cb329d61ff63aaaf27a70",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/runtime.config.toml.txt",
+      "retained_sha256": "ec328a3cdfc21143fb731a4b06a8c1e01f09d7cb8a8cb329d61ff63aaaf27a70",
+      "bytes": 2118,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/skill-paths.json",
+      "source_sha256": "184d18f515daab8a6749df42a94c4a9877ceadeaa2fc1b1469ad08facff84f17",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/skill-paths.json",
+      "retained_sha256": "184d18f515daab8a6749df42a94c4a9877ceadeaa2fc1b1469ad08facff84f17",
+      "bytes": 939,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/clone-git-neutral-probes.json",
+      "source_sha256": "21c92379fb92859b51b9d867d9a14d49245dd84052aea71ae526853e88d43a6f",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/clone-git-neutral-probes.json",
+      "retained_sha256": "21c92379fb92859b51b9d867d9a14d49245dd84052aea71ae526853e88d43a6f",
+      "bytes": 3090,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/clone-git-neutral-probes.py",
+      "source_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/clone-git-neutral-probes.py.txt",
+      "retained_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "bytes": 2621,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/config-gate-passed.json",
+      "source_sha256": "86f3dba23def3e8fee0b1ca7f22bd48cf9f349f07e71743f5f28ce2b013157b2",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/config-gate-passed.json",
+      "retained_sha256": "86f3dba23def3e8fee0b1ca7f22bd48cf9f349f07e71743f5f28ce2b013157b2",
+      "bytes": 9976,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/config-gate.py",
+      "source_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/config-gate.py.txt",
+      "retained_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "bytes": 3135,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/config-overrides.json",
+      "source_sha256": "6c4685ec6d015eabe21c059809446ceadb9be3541d426805340463c13bf15296",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/config-overrides.json",
+      "retained_sha256": "6c4685ec6d015eabe21c059809446ceadb9be3541d426805340463c13bf15296",
+      "bytes": 2507,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/initial-prompt.txt",
+      "source_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/initial-prompt.txt",
+      "retained_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "bytes": 948,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/manifest.json",
+      "source_sha256": "e654d14d39e45db096ae28798f9fc1598a063f02a31431fbafb4c8b387c20035",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/manifest.json",
+      "retained_sha256": "e654d14d39e45db096ae28798f9fc1598a063f02a31431fbafb4c8b387c20035",
+      "bytes": 3643,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/model-plan.json",
+      "source_sha256": "3233ae53ef1e264899014a0fc766656276a5f48998880dddd194f8046ba0b283",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/model-plan.json",
+      "retained_sha256": "3233ae53ef1e264899014a0fc766656276a5f48998880dddd194f8046ba0b283",
+      "bytes": 21416,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/model-trial.py",
+      "source_sha256": "0fad95d4a5b212bb58a51929655188f0cb3322e4d1a32502fb512da403347a95",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/model-trial.py.txt",
+      "retained_sha256": "0fad95d4a5b212bb58a51929655188f0cb3322e4d1a32502fb512da403347a95",
+      "bytes": 14305,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/resume-prompt.txt",
+      "source_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/resume-prompt.txt",
+      "retained_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "bytes": 965,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/runtime.config.toml",
+      "source_sha256": "ec328a3cdfc21143fb731a4b06a8c1e01f09d7cb8a8cb329d61ff63aaaf27a70",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/runtime.config.toml.txt",
+      "retained_sha256": "ec328a3cdfc21143fb731a4b06a8c1e01f09d7cb8a8cb329d61ff63aaaf27a70",
+      "bytes": 2118,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/evidence/packet-before-localrefs-r1/skill-paths.json",
+      "source_sha256": "184d18f515daab8a6749df42a94c4a9877ceadeaa2fc1b1469ad08facff84f17",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/packet-before-localrefs-r1/skill-paths.json",
+      "retained_sha256": "184d18f515daab8a6749df42a94c4a9877ceadeaa2fc1b1469ad08facff84f17",
+      "bytes": 939,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/neutral-probes.py",
+      "source_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/neutral-probes.py.txt",
+      "retained_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "bytes": 2621,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/neutral-probes.json",
+      "source_sha256": "34eef5d17ec1cdba6bc6cbcdf76a356e507ff51076a1bf19af9f9f59463615ad",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/neutral-probes.json.txt",
+      "retained_sha256": "34eef5d17ec1cdba6bc6cbcdf76a356e507ff51076a1bf19af9f9f59463615ad",
+      "bytes": 3070,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/neutral-network.json",
+      "source_sha256": "9afa24bc82301d8a5ab7f9b62dadc3ccd89621f87ddba81b8cd2816a3ec75a61",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/neutral-network.json.txt",
+      "retained_sha256": "9afa24bc82301d8a5ab7f9b62dadc3ccd89621f87ddba81b8cd2816a3ec75a61",
+      "bytes": 464,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/hooks/pre-commit",
+      "source_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "bytes": 115,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-12f0f185970b/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-executor-12f0f185970b/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/config-gate-passed.json",
+      "source_sha256": "e5bcf77f685f73bcce81fd4bcf294a740975e6749905a75e45d89de4ba08f627",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/config-gate-passed.json",
+      "retained_sha256": "e5bcf77f685f73bcce81fd4bcf294a740975e6749905a75e45d89de4ba08f627",
+      "bytes": 10108,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/config-gate.py",
+      "source_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/config-gate.py.txt",
+      "retained_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "bytes": 3135,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/config-overrides.json",
+      "source_sha256": "880a1fd50a1917597a0a602afb4703129851517748d8541c7b6a7fe6b11231fd",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/config-overrides.json",
+      "retained_sha256": "880a1fd50a1917597a0a602afb4703129851517748d8541c7b6a7fe6b11231fd",
+      "bytes": 2543,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/control-exact-common-show.json",
+      "source_sha256": "cc438fc162c1d712d2ef070de3e9f52735c48687f24c1e116567c9d6f1c586c3",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/control-exact-common-show.json",
+      "retained_sha256": "cc438fc162c1d712d2ef070de3e9f52735c48687f24c1e116567c9d6f1c586c3",
+      "bytes": 391,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/events-f54adabf3e6d4a7ca9e962a3dbb383ef-initial.jsonl",
+      "source_sha256": "5c8d169e92bc580c2ccd3536f0581e391013b6d2ec21fa568c3dabe89a7d5371",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/events-f54adabf3e6d4a7ca9e962a3dbb383ef-initial.jsonl",
+      "retained_sha256": "363df4a4c88798ac533690e62c536aa740741d365d638d9de8ebd8ee072abac5",
+      "bytes": 13536,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/feature-validation.json",
+      "source_sha256": "ff7e6e932da5e9464ef4f2dd858152be4c6f637ad6b74c922e6c456a0c8dcb19",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/feature-validation.json",
+      "retained_sha256": "ff7e6e932da5e9464ef4f2dd858152be4c6f637ad6b74c922e6c456a0c8dcb19",
+      "bytes": 3424,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/initial-prompt.txt",
+      "source_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/initial-prompt.txt",
+      "retained_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "bytes": 948,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/model-launch-f54adabf3e6d4a7ca9e962a3dbb383ef.jsonl",
+      "source_sha256": "95912ecdb1d0c0c5cfa23d4e1710d849517c9e41ce30a345249d56f9a976baf2",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/model-launch-f54adabf3e6d4a7ca9e962a3dbb383ef.jsonl",
+      "retained_sha256": "95912ecdb1d0c0c5cfa23d4e1710d849517c9e41ce30a345249d56f9a976baf2",
+      "bytes": 11024,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/model-plan.json",
+      "source_sha256": "f381237ebbed9ae37740f6a8fc18cff08b28d89de9f320588b257875d4379f75",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/model-plan.json",
+      "retained_sha256": "f381237ebbed9ae37740f6a8fc18cff08b28d89de9f320588b257875d4379f75",
+      "bytes": 23802,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/model-trial.py",
+      "source_sha256": "261ed7fd0eb5d5285b302aada94fb7d677ce72db75a247b2968910a23b95c563",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/model-trial.py.txt",
+      "retained_sha256": "261ed7fd0eb5d5285b302aada94fb7d677ce72db75a247b2968910a23b95c563",
+      "bytes": 15162,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/resume-prompt.txt",
+      "source_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/resume-prompt.txt",
+      "retained_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "bytes": 965,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/runtime.config.toml",
+      "source_sha256": "b6fac262ee0ffe71c6928e297bb626a719285402bf7f1140a4273a9bfafd8b8b",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/runtime.config.toml.txt",
+      "retained_sha256": "b6fac262ee0ffe71c6928e297bb626a719285402bf7f1140a4273a9bfafd8b8b",
+      "bytes": 2154,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/evidence/skill-paths.json",
+      "source_sha256": "48ceacd169de8f2c64943f4a5c2b87589f89e8c1eb3ce79ea5b6ef901a85f916",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/skill-paths.json",
+      "retained_sha256": "48ceacd169de8f2c64943f4a5c2b87589f89e8c1eb3ce79ea5b6ef901a85f916",
+      "bytes": 987,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/neutral-probes.py",
+      "source_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/neutral-probes.py.txt",
+      "retained_sha256": "2c0f670a872499564672c3f25d8100a0036349bc4576f7e45fdeb8e29816a00b",
+      "bytes": 2621,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/neutral-probes.json",
+      "source_sha256": "935309fb10e4eb21cb8d48cc21239ad178c68415a4e44176065a9f5cfc1e329c",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/neutral-probes.json.txt",
+      "retained_sha256": "935309fb10e4eb21cb8d48cc21239ad178c68415a4e44176065a9f5cfc1e329c",
+      "bytes": 3214,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/neutral-network.json",
+      "source_sha256": "b1225a56a248d53771012d4fef13e23b6718c8b409cf9e8587cda0637aa10d73",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/neutral-network.json.txt",
+      "retained_sha256": "b1225a56a248d53771012d4fef13e23b6718c8b409cf9e8587cda0637aa10d73",
+      "bytes": 488,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/hooks/pre-commit",
+      "source_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "bytes": 115,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-executor-replacement-a66f231bd50c/state/sessions/2026/10/04/rollout-2026-10-04T04-43-17-01a10614-ee32-77c3-b5b6-64cf19cd03f8.jsonl",
+      "source_sha256": "55b890c9652aab1cbad405ec0e7d1f0ffed21b8d640b90ed4714cba5a6621f62",
+      "retained": "retained/ataraxia-isolation-executor-replacement-a66f231bd50c/session-extracts/rollout-2026-10-04T04-43-17-01a10614-ee32-77c3-b5b6-64cf19cd03f8.jsonl",
+      "retained_sha256": "d77067860de88f5d254d93161e65104a3a8c9b5269f8424acab41c64432eb1b7",
+      "bytes": 27587,
+      "kind": "sanitized actual tools/context/usage",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-launch-0deed16ff6134592b7de8a0a226e2745.jsonl",
+      "source_sha256": "4ca23e3f5eb9e66283a5f6510113361e6b3b4f3f7e16ca6f70a3dfda3325b1e8",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-launch-0deed16ff6134592b7de8a0a226e2745.jsonl",
+      "retained_sha256": "4ca23e3f5eb9e66283a5f6510113361e6b3b4f3f7e16ca6f70a3dfda3325b1e8",
+      "bytes": 1182,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-launch-21c804b9da6a43118de1ae4f2a209d69.jsonl",
+      "source_sha256": "4f118ec0996d72aa13a9e9a6d1ea667657820d0753d596c1b7231103fbea63d2",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-launch-21c804b9da6a43118de1ae4f2a209d69.jsonl",
+      "retained_sha256": "4f118ec0996d72aa13a9e9a6d1ea667657820d0753d596c1b7231103fbea63d2",
+      "bytes": 1164,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-launch-5a9a2b3e8beb4afea2e6c11de3ba276f.jsonl",
+      "source_sha256": "a8c938a3cf408c9e2ddc6f1a51b4b9ff6397c0ee7b53501ce3576ed48b568551",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-launch-5a9a2b3e8beb4afea2e6c11de3ba276f.jsonl",
+      "retained_sha256": "a8c938a3cf408c9e2ddc6f1a51b4b9ff6397c0ee7b53501ce3576ed48b568551",
+      "bytes": 17744,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-launch-9b35e0f615734167840a58ff02ab0fe6.jsonl",
+      "source_sha256": "5af45af9730b32fa91ddb4246baca52dcb54591dd614279f03cdb51cbb50df51",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-launch-9b35e0f615734167840a58ff02ab0fe6.jsonl",
+      "retained_sha256": "5af45af9730b32fa91ddb4246baca52dcb54591dd614279f03cdb51cbb50df51",
+      "bytes": 1182,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-launch-cc7967d3c7084c5f96be7b63a5c688a2.jsonl",
+      "source_sha256": "cf6b0f83ea207fdaa9d8a6d368c8339cb360bef427b1f85a775919f732bfa848",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-launch-cc7967d3c7084c5f96be7b63a5c688a2.jsonl",
+      "retained_sha256": "cf6b0f83ea207fdaa9d8a6d368c8339cb360bef427b1f85a775919f732bfa848",
+      "bytes": 14585,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/batch-plan.json",
+      "source_sha256": "12c2355ecb2cd39c98380f7289e70035652da7b774780d23e0383bbf5c237e29",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/batch-plan.json",
+      "retained_sha256": "12c2355ecb2cd39c98380f7289e70035652da7b774780d23e0383bbf5c237e29",
+      "bytes": 9064,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/config.toml",
+      "source_sha256": "3279d8a9df429324059e4339ae89944805934012a88922f2059e6a9085fd8c81",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/config.toml.txt",
+      "retained_sha256": "3279d8a9df429324059e4339ae89944805934012a88922f2059e6a9085fd8c81",
+      "bytes": 414,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction-0.json",
+      "source_sha256": "1fb946b4108ea709f4e0feab673be012bac521f94dc6301a79c14739a6ed9f8d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction-0.json",
+      "retained_sha256": "4563d47c202dd329432b691dbb9c3f0664149d6defcfb2850058f60fa9b1231c",
+      "bytes": 620,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "1fb946b4108ea709f4e0feab673be012bac521f94dc6301a79c14739a6ed9f8d"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction-1.json",
+      "source_sha256": "4c232d52bb0b0fc50acbd7bf45f788d34a2aff9bd15dbe2a3edfaf51bcb9bff1",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction-1.json",
+      "retained_sha256": "d56498f8536aadfc6b81d6718adb14165c1a73bdb82a959fd8cace5d6831fbab",
+      "bytes": 555,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "4c232d52bb0b0fc50acbd7bf45f788d34a2aff9bd15dbe2a3edfaf51bcb9bff1"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction-2.json",
+      "source_sha256": "ed35925715873d0e0668ac87ba792b396cfdeb8029e704b292d517291ef58de4",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction-2.json",
+      "retained_sha256": "dbd4e4380dcfe26819f846164400e258c093ea8ec6064e483b321ab393cbcae1",
+      "bytes": 493,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "ed35925715873d0e0668ac87ba792b396cfdeb8029e704b292d517291ef58de4"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction-3.json",
+      "source_sha256": "65b904ca63ea53bca77c6752ed5a706b7eb75f0ee9b54fe4acea481323c333e1",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction-3.json",
+      "retained_sha256": "6c35e96d1b9296729935e515715ddc72b5f052b7f7a8a9649ad06318e47ac67c",
+      "bytes": 700,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "65b904ca63ea53bca77c6752ed5a706b7eb75f0ee9b54fe4acea481323c333e1"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction-4.json",
+      "source_sha256": "d026cb97a690b8dc6514e0549d22e9dfc31008447f4a9055d13d27b6454b25bf",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction-4.json",
+      "retained_sha256": "8ccaecbe3876c3e87f710e121ab1eec874b21b2bf63527e3db65957f570b1cf2",
+      "bytes": 492,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "d026cb97a690b8dc6514e0549d22e9dfc31008447f4a9055d13d27b6454b25bf"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/construction.json",
+      "source_sha256": "8d8dab1b8ffc34942976b476c0af8e2fc6748c23ffe8d86d0923738244ce9ae3",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/construction.json",
+      "retained_sha256": "b5828cb97ea4593605eae2a7f2c2ffdca95ac82a45c41256e170ccbd1d1dfadb",
+      "bytes": 558,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "8d8dab1b8ffc34942976b476c0af8e2fc6748c23ffe8d86d0923738244ce9ae3"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/control-0.json",
+      "source_sha256": "a3ccff845ad06cfe622327a335ac4071ef0a1a4c7a86268198ac8f12b679327d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/control-0.json",
+      "retained_sha256": "19d211ab0f367ae0f63ec3f1d6b177e94a4c79ca3fcceaeada401293315dd144",
+      "bytes": 300,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "a3ccff845ad06cfe622327a335ac4071ef0a1a4c7a86268198ac8f12b679327d"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/control-1.json",
+      "source_sha256": "b01976913ef7cb9280f5906e1fb5ed8e4f6da78f84402eb9530f0de700fae4ed",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/control-1.json",
+      "retained_sha256": "3582680e7c4fa7119cce5b0d2d979c2bd784914893b3fbd41d0d3b21b2f555af",
+      "bytes": 296,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "b01976913ef7cb9280f5906e1fb5ed8e4f6da78f84402eb9530f0de700fae4ed"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/control-2.json",
+      "source_sha256": "530477c42fdcd91a3c4293abfe806d3a1d43e8f61f1c4c502c2f4900fce05de5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/control-2.json",
+      "retained_sha256": "fca5c6d670ea9d94a1d865026aa7a31c65e0caa047aa8a86dc1c9eed78e146fd",
+      "bytes": 336,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "530477c42fdcd91a3c4293abfe806d3a1d43e8f61f1c4c502c2f4900fce05de5"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/control-3.json",
+      "source_sha256": "15cf1828b2f247c24c9df7dea71bc862b66359d914739b51eeee98f3cefe2f67",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/control-3.json",
+      "retained_sha256": "59dfd6c6c0de7bd9ef90895797737ac18098b57ef43542ce8f5589c39167d8c9",
+      "bytes": 386,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "15cf1828b2f247c24c9df7dea71bc862b66359d914739b51eeee98f3cefe2f67"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/history-probes.py",
+      "source_sha256": "ecdf5663c5f25fd33fda8a8c22bc5f7fdb20af296b4ca0c6ae02e8cd9a5df89d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/history-probes.py.txt",
+      "retained_sha256": "ecdf5663c5f25fd33fda8a8c22bc5f7fdb20af296b4ca0c6ae02e8cd9a5df89d",
+      "bytes": 5941,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/batch-plan.json",
+      "source_sha256": "eefb5b4146dea270859a2b9e06c98d2c9736832adc234ed72bc03a247374e104",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-read-r1/batch-plan.json",
+      "retained_sha256": "eefb5b4146dea270859a2b9e06c98d2c9736832adc234ed72bc03a247374e104",
+      "bytes": 10663,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/config.toml",
+      "source_sha256": "ebb50558322d6523db93beacbc2fe20637c2b5b1a90e5e35b2dd1957d68e2e37",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-read-r1/config.toml.txt",
+      "retained_sha256": "ebb50558322d6523db93beacbc2fe20637c2b5b1a90e5e35b2dd1957d68e2e37",
+      "bytes": 832,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/history-probes.py",
+      "source_sha256": "a9ddeb0d8b3d40e49866be6008018f6c7f4ac66b25bceb6d5bd757fa49f0e7f4",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-read-r1/history-probes.py.txt",
+      "retained_sha256": "a9ddeb0d8b3d40e49866be6008018f6c7f4ac66b25bceb6d5bd757fa49f0e7f4",
+      "bytes": 6279,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/batch-plan.json",
+      "source_sha256": "0aec9dd543fcd68a5be1b592432854f6cff769e9a5856294079c8fb4dd2a4e31",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/batch-plan.json",
+      "retained_sha256": "0aec9dd543fcd68a5be1b592432854f6cff769e9a5856294079c8fb4dd2a4e31",
+      "bytes": 15563,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/config.toml",
+      "source_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/config.toml.txt",
+      "retained_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "bytes": 944,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-0.json",
+      "source_sha256": "850d6792d0ef1b1a1451879f9099d7e094524e4189eeab0ca289cdb02bdd4c66",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control-0.json",
+      "retained_sha256": "55f39ccd86f4e4a5a65eb95a0906940389f35b4fc5e07c6658355440d1506141",
+      "bytes": 564,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "850d6792d0ef1b1a1451879f9099d7e094524e4189eeab0ca289cdb02bdd4c66"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-1.json",
+      "source_sha256": "7fc16c60562a0a3ce7745acd4c4821ba151d56298a60ab95a1f603a7fab1566d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control-1.json",
+      "retained_sha256": "960dab49524c0155c4303a96a6de3d19bbba7d0fcaf27946d6eeb2e3e1f53938",
+      "bytes": 633,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "7fc16c60562a0a3ce7745acd4c4821ba151d56298a60ab95a1f603a7fab1566d"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-2.json",
+      "source_sha256": "653a64045eea35e78c19633086530edc96ad94f7afafaf4f9616df3bdca66f62",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control-2.json",
+      "retained_sha256": "ec00c2cef9ef597f2ea34f1fe9d413eedc33fb0624ad82fed390286ceb52cacc",
+      "bytes": 518,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "653a64045eea35e78c19633086530edc96ad94f7afafaf4f9616df3bdca66f62"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-3.json",
+      "source_sha256": "d9ac20bb97cf51a3b770dd1046a47bf4b6dca84d64df53e7d33710849151bcc0",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control-3.json",
+      "retained_sha256": "3e8d3c87602c0936fcde2878cb52dcfd8b0a1411ad4e4184868bd0f0d9599535",
+      "bytes": 362,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "d9ac20bb97cf51a3b770dd1046a47bf4b6dca84d64df53e7d33710849151bcc0"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control-4.json",
+      "source_sha256": "2980dc05f9e845d4fe5a40d169601613bb5fd24d48faecad7bf9f82fb9683b0a",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control-4.json",
+      "retained_sha256": "d7321493746226246cd0a2664a9ffcd21aa62193f099aecfe3f4492651e2ec21",
+      "bytes": 362,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "2980dc05f9e845d4fe5a40d169601613bb5fd24d48faecad7bf9f82fb9683b0a"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/history-probes.py",
+      "source_sha256": "e8c73f2e32f71b50b3c58e173831c28d677c0f1179f81a7edd06141a2f808265",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/history-probes.py.txt",
+      "retained_sha256": "e8c73f2e32f71b50b3c58e173831c28d677c0f1179f81a7edd06141a2f808265",
+      "bytes": 8797,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control/current.txt",
+      "source_sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control/current.txt",
+      "retained_sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "bytes": 52,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control/task.txt",
+      "source_sha256": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/control/task.txt",
+      "retained_sha256": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+      "bytes": 8,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-diagnosis-r1/diagnose.py",
+      "source_sha256": "35c776bd3d33840120cf2ae2d43845988f3611f89e950c165986d376c2d0fef6",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-diagnosis-r1/diagnose.py.txt",
+      "retained_sha256": "35c776bd3d33840120cf2ae2d43845988f3611f89e950c165986d376c2d0fef6",
+      "bytes": 3555,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-diagnosis-r1/diagnostic-80f89c6517e9447a91efc4051e15a8ae.jsonl",
+      "source_sha256": "3fc345a49afd6b5caf3bb37aca7edac7ba0f63114af028d0ebf2da781843ae1f",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-diagnosis-r1/diagnostic-80f89c6517e9447a91efc4051e15a8ae.jsonl",
+      "retained_sha256": "3fc345a49afd6b5caf3bb37aca7edac7ba0f63114af028d0ebf2da781843ae1f",
+      "bytes": 4464,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-diagnosis-r1/plan.json",
+      "source_sha256": "18813800ba9f499c19fe9cdb6de85a476c06e633a313c640a1f3006c69b3dab5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-diagnosis-r1/plan.json",
+      "retained_sha256": "18813800ba9f499c19fe9cdb6de85a476c06e633a313c640a1f3006c69b3dab5",
+      "bytes": 3367,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/batch-plan.json",
+      "source_sha256": "423a68661d40fdd1c16ddcc72468993bfab1a46ee02f61f885430fe3a11acb71",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/batch-plan.json",
+      "retained_sha256": "423a68661d40fdd1c16ddcc72468993bfab1a46ee02f61f885430fe3a11acb71",
+      "bytes": 17615,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/config.toml",
+      "source_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/config.toml.txt",
+      "retained_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "bytes": 1022,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control-0.json",
+      "source_sha256": "28c46c32ff0827378bb9265b0458c55f4f96101383f4bc68ed2c61139107dce4",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control-0.json",
+      "retained_sha256": "9748dd8da70ea02a6821ce1a7de73002ef5f216b21f4faaeb2fb4cc3e8c9498b",
+      "bytes": 560,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "28c46c32ff0827378bb9265b0458c55f4f96101383f4bc68ed2c61139107dce4"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control-1.json",
+      "source_sha256": "8ec3582204b0649291962bd86fd9f0b84fe207e9c48fed6db3794fe1d91f821a",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control-1.json",
+      "retained_sha256": "03d1303f20755c3d9b31c00aed0264d2175a885845d4353436a39eda5430e506",
+      "bytes": 468,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "8ec3582204b0649291962bd86fd9f0b84fe207e9c48fed6db3794fe1d91f821a"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control-2.json",
+      "source_sha256": "f7939d2639a67d366af3c7f59507d54e30af7d81a9fd48c2ecebad983cc092bf",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control-2.json",
+      "retained_sha256": "97d9f83456a7941461742236cb72d03e9d2d941ae41bd6572149fa94af083400",
+      "bytes": 430,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "f7939d2639a67d366af3c7f59507d54e30af7d81a9fd48c2ecebad983cc092bf"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control-3.json",
+      "source_sha256": "e77f1d055f2e9eb36a013ee62dceff45edd981f846eab4df205180b82dee7498",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control-3.json",
+      "retained_sha256": "f845e7bf7c48e7b50a388be6cc93c56e777d0399c68cc7ea67f91a619d071416",
+      "bytes": 360,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "e77f1d055f2e9eb36a013ee62dceff45edd981f846eab4df205180b82dee7498"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control-4.json",
+      "source_sha256": "a9c1303d6fadac74b9cb6f3bb8d63f2e869d109bfac97833cb30dc3320072ec3",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control-4.json",
+      "retained_sha256": "482cdb658aa4dd25dde2b48bc64c2c998ff1b736df585b37b1714fe01e3feadc",
+      "bytes": 360,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "a9c1303d6fadac74b9cb6f3bb8d63f2e869d109bfac97833cb30dc3320072ec3"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/history-probes.py",
+      "source_sha256": "782b9810996ccc2676036e47e87dd50c558cea88ef3a382fd68cc1682546d52c",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/history-probes.py.txt",
+      "retained_sha256": "782b9810996ccc2676036e47e87dd50c558cea88ef3a382fd68cc1682546d52c",
+      "bytes": 8857,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control/current.txt",
+      "source_sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control/current.txt",
+      "retained_sha256": "d37ef6c0ddbfa5470f04d305564dcdfcccede506b51c6b8ce54e63ced6f89071",
+      "bytes": 52,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/control/task.txt",
+      "source_sha256": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/control/task.txt",
+      "retained_sha256": "52d26753462488ad21852bc6718e21b84835f53765304d0a1e1b89d05a2a71b1",
+      "bytes": 8,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/symlink-runtime-r2/batch-plan.json",
+      "source_sha256": "b8f72a706020c4cd7c77f757f71b93e924ca836e0fbdc4f2bafb06c08c033f6d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/symlink-runtime-r2/batch-plan.json",
+      "retained_sha256": "b8f72a706020c4cd7c77f757f71b93e924ca836e0fbdc4f2bafb06c08c033f6d",
+      "bytes": 11561,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/symlink-runtime-r2/config.toml",
+      "source_sha256": "7fb3b23a5d802b8f5fc65d2f130ba241bd7c5a189a13287c87e5909c6e98764a",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/symlink-runtime-r2/config.toml.txt",
+      "retained_sha256": "7fb3b23a5d802b8f5fc65d2f130ba241bd7c5a189a13287c87e5909c6e98764a",
+      "bytes": 928,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/symlink-runtime-r2/history-probes.py",
+      "source_sha256": "10efb9bb348cf3a18d7ec0264bbc748f07856ce6dd4a229c86c4338b409fb763",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/symlink-runtime-r2/history-probes.py.txt",
+      "retained_sha256": "10efb9bb348cf3a18d7ec0264bbc748f07856ce6dd4a229c86c4338b409fb763",
+      "bytes": 6783,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/network-r6/config.toml",
+      "source_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/network-r6/config.toml.txt",
+      "retained_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "bytes": 1022,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/network-r6/launch-f85379074d7749b089164cea83301283.jsonl",
+      "source_sha256": "5bb9d15b6dda54f6be5f559156ab8b86ec2ee04d794a9f1d7fbe5b80733238d1",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/network-r6/launch-f85379074d7749b089164cea83301283.jsonl",
+      "retained_sha256": "5bb9d15b6dda54f6be5f559156ab8b86ec2ee04d794a9f1d7fbe5b80733238d1",
+      "bytes": 19738,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/network-r6/network-probes.py",
+      "source_sha256": "4ffa6dd2fd4e7ce92d4ebe1f7896629aeaf0dbb6dea63ea7ee9b214d71fab5c2",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/network-r6/network-probes.py.txt",
+      "retained_sha256": "4ffa6dd2fd4e7ce92d4ebe1f7896629aeaf0dbb6dea63ea7ee9b214d71fab5c2",
+      "bytes": 5194,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/network-r6/plan.json",
+      "source_sha256": "fe4f5d166ce7c6e8916487d7bb52d02bcd6b537e5118136847fc301ed8abdb7d",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/network-r6/plan.json",
+      "retained_sha256": "fe4f5d166ce7c6e8916487d7bb52d02bcd6b537e5118136847fc301ed8abdb7d",
+      "bytes": 8820,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/config.toml",
+      "source_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-read-r3/config.toml.txt",
+      "retained_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "bytes": 944,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/plan.json",
+      "source_sha256": "0a45c554ca4c178448b39487d4510604727f799b068e311aaf3bb1adf96188d9",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-read-r3/plan.json",
+      "retained_sha256": "0a45c554ca4c178448b39487d4510604727f799b068e311aaf3bb1adf96188d9",
+      "bytes": 2422,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/probe-11b4b2304445404cb9eda3271baf0a97.jsonl",
+      "source_sha256": "b5474dd5100470be279b46b419b15cc469f18ce388677af14924689d214c183a",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-read-r3/probe-11b4b2304445404cb9eda3271baf0a97.jsonl",
+      "retained_sha256": "b5474dd5100470be279b46b419b15cc469f18ce388677af14924689d214c183a",
+      "bytes": 2437,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/probe.py",
+      "source_sha256": "da33014cc2edbaff8be2eaebceadf0fa9ac43c4565d8d209ffbb80a4bb21cdd7",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-read-r3/probe.py.txt",
+      "retained_sha256": "da33014cc2edbaff8be2eaebceadf0fa9ac43c4565d8d209ffbb80a4bb21cdd7",
+      "bytes": 3992,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git/hooks/pre-commit",
+      "source_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+      "bytes": 78,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/batch-launch-72d58aef34b9419c9476632432059d4e.jsonl",
+      "source_sha256": "7f22dda4a4796c4c9bccb66bbf47d7bdaf2836d67e6aa83e883c597d49e361d7",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/batch-launch-72d58aef34b9419c9476632432059d4e.jsonl",
+      "retained_sha256": "7f22dda4a4796c4c9bccb66bbf47d7bdaf2836d67e6aa83e883c597d49e361d7",
+      "bytes": 13459,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/batch-plan.json",
+      "source_sha256": "42fbd48aaf5f822777037be92032302d750d2911b50caa6a9c844ae9eedc7790",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/batch-plan.json",
+      "retained_sha256": "42fbd48aaf5f822777037be92032302d750d2911b50caa6a9c844ae9eedc7790",
+      "bytes": 7601,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/config.toml",
+      "source_sha256": "b77cb4f3242b3a4578678ecb9c11c9e6ec047470d855d8eb7dbca6a084131ad7",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/config.toml.txt",
+      "retained_sha256": "b77cb4f3242b3a4578678ecb9c11c9e6ec047470d855d8eb7dbca6a084131ad7",
+      "bytes": 410,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-0.json",
+      "source_sha256": "2ecfc625c57bf3a4194d4528a9fb029485a062b12cedfab089bddb2cc67f22a8",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-0.json",
+      "retained_sha256": "af0c684c3b8fc1c1cf3f9444365a91ac9f6dca48c5ca7349626efeb9809043e7",
+      "bytes": 543,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "2ecfc625c57bf3a4194d4528a9fb029485a062b12cedfab089bddb2cc67f22a8"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-1.json",
+      "source_sha256": "c78b96737f3fefac68bc550c8e6310a5ae4f608a03846155c8c84d32528a28c7",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-1.json",
+      "retained_sha256": "69aff4db7a099d32ad4aecf7e19831a4464f9ad758913c7d01097179dcdead0d",
+      "bytes": 463,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "c78b96737f3fefac68bc550c8e6310a5ae4f608a03846155c8c84d32528a28c7"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-10.json",
+      "source_sha256": "d2c82d721e7eca75164306e61dde752a55c171e4e646bc31191df33fee22df44",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-10.json",
+      "retained_sha256": "e4ae056b5af56f897606e4e056eaf8af1ceb8a886ae5abe5aa33cdd3f94ea9a5",
+      "bytes": 659,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "d2c82d721e7eca75164306e61dde752a55c171e4e646bc31191df33fee22df44"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-11.json",
+      "source_sha256": "af4bd494f061cf4f16903985d5b75ee31313f6587156fe360cddcfd9bc2a5148",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-11.json",
+      "retained_sha256": "bfd7980c47037c519d218707c8a1ae6017e350ebce216d8aba4578c3a940b5d5",
+      "bytes": 455,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "af4bd494f061cf4f16903985d5b75ee31313f6587156fe360cddcfd9bc2a5148"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-2.json",
+      "source_sha256": "902dbfe16469f793c9ee2c4c8edd09501548abd5a58b8b3094e6fba72989e180",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-2.json",
+      "retained_sha256": "eec1cdec73394f70c707c8b6486b557c04d2c493eb03dc9deeaec8107ec75b7d",
+      "bytes": 600,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "902dbfe16469f793c9ee2c4c8edd09501548abd5a58b8b3094e6fba72989e180"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-3.json",
+      "source_sha256": "043ae86b977f78d9edc1e3512cb1c536511df50491fad8eed6b9d25e4827ce8e",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-3.json",
+      "retained_sha256": "fb82b85db084ccffaa57c6bdc76b0cdbaed962c66e65ed819aeab2307fed5425",
+      "bytes": 452,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "043ae86b977f78d9edc1e3512cb1c536511df50491fad8eed6b9d25e4827ce8e"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-4.json",
+      "source_sha256": "7e2e30aefd816fb26bc6b9d8d527aff5d35d9db644b6be5a0d0c17c841d1011f",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-4.json",
+      "retained_sha256": "f4a4fb66a00bd52f0b32262d9a7bcafbd272a415c33e62d3af19b766866f6e51",
+      "bytes": 485,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "7e2e30aefd816fb26bc6b9d8d527aff5d35d9db644b6be5a0d0c17c841d1011f"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-5.json",
+      "source_sha256": "eec3e5cb3af0f3f7e6e978d7b175bfd34f6bf1f58897ff06a6ba6d0c897c093c",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-5.json",
+      "retained_sha256": "f1d0c407e533c05bbe9fea51852d4e3020fd313a64e7f838a640960098331f8b",
+      "bytes": 441,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "eec3e5cb3af0f3f7e6e978d7b175bfd34f6bf1f58897ff06a6ba6d0c897c093c"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-6.json",
+      "source_sha256": "0f65fbad39273387d94476ed05d9d45f379199a21fe80b8256c861d5c1e9be9a",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-6.json",
+      "retained_sha256": "7ddd68e66490a39fedad3f808f9a7c0b28f712a7904d21615bb57a2d3c572c84",
+      "bytes": 550,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "0f65fbad39273387d94476ed05d9d45f379199a21fe80b8256c861d5c1e9be9a"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-7.json",
+      "source_sha256": "a3c3e87a29b031c68afefb9d4af8433040b5667c1d6ccf51a0e28f38ded4cdc6",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-7.json",
+      "retained_sha256": "576bb446293432cb8992634ee18bb27a0a5763be0f7303b306b3e6f526a4940f",
+      "bytes": 473,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "a3c3e87a29b031c68afefb9d4af8433040b5667c1d6ccf51a0e28f38ded4cdc6"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-8.json",
+      "source_sha256": "61ec62c916c54a87fa04acce592465553a60d43d04dd8f874793d9243d78125f",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-8.json",
+      "retained_sha256": "2da1de68dcef64beb92f151255eb09692aaba5606f91999dc9151ab3a1c322c6",
+      "bytes": 435,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "61ec62c916c54a87fa04acce592465553a60d43d04dd8f874793d9243d78125f"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction-9.json",
+      "source_sha256": "e602b08cf9dad6ceb64dc07111a028986be80afac994a6337f63cb3bbd39b804",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction-9.json",
+      "retained_sha256": "d7d14c36264eb055025afb8f096abfa674bae34b2ba306f1ba69324a13741017",
+      "bytes": 603,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "e602b08cf9dad6ceb64dc07111a028986be80afac994a6337f63cb3bbd39b804"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/construction.json",
+      "source_sha256": "10f6336c207cc8443375b117d0f41b442ef3416d7ae44d851f940e092c5d79e2",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/construction.json",
+      "retained_sha256": "828767c27450ab0d92fab7a6cb967739c09b77ac3e584f0eee2f2c59b3b64f97",
+      "bytes": 554,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "10f6336c207cc8443375b117d0f41b442ef3416d7ae44d851f940e092c5d79e2"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/control-0.json",
+      "source_sha256": "00beebe0b9e989177e44c31e5db1be6e25c641b3aa29a94dcb6c4321eed06d74",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/control-0.json",
+      "retained_sha256": "8debac7100732f237d67734a50dacbd3f95d7c042555356cd514a2a15a1bc3bc",
+      "bytes": 423,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "00beebe0b9e989177e44c31e5db1be6e25c641b3aa29a94dcb6c4321eed06d74"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/control-1.json",
+      "source_sha256": "ca9b28516dc5a0bc3e89a68bc87c97b85c7c532f229c4b23e8c5aa652678e309",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/control-1.json",
+      "retained_sha256": "66c06864d49c61e438861ac8c411f6e22664e767b42fe343ecd29e6e3fa175a5",
+      "bytes": 265,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "ca9b28516dc5a0bc3e89a68bc87c97b85c7c532f229c4b23e8c5aa652678e309"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/control-2.json",
+      "source_sha256": "bb3dc66edbe6a6dba4b6d1dec900d8ffb622c3b3a9d2a0583fd9d014ce94b4a4",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/control-2.json",
+      "retained_sha256": "2ab9bf9cfcc1b957c5fbb54fd6f1a2cfe1c4bb85e84b8e37113283966672dac6",
+      "bytes": 261,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "bb3dc66edbe6a6dba4b6d1dec900d8ffb622c3b3a9d2a0583fd9d014ce94b4a4"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/control-3.json",
+      "source_sha256": "15bd3cb6baa9cdba4ee37c79262a4013562e807a3f15decb8f49ae2dabb65ff9",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/control-3.json",
+      "retained_sha256": "1826ad15e23163a735e6d8caf83821bfd1da8509251223d7685899788667c80f",
+      "bytes": 314,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "15bd3cb6baa9cdba4ee37c79262a4013562e807a3f15decb8f49ae2dabb65ff9"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/control-4.json",
+      "source_sha256": "b116b8b51e8ddbcfaa9f83d9003a9310c9ffbafd28141d6290809cff19bd6f9a",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/control-4.json",
+      "retained_sha256": "8f1866b8c027fc20663939391d44d8fd71d92db9de4e9e1e2ae456ded9134620",
+      "bytes": 319,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "b116b8b51e8ddbcfaa9f83d9003a9310c9ffbafd28141d6290809cff19bd6f9a"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/evidence/history-probes.py",
+      "source_sha256": "ee82f6c3b9f72fd823f9795b0e3e17bef8249b6b3c4ed2d0082316c2f72330ac",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/history-probes.py.txt",
+      "retained_sha256": "ee82f6c3b9f72fd823f9795b0e3e17bef8249b6b3c4ed2d0082316c2f72330ac",
+      "bytes": 5313,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/.git/hooks/pre-commit",
+      "source_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "5e97f9b696ba0358e1b9821580a6f0922b92fbbe5471b6610028fa83def5aa31",
+      "bytes": 78,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-history-cb88dea8f876/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/evidence/dependency-snapshot.json",
+      "source_sha256": "6e2ee5eed6a1d7da896566e625b0d294b1a44fac538f53df220260e01775255d",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/dependency-snapshot.json",
+      "retained_sha256": "6e2ee5eed6a1d7da896566e625b0d294b1a44fac538f53df220260e01775255d",
+      "bytes": 468984,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/evidence/offline-recreation/launch-eff2bfaf40bd47ef9464a1869e68e323.jsonl",
+      "source_sha256": "22076a693685340c926626cc5b442b8d96384a0191df047ced5003b07d976338",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/offline-recreation/launch-eff2bfaf40bd47ef9464a1869e68e323.jsonl",
+      "retained_sha256": "22076a693685340c926626cc5b442b8d96384a0191df047ced5003b07d976338",
+      "bytes": 7219,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/evidence/offline-recreation/plan.json",
+      "source_sha256": "d14c38c8308abf1d7fbe7e749d17badbb8316aa939ba96276f45637a034ce7a7",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/offline-recreation/plan.json",
+      "retained_sha256": "d14c38c8308abf1d7fbe7e749d17badbb8316aa939ba96276f45637a034ce7a7",
+      "bytes": 442714,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/evidence/offline-recreation/setup-probes.py",
+      "source_sha256": "b266219510fe2d42da305d9d3fa26fc17d9c62477426498651638c0470d7e86a",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/offline-recreation/setup-probes.py.txt",
+      "retained_sha256": "b266219510fe2d42da305d9d3fa26fc17d9c62477426498651638c0470d7e86a",
+      "bytes": 4365,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone/.git/hooks/pre-commit",
+      "source_sha256": "1c9b244490c6345f82ca0fb7fea10e2aa4caa9a51ccaf92347a9884553401cd5",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "6b810da2f36270fba24ff4f364fd11d0d0a7e0c0192e5b7293cd1186711e984a",
+      "bytes": 438,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "1c9b244490c6345f82ca0fb7fea10e2aa4caa9a51ccaf92347a9884553401cd5"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone/.git/shallow",
+      "source_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/clone-git/shallow.txt",
+      "retained_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-online-c44d9fef9c6a/evidence/online-cache-inventory-09b9619f3b174521b8bbbf288ae955af.json",
+      "source_sha256": "6451b912dbc953058ee49527c9f66a81e015d8256c4ded004dabd840e5142cc1",
+      "retained": "retained/ataraxia-isolation-online-c44d9fef9c6a/online-cache-inventory-09b9619f3b174521b8bbbf288ae955af.json",
+      "retained_sha256": "6451b912dbc953058ee49527c9f66a81e015d8256c4ded004dabd840e5142cc1",
+      "bytes": 498070,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-online-c44d9fef9c6a/evidence/online-launch-09b9619f3b174521b8bbbf288ae955af.jsonl",
+      "source_sha256": "edfe1d547248456ca6d2af99ba39d34d4a0b5a5f31ea3c680898d3e57e3108bb",
+      "retained": "retained/ataraxia-isolation-online-c44d9fef9c6a/online-launch-09b9619f3b174521b8bbbf288ae955af.jsonl",
+      "retained_sha256": "edfe1d547248456ca6d2af99ba39d34d4a0b5a5f31ea3c680898d3e57e3108bb",
+      "bytes": 10150,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-online-c44d9fef9c6a/evidence/online-plan.json",
+      "source_sha256": "b46e0ca0d34f924d40fc9f39b184adb1582635f1c8c8df338497750ddab1129a",
+      "retained": "retained/ataraxia-isolation-online-c44d9fef9c6a/online-plan.json",
+      "retained_sha256": "b46e0ca0d34f924d40fc9f39b184adb1582635f1c8c8df338497750ddab1129a",
+      "bytes": 1648,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-online-c44d9fef9c6a/evidence/online-prepare.py",
+      "source_sha256": "0045b0d76003c12757fe3898641158cc580e731af3572612d0dd4ff9d0637140",
+      "retained": "retained/ataraxia-isolation-online-c44d9fef9c6a/online-prepare.py.txt",
+      "retained_sha256": "0045b0d76003c12757fe3898641158cc580e731af3572612d0dd4ff9d0637140",
+      "bytes": 4569,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/config.toml",
+      "source_sha256": "2c2a4692b53a968715cef60739af7ec5cadfe98e3e623b64083d8fc06f76886e",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/config.toml.txt",
+      "retained_sha256": "2c2a4692b53a968715cef60739af7ec5cadfe98e3e623b64083d8fc06f76886e",
+      "bytes": 410,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/construction-0.json",
+      "source_sha256": "25f0f60e20bab392201021ba5e0114350a425ea6f9ef23774403c85749486173",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/construction-0.json",
+      "retained_sha256": "25f0f60e20bab392201021ba5e0114350a425ea6f9ef23774403c85749486173",
+      "bytes": 546,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/construction-1.json",
+      "source_sha256": "475deeea3f72a73f6ad1d1092472543b323228682fef33d60979d87d64014771",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/construction-1.json",
+      "retained_sha256": "475deeea3f72a73f6ad1d1092472543b323228682fef33d60979d87d64014771",
+      "bytes": 463,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/construction-2.json",
+      "source_sha256": "43a389eb6898c0fcbe8df4a27be13e3789761615c68451d67c5bbd1a9992832e",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/construction-2.json",
+      "retained_sha256": "43a389eb6898c0fcbe8df4a27be13e3789761615c68451d67c5bbd1a9992832e",
+      "bytes": 610,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/construction-3.json",
+      "source_sha256": "4fe9acad60ddc4c873bedc1f35ca3219eaf7c9d096900f0f481232c6cceae4f3",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/construction-3.json",
+      "retained_sha256": "4fe9acad60ddc4c873bedc1f35ca3219eaf7c9d096900f0f481232c6cceae4f3",
+      "bytes": 662,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/construction-4.json",
+      "source_sha256": "b63182fda16f573469ff415e6b67b0147968a7366e2dd8dff7fce9e8c5351346",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/construction-4.json",
+      "retained_sha256": "b63182fda16f573469ff415e6b67b0147968a7366e2dd8dff7fce9e8c5351346",
+      "bytes": 458,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/control.json",
+      "source_sha256": "c5492017276af777e3e4a8fc45956c1ee0f7382cd85a6a2ac969b965e037af4f",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/control.json",
+      "retained_sha256": "c5492017276af777e3e4a8fc45956c1ee0f7382cd85a6a2ac969b965e037af4f",
+      "bytes": 315,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/external-launch-e53b7bc632954affa2c8c0f4fd1e4269.jsonl",
+      "source_sha256": "fceee35f652224218612165e502a3b864b693f89bc4be261f5ebfaf3a2febf1a",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/external-launch-e53b7bc632954affa2c8c0f4fd1e4269.jsonl",
+      "retained_sha256": "fceee35f652224218612165e502a3b864b693f89bc4be261f5ebfaf3a2febf1a",
+      "bytes": 1935,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/frozen-plan.json",
+      "source_sha256": "39cb6e8badd2b04a10bed5f632d5ca62247775364ba7b02c5c28c526453b0836",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/frozen-plan.json",
+      "retained_sha256": "39cb6e8badd2b04a10bed5f632d5ca62247775364ba7b02c5c28c526453b0836",
+      "bytes": 4010,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/standalone-probes.py",
+      "source_sha256": "6ee3c1146ba656c1f7164c47d6b8aa9ff690fecbb34a827912f3ea95726d7fb7",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/standalone-probes.py.txt",
+      "retained_sha256": "6ee3c1146ba656c1f7164c47d6b8aa9ff690fecbb34a827912f3ea95726d7fb7",
+      "bytes": 3904,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/evidence/write.json",
+      "source_sha256": "6342d7892128d9c2eb8ef9d1e8db60dab38e8c9e5f41387a8cc582e01bbd7270",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/write.json",
+      "retained_sha256": "6342d7892128d9c2eb8ef9d1e8db60dab38e8c9e5f41387a8cc582e01bbd7270",
+      "bytes": 498,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/clone/.git/shallow",
+      "source_sha256": "7f79436d7a2b2028a27812fb3cf5665de973278157b11d657a93bc1fb8ed8f39",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/clone-git/shallow.txt",
+      "retained_sha256": "7f79436d7a2b2028a27812fb3cf5665de973278157b11d657a93bc1fb8ed8f39",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-restart-71ca4e8451c3/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/evidence/dependency-snapshot.json",
+      "source_sha256": "6e2ee5eed6a1d7da896566e625b0d294b1a44fac538f53df220260e01775255d",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/dependency-snapshot.json",
+      "retained_sha256": "6e2ee5eed6a1d7da896566e625b0d294b1a44fac538f53df220260e01775255d",
+      "bytes": 468984,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/evidence/scratch-r1/launch-b73a3ccc61904c11b73d225a0dcac6de.jsonl",
+      "source_sha256": "81fa81dc3cd375d5de57d6837a636a0131ca5a69f0c36f9b16eff5fa6c1dce02",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/scratch-r1/launch-b73a3ccc61904c11b73d225a0dcac6de.jsonl",
+      "retained_sha256": "81fa81dc3cd375d5de57d6837a636a0131ca5a69f0c36f9b16eff5fa6c1dce02",
+      "bytes": 14426,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/evidence/scratch-r1/plan.json",
+      "source_sha256": "4dde19b42a5a3142f57f1ed15ac791ab31cd218026c454f3eb337cd138359f3d",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/scratch-r1/plan.json",
+      "retained_sha256": "4dde19b42a5a3142f57f1ed15ac791ab31cd218026c454f3eb337cd138359f3d",
+      "bytes": 442788,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/evidence/scratch-r1/setup-probes.py",
+      "source_sha256": "bd0b69dfc772539edbe2bfa5e443094e65b3ba4f9127c7eb3d078b9b185a6e50",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/scratch-r1/setup-probes.py.txt",
+      "retained_sha256": "bd0b69dfc772539edbe2bfa5e443094e65b3ba4f9127c7eb3d078b9b185a6e50",
+      "bytes": 4681,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/clone/.git/hooks/pre-commit",
+      "source_sha256": "2ae6534c8d2c7e51500fe4953df2acff9e6823162e12291ed423ed9b45620a77",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "77ac0a704c896b5508282789178939b082ff48d4586bffa68fb110831d295316",
+      "bytes": 438,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "2ae6534c8d2c7e51500fe4953df2acff9e6823162e12291ed423ed9b45620a77"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/clone/.git/shallow",
+      "source_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/clone-git/shallow.txt",
+      "retained_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/cache-inventory.json",
+      "source_sha256": "d696be8658f7e2ded2c5340a9e2e18b1267a3f7baed1422d9bb94a386dc665e3",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/cache-inventory.json",
+      "retained_sha256": "d696be8658f7e2ded2c5340a9e2e18b1267a3f7baed1422d9bb94a386dc665e3",
+      "bytes": 19452,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/dependency-snapshot.json",
+      "source_sha256": "f1af22bd667a699fbe502195cdaa38d00542f5c50d505573c5437a97d0554b89",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/dependency-snapshot.json",
+      "retained_sha256": "f1af22bd667a699fbe502195cdaa38d00542f5c50d505573c5437a97d0554b89",
+      "bytes": 437508,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-condition/launch-6d0fc9ed5c164c349c8c81abce4fb5cd.jsonl",
+      "source_sha256": "1d7b6d9dd42a2e0988902493081fa96b79272e693964ae8e0ed911acba9d2389",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-condition/launch-6d0fc9ed5c164c349c8c81abce4fb5cd.jsonl",
+      "retained_sha256": "1d7b6d9dd42a2e0988902493081fa96b79272e693964ae8e0ed911acba9d2389",
+      "bytes": 2082,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-condition/plan.json",
+      "source_sha256": "bbce1c5ac2d4c6458345369872b74209c93d42b2a3519bea8c78ce00af01c1a8",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-condition/plan.json",
+      "retained_sha256": "bbce1c5ac2d4c6458345369872b74209c93d42b2a3519bea8c78ce00af01c1a8",
+      "bytes": 427501,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-condition/setup-probes.py",
+      "source_sha256": "a140bf9aa88c28b6382319afc51137492fafa45183a203e782da7aabcdf6a0fa",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-condition/setup-probes.py.txt",
+      "retained_sha256": "a140bf9aa88c28b6382319afc51137492fafa45183a203e782da7aabcdf6a0fa",
+      "bytes": 4106,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-gmake-r1/launch-216e7d97e5e540a0b4ee660836a53e61.jsonl",
+      "source_sha256": "6d4f63ef07d622836d12cedf17baeef9b3e659ac5dca5532267795fb27f748ff",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-gmake-r1/launch-216e7d97e5e540a0b4ee660836a53e61.jsonl",
+      "retained_sha256": "6d4f63ef07d622836d12cedf17baeef9b3e659ac5dca5532267795fb27f748ff",
+      "bytes": 4546,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-gmake-r1/plan.json",
+      "source_sha256": "5e203bb2f3fcbb721e8dfe16de42e15603e3133529910999929ca68f40ef32cf",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-gmake-r1/plan.json",
+      "retained_sha256": "5e203bb2f3fcbb721e8dfe16de42e15603e3133529910999929ca68f40ef32cf",
+      "bytes": 427761,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-gmake-r1/setup-probes.py",
+      "source_sha256": "c810d31f0938af66c8093e3f12b88d5359ad71d11ef870132449135870911de8",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-gmake-r1/setup-probes.py.txt",
+      "retained_sha256": "c810d31f0938af66c8093e3f12b88d5359ad71d11ef870132449135870911de8",
+      "bytes": 4141,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/clone/.git/shallow",
+      "source_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/clone-git/shallow.txt",
+      "retained_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/evidence/dependency-snapshot.json",
+      "source_sha256": "c0ab93c12bc381683c2c195c99c224c31725a26f44f2926e4639ed462c432372",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/dependency-snapshot.json",
+      "retained_sha256": "c0ab93c12bc381683c2c195c99c224c31725a26f44f2926e4639ed462c432372",
+      "bytes": 495982,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/evidence/setup-hookcache-r1/launch-0a6f9bc1be9d40d39df70e8fd40b689c.jsonl",
+      "source_sha256": "67ca9156d66e6d36114968fb89b38ff8041f5bcc73c2371822b825643f72b393",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/setup-hookcache-r1/launch-0a6f9bc1be9d40d39df70e8fd40b689c.jsonl",
+      "retained_sha256": "67ca9156d66e6d36114968fb89b38ff8041f5bcc73c2371822b825643f72b393",
+      "bytes": 4636,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/evidence/setup-hookcache-r1/plan.json",
+      "source_sha256": "ce369fb697543b97035cbf2fd05478312e8c05f5ba4186d99dc82b8fd84b69f5",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/setup-hookcache-r1/plan.json",
+      "retained_sha256": "ce369fb697543b97035cbf2fd05478312e8c05f5ba4186d99dc82b8fd84b69f5",
+      "bytes": 486175,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/evidence/setup-hookcache-r1/setup-probes.py",
+      "source_sha256": "8ab55b68c4e2de26855e4624d28ac9188bfd3eac5e4c6de1478e1d3a273da9c2",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/setup-hookcache-r1/setup-probes.py.txt",
+      "retained_sha256": "8ab55b68c4e2de26855e4624d28ac9188bfd3eac5e4c6de1478e1d3a273da9c2",
+      "bytes": 4141,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone/.git/shallow",
+      "source_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone-git/shallow.txt",
+      "retained_sha256": "6a349c91ad0dec7bee269f603a75787d026c96a0fc1975767e47a2c5038a8b17",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-H0.json",
+      "source_sha256": "6351ddc5972d0f0b434783e6d9fe27ef7207be5371491de33c5ae671924f9dd6",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/control-H0.json",
+      "retained_sha256": "6351ddc5972d0f0b434783e6d9fe27ef7207be5371491de33c5ae671924f9dd6",
+      "bytes": 272,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-common-show.json",
+      "source_sha256": "cd7e996bc9d54d133e05c8fe10792a2978ad1f8d1896adbff5b4bcb531346f8e",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/control-exact-common-show.json",
+      "retained_sha256": "cd7e996bc9d54d133e05c8fe10792a2978ad1f8d1896adbff5b4bcb531346f8e",
+      "bytes": 281,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-common-symlink-show.json",
+      "source_sha256": "45b8ac1d2a72adc8e1cdc81ad6babe0c8ca86dbc57e55eb3803d61170f5c69a5",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/control-exact-common-symlink-show.json",
+      "retained_sha256": "45b8ac1d2a72adc8e1cdc81ad6babe0c8ca86dbc57e55eb3803d61170f5c69a5",
+      "bytes": 283,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-exact-sibling-show.json",
+      "source_sha256": "3ed342759fbc900a716277182265441d5b4b4050a1144f9d4035a2e6c230fa4d",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/control-exact-sibling-show.json",
+      "retained_sha256": "3ed342759fbc900a716277182265441d5b4b4050a1144f9d4035a2e6c230fa4d",
+      "bytes": 262,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/control-side.json",
+      "source_sha256": "b7ac1971a59d08a02c7b0b40a23c9e62b94bcf3c4a7f3702146a9e3058265c1f",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/control-side.json",
+      "retained_sha256": "b7ac1971a59d08a02c7b0b40a23c9e62b94bcf3c4a7f3702146a9e3058265c1f",
+      "bytes": 262,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/host-temp-path.txt",
+      "source_sha256": "a3d5f3034d389715672d5fe508dce5b29035a4de3f44d5cdf56bf6e4499755ec",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/host-temp-path.txt",
+      "retained_sha256": "a5b246e545983d5b72bae5f6f65801258b53fdf85e454517754d718a0521bf5f",
+      "bytes": 103,
+      "kind": "owned trial evidence/archived source",
+      "transformation": {
+        "selection": "none",
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "a3d5f3034d389715672d5fe508dce5b29035a4de3f44d5cdf56bf6e4499755ec"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/launch-36c4d9efc1214f40b9768c1473f66f3d.jsonl",
+      "source_sha256": "26eca8322a9ce743785b28ca5b0dd8687881d87f127f2751606f7085067f938f",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/launch-36c4d9efc1214f40b9768c1473f66f3d.jsonl",
+      "retained_sha256": "26eca8322a9ce743785b28ca5b0dd8687881d87f127f2751606f7085067f938f",
+      "bytes": 20210,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/plan.json",
+      "source_sha256": "0d20e4b4988e4ee337ab326f340651bde834c931078cf171c6cc3fe4ff12283a",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/plan.json",
+      "retained_sha256": "0d20e4b4988e4ee337ab326f340651bde834c931078cf171c6cc3fe4ff12283a",
+      "bytes": 7389,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/sibling-probes.py",
+      "source_sha256": "3beab684460ef3b8b6bd54825473603b0e5e863e9fcde3ff1fb25dbfface1f94",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/sibling-probes.py.txt",
+      "retained_sha256": "3beab684460ef3b8b6bd54825473603b0e5e863e9fcde3ff1fb25dbfface1f94",
+      "bytes": 5325,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/config-gate-passed.json",
+      "source_sha256": "6680d132d2ef3e73c730349f812ca9087f02e9b7973b52e8a917f9913c3349d7",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/config-gate-passed.json",
+      "retained_sha256": "6680d132d2ef3e73c730349f812ca9087f02e9b7973b52e8a917f9913c3349d7",
+      "bytes": 10275,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/config-gate.py",
+      "source_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/config-gate.py.txt",
+      "retained_sha256": "f50b9470974f0671458ccc178bc6f692eebf43fb0c6475b60ac2e8ad2b726edb",
+      "bytes": 3135,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/config-overrides.json",
+      "source_sha256": "932cae9a822b7962d9a09d5e36ef466b5dfe942bb08d892500ca7380f9f02287",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/config-overrides.json",
+      "retained_sha256": "932cae9a822b7962d9a09d5e36ef466b5dfe942bb08d892500ca7380f9f02287",
+      "bytes": 2606,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/control-exact-common-show.json",
+      "source_sha256": "936b10ade81b7123bd84f5c6fe48a91df67679203b7671e851adea2696a7be96",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/control-exact-common-show.json",
+      "retained_sha256": "936b10ade81b7123bd84f5c6fe48a91df67679203b7671e851adea2696a7be96",
+      "bytes": 380,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/events-c44e2fe0ff0544d28825e27b7d1902bf-initial.jsonl",
+      "source_sha256": "abeb527bbbf7062c3b8eea5fcba885cfdfec8db1686006345c7dcac69cc015d2",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/events-c44e2fe0ff0544d28825e27b7d1902bf-initial.jsonl",
+      "retained_sha256": "9468bebefcacc6288f9074d8d56f403ac1ae771aa92c88924315c60ee88748ed",
+      "bytes": 32873,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/events-c44e2fe0ff0544d28825e27b7d1902bf-resume.jsonl",
+      "source_sha256": "861c1d970f58e2e3da72df7f85bf6866d2cc77ac9e3f1301291e7f4d546339d6",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/events-c44e2fe0ff0544d28825e27b7d1902bf-resume.jsonl",
+      "retained_sha256": "9104b31e9542d41c4181185ab1c9fd00ae87872f4ca33f83ff3ba1d9d9ce6928",
+      "bytes": 32196,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/feature-validation.json",
+      "source_sha256": "491e0803b2e2bee5f4faf8e2c30f6a32ec4bc2d0f652856da9a70624d17659cc",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/feature-validation.json",
+      "retained_sha256": "491e0803b2e2bee5f4faf8e2c30f6a32ec4bc2d0f652856da9a70624d17659cc",
+      "bytes": 3391,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/initial-prompt.txt",
+      "source_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/initial-prompt.txt",
+      "retained_sha256": "43af57cfcf1709116a18a584a7c1516350f060864c21e40e074b924bc851597e",
+      "bytes": 948,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/model-launch-c44e2fe0ff0544d28825e27b7d1902bf.jsonl",
+      "source_sha256": "f7bfa89cc9e544a638a0dd1052f87152afab89137d08d9d0e0f0a0812aebdbc2",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/model-launch-c44e2fe0ff0544d28825e27b7d1902bf.jsonl",
+      "retained_sha256": "f7bfa89cc9e544a638a0dd1052f87152afab89137d08d9d0e0f0a0812aebdbc2",
+      "bytes": 21625,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/model-plan.json",
+      "source_sha256": "f1c9a359a134df5ddda19d4de9dfbc37694b22ff4ede38af3db67a1872ae6f1e",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/model-plan.json",
+      "retained_sha256": "f1c9a359a134df5ddda19d4de9dfbc37694b22ff4ede38af3db67a1872ae6f1e",
+      "bytes": 24009,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/model-trial.py",
+      "source_sha256": "a1a0ad41b8846f772addcce54117fa49dbfde1cc94302a8d97d4e80fcf7528ba",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/model-trial.py.txt",
+      "retained_sha256": "a1a0ad41b8846f772addcce54117fa49dbfde1cc94302a8d97d4e80fcf7528ba",
+      "bytes": 15183,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/resume-prompt.txt",
+      "source_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/resume-prompt.txt",
+      "retained_sha256": "fd86e350895089bc017bc2f1df293f9b39c83ee5bf30801f050d0341c1510b6d",
+      "bytes": 965,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/review-approved-c44e2fe0ff0544d28825e27b7d1902bf.json",
+      "source_sha256": "7612633c43a96164ff5c427eaa6cabc07ac320cc941ad683729eea3c37e76811",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/review-approved-c44e2fe0ff0544d28825e27b7d1902bf.json",
+      "retained_sha256": "7612633c43a96164ff5c427eaa6cabc07ac320cc941ad683729eea3c37e76811",
+      "bytes": 732,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/review-request-c44e2fe0ff0544d28825e27b7d1902bf.json",
+      "source_sha256": "2339d1b10756483d476c7049660d8ae4bd4e0da9938feb606dd7011616fbd2ba",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/review-request-c44e2fe0ff0544d28825e27b7d1902bf.json",
+      "retained_sha256": "2339d1b10756483d476c7049660d8ae4bd4e0da9938feb606dd7011616fbd2ba",
+      "bytes": 534,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/runtime.config.toml",
+      "source_sha256": "74c5e5e22da3f4ac0c4ce097ca5ef734e9f14228064a0e3ce2166fbc4655b321",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/runtime.config.toml.txt",
+      "retained_sha256": "74c5e5e22da3f4ac0c4ce097ca5ef734e9f14228064a0e3ce2166fbc4655b321",
+      "bytes": 2211,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/evidence/skill-paths.json",
+      "source_sha256": "52a36bdc11d8ac916a4e8325a15b6412720f6d57a30298e73c8d946ef3e9943b",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/skill-paths.json",
+      "retained_sha256": "52a36bdc11d8ac916a4e8325a15b6412720f6d57a30298e73c8d946ef3e9943b",
+      "bytes": 943,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/neutral-probes.py",
+      "source_sha256": "585b3cd9e84d8968ff4fd01071bd2df68dc755979598ee539f46e82ea04839bb",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/neutral-probes.py.txt",
+      "retained_sha256": "585b3cd9e84d8968ff4fd01071bd2df68dc755979598ee539f46e82ea04839bb",
+      "bytes": 3016,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/neutral-probes.json",
+      "source_sha256": "0981d8a592f009f36a9ce0df58dd871413b68e95fd3aa9babfd23862c28e3454",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/neutral-probes.json.txt",
+      "retained_sha256": "0981d8a592f009f36a9ce0df58dd871413b68e95fd3aa9babfd23862c28e3454",
+      "bytes": 3082,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/neutral-network.json",
+      "source_sha256": "7aead855fb8ea1e0b37817dde1637b4730ed784a7f9ddee5d7ae5de4378ad803",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/neutral-network.json.txt",
+      "retained_sha256": "7aead855fb8ea1e0b37817dde1637b4730ed784a7f9ddee5d7ae5de4378ad803",
+      "bytes": 466,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/hooks/pre-commit",
+      "source_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/hooks-pre-commit.txt",
+      "retained_sha256": "37d706bd7e2cf0500dc4abd90e89994dce5c1755b3aeff1937a6a7479e1e8630",
+      "bytes": 115,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/config",
+      "source_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/config.txt",
+      "retained_sha256": "cae33efdb02cf774435c1ff9cb16bcc1014606908530c6e1dc727615fe3e8cda",
+      "bytes": 137,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/shallow",
+      "source_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/shallow.txt",
+      "retained_sha256": "b4c2ddda84f87caa5c3b7c74da8a026fc8a07990dfdaafebfc685d43f26d91e8",
+      "bytes": 41,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/clone/.git/HEAD",
+      "source_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/clone-git/HEAD.txt",
+      "retained_sha256": "f6f2b945f6c411b02ba3da9c7ace88dcf71b6af65ba2e0d89aa82900042b5a10",
+      "bytes": 23,
+      "kind": "fixture-only helper/config metadata",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-tmpprefix-2df60f7109cc/state/sessions/2026/10/04/rollout-2026-10-04T04-57-46-01a10622-312d-7332-88f8-fddda82dda94.jsonl",
+      "source_sha256": "cec14e5444bb9fb1f0e97a6bb792111ec83a71d75a3f3ae689c804e7779a42f0",
+      "retained": "retained/ataraxia-isolation-tmpprefix-2df60f7109cc/session-extracts/rollout-2026-10-04T04-57-46-01a10622-312d-7332-88f8-fddda82dda94.jsonl",
+      "retained_sha256": "acbbaac32975ff5c69bd84e2b2333173a61b91d238aab865188a8ed1f3c9ea34",
+      "bytes": 104290,
+      "kind": "sanitized actual tools/context/usage",
+      "transformation": "filtered structured extract; see audit README"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/evidence/config.toml",
+      "source_sha256": "31a23f6c28554bdb4aa38e660dac3f496bf643f61c64a845f602ce94027b25af",
+      "retained": "retained/ataraxia-isolation-zsh-c8d8e5373287/config.toml.txt",
+      "retained_sha256": "31a23f6c28554bdb4aa38e660dac3f496bf643f61c64a845f602ce94027b25af",
+      "bytes": 2103,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/evidence/diagnose.py",
+      "source_sha256": "be94f156a380238790ed46998dd25b448decc88d5007ea03afaf08dcaf48dc0c",
+      "retained": "retained/ataraxia-isolation-zsh-c8d8e5373287/diagnose.py.txt",
+      "retained_sha256": "be94f156a380238790ed46998dd25b448decc88d5007ea03afaf08dcaf48dc0c",
+      "bytes": 2246,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/evidence/launch-4046046704bd4f66a8d3f2470f94bd0a.jsonl",
+      "source_sha256": "0f6af204a05e04692e22341c3532b4f307d783a86f7dd852246bd79bca632a3d",
+      "retained": "retained/ataraxia-isolation-zsh-c8d8e5373287/launch-4046046704bd4f66a8d3f2470f94bd0a.jsonl",
+      "retained_sha256": "0f6af204a05e04692e22341c3532b4f307d783a86f7dd852246bd79bca632a3d",
+      "bytes": 14309,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/evidence/plan.json",
+      "source_sha256": "6eb137a9a934f3adf50865a99458cbf0010037e817ad52b7731fb45553d66299",
+      "retained": "retained/ataraxia-isolation-zsh-c8d8e5373287/plan.json",
+      "retained_sha256": "6eb137a9a934f3adf50865a99458cbf0010037e817ad52b7731fb45553d66299",
+      "bytes": 5300,
+      "kind": "owned trial evidence/archived source",
+      "transformation": "none"
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/sandboxing/src/seatbelt.rs",
+      "source_sha256": "03beaaaac24b6b856d4860ba4c1a6e3818e8cd2432dac7f23eddaef77e745ab5",
+      "retained": "source-excerpts/sandboxing-src-seatbelt.rs.txt",
+      "retained_sha256": "f796a1809bb058e525b7caa8f89107ed0fa25a415129200d7bfb433e16991c6d",
+      "bytes": 5851,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "selection": {
+          "line_ranges": [
+            [
+              200,
+              236
+            ],
+            [
+              430,
+              465
+            ],
+            [
+              499,
+              535
+            ]
+          ],
+          "line_numbers_added": true
+        },
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "abb199db3f03e6fdf5a9cae56b84689d8d4ec999ceff7689e5b3b494eb5003fb"
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/sandboxing/src/seatbelt_read_only_platform_defaults.sbpl",
+      "source_sha256": "6c5c0ae4361e738053f172b635f4e1ab6287087f3d9b6e5882b0bc06922a7199",
+      "retained": "source-excerpts/sandboxing-src-seatbelt_read_only_platform_defaults.sbpl.txt",
+      "retained_sha256": "34a5f7ed70cff6cac363c0c7fae5c14b7515679d74648e4967d984eb912294c6",
+      "bytes": 735,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "selection": {
+          "line_ranges": [
+            [
+              45,
+              62
+            ]
+          ],
+          "line_numbers_added": true
+        },
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "2bc5657ff5a88640881bcd4718b4eec12841469515d78dbc3e6269350f5ef849"
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/protocol/src/permissions.rs",
+      "source_sha256": "78a1c80b9b5cda29c563538d90003005d26c411eea533bd00db54a185a6aed54",
+      "retained": "source-excerpts/protocol-src-permissions.rs.txt",
+      "retained_sha256": "87ce2cbf57785d4ba3e95ce9b7b33c38f25b513833d86d668b155241f9660630",
+      "bytes": 1028,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "line_ranges": [
+          [
+            2258,
+            2278
+          ]
+        ],
+        "line_numbers_added": true
+      }
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/core/src/unified_exec/process_manager.rs",
+      "source_sha256": "ec4878fbe0da4d8e4ae40629702a6c509a7168fd5494c0453d4081cd8f7fc235",
+      "retained": "source-excerpts/core-src-unified_exec-process_manager.rs.txt",
+      "retained_sha256": "a24426b448034a23378f3c9a26a31277d9fee538c3e40dce64a3d3d33ffc7d9c",
+      "bytes": 1953,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "line_ranges": [
+          [
+            1440,
+            1468
+          ]
+        ],
+        "line_numbers_added": true
+      }
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/app-server-protocol/src/protocol/item_builders.rs",
+      "source_sha256": "1b22763234b5931953d3fa92a4a4246a8ce561b779021ca75773eb41c3b1dfab",
+      "retained": "source-excerpts/app-server-protocol-src-protocol-item_builders.rs.txt",
+      "retained_sha256": "bbc13df5325ddfcb5dce2c2f82b3ceb769fa959c901a47f63af08820ed152c46",
+      "bytes": 1022,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "selection": {
+          "line_ranges": [
+            [
+              45,
+              64
+            ]
+          ],
+          "line_numbers_added": true
+        },
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "88dc8aa3c2a270b894015a1be38f9cbe7e16a4a47cb9fd097ebaff409566ab82"
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/exec/src/exec_events.rs",
+      "source_sha256": "dafa872d7e86a099e56e28a329dcb9c03db90ed768c3b88cca8c91d46dc1d0e5",
+      "retained": "source-excerpts/exec-src-exec_events.rs.txt",
+      "retained_sha256": "9f1a9e7026db6b44ce077441d78e27dafbcab9a1286fb0dfd0f4d1a79973e271",
+      "bytes": 2212,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "selection": {
+          "line_ranges": [
+            [
+              104,
+              140
+            ]
+          ],
+          "line_numbers_added": true
+        },
+        "post_selection_normalization": "installed trailing-whitespace/end-of-file-fixer hooks: strip line-end spaces/tabs and exactly one final LF; empty remains empty"
+      },
+      "pre_normalization_retained_sha256": "5301087cb0d962c164d40f71bf98c5340d36ed6a4cd05c70fb16dc1ec526f57c"
+    },
+    {
+      "source": "/private/tmp/codex-source-0.159.3/codex-rs/exec/src/event_processor_with_jsonl_output.rs",
+      "source_sha256": "bc296541b385f9b4ca2c28cc638e25a8d6b1332b2cd67f5a03eaa97a3d612b19",
+      "retained": "source-excerpts/exec-src-event_processor_with_jsonl_output.rs.txt",
+      "retained_sha256": "eb7ba5ae2bfdf7411d0d5dfaa09639b7e08cbb7a57ddd96d7539acda2ffcd024",
+      "bytes": 1774,
+      "kind": "official matching source excerpt",
+      "transformation": {
+        "line_ranges": [
+          [
+            430,
+            460
+          ]
+        ],
+        "line_numbers_added": true
+      }
+    },
+    {
+      "source": "/usr/share/man/man1/zshparam.1",
+      "source_sha256": "f0705876387a75d4a302d81f6417229624ea56f83efbdebe8a2e52eaf176baf0",
+      "retained": "source-excerpts/zshparam-manual.txt",
+      "retained_sha256": "26a4213297e19337e110f238542b3d7805dc202628ddc37dc16f98e4ec11aca8",
+      "bytes": 280,
+      "kind": "installed manual excerpt",
+      "transformation": {
+        "line_ranges": [
+          [
+            1713,
+            1716
+          ]
+        ],
+        "line_numbers_added": true
+      }
+    },
+    {
+      "source": "read-only six-file release comparison",
+      "retained": "source-excerpts/version-comparison.json",
+      "retained_sha256": "67c72081230b03ac761049f1c7c836fef779c0c58dd62691df71704560ff9728",
+      "bytes": 1815,
+      "kind": "derived source comparison",
+      "transformation": "whole-file hashes and equality only"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-scratch-d388fe8a28bd/evidence/scratch-r1/state/config.toml",
+      "source_sha256": "d872dd60423c67f3f8dbbd9daf8ad19f8057f60d9ef967996c2729c1c114c901",
+      "retained": "retained/ataraxia-isolation-scratch-d388fe8a28bd/scratch-r1/state/config.toml.txt",
+      "retained_sha256": "d872dd60423c67f3f8dbbd9daf8ad19f8057f60d9ef967996c2729c1c114c901",
+      "bytes": 755,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-gmake-r1/state/config.toml",
+      "source_sha256": "cc1044b4074afa21cea32bde9925eb9888e6921bcdca5bf48c91c58abc3ebc30",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-gmake-r1/state/config.toml.txt",
+      "retained_sha256": "cc1044b4074afa21cea32bde9925eb9888e6921bcdca5bf48c91c58abc3ebc30",
+      "bytes": 747,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-7a26d72bb1c7/evidence/setup-condition/state/config.toml",
+      "source_sha256": "cc1044b4074afa21cea32bde9925eb9888e6921bcdca5bf48c91c58abc3ebc30",
+      "retained": "retained/ataraxia-isolation-setup-7a26d72bb1c7/setup-condition/state/config.toml.txt",
+      "retained_sha256": "cc1044b4074afa21cea32bde9925eb9888e6921bcdca5bf48c91c58abc3ebc30",
+      "bytes": 747,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-read-r3/state/config.toml",
+      "source_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-read-r3/state/config.toml.txt",
+      "retained_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "bytes": 944,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/network-r6/state/config.toml",
+      "source_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/network-r6/state/config.toml.txt",
+      "retained_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "bytes": 1022,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/symlink-runtime-r2/state/config.toml",
+      "source_sha256": "7fb3b23a5d802b8f5fc65d2f130ba241bd7c5a189a13287c87e5909c6e98764a",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/symlink-runtime-r2/state/config.toml.txt",
+      "retained_sha256": "7fb3b23a5d802b8f5fc65d2f130ba241bd7c5a189a13287c87e5909c6e98764a",
+      "bytes": 928,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/git-write-r5/state/config.toml",
+      "source_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/git-write-r5/state/config.toml.txt",
+      "retained_sha256": "4fb41d5db3bec4614942a9604ef9124f4a6decc397a04fa084dafd8c150aaea5",
+      "bytes": 1022,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/state/config.toml",
+      "source_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/usr-history-r4/state/config.toml.txt",
+      "retained_sha256": "8ee8b5fb1dd462902f8ea0363ec81bba8b1d99cc00c7c2b20f6d971d4305f169",
+      "bytes": 944,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/runtime-read-r1/state/config.toml",
+      "source_sha256": "ebb50558322d6523db93beacbc2fe20637c2b5b1a90e5e35b2dd1957d68e2e37",
+      "retained": "retained/ataraxia-isolation-git-retry-18092082117a/runtime-read-r1/state/config.toml.txt",
+      "retained_sha256": "ebb50558322d6523db93beacbc2fe20637c2b5b1a90e5e35b2dd1957d68e2e37",
+      "bytes": 832,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-offline-c2afe48e926a/evidence/offline-recreation/state/config.toml",
+      "source_sha256": "854e52e4c7d5aac1897550daa80b8a728b897e60c767c090c710621c86846d31",
+      "retained": "retained/ataraxia-isolation-offline-c2afe48e926a/offline-recreation/state/config.toml.txt",
+      "retained_sha256": "854e52e4c7d5aac1897550daa80b8a728b897e60c767c090c710621c86846d31",
+      "bytes": 755,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-sibling-08b8a6fe2ef8/evidence/state/config.toml",
+      "source_sha256": "e1bf8b7b4b405be8189cebff0bbdd0173ada9e2320aabfe42a41621681ed9031",
+      "retained": "retained/ataraxia-isolation-sibling-08b8a6fe2ef8/state/config.toml.txt",
+      "retained_sha256": "e1bf8b7b4b405be8189cebff0bbdd0173ada9e2320aabfe42a41621681ed9031",
+      "bytes": 580,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "/private/tmp/ataraxia-isolation-setup-hookcache-9d90aa43928b/evidence/setup-hookcache-r1/state/config.toml",
+      "source_sha256": "4a9149b9a2cdfcd1f5c8405b3212499a4635a336144bc252d389e8e412c929ba",
+      "retained": "retained/ataraxia-isolation-setup-hookcache-9d90aa43928b/setup-hookcache-r1/state/config.toml.txt",
+      "retained_sha256": "4a9149b9a2cdfcd1f5c8405b3212499a4635a336144bc252d389e8e412c929ba",
+      "bytes": 787,
+      "kind": "explicit owned state configuration only",
+      "transformation": "none; no auth/session files read"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/fixture-provenance.json",
+      "retained_sha256": "4de66f2fc00cc5b362daafb53b2b9ce961fd413f227b4c21ce1c0750b869adc6",
+      "bytes": 415,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/integrated-provenance.json",
+      "retained_sha256": "54d30719045d534217d89b991ca9b8be22dcff32154d79e1dfcae5924949e05e",
+      "bytes": 481,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/integrated-commits.patch.txt",
+      "retained_sha256": "ac52f57e04089882144e443474f2d9cf8849894b8a1a27df5a8cde813970dc24",
+      "bytes": 823,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/advanced-commits.patch.txt",
+      "retained_sha256": "168cea53e869abce12f37defb3b1bbbdf9e8374fd2f279e2f43d3c076c4dcfee",
+      "bytes": 1888,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/fixture-commits.patch.txt",
+      "retained_sha256": "9ed86c9cef4e1e1f347c96da97938f3dfa195de3dd0a60d621826d0911c02644",
+      "bytes": 3601,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/conflict-commits.patch.txt",
+      "retained_sha256": "4ba2fab4bc42b89d7175ff0aef164c2334309fcca6e8eb14d0353fdb7b271746",
+      "bytes": 1916,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/advanced-provenance.json",
+      "retained_sha256": "b890ac5a88ccfe4f8e8743bc379a9da6b0379c070121ef9ce1f93305d4046b27",
+      "bytes": 479,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    },
+    {
+      "source": "read-only accepted disposable Git repository extraction; adjacent provenance names argv",
+      "retained": "git-extracts/conflict-provenance.json",
+      "retained_sha256": "cd7071a992228636abdce916a91d2aa14b5c42f300d512ce13d5362a0847ce5d",
+      "bytes": 479,
+      "kind": "commit/tree-change extract",
+      "transformation": "git log --format=fuller --binary -p; original objects not copied"
+    }
+  ],
+  "normalization": {
+    "reason": "normal installed hooks rejected preservation commit and normalized archival text; no bypass",
+    "changed_entries": 45,
+    "previous_inventory_sha256": "b9690db28c06715383f52097f0bc1540a1591dac59fe3e2b8ebc8ef5bd8f91b9",
+    "original_source_hashes_preserved": true,
+    "comparison": "all275 prior retained bytes read from approved staged index blobs; normalized deltas only; selected original source hashes verified without credential reads"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-online-c44d9fef9c6a",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "base": "6c8720287aa121592ba2b3506221593b182c70f8",
+  "tool_hashes": {
+    "/usr/local/Cellar/make/4.4.1/bin/gmake": "64311ae3e12415a2893692af0849aea74d8c9f6df116753bdeec8496b514fca1",
+    "/usr/local/Cellar/uv/0.12.19/bin/uv": "2fb8724c33d2a25a5c7644acbab921c38ad12dcb1a87c4d58851ac0471275426",
+    "/usr/local/Cellar/git/2.55.0/bin/git": "8a96263130d389f336c402eda9c06357e2f1b829187c730d1b247bfd53874116",
+    "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14": "07919b0fbf82742c24420d7dcadbd459f61bc1feb638eca02b81dccab2daf4d5"
+  },
+  "input_hashes": {
+    "Makefile": "85bd41d827f50139851a1aa5cd5bdf4c141697504ad47a16c1fdefb2022686f4",
+    "pyproject.toml": "68af6be3bd474704ee02f363938ac134c0be15fd4e3385ba99162b5a289e99dc",
+    "uv.lock": "90e25ffbb587d308c5b3b7abfa7f19f8e0ed45f39483418bcf2f30476b7c5652",
+    ".pre-commit-config.yaml": "4bddbf263579ea0d42319541de89230772e1a62e6f6a8fdce7dd61bde585218e"
+  },
+  "commands": [
+    [
+      "setup"
+    ],
+    [
+      "verify-setup"
+    ],
+    [
+      "verify-check"
+    ]
+  ],
+  "timeout_seconds": 300,
+  "total_seconds": 900,
+  "network_sources": [
+    "https://pypi.org/simple",
+    "https://files.pythonhosted.org",
+    "https://github.com/astral-sh/uv-pre-commit at 0.12.19",
+    "https://github.com/pre-commit/pre-commit-hooks at v6.0.0"
+  ],
+  "purpose": "host online dependency/hook preparation only; no source repository fetch or model",
+  "cache": "dedicated-cache (initially empty); inventory complete before later selected offline recreation"
+}

@@ -1,0 +1,20 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original sandboxing/src/seatbelt_read_only_platform_defaults.sbpl
+45:
+46: ; Determine whether a container is expected.
+47: (allow system-mac-syscall
+48:   (require-all
+49:     (mac-policy-name "Sandbox")
+50:     (mac-syscall-number 67)))
+51:
+52: ; Allow resolution of standard system symlinks.
+53: (allow file-read-metadata file-test-existence
+54:   (literal "/etc")
+55:   (literal "/tmp")
+56:   (literal "/var")
+57:   (literal "/private/etc/localtime"))
+58:
+59: ; Allow stat'ing of firmlink parent path components.
+60: (allow file-read-metadata file-test-existence
+61:   (path-ancestors "/System/Volumes/Data/private"))
+62:

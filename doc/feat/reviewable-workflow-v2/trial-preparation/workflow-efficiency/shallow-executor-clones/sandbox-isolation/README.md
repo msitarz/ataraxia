@@ -15,6 +15,9 @@ candidate guidance, not proof of enforcement.
 
 ## Trials and decision basis
 
+Use the [bounded feasibility protocol](protocol.md) before executing trials.
+Preparation does not complete the acceptance criteria below.
+
 Use a disposable source with a non-secret canary only in an earlier commit,
 multiple branches and tags, and a tracked current-tree canary. Prepare depth-one
 local clones, verify the expected base, refs, shallow boundary, and absent
@@ -49,6 +52,33 @@ boundary survives resume without escalation. Report unavailable measurements and
 untested platforms as unknown. If neither candidate works, recommend further
 feasibility Work or a separate environment; building a new sandbox is out of
 scope.
+
+## Current bounded evidence
+
+The
+[standalone B executor and same-UUID resume](standalone-model.md#completed-standalone-b-actual-executor-and-resume)
+passed on the declared macOS tiny fixture, including actual denial probes,
+task-only commits and vetted hook execution. Earlier failures and condition
+corrections remain retained. This uses entire `/usr` read and explicit assigned
+clone `.git` writes; it is evidence for the tested condition, not an adopted
+production boundary. Custom-agent A, full project setup in a model session,
+conflicting overrides, additional sandbox transport variants and broader
+network/MCP coverage remain unrun. The separate
+[orchestrator-owned commit import](../artifact-delivery/delivery-protocol.md#completed-reviewed-importrebase-and-local-delivery)
+passed; that host-side delivery test is distinct from sandbox transport probes.
+Acceptance and final recommendation remain incomplete.
+
+## Preservation and reproduction
+
+The maintainer requested one preservation commit and PR with all findings,
+failed attempts, evidence and the
+[fresh-path successful recipe](successful-recipe.md), with no cleanup commit
+yet. This explicit request authorizes the larger preservation review surface; it
+is no completion/adoption claim. The [in-repository audit](audit/README.md)
+retains inspectable logs, configurations, archived runner text and filtered
+actual session/tool/context evidence with source/retained hashes. No
+credentials, cache payloads or unrelated session content are included. All
+contracts and incomplete criteria remain.
 
 ## Acceptance
 

@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "clone",
+    "--no-local",
+    "--depth=1",
+    "--single-branch",
+    "--no-tags",
+    "--branch=master",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr": "Cloning into '/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control'...\n"
+}

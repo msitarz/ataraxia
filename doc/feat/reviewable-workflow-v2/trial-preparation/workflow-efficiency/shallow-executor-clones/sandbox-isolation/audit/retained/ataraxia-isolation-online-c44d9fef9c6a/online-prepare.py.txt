@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+import hashlib,json,os,pathlib,subprocess,time,uuid
+E=pathlib.Path(__file__).resolve().parent
+PLAN_HASH='b46e0ca0d34f924d40fc9f39b184adb1582635f1c8c8df338497750ddab1129a'
+def sha(p): return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'online-plan.json')==PLAN_HASH
+P=json.loads((E/'online-plan.json').read_text()); R=pathlib.Path(P['root']); C=R/'host-clone'; CACHE=R/'dedicated-cache'
+identity=uuid.uuid4().hex; log=(E/('online-launch-'+identity+'.jsonl')).open('x'); start=time.monotonic()
+def record(**v):
+ v['utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()); log.write(json.dumps(v)+'\n'); log.flush()
+env=os.environ.copy()
+for k in list(env):
+ if k.startswith(('UV_','PIP_','GIT_CONFIG_')) or k.lower() in ('http_proxy','https_proxy','all_proxy','no_proxy') or k in ('GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','VIRTUAL_ENV','PYTHONHOME','PYTHONPATH','PREK_HOME'): env.pop(k,None)
+env.update(UV_CACHE_DIR=str(CACHE/'uv'),PREK_HOME=str(CACHE/'prek'),UV_PYTHON='/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14',UV_PYTHON_DOWNLOADS='never',UV_DEFAULT_INDEX='https://pypi.org/simple',UV_LINK_MODE='copy',UV_NO_CONFIG='true',GIT_CONFIG_NOSYSTEM='1',GIT_CONFIG_GLOBAL='/dev/null',GIT_TERMINAL_PROMPT='0',GIT_EDITOR='/usr/bin/false',GIT_CONFIG_COUNT='1',GIT_CONFIG_KEY_0='credential.helper',GIT_CONFIG_VALUE_0='',TMPDIR=str(C/'.scratch/tmp'),PATH='/usr/local/Cellar/uv/0.12.19/bin:/usr/local/Cellar/git/2.55.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin')
+MAKE='/usr/local/Cellar/make/4.4.1/bin/gmake'; GIT='/usr/local/Cellar/git/2.55.0/bin/git'
+def run(name,argv,timeout=300):
+ remaining=900-(time.monotonic()-start); assert remaining>0,'shared deadline'
+ try: q=subprocess.run(argv,cwd=str(C),env=env,capture_output=True,timeout=min(timeout,remaining))
+ except subprocess.TimeoutExpired: record(name=name,argv=argv,timeout=True); raise
+ record(name=name,argv=argv,exit=q.returncode,stdout=q.stdout.decode(errors='replace'),stderr=q.stderr.decode(errors='replace')); assert q.returncode==0,name; return q
+try:
+ for p,h in P['tool_hashes'].items(): assert sha(p)==h,p
+ for n,h in P['input_hashes'].items(): assert sha(C/n)==h,n
+ assert not (C/'.venv').exists() and not any(CACHE.iterdir())
+ assert (C/'.git/refs/heads/master').read_text().strip()==P['base']
+ assert (C/'.git/shallow').read_text().strip()==P['base']
+ assert not (C/'.git/objects/info/alternates').exists()
+ assert 'remote ' not in (C/'.git/config').read_text()
+ record(name='preflight',passed=True,plan_sha256=PLAN_HASH,cache_environment={k:env[k] for k in ['UV_CACHE_DIR','PREK_HOME','UV_DEFAULT_INDEX','UV_NO_CONFIG','UV_PYTHON']})
+ for binary in [MAKE,'/usr/local/Cellar/uv/0.12.19/bin/uv',env['UV_PYTHON']]: run('runtime-'+pathlib.Path(binary).name,[binary,'--version'],30)
+ for i,args in enumerate(P['commands']): run('make-'+str(i),[MAKE]+args)
+ assert all((C/'.git/hooks'/n).is_file() for n in ['pre-commit','commit-msg'])
+ q=run('tracked-diff',[GIT,'diff','--name-only'],30); assert not q.stdout,'tracked input changed'
+ files={}; links={}; source_refs=[]; metadata=[]; repos=[]
+ for p in CACHE.rglob('*'):
+  assert time.monotonic()-start<900,'inventory deadline'
+  rel=str(p.relative_to(CACHE))
+  if p.is_symlink(): links[rel]={'target':os.readlink(p),'resolved':str(p.resolve()),'internal':p.resolve().is_relative_to(CACHE)}
+  elif p.is_file():
+   b=p.read_bytes(); files[rel]=hashlib.sha256(b).hexdigest()
+   if str(R).encode() in b or b'/Users/nzs/Code/ataraxia' in b: source_refs.append(rel)
+   if p.name in ['direct_url.json','pyvenv.cfg'] or p.suffix=='.pth': metadata.append(rel)
+  if p.name=='.git' and p.is_dir():
+   repos.append({'path':rel,'config':(p/'config').read_text(),'HEAD':(p/'HEAD').read_text().strip(),'FETCH_HEAD':(p/'FETCH_HEAD').read_text() if (p/'FETCH_HEAD').exists() else None,'alternates':(p/'objects/info/alternates').exists()})
+ inventory={'files':files,'links':links,'source_reference_files':source_refs,'environment_metadata':metadata,'dependency_repositories':repos,'purpose':'full raw dedicated cache provenance; NOT automatically approved offline executor inputs','resolver_metadata_preserved':True}
+ f=E/('online-cache-inventory-'+identity+'.json'); f.write_text(json.dumps(inventory,indent=2)+'\n'); record(name='completed',inventory=str(f),inventory_sha256=sha(f),files=len(files),source_refs=len(source_refs),hook_files_present=True,model_calls=0)
+except Exception as exc:
+ record(name='stopped',error=repr(exc)); raise
+finally: log.close()

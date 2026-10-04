@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control",
+    "fetch",
+    "--unshallow",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/source",
+    "master"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr": "From /private/tmp/ataraxia-isolation-git-retry-18092082117a/source\n * branch            master     -> FETCH_HEAD\n"
+}

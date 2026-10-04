@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/clone",
+    "cat-file",
+    "-t",
+    "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "50836eee574ecff79dea3b4fd40673d7d000f7a5f177d8a6a3000b59c78383b8",
+  "stderr": ""
+}

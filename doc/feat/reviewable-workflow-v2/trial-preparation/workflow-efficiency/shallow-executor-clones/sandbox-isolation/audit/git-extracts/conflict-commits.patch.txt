@@ -1,0 +1,75 @@
+commit 4bfb2e3a7ed5d2c36f39eb77cfe70e2a3de0a30b
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:46 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:26:10 2026 -0400
+
+    implementation and evidence
+
+diff --git a/Work.md b/Work.md
+index cbe4732..7a3afd5 100644
+--- a/Work.md
++++ b/Work.md
+@@ -1 +1 @@
+-fixture TODO
++fixture DONE: expected bytes, names and mode retained
+diff --git a/deleted.txt b/deleted.txt
+deleted file mode 100644
+index 53c7376..0000000
+--- a/deleted.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-delete-base
+diff --git a/evidence.txt b/evidence.txt
+new file mode 100644
+index 0000000..e1ee361
+--- /dev/null
++++ b/evidence.txt
+@@ -0,0 +1 @@
++frozen deterministic checks; reviewer gate before publication
+diff --git a/old-name.txt b/new-name.txt
+similarity index 100%
+rename from old-name.txt
+rename to new-name.txt
+diff --git a/payload.bin b/payload.bin
+index 8352675d67aed6625ece79af41c27fdb4ee2e867..5dcca95949e63e3bf3f8e96dbb00feb873596766 100644
+GIT binary patch
+literal 5
+McmZSh&&A9F00b!k5dZ)H
+
+literal 3
+KcmZQzWC8#H2LJ>B
+
+diff --git a/run.sh b/run.sh
+old mode 100644
+new mode 100755
+diff --git a/text.txt b/text.txt
+index ad4e4eb..10ddf74 100644
+--- a/text.txt
++++ b/text.txt
+@@ -1 +1 @@
+-upstream-conflict
++resolved-upstream+work
+
+commit 065b070dfc099a8b5a6cb55b4b2be65383fefffe
+Author:     Fixture Author <fixture@example.invalid>
+AuthorDate: Sun Oct 4 05:21:46 2026 -0400
+Commit:     Orchestrator Fixture <reviewer@example.invalid>
+CommitDate: Sun Oct 4 05:26:10 2026 -0400
+
+    separate cleanup
+
+diff --git a/Work.md b/Work.md
+deleted file mode 100644
+index 7a3afd5..0000000
+--- a/Work.md
++++ /dev/null
+@@ -1 +0,0 @@
+-fixture DONE: expected bytes, names and mode retained
+diff --git a/parent-map.txt b/parent-map.txt
+index 8a43550..c591978 100644
+--- a/parent-map.txt
++++ b/parent-map.txt
+@@ -1 +1 @@
+-pending
++complete

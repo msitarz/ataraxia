@@ -1,0 +1,166 @@
+{
+  "root": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287",
+  "clone": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone",
+  "cwd": "/private/tmp/ataraxia-shallow-isolation",
+  "state": "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/state",
+  "host_tmpdir": "/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/",
+  "cases": [
+    {
+      "name": "default-variables",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "/bin/zsh",
+        "-c",
+        "printf \"TMPDIR=%s\\nTMPPREFIX=%s\\n\" \"${TMPDIR-unset}\" \"$TMPPREFIX\""
+      ],
+      "expect": "metadata"
+    },
+    {
+      "name": "default-heredoc",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "/bin/zsh",
+        "-c",
+        "/bin/cat <<'END'\nheredoc-control\nEND"
+      ],
+      "expect": "permission"
+    },
+    {
+      "name": "TMPDIR-only-variables",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPDIR=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp",
+        "/bin/zsh",
+        "-c",
+        "printf \"TMPDIR=%s\\nTMPPREFIX=%s\\n\" \"${TMPDIR-unset}\" \"$TMPPREFIX\""
+      ],
+      "expect": "metadata"
+    },
+    {
+      "name": "TMPDIR-only-heredoc",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPDIR=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp",
+        "/bin/zsh",
+        "-c",
+        "/bin/cat <<'END'\nheredoc-control\nEND"
+      ],
+      "expect": "permission"
+    },
+    {
+      "name": "TMPPREFIX-only-variables",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPPREFIX=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp/zsh",
+        "/bin/zsh",
+        "-c",
+        "printf \"TMPDIR=%s\\nTMPPREFIX=%s\\n\" \"${TMPDIR-unset}\" \"$TMPPREFIX\""
+      ],
+      "expect": "metadata"
+    },
+    {
+      "name": "TMPPREFIX-only-heredoc",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPPREFIX=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp/zsh",
+        "/bin/zsh",
+        "-c",
+        "/bin/cat <<'END'\nheredoc-control\nEND"
+      ],
+      "expect": "pass"
+    },
+    {
+      "name": "both-variables",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPDIR=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp",
+        "TMPPREFIX=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp/zsh",
+        "/bin/zsh",
+        "-c",
+        "printf \"TMPDIR=%s\\nTMPPREFIX=%s\\n\" \"${TMPDIR-unset}\" \"$TMPPREFIX\""
+      ],
+      "expect": "metadata"
+    },
+    {
+      "name": "both-heredoc",
+      "argv": [
+        "/usr/bin/env",
+        "-u",
+        "TMPDIR",
+        "-u",
+        "TMPPREFIX",
+        "TMPDIR=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp",
+        "TMPPREFIX=/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/tmp/zsh",
+        "/bin/zsh",
+        "-c",
+        "/bin/cat <<'END'\nheredoc-control\nEND"
+      ],
+      "expect": "pass"
+    },
+    {
+      "name": "scratch",
+      "argv": [
+        "/bin/zsh",
+        "-c",
+        "printf scratch-control > /private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/write; /bin/cat /private/tmp/ataraxia-isolation-zsh-c8d8e5373287/clone/.scratch/write"
+      ],
+      "expect": "pass"
+    },
+    {
+      "name": "source-denial",
+      "argv": [
+        "/bin/cat",
+        "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/source-canary"
+      ],
+      "expect": "permission"
+    },
+    {
+      "name": "host-temp-denial",
+      "argv": [
+        "/bin/cat",
+        "/private/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/ataraxia-zsh-7d581c08636c489c8431294813b55c3f"
+      ],
+      "expect": "permission"
+    }
+  ],
+  "hashes": {
+    "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/source-canary": "7695a26cff5cc4ab5b0752504cd92a6c51d4da17fe71c15dab2702aaf622daa2",
+    "/private/var/folders/ml/0n6wj9mx44d35kqdktzmm7k40000gn/T/ataraxia-zsh-7d581c08636c489c8431294813b55c3f": "21d0c5c73492d8882cd6fe46821de274107d703563933e14bdc4e4b446734280",
+    "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/state/config.toml": "31a23f6c28554bdb4aa38e660dac3f496bf643f61c64a845f602ce94027b25af",
+    "/private/tmp/ataraxia-isolation-zsh-c8d8e5373287/evidence/config.toml": "31a23f6c28554bdb4aa38e660dac3f496bf643f61c64a845f602ce94027b25af",
+    "/usr/local/bin/codex": "78dc6d28fa52d0ee89205c383f2caaf596d2fb7ef2847c076c6da7cc3ac46d66",
+    "/bin/zsh": "3fbc7a357f2cc9ee90b975f76c27744c19a051a5922fe59c5c8a3ac7a981ffc5"
+  },
+  "seconds_per_command": 30,
+  "shared_seconds": 180,
+  "manual": "/usr/share/man/man1/zshparam.1:1713-1716 TMPPREFIX default /tmp/zsh; filename prefix required",
+  "difference": "debug sandbox direct shell/env instead of actual exec runtime; no model, shell snapshot or runtime state arg0 permission injection; same mapped one-clone requested filesystem/network semantics"
+}

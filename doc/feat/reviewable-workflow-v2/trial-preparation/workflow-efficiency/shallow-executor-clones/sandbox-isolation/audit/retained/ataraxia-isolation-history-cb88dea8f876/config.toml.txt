@@ -1,0 +1,13 @@
+default_permissions = "isolation"
+approval_policy = "never"
+[permissions.isolation]
+extends = ":workspace"
+[permissions.isolation.filesystem]
+":root" = "deny"
+":minimal" = "read"
+":tmpdir" = "deny"
+":slash_tmp" = "deny"
+"/private/tmp/ataraxia-isolation-history-cb88dea8f876/clone" = "write"
+"/private/tmp/ataraxia-isolation-history-cb88dea8f876/source" = "deny"
+[permissions.isolation.network]
+enabled = false

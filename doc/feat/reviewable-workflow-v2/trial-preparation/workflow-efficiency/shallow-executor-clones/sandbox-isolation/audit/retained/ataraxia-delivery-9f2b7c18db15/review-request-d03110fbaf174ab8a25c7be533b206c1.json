@@ -1,0 +1,9 @@
+{
+  "plan_sha256": "2d351e439c2c8f33d810cee296af0afb6a358ee0af6549b0fb1387a91457b667",
+  "stage": "fixture acceptance before DONE and cleanup",
+  "fixture": "/private/tmp/ataraxia-delivery-9f2b7c18db15/fixture",
+  "base": "73499b181812ca211cc3a7e46d668d1f550b4637",
+  "staged_diff_sha256": "9ab4c8787f99e7f004cb7ce8860971f8fcb4e692c223eeb0f2fe28df84f95d45",
+  "criteria": "text/binary/rename/delete/execute mode and evidence; root inspect before criteria DONE and separate cleanup",
+  "no_live_publication": true
+}

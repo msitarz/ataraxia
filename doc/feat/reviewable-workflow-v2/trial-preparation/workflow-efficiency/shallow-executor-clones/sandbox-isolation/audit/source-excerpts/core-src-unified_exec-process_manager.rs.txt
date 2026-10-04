@@ -1,0 +1,31 @@
+Official openai/codex rust-v0.159.3 commit01fc69f4026735edfdf6789820549727a4867b11
+Apache-2.0 source excerpt; original core/src/unified_exec/process_manager.rs
+1440:         cwd: PathUri,
+1441:         context: &UnifiedExecContext,
+1442:     ) -> Result<(UnifiedExecAttempt, Option<DeferredNetworkApproval>), UnifiedExecError> {
+1443:         let turn = &context.step_context.turn;
+1444:         let shell_environment_policy = request.turn_environment.shell_environment_policy();
+1445:         let local_policy_env = create_env(shell_environment_policy, /*thread_id*/ None);
+1446:         let mut env = local_policy_env.clone();
+1447:         env.insert(
+1448:             CODEX_THREAD_ID_ENV_VAR.to_string(),
+1449:             context.session.thread_id.to_string(),
+1450:         );
+1451:         inject_session_env(&mut env, context.session.session_id());
+1452:         inject_apply_patch_env(&mut env, &turn.config.features);
+1453:         let active_permission_profile = request.turn_environment.active_permission_profile();
+1454:         inject_permission_profile_env(&mut env, active_permission_profile.as_ref());
+1455:         let mut env = apply_unified_exec_env(env);
+1456:         strip_output_env(&mut env);
+1457:         let mut explicit_env_overrides = shell_environment_policy.r#set.clone();
+1458:         strip_output_env(&mut explicit_env_overrides);
+1459:         let exec_server_env_config = ExecServerEnvConfig {
+1460:             policy: exec_env_policy_from_shell_policy(shell_environment_policy),
+1461:             local_policy_env,
+1462:         };
+1463:         let shell_snapshot = shell_snapshot_request(request, &cwd, context);
+1464:         let mut orchestrator = ToolOrchestrator::new();
+1465:         let mut runtime = UnifiedExecRuntime::new(self, request.shell_mode.clone());
+1466:         let session_shell = context.session.user_shell();
+1467:         let configured_shell = request
+1468:             .turn_environment

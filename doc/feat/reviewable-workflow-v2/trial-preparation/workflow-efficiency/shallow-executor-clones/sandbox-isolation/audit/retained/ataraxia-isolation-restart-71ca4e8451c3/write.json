@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/usr/local/bin/codex",
+    "sandbox",
+    "-P",
+    "isolation",
+    "--include-managed-config",
+    "-C",
+    "/private/tmp/ataraxia-isolation-restart-71ca4e8451c3/clone",
+    "/bin/sh",
+    "-c",
+    "printf ready > /private/tmp/ataraxia-isolation-restart-71ca4e8451c3/clone/task.txt"
+  ],
+  "exit_code": 71,
+  "write_observed": false,
+  "stdout": "",
+  "stderr": "sandbox-exec: sandbox_apply: Operation not permitted\n",
+  "timestamp": "2026-10-03T20:46:43.606283+00:00"
+}

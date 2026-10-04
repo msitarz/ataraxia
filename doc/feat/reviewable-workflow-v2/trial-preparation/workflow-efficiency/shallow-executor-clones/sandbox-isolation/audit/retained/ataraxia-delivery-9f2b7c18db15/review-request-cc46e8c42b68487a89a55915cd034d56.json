@@ -1,0 +1,41 @@
+{
+  "plan_sha256": "2d351e439c2c8f33d810cee296af0afb6a358ee0af6549b0fb1387a91457b667",
+  "recovery_plan_sha256": "09d2121b612c1d035c4434707f6393166dcfa632dc57ed5e471eb83d5c3f2f16",
+  "outcomes": {
+    "integrated": {
+      "repo": "/private/tmp/ataraxia-delivery-9f2b7c18db15/integrated",
+      "head": "dcc22b3f7596dc01789c8eac59531b2b0e669672",
+      "tree": "790d94b51b25b420d9cc7567ebf2f99b5b157367",
+      "base": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb"
+    },
+    "unchanged": {
+      "repo": "/private/tmp/ataraxia-delivery-9f2b7c18db15/unchanged",
+      "head": "aabeba11af69c8d1cecc8487f212121f1775c739",
+      "tree": "c9ac5a471782eed9a0166113738bf0f32ffc6d0a",
+      "base": "73499b181812ca211cc3a7e46d668d1f550b4637"
+    },
+    "advanced": {
+      "repo": "/private/tmp/ataraxia-delivery-9f2b7c18db15/advanced",
+      "head": "697c9f24f3854e4af032390f7abad200898f1b24",
+      "tree": "2cc674377fe15822aca1d3ff7d90a5676e3144be",
+      "base": "8075babe4ee5c11a248d1ff49bac3ea76a3b3374"
+    },
+    "conflict": {
+      "repo": "/private/tmp/ataraxia-delivery-9f2b7c18db15/conflict",
+      "head": "065b070dfc099a8b5a6cb55b4b2be65383fefffe",
+      "tree": "045995a0e238b513af5736717b1dae3f54d4f962",
+      "base": "0d3d10559af80d20dbb1c34a97b4de5886b79c2e",
+      "rewritten_commits": [
+        "4bfb2e3a7ed5d2c36f39eb77cfe70e2a3de0a30b",
+        "065b070dfc099a8b5a6cb55b4b2be65383fefffe"
+      ],
+      "evidence_refresh_required": true
+    }
+  },
+  "fixture_original_commits": [
+    "f3d9b9d621d0479e6d514b5d91391248ae34c6b3",
+    "aabeba11af69c8d1cecc8487f212121f1775c739"
+  ],
+  "conflict_resolution": "retained staged reviewer resolution; repeated metadata/tree/boundary checks; root evidence refresh review required",
+  "no_live_publication": true
+}

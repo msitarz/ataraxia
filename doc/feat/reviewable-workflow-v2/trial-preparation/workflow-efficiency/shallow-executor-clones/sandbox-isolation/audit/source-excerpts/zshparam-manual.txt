@@ -1,0 +1,5 @@
+Installed zshparam manual excerpt
+1713: \fBTMPPREFIX\fP
+1714: A pathname prefix which the shell will use for all temporary files\&.
+1715: Note that this should include an initial part for the file name as
+1716: well as any directory names\&.  The default is `\fB/tmp/zsh\fP\&'\&.

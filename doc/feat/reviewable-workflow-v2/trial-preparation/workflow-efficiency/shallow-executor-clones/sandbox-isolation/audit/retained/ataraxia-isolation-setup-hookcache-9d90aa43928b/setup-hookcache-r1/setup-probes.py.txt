@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+import hashlib,json,os,pathlib,subprocess,time,uuid
+E=pathlib.Path(__file__).resolve().parent
+EXPECTED_PLAN='ce369fb697543b97035cbf2fd05478312e8c05f5ba4186d99dc82b8fd84b69f5'
+def sha(p): return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'plan.json')==EXPECTED_PLAN
+P=json.loads((E/'plan.json').read_text()); R=pathlib.Path(P['root']); C=R/'clone'; M=R/'missing-cache-clone'
+log=(E/('launch-'+uuid.uuid4().hex+'.jsonl')).open('x'); start=time.monotonic()
+def record(**v):
+ v['utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()); log.write(json.dumps(v)+'\n'); log.flush()
+env=os.environ.copy()
+for k in list(env):
+ if k.lower() in ('http_proxy','https_proxy','all_proxy','no_proxy') or k.startswith('GIT_CONFIG_') or k in ('GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','VIRTUAL_ENV','PYTHONPATH','PYTHONHOME','UV_PROJECT_ENVIRONMENT','UV_PYTHON'): env.pop(k,None)
+env.update(CODEX_HOME=str(E/'state'),GIT_CONFIG_NOSYSTEM='1',GIT_CONFIG_GLOBAL='/dev/null',GIT_TERMINAL_PROMPT='0',GIT_EDITOR='/usr/bin/false',UV_OFFLINE='true',UV_PYTHON=P['python'],UV_PYTHON_DOWNLOADS='never',UV_LINK_MODE='copy',PATH='/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin')
+def run(name,dest,args):
+ remaining=900-(time.monotonic()-start)
+ assert remaining>0,'shared deadline'
+ local=env.copy(); local.update(TMPDIR=str(dest/'.scratch/tmp'),UV_CACHE_DIR=str(dest/'.cache/uv'),PREK_HOME=str(dest/'.cache/prek'))
+ argv=['/usr/local/bin/codex','sandbox','-P','isolation','--include-managed-config','-C',str(dest)]+args
+ try: q=subprocess.run(argv,cwd=P['cwd'],env=local,capture_output=True,timeout=min(30 if name.startswith("runtime-") else 300,remaining))
+ except subprocess.TimeoutExpired: record(name=name,argv=argv,timeout=True); raise
+ record(name=name,argv=argv,exit=q.returncode,stdout_sha256=hashlib.sha256(q.stdout).hexdigest(),stdout=q.stdout.decode(errors='replace'),stderr=q.stderr.decode(errors='replace'))
+ return q
+def ok(name,dest,args):
+ q=run(name,dest,args); assert q.returncode==0,name; return q
+try:
+ assert sha(E/'state/config.toml')==P['config_sha256']
+ assert sha(R/'evidence/dependency-snapshot.json')==P['snapshot_manifest_sha256']
+ for p,h in P['tool_hashes'].items(): assert sha(p)==h,p
+ for dest in [C,M]:
+  assert not (dest/'.venv').exists()
+  assert (dest/'.git/refs/heads/master').read_text().strip()==P['base']
+  assert (dest/'.git/shallow').read_text().strip()==P['base']
+  assert not (dest/'.git/objects/info/alternates').exists()
+ for p,h in P['dependency_files'].items(): assert sha(C/'.cache'/p)==h,p
+ for p,target in P['dependency_links'].items():
+  link=C/'.cache'/p; assert os.readlink(link)==target and link.resolve().is_relative_to(C/'.cache'),p
+ assert not (M/'.cache').exists()
+ record(name='preflight',passed=True,plan_sha256=EXPECTED_PLAN)
+ ok('runtime-uv',C,[P['uv'],'--version'])
+ ok('runtime-python',C,[P['python'],'--version'])
+ ok('runtime-gmake',C,[P['make'],'--version'])
+ # No unrestricted hook preparation: any unexpected cache miss remains network-denied.
+ for i,args in enumerate(P['commands']): ok('prepared-cache-'+str(i),C,[P['make']]+args)
+ for hook in ['pre-commit','commit-msg']: assert (C/'.git/hooks'/hook).is_file(),hook
+ record(name='prepared-cache-success',fresh_venv=(C/'.venv').is_dir(),hooks_installed=True)
+ q=run('missing-cache-setup',M,[P['make'],'ci-setup','UV_OFFLINE=true'])
+ text=(q.stdout+q.stderr).lower()
+ assert q.returncode!=0 and (b'not found in the cache' in text or b'not found in cache' in text or b'network connectivity is disabled' in text or b'offline mode' in text), 'missing-cache failure inconclusive'
+ assert not any(marker in text for marker in [b'operation not permitted',b'permission denied',b'library not loaded',b'xcode-select',b'sandbox_apply']), 'runtime/permission failure inconclusive'
+ record(name='missing-cache-result',nonzero=True,cache_or_offline_diagnostic=True,destination_retained=M.exists(),not_permission_proof=True)
+ record(name='completed',setup_subset=True,model_calls=0)
+except Exception as exc:
+ record(name='stopped',error=repr(exc)); raise
+finally: log.close()

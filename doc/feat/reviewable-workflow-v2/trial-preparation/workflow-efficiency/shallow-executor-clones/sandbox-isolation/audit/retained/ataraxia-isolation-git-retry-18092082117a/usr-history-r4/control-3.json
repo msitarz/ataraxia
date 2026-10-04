@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/usr/local/Cellar/git/2.55.0/bin/git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-git-retry-18092082117a/evidence/usr-history-r4/control",
+    "cat-file",
+    "-t",
+    "fe74a654b63a7da8eea0bb4a33d949b2d914fc67"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "50836eee574ecff79dea3b4fd40673d7d000f7a5f177d8a6a3000b59c78383b8",
+  "stderr": ""
+}

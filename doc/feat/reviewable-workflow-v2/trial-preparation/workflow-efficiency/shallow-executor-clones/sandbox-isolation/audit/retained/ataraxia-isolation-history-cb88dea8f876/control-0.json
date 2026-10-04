@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "git",
+    "-C",
+    "/private/tmp/ataraxia-isolation-history-cb88dea8f876/source",
+    "rev-parse",
+    "master",
+    "H0",
+    "side"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "7427644666601161ee537686975ff2fded2e67428dd965f9e70b8c66575e6414",
+  "stderr": "",
+  "stdout": "83bc8542fad85d7f49fc0205d578bf8c5e40bbbb\nfe74a654b63a7da8eea0bb4a33d949b2d914fc67\nf94babc03e49cb823e8688ff5cd7fa4e359efb19\n"
+}

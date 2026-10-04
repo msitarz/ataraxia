@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: Apache-2.0
+import hashlib,json,os,pathlib,subprocess,time,uuid
+E=pathlib.Path(__file__).resolve().parent
+PLAN_HASH='0d20e4b4988e4ee337ab326f340651bde834c931078cf171c6cc3fe4ff12283a'
+def sha(p): return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+assert sha(E/'plan.json')==PLAN_HASH
+P=json.loads((E/'plan.json').read_text()); R=pathlib.Path(P['root']); C=R/'clone'; G=P['git']
+known_canaries=[]
+log=(E/('launch-'+uuid.uuid4().hex+'.jsonl')).open('x'); start=time.monotonic(); env=os.environ.copy()
+for k in list(env):
+ if k.startswith('GIT_CONFIG_') or k in ['GIT_DIR','GIT_WORK_TREE','GIT_INDEX_FILE','GIT_OBJECT_DIRECTORY','GIT_ALTERNATE_OBJECT_DIRECTORIES']: env.pop(k,None)
+env.update(CODEX_HOME=str(E/'state'),TMPDIR=P['launcher_tmpdir'],GIT_CONFIG_NOSYSTEM='1',GIT_CONFIG_GLOBAL='/dev/null',GIT_EDITOR='/usr/bin/false',GIT_TERMINAL_PROMPT='0',PATH='/usr/local/Cellar/git/2.55.0/bin:/usr/local/bin:/usr/bin:/bin')
+def record(**v):
+ v['utc']=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()); log.write(json.dumps(v)+'\n'); log.flush()
+def run(name,args,sandbox=True):
+ argv=['/usr/local/bin/codex','sandbox','-P','isolation','--include-managed-config','-C',str(C),'/usr/bin/env','TMPDIR='+str(C/'.scratch/tmp')]+args if sandbox else args
+ left=300-(time.monotonic()-start); assert left>0,'shared deadline'
+ try: q=subprocess.run(argv,cwd=P['cwd'],env=env,capture_output=True,timeout=min(30,left))
+ except subprocess.TimeoutExpired: record(name=name,argv=argv,timeout=True); raise
+ leaked=any(token and token in q.stderr for token in known_canaries)
+ record(name=name,argv=argv,exit=q.returncode,stdout_bytes=len(q.stdout),stdout_sha256=hashlib.sha256(q.stdout).hexdigest(),stderr_sha256=hashlib.sha256(q.stderr).hexdigest(),stderr='[canary content withheld]' if leaked else q.stderr.decode(errors='replace'))
+ assert not leaked,'canary in stderr'
+ return q
+def ok(name,args,expected=None,sandbox=True):
+ q=run(name,args,sandbox); assert q.returncode==0 and (expected is None or q.stdout.strip()==expected),name
+ return q
+def absent(name,obj):
+ q=run(name,[G,'-C',str(C),'cat-file','-t',obj]); assert q.returncode==128 and not q.stdout and b'could not get object info' in q.stderr,name
+try:
+ assert os.environ.get('TMPDIR')==P['launcher_tmpdir'],'launcher temp changed'
+ assert sha(E/'state/config.toml')==P['config_sha256']
+ for path,h in {**P['hashes'],**P['tool_hashes']}.items(): assert sha(path)==h,path
+ for path,target in P['symlinks'].items(): assert os.readlink(path)==target,path
+ assert (C/'.git/shallow').read_text().strip()==P['HEAD']
+ assert not (C/'.git/objects/info/alternates').exists()
+ assert 'remote ' not in (C/'.git/config').read_text()
+ known_canaries.extend((R/'sibling'/n).read_bytes() for n in ['current.txt','dirty.txt','side.txt'])
+ for row in P['denials']:
+  if row['name']=='deny-read-4': known_canaries.append(pathlib.Path(row['argv'][1]).read_bytes())
+ record(name='preflight',passed=True,plan_sha256=PLAN_HASH,only_assigned_clone_writable=True)
+ ok('runtime-version',[G,'--version'],b'git version 2.55.0')
+ ok('HEAD-control',[G,'-C',str(C),'rev-parse','HEAD'],P['HEAD'].encode())
+ ok('allowed-scratch',[ '/bin/sh','-c','printf scratch-ready > "$TMPDIR/canary" && test "$(cat "$TMPDIR/canary")" = scratch-ready'])
+ ok('allowed-task-check',['/bin/cat',str(C/'task.txt')],b'pending')
+ for obj in P['excluded']: absent('absent-before-'+obj,obj)
+ # Live reviewer controls are unrestricted and hashed, never reveal token bytes.
+ for name,file in [('side','control-side.json'),('H0','control-H0.json')]:
+  ctrl=json.loads((E/file).read_text()); q=ok('reviewer-history-'+name,ctrl['argv'],sandbox=False); assert hashlib.sha256(q.stdout).hexdigest()==ctrl['stdout_sha256']
+ for row in P['denials']:
+  if row['kind']=='git-history':
+   ctrl=json.loads((E/row['control']).read_text()); assert ctrl['argv']==row['argv']
+   control=ok('reviewer-exact-'+row['name'],ctrl['argv'],sandbox=False); assert hashlib.sha256(control.stdout).hexdigest()==ctrl['stdout_sha256']; known_canaries.append(control.stdout)
+  q=run(row['name'],row['argv']); diagnostic=q.stderr.lower()
+  denied=q.returncode!=0 and not q.stdout and any(t in diagnostic for t in [b'operation not permitted',b'permission denied'])
+  unsupported=any(t in diagnostic for t in [b'xcode-select',b'library not loaded',b'sandbox_apply',b'failed to load config',b'unknown option'])
+  inferred=row['kind']=='git-history' and q.returncode!=0 and not q.stdout and not unsupported and (denied or b'not a git repository' in diagnostic)
+  passed=denied if row['kind']=='file-read' else inferred
+  record(name=row['name']+'-assessment',explicit_permission_denial=denied,history_retrieval_blocked_inferred=inferred and not denied,precise_syscall_observed=False,inconclusive=not passed)
+  assert passed and not unsupported,'exposure or unsupported/inconclusive diagnostic: '+row['name']
+ for obj in P['excluded']: absent('absent-after-'+obj,obj)
+ ok('final-HEAD',[G,'-C',str(C),'rev-parse','HEAD'],P['HEAD'].encode())
+ for name in ['task.txt','.git/index']: assert sha(C/name)==P['hashes'][str(C/name)],name
+ record(name='completed',sibling_subset=True,HEAD_index_task_unchanged=True,model_calls=0)
+except Exception as exc:
+ record(name='stopped',error=repr(exc)); raise
+finally: log.close()
