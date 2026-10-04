@@ -11,7 +11,7 @@
   "declarations": {
     "uv.lock": "6d39f017286be5586467792502c0cd4f3d300a5093274b26e26fb2876238a27a",
     "pyproject.toml": "6d39f017286be5586467792502c0cd4f3d300a5093274b26e26fb2876238a27a",
-    ".pre-commit-config.yaml": "6d39f017286be5586467792502c0cd4f3d300a5093274b26e26fb2876238a27a"
+    ".pre-commit-config.yaml": "1ea9cebfe015605bc41386b69a4431c65cb3cf1bd84701173a6b12a98da10262"
   },
   "evidence": {
     "successful-setup.log": "79db276984d612c4855ee7c266fa4ef63da254c0c4cec7f98dba92aa20aba95a"
