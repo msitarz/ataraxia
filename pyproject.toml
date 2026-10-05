@@ -162,6 +162,7 @@ project_includes = [
   "test/make/support.py",
   "test/make/fixtures/uv_recorder.py",
   "test/make/integration/test_stub_environment.py",
+  "test/make/integration/test_routing.py",
 ]
 search_path = ["src", "."]
 python_version = "3.14"
