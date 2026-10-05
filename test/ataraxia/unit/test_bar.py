@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
+from collections.abc import Mapping
+
 import pytest
 
 from ataraxia.bar import Bar
 
 
 @pytest.fixture
-def data():
+def data() -> dict[str, str]:
     return {
         "timestamp": "1234",
         "open": "10.25",
@@ -22,9 +24,13 @@ def test_bar_normalize():
     assert Bar._normalize("10.25") == int(10.25 * 4)
 
 
-def test_bar_from_map(data):
+def test_bar_from_map(data: Mapping[str, str]) -> None:
+    # Given: the data fixture supplies the complete string-valued bar.
+
+    # When
     bar = Bar.from_map(data)
 
+    # Then
     assert bar.timestamp == 1234
     assert bar.open == int(10.25 * 4)
     assert bar.high == int(30.50 * 4)
