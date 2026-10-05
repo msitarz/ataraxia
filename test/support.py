@@ -198,13 +198,13 @@ class SelectionProcessResult:
 
 
 def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection:
-    """Copy a static preparation tree and named literal record.
+    """Build literal preparation inputs and copy the accepted record.
 
     Returns:
         Paths and a separately frozen acceptance digest.
     """
     fixtures = ROOT / "test/fixtures/registry_selection"
-    shutil.copytree(fixtures / "common", directory, dirs_exist_ok=True, symlinks=True)
+    build_selection_inputs(directory)
     record = directory / "record.json"
     shutil.copyfile(fixtures / "records/accepted.json", record)
     accepted_sha256 = (fixtures / "accepted-sha256.txt").read_text().strip()
@@ -219,6 +219,39 @@ def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelecti
         accepted_sha256,
         directory / "result",
     )
+
+
+def build_selection_inputs(directory: Path) -> None:
+    """Build the tiny synthetic preparation filesystem from explicit bytes."""
+    files = {
+        "successful-setup.log": b"fixture preparation evidence\n",
+        "repository/uv.lock": b"# frozen fixture declaration\n",
+        "repository/pyproject.toml": b"# frozen fixture declaration\n",
+        "repository/.pre-commit-config.yaml": (
+            b"# frozen fixture declaration\nrepos: []\n"
+        ),
+        "cache/answers": b"project answer\n",
+        "cache/uv/interpreter-v4/environment": b"old environment\n",
+        "cache/uv/sdists-v9/editable/project.whl": b"project editable payload\n",
+        "cache/prek/cache/uv/simple-v25/pypi/dependency.rkyv": (
+            b"opaque fixture simple record\n"
+        ),
+    }
+    for root in ("cache/uv", "cache/prek/cache/uv"):
+        files[f"{root}/archive-v0/dependency/payload.txt"] = b"pinned fixture payload\n"
+        files[f"{root}/archive-v0/dependency/dependency-1.0.dist-info/METADATA"] = (
+            b"Name: dependency\nVersion: 1.0\n"
+        )
+        files[f"{root}/wheels-v6/pypi/dependency/1.0-py3-none-any.http"] = (
+            b"opaque fixture HTTP record\n"
+        )
+    for name, contents in files.items():
+        path = directory / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(contents)
+    for root in ("cache/uv", "cache/prek/cache/uv"):
+        link = directory / root / "wheels-v6/pypi/dependency/1.0-py3-none-any"
+        link.symlink_to("../../../archive-v0/dependency")
 
 
 def arrange_record_variant(record: Path, description: Path) -> None:
