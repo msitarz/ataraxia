@@ -163,6 +163,7 @@ project_includes = [
   "test/make/fixtures/uv_recorder.py",
   "test/make/integration/test_stub_environment.py",
   "test/make/integration/test_routing.py",
+  "test/make/integration/test_preparation.py",
 ]
 search_path = ["src", "."]
 python_version = "3.14"
