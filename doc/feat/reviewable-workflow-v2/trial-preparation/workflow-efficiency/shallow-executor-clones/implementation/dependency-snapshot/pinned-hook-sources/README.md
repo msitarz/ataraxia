@@ -13,7 +13,7 @@ references, old hook environments, interpreter/environment metadata and external
 links. Do not mutate the raw cache, rewrite opaque metadata, fetch missing
 sources, or overwrite a destination. Registry resolver dependencies belong to
 the independent
-[registry selector](../../../../../../../../../CONTRIBUTING.md#optional-reviewed-registry-selection).
+[registry selector](../registry-selection.md).
 
 Use the parent's linked tested recipe to define the initial pinned
 tool/platform/cache-layout condition; unsupported conditions fail closed with no
