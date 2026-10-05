@@ -3,7 +3,7 @@
 
 import pytest
 
-from test.support import (
+from test.script.support import (
     accepted_preparation,
     dependency_declarations,
     package_payload,

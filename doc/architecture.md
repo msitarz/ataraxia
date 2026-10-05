@@ -91,10 +91,12 @@ errors     — shared domain errors.
 util       — shared graph/strategy-loading utilities.
 ```
 
-`test/unit/`, `test/integration/`, and `test/acceptance/` exercise the
-corresponding boundaries. `example/` holds a crossover strategy and its tests;
-`sample/` holds synthetic CSV data. `doc/feat/` holds delivery specifications,
-while [ADRs](adr/) record architectural decisions.
+`test/ataraxia/unit/`, `test/ataraxia/integration/`, and
+`test/ataraxia/acceptance/` exercise the corresponding product boundaries.
+`test/script/` and `test/make/` exercise repository scripts and Make targets.
+`example/` holds a crossover strategy and its tests; `sample/` holds synthetic
+CSV data. `doc/feat/` holds delivery specifications, while [ADRs](adr/) record
+architectural decisions.
 
 `make arch-check`, also run by `make ci-check` and `make ci`, uses Tach to
 enforce the dependencies declared in `tach.toml`, as decided in
@@ -143,10 +145,10 @@ implementation, but with different parameters.
 ### Type-checking limits
 
 `make typecheck` (also run by `make ci`) checks positive `assert_type` cases and
-required negative diagnostics in `test/typecheck/`. These cover result lookup,
-source input, feature input, and runner calls. Negative cases use Pyrefly's
-`--expectations` mode: missing expected errors and unexpected errors fail the
-check.
+required negative diagnostics in `test/ataraxia/typecheck/`. These cover result
+lookup, source input, feature input, and runner calls. Negative cases use
+Pyrefly's `--expectations` mode: missing expected errors and unexpected errors
+fail the check.
 
 `DependencyMapping` remains heterogeneous. Python's type system cannot connect
 arbitrary dependency dictionary keys and node result types to a runner's named

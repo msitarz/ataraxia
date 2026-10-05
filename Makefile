@@ -74,7 +74,7 @@ else
 endif
 
 typecheck-expectations: ## type-check assertion cases; ARGS=paths narrows the files
-	uv run pyrefly check --expectations $(if $(strip $(ARGS)),$(_ARGS),test/typecheck/*.py)
+	uv run pyrefly check --expectations $(if $(strip $(ARGS)),$(_ARGS),test/ataraxia/typecheck/*.py)
 
 .PHONY: arch-check
 arch-check: ## check architecture boundaries

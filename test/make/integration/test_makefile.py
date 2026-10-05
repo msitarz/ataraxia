@@ -9,7 +9,7 @@ import sys
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def expected_size_advisory(*paths: str) -> list[str]:
@@ -233,8 +233,8 @@ def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
         ("test", (), [["run", "pytest", "--cov"]]),
         (
             "test",
-            ("ARGS=test/unit/test_cli.py",),
-            [["run", "pytest", "test/unit/test_cli.py"]],
+            ("ARGS=test/ataraxia/unit/test_cli.py",),
+            [["run", "pytest", "test/ataraxia/unit/test_cli.py"]],
         ),
         (
             "typecheck",
@@ -246,7 +246,7 @@ def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
                     "pyrefly",
                     "check",
                     "--expectations",
-                    "test/typecheck/compute_contracts.py",
+                    "test/ataraxia/typecheck/compute_contracts.py",
                 ],
             ],
         ),
@@ -257,14 +257,14 @@ def test_local_and_ci_checks_use_the_same_read_only_doc_target(tmp_path):
         ),
         (
             "typecheck-expectations",
-            ("ARGS=test/typecheck/compute_contracts.py",),
+            ("ARGS=test/ataraxia/typecheck/compute_contracts.py",),
             [
                 [
                     "run",
                     "pyrefly",
                     "check",
                     "--expectations",
-                    "test/typecheck/compute_contracts.py",
+                    "test/ataraxia/typecheck/compute_contracts.py",
                 ]
             ],
         ),
@@ -633,7 +633,7 @@ def test_dependency_lock_target_uses_uv_lock(tmp_path):
 
 def test_full_checks_ignores_targeted_test_selector(tmp_path):
     result, calls = run_make_with_fake_uv(
-        tmp_path, "verify-test", "ARGS=test/unit/test_cli.py"
+        tmp_path, "verify-test", "ARGS=test/ataraxia/unit/test_cli.py"
     )
 
     assert result.returncode == 0, result.stdout + result.stderr

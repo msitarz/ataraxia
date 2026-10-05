@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 CHECKER = ROOT / "script" / "check_commit_message.py"
 LONG_TOKEN = "https://example.com/" + "a" * 80
 

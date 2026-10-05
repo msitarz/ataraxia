@@ -29,7 +29,7 @@ if TYPE_CHECKING:
         validate_wheel_link,
     )
 else:
-    script = Path(__file__).resolve().parents[1] / "script/registry_selection.py"
+    script = Path(__file__).resolve().parents[2] / "script/registry_selection.py"
     spec = importlib.util.spec_from_file_location(
         "registry_selection_under_test", script
     )
@@ -50,7 +50,7 @@ else:
     validate_selected_inventory = selector.validate_selected_inventory
     validate_wheel_link = selector.validate_wheel_link
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 INPUTS = ("CACHE", "RECORD", "PREPARATION_SHA256", "DESTINATION")
 VALUES = (
     "cache space's $(shell touch MAKE_PWNED)$(touch SHELL_PWNED)`touch TICK_PWNED`",
@@ -106,7 +106,7 @@ def copy_registry_project(directory: Path) -> None:
         ROOT / "script/registry_selection.py",
         directory / "script/registry_selection.py",
     )
-    shutil.copyfile(ROOT / "test/fixtures/registry_uv.py", directory / "uv")
+    shutil.copyfile(ROOT / "test/script/fixtures/registry_uv.py", directory / "uv")
     (directory / "uv").chmod(0o755)
 
 
@@ -227,7 +227,7 @@ def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelecti
     Returns:
         Paths and a separately frozen acceptance digest.
     """
-    fixtures = ROOT / "test/fixtures/registry_selection"
+    fixtures = ROOT / "test/script/fixtures/registry_selection"
     build_selection_inputs(directory)
     record = directory / "record.json"
     shutil.copyfile(fixtures / "records/accepted.json", record)
@@ -340,7 +340,7 @@ def expected_manifest() -> ManifestObservation:
         Whole expected manifest values.
     """
     return read_manifest(
-        ROOT / "test/fixtures/registry_selection/expected-selection.json"
+        ROOT / "test/script/fixtures/registry_selection/expected-selection.json"
     )
 
 
@@ -370,7 +370,7 @@ def tree_state(directory: Path) -> dict[str, bytes | str]:
 
 def arrange_changed_input(case: PreparedSelection, change: str) -> None:
     """Arrange one damaged external input using real fixture files."""
-    changed = ROOT / "test/fixtures/registry_selection/changed.txt"
+    changed = ROOT / "test/script/fixtures/registry_selection/changed.txt"
     destinations = {
         "declaration": case.repository / "uv.lock",
         "evidence": case.directory / "successful-setup.log",
@@ -385,7 +385,8 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
         link.symlink_to(case.repository)
     elif change == "record":
         shutil.copyfile(
-            ROOT / "test/fixtures/registry_selection/unapproved.json", case.record
+            ROOT / "test/script/fixtures/registry_selection/unapproved.json",
+            case.record,
         )
     else:
         raise ValueError(f"unknown fixture input: {change}")
@@ -395,7 +396,7 @@ def arrange_cli_collision(case: PreparedSelection) -> None:
     """Arrange a real preexisting result directory with a sentinel file."""
     case.destination.mkdir()
     shutil.copyfile(
-        ROOT / "test/fixtures/registry_selection/changed.txt",
+        ROOT / "test/script/fixtures/registry_selection/changed.txt",
         case.destination / "sentinel.txt",
     )
 

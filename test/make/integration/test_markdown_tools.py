@@ -9,7 +9,7 @@ import tempfile
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_make_doc_check_rejects_formatting_without_modifying_files() -> None:

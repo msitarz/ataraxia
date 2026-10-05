@@ -3,7 +3,7 @@
 
 import pytest
 
-from test.support import RegistryInputs, run_registry_target
+from test.script.support import RegistryInputs, run_registry_target
 
 
 @pytest.mark.covers(

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-SCRIPT = Path(__file__).resolve().parents[2] / "script" / "acceptance_tests.py"
+SCRIPT = Path(__file__).resolve().parents[3] / "script" / "acceptance_tests.py"
 SPEC = importlib.util.spec_from_file_location("acceptance_tests", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 acceptance_tests = importlib.util.module_from_spec(SPEC)
