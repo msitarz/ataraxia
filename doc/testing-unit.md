@@ -10,11 +10,13 @@ interface and checks its behavior apart from the rest of the system. Use the
 [common boundary and double policy](testing.md#choose-the-boundary-and-doubles)
 to isolate collaborators without replacing the behavior under test.
 
-Unit tests live in `test/unit` and mirror `src/ataraxia`, so the tests for
-`src/ataraxia/compute/loop.py` are in
-[`test/unit/compute/test_loop.py`](../test/unit/compute/test_loop.py). Tests for
-the strategies under `example/` follow the same rules and run through the
-example targets in the [Makefile](../Makefile).
+Product unit tests live in `test/ataraxia/unit` and mirror `src/ataraxia`, so
+the tests for `src/ataraxia/compute/loop.py` are in
+[`test/ataraxia/unit/compute/test_loop.py`](../test/ataraxia/unit/compute/test_loop.py).
+Tests for the strategies under `example/` follow the same rules and run through
+the example targets in the [Makefile](../Makefile).
+
+Script unit tests live in `test/script/unit`.
 
 ## Keep it fast and local
 
@@ -89,12 +91,13 @@ user-visible flow to the [acceptance tests](testing-acceptance.md).
 These references demonstrate the named qualities; other details may predate
 the common guidance.
 
-- [`test/unit/test_broker.py`](../test/unit/test_broker.py) states literal
-  expectations and covers gaps and both-orders-hit boundaries.
+- [`test/ataraxia/unit/test_broker.py`](../test/ataraxia/unit/test_broker.py)
+  states literal expectations and covers gaps and both-orders-hit boundaries.
 - The `test_compute_closes_source_*` tests in
-  [`test/unit/compute/test_loop.py`](../test/unit/compute/test_loop.py) use
-  hand-written nodes and assert lifecycle state on exhaustion, error, and close.
+  [`test/ataraxia/unit/compute/test_loop.py`](../test/ataraxia/unit/compute/test_loop.py)
+  use hand-written nodes and assert lifecycle state on exhaustion, error, and
+  close.
 - `test_bar_provider_rejects_malformed_rows_and_closes` in
-  [`test/unit/test_provider.py`](../test/unit/test_provider.py) uses a real file
-  in `tmp_path` and asserts the error type, message, path, cause, and that the
-  file closed.
+  [`test/ataraxia/unit/test_provider.py`](../test/ataraxia/unit/test_provider.py)
+  uses a real file in `tmp_path` and asserts the error type, message, path,
+  cause, and that the file closed.

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from test.support import (
+from test.script.support import (
     ROOT,
     ChangingRecordRead,
     Package,
@@ -92,7 +92,7 @@ def cli_cache_destination(prepared_selection):
 def changing_record(prepared_selection):
     edge = ChangingRecordRead(
         prepared_selection.record,
-        ROOT / "test/fixtures/registry_selection/unapproved.json",
+        ROOT / "test/script/fixtures/registry_selection/unapproved.json",
         Path.read_bytes,
     )
     with patch.object(Path, "read_bytes", autospec=True, side_effect=edge.read):
@@ -102,14 +102,16 @@ def changing_record(prepared_selection):
 @pytest.fixture
 def preparation_bytes():
     return (
-        ROOT / "test/fixtures/registry_selection/records/accepted.json"
+        ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
     ).read_bytes()
 
 
 @pytest.fixture
 def preparation_expected():
     return json.loads(
-        (ROOT / "test/fixtures/registry_selection/records/accepted.json").read_text()
+        (
+            ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
+        ).read_text()
     )
 
 

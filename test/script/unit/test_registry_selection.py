@@ -3,7 +3,7 @@
 
 import pytest
 
-from test.support import run_selection_cli, select_prepared, tree_state
+from test.script.support import run_selection_cli, select_prepared, tree_state
 
 
 @pytest.mark.covers(

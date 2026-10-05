@@ -7,9 +7,10 @@ Read this file when writing, changing, or reviewing an integration test, after
 
 An integration test runs real parts together across a boundary that unit tests
 cannot see: a file being read, a process being spawned, or a repository being
-changed. Product tests in `test/integration` load strategies from disk and trade
-bars through the provider, broker, and compute loop. Tooling tests exercise our
-scripts, Make targets, and hooks against real Git and files.
+changed. Product tests in `test/ataraxia/integration` load strategies from disk
+and trade bars through the provider, broker, and compute loop. Tooling tests
+exercise our scripts, Make targets, and hooks against real Git and files, under
+`test/script/integration` and `test/make/integration`.
 
 Keep pure calculations and state rules in [unit tests](testing-unit.md), and
 reserve the shipped command's user-visible flows for
@@ -48,17 +49,18 @@ fixture can copy an argument-logging executable before making it discoverable:
 @pytest.fixture
 def fake_uv(tmp_path, monkeypatch):
     script = tmp_path / "uv"
-    shutil.copyfile(ROOT / "test/fixtures/registry_uv.py", script)
+    shutil.copyfile(ROOT / "test/script/fixtures/registry_uv.py", script)
     script.chmod(0o755)
     monkeypatch.setenv("UV_PROXY_MODE", "record")
     monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.environ['PATH']}")
     return tmp_path / "argv.json"
 ```
 
-The example assumes `ROOT` identifies the checkout and the module imports
-`os`, `shutil`, and `pytest`. The existing
-[`registry_uv.py`](../test/fixtures/registry_uv.py) fixture records arguments in
-`argv.json` in the child's working directory; run the child in `tmp_path`.
+The example assumes `ROOT` identifies the checkout and the module imports `os`,
+`shutil`, and `pytest`. The existing
+[`registry_uv.py`](../test/script/fixtures/registry_uv.py) fixture records
+arguments in `argv.json` in the child's working directory; run the child in
+`tmp_path`.
 
 - A shim proves only the effects it observes, such as argument routing or error
   propagation. It does not establish that the replaced tool really installs
@@ -86,10 +88,10 @@ a broken local link, without owning tests of every upstream Markdown rule.
 These references demonstrate the named qualities, not full compliance with
 all current guidance:
 
-- [`test_worktree_cleanup.py`](../test/integration/test_worktree_cleanup.py)
+- [`test_worktree_cleanup.py`](../test/make/integration/test_worktree_cleanup.py)
   uses real Git in disposable repositories and compares state around refusals.
 - `test_backtest_shard` in
-  [`test_backtest.py`](../test/integration/test_backtest.py) runs a real
-  strategy and shard and compares the complete result. Other tests in that file
-  patch internals, and its strategy setup generates source; do not copy those
-  patterns.
+  [`test_backtest.py`](../test/ataraxia/integration/test_backtest.py) runs a
+  real strategy and shard and compares the complete result. Other tests in that
+  file patch internals, and its strategy setup generates source; do not copy
+  those patterns.

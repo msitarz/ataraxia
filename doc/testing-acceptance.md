@@ -7,7 +7,7 @@ Read this file when writing, changing, or reviewing an acceptance test, after
 
 An acceptance test checks the promise the shipped command makes to a user. It
 runs in a separate process and observes exit status, stdout, stderr, and files
-left behind. Acceptance tests live in `test/acceptance`.
+left behind. Acceptance tests live in `test/ataraxia/acceptance`.
 
 Keep them focused on distinct user-visible flows. Variations that only exercise
 an internal rule belong in [unit](testing-unit.md) or
@@ -57,7 +57,7 @@ criterion. Acceptance is a test type; it does not itself require a Work marker.
 ## Pattern in the existing sample test
 
 `test_crossover_sample_cli_run` in
-[`test_crossover_sample.py`](../test/acceptance/test_crossover_sample.py)
+[`test_crossover_sample.py`](../test/ataraxia/acceptance/test_crossover_sample.py)
 demonstrates the shipped command, exact stdout, empty stderr, and independent
 trade expectations. Its artifact assertions check selected fields rather than
 the complete value, and its subprocess plumbing remains in the body. Use the

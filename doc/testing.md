@@ -17,9 +17,9 @@ process. Keep higher-level tests for behavior that lower levels cannot prove.
 
 | Type | Directory | Exercises | Guidance |
 | --- | --- | --- | --- |
-| Unit | `test/unit`, `example` | one function, class, or node through its public interface | [Unit tests](testing-unit.md) |
-| Integration | `test/integration` | real components or external tools across a boundary | [Integration tests](testing-integration.md) |
-| Acceptance | `test/acceptance` | the shipped command as a user runs it | [Acceptance tests](testing-acceptance.md) |
+| Unit | `test/ataraxia/unit`, `test/script/unit`, `example` | one function, class, or node through its public interface | [Unit tests](testing-unit.md) |
+| Integration | `test/ataraxia/integration`, `test/script/integration`, `test/make/integration` | real components or external tools across a boundary | [Integration tests](testing-integration.md) |
+| Acceptance | `test/ataraxia/acceptance` | the shipped command as a user runs it | [Acceptance tests](testing-acceptance.md) |
 
 Read the guidance for the type you are writing or reviewing after this file.
 Run a focused selection with `make test ARGS=<paths>`; example strategy tests
@@ -80,10 +80,11 @@ type-specific guidance may impose stricter boundaries.
 
 Keep simple, unique arrangements in the test or its module. Extract reusable
 fixtures and substantial plumbing, especially subprocess execution and
-external-tool setup. Read existing helpers before adding another; root
-`test/conftest.py` and `test/support.py` are appropriate for suite-wide reuse,
-while narrower helpers belong with their users. Name helpers for what they
-provide and avoid hiding behavior in setup.
+external-tool setup. Read existing helpers before adding another; an owning
+suite's `conftest.py` and `support.py` are appropriate for suite-wide reuse,
+while narrower helpers belong with their users. Shared registry arrangements
+live under `test/script`, with narrow reuse by the Make suite. Name helpers for
+what they provide and avoid hiding behavior in setup.
 
 Repeated setup is a signal to consider sharing it, not a reason to force every
 arrangement into a central file. A process helper should set a timeout and
@@ -157,7 +158,8 @@ def test_a_gap_through_the_stop_fills_at_the_open():
 
 Use small builders with defaults when they make relevant input fields easier to
 see. Keep substantial source or data inputs, especially strategy modules, as
-real files under `test/fixtures/` and copy them into `tmp_path`. Give variants
+real files under the owning suite's `fixtures/` directory (currently
+`test/script/fixtures/`) and copy them into `tmp_path`. Give variants
 names that explain their differences. Avoid assembling source from joined
 strings or `.replace` edits that hide it from formatting and static analysis.
 Tiny inputs such as a malformed CSV row may be written directly in setup.
@@ -176,7 +178,7 @@ inside each test directory where practical. Use fixtures for reusable inputs,
 in-process CLI output. Cover changed behavior and relevant edges; meet the
 branch coverage threshold in [pyproject.toml](../pyproject.toml), without
 mistaking that floor for proof of quality. Type-contract cases under
-`test/typecheck` follow [engineering conventions](engineering.md).
+`test/ataraxia/typecheck` follow [engineering conventions](engineering.md).
 
 [Test ownership](test-ownership.md) distinguishes retained regression tests
 from temporary upstream-adoption probes. Exercise our boundary rather than
