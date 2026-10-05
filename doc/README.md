@@ -20,7 +20,8 @@ relevant guidance.
 | ADR eligibility and architectural decision process | [ADR workflow](adr-workflow.md) |
 | Shared ADR/WDR record format and lifecycle | [Decision record format](decision-records.md) |
 | Workflow decision eligibility, routing, and index | [WDR workflow](wdr-workflow.md) |
-| Coding, typing, and testing conventions | [Engineering](engineering.md) |
+| Coding and typing conventions | [Engineering](engineering.md) |
+| Common testing rules and test-type guidance | [Testing](testing.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
 | Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
