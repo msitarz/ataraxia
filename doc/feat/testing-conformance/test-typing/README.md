@@ -35,20 +35,20 @@ independent defect, report it rather than expanding this leaf.
 
 ## Acceptance
 
-- **AC-1 TODO** Given the adopted configuration, default `make typecheck` checks
+- **AC-1 DONE** Given the adopted configuration, default `make typecheck` checks
   the Bar pilot alongside existing source/example entries under the strict
   preset; other ordinary test modules are not newly blanket-included.
 
   Validation: independently inspect inclusion and annotations; run focused
   `make typecheck ARGS=test/ataraxia/unit/test_bar.py` and default
   `make typecheck`; require full CI on the latest reviewed PR head.
-- **AC-2 TODO** Given intentional-negative type cases, default type checking
+- **AC-2 DONE** Given intentional-negative type cases, default type checking
   still checks them through `--expectations`, preserving their expected
   failures.
 
   Validation: inspect the unchanged Make route and run
   `make typecheck-expectations`; review latest-head CI execution.
-- **AC-3 TODO** Given the pilot diff, annotations preserve fixture/value
+- **AC-3 DONE** Given the pilot diff, annotations preserve fixture/value
   precision without behavioral edits, broad escape hatches, or weaker source
   checking; subsequent cleanup has an explicit incremental inclusion obligation.
 
