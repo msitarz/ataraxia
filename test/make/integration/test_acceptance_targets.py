@@ -164,6 +164,7 @@ def run_coverage_target(work: str = "", ac: str = ""):
         ),
     ],
 )
+@pytest.mark.real_tool
 def test_make_targets_select_work_and_optional_criterion(
     target, ac, selected, excluded
 ):
@@ -177,6 +178,7 @@ def test_make_targets_select_work_and_optional_criterion(
 
 
 @pytest.mark.parametrize("target", ["ac-collect", "ac-test"])
+@pytest.mark.real_tool
 def test_make_targets_fail_when_no_criterion_matches(target):
     with make_fixture(ROOT) as work:
         result = run_target(target, work, "AC-9")
@@ -193,6 +195,7 @@ def test_make_targets_fail_when_no_criterion_matches(target):
     ),
     ac="AC-4",
 )
+@pytest.mark.real_tool
 def test_make_ac_check_reports_declarations_without_running_tests():
     """`ac-check` validates AC declarations, `Validation:` annotations, and literal
     marker references without requiring markers or `Validation:` based on TODO/DONE
@@ -207,6 +210,7 @@ def test_make_ac_check_reports_declarations_without_running_tests():
     assert "AC-99" not in output
 
 
+@pytest.mark.real_tool
 def test_make_ac_check_requires_a_work_and_rejects_ac_selector():
     missing = run_coverage_target()
     assert missing.returncode != 0
@@ -229,6 +233,7 @@ def test_make_ac_check_requires_a_work_and_rejects_ac_selector():
     ),
     ac="AC-4",
 )
+@pytest.mark.real_tool
 def test_make_ac_check_rejects_work_without_criteria():
     """`ac-check` validates AC declarations, `Validation:` annotations, and literal
     marker references without requiring markers or `Validation:` based on TODO/DONE
@@ -261,6 +266,7 @@ def test_make_ac_check_rejects_work_without_criteria():
         ),
     ],
 )
+@pytest.mark.real_tool
 def test_make_ac_check_uses_canonical_validation_annotation(
     annotations, success, message
 ):
