@@ -1,0 +1,20 @@
+{
+  "label": "1-full",
+  "selection": "full",
+  "command": [
+    "make",
+    "test",
+    "ARGS=test/make/integration"
+  ],
+  "environment": {
+    "UV_OFFLINE": "true",
+    "UV_NO_SYNC": "true",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "PYTEST_ADDOPTS": "--durations=0"
+  },
+  "start_utc": "2026-10-05T16:55:08.348565+00:00",
+  "end_utc": "2026-10-05T16:55:57.153657+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 48.803898565936834
+}
