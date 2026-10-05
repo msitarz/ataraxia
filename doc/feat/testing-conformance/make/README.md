@@ -9,7 +9,7 @@ real-tool regressions. Follow [testing](../../../testing.md),
 
 - **DONE** Real-tool marker and optional filtering; default selection includes
   all.
-- **TODO** [Stub environment](stub-environment/README.md).
+- **DONE** Typed shared stub environment and isolated ordinary Make routing.
 - **TODO** [Check orchestration](check-orchestration/README.md).
 - **TODO** [Worktree creation](worktree-creation/README.md).
 - **TODO** [Worktree cleanup](worktree-cleanup/README.md).
@@ -17,12 +17,12 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **TODO** [Acceptance targets](acceptance-targets/README.md).
 - **TODO** [Size guardrails](size-guardrails/README.md).
 
-Merge this map before child delivery. Marker delivered; baseline measurement
-precedes all cleanup. Stub helper precedes routing, orchestration, and creation.
-Sequence parent-map, helper, and Pyrefly inclusion edits. Extract
-responsibilities from the large `test_makefile.py` into focused modules rather
-than annotating its unrelated legacy tests. Stub environment is split because
-helper introduction plus all routing migration exceeds one review question. Each
+Merge this map before child delivery. Marker and shared helper are delivered;
+[baseline measurements](measurements.md) were recorded before cleanup.
+Orchestration and creation consume the delivered helper. Sequence parent-map,
+helper, and Pyrefly inclusion edits. Extract responsibilities from the large
+`test_makefile.py` into focused modules rather than annotating its unrelated
+legacy tests. Each
 complete leaf diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
