@@ -7,7 +7,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
 
 ## Delivery map
 
-- **TODO** [Real-tool selection](real-tool-selection/README.md).
+- **DONE** Real-tool marker and optional filtering; default selection includes
+  all.
 - **TODO** [Stub environment](stub-environment/README.md).
 - **TODO** [Check orchestration](check-orchestration/README.md).
 - **TODO** [Worktree creation](worktree-creation/README.md).
@@ -16,8 +17,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **TODO** [Acceptance targets](acceptance-targets/README.md).
 - **TODO** [Size guardrails](size-guardrails/README.md).
 
-Merge this map before child delivery. Marker delivery and baseline measurement
-precede all cleanup. Stub helper precedes routing, orchestration, and creation.
+Merge this map before child delivery. Marker delivered; baseline measurement
+precedes all cleanup. Stub helper precedes routing, orchestration, and creation.
 Sequence parent-map, helper, and Pyrefly inclusion edits. Extract
 responsibilities from the large `test_makefile.py` into focused modules rather
 than annotating its unrelated legacy tests. Stub environment is split because
