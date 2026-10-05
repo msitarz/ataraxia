@@ -5,13 +5,14 @@ fits the [five-minute review target](../../../../workflow.md#scope-and-sizing).
 Both children use the delivered typed Make sandbox without expanding its
 fixture system or running real installs/network operations.
 
-- **TODO** [Preparation allocation](preparation/README.md).
+- **DONE** Typed isolated preparation allocation for six Make targets.
 - **TODO** [Check execution](execution/README.md).
 
-Merge this revised map before delivery. Preparation goes first, then execution;
-sequence shared `test_makefile.py`, Pyrefly inclusion, and parent-map edits.
-Preserve original covers markers and exact argument/environment contracts. Each
-child owns a focused typed module; leave creation and unrelated tests alone.
+Merge this revised map before delivery. Preparation is delivered; execution is
+next; sequence shared `test_makefile.py`, Pyrefly inclusion, and parent-map
+edits. Preserve original covers markers and exact argument/environment
+contracts. Each child owns a focused typed module; leave creation and unrelated
+tests alone.
 
 - **AC-1 TODO** Given verify/CI/setup targets and injected failures, promised
   commands and flags are observed; stale setup stops later checks and audit
