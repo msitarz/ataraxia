@@ -12,7 +12,7 @@ help: ## display this command index
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo "Run project tools through Make targets; use ARGS=repo/path for focused checks."
 
-singlequote := '
+singlequote := $(shell echo "'")
 # Quote caller selectors as literal, whitespace-separated shell words.
 _SHELL_WORDS = $(foreach arg,$(1),'$(subst $(singlequote),'"'"',$(arg))')
 # Quote one shell value while preserving embedded spaces and apostrophes.
