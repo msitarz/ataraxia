@@ -1,25 +1,67 @@
 # Make testing boundaries
 
-Make orchestration should use real Make and a reusable fixture-file fake uv,
-with explicit child environments, logs, configurable failures, and timeouts.
-Retain real Git for repository effects and real tools for distinct regressions.
+Preserve Make contracts with fast real-Make/fake-uv orchestration and selected
+real-tool regressions. Follow [testing](../../../testing.md),
+[integration guidance](../../../testing-integration.md), and
+[test ownership](../../../test-ownership.md).
 
-The next planning delivery defines bounded leaves for:
+## Delivery map
 
-- Registering `real_tool` for real uv-managed tool executions, including nested
-  pytest; fake-uv and real-Git-only tests remain unmarked. Normal CI runs all.
-- Sharing the stub environment and migrating ordinary routing, followed by
-  focused verify/CI/setup orchestration coverage.
-- Separately preserving worktree creation and cleanup contracts, including
-  hostile input, refusal-state preservation, and isolated Git configuration.
-- Separately retaining documentation, acceptance-target, and statement-size
-  boundary checks in disposable checkouts with real repository configuration.
+- **TODO** [Real-tool selection](real-tool-selection/README.md).
+- **TODO** [Stub environment](stub-environment/README.md).
+- **TODO** [Check orchestration](check-orchestration/README.md).
+- **TODO** [Worktree creation](worktree-creation/README.md).
+- **TODO** [Worktree cleanup](worktree-cleanup/README.md).
+- **TODO** [Documentation boundary](documentation-boundary/README.md).
+- **TODO** [Acceptance targets](acceptance-targets/README.md).
+- **TODO** [Size guardrails](size-guardrails/README.md).
 
-Marker registration precedes baseline measurement; the shared stub precedes
-orchestration migration. Sequence helper edits. Before measurement, declare
-matched revisions, prepared offline conditions, duration reporting, three runs
-per condition, and handling of failures/skips under
-[empirical evaluation guidance](../../../evaluation.md). Compare full-suite and
-unmarked selections after cleanup; report observed medians rather than promising
-a percentage improvement. Filtering uses scoped `PYTEST_ADDOPTS`; `ARGS` remains
-paths-only. Preserve coverage as a prerequisite to interpreting runtime changes.
+Merge this map before child delivery. Marker delivery and baseline measurement
+precede all cleanup. Stub helper precedes routing, orchestration, and creation.
+Sequence parent-map, helper, and Pyrefly inclusion edits. Extract
+responsibilities from the large `test_makefile.py` into focused modules rather
+than annotating its unrelated legacy tests. Stub environment is split because
+helper introduction plus all routing migration exceeds one review question. Each
+complete leaf diff must fit the
+[five-minute review target](../../../workflow.md#scope-and-sizing); replan and
+merge further splits before expansion.
+
+Cleanup leaves preserve existing covers markers, add criterion-marked tests, and
+precisely annotate/include cleaned modules, helpers, and executable fixtures
+under normal strict Pyrefly. Marker-only edits require no legacy typing
+migration. No production changes, reduced coverage thresholds, or CI-skipping
+filter.
+
+## Timing protocol
+
+After marker delivery, freeze baseline revision and prepared offline
+environment. Before cleanup run one untimed warm-up per selection, then three
+repetitions each of full Make and unmarked selections through
+`make test ARGS=test/make/integration`, setting `UV_OFFLINE=true`,
+`UV_NO_SYNC=true`, and `PYTEST_ADDOPTS='--durations=0'`; the unmarked selection
+adds `-m "not real_tool"`. Alternate full/unmarked runs. Repeat on final
+revision with one untimed warm-up per selection before its three-run batch,
+using the same host, tools, preparation, selection, and warm-cache conditions.
+Record revisions, versions, commands, elapsed seconds, per-test durations,
+failures, skips, medians, and deviations in `measurements.md` in this parent
+directory; retain raw captured run outputs in its sibling `measurements/`
+directory. Create these artifacts only after marker merge and before cleanup.
+Keep failed or interrupted observations; rerun only after resolving/reporting
+cause and retain both observations. Missing three successful matched runs makes
+timing inconclusive. Coverage preservation is required; compare medians
+separately, report slower or unchanged results honestly, and claim no unmeasured
+speedup. No timing assertions or benchmark tool. Follow
+[evaluation](../../../evaluation.md).
+
+## Acceptance
+
+- **AC-1 TODO** Given all deliveries, retained tests prove existing routing and
+  real repository effects in disposable environments; normal CI runs all cases.
+
+  Validation: review child criterion execution, preserved coverage, strict
+  inclusion, and latest-head full CI; run the complete Make suite.
+- **AC-2 TODO** Given matched baseline/final runs, the timing comparison reports
+  both selection medians and evidence gaps without trading coverage for speed.
+
+  Validation: independently review protocol compliance, observations, and
+  limits.
