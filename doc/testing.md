@@ -184,6 +184,15 @@ mistaking that floor for proof of quality. Type-contract cases under
 from temporary upstream-adoption probes. Exercise our boundary rather than
 only proving that an upstream tool behaves as documented.
 
+Annotate fixture and test parameters, returns, helpers, and collaborators with
+precise supported types under
+[engineering guidance](engineering.md#preserve-type-precision). As modules are
+cleaned up, explicitly extend Pyrefly's configured strict checked set with
+passing test modules and their changed helpers or executable fixtures; include
+required dependencies within the bounded change. Inclusion of a consumer does
+not imply all fixture code or tests are checked. Keep intentional-negative
+`test/ataraxia/typecheck` cases separate on the existing `--expectations` route.
+
 Existing tests may predate these rules. The type-specific references illustrate
 named strengths, not blanket compliance. Apply this guidance to new or changed
 tests; do not rewrite unrelated tests in passing. Follow the
