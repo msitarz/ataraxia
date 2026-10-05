@@ -5,7 +5,7 @@ in markdown, acceptance-target, and size tests, including nested pytest. Keep
 fake-uv and real-Git-only cases unmarked. Change only marker registration and
 classification; no fixture cleanup or legacy annotation migration.
 
-- **AC-1 TODO** Given full and filtered collection, only real uv-managed
+- **AC-1 DONE** Given full and filtered collection, only real uv-managed
   executions are excluded by `not real_tool`, while normal Make/CI selection
   includes both.
 
