@@ -13,7 +13,21 @@ import sys
 from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from script.registry_selection import Package, Selection, select
+    from script.registry_selection import (
+        Package,
+        PackagePayload,
+        Selection,
+        accepted_preparation,
+        dependency_declarations,
+        package_payload,
+        preparation_evidence,
+        select,
+        validate_digest,
+        validate_package_layout,
+        validate_payload_metadata,
+        validate_selected_inventory,
+        validate_wheel_link,
+    )
 else:
     script = Path(__file__).resolve().parents[1] / "script/registry_selection.py"
     spec = importlib.util.spec_from_file_location(
@@ -25,6 +39,16 @@ else:
     sys.modules[spec.name] = selector
     spec.loader.exec_module(selector)
     Package, Selection, select = selector.Package, selector.Selection, selector.select
+    PackagePayload = selector.PackagePayload
+    accepted_preparation = selector.accepted_preparation
+    dependency_declarations = selector.dependency_declarations
+    package_payload = selector.package_payload
+    preparation_evidence = selector.preparation_evidence
+    validate_digest = selector.validate_digest
+    validate_package_layout = selector.validate_package_layout
+    validate_payload_metadata = selector.validate_payload_metadata
+    validate_selected_inventory = selector.validate_selected_inventory
+    validate_wheel_link = selector.validate_wheel_link
 
 ROOT = Path(__file__).resolve().parents[1]
 INPUTS = ("CACHE", "RECORD", "PREPARATION_SHA256", "DESTINATION")
