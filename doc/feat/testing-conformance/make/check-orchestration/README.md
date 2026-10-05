@@ -14,7 +14,7 @@ edits. Preserve original covers markers and exact argument/environment
 contracts. Each child owns a focused typed module; leave creation and unrelated
 tests alone.
 
-- **AC-1 TODO** Given verify/CI/setup targets and injected failures, promised
+- **AC-1 DONE** Given verify/CI/setup targets and injected failures, promised
   commands and flags are observed; stale setup stops later checks and audit
   failure reaches Make without performing installs or network operations.
 

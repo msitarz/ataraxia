@@ -7,7 +7,7 @@ Separate independent obligations while retaining original covers markers and
 complete relevant arguments. Keep creation untouched; include the cleaned
 module in normal strict Pyrefly. No real installs/network or fixture expansion.
 
-- **AC-1 TODO** Given verify/CI execution, required local checks receive offline
+- **AC-1 DONE** Given verify/CI execution, required local checks receive offline
   and no-sync flags; verify omits preparation/audit, CI preserves required order
   and audit environment, and injected setup/audit failures return Make code 2
   with required later commands absent.
@@ -15,7 +15,7 @@ module in normal strict Pyrefly. No real installs/network or fixture expansion.
   Validation: run marked success/failure cases and strict typecheck; inspect
   ordered observations and stop-state assertions, preserved original covers
   markers, and latest-head full CI.
-- **AC-2 TODO** Given local/CI static checks and full test/static/example
+- **AC-2 DONE** Given local/CI static checks and full test/static/example
   targets with caller selectors, documentation commands remain read-only and
   equivalent, and full targets retain full scope rather than caller paths.
 
