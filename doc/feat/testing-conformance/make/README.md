@@ -10,7 +10,7 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE** Real-tool marker and optional filtering; default selection includes
   all.
 - **DONE** Typed shared stub environment and isolated ordinary Make routing.
-- **TODO** [Check orchestration](check-orchestration/README.md).
+- **DONE** Typed isolated preparation and check execution orchestration.
 - **TODO** [Worktree creation](worktree-creation/README.md).
 - **TODO** [Worktree cleanup](worktree-cleanup/README.md).
 - **TODO** [Documentation boundary](documentation-boundary/README.md).
