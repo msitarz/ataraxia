@@ -15,7 +15,7 @@ rewriting. See the
   payloads and preserves their complete resolver metadata; see
   [usage](../../../../../../../../CONTRIBUTING.md#optional-reviewed-registry-selection)
   and
-  [verified evidence](https://github.com/msitarz/ataraxia/blob/f938650ea42d70d9113c66429c4e4bb25c0c265e/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/evidence.md).
+  [verified evidence](https://github.com/msitarz/ataraxia/blob/ff8b5a2fedebeb210914878123240dbab18eac92/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/evidence.md).
 - **TODO** [Pinned hook sources](pinned-hook-sources/README.md): verify and
   select only the required pinned third-party hook sources.
 - **TODO** [Snapshot delivery](snapshot-delivery/README.md): compose both
