@@ -16,7 +16,10 @@ and diagnostic evidence on failure. No project payloads, answers/source
 references, old environments, interpreter metadata or external links may enter
 the snapshot. Do not rewrite opaque metadata or fall back online.
 
-Document authoritative usage through Make help and CONTRIBUTING. Validate the
+Keep current internal usage under the Work's focused
+[registry selection guidance](../registry-selection.md); final workflow usage
+promotion belongs to [implementation AC-2](../../README.md#acceptance).
+Validate the
 composed result with fresh environments through the actual pinned offline Make
 setup and readiness/hook contracts from the parent's linked recipe, retaining
 the audit. This establishes composition beyond hash checks and path scans.
@@ -24,6 +27,17 @@ Clone construction, sandbox/launch/model integration and import tooling remain
 sibling responsibilities; this optional utility changes no preparation policy.
 Keep the complete delivery within a five-minute review and split before
 expansion. Production execution awaits the revised plan's review and merge.
+
+## Recurring compatibility
+
+- **TODO**
+  [Current dependency compatibility](current-dependency-compatibility/README.md):
+  exercise the delivered snapshot pipeline in CI against each PR's declared
+  dependencies, including dependency updates.
+
+This parent owns snapshot composition and its initial actual offline validation.
+The child depends on that implementation and owns recurring CI compatibility;
+it does not replace or establish the parent's initial acceptance evidence.
 
 ## Acceptance
 
