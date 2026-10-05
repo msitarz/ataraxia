@@ -3,6 +3,7 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -204,18 +205,37 @@ def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelecti
     """
     fixtures = ROOT / "test/fixtures/registry_selection"
     shutil.copytree(fixtures / "common", directory, dirs_exist_ok=True, symlinks=True)
-    shutil.copyfile(
-        fixtures / "records" / f"{record_name}.json", directory / "record.json"
-    )
-    digests: dict[str, str] = json.loads((fixtures / "digests.json").read_text())
+    record = directory / "record.json"
+    shutil.copyfile(fixtures / "records/accepted.json", record)
+    accepted_sha256 = (fixtures / "accepted-sha256.txt").read_text().strip()
+    if record_name != "accepted":
+        arrange_record_variant(record, fixtures / "variants" / f"{record_name}.json")
+        accepted_sha256 = hashlib.sha256(record.read_bytes()).hexdigest()
     return PreparedSelection(
         directory,
         directory / "cache",
         directory / "repository",
         directory / "record.json",
-        digests[record_name],
+        accepted_sha256,
         directory / "result",
     )
+
+
+def arrange_record_variant(record: Path, description: Path) -> None:
+    """Apply one named invalid fixture condition to a fresh accepted record."""
+    data = json.loads(record.read_text())
+    variant = json.loads(description.read_text())
+    if description.stem in {"uv", "index", "platform", "layout"}:
+        data["condition"].update(variant["condition"])
+    elif description.stem == "metadata":
+        del data["files"][variant["remove_metadata"]]
+    elif description.stem == "undeclared":
+        data["files"].update(variant["undeclared_file"])
+    elif description.stem == "version":
+        data["packages"][0]["version"] = variant["project_version"]
+    else:
+        raise ValueError(f"unknown record variant: {description.stem}")
+    record.write_text(json.dumps(data, indent=2) + "\n")
 
 
 def expected_selection() -> Selection:
