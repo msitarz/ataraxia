@@ -165,7 +165,10 @@ preset = "strict"
 [tool.pytest]
 pythonpath = ["src"]
 testpaths = ["test"]
-markers = ["covers(work, ac): trace a test to an acceptance criterion."]
+markers = [
+  "covers(work, ac): trace a test to an acceptance criterion.",
+  "real_tool: Make integration test invoking a real uv-managed tool.",
+]
 addopts = [
   "--strict-markers",
   "--tb=short",

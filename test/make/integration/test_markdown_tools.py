@@ -12,6 +12,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 
 
+@pytest.mark.real_tool
 def test_make_doc_check_rejects_formatting_without_modifying_files() -> None:
     with tempfile.TemporaryDirectory(
         prefix=".doc-format-failure-", dir=ROOT
@@ -41,6 +42,7 @@ def run_make(target: str, *args: str, env: dict[str, str] | None = None):
     )
 
 
+@pytest.mark.real_tool
 def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts() -> None:
     with tempfile.TemporaryDirectory(prefix=".doc-tools-", dir=ROOT) as fixture:
         fixture_dir = Path(fixture)
@@ -72,6 +74,7 @@ def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts() 
         assert excluded.read_bytes() == excluded_before
 
 
+@pytest.mark.real_tool
 def test_make_doc_format_reflows_external_file_with_repository_config(
     tmp_path: Path,
 ) -> None:
@@ -89,6 +92,7 @@ def test_make_doc_format_reflows_external_file_with_repository_config(
 
 
 @pytest.mark.parametrize("mutation", ["rename", "delete"])
+@pytest.mark.real_tool
 def test_make_doc_check_finds_inbound_links_to_changed_heading(
     mutation: str,
 ) -> None:
@@ -114,6 +118,7 @@ def test_make_doc_check_finds_inbound_links_to_changed_heading(
         assert target.name in output
 
 
+@pytest.mark.real_tool
 def test_make_doc_check_fails_visibly_when_rumdl_is_missing(tmp_path: Path) -> None:
     tool_dirs = {
         str(Path(path).parent)

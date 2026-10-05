@@ -5,6 +5,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -28,6 +30,7 @@ def function_source(name: str, statement_count: int) -> str:
     return f"def _{name}():\n" + "    pass\n" * statement_count
 
 
+@pytest.mark.real_tool
 def test_lint_check_warns_after_25_without_failing():
     source = (
         function_source("within_target", 25)
@@ -46,6 +49,7 @@ def test_lint_check_warns_after_25_without_failing():
     assert "Too many statements (25 > 25)" not in output
 
 
+@pytest.mark.real_tool
 def test_lint_check_blocks_after_50():
     result = lint_check_source(function_source("blocking", 51))
 
