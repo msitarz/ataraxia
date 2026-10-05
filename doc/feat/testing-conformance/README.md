@@ -7,8 +7,7 @@ assertions, checkout mutations, and duplicated process plumbing.
 
 ## Delivery map
 
-- **TODO** [Test typing adoption](test-typing/README.md): seed strict
-  enforcement with one test module before suite cleanup.
+- **DONE** Strict Bar test pilot and lasting incremental test-typing guidance.
 - **TODO** [Make boundaries](make/README.md): fast orchestration tests and a
   small retained set of real-tool regressions.
 - **TODO** [Script boundaries](scripts/README.md): correct test types, explicit
@@ -18,10 +17,9 @@ assertions, checkout mutations, and duplicated process plumbing.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
   independent window, Work-path, and Make-argument properties.
 
-Merge this map before child PRs. Test typing is an active leaf contract; the
-four subtree summaries next define leaf contracts in separately reviewable
-planning deliveries. Deliver typing adoption before suite cleanup, then Make
-as the first cleanup subtree. Reassess each
+Merge this map before child PRs. The four subtree summaries next define leaf
+contracts in separately reviewable planning deliveries. Typing adoption is
+delivered; Make is the first cleanup subtree. Reassess each
 complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
 and publication; split and merge revised maps before expansion. Sequence
