@@ -12,6 +12,7 @@ its relevant README and linked contracts.
 | Any repository change | [Repair and scope rules](doc/change-rules.md#fix-the-underlying-problem) |
 | Acting as orchestrator for changes | [Orchestrator handoffs](doc/orchestrator.md) |
 | Code or tests | [Engineering conventions](doc/engineering.md), [architecture](doc/architecture.md) for current contracts, and relevant [ADRs](doc/adr/) |
+| Writing, changing, or reviewing tests | [Testing](doc/testing.md), then the relevant test-type guidance |
 | Test cleanup | [Test ownership](doc/test-ownership.md), including documentation tool probes |
 | Documentation | [Documentation ownership](doc/README.md); use `make doc-check` and `make doc-format` for Markdown formatting and local links |
 | Empirical evaluation | [Empirical evaluations](doc/evaluation.md) and the specific Work README and protocol |

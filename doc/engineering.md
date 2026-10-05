@@ -25,10 +25,7 @@ files.
   statements as a review signal; these counts guide readability review, not
   function shape. Don't split code only to lower a count. Extract cohesive
   helpers that improve readability.
-- Inject dependencies through arguments or constructor/dataclass fields. Tests
-  use the same points with small fakes/stubs. Only if injection is impractical
-  and patching necessary, use scoped `unittest.mock.patch`, never pytest's
-  `monkeypatch` fixture.
+- Inject dependencies through arguments or constructor/dataclass fields.
 - Depend on structural `typing.Protocol` contracts for collaborators; value
   objects/internal helpers need not have protocols. Use `@runtime_checkable` for
   runtime checks; see `compute/protocol.py` and `provider.py` under
@@ -101,20 +98,6 @@ intentional overlap should remain.
 
 ## Testing guidelines
 
-Use pytest, `test_*.py` files, and `test_*` functions. Unit tests run in
-isolation; integration tests exercise components across boundaries; acceptance
-tests exercise the real user flow. Mirror source modules within
-unit/integration/acceptance directories where practical. Use fixtures for
-reusable inputs, `pytest.raises` for failures, `tmp_path` for filesystem tests,
-and `capsys` for CLI output. Cover changed behavior and relevant edges; meet the
-branch coverage threshold configured in [pyproject.toml](../pyproject.toml).
-
-For relevant changes, cover dependency sharing and runner state; provider
-cleanup on exhaustion, error, and explicit generator closure; rolling-window
-ordering/warm-up; and broker timing preventing same-bar exits for new positions.
-Use integration tests for real strategy loading and acceptance tests for CLI
-output/artifacts.
-
-Follow the [check and evidence policy](validation.md) for focused and required
-checks. For test ownership and cleanup, read
-[Test ownership](test-ownership.md).
+When writing, changing, or reviewing tests, read [Testing](testing.md) and its
+relevant test-type guidance. Read [Test ownership](test-ownership.md) when
+reviewing tests for cleanup.
