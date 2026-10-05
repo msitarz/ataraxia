@@ -6,7 +6,7 @@ logs, configurable command failure, captured output, and timeout. Add small
 real-Make smoke cases proving the helper; do not migrate existing routing yet.
 Reuse script-owned registry arrangements narrowly instead of modifying them.
 
-- **AC-1 TODO** Given fresh temporary arrangements, real Make launches the
+- **AC-1 DONE** Given fresh temporary arrangements, real Make launches the
   recorder, preserves arguments/flags, and exposes configured failure and
   diagnostics.
 
