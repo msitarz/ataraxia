@@ -15,7 +15,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
   checks.
 - **DONE** Typed real-Git removal and pruning with refusal/read-only snapshots
   and retained files, refs, and registrations.
-- **TODO** [Documentation boundary](documentation-boundary/README.md).
+- **DONE** Disposable real-tool documentation checks/formatting with
+  selected-file, exclusion, inbound-link, and read-only failure coverage.
 - **TODO** [Acceptance targets](acceptance-targets/README.md).
 - **TODO** [Size guardrails](size-guardrails/README.md).
 
