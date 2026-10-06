@@ -8,7 +8,7 @@ simulates cache/setup verification failures. Reuse delivered Make support
 narrowly; no generic fixture framework or production change. Include all new
 helper/fixture/smoke-test files in normal strict Pyrefly.
 
-- **AC-1 TODO** Given a disposable committed repository and usable cache, real
+- **AC-1 DONE** Given a disposable committed repository and usable cache, real
   Make/Git create a branch worktree; fixture setup creates its local environment
   and records destination-local cache/project paths and offline flags.
 
