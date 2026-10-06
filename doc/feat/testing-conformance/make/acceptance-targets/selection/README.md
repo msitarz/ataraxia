@@ -12,7 +12,7 @@ strict inclusion for new/cleaned modules, helpers and executable fixtures.
 Support is narrowly reusable by declarations next; no generic fixture framework
 or production changes. Leave declaration cases and their legacy support intact.
 
-- **AC-1 TODO** Given marked cases in test and example roots, collect/test
+- **AC-1 DONE** Given marked cases in test and example roots, collect/test
   commands select all intended cases for a Work or only its requested criterion,
   exclude unrelated cases, and fail precisely when neither root has a match.
 
