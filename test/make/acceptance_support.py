@@ -41,7 +41,12 @@ def acceptance_sandbox(directory: Path) -> AcceptanceSandbox:
         shutil.copyfile(ROOT / name, directory / name)
     script = directory / "script"
     script.mkdir()
-    for name in ("acceptance_tests.py", "test_roots.py", "work_paths.py"):
+    for name in (
+        "acceptance_tests.py",
+        "acceptance_coverage.py",
+        "test_roots.py",
+        "work_paths.py",
+    ):
         shutil.copyfile(ROOT / "script" / name, script / name)
     home, scratch = directory / "home", directory / "tmp"
     home.mkdir()
