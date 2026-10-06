@@ -6,16 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from test.make.worktree_support import CreationRepository, GitState, creation_repository
-
-
-def files_under(directory: Path) -> dict[str, bytes]:
-    """Snapshot relevant files including untracked data, excluding Git internals."""
-    return {
-        path.relative_to(directory).as_posix(): path.read_bytes()
-        for path in directory.rglob("*")
-        if path.is_file() and ".git" not in path.relative_to(directory).parts
-    }
+from test.make.worktree_support import (
+    CreationRepository,
+    GitState,
+    creation_repository,
+    files_under,
+)
 
 
 @dataclass(frozen=True)

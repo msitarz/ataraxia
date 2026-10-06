@@ -88,7 +88,7 @@ a broken local link, without owning tests of every upstream Markdown rule.
 These references demonstrate the named qualities, not full compliance with
 all current guidance:
 
-- [`test_worktree_cleanup.py`](../test/make/integration/test_worktree_cleanup.py)
+- [`test_worktree_removal.py`](../test/make/integration/test_worktree_removal.py)
   uses real Git in disposable repositories and compares state around refusals.
 - `test_backtest_shard` in
   [`test_backtest.py`](../test/ataraxia/integration/test_backtest.py) runs a
