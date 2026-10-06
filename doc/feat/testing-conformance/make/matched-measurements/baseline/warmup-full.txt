@@ -1,0 +1,104 @@
+uv run pytest 'test/make/integration'
+============================= test session starts ==============================
+platform darwin -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/tmp/ataraxia-measurement-baseline-input
+configfile: pyproject.toml
+plugins: cov-7.1.0, tach-0.35.1
+collected 71 items
+[Tach] 71 tests in 6 files unaffected by changes. Skip with: [1mpytest --tach[0m
+[Tach] [2mTo disable: pytest -p no:tach (https://docs.gauge.sh/usage/commands#using-the-pytest-plugin-directly)[0m
+
+test/make/integration/test_acceptance_targets.py .............           [ 18%]
+test/make/integration/test_function_size_guardrails.py ..                [ 21%]
+test/make/integration/test_makefile.py ................................. [ 67%]
+..                                                                       [ 70%]
+test/make/integration/test_markdown_tools.py .......                     [ 80%]
+test/make/integration/test_registry_target.py ...                        [ 84%]
+test/make/integration/test_worktree_cleanup.py ...........               [100%]
+
+============================== slowest durations ===============================
+4.61s call     test/make/integration/test_makefile.py::test_ci_preparation_is_allocated_to_its_consumers
+2.39s call     test/make/integration/test_makefile.py::test_local_and_ci_checks_use_the_same_read_only_doc_target
+1.80s call     test/make/integration/test_makefile.py::test_check_order_and_offline_environment[ci-audit-2]
+1.80s call     test/make/integration/test_acceptance_targets.py::test_make_targets_select_work_and_optional_criterion[ac-collect--selected0-excluded0]
+1.66s call     test/make/integration/test_makefile.py::test_check_order_and_offline_environment[verify--0]
+1.62s call     test/make/integration/test_acceptance_targets.py::test_make_targets_select_work_and_optional_criterion[ac-collect-AC-1-selected1-excluded1]
+1.60s call     test/make/integration/test_acceptance_targets.py::test_make_targets_fail_when_no_criterion_matches[ac-collect]
+1.60s call     test/make/integration/test_acceptance_targets.py::test_make_targets_select_work_and_optional_criterion[ac-test--selected2-excluded2]
+1.56s call     test/make/integration/test_acceptance_targets.py::test_make_targets_select_work_and_optional_criterion[ac-test-AC-1-selected3-excluded3]
+1.55s call     test/make/integration/test_acceptance_targets.py::test_make_targets_fail_when_no_criterion_matches[ac-test]
+1.23s call     test/make/integration/test_makefile.py::test_full_static_checks_ignores_targeted_path_selector
+1.22s call     test/make/integration/test_worktree_cleanup.py::test_submodule_worktree_refusal_is_retained
+1.15s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_rejects_formatting_without_modifying_files
+1.12s call     test/make/integration/test_makefile.py::test_worktree_create_preserves_worktree_when_environment_check_fails
+1.08s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_warns_after_25_without_failing
+0.99s call     test/make/integration/test_makefile.py::test_worktree_create_copies_cache_and_routes_isolated_offline_setup
+0.78s call     test/make/integration/test_makefile.py::test_worktree_create_preserves_worktree_when_offline_cache_is_unusable[absent]
+0.76s call     test/make/integration/test_makefile.py::test_worktree_create_preserves_worktree_when_offline_cache_is_unusable[incomplete]
+0.74s call     test/make/integration/test_worktree_cleanup.py::test_prune_preview_and_apply_share_expiry_and_preserve_live_and_locked
+0.68s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-args0-expected0]
+0.68s call     test/make/integration/test_registry_target.py::test_registry_target_rejects_missing_inputs_without_creating_destination
+0.65s call     test/make/integration/test_registry_target.py::test_registry_target_preserves_literal_named_cli_values
+0.61s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-args8-expected8]
+0.58s call     test/make/integration/test_makefile.py::test_make_selectors_quote_shell_metacharacters
+0.57s call     test/make/integration/test_makefile.py::test_lint_target_does_not_suppress_advisory_tool_failures
+0.57s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-check-args2-expected2]
+0.57s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-args1-expected1]
+0.57s call     test/make/integration/test_makefile.py::test_markdown_targets_pass_selected_paths_to_both_checkers
+0.56s call     test/make/integration/test_makefile.py::test_run_target_routes_project_cli_arguments
+0.54s call     test/make/integration/test_makefile.py::test_full_checks_ignores_targeted_test_selector
+0.53s call     test/make/integration/test_registry_target.py::test_registry_target_does_not_execute_caller_expressions
+0.52s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-args7-expected7]
+0.51s call     test/make/integration/test_makefile.py::test_make_selectors_quote_single_quotes
+0.51s call     test/make/integration/test_makefile.py::test_cli_arguments_quote_shell_metacharacters
+0.51s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-args4-expected4]
+0.50s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-expectations-args10-expected10]
+0.50s call     test/make/integration/test_makefile.py::test_dependency_lock_target_uses_uv_lock
+0.50s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-check-args5-expected5]
+0.50s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-args6-expected6]
+0.50s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-args3-expected3]
+0.50s call     test/make/integration/test_makefile.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-args9-expected9]
+0.50s call     test/make/integration/test_makefile.py::test_full_example_checks_ignores_targeted_path_selector
+0.49s call     test/make/integration/test_makefile.py::test_check_order_and_offline_environment[verify-sync-check-2]
+0.49s call     test/make/integration/test_makefile.py::test_markdown_format_target_passes_selected_paths
+0.48s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_requires_a_work_and_rejects_ac_selector
+0.42s call     test/make/integration/test_worktree_cleanup.py::test_remove_literal_path_retains_branch_and_unrelated_worktree
+0.42s call     test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[untracked]
+0.31s call     test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[locked]
+0.30s call     test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[dirty]
+0.27s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_finds_inbound_links_to_changed_heading[rename]
+0.23s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_uses_canonical_validation_annotation[  Validation:\n-False-Validation annotation needs a method]
+0.22s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_reports_declarations_without_running_tests
+0.22s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_rejects_work_without_criteria
+0.22s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_uses_canonical_validation_annotation[  Validation: inspect generated output.\n-True-Validation method declared]
+0.22s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_uses_canonical_validation_annotation[Validation: inspect generated output.\n-True-no test marker or Validation method declared]
+0.22s call     test/make/integration/test_acceptance_targets.py::test_make_ac_check_uses_canonical_validation_annotation[  Validation: inspect output.\n  Validation: compare output.\n-False-multiple Validation annotations]
+0.22s call     test/make/integration/test_makefile.py::test_worktree_create_rejects_conflicts_without_cleanup[branch]
+0.21s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_finds_inbound_links_to_changed_heading[delete]
+0.20s call     test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[main]
+0.18s call     test/make/integration/test_markdown_tools.py::test_make_doc_format_selects_files_and_directories_and_excludes_artifacts
+0.17s call     test/make/integration/test_makefile.py::test_worktree_create_rejects_conflicts_without_cleanup[destination]
+0.17s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_fails_visibly_when_rumdl_is_missing
+0.16s call     test/make/integration/test_worktree_cleanup.py::test_unknown_worktree_failure_preserves_repository
+0.15s call     test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-remove]
+0.15s call     test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-prune-preview]
+0.14s call     test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-prune]
+0.12s call     test/make/integration/test_markdown_tools.py::test_make_doc_format_reflows_external_file_with_repository_config
+0.12s setup    test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-prune-preview]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[main]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-prune]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[locked]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[untracked]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_remove_literal_path_retains_branch_and_unrelated_worktree
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_missing_inputs_fail_before_mutation[worktree-remove]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_submodule_worktree_refusal_is_retained
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_unknown_worktree_failure_preserves_repository
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_unsafe_remove_preserves_data_and_registration[dirty]
+0.11s setup    test/make/integration/test_worktree_cleanup.py::test_prune_preview_and_apply_share_expiry_and_preserve_live_and_locked
+0.09s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_blocks_after_50
+0.06s call     test/make/integration/test_makefile.py::test_run_target_requires_cli_arguments
+0.06s call     test/make/integration/test_markdown_tools.py::test_make_help_lists_markdown_targets
+0.04s call     test/make/integration/test_makefile.py::test_path_selectors_reject_tool_options
+
+(131 durations < 0.005s hidden.  Use -vv to show these durations.)
+============================= 71 passed in 50.37s ==============================

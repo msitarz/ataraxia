@@ -1,0 +1,48 @@
+uv sync --locked --group dev
+Using CPython 3.14.6 interpreter at: /usr/local/bin/python3.14
+Creating virtual environment at: .venv
+Resolved 40 packages in 12ms
+   Building ataraxia @ file:///private/tmp/ataraxia-measurement-final-input
+      Built ataraxia @ file:///private/tmp/ataraxia-measurement-final-input
+Prepared 1 package in 37ms
+Installed 40 packages in 166ms
+ + argcomplete==3.6.3
+ + ataraxia==0.1.0 (from file:///private/tmp/ataraxia-measurement-final-input)
+ + charset-normalizer==3.4.9
+ + colorama==0.4.6
+ + commitizen==4.19.0
+ + coverage==7.15.0
+ + debugpy==1.8.22
+ + decli==0.6.3
+ + deprecated==1.3.1
+ + gitdb==4.0.12
+ + gitpython==3.1.62
+ + iniconfig==2.3.0
+ + jinja2==3.1.6
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + mdurl==0.1.2
+ + networkx==3.7
+ + packaging==26.2
+ + pluggy==1.6.0
+ + prek==0.5.3
+ + prompt-toolkit==3.0.51
+ + pydot==4.0.1
+ + pygments==2.20.0
+ + pyparsing==3.3.3
+ + pyrefly==1.3.1
+ + pytest==9.1.1
+ + pytest-cov==7.1.0
+ + pyyaml==6.0.3
+ + questionary==2.1.1
+ + rich==15.0.0
+ + ruff==0.16.8
+ + rumdl==0.2.78
+ + smmap==5.0.3
+ + tach==0.35.1
+ + termcolor==3.3.0
+ + tomli==2.4.1
+ + tomli-w==1.2.0
+ + tomlkit==0.15.0
+ + wcwidth==0.8.2
+ + wrapt==2.2.2

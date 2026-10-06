@@ -1,0 +1,30 @@
+{
+  "label": "2-unmarked",
+  "selection": "unmarked",
+  "measured": true,
+  "command": [
+    "make",
+    "test",
+    "ARGS=test/make/integration"
+  ],
+  "cwd": "/private/tmp/ataraxia-measurement-baseline-input",
+  "environment": {
+    "UV_PYTHON": "/usr/local/bin/python3.14",
+    "UV_PROJECT_ENVIRONMENT": "/private/tmp/ataraxia-measurement-baseline-input/.venv",
+    "UV_CACHE_DIR": "/private/tmp/ataraxia-measurement-baseline-input/.cache/uv",
+    "UV_OFFLINE": "true",
+    "UV_NO_SYNC": "true",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "PYTEST_ADDOPTS": "--durations=0 -m \"not real_tool\""
+  },
+  "timeout_seconds": 180,
+  "utc_start": "2026-10-06T18:24:42.692967+00:00",
+  "exit_code": 0,
+  "timed_out": false,
+  "outer_elapsed_seconds": 37.24312571506016,
+  "utc_end": "2026-10-06T18:25:19.937496+00:00",
+  "pytest_summary": [
+    "====================== 50 passed, 21 deselected in 36.18s ======================"
+  ]
+}
