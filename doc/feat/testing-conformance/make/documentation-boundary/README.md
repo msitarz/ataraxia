@@ -6,7 +6,7 @@ selection, artifact exclusion, inbound broken links, external-file config, and
 missing-tool diagnostics. Use typed helpers; remove only proven upstream probes
 with historical evidence preserved under test ownership.
 
-- **AC-1 TODO** Given valid, malformed, or missing-tool documentation
+- **AC-1 DONE** Given valid, malformed, or missing-tool documentation
   arrangements, Make changes only selected files or fails visibly with required
   files unchanged.
 
