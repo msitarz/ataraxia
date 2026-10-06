@@ -5,10 +5,11 @@ complete diff within the
 [five-minute review target](../../../../workflow.md#scope-and-sizing). Keep real
 disposable Git and cache copying; fake only external dependency setup.
 
-- **TODO** [Creation helper](helper/README.md).
+- **DONE** Typed isolated Git/setup helper and real-Make creation smoke.
 - **TODO** [Creation cases](cases/README.md).
 
-Merge this revised map before delivery. Helper precedes cases; sequence shared
+Merge this revised map before delivery. Cases follow the delivered helper;
+sequence shared
 support, Pyrefly inclusion, and parent-map edits. Reuse delivered Make support
 narrowly; no generic fixture framework, production changes, or unrelated
 cleanup.
