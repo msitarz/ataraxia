@@ -172,6 +172,10 @@ project_includes = [
   "test/make/integration/test_worktree_removal.py",
   "test/make/integration/test_worktree_pruning.py",
   "test/make/integration/test_markdown_tools.py",
+  "test/make/acceptance_support.py",
+  "test/make/integration/test_acceptance_selection.py",
+  "test/make/fixtures/selection_test_root.py",
+  "test/make/fixtures/selection_example_root.py",
 ]
 search_path = ["src", "."]
 python_version = "3.14"
