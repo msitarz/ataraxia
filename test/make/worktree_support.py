@@ -24,12 +24,12 @@ class CreationRepository:
     sandbox: MakeSandbox
 
     def git(
-        self, *arguments: str, timeout: float = 30
+        self, *arguments: str, timeout: float = 30, cwd: Path | None = None
     ) -> subprocess.CompletedProcess[str]:
         """Run Git under isolated configuration and capture diagnostics."""
         return subprocess.run(
             ["git", *arguments],
-            cwd=self.sandbox.directory,
+            cwd=self.sandbox.directory if cwd is None else cwd,
             env=self.sandbox.environment,
             capture_output=True,
             text=True,
