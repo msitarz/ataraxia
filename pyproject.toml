@@ -130,6 +130,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# Intentional boundary fixture; tests copy it outside this exact exemption.
+"test/make/fixtures/size_51.py" = ["too-many-statements"]
 "src/ataraxia/cli.py" = ["T20"]    # print allowed in CLI code
 
 "test/**" = [
@@ -175,6 +177,11 @@ project_includes = [
   "test/make/acceptance_support.py",
   "test/make/integration/test_acceptance_selection.py",
   "test/make/integration/test_acceptance_declarations.py",
+  "test/make/integration/test_function_size_guardrails.py",
+  "test/make/fixtures/size_25.py",
+  "test/make/fixtures/size_26.py",
+  "test/make/fixtures/size_50.py",
+  "test/make/fixtures/size_51.py",
   "test/make/fixtures/declaration_test_root.py",
   "test/make/fixtures/declaration_example_root.py",
   "test/make/fixtures/selection_test_root.py",
