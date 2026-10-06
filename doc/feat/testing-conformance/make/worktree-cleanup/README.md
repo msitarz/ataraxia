@@ -5,11 +5,10 @@ diff fits the
 [five-minute review target](../../../../workflow.md#scope-and-sizing). Keep real
 Git in disposable arrangements and reuse delivered typed support.
 
-- **DONE** Typed real-Git removal/help and refusal cases preserve literal paths,
-  files, refs, and registrations.
+- **TODO** [Removal and refusals](removal/README.md).
 - **TODO** [Pruning and preview](pruning/README.md).
 
-Removal is delivered; pruning follows. Sequence
+Removal precedes pruning; sequence
 legacy module, shared support, Pyrefly inclusion, and parent-map edits.
 Use explicit isolated configuration and timeout-owning process helpers;
 no generic fixture framework or production changes.
