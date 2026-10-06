@@ -21,14 +21,13 @@ real-tool regressions. Follow [testing](../../../testing.md),
   with precise failures, neutral summaries, and no fixture-test execution.
 - **DONE** Typed named size fixtures and disposable real-Ruff checks preserve
   clean/advisory/blocking boundaries at 25/26/50/51 statements.
+- **TODO** [Matched baseline refresh](matched-baseline/README.md).
+- **TODO** [Final measurements and comparison](final-measurements/README.md).
 
-Merge this map before child delivery. Marker and shared helper are delivered;
-[baseline measurements](measurements.md) were recorded before cleanup.
-Orchestration and creation consume the delivered helper. Sequence parent-map,
-helper, and Pyrefly inclusion edits. Extract responsibilities from the large
-`test_makefile.py` into focused modules rather than annotating its unrelated
-legacy tests. Each
-complete leaf diff must fit the
+Cleanup deliveries are complete;
+[original baseline measurements](measurements.md) remain historical evidence.
+Merge this revised map before refreshing the matched baseline, then deliver
+final measurements. Each complete leaf diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
@@ -58,6 +57,42 @@ timing inconclusive. Coverage preservation is required; compare medians
 separately, report slower or unchanged results honestly, and claim no unmeasured
 speedup. No timing assertions or benchmark tool. Follow
 [evaluation](../../../evaluation.md).
+
+The original baseline used Python 3.14.6; the current prepared environment
+reports 3.14.7. Inventory available interpreters before execution; this does not
+establish that 3.14.6 is unavailable. Refresh old baseline code at
+`96ef5bae2a322c3d1c5a530b88687e128742332c` against final code frozen at
+`72b5c0617e41fe01520f03095aaaea5317dc94c0`. A separate disposable checkout of
+that exact old revision is authorized only as evaluation input; delivery
+branches still start from current master. Later plan/report revisions are
+documentation-only.
+
+Preflight both prepared offline environments on the current host before runs:
+record executable paths, Python/tool/package versions, locks and cache
+preparation; verify matching selections and warm-cache conditions. Freeze those
+conditions through final execution, with no tool/version changes after the
+baseline. Use the protocol above, scoped `GIT_CONFIG_GLOBAL=/dev/null` and
+`GIT_CONFIG_NOSYSTEM=1`, and sequential invocations without another suite
+running. Measure outer elapsed time with a monotonic clock around Make
+launch/exit; exclude preparation, warm-ups and artifact writing from medians,
+and keep pytest durations separate. Stop/report mismatches, failures, timeouts,
+interruptions or unexpected skips and retain their observations; incomplete
+matching is inconclusive, never silently substituted.
+
+Execution budget is exactly eight Make invocations per condition: two warm-ups
+and six measured runs, each with a 180-second timeout, identical for both
+conditions. Stop on timeout or budget exhaustion and retain partial output;
+no automatic extra runs. Preparation remains excluded from timing.
+
+Preserve `measurements.md` and `measurements/` untouched. Add the separate
+report `matched-measurements.md` and raw outputs/metadata in
+`matched-measurements/baseline/` then `matched-measurements/final/`. Include UTC
+boundaries, commands, exits, counts, skips, medians and deviations. Compare full
+and unmarked medians separately: lower/equal/higher means
+faster/unchanged/slower for that measured workload; no causal or general speedup
+claim follows. Independent parent preservation review reuses child evidence, a
+complete Make suite and latest-head full CI before acceptance; timing cannot
+excuse lost coverage.
 
 ## Acceptance
 
