@@ -4,10 +4,11 @@ Split nested pytest selection from static declaration validation so each
 complete delivery fits the
 [five-minute review target](../../../../workflow.md#scope-and-sizing).
 
-- **TODO** [Work and criterion selection](selection/README.md).
+- **DONE** Typed disposable Work/criterion selection through real nested pytest,
+  including precise no-match failure.
 - **TODO** [Declaration validation](declarations/README.md).
 
-Merge this map before delivery. Selection precedes declarations; sequence
+Selection is delivered; declarations follow. Sequence
 shared named fixtures, narrow disposable process support, Pyrefly inclusion,
 and parent-map edits. Copy actual Makefile, acceptance scripts and required
 dependencies/configuration; retain real-tool markers and original covers.
