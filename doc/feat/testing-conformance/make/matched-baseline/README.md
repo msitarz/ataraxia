@@ -11,7 +11,7 @@ parent-owned matched report/raw paths; final execution follows only after this
 delivery. No test cleanup, tools/version changes, timing assertions or benchmark
 framework.
 
-- **AC-1 TODO** Given matching prepared baseline/final environments and frozen
+- **AC-1 DONE** Given matching prepared baseline/final environments and frozen
   revisions, one warm-up per selection then three alternating full/unmarked
   baseline runs produce inspectable outputs, metadata and medians, or retained
   stop observations explicitly explain an inconclusive baseline.
