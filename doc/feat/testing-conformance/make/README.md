@@ -13,7 +13,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE** Typed isolated preparation and check execution orchestration.
 - **DONE** Typed real-Git creation with isolated setup and retained-state
   checks.
-- **TODO** [Worktree cleanup](worktree-cleanup/README.md).
+- **DONE** Typed real-Git removal and pruning with refusal/read-only snapshots
+  and retained files, refs, and registrations.
 - **TODO** [Documentation boundary](documentation-boundary/README.md).
 - **TODO** [Acceptance targets](acceptance-targets/README.md).
 - **TODO** [Size guardrails](size-guardrails/README.md).
