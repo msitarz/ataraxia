@@ -1,10 +1,18 @@
 # Acceptance targets
 
-Copy actual Makefile, acceptance scripts, configuration, and named pytest
-fixtures into a disposable checkout; do not create inputs in the live checkout.
-Retain real-tool markers and typed timeout-owning helpers. Preserve
-Work/criterion selection, no-match failure, declarations without test execution,
-missing inputs, malformed criteria, and canonical Validation annotations.
+Split nested pytest selection from static declaration validation so each
+complete delivery fits the
+[five-minute review target](../../../../workflow.md#scope-and-sizing).
+
+- **TODO** [Work and criterion selection](selection/README.md).
+- **TODO** [Declaration validation](declarations/README.md).
+
+Merge this map before delivery. Selection precedes declarations; sequence
+shared named fixtures, narrow disposable process support, Pyrefly inclusion,
+and parent-map edits. Copy actual Makefile, acceptance scripts and required
+dependencies/configuration; retain real-tool markers and original covers.
+No checkout fixture writes, generic framework, production or tooling-policy
+changes. Remove obsolete legacy support/module only when no callers remain.
 
 - **AC-1 TODO** Given selection or declaration commands, real nested pytest
   selects the intended marked tests, unmatched criteria fail, and declaration
