@@ -1,0 +1,12 @@
+{
+  "baseline": {
+    "files": 9888,
+    "bytes": 658764289,
+    "sha256_path_and_content_manifest": "efd35d6356527f61dc2001f104e3cec36287a1cc7e8caaa38f3f7e646003cd31"
+  },
+  "final": {
+    "files": 9888,
+    "bytes": 658764289,
+    "sha256_path_and_content_manifest": "efd35d6356527f61dc2001f104e3cec36287a1cc7e8caaa38f3f7e646003cd31"
+  }
+}

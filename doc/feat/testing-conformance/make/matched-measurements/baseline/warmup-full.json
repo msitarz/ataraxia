@@ -1,0 +1,30 @@
+{
+  "label": "warmup-full",
+  "selection": "full",
+  "measured": false,
+  "command": [
+    "make",
+    "test",
+    "ARGS=test/make/integration"
+  ],
+  "cwd": "/private/tmp/ataraxia-measurement-baseline-input",
+  "environment": {
+    "UV_PYTHON": "/usr/local/bin/python3.14",
+    "UV_PROJECT_ENVIRONMENT": "/private/tmp/ataraxia-measurement-baseline-input/.venv",
+    "UV_CACHE_DIR": "/private/tmp/ataraxia-measurement-baseline-input/.cache/uv",
+    "UV_OFFLINE": "true",
+    "UV_NO_SYNC": "true",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "PYTEST_ADDOPTS": "--durations=0"
+  },
+  "timeout_seconds": 180,
+  "utc_start": "2026-10-06T18:20:53.588167+00:00",
+  "exit_code": 0,
+  "timed_out": false,
+  "outer_elapsed_seconds": 56.07417865283787,
+  "utc_end": "2026-10-06T18:21:49.666347+00:00",
+  "pytest_summary": [
+    "============================= 71 passed in 50.37s =============================="
+  ]
+}
