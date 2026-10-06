@@ -14,7 +14,7 @@ legacy module, shared support, Pyrefly inclusion, and parent-map edits.
 Use explicit isolated configuration and timeout-owning process helpers;
 no generic fixture framework or production changes.
 
-- **AC-1 TODO** Given removal/pruning actions, only eligible worktrees are
+- **AC-1 DONE** Given removal/pruning actions, only eligible worktrees are
   removed; refusals preserve data, refs, and registrations, and preview is
   read-only.
 
