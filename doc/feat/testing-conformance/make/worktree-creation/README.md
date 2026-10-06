@@ -14,7 +14,7 @@ support, Pyrefly inclusion, and parent-map edits. Reuse delivered Make support
 narrowly; no generic fixture framework, production changes, or unrelated
 cleanup.
 
-- **AC-1 TODO** Given successful or refused creation, destination
+- **AC-1 DONE** Given successful or refused creation, destination
   caches/environment and Git registrations match the contract; setup failures
   retain recoverable worktrees and conflicts preserve existing files/refs.
 

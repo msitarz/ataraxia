@@ -10,14 +10,14 @@ parametrized arrangements instead of test-body branching. Include cleaned files
 in strict Pyrefly; remove the obsolete legacy module only when empty.
 No helper expansion, production changes, or other test responsibilities.
 
-- **AC-1 TODO** Given usable, missing, partial, or verification-failing setup,
+- **AC-1 DONE** Given usable, missing, partial, or verification-failing setup,
   creation succeeds with independent destination caches/environment or fails
   with the recoverable worktree retained; hostile input never executes commands.
 
   Validation: run marked success/setup-failure cases and strict typecheck;
   review precise failures, routing, retained state, original provenance, and
   full CI.
-- **AC-2 TODO** Given an existing destination or branch, refusal preserves
+- **AC-2 DONE** Given an existing destination or branch, refusal preserves
   existing files/refs/registrations and creates no unintended worktree.
 
   Validation: run marked conflict cases; independently compare before/after
