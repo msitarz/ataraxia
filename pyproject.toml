@@ -168,6 +168,7 @@ project_includes = [
   "test/make/worktree_support.py",
   "test/make/fixtures/uv_setup.py",
   "test/make/integration/test_creation_helper.py",
+  "test/make/integration/test_worktree_creation.py",
 ]
 search_path = ["src", "."]
 python_version = "3.14"
