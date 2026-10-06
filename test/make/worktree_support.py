@@ -9,6 +9,15 @@ import subprocess
 from test.make.support import ROOT, MakeSandbox, make_sandbox
 
 
+def files_under(directory: Path) -> dict[str, bytes]:
+    """Snapshot relevant files including untracked data, excluding Git internals."""
+    return {
+        path.relative_to(directory).as_posix(): path.read_bytes()
+        for path in directory.rglob("*")
+        if path.is_file() and ".git" not in path.relative_to(directory).parts
+    }
+
+
 @dataclass(frozen=True)
 class GitState:
     """Exact ref and worktree registration observations for refusal checks."""
