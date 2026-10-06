@@ -19,7 +19,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
   selected-file, exclusion, inbound-link, and read-only failure coverage.
 - **DONE** Typed disposable acceptance selection and static declaration checks,
   with precise failures, neutral summaries, and no fixture-test execution.
-- **TODO** [Size guardrails](size-guardrails/README.md).
+- **DONE** Typed named size fixtures and disposable real-Ruff checks preserve
+  clean/advisory/blocking boundaries at 25/26/50/51 statements.
 
 Merge this map before child delivery. Marker and shared helper are delivered;
 [baseline measurements](measurements.md) were recorded before cleanup.
