@@ -11,7 +11,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
   all.
 - **DONE** Typed shared stub environment and isolated ordinary Make routing.
 - **DONE** Typed isolated preparation and check execution orchestration.
-- **TODO** [Worktree creation](worktree-creation/README.md).
+- **DONE** Typed real-Git creation with isolated setup and retained-state
+  checks.
 - **TODO** [Worktree cleanup](worktree-cleanup/README.md).
 - **TODO** [Documentation boundary](documentation-boundary/README.md).
 - **TODO** [Acceptance targets](acceptance-targets/README.md).
