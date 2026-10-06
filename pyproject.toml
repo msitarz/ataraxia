@@ -165,6 +165,9 @@ project_includes = [
   "test/make/integration/test_routing.py",
   "test/make/integration/test_preparation.py",
   "test/make/integration/test_execution.py",
+  "test/make/worktree_support.py",
+  "test/make/fixtures/uv_setup.py",
+  "test/make/integration/test_creation_helper.py",
 ]
 search_path = ["src", "."]
 python_version = "3.14"
