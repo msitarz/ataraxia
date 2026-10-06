@@ -15,7 +15,7 @@ dependencies/configuration; retain real-tool markers and original covers.
 No checkout fixture writes, generic framework, production or tooling-policy
 changes. Remove obsolete legacy support/module only when no callers remain.
 
-- **AC-1 TODO** Given selection or declaration commands, real nested pytest
+- **AC-1 DONE** Given selection or declaration commands, real nested pytest
   selects the intended marked tests, unmatched criteria fail, and declaration
   checks never execute fixture tests or modify the original checkout.
 

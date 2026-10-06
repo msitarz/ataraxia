@@ -12,7 +12,7 @@ exclusion. Follow Given/When/Then and strict inclusion for cleaned/new modules,
 helpers and executable fixtures. Remove obsolete legacy helper/module only when
 empty; no fixture framework, production or tooling-policy changes.
 
-- **AC-1 TODO** Given literal markers and declared criteria, ac-check reports
+- **AC-1 DONE** Given literal markers and declared criteria, ac-check reports
   neutral TODO/DONE marker/method summaries from test and example roots, ignores
   fenced declarations and unrelated markers, and never executes fixture tests
   or changes their files.
@@ -20,7 +20,7 @@ empty; no fixture framework, production or tooling-policy changes.
   Validation: run marked summary/no-execution cases; independently review poison
   fixture witnesses, exact summaries and unchanged snapshots, preserved covers,
   strict typecheck, and full CI.
-- **AC-2 TODO** Given missing WORK, absent file, unsupported AC selector,
+- **AC-2 DONE** Given missing WORK, absent file, unsupported AC selector,
   malformed criteria or Validation annotations, ac-check refuses with precise
   exits/reasons; canonical methods and unindented non-annotations retain their
   existing successful summaries without file changes.
