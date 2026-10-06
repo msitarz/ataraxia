@@ -21,13 +21,14 @@ real-tool regressions. Follow [testing](../../../testing.md),
   with precise failures, neutral summaries, and no fixture-test execution.
 - **DONE** Typed named size fixtures and disposable real-Ruff checks preserve
   clean/advisory/blocking boundaries at 25/26/50/51 statements.
-- **TODO** [Matched baseline refresh](matched-baseline/README.md).
+- **DONE** [Matched baseline](matched-measurements.md) with frozen matched
+  environments, retained eight-run evidence and separate selection medians.
 - **TODO** [Final measurements and comparison](final-measurements/README.md).
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
-Merge this revised map before refreshing the matched baseline, then deliver
-final measurements. Each complete leaf diff must fit the
+Matched baseline is delivered; final measurements follow. Each complete leaf
+diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
