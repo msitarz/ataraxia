@@ -1,9 +1,17 @@
 # Worktree cleanup
 
-Keep real Git removal/pruning cases in disposable repositories. Use explicit Git
-configuration/environment and timeout-owning typed helpers. Separate unrelated
-help assertions; preserve literal paths, dirty/locked/main/submodule refusals,
-missing inputs, unknown registrations, expiry, and live/locked pruning.
+Split removal/refusal contracts from pruning expiry/liveness so each complete
+diff fits the
+[five-minute review target](../../../../workflow.md#scope-and-sizing). Keep real
+Git in disposable arrangements and reuse delivered typed support.
+
+- **TODO** [Removal and refusals](removal/README.md).
+- **TODO** [Pruning and preview](pruning/README.md).
+
+Merge this revised map before delivery. Removal precedes pruning; sequence
+legacy module, shared support, Pyrefly inclusion, and parent-map edits.
+Use explicit isolated configuration and timeout-owning process helpers;
+no generic fixture framework or production changes.
 
 - **AC-1 TODO** Given removal/pruning actions, only eligible worktrees are
   removed; refusals preserve data, refs, and registrations, and preview is
