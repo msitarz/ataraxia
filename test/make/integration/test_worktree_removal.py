@@ -41,13 +41,16 @@ def unsafe_case(tmp_path: Path, request: pytest.FixtureRequest) -> RefusalCase:
     )
     if condition != "main":
         repository.git("worktree", "add", "-b", "completed", str(destination))
-    if condition == "dirty":
-        with (destination / "Makefile").open("a") as stream:
-            stream.write("# undelivered\n")
-    if condition == "untracked":
-        (destination / "keep").write_text("undelivered")
-    if condition == "locked":
-        repository.git("worktree", "lock", str(destination))
+    match condition:
+        case "main":
+            pass
+        case "dirty":
+            with (destination / "Makefile").open("a") as stream:
+                stream.write("# undelivered\n")
+        case "untracked":
+            (destination / "keep").write_text("undelivered")
+        case "locked":
+            repository.git("worktree", "lock", str(destination))
     reasons = {
         "main": "is a main working tree",
         "dirty": "contains modified or untracked files",
