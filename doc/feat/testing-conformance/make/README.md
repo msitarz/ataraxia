@@ -17,7 +17,8 @@ real-tool regressions. Follow [testing](../../../testing.md),
   and retained files, refs, and registrations.
 - **DONE** Disposable real-tool documentation checks/formatting with
   selected-file, exclusion, inbound-link, and read-only failure coverage.
-- **TODO** [Acceptance targets](acceptance-targets/README.md).
+- **DONE** Typed disposable acceptance selection and static declaration checks,
+  with precise failures, neutral summaries, and no fixture-test execution.
 - **TODO** [Size guardrails](size-guardrails/README.md).
 
 Merge this map before child delivery. Marker and shared helper are delivered;
