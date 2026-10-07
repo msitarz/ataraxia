@@ -163,6 +163,8 @@ project_includes = [
   "test/ataraxia/unit/test_bar.py",
   "test/make/support.py",
   "test/make/fixtures/uv_recorder.py",
+  "test/make/fixtures/uv_scratch.py",
+  "test/make/integration/test_scratch_isolation.py",
   "test/make/integration/test_stub_environment.py",
   "test/make/integration/test_routing.py",
   "test/make/integration/test_preparation.py",

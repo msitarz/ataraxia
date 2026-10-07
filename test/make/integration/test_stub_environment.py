@@ -39,8 +39,8 @@ def test_make_records_literal_arguments_in_an_isolated_environment(
         "PREK_HOME": str(tmp_path / ".cache/prek"),
         "UV_PROJECT_ENVIRONMENT": None,
         "VIRTUAL_ENV": None,
-        "HOME": str(tmp_path / "home"),
-        "TMPDIR": str(tmp_path / "tmp"),
+        "HOME": sandbox.environment["HOME"],
+        "TMPDIR": sandbox.environment["TMPDIR"],
     }
 
 

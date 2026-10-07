@@ -8,6 +8,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -116,7 +117,11 @@ def make_sandbox(directory: Path) -> MakeSandbox:
     recorder = binary / "uv"
     shutil.copyfile(ROOT / "test/make/fixtures/uv_recorder.py", recorder)
     recorder.chmod(0o755)
-    home, scratch = directory / "home", directory / "tmp"
+    # Keep process-owned caches outside the repository's complete file snapshot.
+    process = Path(
+        tempfile.mkdtemp(prefix=f"{directory.name}-process-", dir=directory.parent)
+    )
+    home, scratch = process / "home", process / "tmp"
     home.mkdir()
     scratch.mkdir()
     return MakeSandbox(
