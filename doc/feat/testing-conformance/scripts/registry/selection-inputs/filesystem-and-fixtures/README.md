@@ -7,7 +7,7 @@ annotate/include only extracted helpers, fixtures and changed consumers. Keep
 manifest/process observation, single-read doubles and validator fixtures in
 place. Follow [parent scope and sequencing](../README.md).
 
-- **AC-1 TODO** Given fresh accepted or damaged named arrangements, selection
+- **AC-1 DONE** Given fresh accepted or damaged named arrangements, selection
   consumers receive precise paths/data, independent accepted digest provenance
   and complete literal file bytes/link targets; changing one arrangement does
   not affect another or shared source fixtures.
