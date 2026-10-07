@@ -15,7 +15,7 @@ earlier evidence bytes. Lower/equal/higher medians describe only the measured
 workload; matching or preservation failures make comparison inconclusive, with
 no causal/general speedup claim. Complete diff must fit one five-minute review.
 
-- **AC-1 TODO** Given the corrected frozen revision and retained matched
+- **AC-1 DONE** Given the corrected frozen revision and retained matched
   baseline, successful matched runs support separate selection medians and
   preservation limits, or the report explicitly concludes inconclusive from
   retained failures, mismatches or incomplete observations.
