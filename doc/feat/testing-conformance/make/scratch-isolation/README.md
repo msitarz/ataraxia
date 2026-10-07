@@ -19,7 +19,7 @@ executable fixtures under [testing guidance](../../../../testing.md). Merge
 before the
 [renewed Evaluation](../renewed-final/README.md).
 
-- **AC-1 TODO** Given a complete repository snapshot before execution and
+- **AC-1 DONE** Given a complete repository snapshot before execution and
   process home/scratch outside that repository, writes during a real Make
   action preserve repository files including similarly named legitimate data,
   refs and worktree registrations; the regression detects the old arrangement
