@@ -29,13 +29,17 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE** Isolated disposable process home/scratch outside repository
   snapshots, with deterministic cache-write regression and retained
   removal/pruning checks.
-- **TODO** [Renewed final Evaluation](renewed-final/README.md).
+- **DONE**
+  [Renewed final attempt](matched-measurements.md#corrected-final-renewed-attempt-stopped)
+  stopped on a scratch-witness decoding failure; comparison is inconclusive.
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
-Scratch isolation is delivered; renewed measurement awaits its merged revision
-freeze and matching preflight. Each complete leaf diff must fit the
+Scratch isolation and the stopped renewed attempt are delivered. Scratch-witness
+correction and another approved measurement sequence remain unresolved;
+parent integration and timing acceptance remain pending. Each complete leaf
+diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
@@ -101,6 +105,9 @@ complete Make suite and latest-head full CI before acceptance; timing cannot
 excuse lost coverage.
 
 ### Renewed attempt
+
+This retained protocol governed the stopped renewed attempt. It does not
+authorize resuming that sequence or another run.
 
 After scratch isolation merges, record its exact merged SHA before preparation
 or execution and create a separate corrected-final input. Reuse the retained
