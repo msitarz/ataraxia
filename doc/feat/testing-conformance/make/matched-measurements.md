@@ -88,3 +88,54 @@ cold starts, CI or general hardware performance. Full and unmarked selections
 are different workloads; their medians are not a cleanup speedup comparison.
 Final measurements, preservation review and parent acceptance remain pending.
 No causal or general speedup claim follows from baseline refresh alone.
+
+## Final condition: stopped, comparison inconclusive
+
+Before execution, [final preflight](matched-measurements/final/preflight.json)
+matched both retained inputs against baseline host, interpreter, tool/package
+versions, locks and pytest configuration. The preserved caches and preparation
+were reused; [offline verification](matched-measurements/final/verify-final.txt)
+passed without re-preparation. The original and refreshed baseline artifacts
+remain unchanged.
+
+The same eight-invocation budget and 180-second timeout applied. The
+[retained driver](matched-measurements/final/timer-command.txt) stopped after
+the first full warm-up exited **2**: **6 failed, 81 passed**, 87 collected,
+pytest elapsed 54.58 s and outer elapsed 60.216 s. See
+[raw output](matched-measurements/final/warmup-full.txt) and
+[timing metadata](matched-measurements/final/warmup-full.json). No timeout or
+skip occurred. Seven invocations were never launched, including all six
+measured runs; there are **no final medians** or unmarked-selection results.
+
+The
+[encoded original output](matched-measurements/final/warmup-full-output.json)
+retains exact captured bytes as base64 with their SHA-256. The readable
+transcript removes trailing whitespace from only six pytest `E` lines for
+required hooks; decoded-byte/hash and normalized-transcript equivalence were
+checked. The first commit attempt stopped when the whitespace hook normalized
+those lines; no hook was bypassed and no test invocation was repeated.
+
+The six failing cases were:
+
+- `test_missing_expiry_refuses_without_mutation[preview]`
+- `test_missing_expiry_refuses_without_mutation[apply]`
+- `test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs`
+- `test_hostile_expiry_is_literal_and_preserves_repository`
+- `test_unsafe_removal_preserves_complete_relevant_state[main]`
+- `test_missing_removal_input_preserves_repository_state`
+
+Each failed its complete file snapshot comparison: the fixture's `tmp/xcrun_db`
+changed from a Git tool-resolution cache to also contain Make resolution.
+The differing bytes and `/Library/Developer/CommandLineTools/usr/bin/git` and
+`/Library/Developer/CommandLineTools/usr/bin/make` paths are retained in the raw
+assertion output. This demonstrates scratch-cache changes within the observed
+snapshot. Apple tool dispatch contaminating that snapshot is a fixture-isolation
+hypothesis; it does not demonstrate mutation of the promised worktree data or
+establish a production defect. No tests, input trees or environments were fixed
+or replaced, and no invocation was retried.
+
+The baseline's 71 cases and final collection's 87 cases are different workloads;
+the failed warm-up does not establish complete coverage preservation. Its time
+is excluded from comparison. Performance comparison and parent acceptance remain
+inconclusive/pending, with no causal speedup claim. Any fixture correction
+requires a separate planned Work and a newly approved measurement sequence.
