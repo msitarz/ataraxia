@@ -17,7 +17,7 @@ observations at parent-owned witness-final paths; append report without changing
 earlier bytes. Different counts/workloads and fixture environments limit
 preservation/performance conclusions; no causal/general speedup claim.
 
-- **AC-1 TODO** Given the corrected frozen revision and retained baseline,
+- **AC-1 DONE** Given the corrected frozen revision and retained baseline,
   successful matched observations support separate selection medians and
   preservation limits, or retained failures, drift or incomplete observations
   produce an explicitly inconclusive report.
