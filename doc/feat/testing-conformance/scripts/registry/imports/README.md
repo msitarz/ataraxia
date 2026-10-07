@@ -7,7 +7,7 @@ the changed typed helper; no fixture migration or API change. Stop and split if
 strict inclusion needs unrelated helper repair. Follow
 [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given actual registry imports, existing helper consumers receive
+- **AC-1 DONE** Given actual registry imports, existing helper consumers receive
   the real public types/functions with stable selector and validator outcomes.
 
   Validation: Run registry unit/process cases and Make registry consumers;
