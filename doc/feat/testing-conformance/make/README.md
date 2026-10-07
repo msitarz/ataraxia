@@ -32,12 +32,15 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE**
   [Renewed final attempt](matched-measurements.md#corrected-final-renewed-attempt-stopped)
   stopped on a scratch-witness decoding failure; comparison is inconclusive.
+- **TODO** [Synthetic scratch witness correction](scratch-witness/README.md).
+- **TODO** [Witness-final Evaluation](witness-final/README.md).
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
 Scratch isolation and the stopped renewed attempt are delivered. Scratch-witness
-correction and another approved measurement sequence remain unresolved;
+correction precedes the witness-final Evaluation; merge it before freezing
+the new evaluation input. Both outcomes remain pending;
 parent integration and timing acceptance remain pending. Each complete leaf
 diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
@@ -126,6 +129,30 @@ encoded output. Report counts/workload differences and preservation limits;
 unsuccessful or unmatched observations are inconclusive. Parent integration
 review reuses both children, complete Make-suite execution and latest-head full
 CI.
+
+### Witness-final attempt
+
+After the witness correction merges, the [Evaluation](witness-final/README.md)
+freezes that exact merged revision in a separate input. Reuse the shared
+command, order, timing boundaries and stop handling with a new eight-invocation
+budget and 180-second timeout per invocation. Earlier protocols and all three
+frozen inputs remain historical evidence, not sequences to resume.
+
+Preflight against the retained matched baseline before execution. Fixture-owned
+Git PATH narrowing is an intentional code change: baseline cleanup inherited
+top-level Git 2.55.0; cleaned fixtures resolve Apple Git 2.50.1. Disclose this
+confound; unrelated host/tool/Python/package/lock/selector drift stops
+execution. Use the stopped corrected attempt's preparation method: copy the
+preserved baseline post-batch cache to the new input, then offline Make
+setup/verification. Record new cache/preparation conditions and limits; this is
+not the original initial seed. No silent rebaseline, tool replacement or
+automatic extra runs. Append observations to `matched-measurements.md` and
+retain new raw outputs, metadata and driver in
+`matched-measurements/witness-final/`, preserving all earlier evidence bytes.
+Report selection medians separately or an explicit inconclusive outcome, counts
+and workload/preservation limits; no causal/general speedup attribution. Parent
+acceptance reuses correction evidence, complete Make-suite outcomes and
+latest-head full CI.
 
 ## Acceptance
 
