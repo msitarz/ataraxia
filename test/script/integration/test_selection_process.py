@@ -15,6 +15,10 @@ from test.script.selection_process import run_selection_cli, tree_state
     work="doc/feat/testing-conformance/scripts/registry/selection-observations/process-state/README.md",
     ac="AC-1",
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-observations/README.md",
+    ac="AC-1",
+)
 def test_cli_success_retains_complete_artifacts_and_isolated_environment(
     tmp_path: Path,
     prepared_selection: PreparedSelection,
@@ -24,6 +28,13 @@ def test_cli_success_retains_complete_artifacts_and_isolated_environment(
     retain precise exit/diagnostics, whole manifests or failure artifacts and
     complete source/destination state; process scratch stays contained outside
     observed inputs and expected answers remain independent of production output.
+
+    Given prepared inputs, actual selector/CLI observations retain
+    complete manifest fields, file bytes/link targets, exit and diagnostics
+    through precisely typed results.
+
+    Parent coverage verifies successful CLI exit/diagnostics, complete manifest
+    artifacts and source/destination bytes/link state.
 
     Covers real CLI success, all artifact bytes, whole input state and environment
     containment; the companion case covers exact refusal diagnostics/artifacts.
@@ -64,6 +75,10 @@ def test_cli_success_retains_complete_artifacts_and_isolated_environment(
     work="doc/feat/testing-conformance/scripts/registry/selection-observations/process-state/README.md",
     ac="AC-1",
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-observations/README.md",
+    ac="AC-1",
+)
 def test_cli_refusal_retains_literal_failure_and_complete_input_state(
     prepared_selection: PreparedSelection,
 ) -> None:
@@ -71,6 +86,13 @@ def test_cli_refusal_retains_literal_failure_and_complete_input_state(
     retain precise exit/diagnostics, whole manifests or failure artifacts and
     complete source/destination state; process scratch stays contained outside
     observed inputs and expected answers remain independent of production output.
+
+    Given prepared inputs, actual selector/CLI observations retain
+    complete manifest fields, file bytes/link targets, exit and diagnostics
+    through precisely typed results.
+
+    Parent coverage verifies refused CLI exit/diagnostics, complete failure
+    artifacts and source/destination bytes/link state.
 
     Covers exact real CLI refusal and all artifact/input bytes; environment
     containment and complete successful manifests are covered separately.

@@ -16,11 +16,22 @@ from test.script.support import select_prepared, tree_state
     work="doc/feat/testing-conformance/scripts/registry/imports/README.md",
     ac="AC-1",
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-observations/README.md",
+    ac="AC-1",
+)
 def test_selector_values_share_the_public_registry_types(
     prepared_selection: PreparedSelection, selection_expected: Selection
 ) -> None:
     """Given actual registry imports, existing helper consumers receive
     the real public types/functions with stable selector and validator outcomes.
+
+    Given prepared inputs, actual selector/CLI observations retain
+    complete manifest fields, file bytes/link targets, exit and diagnostics
+    through precisely typed results.
+
+    Parent coverage verifies canonical selector values and complete unchanged
+    prepared inputs; manifest reading and CLI outcomes are covered separately.
 
     Given literal or delivered manifest data, observations retain
     every public value through precise canonical types and reject malformed

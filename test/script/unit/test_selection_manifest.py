@@ -33,11 +33,22 @@ PACKAGE: dict[str, Json] = {
     work="doc/feat/testing-conformance/scripts/registry/selection-observations/manifest-adaptation/README.md",
     ac="AC-1",
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-observations/README.md",
+    ac="AC-1",
+)
 def test_manifest_retains_every_literal_public_value() -> None:
     """Given literal or delivered manifest data, observations retain
     every public value through precise canonical types and reject malformed
     consumed shapes before exposing typed values; real public selector calls
     preserve the independent complete expected result and input state.
+
+    Given prepared inputs, actual selector/CLI observations retain
+    complete manifest fields, file bytes/link targets, exit and diagnostics
+    through precisely typed results.
+
+    Parent coverage verifies complete canonical manifest values and unchanged
+    literal source bytes; selector and process behavior are covered separately.
 
     This case covers complete reader values and source immutability.
     """
