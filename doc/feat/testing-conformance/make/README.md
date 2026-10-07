@@ -162,12 +162,12 @@ latest-head full CI.
 
 ## Acceptance
 
-- **AC-1 TODO** Given all deliveries, retained tests prove existing routing and
+- **AC-1 DONE** Given all deliveries, retained tests prove existing routing and
   real repository effects in disposable environments; normal CI runs all cases.
 
   Validation: review child criterion execution, preserved coverage, strict
   inclusion, and latest-head full CI; run the complete Make suite.
-- **AC-2 TODO** Given matched baseline/final runs, the timing comparison reports
+- **AC-2 DONE** Given matched baseline/final runs, the timing comparison reports
   both selection medians and evidence gaps without trading coverage for speed.
 
   Validation: independently review protocol compliance, observations, and
