@@ -23,12 +23,15 @@ real-tool regressions. Follow [testing](../../../testing.md),
   clean/advisory/blocking boundaries at 25/26/50/51 statements.
 - **DONE** [Matched baseline](matched-measurements.md) with frozen matched
   environments, retained eight-run evidence and separate selection medians.
-- **TODO** [Final measurements and comparison](final-measurements/README.md).
+- **DONE**
+  [Final measurement attempt](matched-measurements.md#final-condition-stopped-comparison-inconclusive)
+  stopped after a failed warm-up; comparison is explicitly inconclusive.
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
-Matched baseline is delivered; final measurements follow. Each complete leaf
-diff must fit the
+Matched baseline and the inconclusive final attempt are delivered.
+Fixture-snapshot isolation correction and a newly approved measurement sequence
+remain unresolved. Each complete leaf diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
