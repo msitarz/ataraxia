@@ -12,6 +12,10 @@ from test.script.support import ROOT, tree_state
 
 
 @pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-inputs/README.md",
+    ac="AC-1",
+)
+@pytest.mark.covers(
     work="doc/feat/testing-conformance/scripts/registry/selection-inputs/record-variants/README.md",
     ac="AC-1",
 )
@@ -57,6 +61,13 @@ def test_named_record_bytes_and_acceptance_digest_are_preserved(
     variants, preparation changes only the named record fields, retains all other
     values and source fixture bytes, and preserves the reviewed acceptance digest
     for accepted input and the changed-byte digest for variant input.
+
+    Given fresh accepted or damaged named inputs, arrangements
+    expose precisely typed paths/data and the independent preparation acceptance
+    digest without changing shared source fixtures.
+
+    Parent coverage verifies complete record bytes/digests and source immutability;
+    typed paths and filesystem/copy isolation are covered by companion cases.
 
     Covers all eight complete serialized records, digest forwarding and source
     immutability; the companion case checks untouched recursive JSON values.
