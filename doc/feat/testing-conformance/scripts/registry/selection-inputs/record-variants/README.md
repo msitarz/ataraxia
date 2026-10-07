@@ -9,7 +9,7 @@ supported JSON values and narrow changed fields before use, without broad
 casts or implicit Any. No production API, validator or unrelated fixture
 redesign. Follow [parent scope and sequencing](../README.md).
 
-- **AC-1 TODO** Given fresh accepted record copies and each of the seven named
+- **AC-1 DONE** Given fresh accepted record copies and each of the seven named
   variants, preparation changes only the named record fields, retains all other
   values and source fixture bytes, and preserves the reviewed acceptance digest
   for accepted input and the changed-byte digest for variant input.
