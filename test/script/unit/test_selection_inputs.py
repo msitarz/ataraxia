@@ -9,7 +9,9 @@ from test.script.selection_inputs import (
     ROOT,
     PreparedSelection,
     arrange_changed_input,
+    changed_input_name,
     copy_selection_fixture,
+    record_fixture_name,
 )
 from test.script.support import tree_state
 
@@ -68,7 +70,7 @@ def test_accepted_arrangement_preserves_complete_literal_inputs(tmp_path: Path) 
     }
 
     # When
-    result = copy_selection_fixture(tmp_path, "accepted")
+    result = copy_selection_fixture(tmp_path, record_fixture_name("accepted"))
 
     # Then
     assert result == PreparedSelection(
@@ -109,3 +111,77 @@ def test_damaging_one_copy_preserves_other_copy_and_source(tmp_path: Path) -> No
     assert not (first.cache / "uv/archive-v0/dependency/payload.txt").exists()
     assert tree_state(second.directory) == second_before
     assert tree_state(fixtures) == source_before
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-inputs/filesystem-and-fixtures/README.md",
+    ac="AC-1",
+)
+@pytest.mark.parametrize(
+    ("name", "message"),
+    [
+        ("uv", "unknown fixture input: uv"),
+        ("accepted", "unknown fixture input: accepted"),
+        ("unknown", "unknown fixture input: unknown"),
+    ],
+    ids=["record-variant", "accepted-record", "unknown-name"],
+)
+def test_changed_input_boundary_rejects_other_domains_without_mutation(
+    prepared_selection: PreparedSelection, name: str, message: str
+) -> None:
+    """Given fresh accepted or damaged named arrangements, selection
+    consumers receive precise paths/data, independent accepted digest provenance
+    and complete literal file bytes/link targets; changing one arrangement does
+    not affect another or shared source fixtures.
+
+    Covers truthful changed-input narrowing and unchanged inputs on refusal;
+    supported names and their effects are covered by existing consumer cases.
+    """
+    # Given
+    before = tree_state(prepared_selection.directory)
+
+    # When
+    with pytest.raises(ValueError) as error:
+        arrange_changed_input(prepared_selection, changed_input_name(name))
+
+    # Then
+    assert error.value.args == (message,)
+    assert error.value.__cause__ is None
+    assert tree_state(prepared_selection.directory) == before
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-inputs/filesystem-and-fixtures/README.md",
+    ac="AC-1",
+)
+@pytest.mark.parametrize(
+    ("name", "message"),
+    [
+        ("file", "unknown record fixture: file"),
+        ("declaration", "unknown record fixture: declaration"),
+        ("unknown", "unknown record fixture: unknown"),
+    ],
+    ids=["changed-file", "changed-declaration", "unknown-name"],
+)
+def test_record_boundary_rejects_other_domains_before_creating_inputs(
+    tmp_path: Path, name: str, message: str
+) -> None:
+    """Given fresh accepted or damaged named arrangements, selection
+    consumers receive precise paths/data, independent accepted digest provenance
+    and complete literal file bytes/link targets; changing one arrangement does
+    not affect another or shared source fixtures.
+
+    Covers truthful record-name narrowing and absence of output on refusal;
+    all eight supported records/digests are covered by the record-variant cases.
+    """
+    # Given
+    destination = tmp_path / "rejected"
+
+    # When
+    with pytest.raises(ValueError) as error:
+        copy_selection_fixture(destination, record_fixture_name(name))
+
+    # Then
+    assert error.value.args == (message,)
+    assert error.value.__cause__ is None
+    assert not destination.exists()

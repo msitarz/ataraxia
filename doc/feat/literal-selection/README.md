@@ -1,9 +1,9 @@
 # Literal selection investigation
 
 Investigate whether tooling or guidance should identify suitable closed string
-domains. The seed is `arrange_changed_input` in
+domains. The first seed is `arrange_changed_input` in
 [registry selection inputs](../../../test/script/selection_inputs.py),
-currently:
+before local Literal adoption:
 
 ```python
 def arrange_changed_input(case: PreparedSelection, change: str) -> None:
@@ -30,19 +30,31 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
             raise ValueError(f"unknown fixture input: {change}")
 ```
 
-A candidate `Literal["declaration", "evidence", "file", "link", "record"]`
-is provisional. Compare it with retaining `str`, and explain when Enum adds
-useful identity or behavior. Trace callers through the untyped `request.param`
-boundary and `parameter_name`'s validated `str`: a narrower annotation requires
-truthful validation/typing through that path, not casts or checker suppression.
-Preserve runtime rejection and avoid competing copies of literal inventories.
+A second historical seed is the original record-input signature:
+
+```python
+def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection:
+    ...
+```
+
+Its supported names are accepted, uv, index, platform, layout, metadata,
+undeclared and version, a distinct domain from the five changed-input names.
+Paths and digest strings do not define finite domains.
+
+Both local examples now use distinct Literal aliases, with domain-specific
+narrowing after `parameter_name` validates the untyped `request.param` as `str`.
+The changed-input match retains its unknown-name ValueError. This maintainer
+adoption supplies concrete examples, not tooling findings or repository-wide
+policy. Compare Literal with retaining `str`, and explain when Enum adds useful
+identity or behavior. Preserve truthful boundary/caller types without casts or
+checker suppression, runtime rejection and one authoritative domain inventory.
 
 Compare the locked Ruff/Pyrefly capabilities with other tooling and guidance
 only. Match arms alone cannot establish a closed domain: assess open-domain
 matches, meaningful defaults, overlapping conditions and future extensions.
 Review false positives and safe adoption limits with positive and negative
-examples. This Work recommends a direction; no signature/API change, rule
-adoption or tooling investigation result is delivered by this contract.
+examples. This Work recommends a direction; no general rule adoption or tooling
+investigation result is delivered by this contract.
 
 - **AC-1 TODO** An inspectable recommendation compares Literal, retained str
   and justified Enum usage, evaluates tooling versus guidance for suitable

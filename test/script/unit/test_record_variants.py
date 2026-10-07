@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from test.script.record_variants import arrange_record_variant, read_fixture
-from test.script.selection_inputs import copy_selection_fixture
+from test.script.selection_inputs import RecordName, copy_selection_fixture
 from test.script.support import ROOT, tree_state
 
 
@@ -51,7 +51,7 @@ from test.script.support import ROOT, tree_state
     ],
 )
 def test_named_record_bytes_and_acceptance_digest_are_preserved(
-    tmp_path: Path, name: str, expected_digest: str
+    tmp_path: Path, name: RecordName, expected_digest: str
 ) -> None:
     """Given fresh accepted record copies and each of the seven named
     variants, preparation changes only the named record fields, retains all other

@@ -5,12 +5,18 @@ from dataclasses import dataclass, replace
 import hashlib
 from pathlib import Path
 import shutil
+from typing import Literal
 
 import pytest
 
 from test.script.record_variants import arrange_record_variant
 
 ROOT = Path(__file__).resolve().parents[2]
+
+type ChangedInput = Literal["declaration", "evidence", "file", "link", "record"]
+type RecordName = Literal[
+    "accepted", "uv", "index", "platform", "layout", "metadata", "undeclared", "version"
+]
 
 
 @dataclass(frozen=True)
@@ -25,7 +31,9 @@ class PreparedSelection:
     destination: Path
 
 
-def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection:
+def copy_selection_fixture(
+    directory: Path, record_name: RecordName
+) -> PreparedSelection:
     """Build literal preparation inputs and copy the accepted record.
 
     Returns:
@@ -82,7 +90,7 @@ def build_selection_inputs(directory: Path) -> None:
         link.symlink_to("../../../archive-v0/dependency")
 
 
-def arrange_changed_input(case: PreparedSelection, change: str) -> None:
+def arrange_changed_input(case: PreparedSelection, change: ChangedInput) -> None:
     """Arrange one damaged external input using real fixture files."""
     changed = ROOT / "test/script/fixtures/registry_selection/changed.txt"
     destinations = {
@@ -131,6 +139,47 @@ def parameter_name(request: pytest.FixtureRequest) -> str:
     return value
 
 
+def changed_input_name(value: str) -> ChangedInput:
+    """Narrow a validated external name to the changed-input domain.
+
+    Returns:
+        The supported changed-input name.
+
+    Raises:
+        ValueError: If the name does not select a supported change.
+    """
+    match value:
+        case "declaration" | "evidence" | "file" | "link" | "record":
+            return value
+        case _:
+            raise ValueError(f"unknown fixture input: {value}")
+
+
+def record_fixture_name(value: str) -> RecordName:
+    """Narrow a validated external name to the record-fixture domain.
+
+    Returns:
+        The supported record name.
+
+    Raises:
+        ValueError: If the name does not select a supported record.
+    """
+    match value:
+        case (
+            "accepted"
+            | "uv"
+            | "index"
+            | "platform"
+            | "layout"
+            | "metadata"
+            | "undeclared"
+            | "version"
+        ):
+            return value
+        case _:
+            raise ValueError(f"unknown record fixture: {value}")
+
+
 @pytest.fixture
 def prepared_selection(tmp_path: Path) -> PreparedSelection:
     """Provide a fresh accepted preparation filesystem."""
@@ -142,7 +191,9 @@ def changed_selection(
     request: pytest.FixtureRequest, prepared_selection: PreparedSelection
 ) -> PreparedSelection:
     """Damage only the named input in a fresh arrangement."""
-    arrange_changed_input(prepared_selection, parameter_name(request))
+    arrange_changed_input(
+        prepared_selection, changed_input_name(parameter_name(request))
+    )
     return prepared_selection
 
 
@@ -151,7 +202,9 @@ def unsupported_selection(
     request: pytest.FixtureRequest, tmp_path: Path
 ) -> PreparedSelection:
     """Provide a fresh named unsupported record variant."""
-    return copy_selection_fixture(tmp_path, parameter_name(request))
+    return copy_selection_fixture(
+        tmp_path, record_fixture_name(parameter_name(request))
+    )
 
 
 @pytest.fixture
