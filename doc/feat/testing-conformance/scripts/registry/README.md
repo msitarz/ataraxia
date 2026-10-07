@@ -10,7 +10,9 @@ changes, installs, blanket support/conftest migration or new fixture framework.
   checking and normal pytest/criterion-runner import parity.
 - **DONE** Typed script-owned Make transport and fixtures preserve literal
   arguments, shell safety and missing-input refusal in an isolated environment.
-- **TODO** [Prepared selection inputs](selection-inputs/README.md).
+- **DONE** Precisely typed record variants and isolated selection-input fixtures
+  preserve complete bytes/link targets, accepted digest provenance, finite name
+  domains and independent fresh copies without changing source fixtures.
 - **TODO**
   [Selection process and manifest observations](selection-observations/README.md).
 - **TODO** [Registry CLI integration cases](cli/README.md).
