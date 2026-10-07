@@ -253,3 +253,21 @@ claim. Workload, fixture Git and cache-history differences prevent attributing
 the higher times solely to cleanup; the earlier stopped observations are
 retained and excluded. No cold-start, CI-performance or resource-cost conclusion
 follows.
+
+## Parent integration assessment
+
+On merged revision `a85455e30c58cb9f42384902048c5c25febcaa74`, the complete Make
+suite passed all 88 cases on macOS/Python 3.14.6. Strict type checking passed
+with zero errors in the configured checked set and seven expected diagnostics on
+the separate expectations route; doc/ac checks passed. All four normal CI jobs
+passed on that revision (run `37591974625`); default Make/CI selection includes
+real-tool cases without filtering.
+
+Root independent review reused verified child deliveries and their criterion
+execution, preserving literal routing/failure contracts, real Make/Git/tool
+boundaries, complete repository snapshots, strict test/helper inclusion and
+historical coverage provenance. These are retained integration regressions;
+no temporary upstream-only probes require removal. Parent timing review reused
+the baseline and eight final observations with independently checked order,
+metadata and medians. The workload, fixture Git and cache limits above remain;
+this integration assessment does not establish causal performance improvement.
