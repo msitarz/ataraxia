@@ -45,6 +45,7 @@ from script.registry_selection import (
 from script.registry_selection import (
     validate_wheel_link as validate_wheel_link,
 )
+from test.script.record_variants import arrange_record_variant
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -143,23 +144,6 @@ def build_selection_inputs(directory: Path) -> None:
     for root in ("cache/uv", "cache/prek/cache/uv"):
         link = directory / root / "wheels-v6/pypi/dependency/1.0-py3-none-any"
         link.symlink_to("../../../archive-v0/dependency")
-
-
-def arrange_record_variant(record: Path, description: Path) -> None:
-    """Apply one named invalid fixture condition to a fresh accepted record."""
-    data = json.loads(record.read_text())
-    variant = json.loads(description.read_text())
-    if description.stem in {"uv", "index", "platform", "layout"}:
-        data["condition"].update(variant["condition"])
-    elif description.stem == "metadata":
-        del data["files"][variant["remove_metadata"]]
-    elif description.stem == "undeclared":
-        data["files"].update(variant["undeclared_file"])
-    elif description.stem == "version":
-        data["packages"][0]["version"] = variant["project_version"]
-    else:
-        raise ValueError(f"unknown record variant: {description.stem}")
-    record.write_text(json.dumps(data, indent=2) + "\n")
 
 
 def expected_selection() -> Selection:
