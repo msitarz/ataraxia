@@ -8,7 +8,7 @@ baseline evidence unchanged. No version changes after baseline, test changes,
 timing assertions or benchmark framework. Stop/report mismatches and retain
 failed/interrupted observations rather than silently replacing runs.
 
-- **AC-1 TODO** Given the frozen matched baseline, one warm-up per selection and
+- **AC-1 DONE** Given the frozen matched baseline, one warm-up per selection and
   three alternating full/unmarked final runs support separately reported median
   comparisons and preservation limits, or explicitly inconclusive results when
   matching/successful observations are incomplete.
