@@ -89,21 +89,22 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
         "declaration": case.repository / "uv.lock",
         "evidence": case.directory / "successful-setup.log",
     }
-    if change in destinations:
-        shutil.copyfile(changed, destinations[change])
-    elif change == "file":
-        (case.cache / "uv/archive-v0/dependency/payload.txt").unlink()
-    elif change == "link":
-        link = case.cache / "uv/wheels-v6/pypi/dependency/1.0-py3-none-any"
-        link.unlink()
-        link.symlink_to(case.repository)
-    elif change == "record":
-        shutil.copyfile(
-            ROOT / "test/script/fixtures/registry_selection/unapproved.json",
-            case.record,
-        )
-    else:
-        raise ValueError(f"unknown fixture input: {change}")
+    match change:
+        case "declaration" | "evidence":
+            shutil.copyfile(changed, destinations[change])
+        case "file":
+            (case.cache / "uv/archive-v0/dependency/payload.txt").unlink()
+        case "link":
+            link = case.cache / "uv/wheels-v6/pypi/dependency/1.0-py3-none-any"
+            link.unlink()
+            link.symlink_to(case.repository)
+        case "record":
+            shutil.copyfile(
+                ROOT / "test/script/fixtures/registry_selection/unapproved.json",
+                case.record,
+            )
+        case _:
+            raise ValueError(f"unknown fixture input: {change}")
 
 
 def arrange_cli_collision(case: PreparedSelection) -> None:
