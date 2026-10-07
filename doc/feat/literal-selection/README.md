@@ -33,8 +33,7 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
 A second historical seed is the original record-input signature:
 
 ```python
-def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection:
-    ...
+def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection: ...
 ```
 
 Its supported names are accepted, uv, index, platform, layout, metadata,

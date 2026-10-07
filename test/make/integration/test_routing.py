@@ -88,6 +88,7 @@ def expected_size_advisory(*paths: str) -> list[str]:
                     "check",
                     "--expectations",
                     "test/ataraxia/typecheck/compute_contracts.py",
+                    "test/ataraxia/typecheck/selection_input_contracts.py",
                 ],
             ],
         ),
