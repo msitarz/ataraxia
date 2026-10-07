@@ -1,7 +1,7 @@
 # Witness-final Evaluation
 
-After [witness correction](../scratch-witness/README.md) merges, freeze its
-exact merged SHA before preparation in a separate detached input at
+After the [delivered witness correction](../README.md#delivery-map) merges,
+freeze its exact merged SHA before preparation in a separate detached input at
 `/private/tmp/ataraxia-measurement-witness-final-input`. Preserve all three
 earlier inputs unchanged. Follow the
 [parent protocol](../README.md#witness-final-attempt) and
