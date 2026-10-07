@@ -189,3 +189,67 @@ suite preservation. Cache and fixture-tool differences further limit any
 comparison. This attempt is explicitly inconclusive, with no causal/general
 speedup claim; parent acceptance remains pending. A witness correction requires
 a separate planned Work and another approved measurement sequence.
+
+## Witness-final observations and comparison
+
+Freeze witness-corrected merge `148c1e65cb30219d8051b949d403914e592bf82f` in
+`/private/tmp/ataraxia-measurement-witness-final-input`, separate from all three
+earlier inputs.
+[Preparation metadata](matched-measurements/witness-final/preparation.json)
+records the same method as the stopped corrected attempt: read-only copy of the
+preserved baseline post-batch cache (7,238 files, 316,008,257 bytes), then
+offline Make [setup](matched-measurements/witness-final/prepare.txt) and
+[verification](matched-measurements/witness-final/verify.txt). Both passed. This
+is not the baseline's original seed; editable-build locations and cache history
+limit comparison. No earlier input was re-prepared.
+
+[Preflight](matched-measurements/witness-final/preflight.json) checked both
+conditions before execution: retained host, Python 3.14.6, top-level tools,
+packages, lock and pytest configuration match. Fixture PATH intentionally
+narrows Git to Apple 2.50.1, while baseline cleanup inherited top-level Git
+2.55.0. This code-owned environment difference is disclosed, not corrected by
+replacing Git. [Postflight](matched-measurements/witness-final/postflight.json)
+confirms unchanged common versions, packages, lock and configuration after the
+batch. All earlier artifacts and report text remain unchanged.
+
+Exactly eight sequential invocations completed: full/unmarked warm-ups, then
+three alternating full/unmarked pairs, with 180-second timeouts and no
+concurrent suite. The
+[driver](matched-measurements/witness-final/timer-command.txt) retains exact
+commands/environment and monotonic launch/exit boundaries; sibling JSON files
+retain UTC boundaries, exits, elapsed seconds and summaries. No failures, skips,
+timeouts, interruptions, retries or additional runs occurred. Preparation,
+warm-ups and artifact writing are excluded from medians; pytest time is
+separate.
+
+| Invocation / raw output | Outer elapsed (s) | Pytest elapsed (s) | Outcome |
+| --- | --- | --- | --- |
+| [warmup-full](matched-measurements/witness-final/warmup-full.txt) | 60.648 | 55.23 | 88 passed |
+| [warmup-unmarked](matched-measurements/witness-final/warmup-unmarked.txt) | 45.315 | 44.34 | 62 passed; 26 deselected |
+| [1-full](matched-measurements/witness-final/1-full.txt) | 53.819 | 52.85 | 88 passed |
+| [1-unmarked](matched-measurements/witness-final/1-unmarked.txt) | 46.108 | 45.14 | 62 passed; 26 deselected |
+| [2-full](matched-measurements/witness-final/2-full.txt) | 54.432 | 53.42 | 88 passed |
+| [2-unmarked](matched-measurements/witness-final/2-unmarked.txt) | 46.297 | 45.31 | 62 passed; 26 deselected |
+| [3-full](matched-measurements/witness-final/3-full.txt) | 53.949 | 52.99 | 88 passed |
+| [3-unmarked](matched-measurements/witness-final/3-unmarked.txt) | 45.717 | 44.74 | 62 passed; 26 deselected |
+
+Measured outer medians: full **53.949 s**, unmarked **46.108 s**. Separate
+pytest medians: full 52.99 s, unmarked 45.14 s. Retained baseline outer medians
+are 50.640 s and 36.910 s: the observed final selection medians are higher by
+3.309 s and 9.198 s respectively.
+[Summary metadata](matched-measurements/witness-final/summary.json) retains
+unrounded values and arithmetic. The eight-invocation budget is exhausted.
+
+Baseline full/unmarked counts were 71/50 (21 deselected); final counts are 88/62
+(26 deselected). Test extraction, parameterization and added regressions change
+workloads and marker-selected counts. All final cases passed, including scratch,
+removal/pruning and real-tool boundaries; passing counts alone do not prove
+preserved assertions or complete contract coverage. Parent preservation review
+and acceptance remain pending.
+
+These single-host, three-repetition warm-cache observations support separate
+selection median reporting, not a causal/general cleanup speedup or slowdown
+claim. Workload, fixture Git and cache-history differences prevent attributing
+the higher times solely to cleanup; the earlier stopped observations are
+retained and excluded. No cold-start, CI-performance or resource-cost conclusion
+follows.

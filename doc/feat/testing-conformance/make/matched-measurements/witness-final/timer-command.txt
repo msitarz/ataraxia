@@ -1,0 +1,33 @@
+from pathlib import Path
+from datetime import datetime,timezone
+import json,os,re,subprocess,time
+root=Path('/private/tmp/ataraxia-measurement-witness-final-input')
+out=Path('/private/tmp/ataraxia-make-witness-final/doc/feat/testing-conformance/make/matched-measurements/witness-final')
+sequence=[('warmup-full','full'),('warmup-unmarked','unmarked')]+[(str(n)+'-'+selection,selection) for n in (1,2,3) for selection in ('full','unmarked')]
+for label,selection in sequence:
+ if (out/(label+'.json')).exists() or (out/(label+'.started.json')).exists():
+  raise SystemExit('STOP: invocation already recorded: '+label)
+ env=os.environ.copy()
+ for key in ('WORK','AC','WORKTREE','EXPIRE','MAKEFLAGS','MAKEOVERRIDES','MFLAGS','VIRTUAL_ENV','PYTHONPATH'):
+  env.pop(key,None)
+ env.update(UV_PYTHON='/usr/local/bin/python3.14',UV_PROJECT_ENVIRONMENT=str(root/'.venv'),UV_CACHE_DIR=str(root/'.cache/uv'),UV_OFFLINE='true',UV_NO_SYNC='true',GIT_CONFIG_GLOBAL='/dev/null',GIT_CONFIG_NOSYSTEM='1',PYTEST_ADDOPTS='--durations=0'+(' -m "not real_tool"' if selection=='unmarked' else ''))
+ command=['make','test','ARGS=test/make/integration']
+ record={'label':label,'selection':selection,'measured':not label.startswith('warmup'),'command':command,'cwd':str(root),'environment':{k:env[k] for k in ('UV_PYTHON','UV_PROJECT_ENVIRONMENT','UV_CACHE_DIR','UV_OFFLINE','UV_NO_SYNC','GIT_CONFIG_GLOBAL','GIT_CONFIG_NOSYSTEM','PYTEST_ADDOPTS')},'timeout_seconds':180,'utc_start':datetime.now(timezone.utc).isoformat()}
+ (out/(label+'.started.json')).write_text(json.dumps(record,indent=2)+'\n')
+ print('START '+label,flush=True)
+ with (out/(label+'.txt')).open('wb') as output:
+  begin=time.perf_counter()
+  try:
+   result=subprocess.run(command,cwd=root,env=env,stdout=output,stderr=subprocess.STDOUT,timeout=180)
+   code=result.returncode; timed_out=False
+  except subprocess.TimeoutExpired:
+   code=None;timed_out=True
+  elapsed=time.perf_counter()-begin
+ record.update(exit_code=code,timed_out=timed_out,outer_elapsed_seconds=elapsed,utc_end=datetime.now(timezone.utc).isoformat())
+ text=(out/(label+'.txt')).read_text()
+ record['pytest_summary']=[line for line in text.splitlines() if re.search(r'\d+ (passed|failed|skipped|deselected).* in [0-9.]+s',line)]
+ (out/(label+'.json')).write_text(json.dumps(record,indent=2)+'\n')
+ (out/(label+'.started.json')).unlink()
+ print(json.dumps({k:record[k] for k in ('label','exit_code','timed_out','outer_elapsed_seconds','pytest_summary')}),flush=True)
+ if code!=0 or timed_out or re.search(r'\b\d+ skipped\b',text):
+  raise SystemExit('STOP: unsuccessful or skipped invocation; no automatic extra runs')

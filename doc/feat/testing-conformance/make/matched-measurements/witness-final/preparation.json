@@ -1,0 +1,31 @@
+{
+  "revision": "148c1e65cb30219d8051b949d403914e592bf82f",
+  "input": "/private/tmp/ataraxia-measurement-witness-final-input",
+  "cache_seed": "/private/tmp/ataraxia-measurement-baseline-input/.cache/uv",
+  "seed_files": 7238,
+  "seed_bytes": 316008257,
+  "seed_path_content_sha256": "d7a3dee86c5ee0206aca568931495dc63812b3ddf770b117d9fbe3744414dfd4",
+  "cache_limits": "Read-only copy of preserved baseline post-batch cache, same method as corrected-final; not original initial seed. Offline setup can create revision-specific editable artifacts. Post-setup byte equality is not asserted. One warm-up per selection remains required.",
+  "common_preparation_check": {
+    "host": "michals-mbp-2.home",
+    "platform": "macOS-26.6.2-x86_64-i386-64bit-Mach-O",
+    "tools": {
+      "uv": {
+        "path": "/usr/local/bin/uv",
+        "version": "uv 0.12.19 (Homebrew 2026-09-24 x86_64-apple-darwin)"
+      },
+      "make": {
+        "path": "/usr/bin/make",
+        "version": "GNU Make 3.81"
+      },
+      "git": {
+        "path": "/usr/local/bin/git",
+        "version": "git version 2.55.0"
+      }
+    }
+  },
+  "preparation_commands": [
+    "UV_PYTHON=/usr/local/bin/python3.14 UV_OFFLINE=true UV_CACHE_DIR=/private/tmp/ataraxia-measurement-witness-final-input/.cache/uv make ci-setup",
+    "UV_PYTHON=/usr/local/bin/python3.14 UV_OFFLINE=true UV_CACHE_DIR=/private/tmp/ataraxia-measurement-witness-final-input/.cache/uv make verify-setup"
+  ]
+}
