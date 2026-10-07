@@ -26,14 +26,16 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE**
   [Final measurement attempt](matched-measurements.md#final-condition-stopped-comparison-inconclusive)
   stopped after a failed warm-up; comparison is explicitly inconclusive.
-- **TODO** [Sandbox scratch isolation](scratch-isolation/README.md).
+- **DONE** Isolated disposable process home/scratch outside repository
+  snapshots, with deterministic cache-write regression and retained
+  removal/pruning checks.
 - **TODO** [Renewed final Evaluation](renewed-final/README.md).
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
-Scratch isolation precedes renewed measurement; merge the correction before
-freezing its evaluation revision. Each complete leaf diff must fit the
+Scratch isolation is delivered; renewed measurement awaits its merged revision
+freeze and matching preflight. Each complete leaf diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
