@@ -8,7 +8,8 @@ changes, installs, blanket support/conftest migration or new fixture framework.
 
 - **DONE** Canonical registry imports with public value identity, strict helper
   checking and normal pytest/criterion-runner import parity.
-- **TODO** [Make registry transport support](transport/README.md).
+- **DONE** Typed script-owned Make transport and fixtures preserve literal
+  arguments, shell safety and missing-input refusal in an isolated environment.
 - **TODO** [Prepared selection inputs](selection-inputs/README.md).
 - **TODO**
   [Selection process and manifest observations](selection-observations/README.md).
