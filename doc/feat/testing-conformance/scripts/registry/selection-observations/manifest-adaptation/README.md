@@ -9,7 +9,7 @@ new generic framework. Expected values still come from the independent literal
 manifest, not running production selection/validators. Follow
 [parent ownership and sequencing](../README.md).
 
-- **AC-1 TODO** Given literal or delivered manifest data, observations retain
+- **AC-1 DONE** Given literal or delivered manifest data, observations retain
   every public value through precise canonical types and reject malformed
   consumed shapes before exposing typed values; real public selector calls
   preserve the independent complete expected result and input state.
