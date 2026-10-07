@@ -34,14 +34,15 @@ real-tool regressions. Follow [testing](../../../testing.md),
   stopped on a scratch-witness decoding failure; comparison is inconclusive.
 - **DONE** Dedicated synthetic scratch witness survives real Git inspection,
   with complete repository snapshots and retained legitimate cache/witness data.
-- **TODO** [Witness-final Evaluation](witness-final/README.md).
+- **DONE**
+  [Witness-final observations](matched-measurements.md#witness-final-observations-and-comparison)
+  with eight successful invocations, separate medians and comparison limits.
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
 Scratch isolation, the stopped renewed attempt and witness correction are
-delivered. Witness-final Evaluation awaits the correction's merged revision
-freeze and matching preflight;
+delivered. Witness-final observations and selection medians are delivered;
 parent integration and timing acceptance remain pending. Each complete leaf
 diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
@@ -133,8 +134,12 @@ CI.
 
 ### Witness-final attempt
 
-After the witness correction merges, the [Evaluation](witness-final/README.md)
-freezes that exact merged revision in a separate input. Reuse the shared
+This retained protocol governed the
+[delivered observations](matched-measurements.md#witness-final-observations-and-comparison)
+and does not authorize additional runs.
+
+After the witness correction merges, the Evaluation freezes that exact merged
+revision in a separate input. Reuse the shared
 command, order, timing boundaries and stop handling with a new eight-invocation
 budget and 180-second timeout per invocation. Earlier protocols and all three
 frozen inputs remain historical evidence, not sequences to resume.
