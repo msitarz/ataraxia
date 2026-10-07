@@ -183,7 +183,7 @@ def record_fixture_name(value: str) -> RecordName:
 @pytest.fixture
 def prepared_selection(tmp_path: Path) -> PreparedSelection:
     """Provide a fresh accepted preparation filesystem."""
-    return copy_selection_fixture(tmp_path, "accepted")
+    return copy_selection_fixture(tmp_path / "inputs", "accepted")
 
 
 @pytest.fixture
@@ -203,7 +203,7 @@ def unsupported_selection(
 ) -> PreparedSelection:
     """Provide a fresh named unsupported record variant."""
     return copy_selection_fixture(
-        tmp_path, record_fixture_name(parameter_name(request))
+        tmp_path / "inputs", record_fixture_name(parameter_name(request))
     )
 
 
