@@ -1,0 +1,228 @@
+uv run pytest 'test/make/integration'
+============================= test session starts ==============================
+platform darwin -- Python 3.14.6, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/tmp/ataraxia-measurement-final-input
+configfile: pyproject.toml
+plugins: cov-7.1.0, tach-0.35.1
+collected 87 items
+[Tach] 87 tests in 13 files unaffected by changes. Skip with: [1mpytest --tach[0m
+[Tach] [2mTo disable: pytest -p no:tach (https://docs.gauge.sh/usage/commands#using-the-pytest-plugin-directly)[0m
+
+test/make/integration/test_acceptance_declarations.py ..........         [ 11%]
+test/make/integration/test_acceptance_selection.py ......                [ 18%]
+test/make/integration/test_creation_helper.py .                          [ 19%]
+test/make/integration/test_execution.py ........                         [ 28%]
+test/make/integration/test_function_size_guardrails.py ....              [ 33%]
+test/make/integration/test_markdown_tools.py .......                     [ 41%]
+test/make/integration/test_preparation.py ......                         [ 48%]
+test/make/integration/test_registry_target.py ...                        [ 51%]
+test/make/integration/test_routing.py .....................              [ 75%]
+test/make/integration/test_stub_environment.py ..                        [ 78%]
+test/make/integration/test_worktree_creation.py ......                   [ 85%]
+test/make/integration/test_worktree_pruning.py FFFF                      [ 89%]
+test/make/integration/test_worktree_removal.py ..F...F..                 [100%]
+
+=================================== FAILURES ===================================
+____________ test_missing_expiry_refuses_without_mutation[preview] _____________
+test/make/integration/test_worktree_pruning.py:42: in test_missing_expiry_refuses_without_mutation
+    assert files_under(repository.sandbox.directory) == files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+_____________ test_missing_expiry_refuses_without_mutation[apply] ______________
+test/make/integration/test_worktree_pruning.py:42: in test_missing_expiry_refuses_without_mutation
+    assert files_under(repository.sandbox.directory) == files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+_______ test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs ________
+test/make/integration/test_worktree_pruning.py:85: in test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs
+    assert files_under(repository.sandbox.directory) == source_files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+___________ test_hostile_expiry_is_literal_and_preserves_repository ____________
+test/make/integration/test_worktree_pruning.py:148: in test_hostile_expiry_is_literal_and_preserves_repository
+    assert files_under(repository.sandbox.directory) == files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+_________ test_unsafe_removal_preserves_complete_relevant_state[main] __________
+test/make/integration/test_worktree_removal.py:184: in test_unsafe_removal_preserves_complete_relevant_state
+    assert files_under(unsafe_case.destination) == unsafe_case.files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+____________ test_missing_removal_input_preserves_repository_state _____________
+test/make/integration/test_worktree_removal.py:216: in test_missing_removal_input_preserves_repository_state
+    assert files_under(repository.sandbox.directory) == files
+E   AssertionError: assert {'Makefile': ...acts.py': b''} == {'Makefile': ...acts.py': b''}
+E
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'tmp/xcrun_db': b'XR1L\x04\x00\x00\x00\x12\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...usr/share/man:\x00make|||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/make\x00'} != {'tmp/xcrun_db': b'XR1L\x02\x00\x00\x00\xbb\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00b\x00\x00\x00\x...ineTools/SDKs/MacOSX.sdk||/Library/Developer/CommandLineTools|\x00/Library/Developer/CommandLineTools/usr/bin/git\x00'}
+E     Use -v to get more diff
+========================= Tach Impact Analysis Warning =========================
+[Tach] WARNING: 6 test(s) failed that would be skipped by impact analysis!
+[Tach] These failures would be missed when using --tach:
+[Tach]   - test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[preview]
+[Tach]   - test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[apply]
+[Tach]   - test/make/integration/test_worktree_pruning.py::test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs
+[Tach]   - test/make/integration/test_worktree_pruning.py::test_hostile_expiry_is_literal_and_preserves_repository
+[Tach]   - test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[main]
+[Tach]   - test/make/integration/test_worktree_removal.py::test_missing_removal_input_preserves_repository_state
+============================== slowest durations ===============================
+1.97s call     test/make/integration/test_execution.py::test_ci_runs_local_checks_before_propagating_audit_failure
+1.81s call     test/make/integration/test_execution.py::test_verify_runs_required_consumers_offline_without_preparation_or_audit
+1.67s call     test/make/integration/test_preparation.py::test_ci_check_prepares_dependencies_and_hooks_before_checks_and_audit
+1.60s call     test/make/integration/test_execution.py::test_static_checks_request_equivalent_read_only_documentation_commands[ci]
+1.53s call     test/make/integration/test_worktree_removal.py::test_populated_submodule_refusal_preserves_complete_worktree_state
+1.51s call     test/make/integration/test_execution.py::test_full_static_checks_ignore_caller_paths
+1.38s call     test/make/integration/test_creation_helper.py::test_real_make_creates_a_worktree_with_destination_local_setup
+1.33s call     test/make/integration/test_execution.py::test_static_checks_request_equivalent_read_only_documentation_commands[local]
+1.21s call     test/make/integration/test_worktree_creation.py::test_creation_copies_cache_and_overrides_parent_environment
+1.21s call     test/make/integration/test_worktree_creation.py::test_failed_verification_retains_the_prepared_worktree
+1.12s call     test/make/integration/test_worktree_creation.py::test_unusable_cache_retains_a_recoverable_worktree[incomplete-cache]
+1.11s call     test/make/integration/test_worktree_creation.py::test_unusable_cache_retains_a_recoverable_worktree[absent-cache]
+1.11s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_reports_size_advice_without_failing[25-clean]
+1.01s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_rejects_formatting_without_modifying_files
+0.95s call     test/make/integration/test_worktree_pruning.py::test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs
+0.86s call     test/make/integration/test_preparation.py::test_setup_prepares_hooks_and_wheel_after_dependencies
+0.79s call     test/make/integration/test_worktree_removal.py::test_clean_literal_removal_retains_refs_and_unrelated_worktree
+0.74s call     test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[execute-criterion]
+0.72s call     test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[execute-work]
+0.72s call     test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[collect-work]
+0.72s call     test/make/integration/test_acceptance_selection.py::test_make_targets_fail_when_no_criterion_matches[collect]
+0.71s call     test/make/integration/test_acceptance_selection.py::test_make_targets_fail_when_no_criterion_matches[execute]
+0.71s call     test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[collect-criterion]
+0.67s call     test/make/integration/test_registry_target.py::test_registry_target_rejects_missing_inputs_without_creating_destination
+0.67s call     test/make/integration/test_worktree_creation.py::test_existing_branch_is_preserved_without_creating_a_worktree
+0.66s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-default]
+0.66s call     test/make/integration/test_preparation.py::test_package_prepares_python_then_requests_offline_smoke
+0.65s call     test/make/integration/test_registry_target.py::test_registry_target_preserves_literal_named_cli_values
+0.64s call     test/make/integration/test_preparation.py::test_ci_targets_prepare_dependencies_before_their_consumer[prepare-before-examples]
+0.63s call     test/make/integration/test_preparation.py::test_ci_targets_prepare_dependencies_before_their_consumer[prepare-before-tests]
+0.62s call     test/make/integration/test_routing.py::test_lint_target_does_not_suppress_advisory_tool_failures
+0.61s call     test/make/integration/test_routing.py::test_markdown_targets_pass_selected_paths_to_both_checkers
+0.61s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-check-selected]
+0.60s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-default]
+0.60s call     test/make/integration/test_routing.py::test_make_selectors_quote_shell_metacharacters
+0.60s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-selected]
+0.55s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-default]
+0.55s call     test/make/integration/test_stub_environment.py::test_make_records_literal_arguments_in_an_isolated_environment
+0.55s call     test/make/integration/test_execution.py::test_full_test_targets_ignore_caller_selectors[full-examples]
+0.54s call     test/make/integration/test_routing.py::test_run_target_routes_project_cli_arguments
+0.54s call     test/make/integration/test_routing.py::test_dependency_lock_target_uses_uv_lock
+0.53s call     test/make/integration/test_execution.py::test_full_test_targets_ignore_caller_selectors[full-tests]
+0.53s call     test/make/integration/test_registry_target.py::test_registry_target_does_not_execute_caller_expressions
+0.53s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-selected]
+0.53s call     test/make/integration/test_stub_environment.py::test_make_exposes_configured_failure_and_stops_later_commands
+0.52s call     test/make/integration/test_preparation.py::test_ci_targets_prepare_dependencies_before_their_consumer[dependencies-only]
+0.52s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-selected]
+0.52s call     test/make/integration/test_routing.py::test_make_selectors_quote_single_quotes
+0.52s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[expectations-selected]
+0.52s call     test/make/integration/test_routing.py::test_cli_arguments_quote_shell_metacharacters
+0.52s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-selected]
+0.51s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-check-selected]
+0.51s call     test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-default]
+0.51s call     test/make/integration/test_routing.py::test_markdown_format_target_passes_selected_paths
+0.51s call     test/make/integration/test_execution.py::test_verify_stops_after_the_prepared_environment_check_fails
+0.46s call     test/make/integration/test_worktree_removal.py::test_unknown_worktree_refusal_preserves_files_and_repository
+0.46s call     test/make/integration/test_worktree_pruning.py::test_hostile_expiry_is_literal_and_preserves_repository
+0.45s call     test/make/integration/test_worktree_creation.py::test_existing_destination_is_preserved_before_setup
+0.44s call     test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[apply]
+0.44s call     test/make/integration/test_worktree_removal.py::test_missing_removal_input_preserves_repository_state
+0.43s setup    test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[locked]
+0.43s call     test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[preview]
+0.39s setup    test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[untracked]
+0.38s setup    test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[dirty]
+0.29s setup    test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[main]
+0.25s call     test/make/integration/test_worktree_removal.py::test_help_lists_all_worktree_cleanup_targets
+0.22s call     test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[locked]
+0.21s call     test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[untracked]
+0.21s call     test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[dirty]
+0.19s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[canonical]
+0.19s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_reports_complete_neutral_summaries_without_execution
+0.19s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[empty-method]
+0.19s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[duplicate-methods]
+0.19s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_missing_or_malformed_criteria[malformed-criterion]
+0.18s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[missing-work]
+0.18s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[unsupported-criterion-selector]
+0.18s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_missing_or_malformed_criteria[missing-criteria]
+0.18s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_fails_visibly_when_rumdl_is_missing
+0.18s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[absent-file]
+0.18s call     test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[unindented-text]
+0.17s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_reports_size_advice_without_failing[26-advisory]
+0.17s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_reports_size_advice_without_failing[50-advisory-ceiling]
+0.16s call     test/make/integration/test_markdown_tools.py::test_make_doc_format_selects_files_and_directories_and_excludes_artifacts
+0.15s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_finds_inbound_links_to_changed_heading[rename]
+0.15s call     test/make/integration/test_markdown_tools.py::test_make_doc_check_finds_inbound_links_to_changed_heading[delete]
+0.14s call     test/make/integration/test_markdown_tools.py::test_make_doc_format_reflows_external_file_with_repository_config
+0.11s call     test/make/integration/test_function_size_guardrails.py::test_lint_check_blocks_after_50
+0.11s call     test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[main]
+0.07s call     test/make/integration/test_routing.py::test_run_target_requires_cli_arguments
+0.07s call     test/make/integration/test_markdown_tools.py::test_make_help_lists_markdown_targets
+0.05s call     test/make/integration/test_routing.py::test_path_selectors_reject_tool_options
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_reports_complete_neutral_summaries_without_execution
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[execute-criterion]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[missing-work]
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[execute-work]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[canonical]
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[collect-work]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[duplicate-methods]
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_fail_when_no_criterion_matches[execute]
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_select_work_and_optional_criterion[collect-criterion]
+0.01s setup    test/make/integration/test_acceptance_selection.py::test_make_targets_fail_when_no_criterion_matches[collect]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[unsupported-criterion-selector]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[unindented-text]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_missing_or_malformed_criteria[missing-criteria]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_independent_invalid_inputs[absent-file]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_refuses_missing_or_malformed_criteria[malformed-criterion]
+0.01s setup    test/make/integration/test_acceptance_declarations.py::test_make_ac_check_uses_canonical_validation_annotation[empty-method]
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-selected]
+0.01s setup    test/make/integration/test_preparation.py::test_ci_targets_prepare_dependencies_before_their_consumer[dependencies-only]
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[typecheck-default]
+0.01s setup    test/make/integration/test_preparation.py::test_ci_check_prepares_dependencies_and_hooks_before_checks_and_audit
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-default]
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-check-selected]
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-default]
+0.01s setup    test/make/integration/test_routing.py::test_run_target_routes_project_cli_arguments
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[expectations-selected]
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-selected]
+0.01s setup    test/make/integration/test_preparation.py::test_package_prepares_python_then_requests_offline_smoke
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[test-selected]
+0.01s setup    test/make/integration/test_routing.py::test_run_target_requires_cli_arguments
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[lint-selected]
+0.01s setup    test/make/integration/test_preparation.py::test_ci_targets_prepare_dependencies_before_their_consumer[prepare-before-examples]
+0.01s setup    test/make/integration/test_registry_target.py::test_registry_target_preserves_literal_named_cli_values
+0.01s setup    test/make/integration/test_execution.py::test_static_checks_request_equivalent_read_only_documentation_commands[ci]
+0.01s setup    test/make/integration/test_execution.py::test_verify_stops_after_the_prepared_environment_check_fails
+0.01s setup    test/make/integration/test_routing.py::test_markdown_targets_pass_selected_paths_to_both_checkers
+0.01s setup    test/make/integration/test_routing.py::test_make_tool_targets_preserve_defaults_and_route_selectors[format-default]
+0.01s setup    test/make/integration/test_routing.py::test_cli_arguments_quote_shell_metacharacters
+
+(133 durations < 0.005s hidden.  Use -vv to show these durations.)
+=========================== short test summary info ============================
+FAILED test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[preview]
+FAILED test/make/integration/test_worktree_pruning.py::test_missing_expiry_refuses_without_mutation[apply]
+FAILED test/make/integration/test_worktree_pruning.py::test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs
+FAILED test/make/integration/test_worktree_pruning.py::test_hostile_expiry_is_literal_and_preserves_repository
+FAILED test/make/integration/test_worktree_removal.py::test_unsafe_removal_preserves_complete_relevant_state[main]
+FAILED test/make/integration/test_worktree_removal.py::test_missing_removal_input_preserves_repository_state
+======================== 6 failed, 81 passed in 54.58s =========================
+make: *** [test] Error 1

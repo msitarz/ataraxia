@@ -1,0 +1,5 @@
+uv sync --locked --group dev --check --offline
+Would use project environment at: .venv
+Resolved 40 packages in 12ms
+Checked 40 packages in 18ms
+Would make no changes
