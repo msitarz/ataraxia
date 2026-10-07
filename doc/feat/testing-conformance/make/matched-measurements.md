@@ -139,3 +139,53 @@ the failed warm-up does not establish complete coverage preservation. Its time
 is excluded from comparison. Performance comparison and parent acceptance remain
 inconclusive/pending, with no causal speedup claim. Any fixture correction
 requires a separate planned Work and a newly approved measurement sequence.
+
+## Corrected final: renewed attempt stopped
+
+Freeze corrected implementation at `4f4508d55de93b296e3d3195074753b9e310e74a` in
+`/private/tmp/ataraxia-measurement-corrected-final-input`, separately from both
+retained earlier inputs. New
+[preparation metadata](matched-measurements/corrected-final/preparation.json)
+records a read-only copy of the baseline's post-batch cache, followed by offline
+Make [setup](matched-measurements/corrected-final/prepare.txt) and
+[verification](matched-measurements/corrected-final/verify.txt). Both passed.
+This cache is not the baseline's original seed; revision-specific editable
+builds and cache history limit matching. No baseline refresh or tool change
+occurred, and all earlier report text and artifact bytes remain unchanged.
+
+[Preflight](matched-measurements/corrected-final/preflight.json) checked both
+inputs before execution: host, Python 3.14.6, top-level tool/package versions,
+lock and pytest configuration match retained baseline metadata. A metadata
+parser initially assumed `ini_options` nesting and stopped before tests; it was
+corrected to the actual `tool.pytest` table. Fixture PATH resolves Apple Git
+2.50.1 at `/usr/bin/git`, whereas top-level Git is 2.55.0 at
+`/usr/local/bin/git`. Baseline cleanup fixtures inherited top-level PATH;
+corrected fixtures narrow it. This environment difference prevents attributing
+timing changes solely to cleanup.
+
+The [retained driver](matched-measurements/corrected-final/timer-command.txt)
+used the same selection, isolation, monotonic boundaries and stop handling,
+with a fresh eight-invocation budget and 180-second timeout. The first full
+warm-up exited **2**, without timeout/skips: **1 failed, 87 passed**, 88
+collected, pytest 55.15 s and outer 60.279 s. See exact
+[raw output](matched-measurements/corrected-final/warmup-full.txt) and
+[timing metadata](matched-measurements/corrected-final/warmup-full.json).
+The sequence stopped immediately: seven invocations were never launched and
+zero measured runs completed. There are **no corrected-final medians**, no
+unmarked results, and no median comparison.
+
+`test_make_process_caches_preserve_repository_snapshot` failed reading its
+external scratch `xcrun_db` as UTF-8: `UnicodeDecodeError`. Its complete
+repository-file snapshot, ref/registration comparison and external home/scratch
+containment assertions had already passed; all 13 removal/pruning cases passed.
+The decoding failure demonstrates that the final scratch witness was not the
+expected text. Apple Git dispatch overwriting the synthetic cache witness
+after `repository.state()` is a hypothesis, not a directly captured write or a
+proven production defect. No test/input fix or retry occurred.
+
+Baseline 71 and corrected-final 88 collected cases are different workloads;
+the failed warm-up is excluded from medians and does not establish complete
+suite preservation. Cache and fixture-tool differences further limit any
+comparison. This attempt is explicitly inconclusive, with no causal/general
+speedup claim; parent acceptance remains pending. A witness correction requires
+a separate planned Work and another approved measurement sequence.
