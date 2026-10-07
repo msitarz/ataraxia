@@ -1,7 +1,7 @@
 # Renewed final Evaluation
 
-After [scratch isolation](../scratch-isolation/README.md) merges, evaluate its
-exact frozen merged revision under the
+After the [delivered scratch isolation](../README.md#delivery-map) merges,
+evaluate its exact frozen merged revision under the
 [renewed protocol](../README.md#renewed-attempt). Use a new corrected-final
 input; retain the failed frozen input unchanged. Reuse the matched baseline only
 after common-condition preflight. No silent baseline refresh, test/tool changes
