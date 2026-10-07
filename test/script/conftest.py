@@ -16,13 +16,12 @@ from test.script.selection_inputs import (
     prepared_selection,
     unsupported_selection,
 )
+from test.script.selection_manifest import manifest_expected, selection_expected
 from test.script.support import (
     ROOT,
     ChangingRecordRead,
     Package,
     PackagePayload,
-    expected_manifest,
-    expected_selection,
 )
 
 __all__ = [
@@ -30,19 +29,11 @@ __all__ = [
     "cli_cache_destination",
     "cli_existing_destination",
     "cli_missing_record",
+    "manifest_expected",
     "prepared_selection",
+    "selection_expected",
     "unsupported_selection",
 ]
-
-
-@pytest.fixture
-def selection_expected():
-    return expected_selection()
-
-
-@pytest.fixture
-def manifest_expected():
-    return expected_manifest()
 
 
 @pytest.fixture

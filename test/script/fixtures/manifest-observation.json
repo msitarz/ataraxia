@@ -1,0 +1,7 @@
+{
+  "files": {"relative.txt": "reviewed-digest"},
+  "links": {"linked": "target"},
+  "packages": [{"root": "cache-root", "name": "package-name", "version": "package-version", "origin": "package-origin", "wheel": "wheel-path", "archive": "archive-path", "basis": "review-basis", "trace": "trace-path"}],
+  "preparation_sha256": "accepted-anchor",
+  "condition": {"mode": "supported"}
+}
