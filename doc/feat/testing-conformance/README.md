@@ -8,8 +8,9 @@ assertions, checkout mutations, and duplicated process plumbing.
 ## Delivery map
 
 - **DONE** Strict Bar test pilot and lasting incremental test-typing guidance.
-- **TODO** [Make boundaries](make/README.md): fast orchestration tests and a
-  small retained set of real-tool regressions.
+- **DONE** Typed real-Make/fake-uv orchestration and retained real-Git/tool
+  regressions in disposable environments. Full/unmarked timing medians were
+  higher; workload, cache and fixture Git differences limit causal conclusions.
 - **TODO** [Script boundaries](scripts/README.md): correct test types, explicit
   process environments, and independently expected validation results.
 - **TODO** [Ataraxia boundaries](ataraxia/README.md): real product execution,
@@ -17,9 +18,9 @@ assertions, checkout mutations, and duplicated process plumbing.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
   independent window, Work-path, and Make-argument properties.
 
-Merge this map before child PRs. The four subtree summaries next define leaf
-contracts in separately reviewable planning deliveries. Typing adoption is
-delivered; Make is the first cleanup subtree. Reassess each
+Typing adoption and Make cleanup are delivered. The three remaining subtree
+summaries next define leaf contracts in separately reviewable planning
+deliveries. Merge revised maps before child PRs. Reassess each
 complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
 and publication; split and merge revised maps before expansion. Sequence

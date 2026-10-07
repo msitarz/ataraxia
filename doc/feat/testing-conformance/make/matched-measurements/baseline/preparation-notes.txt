@@ -1,5 +1,0 @@
-No measured invocations preceded this preflight.
-Initial uv python list --only-installed failed before inventory: Failed to initialize cache at /Users/nzs/.cache/uv; failed to open sdists-v9/.git: Operation not permitted. Escalated retry using project cache was aborted without an inventory result. No measured budget consumed.
-Read-only symlink/runtime inventory finds /usr/local/bin/python3.14 -> /Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14: Python 3.14.6; /Users/nzs/.local/bin/python3.14 -> /private/tmp/ataraxia-ci-python-installed/cpython-3.14-macos-x86_64-none/bin/python3.14: Python 3.14.7. Standard uv-managed Python directories under ~/.local/share/uv/python and ~/Library/Application Support/uv/python absent.
-Choose existing /usr/local/bin/python3.14 (3.14.6) for both inputs, matching original baseline patch and the freshly prepared delivery environment. This is measurement-only, not project support policy.
-Both input caches copied from /Users/nzs/Code/ataraxia/.cache before preparation; initial normalized content manifests match.
