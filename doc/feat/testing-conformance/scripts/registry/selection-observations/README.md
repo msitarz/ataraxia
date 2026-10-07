@@ -6,10 +6,12 @@ each complete delivery fits the five-minute review boundary. Follow
 
 - **DONE** Precise canonical manifest adaptation, independent whole-value oracle
   and typed public selector/expected-fixture observations.
-- **TODO** [CLI process and complete state](process-state/README.md).
+- **DONE** Real CLI process isolation, precise diagnostics/artifacts and
+  complete source/destination state observations.
 
-Manifest adaptation is delivered; process/state follows. Sequence shared
-support/conftest, consumer imports and strict includes. The first child owns
+Manifest adaptation and process/state are delivered; parent integration review
+remains. Shared support/conftest, consumer imports and strict includes retain
+the delivered boundaries. The first child owns
 ManifestObservation, read_manifest, expected_manifest, expected_selection,
 select_prepared and the two expected-value fixtures. The second owns
 SelectionProcessResult, tree_state and run_selection_cli. Preserve existing
