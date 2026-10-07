@@ -15,7 +15,7 @@ literal bytes, link targets and all existing consumers. Observations/process
 execution and record/payload validator fixtures remain outside this subtree.
 Merge a finer split before expanding either leaf beyond its review boundary.
 
-- **AC-1 TODO** Given fresh accepted or damaged named inputs, arrangements
+- **AC-1 DONE** Given fresh accepted or damaged named inputs, arrangements
   expose precisely typed paths/data and the independent preparation acceptance
   digest without changing shared source fixtures.
 
