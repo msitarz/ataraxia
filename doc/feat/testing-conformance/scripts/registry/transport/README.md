@@ -7,7 +7,7 @@ environment, bounded timeout/capture, precise argv/absence/refusal effects; no
 generic runner or selection fixture migration. Follow
 [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given isolated literal and missing-input arrangements, real Make
+- **AC-1 DONE** Given isolated literal and missing-input arrangements, real Make
   transports named arguments safely and preserves marker/destination refusal
   effects.
 
