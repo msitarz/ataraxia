@@ -15,7 +15,7 @@ expected bytes; the regression must still fail the old inside-repository layout.
 Merge before [witness-final Evaluation](../witness-final/README.md). One short
 fixture-witness review; no measurement or unrelated cleanup.
 
-- **AC-1 TODO** Given a repository snapshot before real Make writes its
+- **AC-1 DONE** Given a repository snapshot before real Make writes its
   synthetic process scratch witness, subsequent real Git inspection preserves
   deterministic witness bytes outside the repository and complete repository
   files, refs and registrations; the regression detects the old layout.
