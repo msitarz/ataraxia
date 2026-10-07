@@ -3,15 +3,12 @@
 
 from collections.abc import Callable
 from dataclasses import dataclass
-import json
 from pathlib import Path
 import subprocess
 import sys
 
 from script.registry_selection import (
-    Package,
-    Selection,
-    select,
+    Package as Package,
 )
 from script.registry_selection import (
     PackagePayload as PackagePayload,
@@ -44,16 +41,15 @@ from script.registry_selection import (
     validate_wheel_link as validate_wheel_link,
 )
 from test.script.selection_inputs import PreparedSelection
+from test.script.selection_manifest import (
+    ManifestObservation,
+    read_manifest,
+)
+from test.script.selection_manifest import (
+    select_prepared as select_prepared,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
-
-
-@dataclass(frozen=True)
-class ManifestObservation:
-    """All documented values of the delivered registry manifest."""
-
-    selection: Selection
-    condition: dict[str, str]
 
 
 @dataclass(frozen=True)
@@ -73,64 +69,6 @@ class SelectionProcessResult:
     def output(self) -> str:
         """Return combined process diagnostics."""
         return self.stdout + self.stderr
-
-
-def expected_selection() -> Selection:
-    """Read an independent whole expected value from a literal fixture.
-
-    Returns:
-        The expected public selector result.
-    """
-    return expected_manifest().selection
-
-
-def read_manifest(path: Path) -> ManifestObservation:
-    """Read public artifact values without deriving expected answers.
-
-    Returns:
-        All documented manifest fields.
-
-    Raises:
-        ValueError: If the manifest has missing or unexpected top-level fields.
-    """
-    data = json.loads(path.read_text())
-    if data.keys() != {
-        "files",
-        "links",
-        "packages",
-        "preparation_sha256",
-        "condition",
-    }:
-        raise ValueError(
-            "selection manifest must contain exactly the five public fields"
-        )
-    result = Selection(
-        data["files"],
-        data["links"],
-        tuple(Package(**record) for record in data["packages"]),
-        data["preparation_sha256"],
-    )
-    return ManifestObservation(result, data["condition"])
-
-
-def expected_manifest() -> ManifestObservation:
-    """Load an independent literal expected artifact.
-
-    Returns:
-        Whole expected manifest values.
-    """
-    return read_manifest(
-        ROOT / "test/script/fixtures/registry_selection/expected-selection.json"
-    )
-
-
-def select_prepared(case: PreparedSelection) -> Selection:
-    """Call the actual public selector with fixture paths.
-
-    Returns:
-        The public selector's result without adapting its behavior.
-    """
-    return select(case.cache, case.record, case.accepted_sha256, case.repository)
 
 
 def tree_state(directory: Path) -> dict[str, bytes | str]:
