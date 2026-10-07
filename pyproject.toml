@@ -161,6 +161,8 @@ project_includes = [
   "src",
   "example/crossover.py",
   "test/ataraxia/unit/test_bar.py",
+  "test/script/support.py",
+  "test/script/unit/test_registry_imports.py",
   "test/make/support.py",
   "test/make/fixtures/uv_recorder.py",
   "test/make/fixtures/uv_scratch.py",
@@ -197,7 +199,7 @@ preset = "strict"
 # pytest
 # =============================================================================
 [tool.pytest]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 testpaths = ["test"]
 markers = [
   "covers(work, ac): trace a test to an acceptance criterion.",
