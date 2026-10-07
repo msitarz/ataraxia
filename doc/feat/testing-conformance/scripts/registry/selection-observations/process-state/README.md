@@ -9,7 +9,7 @@ manifest reader and actual imports; update only needed consumer interfaces,
 without CLI case migration, validator cleanup or single-read-double migration.
 Follow [parent ownership and sequencing](../README.md).
 
-- **AC-1 TODO** Given fresh accepted or refused inputs, actual CLI observations
+- **AC-1 DONE** Given fresh accepted or refused inputs, actual CLI observations
   retain precise exit/diagnostics, whole manifests or failure artifacts and
   complete source/destination state; process scratch stays contained outside
   observed inputs and expected answers remain independent of production output.
