@@ -23,27 +23,9 @@ from test.script.support import select_prepared, tree_state
 def test_selector_values_share_the_public_registry_types(
     prepared_selection: PreparedSelection, selection_expected: Selection
 ) -> None:
-    """Given actual registry imports, existing helper consumers receive
-    the real public types/functions with stable selector and validator outcomes.
+    """Verify canonical selector identity, complete values and unchanged inputs.
 
-    Given prepared inputs, actual selector/CLI observations retain
-    complete manifest fields, file bytes/link targets, exit and diagnostics
-    through precisely typed results.
-
-    Parent coverage verifies canonical selector values and complete unchanged
-    prepared inputs; manifest reading and CLI outcomes are covered separately.
-
-    Given literal or delivered manifest data, observations retain
-    every public value through precise canonical types and reject malformed
-    consumed shapes before exposing typed values; real public selector calls
-    preserve the independent complete expected result and input state.
-
-    Manifest-adaptation coverage here verifies the actual selector result and
-    complete input immutability; companion reader cases cover full values and
-    malformed shapes.
-
-    Covers the selector's complete result and public value identity; existing
-    validator and Make cases cover the remaining consumer obligations.
+    CLI exit/diagnostics and complete manifest reading are covered separately.
     """
     # Given
     before = tree_state(prepared_selection.cache)
