@@ -9,7 +9,9 @@ from pathlib import Path
 def main() -> None:
     """Write cache witnesses without touching the requested repository files."""
     (Path(os.environ["HOME"]) / "cache").write_text("process home cache\n")
-    (Path(os.environ["TMPDIR"]) / "xcrun_db").write_text("process scratch cache\n")
+    (Path(os.environ["TMPDIR"]) / "fixture-scratch-witness").write_bytes(
+        b"process scratch cache\n"
+    )
 
 
 if __name__ == "__main__":
