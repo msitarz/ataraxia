@@ -6,7 +6,8 @@ changes, installs, blanket support/conftest migration or new fixture framework.
 
 ## Delivery map
 
-- **TODO** [Actual registry imports](imports/README.md).
+- **DONE** Canonical registry imports with public value identity, strict helper
+  checking and normal pytest/criterion-runner import parity.
 - **TODO** [Make registry transport support](transport/README.md).
 - **TODO** [Prepared selection inputs](selection-inputs/README.md).
 - **TODO**
