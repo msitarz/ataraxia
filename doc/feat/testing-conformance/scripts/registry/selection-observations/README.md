@@ -1,11 +1,20 @@
 # Selection process and manifest observations
 
-After selection inputs, isolate typed whole manifest/state observation, public
-selector invocation and run_selection_cli. Preserve actual imports, validate
-external JSON at its boundary and use the separate literal expected manifest.
-Explicit disposable HOME/TMPDIR outside observed inputs, timeout/capture, exact
-output artifacts; no production-derived expected answers. Follow
+Separate external manifest adaptation from real CLI process/state isolation so
+each complete delivery fits the five-minute review boundary. Follow
 [parent ownership, sequencing and checks](../README.md).
+
+- **TODO**
+  [Manifest adaptation and selector observations](manifest-adaptation/README.md).
+- **TODO** [CLI process and complete state](process-state/README.md).
+
+Manifest adaptation precedes process/state; sequence shared support/conftest,
+consumer imports and strict includes. The first child owns ManifestObservation,
+read_manifest, expected_manifest, expected_selection, select_prepared and the
+two expected-value fixtures. The second owns SelectionProcessResult, tree_state
+and run_selection_cli. Preserve existing consumer paths/cases/markers, with
+narrow typed reexports if needed; no CLI case relocation in this subtree.
+Validator fixtures and the single-read double remain for later leaves.
 
 - **AC-1 TODO** Given prepared inputs, actual selector/CLI observations retain
   complete manifest fields, file bytes/link targets, exit and diagnostics
