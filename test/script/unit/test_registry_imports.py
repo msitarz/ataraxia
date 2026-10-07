@@ -4,7 +4,8 @@
 import pytest
 
 from script.registry_selection import Package, Selection
-from test.script.support import PreparedSelection, select_prepared, tree_state
+from test.script.selection_inputs import PreparedSelection
+from test.script.support import select_prepared, tree_state
 
 
 @pytest.mark.covers(

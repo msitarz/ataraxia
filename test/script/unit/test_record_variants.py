@@ -7,7 +7,8 @@ from pathlib import Path
 import pytest
 
 from test.script.record_variants import arrange_record_variant, read_fixture
-from test.script.support import ROOT, copy_selection_fixture, tree_state
+from test.script.selection_inputs import copy_selection_fixture
+from test.script.support import ROOT, tree_state
 
 
 @pytest.mark.covers(

@@ -162,6 +162,8 @@ project_includes = [
   "example/crossover.py",
   "test/ataraxia/unit/test_bar.py",
   "test/script/support.py",
+  "test/script/selection_inputs.py",
+  "test/script/unit/test_selection_inputs.py",
   "test/script/record_variants.py",
   "test/script/unit/test_record_variants.py",
   "test/script/registry_transport.py",
