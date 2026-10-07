@@ -38,19 +38,9 @@ PACKAGE: dict[str, Json] = {
     ac="AC-1",
 )
 def test_manifest_retains_every_literal_public_value() -> None:
-    """Given literal or delivered manifest data, observations retain
-    every public value through precise canonical types and reject malformed
-    consumed shapes before exposing typed values; real public selector calls
-    preserve the independent complete expected result and input state.
+    """Retain every literal manifest value without changing source bytes.
 
-    Given prepared inputs, actual selector/CLI observations retain
-    complete manifest fields, file bytes/link targets, exit and diagnostics
-    through precisely typed results.
-
-    Parent coverage verifies complete canonical manifest values and unchanged
-    literal source bytes; selector and process behavior are covered separately.
-
-    This case covers complete reader values and source immutability.
+    Selector calls and CLI outcomes are covered separately.
     """
     # Given
     path = Path(__file__).parents[1] / "fixtures/manifest-observation.json"
@@ -141,12 +131,9 @@ def test_manifest_retains_every_literal_public_value() -> None:
 def test_manifest_rejects_malformed_consumed_shapes(
     tmp_path: Path, document: Json, reason: str
 ) -> None:
-    """Given literal or delivered manifest data, observations retain
-    every public value through precise canonical types and reject malformed
-    consumed shapes before exposing typed values; real public selector calls
-    preserve the independent complete expected result and input state.
+    """Reject malformed consumed shapes with exact reasons and unchanged bytes.
 
-    This case covers exact consumed-shape refusal without source mutation.
+    Successful values and selector/CLI behavior are covered separately.
     """
     # Given
     path = tmp_path / "manifest.json"
