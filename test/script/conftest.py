@@ -8,22 +8,31 @@ from unittest.mock import patch
 
 import pytest
 
+from test.script.selection_inputs import (
+    changed_selection,
+    cli_cache_destination,
+    cli_existing_destination,
+    cli_missing_record,
+    prepared_selection,
+    unsupported_selection,
+)
 from test.script.support import (
     ROOT,
     ChangingRecordRead,
     Package,
     PackagePayload,
-    arrange_changed_input,
-    arrange_cli_collision,
-    copy_selection_fixture,
     expected_manifest,
     expected_selection,
 )
 
-
-@pytest.fixture
-def prepared_selection(tmp_path):
-    return copy_selection_fixture(tmp_path, "accepted")
+__all__ = [
+    "changed_selection",
+    "cli_cache_destination",
+    "cli_existing_destination",
+    "cli_missing_record",
+    "prepared_selection",
+    "unsupported_selection",
+]
 
 
 @pytest.fixture
@@ -34,37 +43,6 @@ def selection_expected():
 @pytest.fixture
 def manifest_expected():
     return expected_manifest()
-
-
-@pytest.fixture
-def changed_selection(request, prepared_selection):
-    arrange_changed_input(prepared_selection, request.param)
-    return prepared_selection
-
-
-@pytest.fixture
-def unsupported_selection(request, tmp_path):
-    return copy_selection_fixture(tmp_path, request.param)
-
-
-@pytest.fixture
-def cli_missing_record(prepared_selection):
-    return replace(
-        prepared_selection, record=prepared_selection.directory / "absent.json"
-    )
-
-
-@pytest.fixture
-def cli_existing_destination(prepared_selection):
-    arrange_cli_collision(prepared_selection)
-    return prepared_selection
-
-
-@pytest.fixture
-def cli_cache_destination(prepared_selection):
-    return replace(
-        prepared_selection, destination=prepared_selection.cache / "forbidden"
-    )
 
 
 @pytest.fixture
