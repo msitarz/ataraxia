@@ -4,51 +4,48 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 import hashlib
-import importlib.util
 import json
 from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
-if TYPE_CHECKING:
-    from script.registry_selection import (
-        Package,
-        PackagePayload,
-        Selection,
-        accepted_preparation,
-        dependency_declarations,
-        package_payload,
-        preparation_evidence,
-        select,
-        validate_digest,
-        validate_package_layout,
-        validate_payload_metadata,
-        validate_selected_inventory,
-        validate_wheel_link,
-    )
-else:
-    script = Path(__file__).resolve().parents[2] / "script/registry_selection.py"
-    spec = importlib.util.spec_from_file_location(
-        "registry_selection_under_test", script
-    )
-    if spec is None or spec.loader is None:
-        raise ImportError("cannot load the actual registry selector")
-    selector = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = selector
-    spec.loader.exec_module(selector)
-    Package, Selection, select = selector.Package, selector.Selection, selector.select
-    PackagePayload = selector.PackagePayload
-    accepted_preparation = selector.accepted_preparation
-    dependency_declarations = selector.dependency_declarations
-    package_payload = selector.package_payload
-    preparation_evidence = selector.preparation_evidence
-    validate_digest = selector.validate_digest
-    validate_package_layout = selector.validate_package_layout
-    validate_payload_metadata = selector.validate_payload_metadata
-    validate_selected_inventory = selector.validate_selected_inventory
-    validate_wheel_link = selector.validate_wheel_link
+from script.registry_selection import (
+    Package,
+    Selection,
+    select,
+)
+from script.registry_selection import (
+    PackagePayload as PackagePayload,
+)
+from script.registry_selection import (
+    accepted_preparation as accepted_preparation,
+)
+from script.registry_selection import (
+    dependency_declarations as dependency_declarations,
+)
+from script.registry_selection import (
+    package_payload as package_payload,
+)
+from script.registry_selection import (
+    preparation_evidence as preparation_evidence,
+)
+from script.registry_selection import (
+    validate_digest as validate_digest,
+)
+from script.registry_selection import (
+    validate_package_layout as validate_package_layout,
+)
+from script.registry_selection import (
+    validate_payload_metadata as validate_payload_metadata,
+)
+from script.registry_selection import (
+    validate_selected_inventory as validate_selected_inventory,
+)
+from script.registry_selection import (
+    validate_wheel_link as validate_wheel_link,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 INPUTS = ("CACHE", "RECORD", "PREPARATION_SHA256", "DESTINATION")
