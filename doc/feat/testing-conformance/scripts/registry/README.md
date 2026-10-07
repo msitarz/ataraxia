@@ -1,28 +1,40 @@
 # Registry testing boundaries
 
-Plan bounded leaves before implementation for these ordered outcomes:
+Preserve reviewed registry selection/validation contracts under the
+[parent testing and typing obligations](../README.md). No production/tool
+changes, installs, blanket support/conftest migration or new fixture framework.
 
-1. Isolate typed script-owned process/selection arrangements and actual imports
-   as prerequisites sized separately from case migrations where necessary.
-2. Move four CLI cases from `unit/test_registry_selection.py` to integration;
-   keep selector cases unit-level. Preserve whole literal manifest, recoverable
-   failure artifacts, source bytes/link targets, destination collisions and
-   forbidden cache-contained destinations. Failure expectations are independent
-   of captured stderr; output agreement is a separate forwarding obligation.
-3. Clean selector/record contracts: accepted-record single-read behavior,
-   changed/unsupported conditions, digest acceptance, declarations and reviewed
-   evidence. Retain exact errors/causes and complete independent record values.
-4. Clean payload contracts: package layout, complete inventory/resolver
-   metadata, vendored metadata, wheel-link containment and local/environment
-   rejection.
+## Delivery map
 
-`support.py` mixes dynamic imports and process/manifest helpers; `conftest.py`
-mixes untyped record/payload fixtures. The next map must allocate narrow owned
-helper/fixture migrations before their consumers, splitting record and payload
-tests/support as needed. No blanket fixture migration or generic framework.
-Script ownership remains; shared Make registry consumers must retain literal
-arguments, marker absence and missing-input behavior. No production changes.
-Follow [parent typing and review obligations](../README.md).
+- **TODO** [Actual registry imports](imports/README.md).
+- **TODO** [Make registry transport support](transport/README.md).
+- **TODO** [Prepared selection inputs](selection-inputs/README.md).
+- **TODO**
+  [Selection process and manifest observations](selection-observations/README.md).
+- **TODO** [Registry CLI integration cases](cli/README.md).
+- **TODO** [Selector unit cases](selectors/README.md).
+- **TODO** [Record validation unit contracts](records/README.md).
+- **TODO** [Package layout and wheel-link contracts](payload-layout/README.md).
+- **TODO**
+  [Payload inventory and vendored metadata](payload-inventory/README.md).
+- **TODO**
+  [Payload metadata and declared inventory](payload-metadata/README.md).
+
+Execute in listed order to serialize support/conftest, public imports, strict
+includes and Make-consumer changes. Helper prerequisites precede case
+migrations; each leaf owns only its named fixtures/functions. Extract cohesive
+typed modules rather than sweeping legacy fixtures into one PR. Include cleaned
+modules, helpers and executable fixtures precisely; do not claim remaining
+fixtures are checked. Reassess each complete diff against the five-minute review
+target and merge a finer split before expansion.
+
+Preserve all original cases, covers/full criterion text and accurate partial
+claims when moving tests; units start no processes, real CLI belongs in
+integration. Shared Make consumers retain named literal arguments,
+hostile-marker absence and missing-input refusal. Run those focused checks
+whenever shared imports/helpers/fixtures change. Parent integration reuses child
+evidence plus complete registry and Make-consumer execution and latest-head full
+CI.
 
 - **AC-1 TODO** Given fresh disposable inputs, real registry CLI and unit
   selectors/validators preserve reviewed manifests, precise refusals, complete
