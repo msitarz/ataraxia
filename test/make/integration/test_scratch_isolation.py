@@ -13,12 +13,20 @@ from test.make.worktree_support import creation_repository, files_under
 @pytest.mark.covers(
     work="doc/feat/testing-conformance/make/scratch-isolation/README.md", ac="AC-1"
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/make/scratch-witness/README.md", ac="AC-1"
+)
 def test_make_process_caches_preserve_repository_snapshot(tmp_path: Path) -> None:
     """AC-1: Given a complete repository snapshot before execution and
     process home/scratch outside that repository, writes during a real Make
     action preserve repository files including similarly named legitimate data,
     refs and worktree registrations; the regression detects the old arrangement
     and removal/pruning retain their promises.
+
+    AC-1: Given a repository snapshot before real Make writes its
+    synthetic process scratch witness, subsequent real Git inspection preserves
+    deterministic witness bytes outside the repository and complete repository
+    files, refs and registrations; the regression detects the old layout.
 
     This case covers cache writes and complete repository/state preservation;
     existing removal/pruning cases cover their command-specific promises.
@@ -31,6 +39,7 @@ def test_make_process_caches_preserve_repository_snapshot(tmp_path: Path) -> Non
     (directory / "tmp").mkdir(exist_ok=True)
     (directory / "home/cache").write_text("repository home data\n")
     (directory / "tmp/xcrun_db").write_text("repository scratch data\n")
+    (directory / "tmp/fixture-scratch-witness").write_bytes(b"repository witness\n")
     files, state = files_under(directory), repository.state()
 
     # When
@@ -47,6 +56,11 @@ def test_make_process_caches_preserve_repository_snapshot(tmp_path: Path) -> Non
     assert home.is_relative_to(tmp_path)
     assert scratch.is_relative_to(tmp_path)
     assert (home / "cache").read_text() == "process home cache\n"
-    assert (scratch / "xcrun_db").read_text() == "process scratch cache\n"
+    assert (
+        scratch / "fixture-scratch-witness"
+    ).read_bytes() == b"process scratch cache\n"
     assert (directory / "home/cache").read_text() == "repository home data\n"
     assert (directory / "tmp/xcrun_db").read_text() == "repository scratch data\n"
+    assert (
+        directory / "tmp/fixture-scratch-witness"
+    ).read_bytes() == b"repository witness\n"
