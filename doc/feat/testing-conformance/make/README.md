@@ -32,15 +32,16 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE**
   [Renewed final attempt](matched-measurements.md#corrected-final-renewed-attempt-stopped)
   stopped on a scratch-witness decoding failure; comparison is inconclusive.
-- **TODO** [Synthetic scratch witness correction](scratch-witness/README.md).
+- **DONE** Dedicated synthetic scratch witness survives real Git inspection,
+  with complete repository snapshots and retained legitimate cache/witness data.
 - **TODO** [Witness-final Evaluation](witness-final/README.md).
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
-Scratch isolation and the stopped renewed attempt are delivered. Scratch-witness
-correction precedes the witness-final Evaluation; merge it before freezing
-the new evaluation input. Both outcomes remain pending;
+Scratch isolation, the stopped renewed attempt and witness correction are
+delivered. Witness-final Evaluation awaits the correction's merged revision
+freeze and matching preflight;
 parent integration and timing acceptance remain pending. Each complete leaf
 diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
