@@ -17,6 +17,10 @@ from test.script.support import tree_state
 
 
 @pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-inputs/README.md",
+    ac="AC-1",
+)
+@pytest.mark.covers(
     work="doc/feat/testing-conformance/scripts/registry/selection-inputs/filesystem-and-fixtures/README.md",
     ac="AC-1",
 )
@@ -25,6 +29,13 @@ def test_accepted_arrangement_preserves_complete_literal_inputs(tmp_path: Path) 
     consumers receive precise paths/data, independent accepted digest provenance
     and complete literal file bytes/link targets; changing one arrangement does
     not affect another or shared source fixtures.
+
+    Given fresh accepted or damaged named inputs, arrangements
+    expose precisely typed paths/data and the independent preparation acceptance
+    digest without changing shared source fixtures.
+
+    Parent coverage verifies complete typed accepted paths, digest and bytes/link
+    targets; damaged records and copy/source isolation are covered separately.
 
     Covers complete accepted paths, digest and filesystem contents; independent
     copy isolation is covered by the companion case.
@@ -85,6 +96,10 @@ def test_accepted_arrangement_preserves_complete_literal_inputs(tmp_path: Path) 
 
 
 @pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/selection-inputs/README.md",
+    ac="AC-1",
+)
+@pytest.mark.covers(
     work="doc/feat/testing-conformance/scripts/registry/selection-inputs/filesystem-and-fixtures/README.md",
     ac="AC-1",
 )
@@ -93,6 +108,13 @@ def test_damaging_one_copy_preserves_other_copy_and_source(tmp_path: Path) -> No
     consumers receive precise paths/data, independent accepted digest provenance
     and complete literal file bytes/link targets; changing one arrangement does
     not affect another or shared source fixtures.
+
+    Given fresh accepted or damaged named inputs, arrangements
+    expose precisely typed paths/data and the independent preparation acceptance
+    digest without changing shared source fixtures.
+
+    Parent coverage verifies damaged-copy independence and unchanged shared source;
+    complete accepted state and record/digest preservation are covered separately.
 
     Covers independent copies and source-fixture immutability when a selected
     payload is removed; literal contents and digest are covered separately.
