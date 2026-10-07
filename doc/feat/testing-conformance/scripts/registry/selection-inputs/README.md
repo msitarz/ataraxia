@@ -1,15 +1,15 @@
 # Prepared selection inputs
 
-Precise record-variant adaptation and filesystem/fixture extraction are
-delivered as separate changes within the five-minute review boundary. Follow
+Precise record-variant adaptation is delivered; filesystem/fixture extraction
+follows as a separate change within the five-minute review boundary. Follow
 [parent ownership, sequencing and checks](../README.md).
 
 - **DONE** Precise JSON adaptation preserves seven named record mutations,
   complete serialized digests and unchanged source fixtures.
-- **DONE** Typed selection-input helpers and six owned fixtures preserve literal
-  bytes/link targets, accepted digest provenance and independent fresh copies.
+- **TODO** [Filesystem and owned fixtures](filesystem-and-fixtures/README.md).
 
-Both input arrangements are delivered. Preserve accepted digest provenance,
+Filesystem/fixtures follows delivered record variants; sequence shared support,
+conftest and strict-inclusion edits. Preserve accepted digest provenance,
 literal bytes, link targets and all existing consumers. Observations/process
 execution and record/payload validator fixtures remain outside this subtree.
 Merge a finer split before expanding either leaf beyond its review boundary.
