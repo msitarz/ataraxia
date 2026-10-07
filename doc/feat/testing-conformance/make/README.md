@@ -26,12 +26,14 @@ real-tool regressions. Follow [testing](../../../testing.md),
 - **DONE**
   [Final measurement attempt](matched-measurements.md#final-condition-stopped-comparison-inconclusive)
   stopped after a failed warm-up; comparison is explicitly inconclusive.
+- **TODO** [Sandbox scratch isolation](scratch-isolation/README.md).
+- **TODO** [Renewed final Evaluation](renewed-final/README.md).
 
 Cleanup deliveries are complete;
 [original baseline measurements](measurements.md) remain historical evidence.
 Matched baseline and the inconclusive final attempt are delivered.
-Fixture-snapshot isolation correction and a newly approved measurement sequence
-remain unresolved. Each complete leaf diff must fit the
+Scratch isolation precedes renewed measurement; merge the correction before
+freezing its evaluation revision. Each complete leaf diff must fit the
 [five-minute review target](../../../workflow.md#scope-and-sizing); replan and
 merge further splits before expansion.
 
@@ -62,14 +64,12 @@ separately, report slower or unchanged results honestly, and claim no unmeasured
 speedup. No timing assertions or benchmark tool. Follow
 [evaluation](../../../evaluation.md).
 
-The original baseline used Python 3.14.6; the current prepared environment
-reports 3.14.7. Inventory available interpreters before execution; this does not
-establish that 3.14.6 is unavailable. Refresh old baseline code at
-`96ef5bae2a322c3d1c5a530b88687e128742332c` against final code frozen at
-`72b5c0617e41fe01520f03095aaaea5317dc94c0`. A separate disposable checkout of
-that exact old revision is authorized only as evaluation input; delivery
-branches still start from current master. Later plan/report revisions are
-documentation-only.
+The original baseline used Python 3.14.6; inventory found that interpreter and
+3.14.7. The matched refresh used old code
+`96ef5bae2a322c3d1c5a530b88687e128742332c` and the stopped final attempt used
+`72b5c0617e41fe01520f03095aaaea5317dc94c0`. Those frozen inputs and artifacts
+are historical records; do not resume the stopped sequence. Evaluation inputs
+may use exact frozen revisions; delivery branches start from current master.
 
 Preflight both prepared offline environments on the current host before runs:
 record executable paths, Python/tool/package versions, locks and cache
@@ -97,6 +97,26 @@ faster/unchanged/slower for that measured workload; no causal or general speedup
 claim follows. Independent parent preservation review reuses child evidence, a
 complete Make suite and latest-head full CI before acceptance; timing cannot
 excuse lost coverage.
+
+### Renewed attempt
+
+After scratch isolation merges, record its exact merged SHA before preparation
+or execution and create a separate corrected-final input. Reuse the retained
+matched baseline only after preflight against its metadata: common host,
+executable/tool/Python/package versions, lock, selectors and cache preparation.
+Record new input preparation and cache conditions and their comparison limits;
+stop on mismatch rather than silently refreshing baseline or replacing tools.
+
+Reuse the shared command, isolation, timing and stop protocol above with a new
+budget of exactly eight corrected-final invocations: two warm-ups then three
+alternating full/unmarked pairs, 180 seconds each. No concurrent suite or extra
+runs. Append the comparison to `matched-measurements.md`; retain new raw output,
+metadata and driver in `matched-measurements/corrected-final/`. Preserve
+original, refreshed baseline and stopped-attempt evidence bytes, including
+encoded output. Report counts/workload differences and preservation limits;
+unsuccessful or unmatched observations are inconclusive. Parent integration
+review reuses both children, complete Make-suite execution and latest-head full
+CI.
 
 ## Acceptance
 
