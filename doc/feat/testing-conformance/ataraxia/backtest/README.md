@@ -5,7 +5,8 @@
 - **DONE** Valid arrangements: typed strategy and loader fixtures, a retained
   literal CSV shard, and independent complete result observations in
   `test/ataraxia/fixtures/backtest/` and `test/ataraxia/backtest_support.py`.
-- **TODO** [Module loading](loading/README.md): both existing import-file cases.
+- **DONE** Module loading: retained utility tests cover the exact missing-module
+  refusal and loading the copied six-field Bar fixture through `import_file`.
 - **TODO** [Real results](results/README.md): shard/directory results and paths,
   plus genuine sink and consumer selection.
 - **TODO** [Invalid arrangements](invalid-arrangements/README.md): named export,
