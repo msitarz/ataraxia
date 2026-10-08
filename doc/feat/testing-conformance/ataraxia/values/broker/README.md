@@ -16,7 +16,7 @@ Retain account sum 2999/594. Entry must remain open with zero PnL even when its
 bar touches an exit; on later calls existing positions update before the new
 one is admitted. ADR 13 owns this timing. No broker policy or production repair.
 
-- **AC-1 TODO** Given retained signal/lifecycle cases, the real broker returns
+- **AC-1 DONE** Given retained signal/lifecycle cases, the real broker returns
   complete independently expected snapshots, delays new-position exits and
   aggregates account values without internal doubles or mutable-oracle aliasing.
 
