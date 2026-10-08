@@ -7,7 +7,7 @@ units process-free, with real nested pytest in Make integration. Strictly
 include only this cleaned subset and owned helpers. Use public functions and
 scoped process state, never internal doubles.
 
-- **AC-1 TODO** Given invocation state or pytest summary text, the script
+- **AC-1 DONE** Given invocation state or pytest summary text, the script
   reports missing WORK with its defined exit and recognizes empty selections
   without misclassifying output containing a selected test.
 
