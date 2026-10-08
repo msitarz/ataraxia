@@ -19,7 +19,7 @@ consumer paths/cases/markers, with narrow typed reexports if needed; no CLI case
 relocation in this subtree. Validator fixtures and the single-read double remain
 for later leaves.
 
-- **AC-1 TODO** Given prepared inputs, actual selector/CLI observations retain
+- **AC-1 DONE** Given prepared inputs, actual selector/CLI observations retain
   complete manifest fields, file bytes/link targets, exit and diagnostics
   through precisely typed results.
 
