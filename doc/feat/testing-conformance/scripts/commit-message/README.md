@@ -6,8 +6,10 @@ without changing checker or hook behavior. Follow
 
 ## Delivery map
 
-- **TODO** [Typed arrangements](support/README.md): isolated process/Git support
-  and a named executable hook fixture, before any consumer migration.
+- **DONE** Typed arrangements: added `test/script/commit_message_support.py`
+  and the executable `test/script/fixtures/commit_message_hook.py` with precise
+  strict-Pyrefly includes. Consumer runtime adoption remains in the following
+  leaves.
 - **TODO** [Checker CLI](checker/README.md): all 18 accepted and seven refused
   formatting cases, with independent complete outcomes and retained bytes.
 - **TODO** [Configured Git behavior](git/README.md): six scissors combinations
