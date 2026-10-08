@@ -12,7 +12,7 @@ the production conversion formula. Parametrize `within` below/at/inside/at/above
 the existing 5..20 range, preserving the interior 14 case and inclusive edges.
 Add no instrument, malformed-input or normalization policy.
 
-- **AC-1 TODO** Given the retained mapping/rounding and range cases, public Bar
+- **AC-1 DONE** Given the retained mapping/rounding and range cases, public Bar
   construction and `within` produce complete literal normalized values and
   inclusive-boundary outcomes without losing the strict pilot's contract.
 
