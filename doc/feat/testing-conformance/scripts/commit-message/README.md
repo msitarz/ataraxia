@@ -13,8 +13,11 @@ without changing checker or hook behavior. Follow
 - **DONE** Checker CLI: moved all 18 accepted and seven refused formatting
   inputs into `test/script/integration/test_commit_message_cli.py`, with
   independent outcomes, retained bytes and a precise strict-Pyrefly include.
-- **TODO** [Configured Git behavior](git/README.md): six scissors combinations
-  and the real commit-hook refusal/acceptance lifecycle.
+- **DONE** Configured Git behavior: moved the six scissors combinations and
+  real commit-hook refusal/acceptance lifecycle into
+  `test/script/integration/test_commit_message_git.py`, preserving exact checker
+  outcomes, message bytes, ref effects, and stored message content with strict
+  typing.
 - **TODO** [Prepared-project prek](prek/README.md): separate filename-forwarding
   success/refusal tests using real prepared tools in a disposable project.
 
