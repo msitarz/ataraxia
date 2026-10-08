@@ -16,7 +16,7 @@ and assert that handle closed after the scope exits. Do not confuse the provider
 iterator with a closable compute generator or infer closure from callback
 counts.
 
-- **AC-1 TODO** Given real CSV/source contexts, exhaustion, a propagated body
+- **AC-1 DONE** Given real CSV/source contexts, exhaustion, a propagated body
   error and early scope exit each preserve literal source values and close the
   genuine provider resource at the source-owned context boundary.
 
