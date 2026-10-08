@@ -9,6 +9,10 @@ import pytest
 
 from test.script.acceptance_support import acceptance_tests as acceptance_tests
 
+# The standalone public function has no root argument and reads module ROOT.
+# These scoped overrides redirect only filesystem lookup so its real Work-path
+# validation and test-root discovery run against disposable files.
+
 
 def make_work_fixture(root: Path) -> str:
     """Create an owning README and both selector roots beneath a temporary root."""
@@ -109,11 +113,13 @@ def test_build_command_rejects_invalid_work_paths_with_exact_errors(
 ) -> None:
     """Reject invalid Work paths with their exact ValueError arguments."""
     # Given
+    # The temporary repository contains no Work files.
+
+    # When
     with (
         patch.object(acceptance_tests, "ROOT", tmp_path),
         pytest.raises(ValueError) as raised,
     ):
-        # When
         acceptance_tests.build_command("test", work)
 
     # Then
@@ -133,11 +139,11 @@ def test_build_command_rejects_invalid_criterion_for_existing_work(
     # Given
     work = make_work_fixture(tmp_path)
 
+    # When
     with (
         patch.object(acceptance_tests, "ROOT", tmp_path),
         pytest.raises(ValueError) as raised,
     ):
-        # When
         acceptance_tests.build_command("test", work, "AC-0")
 
     # Then
