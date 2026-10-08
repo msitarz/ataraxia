@@ -23,13 +23,20 @@ marker discovery. Each complete diff, including types, fixtures and strict
 inclusion, must fit the five-minute review target; split before expansion.
 
 Use public script functions. Justify and scope any sibling-import or root setup;
-do not patch internal call graphs. Units start no processes. Run existing Make
-acceptance tests after shared support or fixture changes.
+do not patch internal call graphs. The two current test files are historical
+containers, not whole-module ownership: extract only each leaf's cases into
+cohesive typed modules and strictly include only owned modules/helpers. Command
+construction owns the command-script import/root setup reused narrowly by
+summaries; parsing owns equivalent checker setup reused by later declaration
+leaves. No new framework. Units start no processes; run Make acceptance tests
+after shared support or fixture changes.
 
 Use distinct test/example roots and named, typed source fixtures copied
 unchanged. Precisely include cleaned modules, helpers and executable fixtures
 in strict Pyrefly. Preserve independent commands/reports, refusal reasons and
 causes, markers, Given/When/Then, and concise truthful slice docstrings.
+Retain all 13 command and 16 declaration cases (8+5 and 4+8+4), with historical
+marker identities intact.
 
 - **AC-1 TODO** Given disposable Work/test/example arrangements, command rules
   select the declared scope and reject invalid inputs precisely; static checks

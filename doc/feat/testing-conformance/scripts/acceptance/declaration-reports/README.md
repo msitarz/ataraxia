@@ -1,10 +1,12 @@
 # Acceptance declaration reports
 
-Own the eight-case status/method/marker matrix in `test_acceptance_coverage.py`.
-Preserve TODO/DONE with each combination and compare complete neutral reports;
-status must not imply completion or required declarations. Precisely type and
-strictly include cleaned modules/fixtures. Reuse marker-discovery fixtures only
-when ownership fits; keep reports independent of production formatting helpers.
+Extract only the eight status/method/marker combinations from legacy
+`test_acceptance_coverage.py`. Use eight independent arrangements, each with a
+literal complete expected report; no generated Python or test-body branching.
+Preserve TODO/DONE neutrality. Own a named typed marker-source fixture before
+discovery; precisely type/include only this cleaned subset and owned
+helpers/fixture, not remaining legacy cases. Reuse parser setup; keep
+expectations production- independent.
 
 - **AC-1 TODO** Given either criterion status and independent marker/method
   declarations, reports state exactly what was declared without judging the
