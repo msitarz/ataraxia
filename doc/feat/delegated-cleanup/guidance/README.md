@@ -1,13 +1,13 @@
 # Cleanup role guidance and WDR
 
 Update the post-merge cleanup owner and orchestrator route for a distinct
-reusable cleanup subagent named `cleanup`, using Luna at medium effort as
+reusable subagent named `cleaner`, using Luna at medium effort as
 explicitly authorized for this operational role. The role is not a Work leaf
 executor and does not publish PRs, review or merge code, or delegate
 recursively.
 
 After the maintainer confirms a Work PR merged, the orchestrator hands off the
-PR, branch, worktree, reviewed head, and merge IDs. The cleanup agent refreshes
+PR, branch, worktree, reviewed head, and merge IDs. The cleaner agent refreshes
 Git objects with `git fetch` before comparisons; checks local and remote tips
 separately for changes beyond the reviewed revision; checks for dependent PRs,
 dirty or untracked state, and uncertain comparisons; then follows all existing

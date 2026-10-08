@@ -1,6 +1,6 @@
 # Cleanup role operational trial
 
-After the guidance child merges, reuse the same cleanup agent for a subsequent
+After the guidance child merges, reuse the same cleaner agent for a subsequent
 maintainer-confirmed Work PR merge. Assess the actual handoff, reported object
 comparisons and state checks, removals, blockers, and orchestrator assessment.
 Use real occurrences only; do not create artificial destructive cases, add a
