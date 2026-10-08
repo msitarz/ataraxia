@@ -93,10 +93,18 @@ def test_position_on_bar_no_order_hit(long_position: Position) -> None:
 @pytest.mark.covers(
     work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
 )
-def test_position_on_bar_stop_loss_hit(long_position: Position) -> None:
+@pytest.mark.parametrize(
+    "bar",
+    [
+        Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2),
+        Bar(timestamp=2, open=25, high=28, low=10, close=28, volume=2),
+    ],
+    ids=["inside-stop-range", "at-stop-boundary"],
+)
+def test_position_on_bar_stop_loss_hit(long_position: Position, bar: Bar) -> None:
     """Close a long position at its stop when the bar touches the stop level."""
     # Given
-    bar = Bar(timestamp=2, open=25, high=28, low=10, close=28, volume=2)
+    # The table covers an interior stop price and equality at the lower edge.
 
     # When
     result = long_position.on_bar(bar)
@@ -176,7 +184,7 @@ def test_position_on_bar_both_orders_hit(long_position: Position) -> None:
 def test_position_on_bar_when_already_finished(long_position: Position) -> None:
     """Return the first close outcome and preserve its closing bar and fields."""
     # Given
-    first_bar = Bar(timestamp=2, open=25, high=28, low=10, close=28, volume=2)
+    first_bar = Bar(timestamp=2, open=25, high=28, low=5, close=28, volume=2)
     long_position.on_bar(first_bar)
     later_bar = Bar(timestamp=3, open=25, high=35, low=20, close=28, volume=2)
 
