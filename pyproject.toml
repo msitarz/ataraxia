@@ -168,6 +168,7 @@ project_includes = [
   "test/script/integration/test_selection_process.py",
   "test/script/unit/test_registry_selection.py",
   "test/script/unit/test_registry_records.py",
+  "test/script/unit/test_registry_metadata.py",
   "test/script/unit/test_registry_payloads.py",
   "test/script/registry_layout.py",
   "test/script/unit/test_registry_layout.py",

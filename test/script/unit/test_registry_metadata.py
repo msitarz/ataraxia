@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exercise pure registry validation with independent literal values."""
+"""Check package metadata and declared inventory validation."""
 
 import pytest
 
+from script.registry_selection import Package
 from test.script.support import (
     validate_payload_metadata,
     validate_selected_inventory,
@@ -13,11 +14,21 @@ from test.script.support import (
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
     ac="AC-1",
 )
-def test_matching_payload_metadata_is_accepted(literal_package):
-    result = validate_payload_metadata(
-        literal_package, "Name: Dependency\nVersion: 1.0\n", frozenset({"payload.txt"})
-    )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/payload-metadata/README.md",
+    ac="AC-1",
+)
+def test_matching_payload_metadata_is_accepted(literal_package: Package) -> None:
+    """Accept matching package metadata and an ordinary payload file."""
+    # Given
+    package = literal_package
+    metadata = "Name: Dependency\nVersion: 1.0\n"
+    payload = frozenset({"payload.txt"})
 
+    # When
+    result = validate_payload_metadata(package, metadata, payload)
+
+    # Then
     assert result is None
 
 
@@ -54,12 +65,26 @@ def test_matching_payload_metadata_is_accepted(literal_package):
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
     ac="AC-2",
 )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/payload-metadata/README.md",
+    ac="AC-1",
+)
 def test_contradictory_payload_metadata_is_rejected(
-    literal_package, metadata, payload, message
-):
-    with pytest.raises(ValueError) as error:
-        validate_payload_metadata(literal_package, metadata, payload)
+    literal_package: Package,
+    metadata: str,
+    payload: frozenset[str],
+    message: str,
+) -> None:
+    """Reject name, version, local-source, and environment contradictions."""
+    # Given
+    # The cases provide literal metadata and payload observations.
+    package = literal_package
 
+    # When
+    with pytest.raises(ValueError) as error:
+        validate_payload_metadata(package, metadata, payload)
+
+    # Then
     assert error.type is ValueError
     assert error.value.args == (message,)
     assert error.value.__cause__ is None
@@ -69,14 +94,22 @@ def test_contradictory_payload_metadata_is_rejected(
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
     ac="AC-1",
 )
-def test_declared_inventory_is_accepted(literal_package):
-    result = validate_selected_inventory(
-        {"payload": "sha"},
-        {"uv/wheels-v6/pypi/dependency/1.0-py3-none-any": "target"},
-        (literal_package,),
-        {"payload"},
-    )
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/payload-metadata/README.md",
+    ac="AC-1",
+)
+def test_declared_inventory_is_accepted(literal_package: Package) -> None:
+    """Accept the declared files, wheel link, package, and selected entry."""
+    # Given
+    files = {"payload": "sha"}
+    links = {"uv/wheels-v6/pypi/dependency/1.0-py3-none-any": "target"}
+    packages = (literal_package,)
+    selected = {"payload"}
 
+    # When
+    result = validate_selected_inventory(files, links, packages, selected)
+
+    # Then
     assert result is None
 
 
@@ -108,10 +141,26 @@ def test_declared_inventory_is_accepted(literal_package):
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
     ac="AC-2",
 )
-def test_undeclared_inventory_is_rejected(literal_package, files, links):
-    with pytest.raises(ValueError) as error:
-        validate_selected_inventory(files, links, (literal_package,), {"payload"})
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/scripts/registry/payload-metadata/README.md",
+    ac="AC-1",
+)
+def test_undeclared_inventory_is_rejected(
+    literal_package: Package,
+    files: dict[str, str],
+    links: dict[str, str],
+) -> None:
+    """Reject missing and undeclared file and wheel-link entries."""
+    # Given
+    # The cases provide literal file and link inventories.
+    package = literal_package
+    selected = {"payload"}
 
+    # When
+    with pytest.raises(ValueError) as error:
+        validate_selected_inventory(files, links, (package,), selected)
+
+    # Then
     assert error.type is ValueError
     assert error.value.args == ("inventory contains undeclared entries",)
     assert error.value.__cause__ is None
