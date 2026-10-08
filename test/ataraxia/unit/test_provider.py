@@ -3,7 +3,9 @@
 """Real-file tests for BarProvider's contextual failures."""
 
 import csv
+from io import TextIOBase
 from pathlib import Path
+import textwrap
 
 import pytest
 
@@ -13,16 +15,20 @@ from ataraxia.provider import BarProvider
 
 @pytest.fixture
 def no_header() -> str:
-    return """1,2,3,4,5,6
-1,25.0,55.5,23.25,43.25,10
-"""
+    txt = """1,2,3,4,5,6
+    1,25.0,55.5,23.25,43.25,10
+    """
+
+    return textwrap.dedent(txt)
 
 
 @pytest.fixture
 def wrong_header() -> str:
-    return """timing,open,high,low,close,volume
-1,25.0,55.5,23.25,43.25,10
-"""
+    txt = """timing,open,high,low,close,volume
+    1,25.0,55.5,23.25,43.25,10
+    """
+
+    return textwrap.dedent(txt)
 
 
 @pytest.mark.covers(
@@ -34,16 +40,19 @@ def test_bar_provider_no_header(tmp_path: Path, no_header: str) -> None:
     shard = tmp_path / "no-header.csv"
     shard.write_text(no_header, encoding="utf-8")
     provider = BarProvider(shard)
+    opened_file: TextIOBase | None = None
 
     # When
-    with provider, pytest.raises(ProviderError) as error:
+    with pytest.raises(ProviderError) as error, provider:
+        opened_file = provider.fd
+        assert opened_file is not None
         next(provider)
 
     # Then
     assert str(error.value) == f"CSV file must contain a header: {shard}"
     assert error.value.__cause__ is None
-    assert provider.fd is not None
-    assert provider.fd.closed
+    assert opened_file is not None
+    assert opened_file.closed
 
 
 @pytest.mark.covers(
@@ -55,16 +64,19 @@ def test_bar_provider_wrong_header(tmp_path: Path, wrong_header: str) -> None:
     shard = tmp_path / "wrong-header.csv"
     shard.write_text(wrong_header, encoding="utf-8")
     provider = BarProvider(shard)
+    opened_file: TextIOBase | None = None
 
     # When
-    with provider, pytest.raises(ProviderError) as error:
+    with pytest.raises(ProviderError) as error, provider:
+        opened_file = provider.fd
+        assert opened_file is not None
         next(provider)
 
     # Then
     assert str(error.value) == f"CSV file must contain a header: {shard}"
     assert error.value.__cause__ is None
-    assert provider.fd is not None
-    assert provider.fd.closed
+    assert opened_file is not None
+    assert opened_file.closed
 
 
 @pytest.mark.covers(
@@ -106,9 +118,12 @@ def test_bar_provider_rejects_malformed_rows_and_closes(
     shard = tmp_path / "invalid.csv"
     shard.write_text(f"timestamp,open,high,low,close,volume\n{row}\n", encoding="utf-8")
     provider = BarProvider(shard)
+    opened_file: TextIOBase | None = None
 
     # When
-    with provider, pytest.raises(ProviderError) as error:
+    with pytest.raises(ProviderError) as error, provider:
+        opened_file = provider.fd
+        assert opened_file is not None
         next(provider)
 
     # Then
@@ -116,8 +131,8 @@ def test_bar_provider_rejects_malformed_rows_and_closes(
     assert str(error.value).startswith(message_prefix)
     assert distinctive_reason in str(error.value)
     assert isinstance(error.value.__cause__, ValueError)
-    assert provider.fd is not None
-    assert provider.fd.closed
+    assert opened_file is not None
+    assert opened_file.closed
 
 
 @pytest.mark.covers(
@@ -132,9 +147,12 @@ def test_bar_provider_rejects_unterminated_quote(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     provider = BarProvider(shard)
+    opened_file: TextIOBase | None = None
 
     # When
-    with provider, pytest.raises(ProviderError) as error:
+    with pytest.raises(ProviderError) as error, provider:
+        opened_file = provider.fd
+        assert opened_file is not None
         next(provider)
 
     # Then
@@ -142,5 +160,5 @@ def test_bar_provider_rejects_unterminated_quote(tmp_path: Path) -> None:
     assert str(error.value).startswith(message_prefix)
     assert "unexpected end of data" in str(error.value)
     assert isinstance(error.value.__cause__, csv.Error)
-    assert provider.fd is not None
-    assert provider.fd.closed
+    assert opened_file is not None
+    assert opened_file.closed
