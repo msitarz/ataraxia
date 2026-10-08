@@ -8,9 +8,10 @@ criteria remain authoritative in Work contracts and Git after their cleanup.
 
 Update the owning [acceptance tracing](../../acceptance-tracing.md) guidance
 and its [testing](../../testing.md) reading route consistently. Reconcile
-conflicting active testing-conformance instructions in the
-[scripts map](../testing-conformance/scripts/README.md), checking for further
-directly conflicting instructions before delivery. Preserve coverage identity,
+conflicting active instructions in the
+[testing-conformance map](../testing-conformance/README.md) and its linked
+contracts, checking for further directly conflicting instructions before
+delivery. Preserve coverage identity,
 accurate partial claims and independent acceptance review.
 No checker redesign or broad legacy-test cleanup belongs in this revision.
 

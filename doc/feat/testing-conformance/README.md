@@ -11,8 +11,10 @@ assertions, checkout mutations, and duplicated process plumbing.
 - **DONE** Typed real-Make/fake-uv orchestration and retained real-Git/tool
   regressions in disposable environments. Full/unmarked timing medians were
   higher; workload, cache and fixture Git differences limit causal conclusions.
-- **TODO** [Script boundaries](scripts/README.md): correct test types, explicit
-  process environments, and independently expected validation results.
+- **DONE** Script boundaries: migrated and validated registry,
+  acceptance-tooling, and commit-message tests with typed arrangements, real
+  process/Git boundaries, independent expectations, and affected Make
+  consumers.
 - **TODO** [Ataraxia boundaries](ataraxia/README.md): real product execution,
   complete outcomes, and explicit lifecycle and trading boundaries.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
