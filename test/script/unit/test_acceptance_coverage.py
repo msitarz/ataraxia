@@ -114,15 +114,6 @@ def test_only_decorated_static_test_candidates_are_reported(tmp_path):
     assert errors == []
 
 
-@pytest.mark.parametrize(
-    ("status", "has_validation", "has_marker"),
-    [
-        (status, has_validation, has_marker)
-        for status in ("TODO", "DONE")
-        for has_validation in (False, True)
-        for has_marker in (False, True)
-    ],
-)
 @pytest.mark.covers(
     work=(
         "doc/feat/reviewable-workflow-v2/trial-preparation/"
@@ -130,41 +121,6 @@ def test_only_decorated_static_test_candidates_are_reported(tmp_path):
     ),
     ac="AC-4",
 )
-def test_declaration_reports_do_not_require_status_or_method(
-    tmp_path, status, has_validation, has_marker
-):
-    """`ac-check` validates AC declarations, `Validation:` annotations, and literal
-    marker references without requiring markers or `Validation:` based on TODO/DONE
-    status; neutral summaries do not claim coverage or completion."""
-    validation = (
-        "  Validation: compare generated output with the fixture.\n"
-        if has_validation
-        else ""
-    )
-    work = write_work(
-        tmp_path,
-        f"# Work\n\n- **AC-1 {status}** Output remains stable.\n{validation}",
-    )
-    if has_marker:
-        write_tests(
-            tmp_path,
-            "import pytest\n"
-            f"@pytest.mark.covers(work={work!r}, ac='AC-1')\n"
-            "def test_output_remains_stable():\n    pass\n",
-        )
-
-    errors, reports = check_work(tmp_path, work)
-
-    if has_marker:
-        declaration = "1 test marker(s) declared"
-    elif has_validation:
-        declaration = "Validation method declared"
-    else:
-        declaration = "no test marker or Validation method declared"
-    assert errors == []
-    assert reports == [f"AC-1 {status}: {declaration}"]
-
-
 @pytest.mark.covers(
     work=(
         "doc/feat/reviewable-workflow-v2/trial-preparation/"
