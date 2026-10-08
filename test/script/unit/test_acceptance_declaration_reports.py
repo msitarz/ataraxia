@@ -113,6 +113,12 @@ def test_reports_declarations_without_judging_status(
     # Given
     relative_work = write_work(tmp_path, work, content)
     copy_marker_source(tmp_path)
+    contract = tmp_path / relative_work
+    marker_source = tmp_path / "test" / "test_marker_source.py"
+    work_bytes = content.encode("utf-8")
+    marker_bytes = MARKER_SOURCE.read_bytes()
+    assert contract.read_bytes() == work_bytes
+    assert marker_source.read_bytes() == marker_bytes
 
     # When
     errors, reports = acceptance_coverage.check_work(tmp_path, relative_work)
@@ -120,3 +126,5 @@ def test_reports_declarations_without_judging_status(
     # Then
     assert errors == []
     assert reports == expected_reports
+    assert contract.read_bytes() == work_bytes
+    assert marker_source.read_bytes() == marker_bytes
