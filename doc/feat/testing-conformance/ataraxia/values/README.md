@@ -26,7 +26,7 @@ supporting fixture/type migration before expanding beyond five-minute review.
 Unexpected contract/type mismatches need a separately scoped repair; do not
 weaken expectations, widen types, or change production to complete cleanup.
 
-- **AC-1 TODO** Given all delivered leaves, value/trading tests preserve literal
+- **AC-1 DONE** Given all delivered leaves, value/trading tests preserve literal
   outcomes and boundary cases through real public behavior with precise typing.
 
   Validation: independently review leaf artifacts, case inventories and focused
