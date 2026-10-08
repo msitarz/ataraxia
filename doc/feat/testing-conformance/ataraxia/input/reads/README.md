@@ -9,9 +9,10 @@ cases/fixtures untouched. Replace mock-open with precisely typed local temporary
 CSV arrangements; no new shared conftest/helper dependency.
 
 Preserve decimal conversion to the complete literal Bar: timestamp 1, prices
-100/222/93/173, volume 10. Preserve header-only empty output and blank-row input
-yielding complete Bars at timestamps 1 and 2 with prices 100/200/50/150, volume
-1.
+100/222/93/173, volume 10. Preserve header-only empty output and blank-row CSV
+inputs with integer-string prices 100/200/50/150. Bar normalization retains
+integer strings unchanged; complete expected Bars therefore have timestamps
+1 and 2, prices 100/200/50/150 and volume 1.
 
 Assert exact StopIteration after the retained single row and real `fd.closed`
 after context exit, not a mocked close call or automatic close on exhaustion.
