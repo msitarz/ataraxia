@@ -24,8 +24,7 @@ changes, installs, blanket support/conftest migration or new fixture framework.
   and exact digest, declaration and evidence refusals across 11 cases.
 - **DONE** Package layout and wheel-link contracts.
 - **DONE** Payload inventory and vendored metadata.
-- **TODO**
-  [Payload metadata and declared inventory](payload-metadata/README.md).
+- **DONE** Payload metadata and declared inventory.
 
 Execute in listed order to serialize support/conftest, public imports, strict
 includes and Make-consumer changes. Helper prerequisites precede case
