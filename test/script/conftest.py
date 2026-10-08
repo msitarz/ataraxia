@@ -5,6 +5,7 @@ from dataclasses import replace
 
 import pytest
 
+from test.script.registry_layout import literal_package as literal_package
 from test.script.selection_inputs import (
     changed_selection,
     cli_cache_destination,
@@ -15,7 +16,6 @@ from test.script.selection_inputs import (
 )
 from test.script.selection_manifest import manifest_expected, selection_expected
 from test.script.support import (
-    Package,
     PackagePayload,
 )
 
@@ -24,38 +24,12 @@ __all__ = [
     "cli_cache_destination",
     "cli_existing_destination",
     "cli_missing_record",
+    "literal_package",
     "manifest_expected",
     "prepared_selection",
     "selection_expected",
     "unsupported_selection",
 ]
-
-
-@pytest.fixture
-def literal_package():
-    return Package(
-        "uv",
-        "dependency",
-        "1.0",
-        "https://pypi.org/simple",
-        "uv/wheels-v6/pypi/dependency/1.0-py3-none-any",
-        "uv/archive-v0/dependency",
-        "reviewed fixture dependency",
-        "uv/archive-v0/dependency/dependency-1.0.dist-info/METADATA",
-    )
-
-
-@pytest.fixture
-def layout_package(request, literal_package):
-    variants = {
-        "root": {"root": "unsupported"},
-        "origin": {"origin": "https://other"},
-        "name": {"name": "Dependency"},
-        "wheel": {"version": "2.0"},
-        "archive": {"archive": "uv/other/dependency"},
-        "accepted": {},
-    }
-    return replace(literal_package, **variants[request.param])
 
 
 @pytest.fixture
@@ -98,19 +72,6 @@ def payload_expected():
             "uv/archive-v0/dependency/dependency-1.0.dist-info/METADATA",
         }),
     )
-
-
-@pytest.fixture
-def layout_links(request):
-    variants = {
-        "valid": {
-            "uv/wheels-v6/pypi/dependency/1.0-py3-none-any": (
-                "../../../archive-v0/dependency"
-            )
-        },
-        "missing": {},
-    }
-    return variants[getattr(request, "param", "valid")]
 
 
 @pytest.fixture
