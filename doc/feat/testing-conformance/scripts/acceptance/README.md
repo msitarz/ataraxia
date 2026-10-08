@@ -15,8 +15,8 @@ policy or new framework changes belong here.
   outcomes, exact syntax diagnostics, and legacy/outdented annotation behavior.
 - **DONE** Declaration reports: typed cases preserve neutral status/method/
   marker reports across TODO/DONE and unchanged input files.
-- **TODO** [Static marker discovery](marker-discovery/README.md): decorated
-  candidate selection, literal marker validation, and exact diagnostics.
+- **DONE** Static marker discovery: typed fixtures verify supported candidate
+  selection and precise unknown/dynamic marker diagnostics.
 
 Sequence command construction before summaries, then parsing before reports and
 marker discovery. Each complete diff, including types, fixtures and strict
