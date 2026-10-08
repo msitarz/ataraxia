@@ -10,8 +10,8 @@
   bar-close calculation through the public runner.
 - **DONE** Positions: both sides, price equality/gaps, competing orders and
   retained closing state.
-- **TODO** [Broker/account](broker/README.md): complete snapshots and account
-  sums, existing-position updates and prevention of same-bar exits.
+- **DONE** Broker/account: complete snapshots and account sums,
+  existing-position updates and prevention of same-bar exits.
 
 Merge this map before implementation; deliver leaves in listed order. Shared
 Pyrefly includes and map edits are serial. Each leaf owns its stated subset;
