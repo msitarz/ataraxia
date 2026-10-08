@@ -22,7 +22,7 @@ changes, installs, blanket support/conftest migration or new fixture framework.
   complete cache state and single accepted-record reads across 14 cases.
 - **DONE** Record validation unit contracts preserve complete accepted records
   and exact digest, declaration and evidence refusals across 11 cases.
-- **TODO** [Package layout and wheel-link contracts](payload-layout/README.md).
+- **DONE** Package layout and wheel-link contracts.
 - **TODO**
   [Payload inventory and vendored metadata](payload-inventory/README.md).
 - **TODO**
