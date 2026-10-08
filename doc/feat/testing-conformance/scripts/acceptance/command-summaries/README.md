@@ -1,10 +1,11 @@
 # Acceptance command summaries
 
-After command construction, own `main`'s missing-WORK response and
-`has_no_selected_tests`; preserve five cases (one refusal, three empty
-summaries, one selected summary). Keep units process-free; real nested pytest
-remains in Make integration. Precisely type/include the module in strict
-Pyrefly; use public functions and scoped process state, never internal doubles.
+After command construction, extract the remaining five cases from legacy
+`test_acceptance_tests.py`: missing-WORK response, three empty summaries and
+one selected summary. Reuse its command-script import setup narrowly; keep
+units process-free, with real nested pytest in Make integration. Strictly
+include only this cleaned subset and owned helpers. Use public functions and
+scoped process state, never internal doubles.
 
 - **AC-1 TODO** Given invocation state or pytest summary text, the script
   reports missing WORK with its defined exit and recognizes empty selections
