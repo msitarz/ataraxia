@@ -164,6 +164,7 @@ project_includes = [
   "test/ataraxia/unit/test_rolling_window.py",
   "test/ataraxia/unit/test_feature.py",
   "test/ataraxia/unit/test_position.py",
+  "test/ataraxia/unit/test_broker.py",
   "test/script/support.py",
   "test/script/selection_manifest.py",
   "test/script/selection_process.py",
