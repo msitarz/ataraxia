@@ -10,8 +10,7 @@ Update the owning [acceptance tracing](../../acceptance-tracing.md) guidance
 and its [testing](../../testing.md) reading route consistently. Reconcile
 conflicting active testing-conformance instructions in the
 [scripts map](../testing-conformance/scripts/README.md),
-[registry map](../testing-conformance/scripts/registry/README.md),
-[CLI Work](../testing-conformance/scripts/registry/cli/README.md) and
+[registry map](../testing-conformance/scripts/registry/README.md) and
 [acceptance map](../testing-conformance/scripts/acceptance/README.md), checking
 for further directly conflicting instructions before delivery. Preserve
 coverage identity, accurate partial claims and independent acceptance review.
