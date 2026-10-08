@@ -4,8 +4,8 @@
 
 - **DONE** Provider reads: real-file CSV reads with complete Bars, exact
   exhaustion, context-exit closure and filepath hash equivalence.
-- **TODO** [Provider failures](failures/README.md): contextual header/row/parser
-  failures, exact causes and real closed-file state.
+- **DONE** Provider failures: contextual header, row and parser errors,
+  preserved causes, and real file closure after failed context exits.
 - **TODO** [Source forwarding](forwarding/README.md): precisely typed Provider
   collaborators, send/factory/runner identity and context argument/result
   routing.
