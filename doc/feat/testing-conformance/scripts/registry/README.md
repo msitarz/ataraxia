@@ -16,7 +16,8 @@ changes, installs, blanket support/conftest migration or new fixture framework.
 - **DONE** Canonical typed selector/manifest observations and isolated real CLI
   execution preserve independent complete artifacts, diagnostics and input
   state.
-- **TODO** [Registry CLI integration cases](cli/README.md).
+- **DONE** Registry CLI integration cases preserve four real CLI delivery and
+  refusal outcomes with complete disposable input/output state.
 - **TODO** [Selector unit cases](selectors/README.md).
 - **TODO** [Record validation unit contracts](records/README.md).
 - **TODO** [Package layout and wheel-link contracts](payload-layout/README.md).
