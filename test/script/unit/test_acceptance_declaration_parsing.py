@@ -45,9 +45,10 @@ def test_parser_reports_duplicate_malformed_and_empty_criteria() -> None:
     )
 
     # Then
-    assert list(criteria) == ["AC-1", "AC-3"]
-    assert criteria["AC-1"].status == "TODO"
-    assert criteria["AC-3"].has_validation is False
+    assert criteria == {
+        "AC-1": acceptance_coverage.Criterion("TODO", False),
+        "AC-3": acceptance_coverage.Criterion("TODO", False),
+    }
     assert errors == [
         "doc/example/README.md:3: duplicate criterion AC-1",
         "doc/example/README.md:4: malformed AC declaration; expected "
@@ -95,9 +96,10 @@ def test_parser_rejects_empty_and_duplicate_validation_methods() -> None:
     )
 
     # Then
-    assert list(criteria) == ["AC-1", "AC-2"]
-    assert criteria["AC-1"].has_validation is False
-    assert criteria["AC-2"].has_validation is True
+    assert criteria == {
+        "AC-1": acceptance_coverage.Criterion("TODO", False),
+        "AC-2": acceptance_coverage.Criterion("DONE", True),
+    }
     assert errors == [
         "doc/example/README.md:2: AC-1 Validation annotation needs a method",
         "doc/example/README.md:4: AC-2 has multiple Validation annotations",
@@ -158,7 +160,7 @@ def test_parser_does_not_treat_legacy_verification_as_validation() -> None:
     )
 
     # Then
-    assert list(criteria) == ["AC-1"]
-    assert criteria["AC-1"].status == "TODO"
-    assert criteria["AC-1"].has_validation is False
+    assert criteria == {
+        "AC-1": acceptance_coverage.Criterion("TODO", False),
+    }
     assert errors == []
