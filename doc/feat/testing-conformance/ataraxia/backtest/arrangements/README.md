@@ -14,7 +14,7 @@ results specify complete account/position fields and resolved paths
 independently; do not call backtest or Position processing to generate the
 oracle. Leave legacy tests unchanged; consumer adoption follows after merge.
 
-- **AC-1 TODO** Given these retained inputs, named fixture/support artifacts
+- **AC-1 DONE** Given these retained inputs, named fixture/support artifacts
   expose precise real strategy/loader arrangements and independent expectations
   without generated source or unchecked/forward dependencies.
 
