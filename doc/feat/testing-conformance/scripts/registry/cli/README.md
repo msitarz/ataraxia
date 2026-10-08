@@ -7,7 +7,7 @@ sentinel and forbidden cache destination. Assert literal failure bytes/content
 independently; stderr/artifact equality is a separate forwarding assertion.
 Follow [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given accepted or invalid disposable inputs, real CLI delivers
+- **AC-1 DONE** Given accepted or invalid disposable inputs, real CLI delivers
   the reviewed manifest or exact refusal/recovery effects while preserving
   complete relevant input/output state.
 
