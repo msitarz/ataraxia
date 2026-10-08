@@ -9,7 +9,7 @@ fixture only if ownership fits. Strictly include only this cleaned subset and
 owned fixtures/helpers, not remaining legacy cases. Reuse checker setup; no
 framework. Run Make declaration tests after shared changes.
 
-- **AC-1 TODO** Given static test-source arrangements, discovery counts only
+- **AC-1 DONE** Given static test-source arrangements, discovery counts only
   supported decorated candidates for the selected Work and rejects malformed,
   unknown, or dynamic selected marker declarations precisely.
 
