@@ -1,6 +1,6 @@
 # Delegated post-merge cleanup
 
-Define and evaluate a distinct cleanup-agent role for removing verified merged
+Define and evaluate a distinct `cleaner` role for removing verified merged
 Work branches and linked worktrees. Preserve maintainer confirmation, existing
 cleanup guardrails, and serialized shared-Git operations. This tests whether
 delegation reduces orchestrator cleanup effort; no cost or speed improvement is
