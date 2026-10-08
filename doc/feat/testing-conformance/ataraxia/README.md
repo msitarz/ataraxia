@@ -7,12 +7,12 @@ results while preserving trading, graph, resource, and user-visible contracts.
 
 - **DONE** Values: Bar, rolling windows, SMA, positions, and broker/account
   outcomes through public boundaries.
-- **TODO** [Input](input/README.md): real CSV/provider outcomes, source runner
-  identity and context/resource forwarding.
+- **DONE** Input: real CSV/provider outcomes, source runner identity and
+  context/resource forwarding. Explicit compute-generator lifecycle remains
+  deferred to the Compute plan.
 
-Values is delivered. Merge the input map before its ordered leaf deliveries.
-Define the remaining groups in separate planning PRs, in the order below,
-before implementation:
+Values and Input are delivered. Define the remaining groups in separate
+planning PRs, in the order below, before implementation:
 
 1. Backtest/loading: `unit/test_backtest.py`, `integration/test_backtest.py`,
    and both `test_util.py` modules. First define named typed strategy fixtures
