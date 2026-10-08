@@ -6,9 +6,8 @@
   exhaustion, context-exit closure and filepath hash equivalence.
 - **DONE** Provider failures: contextual header, row and parser errors,
   preserved causes, and real file closure after failed context exits.
-- **TODO** [Source forwarding](forwarding/README.md): precisely typed Provider
-  collaborators, send/factory/runner identity and context argument/result
-  routing.
+- **DONE** Source forwarding: precisely typed Provider collaborators preserve
+  source/runner identity and forward context arguments and exit results.
 - **TODO** [Source CSV contexts](contexts/README.md): real provider resources on
   exhaustion, body failure and early source-context exit.
 
