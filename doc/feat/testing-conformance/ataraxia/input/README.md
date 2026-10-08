@@ -2,8 +2,8 @@
 
 ## Delivery map
 
-- **TODO** [Provider reads](reads/README.md): real temporary CSVs, complete
-  Bars, exhaustion/blank rows and filepath hashing.
+- **DONE** Provider reads: real-file CSV reads with complete Bars, exact
+  exhaustion, context-exit closure and filepath hash equivalence.
 - **TODO** [Provider failures](failures/README.md): contextual header/row/parser
   failures, exact causes and real closed-file state.
 - **TODO** [Source forwarding](forwarding/README.md): precisely typed Provider
