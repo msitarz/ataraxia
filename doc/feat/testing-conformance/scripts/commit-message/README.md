@@ -10,8 +10,9 @@ without changing checker or hook behavior. Follow
   and the executable `test/script/fixtures/commit_message_hook.py` with precise
   strict-Pyrefly includes. Consumer runtime adoption remains in the following
   leaves.
-- **TODO** [Checker CLI](checker/README.md): all 18 accepted and seven refused
-  formatting cases, with independent complete outcomes and retained bytes.
+- **DONE** Checker CLI: moved all 18 accepted and seven refused formatting
+  inputs into `test/script/integration/test_commit_message_cli.py`, with
+  independent outcomes, retained bytes and a precise strict-Pyrefly include.
 - **TODO** [Configured Git behavior](git/README.md): six scissors combinations
   and the real commit-hook refusal/acceptance lifecycle.
 - **TODO** [Prepared-project prek](prek/README.md): separate filename-forwarding
