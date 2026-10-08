@@ -286,7 +286,7 @@ def test_broker_runner_position_update_on_signal(
     # Given
     broker = BrokerRunner()
     entry_snapshot = _broker_snapshot(broker(bar=entry_bar, signal=long_signal))
-    signal_bar = Bar(timestamp=2, open=20, high=29, low=15, close=28, volume=1)
+    signal_bar = Bar(timestamp=1, open=20, high=29, low=15, close=28, volume=1)
 
     # When
     update_snapshot = _broker_snapshot(broker(bar=signal_bar, signal=short_signal))
