@@ -8,8 +8,8 @@
   construction.
 - **DONE** SMA outcomes: warm-up, missing/zero values, errors, and actual
   bar-close calculation through the public runner.
-- **TODO** [Positions](positions/README.md): both sides, price equality/gaps,
-  competing orders and retained closing state.
+- **DONE** Positions: both sides, price equality/gaps, competing orders and
+  retained closing state.
 - **TODO** [Broker/account](broker/README.md): complete snapshots and account
   sums, existing-position updates and prevention of same-bar exits.
 
