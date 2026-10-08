@@ -38,7 +38,7 @@ causes, markers, Given/When/Then, and concise truthful slice docstrings.
 Retain all 13 command and 16 declaration cases (8+5 and 4+8+4), with historical
 marker identities intact.
 
-- **AC-1 TODO** Given disposable Work/test/example arrangements, command rules
+- **AC-1 DONE** Given disposable Work/test/example arrangements, command rules
   select the declared scope and reject invalid inputs precisely; static checks
   report declarations without claiming execution, coverage or completion.
 
