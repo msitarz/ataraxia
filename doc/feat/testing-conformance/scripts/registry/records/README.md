@@ -7,7 +7,7 @@ values, extra/missing keys and acceptance-digest refusals. Expected records must
 not be computed by production validators. Follow
 [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given literal record inputs, validators preserve complete
+- **AC-1 DONE** Given literal record inputs, validators preserve complete
   accepted values and exact errors/causes for missing, extra or unaccepted
   declarations/evidence/bytes.
 
