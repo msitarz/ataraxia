@@ -19,33 +19,52 @@ def data() -> dict[str, str]:
     }
 
 
-def test_bar_normalize():
-    assert Bar._normalize("1234") == 1234
-    assert Bar._normalize("10.25") == int(10.25 * 4)
-
-
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
+)
 def test_bar_from_map(data: Mapping[str, str]) -> None:
-    # Given: the data fixture supplies the complete string-valued bar.
+    """Normalize integer and quarter-price fields through the public mapping."""
+    # Given
+    # The data fixture supplies the complete string-valued bar.
 
     # When
     bar = Bar.from_map(data)
 
     # Then
-    assert bar.timestamp == 1234
-    assert bar.open == int(10.25 * 4)
-    assert bar.high == int(30.50 * 4)
-    assert bar.low == int(10.0 * 4)
-    assert bar.close == int(25.75 * 4)
-    assert bar.volume == 4321
+    assert bar == Bar(timestamp=1234, open=41, high=122, low=40, close=103, volume=4321)
 
 
-def test_bar_within():
-    """Should return True if value within bar's range."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
+)
+def test_bar_from_map_rounds_fractional_tick_value(data: Mapping[str, str]) -> None:
+    """Preserve the established rounding result for a fractional tick value."""
+    # Given
+    rounding_data = dict(data)
+    rounding_data["open"] = "3.2"
+
+    # When
+    bar = Bar.from_map(rounding_data)
+
+    # Then
+    assert bar == Bar(timestamp=1234, open=13, high=122, low=40, close=103, volume=4321)
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [(4, False), (5, True), (14, True), (20, True), (21, False)],
+    ids=["below-low", "at-low", "inside-range", "at-high", "above-high"],
+)
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
+)
+def test_bar_within_includes_both_range_boundaries(value: int, expected: bool) -> None:
+    """Treat both ends of the Bar price range as inclusive."""
+    # Given
     bar = Bar(timestamp=1, open=10, high=20, low=5, close=15, volume=1)
 
-    assert bar.within(14)
+    # When
+    result = bar.within(value)
 
-
-def test_bar_normalize_not_truncate():
-    """Should not truncate fractional part of the number."""
-    assert Bar._normalize("3.2") == 13
+    # Then
+    assert result is expected
