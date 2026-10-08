@@ -1,85 +1,126 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
+"""Tests for source runner and provider forwarding."""
 
+from collections.abc import Iterator
+from types import TracebackType
 
 import pytest
 
+from ataraxia.provider import Provider
 from ataraxia.source import SourceNode, SourceRunner
 
 
-def test_source_runner():
-    """Should return stored item."""
+class IntegerProvider(Provider[int]):
+    """Provide a typed integer iterator and record context exit arguments."""
 
-    sr = SourceRunner[int]()
+    def __init__(self, values: Iterator[int], exit_result: bool | None = False) -> None:
+        self._values = values
+        self.exit_result = exit_result
+        self.entered = 0
+        self.exit_args: (
+            tuple[
+                type[BaseException] | None,
+                BaseException | None,
+                TracebackType | None,
+            ]
+            | None
+        ) = None
 
-    sr.item = 1
+    def __enter__(self) -> IntegerProvider:
+        self.entered += 1
+        return self
 
-    assert sr() == 1
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
+        self.exit_args = (exc_type, exc_value, traceback)
+        return self.exit_result
+
+    def __iter__(self) -> IntegerProvider:
+        return self
+
+    def __next__(self) -> int:
+        return next(self._values)
+
+    def __hash__(self) -> int:
+        return object.__hash__(self)
 
 
-def test_source_node():
-    """Should set runner's item from provider and raise StopIteration."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
+)
+def test_source_runner() -> None:
+    """Return the item stored by the source node."""
+    # Given
+    runner = SourceRunner[int]()
+    runner.item = 1
 
-    class TestProvider:
-        def __init__(self):
-            self.iterator = iter(range(3, 5))
+    # When
+    actual = runner()
 
-        def __enter__(self):
-            return self
+    # Then
+    assert actual == 1
 
-        def __exit__(self, *_args):
-            return False
 
-        def __iter__(self):
-            return self
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
+)
+def test_source_node() -> None:
+    """Forward integer items while retaining its provider and runner."""
+    # Given
+    provider = IntegerProvider(iter((3, 4)))
+    source = SourceNode[int](provider)
+    runner = source.factory()
 
-        def __next__(self):
-            return next(self.iterator)
+    # When
+    actual_provider = iter(source)
+    source.send(next(actual_provider))
+    first = runner()
+    source.send(next(actual_provider))
+    second = runner()
 
-    sn = SourceNode(TestProvider())
-
-    iterator = iter(sn)
-    value_1 = next(iterator)
-    sn.send(value_1)
-
-    assert sn.runner() == 3
-
-    value_2 = next(iterator)
-    sn.send(value_2)
-
-    assert sn.runner() == 4
-
+    # Then
     with pytest.raises(StopIteration):
-        next(iterator)
+        next(actual_provider)
+
+    assert actual_provider is provider
+    assert source.provider is provider
+    assert source.deps() == {}
+    assert source.factory() is runner
+    assert (first, second) == (3, 4)
 
 
-def test_source_node_delegates_provider_lifecycle():
-    """Should enter and exit its provider unchanged."""
-
-    class TestProvider:
-        def __init__(self):
-            self.entered = 0
-            self.exit_args = None
-
-        def __enter__(self):
-            self.entered += 1
-            return self
-
-        def __exit__(self, *args):
-            self.exit_args = args
-            return False
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            raise StopIteration
-
-    provider = TestProvider()
-    source = SourceNode(provider)
+@pytest.mark.parametrize(
+    "exit_result", [False, True, None], ids=["false", "true", "none"]
+)
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
+)
+def test_source_node_delegates_provider_lifecycle(exit_result: bool | None) -> None:
+    """Forward context entry, exact errors, traceback, and exit outcomes."""
+    # Given
+    provider = IntegerProvider(iter(()), exit_result=exit_result)
+    source = SourceNode[int](provider)
     error = RuntimeError("compute failed")
 
-    assert source.__enter__() is source
-    assert source.__exit__(RuntimeError, error, None) is False
-    assert provider.entered == 1
-    assert provider.exit_args == (RuntimeError, error, None)
+    # When
+    entered = source.__enter__()
+    none_traceback_result = source.__exit__(RuntimeError, error, None)
+    source.__enter__()
+    try:
+        raise error
+    except RuntimeError as caught:
+        traceback = caught.__traceback__
+        actual_result = source.__exit__(RuntimeError, caught, traceback)
+
+    # Then
+    assert entered is source
+    assert provider.entered == 2
+    assert none_traceback_result is exit_result
+    assert actual_result is exit_result
+    assert traceback is not None
+    assert provider.exit_args == (RuntimeError, error, traceback)
