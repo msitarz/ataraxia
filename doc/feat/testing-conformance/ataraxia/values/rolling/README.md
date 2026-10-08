@@ -11,7 +11,7 @@ public node factory's actual runner and fresh state, with literal tuples. Cover
 empty initial state and zero-valued input without properties, subprocesses or a
 shared graph-fixture framework. Keep setup here; compute lifecycle is deferred.
 
-- **AC-1 TODO** Given typed local inputs and node construction, real rolling
+- **AC-1 DONE** Given typed local inputs and node construction, real rolling
   runners preserve warm-up/newest-first ordering, capacity and fresh state,
   including zero items, with the supplied node dependency unchanged.
 
