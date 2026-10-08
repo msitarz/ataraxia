@@ -100,16 +100,16 @@ def test_sma_none_on_excess_values_with_none() -> None:
         ),
         (
             (
-                Bar(timestamp=1, open=0, high=4, low=0, close=0, volume=10),
-                Bar(timestamp=2, open=2, high=4, low=1, close=2, volume=11),
+                Bar(timestamp=1, open=2, high=4, low=0, close=0, volume=10),
+                Bar(timestamp=2, open=3, high=5, low=1, close=2, volume=11),
             ),
             2,
             1,
         ),
         (
             (
-                Bar(timestamp=1, open=4, high=6, low=3, close=4, volume=10),
-                Bar(timestamp=2, open=6, high=8, low=5, close=6, volume=11),
+                Bar(timestamp=1, open=8, high=11, low=1, close=4, volume=10),
+                Bar(timestamp=2, open=10, high=13, low=2, close=6, volume=11),
             ),
             2,
             5,
