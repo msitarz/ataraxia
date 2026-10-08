@@ -1,133 +1,327 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
-from collections.abc import Sequence
-from dataclasses import asdict
-from typing import TypedDict
+from dataclasses import dataclass
+from typing import Literal
 
 import pytest
 
 from ataraxia.bar import Bar
-from ataraxia.broker import Account, BrokerRunner, Position, Signal
+from ataraxia.broker import Account, BrokerReturn, BrokerRunner, Position, Signal
 
 
-class PositionFixture(TypedDict):
-    position: Position
-    signal: Signal
-    bar: Bar
+@dataclass(frozen=True)
+class AccountSnapshot:
+    pnl: int
+    unrealized_pnl: int
+
+
+@dataclass(frozen=True)
+class PositionSnapshot:
+    side: Literal["buy", "sell"]
+    stop_loss: int
+    take_profit: int
+    entry_bar: Bar
+    entry_level: int
+    closing_bar: Bar | None
+    closing_level: int | None
+    closing_pnl: int | None
+
+
+@dataclass(frozen=True)
+class BrokerSnapshot:
+    account: AccountSnapshot
+    open_positions: tuple[PositionSnapshot, ...]
+    closed_positions: tuple[PositionSnapshot, ...]
+
+
+def _position_snapshot(position: Position) -> PositionSnapshot:
+    return PositionSnapshot(
+        side=position.side,
+        stop_loss=position.stop_loss,
+        take_profit=position.take_profit,
+        entry_bar=position.entry_bar,
+        entry_level=position.entry_level,
+        closing_bar=position.closing_bar,
+        closing_level=position.closing_level,
+        closing_pnl=position.closing_pnl,
+    )
+
+
+def _broker_snapshot(result: BrokerReturn) -> BrokerSnapshot:
+    return BrokerSnapshot(
+        account=AccountSnapshot(
+            pnl=result["account"].pnl,
+            unrealized_pnl=result["account"].unrealized_pnl,
+        ),
+        open_positions=tuple(
+            _position_snapshot(position) for position in result["open_positions"]
+        ),
+        closed_positions=tuple(
+            _position_snapshot(position) for position in result["closed_positions"]
+        ),
+    )
+
+
+def _expected_open_position(
+    side: Literal["buy", "sell"],
+    stop_loss: int,
+    take_profit: int,
+    entry_bar: Bar,
+    entry_level: int,
+) -> PositionSnapshot:
+    return PositionSnapshot(
+        side=side,
+        stop_loss=stop_loss,
+        take_profit=take_profit,
+        entry_bar=entry_bar,
+        entry_level=entry_level,
+        closing_bar=None,
+        closing_level=None,
+        closing_pnl=None,
+    )
+
+
+def _expected_closed_position(
+    side: Literal["buy", "sell"],
+    stop_loss: int,
+    take_profit: int,
+    entry_bar: Bar,
+    entry_level: int,
+    closing_bar: Bar,
+    closing_level: int,
+    closing_pnl: int,
+) -> PositionSnapshot:
+    return PositionSnapshot(
+        side=side,
+        stop_loss=stop_loss,
+        take_profit=take_profit,
+        entry_bar=entry_bar,
+        entry_level=entry_level,
+        closing_bar=closing_bar,
+        closing_level=closing_level,
+        closing_pnl=closing_pnl,
+    )
 
 
 @pytest.fixture
-def long_position() -> PositionFixture:
-    signal = Signal(side="buy", stop_loss=10, take_profit=30)
-    bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
-
-    position = Position(entry_bar=bar, **asdict(signal))
-
-    return {
-        "bar": bar,
-        "signal": signal,
-        "position": position,
-    }
+def entry_bar() -> Bar:
+    return Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
 
 
 @pytest.fixture
-def short_position() -> PositionFixture:
-    signal = Signal(side="sell", stop_loss=29, take_profit=11)
-    bar = Bar(timestamp=1, open=20, high=30, low=15, close=25, volume=1)
-
-    position = Position(entry_bar=bar, **asdict(signal))
-
-    return {
-        "bar": bar,
-        "signal": signal,
-        "position": position,
-    }
+def long_signal() -> Signal:
+    return Signal(side="buy", stop_loss=10, take_profit=30)
 
 
 @pytest.fixture
-def accounts():
+def short_signal() -> Signal:
+    return Signal(side="sell", stop_loss=29, take_profit=11)
+
+
+@pytest.fixture
+def accounts() -> tuple[Account, Account]:
     return (Account(pnl=2000, unrealized_pnl=150), Account(pnl=999, unrealized_pnl=444))
 
 
-def test_sum_accounts(accounts: Sequence[Account]):
-    summed: Account = sum(accounts)
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_sum_accounts(accounts: tuple[Account, Account]) -> None:
+    """Sum realized and unrealized account totals independently."""
+    # Given
+    # Two account values are supplied by the typed fixture.
 
-    assert summed.pnl == 2999
-    assert summed.unrealized_pnl == 594
+    # When
+    summed = sum(accounts)
+
+    # Then
+    assert isinstance(summed, Account)
+    snapshot = AccountSnapshot(pnl=summed.pnl, unrealized_pnl=summed.unrealized_pnl)
+    assert snapshot == AccountSnapshot(pnl=2999, unrealized_pnl=594)
 
 
-def test_broker_runner_no_signal():
-    """Test single signal broker that exits."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_broker_runner_no_signal() -> None:
+    """Return an empty broker snapshot when no signal is supplied."""
+    # Given
     broker = BrokerRunner()
-
     bar = Bar(timestamp=1, open=2, high=3, low=1, close=2, volume=0)
 
-    assert broker(bar=bar, signal=None) == {
-        "account": Account(),
-        "open_positions": [],
-        "closed_positions": [],
-    }
+    # When
+    snapshot = _broker_snapshot(broker(bar=bar, signal=None))
+
+    # Then
+    assert snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=0),
+        open_positions=(),
+        closed_positions=(),
+    )
 
 
-def test_broker_runner_signal_add_position(long_position):
-    """Test position entry."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_broker_runner_signal_add_position(entry_bar: Bar, long_signal: Signal) -> None:
+    """Admit a position after its signal bar even when that bar touches target."""
+    # Given
     broker = BrokerRunner()
 
-    ret = broker(bar=long_position["bar"], signal=long_position["signal"])
+    # When
+    snapshot = _broker_snapshot(broker(bar=entry_bar, signal=long_signal))
 
-    assert len(ret["open_positions"]) == 1
-    assert len(ret["closed_positions"]) == 0
+    # Then
+    assert snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=0),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+        ),
+        closed_positions=(),
+    )
 
-    assert ret["account"].pnl == 0
-    assert ret["account"].unrealized_pnl == 0
 
-
-def test_broker_runner_signal_close_position(long_position):
-    """Test position add and close."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_broker_runner_signal_close_position(
+    entry_bar: Bar, long_signal: Signal
+) -> None:
+    """Snapshot entry before a later bar moves the position to closed."""
+    # Given
     broker = BrokerRunner()
+    entry_snapshot = _broker_snapshot(broker(bar=entry_bar, signal=long_signal))
+    exit_bar = Bar(timestamp=2, open=25, high=35, low=15, close=25, volume=1)
 
-    broker(bar=long_position["bar"], signal=long_position["signal"])
+    # When
+    exit_snapshot = _broker_snapshot(broker(bar=exit_bar, signal=None))
 
-    bar = Bar(timestamp=2, open=25, high=35, low=15, close=25, volume=1)
+    # Then
+    assert entry_snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=0),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+        ),
+        closed_positions=(),
+    )
+    assert exit_snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=5, unrealized_pnl=0),
+        open_positions=(),
+        closed_positions=(
+            _expected_closed_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+                closing_bar=exit_bar,
+                closing_level=30,
+                closing_pnl=5,
+            ),
+        ),
+    )
 
-    ret = broker(bar=bar, signal=None)
 
-    assert len(ret["open_positions"]) == 0
-    assert len(ret["closed_positions"]) == 1
-
-    assert ret["account"].pnl == 5
-    assert ret["account"].unrealized_pnl == 0
-
-
-def test_broker_runner_unrealized_pnl(long_position):
-    """Test unrealized pnl."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_broker_runner_unrealized_pnl(entry_bar: Bar, long_signal: Signal) -> None:
+    """Keep a position open and snapshot its complete unrealized state."""
+    # Given
     broker = BrokerRunner()
+    entry_snapshot = _broker_snapshot(broker(bar=entry_bar, signal=long_signal))
+    mark_bar = Bar(timestamp=2, open=25, high=29, low=15, close=29, volume=1)
 
-    broker(bar=long_position["bar"], signal=long_position["signal"])
+    # When
+    snapshot = _broker_snapshot(broker(bar=mark_bar, signal=None))
 
-    bar = Bar(timestamp=2, open=25, high=29, low=15, close=29, volume=1)
+    # Then
+    assert entry_snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=0),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+        ),
+        closed_positions=(),
+    )
+    assert snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=4),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+        ),
+        closed_positions=(),
+    )
 
-    ret = broker(bar=bar, signal=None)
 
-    assert len(ret["open_positions"]) == 1
-    assert len(ret["closed_positions"]) == 0
-
-    assert ret["account"].pnl == 0
-    assert ret["account"].unrealized_pnl == 4
-
-
-def test_broker_runner_position_update_on_signal(long_position, short_position):
-    """Should update already opened positions when receiving a signal."""
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
+)
+def test_broker_runner_position_update_on_signal(
+    entry_bar: Bar, long_signal: Signal, short_signal: Signal
+) -> None:
+    """Update old positions before admitting a new signaled position."""
+    # Given
     broker = BrokerRunner()
+    entry_snapshot = _broker_snapshot(broker(bar=entry_bar, signal=long_signal))
+    signal_bar = Bar(timestamp=2, open=20, high=29, low=15, close=28, volume=1)
 
-    broker(bar=long_position["bar"], signal=long_position["signal"])
+    # When
+    update_snapshot = _broker_snapshot(broker(bar=signal_bar, signal=short_signal))
 
-    bar = Bar(timestamp=1, open=20, high=29, low=15, close=28, volume=1)
-
-    ret = broker(bar=bar, signal=short_position["signal"])
-
-    assert ret["account"].pnl == 0
-    assert ret["account"].unrealized_pnl == 3
-
-    assert len(ret["open_positions"]) == 2
-    assert len(ret["closed_positions"]) == 0
+    # Then
+    assert entry_snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=0),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+        ),
+        closed_positions=(),
+    )
+    assert update_snapshot == BrokerSnapshot(
+        account=AccountSnapshot(pnl=0, unrealized_pnl=3),
+        open_positions=(
+            _expected_open_position(
+                side="buy",
+                stop_loss=10,
+                take_profit=30,
+                entry_bar=entry_bar,
+                entry_level=25,
+            ),
+            _expected_open_position(
+                side="sell",
+                stop_loss=29,
+                take_profit=11,
+                entry_bar=signal_bar,
+                entry_level=28,
+            ),
+        ),
+        closed_positions=(),
+    )
