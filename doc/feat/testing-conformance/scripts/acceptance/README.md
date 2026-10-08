@@ -13,8 +13,8 @@ policy or new framework changes belong here.
   response and distinguish empty from selected pytest summaries.
 - **DONE** Declaration parsing: typed tests preserve malformed declaration
   outcomes, exact syntax diagnostics, and legacy/outdented annotation behavior.
-- **TODO** [Declaration reports](declaration-reports/README.md): neutral
-  status/method/marker reports and unchanged input state.
+- **DONE** Declaration reports: typed cases preserve neutral status/method/
+  marker reports across TODO/DONE and unchanged input files.
 - **TODO** [Static marker discovery](marker-discovery/README.md): decorated
   candidate selection, literal marker validation, and exact diagnostics.
 
