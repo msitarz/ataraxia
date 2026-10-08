@@ -19,7 +19,7 @@ after context exit, not a mocked close call or automatic close on exhaustion.
 Retain equal-path hash comparison without treating hash values as stable
 literals.
 
-- **AC-1 TODO** Given retained disposable CSV inputs and filepath arrangements,
+- **AC-1 DONE** Given retained disposable CSV inputs and filepath arrangements,
   the real provider yields complete literal Bars, skips blanks, exhausts exactly
   and leaves its actual file closed after context exit with precise test typing.
 
