@@ -13,7 +13,7 @@ normal strict includes; use concise slice docstrings. No blanket tool/hook/test
 migration or shared helper redesign. Stop/report if supporting changes exceed
 the complete-diff review target rather than expanding this fix.
 
-- **AC-1 TODO** Given real Make with recorded fake uv, package CI requests
+- **AC-1 DONE** Given real Make with recorded fake uv, package CI requests
   Python preparation, then wheel/backend preparation, then smoke execution in
   that order. Preparation calls are online with no-sync retained; smoke is
   offline and no-sync. Python or build refusal prevents subsequent calls and
@@ -23,7 +23,7 @@ the complete-diff review target rather than expanding this fix.
   regressions using existing disposable HOME/TMPDIR/cache arrangements. Run
   focused package cases and the preparation/execution modules, strict typing,
   lint/format and doc/ac checks. Fake uv proves routing, not actual preparation.
-- **AC-2 TODO** Given a disposable empty UV_CACHE_DIR and prepared project
+- **AC-2 DONE** Given a disposable empty UV_CACHE_DIR and prepared project
   tools, actual `make ci-package` prepares the backend online and completes real
   offline build/install/sample smoke verification. The same cold-cache flow
   succeeds with uv_build 0.12.23 in a disposable project copy, preserving
