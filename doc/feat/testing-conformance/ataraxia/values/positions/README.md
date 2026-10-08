@@ -18,7 +18,7 @@ production deserves separate scrutiny for a zero-realized closure. Any exposed
 contract defect becomes a separate repair, without changing production or
 encoding incorrect behavior here.
 
-- **AC-1 TODO** Given the retained long/short lifecycle and price boundaries,
+- **AC-1 DONE** Given the retained long/short lifecycle and price boundaries,
   real Position operations produce complete literal records and persistent
   closing state with stop priority and correctly observed entry/exit levels.
 
