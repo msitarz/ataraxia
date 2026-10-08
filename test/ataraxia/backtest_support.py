@@ -16,6 +16,10 @@ from ataraxia.bar import Bar
 from ataraxia.broker import Position
 
 type StrategyFixture = Literal["broker_strategy.py", "sink_result_strategy.py"]
+type StrategyBasename = Literal[
+    "broker_strategy.py", "sink_result_strategy.py", "somefile.py"
+]
+type ShardBasename = Literal["shard.csv", "somedir"]
 
 BACKTEST_SHARD = "timestamp,open,high,low,close,volume\n1,100,200,50,150,1\n"
 
@@ -65,6 +69,9 @@ def arrange_backtest(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     strategy_fixture: StrategyFixture,
+    *,
+    strategy_basename: StrategyBasename | None = None,
+    shard_basename: ShardBasename = "shard.csv",
 ) -> BacktestPaths:
     """Copy a named strategy bundle and shard into a temporary import root."""
     fixture_root = Path(__file__).parent / "fixtures" / "backtest"
@@ -72,7 +79,7 @@ def arrange_backtest(
     strategy_root.mkdir(parents=True)
 
     copyfile(fixture_root / "strategy_base.py", strategy_root / "strategy_base.py")
-    strategy_path = strategy_root / strategy_fixture
+    strategy_path = strategy_root / (strategy_basename or strategy_fixture)
     copyfile(fixture_root / strategy_fixture, strategy_path)
     monkeypatch.syspath_prepend(str(strategy_root))
 
@@ -84,7 +91,7 @@ def arrange_backtest(
     monkeypatch.setitem(sys.modules, "strategy_base", base_module)
     spec.loader.exec_module(base_module)
 
-    shard_path = tmp_path / "shard.csv"
+    shard_path = tmp_path / shard_basename
     shard_path.write_text(BACKTEST_SHARD, encoding="utf-8")
     return BacktestPaths(strategy_path=strategy_path, shard_path=shard_path)
 

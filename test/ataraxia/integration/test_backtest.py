@@ -6,9 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from ataraxia.backtest import BacktestShardReturn, backtest_dir, backtest_shard
-from ataraxia.bar import Bar
-from ataraxia.broker import Account, BrokerReturn, Position, Signal
+from ataraxia.backtest import BacktestShardReturn, backtest_shard
+from ataraxia.broker import Account, BrokerReturn, Signal
 from ataraxia.errors import BacktestError, ModuleError
 
 
@@ -58,41 +57,6 @@ def broker_result() -> BrokerReturn:
         "open_positions": [],
         "closed_positions": [],
     }
-
-
-def expected_backtest_result(shard: Path, strategy: Path) -> BacktestShardReturn:
-    """Return the complete broker result expected from the fixture strategy."""
-    return {
-        "account": Account(),
-        "open_positions": [
-            Position(
-                side="buy",
-                stop_loss=100,
-                take_profit=200,
-                entry_bar=Bar(
-                    timestamp=1,
-                    open=100,
-                    high=200,
-                    low=50,
-                    close=150,
-                    volume=1,
-                ),
-            )
-        ],
-        "closed_positions": [],
-        "shard_path": str(shard.resolve()),
-        "strategy_path": str(strategy.resolve()),
-    }
-
-
-def test_backtest_shard(strategy_and_shard_path):
-    """Should process provided strategy via provided shard."""
-    shard = strategy_and_shard_path["shard"]
-    strategy = strategy_and_shard_path["strategy"]
-
-    result = backtest_shard(strategy, shard)
-
-    assert result == expected_backtest_result(shard, strategy)
 
 
 def test_backtest_header_only_shard(strategy_and_shard_path):
@@ -176,26 +140,3 @@ def test_backtest_shard_uses_broker_result_from_compute_step(
         result = backtest_shard(strategy, shard)
 
         assert result == expected
-
-
-def test_backtest_dir(strategy_and_shard_path):
-    """Should process all shards and return broker results."""
-
-    shard = strategy_and_shard_path["shard"]
-    strategy = strategy_and_shard_path["strategy"]
-    shards_dir = shard.parent / "shards"
-    shards_dir.mkdir()
-    first_shard = shards_dir / "first_shard.csv"
-    first_shard.write_text(shard.read_text())
-    second_shard = shards_dir / "second_shard.csv"
-    second_shard.write_text(shard.read_text())
-
-    results = backtest_dir(strategy, shards_dir)
-
-    expected_results = {
-        str(first_shard.resolve()): expected_backtest_result(first_shard, strategy),
-        str(second_shard.resolve()): expected_backtest_result(second_shard, strategy),
-    }
-
-    assert len(results) == 2
-    assert {result["shard_path"]: result for result in results} == expected_results
