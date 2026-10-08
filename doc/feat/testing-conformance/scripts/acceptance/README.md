@@ -7,8 +7,8 @@ policy or new framework changes belong here.
 
 ## Delivery map
 
-- **TODO** [Command construction](command-construction/README.md): typed script
-  boundary, Work/criterion validation, and independent complete pytest argv.
+- **DONE** Command construction: typed isolated tests preserve complete pytest
+  argv for both roots and exact invalid Work/criterion refusals.
 - **TODO** [Command summaries](command-summaries/README.md): missing-WORK
   response, empty-selection recognition, and selected-output boundary.
 - **TODO** [Declaration parsing](declaration-parsing/README.md): criterion and
