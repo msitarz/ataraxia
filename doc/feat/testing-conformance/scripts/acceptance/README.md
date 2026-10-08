@@ -9,8 +9,8 @@ policy or new framework changes belong here.
 
 - **DONE** Command construction: typed isolated tests preserve complete pytest
   argv for both roots and exact invalid Work/criterion refusals.
-- **TODO** [Command summaries](command-summaries/README.md): missing-WORK
-  response, empty-selection recognition, and selected-output boundary.
+- **DONE** Command summaries: typed unit cases preserve the exact missing-WORK
+  response and distinguish empty from selected pytest summaries.
 - **TODO** [Declaration parsing](declaration-parsing/README.md): criterion and
   Validation syntax, canonical methods, and malformed-input diagnostics.
 - **TODO** [Declaration reports](declaration-reports/README.md): neutral
