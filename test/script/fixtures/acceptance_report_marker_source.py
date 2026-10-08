@@ -5,5 +5,5 @@ import pytest
 
 
 @pytest.mark.covers(work="doc/other/README.md", ac="AC-1")
-def test_output_remains_stable() -> None:
+def test_declares_marker_for_ac_1() -> None:
     """Represent one collected declaration for the temporary Work."""
