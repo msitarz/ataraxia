@@ -8,7 +8,7 @@ import and typed temporary-root setup for the following summary leaf. Strictly
 include only owned modules/helpers, not the legacy file's remaining cases. Call
 the real function; justify and scope root/import setup.
 
-- **AC-1 TODO** Given temporary owning files, command construction returns
+- **AC-1 DONE** Given temporary owning files, command construction returns
   complete argv for valid actions and rejects missing, malformed, escaping, or
   absent Work paths and invalid criterion IDs with the defined reasons.
 
