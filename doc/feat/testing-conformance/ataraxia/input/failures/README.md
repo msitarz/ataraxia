@@ -17,7 +17,7 @@ incidental upstream wording beyond distinctive reasons. Assert actual opened
 file closure after failed context exits; outside-context use must leave `fd`
 absent.
 
-- **AC-1 TODO** Given every retained invalid input/context arrangement, the real
+- **AC-1 DONE** Given every retained invalid input/context arrangement, the real
   provider raises its precise contextual failure/cause and preserves the
   expected unopened or genuinely closed resource state without caller or
   checkout mutation.
