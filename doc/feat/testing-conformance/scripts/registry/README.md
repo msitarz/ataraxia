@@ -20,7 +20,8 @@ changes, installs, blanket support/conftest migration or new fixture framework.
   refusal outcomes with complete disposable input/output state.
 - **DONE** Selector unit cases preserve reviewed selections, exact refusals,
   complete cache state and single accepted-record reads across 14 cases.
-- **TODO** [Record validation unit contracts](records/README.md).
+- **DONE** Record validation unit contracts preserve complete accepted records
+  and exact digest, declaration and evidence refusals across 11 cases.
 - **TODO** [Package layout and wheel-link contracts](payload-layout/README.md).
 - **TODO**
   [Payload inventory and vendored metadata](payload-inventory/README.md).
