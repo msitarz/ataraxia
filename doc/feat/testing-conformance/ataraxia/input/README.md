@@ -8,8 +8,8 @@
   preserved causes, and real file closure after failed context exits.
 - **DONE** Source forwarding: precisely typed Provider collaborators preserve
   source/runner identity and forward context arguments and exit results.
-- **TODO** [Source CSV contexts](contexts/README.md): real provider resources on
-  exhaustion, body failure and early source-context exit.
+- **DONE** Source CSV contexts: actual source/provider scopes close resources
+  after exhaustion, propagated body errors and early source-context exit.
 
 Merge this map before implementation; deliver leaves in listed order. Each owns
 its named modules/subsets and strict includes; serialize Pyrefly and map edits.
