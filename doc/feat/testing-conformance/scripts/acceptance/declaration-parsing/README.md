@@ -8,7 +8,7 @@ leaves. Precisely type/include only this cleaned subset and owned helpers, not
 the remaining legacy cases. Call the real parser/checker with temporary files
 for path-resolution behavior.
 
-- **AC-1 TODO** Given malformed or noncanonical Work declarations, parsing
+- **AC-1 DONE** Given malformed or noncanonical Work declarations, parsing
   retains only valid criteria and reports the defined errors without treating
   outdented or legacy annotations as methods.
 
