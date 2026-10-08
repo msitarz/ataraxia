@@ -13,8 +13,9 @@ changes, installs, blanket support/conftest migration or new fixture framework.
 - **DONE** Precisely typed record variants and isolated selection-input fixtures
   preserve complete bytes/link targets, accepted digest provenance, finite name
   domains and independent fresh copies without changing source fixtures.
-- **TODO**
-  [Selection process and manifest observations](selection-observations/README.md).
+- **DONE** Canonical typed selector/manifest observations and isolated real CLI
+  execution preserve independent complete artifacts, diagnostics and input
+  state.
 - **TODO** [Registry CLI integration cases](cli/README.md).
 - **TODO** [Selector unit cases](selectors/README.md).
 - **TODO** [Record validation unit contracts](records/README.md).
