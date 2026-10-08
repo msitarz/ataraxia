@@ -98,6 +98,6 @@ the common guidance.
   use hand-written nodes and assert lifecycle state on exhaustion, error, and
   close.
 - `test_bar_provider_rejects_malformed_rows_and_closes` in
-  [`test/ataraxia/unit/test_provider_failures.py`](../test/ataraxia/unit/test_provider_failures.py)
+  [`test/ataraxia/unit/test_provider.py`](../test/ataraxia/unit/test_provider.py)
   uses a real file in `tmp_path` and asserts the error type, message, path,
   cause, and that the file closed.
