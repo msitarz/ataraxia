@@ -42,7 +42,7 @@ whenever shared imports/helpers/fixtures change. Parent integration reuses child
 evidence plus complete registry and Make-consumer execution and latest-head full
 CI.
 
-- **AC-1 TODO** Given fresh disposable inputs, real registry CLI and unit
+- **AC-1 DONE** Given fresh disposable inputs, real registry CLI and unit
   selectors/validators preserve reviewed manifests, precise refusals, complete
   source/destination state and existing criterion coverage without installs.
 
