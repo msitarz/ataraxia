@@ -6,7 +6,7 @@ literal complete expected report; no generated Python or test-body branching.
 Preserve TODO/DONE neutrality. Own a named typed marker-source fixture before
 discovery; precisely type/include only this cleaned subset and owned
 helpers/fixture, not remaining legacy cases. Reuse parser setup; keep
-expectations production- independent.
+expectations independent of production.
 
 - **AC-1 TODO** Given either criterion status and independent marker/method
   declarations, reports state exactly what was declared without judging the
