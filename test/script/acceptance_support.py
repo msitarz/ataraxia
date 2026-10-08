@@ -13,3 +13,8 @@ SCRIPT = SCRIPT_DIR / "acceptance_tests.py"
 # names, so expose its directory only while importing its public module.
 with patch.object(sys, "path", [str(SCRIPT_DIR), *sys.path]):
     from script import acceptance_tests as acceptance_tests
+
+# Keep the static checker available through its typed public module as well;
+# it uses the same flat sibling-import layout as the command script.
+with patch.object(sys, "path", [str(SCRIPT_DIR), *sys.path]):
+    from script import acceptance_coverage as acceptance_coverage

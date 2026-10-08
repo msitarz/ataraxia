@@ -185,6 +185,7 @@ project_includes = [
   "test/script/acceptance_support.py",
   "test/script/unit/test_acceptance_command_construction.py",
   "test/script/unit/test_acceptance_command_summaries.py",
+  "test/script/unit/test_acceptance_declaration_parsing.py",
   "test/make/support.py",
   "test/make/fixtures/uv_recorder.py",
   "test/make/fixtures/uv_scratch.py",
