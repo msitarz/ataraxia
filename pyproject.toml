@@ -168,6 +168,7 @@ project_includes = [
   "test/ataraxia/unit/test_provider_reads.py",
   "test/ataraxia/unit/test_provider.py",
   "test/ataraxia/unit/test_source.py",
+  "test/ataraxia/integration/test_source_csv.py",
   "test/script/support.py",
   "test/script/selection_manifest.py",
   "test/script/selection_process.py",
