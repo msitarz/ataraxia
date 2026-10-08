@@ -7,8 +7,8 @@
   `test/ataraxia/fixtures/backtest/` and `test/ataraxia/backtest_support.py`.
 - **DONE** Module loading: retained utility tests cover the exact missing-module
   refusal and loading the copied six-field Bar fixture through `import_file`.
-- **TODO** [Real results](results/README.md): shard/directory results and paths,
-  plus genuine sink and consumer selection.
+- **DONE** Real results: shard and directory backtests compare complete
+  resolved-path snapshots and exercise direct-sink and broker-consumer results.
 - **TODO** [Invalid arrangements](invalid-arrangements/README.md): named export,
   strategy-error and invalid-result fixtures before their consumers.
 - **TODO** [Export and strategy failures](exports/README.md): all seven retained
