@@ -6,8 +6,8 @@
   retain the delivered strict-typing pilot.
 - **DONE** Rolling windows: newest-first runner state and typed node
   construction.
-- **TODO** [SMA outcomes](sma/README.md): warm-up, missing/zero values, errors,
-  and actual bar-close calculation instead of a patched internal function.
+- **DONE** SMA outcomes: warm-up, missing/zero values, errors, and actual
+  bar-close calculation through the public runner.
 - **TODO** [Positions](positions/README.md): both sides, price equality/gaps,
   competing orders and retained closing state.
 - **TODO** [Broker/account](broker/README.md): complete snapshots and account
