@@ -196,6 +196,7 @@ project_includes = [
   "test/script/commit_message_support.py",
   "test/script/fixtures/commit_message_hook.py",
   "test/script/integration/test_commit_message_cli.py",
+  "test/script/integration/test_commit_message_git.py",
   "test/make/support.py",
   "test/make/fixtures/uv_recorder.py",
   "test/make/fixtures/uv_scratch.py",
