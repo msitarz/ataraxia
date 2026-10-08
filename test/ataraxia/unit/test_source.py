@@ -54,7 +54,7 @@ class IntegerProvider(Provider[int]):
     work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
 )
 def test_source_runner() -> None:
-    """Return the item stored by the source node."""
+    """Return a directly stored item."""
     # Given
     runner = SourceRunner[int]()
     runner.item = 1
@@ -110,6 +110,7 @@ def test_source_node_delegates_provider_lifecycle(exit_result: bool | None) -> N
     # When
     entered = source.__enter__()
     none_traceback_result = source.__exit__(RuntimeError, error, None)
+    none_traceback_args = provider.exit_args
     source.__enter__()
     try:
         raise error
@@ -122,5 +123,6 @@ def test_source_node_delegates_provider_lifecycle(exit_result: bool | None) -> N
     assert provider.entered == 2
     assert none_traceback_result is exit_result
     assert actual_result is exit_result
+    assert none_traceback_args == (RuntimeError, error, None)
     assert traceback is not None
     assert provider.exit_args == (RuntimeError, error, traceback)
