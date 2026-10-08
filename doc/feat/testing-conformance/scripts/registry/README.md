@@ -18,7 +18,8 @@ changes, installs, blanket support/conftest migration or new fixture framework.
   state.
 - **DONE** Registry CLI integration cases preserve four real CLI delivery and
   refusal outcomes with complete disposable input/output state.
-- **TODO** [Selector unit cases](selectors/README.md).
+- **DONE** Selector unit cases preserve reviewed selections, exact refusals,
+  complete cache state and single accepted-record reads across 14 cases.
 - **TODO** [Record validation unit contracts](records/README.md).
 - **TODO** [Package layout and wheel-link contracts](payload-layout/README.md).
 - **TODO**
