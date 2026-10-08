@@ -2,8 +2,8 @@
 
 ## Delivery map
 
-- **TODO** [Bar outcomes](bar/README.md): complete public normalization and
-  range boundaries; retain the delivered strict-typing pilot.
+- **DONE** Bar outcomes: complete public normalization and range boundaries;
+  retain the delivered strict-typing pilot.
 - **TODO** [Rolling windows](rolling/README.md): newest-first runner state and
   typed node construction.
 - **TODO** [SMA outcomes](sma/README.md): warm-up, missing/zero values, errors,
