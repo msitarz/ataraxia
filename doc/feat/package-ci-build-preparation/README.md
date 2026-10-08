@@ -14,7 +14,7 @@ responsibility with a five-minute complete-diff review target; no expanded
 multi-PR plan, dependency bump or change to PR #172 is authorized. Resume the
 separate source-forwarding Work afterward.
 
-- **AC-1 TODO** Given an initially empty package-build cache, installed-package
+- **AC-1 DONE** Given an initially empty package-build cache, installed-package
   CI prepares its declared backend before offline verification and successfully
   smoke-tests the installed wheel, without weakening offline/no-sync checking.
 
