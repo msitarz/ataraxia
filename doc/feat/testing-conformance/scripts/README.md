@@ -11,8 +11,11 @@ Preserve registry, acceptance-tooling, and commit-hook contracts while applying
   consumer validation.
 - **DONE** Acceptance tooling: typed command and declaration tests preserve
   scoped selection, neutral reports, exact diagnostics, and marker provenance.
-- **TODO** [Commit-message boundaries](commit-message/README.md): actual
-  checker, Git hooks and prepared-project prek execution.
+- **DONE** Commit-message boundaries: migrated the checker, real Git-hook, and
+  prepared-project prek cases into three strictly typed integration modules
+  using shared isolated process/Git support. The 34 retained cases assert
+  independent outputs, unchanged message and project inputs, and relevant Git
+  state.
 
 These are parent contracts, not implementation leaves. Merge this map, then
 define each subtree's bounded leaves in separate planning PRs before execution.
