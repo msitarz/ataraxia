@@ -16,7 +16,7 @@ broker-consumer cases under ADR 14; do not patch
 compute/import_file/is_sink/is_type. These show natural selected results, not
 mapping-order independence, which has its separate leaf.
 
-- **AC-1 TODO** Given retained real strategy/shard arrangements, shard and
+- **AC-1 DONE** Given retained real strategy/shard arrangements, shard and
   directory backtests return complete literal enriched results and choose the
   real sink/consumer outcome without replacing product computation.
 
