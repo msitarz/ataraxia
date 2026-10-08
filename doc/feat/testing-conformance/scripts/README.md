@@ -9,8 +9,8 @@ Preserve registry, acceptance-tooling, and commit-hook contracts while applying
   payload contracts and script-owned shared arrangements now have precise
   fixtures, isolated unit/integration coverage and complete registry/Make
   consumer validation.
-- **TODO** [Acceptance tooling](acceptance/README.md): command construction and
-  static declaration contracts with named source fixtures.
+- **DONE** Acceptance tooling: typed command and declaration tests preserve
+  scoped selection, neutral reports, exact diagnostics, and marker provenance.
 - **TODO** [Commit-message boundaries](commit-message/README.md): actual
   checker, Git hooks and prepared-project prek execution.
 
