@@ -5,8 +5,10 @@ Preserve registry, acceptance-tooling, and commit-hook contracts while applying
 
 ## Delivery map
 
-- **TODO** [Registry boundaries](registry/README.md): CLI relocation/selection,
-  record contracts and payload contracts with script-owned shared arrangements.
+- **DONE** Registry boundaries: CLI relocation/selection, record contracts,
+  payload contracts and script-owned shared arrangements now have precise
+  fixtures, isolated unit/integration coverage and complete registry/Make
+  consumer validation.
 - **TODO** [Acceptance tooling](acceptance/README.md): command construction and
   static declaration contracts with named source fixtures.
 - **TODO** [Commit-message boundaries](commit-message/README.md): actual
