@@ -39,10 +39,14 @@ helpers, golden artifacts and parent maps; merge dependency owners before their
 consumers. Preserve cases/markers; use session-authorized concise slice
 docstrings. No production repairs or property adoption belong here.
 
-- **AC-1 TODO** Given the values contracts and deferred group scopes, the map
-  defines a reviewable sequence with explicit boundaries and no implementation
-  before its owned contracts and maps merge.
+- **AC-1 TODO** Given completed values, input, backtest/loading, CLI and compute
+  deliveries, retained product tests exercise real public boundaries with
+  independent complete outcomes, precise failures and resource/lifecycle state,
+  preserved case/marker provenance, and precise incremental strict typing of
+  cleaned modules, helpers and fixtures without weakening product contracts.
 
-  Validation: manually compare scope, dependency order and preserved product
-  boundaries against current tests, architecture, relevant ADRs and testing
-  guidance; review each later group's contracts separately before dispatch.
+  Validation: integrate independent child artifact/evidence reviews against
+  architecture, relevant ADRs and testing guidance; run the complete product
+  suite and strict type checks, and require latest-head full CI. Deferred groups
+  remain unverified until their separately reviewed plans and deliveries are
+  complete; planning readiness alone does not establish parent completion.
