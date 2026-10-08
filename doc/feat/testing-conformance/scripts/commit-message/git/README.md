@@ -22,7 +22,7 @@ text, including newline behavior. Capture refs before/after refusal rather than
 using only failed `rev-parse`; all Git/checker processes use isolated explicit
 state and timeouts. Do not repair Git or generated project hook launchers.
 
-- **AC-1 TODO** Given configured disposable Git repositories, scissors preserve
+- **AC-1 DONE** Given configured disposable Git repositories, scissors preserve
   checker outcomes and input bytes, while the installed real hook refuses
   without ref changes and accepts exactly the expected stored commit content.
 
