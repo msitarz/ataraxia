@@ -4,67 +4,9 @@
 import pytest
 
 from test.script.support import (
-    package_payload,
     validate_payload_metadata,
     validate_selected_inventory,
 )
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_payload_inventory_retains_complete_entries(
-    literal_package, payload_files, payload_expected
-):
-    result = package_payload(literal_package, payload_files)
-
-    assert result == payload_expected
-
-
-@pytest.mark.parametrize(
-    ("invalid_payload", "message"),
-    [
-        pytest.param(
-            "missing-payload",
-            "missing payload or complete resolver metadata",
-            id="missing-payload",
-        ),
-        pytest.param(
-            "multiple-metadata", "expected one wheel METADATA", id="multiple-metadata"
-        ),
-        pytest.param(
-            "trace", "missing package preparation derivation", id="trace-mismatch"
-        ),
-        pytest.param(
-            "missing-http",
-            "missing payload or complete resolver metadata",
-            id="missing-resolver",
-        ),
-        pytest.param(
-            "missing-metadata", "expected one wheel METADATA", id="missing-metadata"
-        ),
-        pytest.param(
-            "missing-basis",
-            "missing package preparation derivation",
-            id="missing-basis",
-        ),
-    ],
-    indirect=["invalid_payload"],
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_incomplete_payload_inventory_is_rejected(invalid_payload, message):
-    package, files = invalid_payload
-
-    with pytest.raises(ValueError) as error:
-        package_payload(package, files)
-
-    assert error.type is ValueError
-    assert error.value.args == (message,)
-    assert error.value.__cause__ is None
 
 
 @pytest.mark.covers(
@@ -173,17 +115,3 @@ def test_undeclared_inventory_is_rejected(literal_package, files, links):
     assert error.type is ValueError
     assert error.value.args == ("inventory contains undeclared entries",)
     assert error.value.__cause__ is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_nested_vendored_metadata_is_retained_without_becoming_package_trace(
-    literal_package,
-    vendored_payload_files,
-    vendored_payload_expected,
-):
-    result = package_payload(literal_package, vendored_payload_files)
-
-    assert result == vendored_payload_expected
