@@ -3,9 +3,11 @@
 After checker delivery, own new
 `test/script/integration/test_commit_message_git.py` and its strict include.
 Move only `test_verbose_diff_below_scissors` and
-`test_git_commit_hook_and_configured_comments` from the legacy module. Use the
-merged typed support and named hook fixture; change support only for a necessary
-bounded interface correction, reporting any larger scope before expansion.
+`test_git_commit_hook_and_configured_comments` from the legacy module. Use
+`test/script/commit_message_support.py` and
+`test/script/fixtures/commit_message_hook.py`; change support only for a
+necessary bounded interface correction, reporting any larger scope before
+expansion.
 
 Retain all six combinations: comment prefixes `#`, `;`, `//` with short accepted
 or over-width refused bodies. Configure real Git `core.commentString`; assert

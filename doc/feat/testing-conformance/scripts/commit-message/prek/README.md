@@ -5,7 +5,8 @@ After configured Git delivery, own new
 `test/script/commit_message_prek.py` arrangement helper, and their strict
 includes. Move only `test_prek_passes_message_filename`, splitting its loop into
 named success and refusal tests; remove the then-empty legacy module. Reuse
-merged process support without adding fixtures to earlier leaves or conftest.
+`test/script/commit_message_support.py` without adding fixtures to earlier
+leaves or conftest.
 
 Use the prepared project's actual `.venv` prek and real configured
 `commit-message-format` hook/checker in a disposable minimal project. Preserve
