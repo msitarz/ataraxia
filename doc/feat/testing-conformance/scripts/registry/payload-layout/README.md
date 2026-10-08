@@ -5,7 +5,7 @@ Preserve canonical root/origin/name/version/archive and wheel-target promises,
 linked-parent/external/missing-link refusals. No inventory/metadata fixture
 migration yet. Follow [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given literal package/link observations, validators accept the
+- **AC-1 DONE** Given literal package/link observations, validators accept the
   supported layout and reject each unsafe observation with exact contextual
   errors and causes.
 
