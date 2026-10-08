@@ -18,8 +18,11 @@ without changing checker or hook behavior. Follow
   `test/script/integration/test_commit_message_git.py`, preserving exact checker
   outcomes, message bytes, ref effects, and stored message content with strict
   typing.
-- **TODO** [Prepared-project prek](prek/README.md): separate filename-forwarding
-  success/refusal tests using real prepared tools in a disposable project.
+- **DONE** Prepared-project prek: added `test/script/commit_message_prek.py`
+  and separate success/refusal tests in
+  `test/script/integration/test_commit_message_prek.py`. They use the prepared
+  prek and real configured checker hook with offline/no-sync isolation, and
+  verify exact message outcomes plus unchanged inputs and Git refs.
 
 Merge this map before implementation; deliver leaves in listed order. Each leaf
 owns only its listed modules/subsets and strict includes, and updates this map
