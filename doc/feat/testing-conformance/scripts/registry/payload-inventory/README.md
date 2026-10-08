@@ -6,7 +6,7 @@ metadata, trace/basis and nested vendored data without using production to
 derive expected PackagePayload. Follow
 [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given literal payload inventories, complete public payload
+- **AC-1 DONE** Given literal payload inventories, complete public payload
   values retain vendored entries and each missing/contradictory inventory fails
   precisely.
 
