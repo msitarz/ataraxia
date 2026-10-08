@@ -23,8 +23,7 @@ changes, installs, blanket support/conftest migration or new fixture framework.
 - **DONE** Record validation unit contracts preserve complete accepted records
   and exact digest, declaration and evidence refusals across 11 cases.
 - **DONE** Package layout and wheel-link contracts.
-- **TODO**
-  [Payload inventory and vendored metadata](payload-inventory/README.md).
+- **DONE** Payload inventory and vendored metadata.
 - **TODO**
   [Payload metadata and declared inventory](payload-metadata/README.md).
 
