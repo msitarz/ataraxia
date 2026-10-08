@@ -33,7 +33,7 @@ Each leaf runs its focused cases and affected legacy remainder, strict typing,
 lint/format and doc/ac checks; latest-head full CI remains required before
 merge.
 
-- **AC-1 TODO** Given completed input deliveries, retained provider/source cases
+- **AC-1 DONE** Given completed input deliveries, retained provider/source cases
   observe real CSV values and contextual failures, complete independent Bars,
   real resource closure at owned context exits, and faithful public forwarding
   with preserved instance identity/provenance and precise incremental typing.
