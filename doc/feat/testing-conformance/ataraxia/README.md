@@ -10,22 +10,20 @@ results while preserving trading, graph, resource, and user-visible contracts.
 - **DONE** Input: real CSV/provider outcomes, source runner identity and
   context/resource forwarding. Explicit compute-generator lifecycle remains
   deferred to the Compute plan.
+- **TODO** [Backtest/loading](backtest/README.md): named typed modules, real
+  results/export/error paths and the distinct reordered-mapping regression.
 
-Values and Input are delivered. Define the remaining groups in separate
-planning PRs, in the order below, before implementation:
+Values and Input are delivered. Merge the backtest/loading map before its
+ordered deliveries. Define the remaining groups in separate planning PRs,
+in the order below, before implementation:
 
-1. Backtest/loading: `unit/test_backtest.py`, `integration/test_backtest.py`,
-   and both `test_util.py` modules. First define named typed strategy fixtures
-   and loader arrangements; then real sink/consumer selection, invalid results,
-   exports and strategy errors under ADR 14. Remove internal doubles only after
-   real replacement coverage preserves the corresponding cases.
-2. CLI: `unit/test_cli.py` and `acceptance/test_crossover_sample.py`. Plan typed
+1. CLI: `unit/test_cli.py` and `acceptance/test_crossover_sample.py`. Plan typed
    result fixtures before display/serialization consumers, argument-only units,
    then isolated real-command support and complete sample golden artifacts
    before success/failure flows. Preserve absent/unchanged output and exact
    exits; retain lower-level malformed-input coverage before reducing
    duplicates.
-3. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
+2. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
    `typecheck/compute_contracts.py`. Separate typed collaborator arrangements,
    graph/results/sharing, lifecycle, and binding reviews; retain real execution
    and precise positive/negative type contracts on their existing routes.
