@@ -143,27 +143,14 @@ def test_setup_prepares_hooks_and_wheel_after_dependencies(
     work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
     ac="AC-3",
 )
+@pytest.mark.covers(
+    work="doc/feat/package-ci-build-preparation/fix/README.md",
+    ac="AC-1",
+)
 def test_package_prepares_python_then_requests_offline_smoke(
     sandbox: MakeSandbox,
 ) -> None:
-    """AC-1: Given each preparation target, real Make requests only its
-    required preparation and subsequent consumers through fake uv; setup requests
-    hooks/build, package requests Python preparation then offline smoke routing,
-    and ci-check prepares hooks before checks and audit.
-
-    AC-2: Each CI target prepares what its checks require, and missing required
-    environments fail clearly. `make setup` still prepares hooks and build
-    tooling for subsequent offline checks.
-
-    AC-3: Prepared offline checks remain network-free, reject a missing or
-    stale environment, and exercise the installed package outside the
-    worktree. Dependency synchronization stays locked and audit remains
-    required by full CI.
-
-    This case covers package preparation and smoke routing/flags only. It does not cover
-    actual installs, network isolation, stale environments, or installed-package
-    execution.
-    """
+    """Covers online package preparation followed by offline wheel smoke routing."""
     # Given: the sandbox fixture supplies the disposable environment.
 
     # When
@@ -173,12 +160,71 @@ def test_package_prepares_python_then_requests_offline_smoke(
     assert result.exit_code == 0, result.output
     assert [call.argv for call in result.calls] == [
         ("python", "install"),
+        ("build", "--wheel", "--out-dir", ".cache/build"),
         ("run", "python", "script/smoke_installed_package.py"),
     ]
     assert [
         (call.environment["UV_OFFLINE"], call.environment["UV_NO_SYNC"])
         for call in result.calls
-    ] == [(None, "true"), ("true", "true")]
+    ] == [(None, "true"), (None, "true"), ("true", "true")]
+
+
+@pytest.mark.covers(
+    work="doc/feat/package-ci-build-preparation/fix/README.md", ac="AC-1"
+)
+def test_package_stops_after_python_preparation_refusal(sandbox: MakeSandbox) -> None:
+    """Covers AC-1: Python preparation refusal stops build and offline smoke."""
+    # Given
+    distinctive_error = "python preparation refused"
+
+    # When
+    result = sandbox.run(
+        "ci-package",
+        fail_args=("python", "install"),
+        exit_code=17,
+        stderr=f"{distinctive_error}\n",
+    )
+
+    # Then
+    assert result.exit_code == 2
+    assert distinctive_error in result.output
+    assert "Error 17" in result.output
+    assert [call.argv for call in result.calls] == [("python", "install")]
+    assert [
+        (call.environment["UV_OFFLINE"], call.environment["UV_NO_SYNC"])
+        for call in result.calls
+    ] == [(None, "true")]
+
+
+@pytest.mark.covers(
+    work="doc/feat/package-ci-build-preparation/fix/README.md", ac="AC-1"
+)
+def test_package_stops_after_backend_preparation_refusal(sandbox: MakeSandbox) -> None:
+    """Covers AC-1: backend refusal prevents offline smoke and preserves Make error."""
+    # Given
+    build_arguments = ("build", "--wheel", "--out-dir", ".cache/build")
+    distinctive_error = "backend wheel preparation refused"
+
+    # When
+    result = sandbox.run(
+        "ci-package",
+        fail_args=build_arguments,
+        exit_code=23,
+        stderr=f"{distinctive_error}\n",
+    )
+
+    # Then
+    assert result.exit_code == 2
+    assert distinctive_error in result.output
+    assert "Error 23" in result.output
+    assert [call.argv for call in result.calls] == [
+        ("python", "install"),
+        build_arguments,
+    ]
+    assert [
+        (call.environment["UV_OFFLINE"], call.environment["UV_NO_SYNC"])
+        for call in result.calls
+    ] == [(None, "true"), (None, "true")]
 
 
 @pytest.mark.covers(
