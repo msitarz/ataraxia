@@ -5,13 +5,11 @@ results while preserving trading, graph, resource, and user-visible contracts.
 
 ## Delivery map
 
-- **TODO** [Values](values/README.md): residual Bar conformance, rolling
-  windows, SMA, positions, and broker/account outcomes through public
-  boundaries.
+- **DONE** Values: Bar, rolling windows, SMA, positions, and broker/account
+  outcomes through public boundaries.
 
-Only values has executable leaf contracts in this plan. After this map merges,
-deliver its leaves in their declared order; define remaining groups in separate
-planning PRs, in this order, before their implementation:
+Values is delivered. Define the remaining groups in separate planning PRs, in
+the order below, before implementation:
 
 1. Input: `unit/test_provider.py` and `unit/test_source.py`; real temporary
    CSVs, complete Bars, contextual failures and resource state on exhaustion,
