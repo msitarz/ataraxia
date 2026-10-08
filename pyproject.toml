@@ -169,6 +169,11 @@ project_includes = [
   "test/ataraxia/unit/test_provider.py",
   "test/ataraxia/unit/test_source.py",
   "test/ataraxia/integration/test_source_csv.py",
+  "test/ataraxia/backtest_support.py",
+  "test/ataraxia/fixtures/backtest/strategy_base.py",
+  "test/ataraxia/fixtures/backtest/broker_strategy.py",
+  "test/ataraxia/fixtures/backtest/sink_result_strategy.py",
+  "test/ataraxia/fixtures/backtest/import_bar.py",
   "test/script/support.py",
   "test/script/selection_manifest.py",
   "test/script/selection_process.py",
@@ -235,7 +240,7 @@ project_includes = [
   "test/make/fixtures/selection_test_root.py",
   "test/make/fixtures/selection_example_root.py",
 ]
-search_path = ["src", "."]
+search_path = ["src", ".", "test/ataraxia/fixtures/backtest"]
 python_version = "3.14"
 preset = "strict"
 
