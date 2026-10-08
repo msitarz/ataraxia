@@ -6,7 +6,7 @@ required file/link inventories and undeclared entries. Remove legacy
 validation/support/conftest pieces only when no callers remain; retain unrelated
 fixtures. Follow [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given literal metadata and selected inventories, supported
+- **AC-1 DONE** Given literal metadata and selected inventories, supported
   values pass while conflicting, local/environment or missing/extra entries fail
   with precise errors/causes.
 
