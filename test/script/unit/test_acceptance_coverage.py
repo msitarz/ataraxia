@@ -121,13 +121,6 @@ def test_only_decorated_static_test_candidates_are_reported(tmp_path):
     ),
     ac="AC-4",
 )
-@pytest.mark.covers(
-    work=(
-        "doc/feat/reviewable-workflow-v2/trial-preparation/"
-        "workflow-efficiency/verification-plan/README.md"
-    ),
-    ac="AC-4",
-)
 def test_unknown_marker_reference_fails_with_work_and_ac(tmp_path):
     """`ac-check` validates AC declarations, `Validation:` annotations, and literal
     marker references without requiring markers or `Validation:` based on TODO/DONE
