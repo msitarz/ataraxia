@@ -19,7 +19,7 @@ This leaf owns no prek project arrangement: that helper is defined with its
 consumer in the prek leaf. Keep support small; return a split if precise typing,
 fixture construction, or environment setup exceeds the review target.
 
-- **AC-1 TODO** Given the support artifact, later checker and Git consumers can
+- **AC-1 DONE** Given the support artifact, later checker and Git consumers can
   use precise typed arrangements with captured bounded processes and disposable
   state, without forward fixture dependencies or caller configuration leakage.
 
