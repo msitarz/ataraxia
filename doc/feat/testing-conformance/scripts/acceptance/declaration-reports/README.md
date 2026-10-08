@@ -8,7 +8,7 @@ discovery; precisely type/include only this cleaned subset and owned
 helpers/fixture, not remaining legacy cases. Reuse parser setup; keep
 expectations independent of production.
 
-- **AC-1 TODO** Given either criterion status and independent marker/method
+- **AC-1 DONE** Given either criterion status and independent marker/method
   declarations, reports state exactly what was declared without judging the
   criterion outcome.
 
