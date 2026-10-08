@@ -3,8 +3,6 @@
 
 from dataclasses import replace
 import json
-from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -19,7 +17,6 @@ from test.script.selection_inputs import (
 from test.script.selection_manifest import manifest_expected, selection_expected
 from test.script.support import (
     ROOT,
-    ChangingRecordRead,
     Package,
     PackagePayload,
 )
@@ -34,17 +31,6 @@ __all__ = [
     "selection_expected",
     "unsupported_selection",
 ]
-
-
-@pytest.fixture
-def changing_record(prepared_selection):
-    edge = ChangingRecordRead(
-        prepared_selection.record,
-        ROOT / "test/script/fixtures/registry_selection/unapproved.json",
-        Path.read_bytes,
-    )
-    with patch.object(Path, "read_bytes", autospec=True, side_effect=edge.read):
-        yield edge
 
 
 @pytest.fixture
