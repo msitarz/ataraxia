@@ -14,7 +14,7 @@ with no mocked product calculation or oracle obtained by calling `sma`.
 Keep fixtures local and precisely typed; do not adopt properties or add a
 different moving-average/invalid-period policy.
 
-- **AC-1 TODO** Given retained scalar/missing-value cases and real Bars, SMA and
+- **AC-1 DONE** Given retained scalar/missing-value cases and real Bars, SMA and
   its runner return literal warm-up/zero/complete outcomes and preserve the
   excess-value failure and missing-value precedence without internal doubles.
 
