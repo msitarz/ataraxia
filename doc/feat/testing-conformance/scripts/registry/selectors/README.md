@@ -7,7 +7,7 @@ read using a scoped signature-compatible filesystem edge only with boundary
 justification; restore it after each case. Follow
 [parent ownership, sequencing and checks](../README.md).
 
-- **AC-1 TODO** Given accepted, changed or unsupported records, the public
+- **AC-1 DONE** Given accepted, changed or unsupported records, the public
   selector returns only reviewed inputs or precise refusals without cache
   mutation and consumes the accepted record once.
 
