@@ -22,7 +22,7 @@ from calling checker helpers. Leave scissors, Git-hook, and prek cases
 untouched; add no checker API changes, properties, or new shared fixture
 responsibility.
 
-- **AC-1 TODO** Given every retained formatting input, the real checker CLI
+- **AC-1 DONE** Given every retained formatting input, the real checker CLI
   produces its literal accepted/refused outcome and preserves input bytes,
   including the width boundary and CRLF, under isolated bounded processes.
 
