@@ -51,7 +51,7 @@ unchecked fixture dependencies cannot stand in for that adoption. Preserve case
 identities and existing coverage provenance. This session authorizes concise
 slice docstrings describing actual coverage instead of copying criterion text.
 
-- **AC-1 TODO** Given disposable messages/repositories and prepared project
+- **AC-1 DONE** Given disposable messages/repositories and prepared project
   tools, checker, configured Git hook and prek preserve formatting contracts,
   exact failure effects and accepted content without changing caller state.
 
