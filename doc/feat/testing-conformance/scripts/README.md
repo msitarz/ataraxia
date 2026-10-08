@@ -40,7 +40,7 @@ or property-test adoption in this subtree. Discovered repairs become separate
 Works. Follow [test ownership](../../../test-ownership.md) before removing
 probes.
 
-- **AC-1 TODO** Given completed script cleanup, retained tests observe registry,
+- **AC-1 DONE** Given completed script cleanup, retained tests observe registry,
   acceptance and commit-message contracts at their proper boundaries with
   independent complete expectations and preserved failures/state/provenance.
 
