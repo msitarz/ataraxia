@@ -16,7 +16,7 @@ existing None-traceback case; cover bool/None provider exit results as
 forwarding outcomes, including the retained False result, without replacing
 product source code.
 
-- **AC-1 TODO** Given precisely typed Provider collaborators, public source
+- **AC-1 DONE** Given precisely typed Provider collaborators, public source
   iteration/send/factory preserve item values and provider/runner identity while
   context entry/exit forward exact arguments and supported return values.
 
