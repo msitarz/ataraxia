@@ -11,8 +11,8 @@ policy or new framework changes belong here.
   argv for both roots and exact invalid Work/criterion refusals.
 - **DONE** Command summaries: typed unit cases preserve the exact missing-WORK
   response and distinguish empty from selected pytest summaries.
-- **TODO** [Declaration parsing](declaration-parsing/README.md): criterion and
-  Validation syntax, canonical methods, and malformed-input diagnostics.
+- **DONE** Declaration parsing: typed tests preserve malformed declaration
+  outcomes, exact syntax diagnostics, and legacy/outdented annotation behavior.
 - **TODO** [Declaration reports](declaration-reports/README.md): neutral
   status/method/marker reports and unchanged input state.
 - **TODO** [Static marker discovery](marker-discovery/README.md): decorated
