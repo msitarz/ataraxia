@@ -25,7 +25,7 @@ incidental progress formatting. Preserve other disposable project input files
 and Git refs. Precisely annotate every new helper/fixture/test and keep the
 success/refusal tests separate with Given/When/Then and slice docstrings.
 
-- **AC-1 TODO** Given the prepared offline project arrangement, real prek
+- **AC-1 DONE** Given the prepared offline project arrangement, real prek
   forwards each named message file to our configured checker, returns exact
   success/refusal effects, and preserves message/project inputs and Git refs
   without relying on global installation or changing caller state.
