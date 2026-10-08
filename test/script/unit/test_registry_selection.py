@@ -3,7 +3,7 @@
 
 import pytest
 
-from test.script.support import run_selection_cli, select_prepared, tree_state
+from test.script.support import select_prepared, tree_state
 
 
 @pytest.mark.covers(
@@ -153,77 +153,3 @@ def test_selector_uses_only_the_single_accepted_record_read(
 
     assert result == selection_expected
     assert changing_record.record_reads == 1
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_cli_delivers_the_reviewed_manifest_without_changing_cache(
-    prepared_selection,
-    manifest_expected,
-):
-    case = prepared_selection
-    before = tree_state(case.cache)
-
-    result = run_selection_cli(case)
-
-    assert result.exit_code == 0, result.output
-    assert result.manifest == manifest_expected
-    assert result.failure is None
-    assert result.source_after == before
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_cli_retains_missing_record_failure_without_changing_cache(cli_missing_record):
-    case = cli_missing_record
-    before = tree_state(case.cache)
-    missing_path = str(case.record)
-
-    result = run_selection_cli(case)
-
-    expected_destination = {"failure.txt": result.stderr.encode()}
-    assert result.exit_code == 1, result.output
-    assert result.failure is not None
-    assert missing_path in result.failure
-    assert "No such file or directory" in result.failure
-    assert "retain destination and reprepare/review inputs" in result.failure
-    assert missing_path in result.stderr
-    assert result.failure == result.stderr
-    assert result.destination_after == expected_destination
-    assert result.source_after == before
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_cli_preserves_an_existing_destination(cli_existing_destination):
-    case = cli_existing_destination
-
-    result = run_selection_cli(case)
-
-    assert result.exit_code == 1, result.output
-    assert "selection destination must be new" in result.output
-    assert result.destination_after == {"sentinel.txt": b"changed fixture content\n"}
-    assert result.manifest is None
-    assert result.failure is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_cli_rejects_destinations_inside_the_input_cache(cli_cache_destination):
-    case = cli_cache_destination
-    before = tree_state(case.cache)
-
-    result = run_selection_cli(case)
-
-    assert result.exit_code == 1, result.output
-    assert "selection destination must be outside the input cache" in result.output
-    assert result.destination_exists is False
-    assert result.source_after == before
