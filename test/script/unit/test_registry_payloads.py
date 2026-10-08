@@ -78,7 +78,7 @@ def invalid_payload(
 
 @pytest.fixture
 def payload_expected() -> PackagePayload:
-    """Return a fully literal expected payload, metadata path, and trace."""
+    """Return expected entries, owning METADATA path, and payload-file set."""
     return PackagePayload(
         frozenset({
             "uv/archive-v0/dependency/payload.txt",
@@ -104,7 +104,7 @@ def vendored_payload_files(payload_files: dict[str, str]) -> dict[str, str]:
 
 @pytest.fixture
 def vendored_payload_expected() -> PackagePayload:
-    """Return the complete literal payload including nested vendor metadata."""
+    """Return expected entries, METADATA path, and payload files including vendor."""
     return PackagePayload(
         frozenset({
             "uv/archive-v0/dependency/payload.txt",
@@ -134,10 +134,7 @@ def test_payload_inventory_retains_complete_entries(
     payload_files: dict[str, str],
     payload_expected: PackagePayload,
 ) -> None:
-    """Return complete payload, resolver, and preparation-trace values.
-
-    Covers AC-1: complete public payload values retain their declared entries.
-    """
+    """Return complete entries, owning METADATA path, and payload-file set."""
     # Given
     # The fixtures provide independent package and file literals.
 
@@ -190,10 +187,7 @@ def test_incomplete_payload_inventory_is_rejected(
     invalid_payload: tuple[Package, dict[str, str]],
     message: str,
 ) -> None:
-    """Reject missing or contradictory payload observations with exact errors.
-
-    Covers AC-1: each missing or contradictory inventory fails precisely.
-    """
+    """Reject missing or contradictory payload observations with exact errors."""
     # Given
     package, files = invalid_payload
 
@@ -220,10 +214,7 @@ def test_nested_vendored_metadata_is_retained_without_becoming_package_trace(
     vendored_payload_files: dict[str, str],
     vendored_payload_expected: PackagePayload,
 ) -> None:
-    """Retain nested vendored METADATA without selecting it as package trace.
-
-    Covers AC-1: complete public payload values retain vendored entries.
-    """
+    """Retain nested vendor data and select the owning METADATA path."""
     # Given
     # The fixtures provide an independent nested vendor file and full result.
 
