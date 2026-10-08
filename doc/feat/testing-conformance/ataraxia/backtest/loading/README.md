@@ -13,7 +13,7 @@ casts, ignores or unrestricted mocks. Keep filesystem/module execution real and
 input files under tmp_path. Do not redesign import_file or add unrelated loader
 policy.
 
-- **AC-1 TODO** Given the retained missing and loadable modules, real
+- **AC-1 DONE** Given the retained missing and loadable modules, real
   import_file produces the exact failure or complete independent callable result
   with precise checked tests and copied named source.
 
