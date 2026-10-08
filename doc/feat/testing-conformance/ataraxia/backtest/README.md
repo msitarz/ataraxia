@@ -2,8 +2,9 @@
 
 ## Delivery map
 
-- **TODO** [Valid arrangements](arrangements/README.md): named typed strategy,
-  loader and CSV arrangements before consumers.
+- **DONE** Valid arrangements: typed strategy and loader fixtures, a retained
+  literal CSV shard, and independent complete result observations in
+  `test/ataraxia/fixtures/backtest/` and `test/ataraxia/backtest_support.py`.
 - **TODO** [Module loading](loading/README.md): both existing import-file cases.
 - **TODO** [Real results](results/README.md): shard/directory results and paths,
   plus genuine sink and consumer selection.
