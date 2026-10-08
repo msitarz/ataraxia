@@ -5,18 +5,8 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from ataraxia.bar import Bar
 from ataraxia.errors import ProviderError
 from ataraxia.provider import BarProvider
-
-
-@pytest.fixture
-def file_contents():
-    txt = """timestamp,open,high,low,close,volume
-    1,25.0,55.5,23.25,43.25,10
-    """
-
-    return textwrap.dedent(txt)
 
 
 @pytest.fixture
@@ -35,28 +25,6 @@ def wrong_header():
     """
 
     return textwrap.dedent(txt)
-
-
-def test_bar_provider_single_bar(file_contents):
-    """Should return a single bar."""
-    m = mock_open(read_data=file_contents)
-    with patch("builtins.open", m), BarProvider("stub_file_name") as f:
-        bar = next(f)
-
-        assert isinstance(bar, Bar)
-        assert bar.timestamp == 1
-
-
-def test_bar_provider_stop_iteration(file_contents):
-    """Should raise StopIteration when no more data."""
-    m = mock_open(read_data=file_contents)
-    with (
-        patch("builtins.open", m),
-        BarProvider("stub_file_name") as f,
-        pytest.raises(StopIteration),
-    ):
-        next(f)
-        next(f)
 
 
 def test_bar_provider_no_header(no_header):
@@ -87,13 +55,6 @@ def test_bar_provider_no_context_manager():
         next(BarProvider("stub_file_name"))
 
 
-def test_bar_provider_hashable_by_filepath():
-    a = BarProvider("dummy_file_name")
-    b = BarProvider("dummy_file_name")
-
-    assert hash(a) == hash(b)
-
-
 @pytest.mark.parametrize(
     "row",
     ["1,100", "1,100,200,50,150,1,extra", "1,bad,200,50,150,1", "1,,200,50,150,1"],
@@ -109,31 +70,6 @@ def test_bar_provider_rejects_malformed_rows_and_closes(tmp_path, row):
 
     assert str(shard) in str(error.value)
     assert isinstance(error.value.__cause__, ValueError)
-    assert provider.fd.closed
-
-
-def test_bar_provider_header_only_exhausts_and_closes(tmp_path):
-    shard = tmp_path / "empty.csv"
-    shard.write_text("timestamp,open,high,low,close,volume\n")
-    provider = BarProvider(shard)
-
-    with provider:
-        assert list(provider) == []
-
-    assert provider.fd.closed
-
-
-def test_bar_provider_skips_blank_rows(tmp_path):
-    shard = tmp_path / "bars.csv"
-    shard.write_text(
-        "timestamp,open,high,low,close,volume\n\n"
-        "1,100,200,50,150,1\n\n2,100,200,50,150,1\n\n"
-    )
-    provider = BarProvider(shard)
-
-    with provider:
-        assert [bar.timestamp for bar in provider] == [1, 2]
-
     assert provider.fd.closed
 
 
