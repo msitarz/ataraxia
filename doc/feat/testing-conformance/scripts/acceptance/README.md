@@ -1,31 +1,47 @@
 # Acceptance tooling testing boundaries
 
-The next planning map separates command construction from static declarations;
-sequence shared imports/fixtures and strict includes, command cases first.
-Implementation cannot begin until bounded leaf contracts merge.
+Clean acceptance selection and declaration tooling under the parent
+[script testing contract](../README.md); preserve command behavior, static-only
+reporting, historical markers and exact refusals. No production API, tool
+policy or new framework changes belong here.
 
-Command construction owns collect/test selection, optional criterion, both
-test/example roots, Work-path/criterion refusals, missing-WORK diagnostics and
-empty/selected summary recognition. Keep pure commands/summary rules as units;
-process behavior uses disposable real scripts. Current own-ROOT/sys.path patches
-require boundary review: use existing public entry points without changing
-production APIs; any necessary scoped patch must satisfy testing guidance.
+## Delivery map
 
-Declarations own neutral complete reports, fenced examples/other Work markers,
-static decorated candidate discovery, dynamic/unknown marker refusals,
-duplicate/malformed/empty criteria and canonical Validation annotations.
-Replace substantial generated Python with named typed source fixtures copied
-under tmp_path; small Markdown data can stay local. Parameterize independent
-cases without test-body branching. Preserve existing covers and full text.
-Use independent exact commands/reports/errors, not production-derived oracles.
-Reuse Make acceptance fixtures/support narrowly only when ownership fits;
-changes require focused Make acceptance checks. No new import/fixture framework.
+- **TODO** [Command construction](command-construction/README.md): typed script
+  boundary, Work/criterion validation, and independent complete pytest argv.
+- **TODO** [Command summaries](command-summaries/README.md): missing-WORK
+  response, empty-selection recognition, and selected-output boundary.
+- **TODO** [Declaration parsing](declaration-parsing/README.md): criterion and
+  Validation syntax, canonical methods, and malformed-input diagnostics.
+- **TODO** [Declaration reports](declaration-reports/README.md): neutral
+  status/method/marker reports and unchanged input state.
+- **TODO** [Static marker discovery](marker-discovery/README.md): decorated
+  candidate selection, literal marker validation, and exact diagnostics.
+
+Sequence command construction before summaries, then parsing before reports and
+marker discovery. Each complete diff, including types, fixtures and strict
+inclusion, must fit the five-minute review target; split before expansion.
+
+Use public script functions. Justify and scope any sibling-import or root setup;
+do not patch internal call graphs. The two current test files are historical
+containers, not whole-module ownership: extract only each leaf's cases into
+cohesive typed modules and strictly include only owned modules/helpers. Command
+construction owns the command-script import/root setup reused narrowly by
+summaries; parsing owns equivalent checker setup reused by later declaration
+leaves. No new framework. Units start no processes; run Make acceptance tests
+after shared support or fixture changes.
+
+Use distinct test/example roots and named, typed source fixtures copied
+unchanged. Precisely include cleaned modules, helpers and executable fixtures
+in strict Pyrefly. Preserve independent commands/reports, refusal reasons and
+causes, markers, Given/When/Then, and concise truthful slice docstrings.
+Retain all 13 command and 16 declaration cases (8+5 and 4+8+4), with historical
+marker identities intact.
 
 - **AC-1 TODO** Given disposable Work/test/example arrangements, command rules
   select the declared scope and reject invalid inputs precisely; static checks
   report declarations without claiming execution, coverage or completion.
 
-  Validation: independently review import isolation, named fixtures and complete
-  literal expectations; run criterion-marked command/declaration cases, affected
-  Make acceptance tests, strict typing, lint/format, doc/ac checks and latest
-  CI.
+  Validation: review import isolation, named fixtures and literal expectations;
+  run marked cases, affected Make tests, strict typing, lint/format, doc/ac and
+  latest CI.
