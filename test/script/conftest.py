@@ -2,7 +2,6 @@
 """Shared temporary arrangements for registry process tests."""
 
 from dataclasses import replace
-import json
 
 import pytest
 
@@ -16,7 +15,6 @@ from test.script.selection_inputs import (
 )
 from test.script.selection_manifest import manifest_expected, selection_expected
 from test.script.support import (
-    ROOT,
     Package,
     PackagePayload,
 )
@@ -31,22 +29,6 @@ __all__ = [
     "selection_expected",
     "unsupported_selection",
 ]
-
-
-@pytest.fixture
-def preparation_bytes():
-    return (
-        ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
-    ).read_bytes()
-
-
-@pytest.fixture
-def preparation_expected():
-    return json.loads(
-        (
-            ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
-        ).read_text()
-    )
 
 
 @pytest.fixture

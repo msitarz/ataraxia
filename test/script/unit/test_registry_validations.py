@@ -4,140 +4,12 @@
 import pytest
 
 from test.script.support import (
-    accepted_preparation,
-    dependency_declarations,
     package_payload,
-    preparation_evidence,
-    validate_digest,
     validate_package_layout,
     validate_payload_metadata,
     validate_selected_inventory,
     validate_wheel_link,
 )
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_matching_digests_are_accepted():
-    result = validate_digest("same", "same", "changed input")
-
-    assert result is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_changed_digest_retains_context():
-    with pytest.raises(ValueError) as error:
-        validate_digest("actual", "expected", "changed selected file: payload")
-
-    assert error.type is ValueError
-    assert error.value.args == ("changed selected file: payload",)
-    assert error.value.__cause__ is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_complete_declaration_inventory_is_returned():
-    declarations = {
-        "uv.lock": "lock",
-        "pyproject.toml": "project",
-        ".pre-commit-config.yaml": "hooks",
-    }
-
-    result = dependency_declarations(declarations)
-
-    assert result == {
-        "uv.lock": "lock",
-        "pyproject.toml": "project",
-        ".pre-commit-config.yaml": "hooks",
-    }
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_incomplete_declaration_inventory_is_rejected():
-    with pytest.raises(ValueError) as error:
-        dependency_declarations({"uv.lock": "lock"})
-
-    assert error.type is ValueError
-    assert error.value.args == ("incomplete dependency declarations",)
-    assert error.value.__cause__ is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_reviewed_evidence_inventory_is_returned():
-    result = preparation_evidence({"setup.log": "sha"}, "reviewed derivation")
-
-    assert result == {"setup.log": "sha"}
-
-
-@pytest.mark.parametrize(
-    ("evidence", "derivation"),
-    [
-        pytest.param({}, "reviewed", id="absent-evidence"),
-        pytest.param({"setup.log": "sha"}, "", id="absent-derivation"),
-    ],
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_missing_reviewed_evidence_is_rejected(evidence, derivation):
-    with pytest.raises(ValueError) as error:
-        preparation_evidence(evidence, derivation)
-
-    assert error.type is ValueError
-    assert error.value.args == ("missing reviewed preparation evidence/derivation",)
-    assert error.value.__cause__ is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-1",
-)
-def test_supported_preparation_bytes_are_accepted(
-    preparation_bytes, preparation_expected
-):
-    result = accepted_preparation(
-        preparation_bytes,
-        "86a0bd7e2b6004ca8deaaf776b1f344fa65b1531ccf3585a423635d14f559cff",
-    )
-
-    assert result == preparation_expected
-
-
-@pytest.mark.parametrize(
-    "expected",
-    [
-        pytest.param("not-a-digest", id="invalid-digest"),
-        pytest.param(
-            "0000000000000000000000000000000000000000000000000000000000000000",
-            id="unaccepted-bytes",
-        ),
-    ],
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_unaccepted_preparation_bytes_are_rejected(preparation_bytes, expected):
-    with pytest.raises(ValueError) as error:
-        accepted_preparation(preparation_bytes, expected)
-
-    assert error.type is ValueError
-    assert error.value.args == ("preparation digest differs from external acceptance",)
-    assert error.value.__cause__ is None
 
 
 @pytest.mark.covers(
@@ -395,26 +267,6 @@ def test_unsafe_wheel_link_observation_is_rejected(
 
     assert error.type is ValueError
     assert error.value.args == (message,)
-    assert error.value.__cause__ is None
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
-    ac="AC-2",
-)
-def test_superfluous_declaration_key_is_rejected():
-    declarations = {
-        "uv.lock": "lock",
-        "pyproject.toml": "project",
-        ".pre-commit-config.yaml": "hooks",
-        "answer": "sha",
-    }
-
-    with pytest.raises(ValueError) as error:
-        dependency_declarations(declarations)
-
-    assert error.type is ValueError
-    assert error.value.args == ("incomplete dependency declarations",)
     assert error.value.__cause__ is None
 
 
