@@ -34,8 +34,8 @@ sequenceDiagram
             A-->>T: Escalate decision or split
             T->>A: Pause entire requested tree at safe stopping points
             T->>B: Pause entire requested tree at safe stopping points
-            A->>EA: Stop new implementation; preserve artifacts and evidence
-            B->>EB: Stop new implementation; preserve artifacts and evidence
+            A->>EA: Stop new implementation and preserve artifacts and evidence
+            B->>EB: Stop new implementation and preserve artifacts and evidence
             T->>M: Request concrete decision
             M-->>T: Decide scope
             T->>T: Wait for required concrete planning PR merge
@@ -46,18 +46,18 @@ sequenceDiagram
         A->>A: Review and verification/cleanup pair
         A->>EA: Implement dependent leaf A2 after local acceptance
         EA-->>A: Artifact and evidence
-        A->>A: Review leaf pair; verify child parent and retain contract
+        A->>A: Review leaf pair and verify child parent with retained contract
     and Subtree B
         B->>EB: Implement sequential leaves with local reviews
         EB-->>B: Artifacts and evidence
-        B->>B: Review leaf pairs; verify child parent and retain contract
+        B->>B: Review leaf pairs and verify child parent with retained contract
     end
     A-->>T: Retained verified contract, commits and evidence
     B-->>T: Retained verified contract, commits and evidence
     T->>T: Review child interfaces/integration
     T->>T: Record reviewed child cleanup and parent-map updates
     T->>T: Complete requested parent verification/cleanup pair
-    T->>M: Publish one final PR; require final-head full CI
+    T->>M: Publish one final PR and require final-head full CI
     M->>M: Own merge decision
 ```
 
