@@ -64,13 +64,10 @@ does not justify losing information about values or their relationships.
   unparameterized container, or a base type that discards the required contract.
   Do not remove annotations or add catch-all union members to make incompatible
   values fit. Existing broad types are debt, not precedent for spreading them.
-- A repository-owned, reviewed static expectation loaded only for complete
-  equality may use `object` as an honest opaque type; do not invent a detailed
-  schema just to type that fixture. This applies only to the opaque expectation,
-  not to structured values a consumer reads or adapts. Compare the complete
-  actual value so missing or unexpected fields remain visible. Validate only
-  what structured access, genuinely external or untrusted data, or a separate
-  validation contract requires.
+- A repository-owned, reviewed static expectation loaded only as an opaque
+  fixture may use `object` honestly. This does not justify widening a meaningful
+  structured contract; see
+  [test data guidance](testing.md#treat-test-data-as-data).
 - Introduce types or explicit unions of supported variants as needed to model
   the contract. Preserve input/output relationships with type parameters through
   producers, runners, consumers, and containers. A type parameter must be
