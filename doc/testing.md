@@ -194,6 +194,18 @@ mistaking that floor for proof of quality. Type-contract cases under
 from temporary upstream-adoption probes. Exercise our boundary rather than
 only proving that an upstream tool behaves as documented.
 
+Hypothesis settings are selected in [`test/conftest.py`](../test/conftest.py):
+properties use 100 examples normally and deterministic generation in CI while
+retaining shrinking, replay, deadlines, and health checks. A property that
+invokes a subprocess may set `@settings(max_examples=25, deadline=None)`; its
+process execution helper still needs a timeout. Create mutable and filesystem
+state within each generated invocation and open resources with fresh context
+managers, rather than relying on function-scoped pytest fixtures to reset per
+example. See Hypothesis's
+[settings guide](https://hypothesis.readthedocs.io/en/latest/tutorial/settings.html)
+and
+[function-scoped fixture health check](https://hypothesis.readthedocs.io/en/latest/_modules/hypothesis/_settings.html).
+
 Annotate fixture and test parameters, returns, helpers, and collaborators with
 precise supported types under
 [engineering guidance](engineering.md#preserve-type-precision). Pyrefly's
