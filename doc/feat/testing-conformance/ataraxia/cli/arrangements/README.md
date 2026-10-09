@@ -14,7 +14,7 @@ Load the reviewed JSON as an opaque value for whole-value comparison; preserve
 the complete fixture rather than adding duplicate schema validation. Leave
 legacy consumers unchanged until adoption.
 
-- **AC-1 TODO** Given the retained reporting input, precisely typed arrangements
+- **AC-1 DONE** Given the retained reporting input, precisely typed arrangements
   and independently reviewed complete JSON expectations are available before
   display/serialization consumers, without forward or unchecked dependencies.
 
