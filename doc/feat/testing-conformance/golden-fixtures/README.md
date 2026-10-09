@@ -13,12 +13,13 @@ is an acceptable outcome for any suite; do not force edits in all three.
 The initial scan found one concrete opaque-equality candidate:
 `test/script/unit/test_registry_records.py` loads `preparation_expected` through
 `read_fixture` but only compares it with `accepted_preparation`'s complete
-result. Own that fixture and its consuming test's annotation here. Before:
+result. Own that expected value and its consuming test here. Before:
 `preparation_expected() -> dict[str, Json]` recursively adapts every field.
-After: `preparation_expected() -> object` directly loads the reviewed static
-JSON for complete equality, without recreating its schema. The production
-result remains precisely typed and its digest/refusal cases remain unchanged.
-This small helper change needs this prose summary, not an invented diagram/API.
+After: the test's Given phase directly loads the reviewed static JSON as
+`object` for complete equality, without recreating its schema or retaining a
+single-use fixture. The production result remains precisely typed and its
+digest/refusal cases remain unchanged. This small change needs this prose
+summary, not an invented diagram/API.
 
 Inspect other loaders and their consumers before prescribing edits. In
 `test/script/record_variants.py`, `read_fixture`/`json_value` support named
