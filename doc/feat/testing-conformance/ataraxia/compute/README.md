@@ -14,7 +14,7 @@
   failure and explicit generator-close state/exception observations.
 - **DONE** Real resource lifecycle: actual
   source/provider file closure under compute exhaustion/error/explicit close.
-- **TODO** [Dependency binding](binding/README.md): all signature/preparation
+- **DONE** Dependency binding: all signature/preparation
   cases and preserved positive/negative static contracts.
 
 Merge this map before implementation; deliver leaves in listed order. Paths
