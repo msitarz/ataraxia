@@ -22,7 +22,7 @@ Use 100 in-process examples, no function-scoped mutable fixture or health-check
 suppression. Precisely type all strategies/arrangements on the existing strict
 folder route; retain independent path intent and observed failure provenance.
 
-- **AC-1 TODO** Given freshly arranged canonical contracts and named malformed
+- **AC-1 DONE** Given freshly arranged canonical contracts and named malformed
   or escaping variants, the real resolver accepts exactly the intended existing
   contained identities and rejects invalid/noncanonical/absent/outside paths
   with contextual failures, including symlinks, without shared example state.
