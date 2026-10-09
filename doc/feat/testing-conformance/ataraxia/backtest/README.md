@@ -13,8 +13,9 @@
   invalid exports, module/construction errors and invalid result variants under
   `test/ataraxia/fixtures/backtest/`; support keeps invalid fixture names
   separate from the valid strategy type.
-- **TODO** [Export and strategy failures](exports/README.md): all seven retained
-  missing/invalid export and module/construction error instances.
+- **DONE** Export and strategy failures: seven retained real-loader cases
+  preserve absent/invalid exports, contextual causes and module/construction
+  `AttributeError` outcomes in the typed integration tests.
 - **TODO** [Result/input refusals](refusals/README.md): two invalid results,
   header-only shard and missing directory.
 - **TODO** [Mapping-order selection](ordering/README.md): retain the distinct
