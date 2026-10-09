@@ -39,7 +39,7 @@ Four parser boundary cases were added; coverage markers remain on the delivered
 CLI tests. The empty-directory acceptance case uses a copied strategy and
 preserves the default `results.json` behavior.
 
-- **AC-1 TODO** Given completed CLI deliveries, retained reporting/parser/user
+- **AC-1 DONE** Given completed CLI deliveries, retained reporting/parser/user
   flows exercise real public behavior, complete independent artifacts and exact
   exits/failure state, preserving provenance and precise incremental typing
   without patched backtesting or weakened lower-level malformed-input coverage.
