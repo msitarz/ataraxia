@@ -184,6 +184,7 @@ project_includes = [
   "test/ataraxia/unit/test_util.py",
   "test/ataraxia/unit/test_source.py",
   "test/ataraxia/integration/test_source_csv.py",
+  "test/ataraxia/integration/test_compute_resources.py",
   "test/ataraxia/integration/test_backtest_results.py",
   "test/ataraxia/integration/test_backtest_exports.py",
   "test/ataraxia/integration/test_backtest_refusals.py",
