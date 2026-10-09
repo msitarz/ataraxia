@@ -6,7 +6,7 @@
   nodes/runners before graph and result consumers.
 - **DONE** Source arrangements: typed integer source/sink
   collaborators and small real-CSV arrangements before consumers.
-- **TODO** [Graph and results](results/README.md): graph/order/cycle, catalogs,
+- **DONE** Graph and results: graph/order/cycle, catalogs,
   dependency values, complete steps and real simple computation.
 - **TODO** [Shared state](sharing/README.md): equivalent dependency identity,
   once-per-bar state and fresh runners across executions.
