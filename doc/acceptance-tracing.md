@@ -60,6 +60,10 @@ satisfied before cleanup.
 3. In the cleanup commit, remove the contract and update the parent map. Review
    tests under [test ownership](test-ownership.md) and retain regression tests.
 
+Before first publication, independently review both commits, the resulting
+artifact, and its PR description. Publish the reviewed verification and cleanup
+sequence only after that review.
+
 Development fixups may be folded into the verified implementation/evidence
 commit; retaining every intermediate commit or SHA is not required. A later
 implementation or evidence correction invalidates the affected evidence. Return

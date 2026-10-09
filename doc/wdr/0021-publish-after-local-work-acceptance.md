@@ -13,12 +13,13 @@ and
 
 ## Context
 
-Work criteria may be verified by local behavior tests, type checks, or manual
-review while full PR CI remains the required merge gate. Requiring CI before
-every criterion is accepted can make the ordinary sequence circular: publishing
-starts CI, but the acceptance contract requires both verification and cleanup
-commits before publication. CI-specific criteria still require their actual
-CI result and cannot be completed by local evidence.
+Recent deliveries routinely published implementation and ran CI first, then
+committed acceptance verification and contract cleanup and pushed a second
+time, triggering full CI again. Locally inspectable behavior and review
+evidence could already support ordinary acceptance before that first
+publication. This record removes that routine second publication and CI round
+while retaining the final-head merge gate. A criterion whose method explicitly
+requires CI still needs its actual CI result.
 
 ## Decision
 
@@ -49,5 +50,5 @@ Ordinary local acceptance can be recorded before CI runs without claiming CI
 success. CI remains authoritative for mechanical outcomes and mandatory before
 merge. Explicit CI-dependent acceptance remains unresolved until observed, and
 corrections retain a path to refreshed evidence and CI without weakening the
-original gate. See the
-[single-publication delivery Work](../feat/single-publication-delivery/policy/README.md).
+original gate. See the lasting
+[pull-request publishing guidance](../pull-requests.md#publishing).
