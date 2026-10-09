@@ -16,7 +16,7 @@ from ataraxia.bar import Bar
 from ataraxia.broker import Position
 
 type StrategyFixture = Literal["broker_strategy.py", "sink_result_strategy.py"]
-type InvalidStrategyFixture = Literal[
+type InvalidExportFixture = Literal[
     "missing_export.py",
     "export_none.py",
     "export_number.py",
@@ -24,9 +24,12 @@ type InvalidStrategyFixture = Literal[
     "export_instance.py",
     "module_error.py",
     "construction_error.py",
+]
+type InvalidResultFixture = Literal[
     "result_number.py",
     "result_non_position.py",
 ]
+type InvalidStrategyFixture = InvalidExportFixture | InvalidResultFixture
 type StrategyBasename = Literal[
     "broker_strategy.py",
     "sink_result_strategy.py",
