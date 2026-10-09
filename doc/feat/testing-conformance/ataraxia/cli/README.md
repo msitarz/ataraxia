@@ -16,8 +16,8 @@
   these artifacts.
 - **DONE** Success flow: the real prepared command asserts the exact report
   and complete normalized sample artifact while preserving its inputs.
-- **TODO** [Failure flows](failures/README.md): exact exits, diagnostic context
-  and absent/unchanged output, including the migrated empty-result case.
+- **DONE** Failure flows: real command refusals preserve malformed inputs and
+  absent or prior output, including the empty-directory default-output case.
 
 Merge this map before implementation; deliver leaves in listed order. Paths
 below are relative to `test/ataraxia`. Serialize strict includes, helper/fixture
