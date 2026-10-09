@@ -39,7 +39,7 @@ Each leaf runs focused cases and affected legacy remainders, normal strict
 typing, existing type expectations, lint/format and doc/ac checks; latest-head
 full CI remains the merge gate.
 
-- **AC-1 TODO** Given delivered leaves, retained graph/result/sharing/binding
+- **AC-1 DONE** Given delivered leaves, retained graph/result/sharing/binding
   cases and compute lifecycles observe complete independent values, precise
   errors and genuine resource closure, preserving provenance and node/result
   type relationships without broad typing or product doubles.
