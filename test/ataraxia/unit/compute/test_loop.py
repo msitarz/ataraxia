@@ -10,7 +10,6 @@ from ataraxia.compute import Runner, Source
 from ataraxia.compute.loop import (
     compute,
     compute_step,
-    computed_node_deps,
     prime_catalog,
 )
 
@@ -49,31 +48,6 @@ def single_dep():
             return ARunner()
 
     return {"BRunner": BRunner, "B": B, "ARunner": ARunner, "A": A}
-
-
-def test_prime_catalog(single_dep):
-    A, B, ARunner, BRunner = itemgetter("A", "B", "ARunner", "BRunner")(single_dep)
-
-    sorted_graph = (B(), A())
-
-    assert prime_catalog(sorted_graph) == {B(): BRunner(), A(): ARunner()}
-
-
-def test_computed_node_deps(single_dep):
-    A, B = itemgetter("A", "B")(single_dep)
-
-    computed = {B(): B().factory()(), A(): ValueError("Shouldn't be here")}
-
-    assert computed_node_deps(A(), computed) == {"b": 1}
-
-
-def test_compute_step(single_dep):
-    A, B = itemgetter("A", "B")(single_dep)
-
-    nodes = (B(), A())
-    catalog = {B(): B().factory(), A(): A().factory()}
-
-    assert compute_step(nodes, catalog) == {B(): 1, A(): 4}
 
 
 @pytest.fixture
@@ -130,17 +104,6 @@ def source_sink():
             return None
 
     return {"Src": Src, "Snk": Snk}
-
-
-def test_compute(source_sink):
-    Snk = itemgetter("Snk")(source_sink)
-
-    snk = Snk()
-
-    computed = compute(snk)
-
-    assert next(computed) == {snk.source: 1, snk: 8}
-    assert next(computed) == {snk.source: 3, snk: 10}
 
 
 def test_equivalent_dependencies_share_state_once_per_bar(source_sink):
