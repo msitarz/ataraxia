@@ -12,6 +12,9 @@ for mechanical-check evidence and
 [14. Remove mandatory PR records for manual judgment](0014-remove-mandatory-pr-records-for-manual-judgment.md)
 for PR review-reporting records. Other decisions remain in force.
 
+Amended by
+[21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md).
+
 ## Context
 
 Agent-written prose about checks can be inaccurate and later mistaken for

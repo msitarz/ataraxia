@@ -45,6 +45,5 @@ full CI remains the merge gate.
   type relationships without broad typing or product doubles.
 
   Validation: integrate independent child artifact/evidence reviews; run all
-  compute modules, complete product suite and both existing type-check routes,
-  and require latest-head full CI. Planning/probe results alone verify no
-  outcome.
+  compute modules, complete product suite and both existing type-check routes.
+  Planning/probe results alone verify no outcome.

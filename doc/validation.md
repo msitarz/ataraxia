@@ -13,6 +13,12 @@ must be covered by CI; agent-written summaries, inventories, and review
 comments cannot establish passing checks. Local focused checks remain useful
 preparation. Independent review assesses judgments CI cannot establish.
 
+Local behavior, type and manual evidence is assessed against each Work
+criterion's own `Validation:` method. Completing that method and receiving
+independent review may establish acceptance before PR CI runs; it does not
+establish or replace CI outcomes. A criterion that explicitly requires a CI
+result remains unverified until that result is observed.
+
 Before merge, require the full CI workflow to pass on the latest reviewed PR
 head. Evidence from an earlier revision does not cover later changes. The
 [CI workflow](../.github/workflows/ci.yml) owns its jobs and required commands.

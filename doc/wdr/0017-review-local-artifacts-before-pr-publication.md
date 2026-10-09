@@ -9,6 +9,9 @@ Accepted
 Amends
 [5. Review completed handoffs once](0005-review-completed-handoffs-once.md).
 
+Amended by
+[21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md).
+
 ## Context
 
 WDR 5 uses a draft PR to signal executor completion. Current

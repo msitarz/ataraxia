@@ -93,9 +93,12 @@ unresolved before continuing. If uncertain, state that and ask for steering
 rather than treating the handoff as complete. A fresh executor session may
 continue the same scope after recovery.
 
-Follow [Pull requests](pull-requests.md#descriptions) for executor returns,
-local review before new or amended PR publication, description preparation,
-ready-PR meaning, and publication ownership.
+Follow [acceptance tracing](acceptance-tracing.md) for criterion status,
+coverage semantics, evidence methods, and the retained verification/cleanup
+commits. Follow
+[Pull requests](pull-requests.md#descriptions) for executor returns, local
+review before new or amended PR publication, description preparation, ready-PR
+meaning, and publication ownership.
 
 Before publishing, reassess maintainer review effort from the actual diff,
 including tests, supporting changes, and concepts. If it exceeds the target,
@@ -117,7 +120,5 @@ override, or bypass review or CI requirements.
 Return the reviewable artifact (branch and revision or PR), outcome, acceptance
 evidence, commands run, unrun checks, unresolved criteria, and blockers. After
 session recovery, include the recovered state.
-Use the Work contract's evidence method; see
-[acceptance tracing](acceptance-tracing.md) for criterion status and coverage
-semantics. A blocked return states what remains and what input or decision is
-needed. A completed return identifies changes awaiting orchestrator review.
+A blocked return states what remains and what input or decision is needed. A
+completed return identifies changes awaiting orchestrator review.

@@ -37,6 +37,15 @@ existing reports or artifacts. Manual judgment requires independent review of
 the changed artifact. Apply the [criterion status rules](#criteria-and-coverage)
 to these evidence sources.
 
+Complete a criterion when its own `Validation:` method has been performed and
+an independent reviewer verified the resulting evidence. Full latest-head CI
+is a separate merge gate; it is not a routine precondition for accepting local
+behavior evidence. If a criterion or its method explicitly requires a CI
+result, keep it `TODO` until that result is observed. Never treat pending CI as
+completed evidence or silently waive a CI-specific method to fit the ordinary
+publication sequence. Get maintainer steering when that method cannot be
+satisfied before cleanup.
+
 ## Work delivery commits
 
 1. While the contract exists, run `ac-check`, applicable selected tests, and
