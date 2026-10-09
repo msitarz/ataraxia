@@ -6,8 +6,8 @@
   independent serialization expectations for whole-value comparison.
 - **DONE** Reporting units: real display totals and complete saved JSON use
   retained inputs, whole-value expectations and a disposable `out.json`.
-- **TODO** [Argument-only units](arguments/README.md): actual parser exits
-  before backtesting, without an internal product double.
+- **DONE** Argument-only units: actual parser exits cover missing required
+  options, unknown options and help before backtest work begins.
 - **TODO** [Command support](command/README.md): isolated typed shipped-command
   execution before acceptance flows.
 - **TODO** [Sample golden artifacts](golden/README.md): independently derived
