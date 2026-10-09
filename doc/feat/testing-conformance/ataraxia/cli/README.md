@@ -9,8 +9,8 @@
 - **DONE** Argument-only units: actual parser exits cover missing required
   options, unknown options and help before backtest work begins.
 - **DONE** Command support: typed offline execution of the prepared shipped
-  entry point with bounded capture and disposable process state; consumer
-  backtest outcomes remain for later acceptance leaves.
+  entry point with bounded capture and disposable process state, used by the
+  real-command success and failure acceptance flows.
 - **DONE** Sample golden artifacts: independently derived complete results and
   typed checkout-independent path/order adaptation; the success flow consumes
   these artifacts.
@@ -19,22 +19,25 @@
 - **DONE** Failure flows: real command refusals preserve malformed inputs and
   absent or prior output, including the empty-directory default-output case.
 
-Merge this map before implementation; deliver leaves in listed order. Paths
-below are relative to `test/ataraxia`. Serialize strict includes, helper/fixture
-ownership, legacy subsets and maps. Every cleaned module/helper/executable
-fixture is precisely annotated and explicitly normal strict checked; do not
-imply adoption of untouched remainders or alter positive/negative type-check
-routes. No forward fixture dependency, broad typing suppression, shared conftest
-migration, production repair or property adoption. Full supporting changes count
-toward five-minute leaf review; split and review revised maps before expansion.
+All seven CLI deliveries are integrated. Relative to `test/ataraxia`, strict
+typing explicitly includes `cli_result_inputs.py`, `cli_sample_expected.py`,
+`cli_process.py`, `acceptance/test_cli_success.py`,
+`acceptance/test_crossover_sample.py`,
+`unit/test_cli_reporting.py`, and `unit/test_cli_arguments.py`; the existing
+negative type-check route is unchanged. Reviewed static JSON goldens are opaque
+complete expectations; only actual output paths and unspecified shard order are
+normalized. The prepared-process helper's offline isolated execution was
+separately verified.
 
-Preserve the three existing unit cases, sample success and twelve failure rows
-with their inputs/identities/markers. Keep legacy tests until their real
-replacements deliver. Use concise slice docstrings and Given/When/Then. Retain
-all failure rows here; any later duplicate reduction first requires reviewed
-lower-level malformed-input coverage and preservation of distinct user outcomes.
-Each leaf runs focused cases/affected remainders, strict typing, lint/format and
-doc/ac checks; latest-head full CI remains required before merge.
+The original 16 case instances and identities remain: two reporting cases, the
+sample success case, the moved `test_main_print_error_and_exit`, and twelve
+malformed-input/output cases. Their historical row-first IDs remain
+`no-shards-False`, `empty-file-False`, `header-only-False`, `bad-header-False`,
+`bad-value-False`, `short-row-False`, `no-shards-True`, `empty-file-True`,
+`header-only-True`, `bad-header-True`, `bad-value-True`, and `short-row-True`.
+Four parser boundary cases were added; coverage markers remain on the delivered
+CLI tests. The empty-directory acceptance case uses a copied strategy and
+preserves the default `results.json` behavior.
 
 - **AC-1 TODO** Given completed CLI deliveries, retained reporting/parser/user
   flows exercise real public behavior, complete independent artifacts and exact
