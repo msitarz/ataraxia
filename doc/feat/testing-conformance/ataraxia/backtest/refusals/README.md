@@ -14,7 +14,7 @@ asserting FileNotFoundError's offending path. Invalid-result fixtures execute
 their actual runners; no patched product validation/computation. Keep all
 expected failures independent of implementation.
 
-- **AC-1 TODO** Given retained malformed selected results and empty/missing
+- **AC-1 DONE** Given retained malformed selected results and empty/missing
   inputs, actual backtests reject with precise contextual errors and unchanged
   input artifacts, without internal doubles or loss of case identities.
 
