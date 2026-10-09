@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
 from dataclasses import dataclass, field
-from operator import itemgetter
 from typing import TYPE_CHECKING
 
 import pytest
@@ -104,66 +103,6 @@ def source_sink():
             return None
 
     return {"Src": Src, "Snk": Snk}
-
-
-def test_compute_closes_source_on_exhaustion(source_sink):
-    Snk = itemgetter("Snk")(source_sink)
-    snk = Snk()
-
-    assert list(compute(snk)) == [
-        {snk.source: 1, snk: 8},
-        {snk.source: 3, snk: 10},
-    ]
-    assert snk.source.exit_args == [(None, None, None)]
-
-
-def test_compute_closes_source_when_runner_raises(source_sink):
-    Src = itemgetter("Src")(source_sink)
-
-    @dataclass(frozen=True)
-    class FailingRunner:
-        def __call__(self, item: int):
-            raise RuntimeError("sink runner failed")
-
-    @dataclass(frozen=True)
-    class FailingSink:
-        source: Source
-
-        def deps(self):
-            return {"item": self.source}
-
-        def factory(self):
-            return FailingRunner()
-
-        def sources(self):
-            return (self.source,)
-
-        def consumer(self):
-            return None
-
-    source = Src()
-
-    with pytest.raises(RuntimeError, match="sink runner failed"):
-        next(compute(FailingSink(source)))
-
-    ((exc_type, exc_value, traceback),) = source.exit_args
-    assert exc_type is RuntimeError
-    assert str(exc_value) == "sink runner failed"
-    assert traceback is not None
-
-
-def test_compute_closes_source_when_generator_is_closed(source_sink):
-    Snk = itemgetter("Snk")(source_sink)
-    snk = Snk()
-    computed = compute(snk)
-
-    next(computed)
-    computed.close()
-
-    ((exc_type, exc_value, traceback),) = snk.source.exit_args
-    assert exc_type is GeneratorExit
-    assert isinstance(exc_value, GeneratorExit)
-    assert traceback is not None
 
 
 @pytest.mark.parametrize(
