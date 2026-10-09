@@ -25,4 +25,4 @@ route. Do not add it to normal strict includes or migrate script/conftest files.
 
   Validation: review every signature/identity/cause and preserved static case;
   run all compute modules, complete product suite, normal strict typing and
-  typecheck-expectations, plus subtree checks and latest-head full CI.
+  typecheck-expectations, plus subtree checks.

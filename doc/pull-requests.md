@@ -11,6 +11,11 @@ For Work deliveries with acceptance criteria, follow the
 The owning orchestrator's publication and description responsibilities are
 defined [below](#descriptions).
 
+Follow [acceptance tracing](acceptance-tracing.md) for criterion status and
+verification/cleanup commit preservation. Full CI remains required on the
+latest reviewed PR head before merge; a criterion whose own method explicitly
+requires CI remains `TODO` until its result is observed.
+
 Before starting a rebase of an already-published branch, inspect the remote
 branch and record its commit ID. Verify that this is the
 published head whose work the rewrite will replace; reconcile unexpected remote

@@ -32,6 +32,6 @@ docstrings. No production repairs or property adoption belong here.
 
   Validation: integrate independent child artifact/evidence reviews against
   architecture, relevant ADRs and testing guidance; run the complete product
-  suite and strict type checks, and require latest-head full CI. Deferred groups
-  remain unverified until their separately reviewed plans and deliveries are
-  complete; planning readiness alone does not establish parent completion.
+  suite and strict type checks. Deferred groups remain unverified until their
+  separately reviewed plans and deliveries are complete; planning readiness
+  alone does not establish parent completion.
