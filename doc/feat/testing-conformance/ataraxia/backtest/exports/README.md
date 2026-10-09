@@ -13,7 +13,7 @@ cause state. Module execution and sink construction preserve AttributeError's
 exact error types, contractual contextual formatting and independent literals.
 Leave result/empty-shard/ordering cases with their owners.
 
-- **AC-1 TODO** Given all seven retained export/error arrangements, real loading
+- **AC-1 DONE** Given all seven retained export/error arrangements, real loading
   and construction preserve contextual rejection and underlying strategy errors
   through the actual backtest boundary with precise test/fixture typing.
 
