@@ -1,195 +1,310 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
+"""Test precise runtime dependency binding and preparation behavior."""
+
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
 
 import pytest
 
-from ataraxia.compute import Runner, Source
-from ataraxia.compute.loop import (
-    compute,
-    compute_step,
-    prime_catalog,
+from ataraxia.compute import Computable, Runner
+from ataraxia.compute.loop import compute, compute_step, prime_catalog
+from test.ataraxia.compute_source_inputs import (
+    IntegerSink,
+    IntegerSource,
+    integer_source_sink,
 )
 
 if TYPE_CHECKING:
     from ataraxia.bar import Bar
 
 
-@pytest.fixture
-def single_dep():
-    # Runners are also frozen dataclasses for easy assert
+@dataclass(frozen=True)
+class ConstantRunner:
+    """Return the integer dependency value used by binding arrangements."""
 
-    @dataclass(frozen=True)
-    class BRunner:
-        def __call__(self):
-            return 1
-
-    @dataclass(frozen=True)
-    class B:
-        def deps(self):
-            return {}
-
-        def factory(self):
-            return BRunner()
-
-    @dataclass(frozen=True)
-    class ARunner:
-        def __call__(self, b: int):
-            return b + 3
-
-    @dataclass(frozen=True)
-    class A:
-        def deps(self):
-            return {"b": B()}
-
-        def factory(self):
-            return ARunner()
-
-    return {"BRunner": BRunner, "B": B, "ARunner": ARunner, "A": A}
+    def __call__(self) -> int:
+        return 1
 
 
-@pytest.fixture
-def source_sink():
-    class SrcRunner:
-        def __call__(self):
-            return self.next_item
+@dataclass(frozen=True)
+class ConstantNode:
+    """Provide one typed, dependency-free integer node."""
 
-    @dataclass(frozen=True)
-    class Src:
-        runner: Runner = field(default_factory=SrcRunner)
-        exit_args: list[tuple[object, object, object]] = field(
-            default_factory=list, compare=False, hash=False
-        )
+    runner: ConstantRunner = field(default_factory=ConstantRunner)
 
-        def deps(self):
-            return {}
+    def deps(self) -> dict[str, Computable[..., int]]:
+        return {}
 
-        def factory(self):
-            return self.runner
+    def factory(self) -> ConstantRunner:
+        return self.runner
 
-        def send(self, item):
-            self.runner.next_item = item
 
-        def __iter__(self):
-            return (x for x in (1, 3))
+@dataclass(frozen=True)
+class RequiredItemRunner:
+    """Accept one required keyword named item."""
 
-        def __enter__(self):
-            return self
+    def __call__(self, item: int) -> int:
+        return item
 
-        def __exit__(self, exc_type, exc_value, traceback):
-            self.exit_args.append((exc_type, exc_value, traceback))
-            return False
 
-    @dataclass(frozen=True)
-    class SnkRunner:
-        def __call__(self, item: int):
-            return item + 7
+@dataclass(frozen=True)
+class PositionalOnlyItemRunner:
+    """Accept item positionally but reject it as a dependency keyword."""
 
-    @dataclass(frozen=True)
-    class Snk:
-        source: Source = field(default_factory=Src)
+    def __call__(self, item: int, /) -> int:
+        return item
 
-        def deps(self):
-            return {"item": self.source}
 
-        def factory(self):
-            return SnkRunner()
+@dataclass(frozen=True)
+class KeywordOnlyItemRunner:
+    """Accept item as a required keyword-only dependency."""
 
-        def sources(self):
-            return (self.source,)
+    def __call__(self, *, item: int) -> int:
+        return item
 
-        def consumer(self):
-            return None
 
-    return {"Src": Src, "Snk": Snk}
+@dataclass(frozen=True)
+class DefaultItemRunner:
+    """Accept item as an optional keyword dependency."""
+
+    def __call__(self, item: int = 1) -> int:
+        return item
+
+
+@dataclass(frozen=True)
+class ArbitraryKeywordRunner:
+    """Accept the named arbitrary dependency supplied by its node."""
+
+    def __call__(self, **kwargs: int) -> int:
+        return kwargs["arbitrary"]
+
+
+@dataclass(frozen=True)
+class PositionalArgsRunner:
+    """Accept an empty dependency mapping through variadic positional args."""
+
+    def __call__(self, *args: int) -> int:
+        return len(args)
+
+
+@dataclass(frozen=True)
+class SignatureNode[R: Runner[..., int]]:
+    """Pair a signature-specific runner with its precise dependency mapping."""
+
+    runner: R
+    dependencies: dict[str, Computable[..., int]] = field(compare=False, hash=False)
+
+    def deps(self) -> dict[str, Computable[..., int]]:
+        return self.dependencies
+
+    def factory(self) -> R:
+        return self.runner
+
+
+@dataclass(frozen=True)
+class MisspelledWiringSink(IntegerSink):
+    """Expose a bad dependency key for pre-entry preparation coverage."""
+
+    @override
+    def deps(self) -> dict[str, IntegerSource]:
+        return {"itme": self.source}
+
+
+@dataclass(frozen=True)
+class UninspectableRunnerNode:
+    """Return builtin int, whose callable signature cannot be inspected."""
+
+    def deps(self) -> dict[str, ConstantNode]:
+        return {}
+
+    def factory(self) -> type[int]:
+        return int
+
+
+@dataclass(frozen=True)
+class TypeOnlyAnnotationRunner:
+    """Return a result without evaluating its TYPE_CHECKING-only Bar annotation."""
+
+    def __call__(self, item: Bar | None = None) -> int:
+        return 7
+
+
+@dataclass(frozen=True)
+class TypeOnlyAnnotationNode:
+    """Expose the annotation-only runner through normal node preparation."""
+
+    runner: TypeOnlyAnnotationRunner = field(default_factory=TypeOnlyAnnotationRunner)
+
+    def deps(self) -> dict[str, ConstantNode]:
+        return {}
+
+    def factory(self) -> TypeOnlyAnnotationRunner:
+        return self.runner
+
+
+INVALID_SIGNATURE_CASES: tuple[
+    tuple[
+        SignatureNode[RequiredItemRunner] | SignatureNode[PositionalOnlyItemRunner],
+        str,
+    ],
+    ...,
+] = (
+    (
+        SignatureNode(RequiredItemRunner(), {"itme": ConstantNode()}),
+        "missing a required argument: 'item'",
+    ),
+    (SignatureNode(RequiredItemRunner(), {}), "missing a required argument: 'item'"),
+    (
+        SignatureNode(
+            RequiredItemRunner(),
+            {"item": ConstantNode(), "extra": ConstantNode()},
+        ),
+        "got an unexpected keyword argument 'extra'",
+    ),
+    (
+        SignatureNode(PositionalOnlyItemRunner(), {"item": ConstantNode()}),
+        "missing a required positional-only argument: 'item'",
+    ),
+)
+
+VALID_SIGNATURE_NODES: tuple[
+    SignatureNode[KeywordOnlyItemRunner]
+    | SignatureNode[DefaultItemRunner]
+    | SignatureNode[ArbitraryKeywordRunner]
+    | SignatureNode[PositionalArgsRunner],
+    ...,
+] = (
+    SignatureNode(KeywordOnlyItemRunner(), {"item": ConstantNode()}),
+    SignatureNode(DefaultItemRunner(), {}),
+    SignatureNode(ArbitraryKeywordRunner(), {"arbitrary": ConstantNode()}),
+    SignatureNode(PositionalArgsRunner(), {}),
+)
 
 
 @pytest.mark.parametrize(
-    ("runner", "names"),
-    [
-        (lambda item: item, ("itme",)),
-        (lambda item: item, ()),
-        (lambda item: item, ("item", "extra")),
-        (lambda item, /: item, ("item",)),
+    ("node", "cause_reason"),
+    INVALID_SIGNATURE_CASES,
+    ids=[
+        "<lambda>-names0",
+        "<lambda>-names1",
+        "<lambda>-names2",
+        "<lambda>-names3",
     ],
 )
-def test_invalid_dependency_names_fail_preparation(single_dep, runner, names):
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
+    ac="AC-1",
+)
+def test_invalid_dependency_names_fail_preparation(
+    node: SignatureNode[RequiredItemRunner] | SignatureNode[PositionalOnlyItemRunner],
+    cause_reason: str,
+) -> None:
+    """Refuse malformed dependency names with their precise bind errors."""
     from ataraxia.errors import DependencyError
 
-    class Invalid:
-        def deps(self):
-            return dict.fromkeys(names, single_dep["B"]())
+    # Given
+    expected_reason = cause_reason
 
-        def factory(self):
-            return runner
-
+    # When
     with pytest.raises(DependencyError, match="Invalid dependencies") as error:
-        prime_catalog((Invalid(),))
-    assert isinstance(error.value.__cause__, TypeError)
+        prime_catalog((node,))
+
+    # Then
+    assert type(error.value.__cause__) is TypeError
+    assert str(error.value.__cause__) == expected_reason
 
 
 @pytest.mark.parametrize(
-    ("runner", "names"),
-    [
-        (lambda *, item: item, ("item",)),
-        (lambda item=1: item, ()),
-        (lambda **kwargs: kwargs, ("arbitrary",)),
-        (lambda *args: args, ()),
+    "node",
+    VALID_SIGNATURE_NODES,
+    ids=[
+        "<lambda>-names0",
+        "<lambda>-names1",
+        "<lambda>-names2",
+        "<lambda>-names3",
     ],
 )
-def test_valid_dependency_signatures(single_dep, runner, names):
-    class Valid:
-        def deps(self):
-            return dict.fromkeys(names, single_dep["B"]())
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
+    ac="AC-1",
+)
+def test_valid_dependency_signatures(
+    node: (
+        SignatureNode[KeywordOnlyItemRunner]
+        | SignatureNode[DefaultItemRunner]
+        | SignatureNode[ArbitraryKeywordRunner]
+        | SignatureNode[PositionalArgsRunner]
+    ),
+) -> None:
+    """Accept keyword-only, defaulted, variadic keyword and positional runners."""
+    # Given
+    expected_runner = node.factory()
 
-        def factory(self):
-            return runner
-
-    node = Valid()
-    assert prime_catalog((node,))[node] is runner
-
-
-def test_wiring_failure_precedes_source_entry(source_sink):
-    from ataraxia.errors import DependencyError
-
-    class InvalidSink(source_sink["Snk"]):
-        def deps(self):
-            return {"itme": self.source}
-
-    sink = InvalidSink()
-    with pytest.raises(DependencyError):
-        next(compute(sink))
-    assert sink.source.exit_args == []
-
-
-def test_uninspectable_runner_fails_preparation():
-    from ataraxia.errors import DependencyError
-
-    class Node:
-        def deps(self):
-            return {}
-
-        def factory(self):
-            return int
-
-    with pytest.raises(DependencyError) as error:
-        prime_catalog((Node(),))
-    assert isinstance(error.value.__cause__, ValueError)
-
-
-def test_preparation_does_not_evaluate_type_only_annotations():
-    class AnnotatedRunner:
-        def __call__(self, item: Bar | None = None) -> int:
-            return 7
-
-    class Node:
-        def deps(self):
-            return {}
-
-        def factory(self):
-            return AnnotatedRunner()
-
-    node = Node()
+    # When
     catalog = prime_catalog((node,))
+
+    # Then
+    assert catalog[node] is expected_runner
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
+    ac="AC-1",
+)
+def test_wiring_failure_precedes_source_entry() -> None:
+    """Reject bad wiring before entering the faithful integer source."""
+    from ataraxia.errors import DependencyError
+
+    # Given
+    _, source = integer_source_sink()
+    sink = MisspelledWiringSink(source)
+
+    # When
+    with pytest.raises(DependencyError, match="Invalid dependencies") as error:
+        next(compute(sink))
+
+    # Then
+    assert type(error.value.__cause__) is TypeError
+    assert str(error.value.__cause__) == "missing a required argument: 'item'"
+    assert not source.context.is_open
+    assert not source.context.is_closed
+    assert source.context.exit_args is None
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
+    ac="AC-1",
+)
+def test_uninspectable_runner_fails_preparation() -> None:
+    """Report the exact signature-inspection failure for builtin int."""
+    from ataraxia.errors import DependencyError
+
+    # Given
+    node = UninspectableRunnerNode()
+
+    # When
+    with pytest.raises(DependencyError, match="Invalid dependencies") as error:
+        prime_catalog((node,))
+
+    # Then
+    assert type(error.value.__cause__) is ValueError
+    assert str(error.value.__cause__) == (
+        "no signature found for builtin type <class 'int'>"
+    )
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
+    ac="AC-1",
+)
+def test_preparation_does_not_evaluate_type_only_annotations() -> None:
+    """Prepare a runner whose optional Bar annotation is type-only."""
+    # Given
+    node = TypeOnlyAnnotationNode()
+
+    # When
+    catalog = prime_catalog((node,))
+
+    # Then
     assert compute_step((node,), catalog)[node] == 7
