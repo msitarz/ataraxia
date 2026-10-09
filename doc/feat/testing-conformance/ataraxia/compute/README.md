@@ -4,7 +4,7 @@
 
 - **DONE** Dependency arrangements: typed dependency
   nodes/runners before graph and result consumers.
-- **TODO** [Source arrangements](sources/README.md): typed integer source/sink
+- **DONE** Source arrangements: typed integer source/sink
   collaborators and small real-CSV arrangements before consumers.
 - **TODO** [Graph and results](results/README.md): graph/order/cycle, catalogs,
   dependency values, complete steps and real simple computation.
