@@ -183,7 +183,7 @@ def test_supported_preparation_bytes_are_accepted(
     """Accept the literal record bytes and retain every documented field."""
     # Given
     expected_digest = "86a0bd7e2b6004ca8deaaf776b1f344fa65b1531ccf3585a423635d14f559cff"
-    expected = json.loads(
+    expected: object = json.loads(
         (
             ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
         ).read_text(encoding="utf-8")
