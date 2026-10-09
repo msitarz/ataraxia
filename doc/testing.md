@@ -196,12 +196,12 @@ only proving that an upstream tool behaves as documented.
 
 Annotate fixture and test parameters, returns, helpers, and collaborators with
 precise supported types under
-[engineering guidance](engineering.md#preserve-type-precision). As modules are
-cleaned up, explicitly extend Pyrefly's configured strict checked set with
-passing test modules and their changed helpers or executable fixtures; include
-required dependencies within the bounded change. Inclusion of a consumer does
-not imply all fixture code or tests are checked. Keep intentional-negative
-`test/ataraxia/typecheck` cases separate on the existing `--expectations` route.
+[engineering guidance](engineering.md#preserve-type-precision). Pyrefly's
+strict check covers the configured project folders; keep changed modules,
+helpers, and executable fixtures within those roots so normal type checking
+covers them automatically. Do not add redundant per-file include entries. Keep
+intentional-negative `test/ataraxia/typecheck` cases excluded from the normal
+check and on the existing `--expectations` route.
 
 Existing tests may predate these rules. The type-specific references illustrate
 named strengths, not blanket compliance. Apply this guidance to new or changed
