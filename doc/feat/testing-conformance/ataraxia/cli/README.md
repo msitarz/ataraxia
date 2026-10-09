@@ -8,8 +8,9 @@
   retained inputs, whole-value expectations and a disposable `out.json`.
 - **DONE** Argument-only units: actual parser exits cover missing required
   options, unknown options and help before backtest work begins.
-- **TODO** [Command support](command/README.md): isolated typed shipped-command
-  execution before acceptance flows.
+- **DONE** Command support: typed offline execution of the prepared shipped
+  entry point with bounded capture and disposable process state; consumer
+  backtest outcomes remain for later acceptance leaves.
 - **TODO** [Sample golden artifacts](golden/README.md): independently derived
   complete sample results before their acceptance consumer.
 - **TODO** [Success flow](success/README.md): exact report and complete
