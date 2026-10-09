@@ -19,8 +19,12 @@ from test.ataraxia.backtest_support import (
 )
 
 
-class ConsumerBeforeSinkMapping(ComputedMapping):
-    """Expose real computed results with the consumer before the sink."""
+class ConsumerBeforeSinkAdapter(ComputedMapping):
+    """Test-local view that changes iteration order of real computed steps.
+
+    Lookups and values stay delegated; this order belongs only to the lookup
+    regression below, so the adapter stays beside its sole consumer.
+    """
 
     def __init__(
         self,
@@ -51,7 +55,11 @@ class ConsumerBeforeSinkMapping(ComputedMapping):
 
 
 class ConsumerBeforeSinkCompute:
-    """Adapt real compute steps and record their exposed key order."""
+    """Callable adapter installed at backtest.compute for the ordering test.
+
+    It delegates to real compute and wraps each step consumer-first; normal
+    graph sorting puts the selected consumer root last.
+    """
 
     def __init__(self) -> None:
         self.sink_node: Sink[..., Any] | None = None
@@ -66,7 +74,7 @@ class ConsumerBeforeSinkCompute:
         self.consumer_node = consumer
 
         for step in compute(sink):
-            reordered = ConsumerBeforeSinkMapping(step, sink, consumer)
+            reordered = ConsumerBeforeSinkAdapter(step, sink, consumer)
             self.orders.append(tuple(reordered))
             yield reordered
 
