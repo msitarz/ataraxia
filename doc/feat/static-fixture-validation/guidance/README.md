@@ -28,7 +28,7 @@ PR #244 mutation, blanket loader cleanup or new type-check route belongs here.
 Keep the complete guidance diff within five-minute review; return a split before
 adding independent cleanup. Session adoption does not verify durable delivery.
 
-- **AC-1 TODO** Given revised common owners and active CLI contracts, guidance
+- **AC-1 DONE** Given revised common owners and active CLI contracts, guidance
   consistently permits opaque equality expectations, requires only justified
   validation, and preserves meaningful structured typing and genuine validation
   boundaries without duplicated policy or weakened full-value oracles.
