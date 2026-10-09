@@ -9,6 +9,7 @@ import pytest
 
 from ataraxia.compute import Computable, Runner
 from ataraxia.compute.loop import compute, compute_step, prime_catalog
+from test.ataraxia.compute_dependency_inputs import B
 from test.ataraxia.compute_source_inputs import (
     IntegerSink,
     IntegerSource,
@@ -17,27 +18,6 @@ from test.ataraxia.compute_source_inputs import (
 
 if TYPE_CHECKING:
     from ataraxia.bar import Bar
-
-
-@dataclass(frozen=True)
-class ConstantRunner:
-    """Return the integer dependency value used by binding arrangements."""
-
-    def __call__(self) -> int:
-        return 1
-
-
-@dataclass(frozen=True)
-class ConstantNode:
-    """Provide one typed, dependency-free integer node."""
-
-    runner: ConstantRunner = field(default_factory=ConstantRunner)
-
-    def deps(self) -> dict[str, Computable[..., int]]:
-        return {}
-
-    def factory(self) -> ConstantRunner:
-        return self.runner
 
 
 @dataclass(frozen=True)
@@ -115,7 +95,7 @@ class MisspelledWiringSink(IntegerSink):
 class UninspectableRunnerNode:
     """Return builtin int, whose callable signature cannot be inspected."""
 
-    def deps(self) -> dict[str, ConstantNode]:
+    def deps(self) -> dict[str, Computable[..., int]]:
         return {}
 
     def factory(self) -> type[int]:
@@ -136,7 +116,7 @@ class TypeOnlyAnnotationNode:
 
     runner: TypeOnlyAnnotationRunner = field(default_factory=TypeOnlyAnnotationRunner)
 
-    def deps(self) -> dict[str, ConstantNode]:
+    def deps(self) -> dict[str, Computable[..., int]]:
         return {}
 
     def factory(self) -> TypeOnlyAnnotationRunner:
@@ -151,19 +131,19 @@ INVALID_SIGNATURE_CASES: tuple[
     ...,
 ] = (
     (
-        SignatureNode(RequiredItemRunner(), {"itme": ConstantNode()}),
+        SignatureNode(RequiredItemRunner(), {"itme": B()}),
         "missing a required argument: 'item'",
     ),
     (SignatureNode(RequiredItemRunner(), {}), "missing a required argument: 'item'"),
     (
         SignatureNode(
             RequiredItemRunner(),
-            {"item": ConstantNode(), "extra": ConstantNode()},
+            {"item": B(), "extra": B()},
         ),
         "got an unexpected keyword argument 'extra'",
     ),
     (
-        SignatureNode(PositionalOnlyItemRunner(), {"item": ConstantNode()}),
+        SignatureNode(PositionalOnlyItemRunner(), {"item": B()}),
         "missing a required positional-only argument: 'item'",
     ),
 )
@@ -175,9 +155,9 @@ VALID_SIGNATURE_NODES: tuple[
     | SignatureNode[PositionalArgsRunner],
     ...,
 ] = (
-    SignatureNode(KeywordOnlyItemRunner(), {"item": ConstantNode()}),
+    SignatureNode(KeywordOnlyItemRunner(), {"item": B()}),
     SignatureNode(DefaultItemRunner(), {}),
-    SignatureNode(ArbitraryKeywordRunner(), {"arbitrary": ConstantNode()}),
+    SignatureNode(ArbitraryKeywordRunner(), {"arbitrary": B()}),
     SignatureNode(PositionalArgsRunner(), {}),
 )
 
