@@ -11,7 +11,7 @@ and output.json under tmp_path. Compare the entire parsed artifact against
 reviewed golden fields and actual resolved paths; normalize only unspecified
 shard order, never omit fields. Preserve input state and case/marker identity.
 
-- **AC-1 TODO** Given shipped example/sample data and prepared tools, the real
+- **AC-1 DONE** Given shipped example/sample data and prepared tools, the real
   command returns the exact success report and complete independently expected
   artifact at the requested output while retaining inputs unchanged.
 
