@@ -23,12 +23,12 @@
   sink iteration with precise keyed lookup, independently checked against the
   complete broker result.
 
-Merge this map before implementation; deliver leaves in listed order. All paths
-below are relative to `test/ataraxia`. Serialize shared includes, arrangements,
-legacy subsets and maps. Every changed module/helper/executable fixture is
-precisely typed and explicitly normal strict checked; untouched remainders are
-not adopted by implication. Preserve case identities/markers and use concise
-slice docstrings, Given/When/Then and independent complete expectations.
+The seven leaf outcomes above are delivered. Test paths below are relative to
+`test/ataraxia`. Their changed test modules, shared support and executable
+fixtures are precisely typed and explicitly strict-included in `pyproject.toml`;
+untouched remainders are not adopted by implication. The retained tests preserve
+original case identities and covers provenance, with concise slice docstrings,
+Given/When/Then and independent complete expectations.
 
 Fixture owners precede consumers; no generated substantial source, `.replace`
 variants or forward fixture dependencies. No production repair, property
@@ -38,10 +38,11 @@ review. Each leaf runs focused cases and affected legacy remainders, strict
 typing, lint/format and doc/ac checks; latest-head full CI remains the merge
 gate.
 
-Ordinary real compute puts its selected graph root last. Natural consumer
-execution therefore cannot replace the reordered-mapping claim. Retain that
-regression separately; adapter feasibility/type constraints remain unverified
-until its leaf delivers. Do not remove it or call it real ordering coverage.
+Natural real compute puts its selected consumer root last. The retained ordering
+regression runs real computation through a typed adapter that changes only
+public mapping iteration to put the consumer before the sink, while delegating
+lookups and values unchanged. It verifies keyed selection independently of
+natural-order result coverage.
 
 - **AC-1 TODO** Given delivered leaves, retained loading/backtest cases observe
   real modules/graphs, complete independent results and contextual failures,
