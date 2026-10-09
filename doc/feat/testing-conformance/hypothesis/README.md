@@ -29,18 +29,18 @@ retaining process timeouts; use deterministic CI generation. Construct fresh
 mutable/filesystem state per example instead of suppressing fixture health
 checks. Keep generated inputs bounded and retain named hostile examples.
 
-The four reviewed pilots depended on adoption and their corresponding cleanup.
+The three reviewed pilots followed adoption and their corresponding cleanup.
 They do not authorize a wholesale conversion or new broker/Git state machines.
-Adoption, window, Work paths, and Make arguments are delivered. Serialize
-shared settings and maps. Each complete leaf includes helpers/type changes
-within about five-minute review; escalate and merge revised contracts before
-expansion. Reuse full-folder strict coverage for `src`, `script`, `test` and
-`example`, with the existing intentional-negative expectations route, rather
-than per-file lists. No production repair or performance claim. Preserve named
-cases and provenance.
+Adoption and the window, Work paths, and Make arguments pilots are delivered.
+Serialize shared settings and maps. Each complete leaf includes helpers/type
+changes within about five-minute review; escalate and merge revised contracts
+before expansion. Reuse full-folder strict coverage for `src`, `script`, `test`
+and `example`, with the existing intentional-negative expectations route,
+rather than per-file lists. No production repair or performance claim. Preserve
+named cases and provenance.
 
 - **AC-1 TODO** Given the adopted bounded settings and fresh per-example state,
-  the four independently reviewed pilots prove ordering/truncation, canonical
+  the three independently reviewed pilots prove ordering/truncation, canonical
   Work containment and literal Make transport without replacing named examples
   or weakening behavior, type precision or isolation.
 
