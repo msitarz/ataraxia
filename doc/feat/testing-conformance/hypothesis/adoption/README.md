@@ -24,7 +24,7 @@ here before pilot consumers. Existing named tests and production code remain
 unchanged. Temporary upstream/settings probes may establish adoption once;
 review their ownership before cleanup and preserve observed evidence.
 
-- **AC-1 TODO** Given the prepared locked development environment, normal test
+- **AC-1 DONE** Given the prepared locked development environment, normal test
   routes load bounded in-process and deterministic CI settings, permit the
   explicit subprocess override without losing timeouts, and retain isolation
   health checks and precise folder-wide typing.
