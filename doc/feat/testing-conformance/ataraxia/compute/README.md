@@ -8,7 +8,7 @@
   collaborators and small real-CSV arrangements before consumers.
 - **DONE** Graph and results: graph/order/cycle, catalogs,
   dependency values, complete steps and real simple computation.
-- **TODO** [Shared state](sharing/README.md): equivalent dependency identity,
+- **DONE** Shared state: equivalent dependency identity,
   once-per-bar state and fresh runners across executions.
 - **TODO** [Source lifecycle](lifecycle/README.md): retained exhaustion, runner
   failure and explicit generator-close state/exception observations.
