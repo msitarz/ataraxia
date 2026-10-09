@@ -14,8 +14,8 @@
 - **DONE** Sample golden artifacts: independently derived complete results and
   typed checkout-independent path/order adaptation; the success flow consumes
   these artifacts.
-- **TODO** [Success flow](success/README.md): exact report and complete
-  artifact.
+- **DONE** Success flow: the real prepared command asserts the exact report
+  and complete normalized sample artifact while preserving its inputs.
 - **TODO** [Failure flows](failures/README.md): exact exits, diagnostic context
   and absent/unchanged output, including the migrated empty-result case.
 
