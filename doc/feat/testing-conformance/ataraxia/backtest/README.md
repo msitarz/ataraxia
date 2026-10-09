@@ -9,8 +9,10 @@
   refusal and loading the copied six-field Bar fixture through `import_file`.
 - **DONE** Real results: shard and directory backtests compare complete
   resolved-path snapshots and exercise direct-sink and broker-consumer results.
-- **TODO** [Invalid arrangements](invalid-arrangements/README.md): named export,
-  strategy-error and invalid-result fixtures before their consumers.
+- **DONE** Invalid arrangements: nine named, strictly checked fixtures cover
+  invalid exports, module/construction errors and invalid result variants under
+  `test/ataraxia/fixtures/backtest/`; support keeps invalid fixture names
+  separate from the valid strategy type.
 - **TODO** [Export and strategy failures](exports/README.md): all seven retained
   missing/invalid export and module/construction error instances.
 - **TODO** [Result/input refusals](refusals/README.md): two invalid results,
