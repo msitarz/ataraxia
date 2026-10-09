@@ -18,7 +18,7 @@ Runner/Sma/window relationships and all E-marked rejected assignments/calls,
 including read-only/invalid-key checks, unchanged on its existing expectations
 route. Do not add it to normal strict includes or migrate script/conftest files.
 
-- **AC-1 TODO** Given all eleven retained binding case instances, actual
+- **AC-1 DONE** Given all eleven retained binding case instances, actual
   preparation preserves signature acceptance/refusal and pre-entry failure while
   existing positive/negative static relationships retain their precise
   guarantees.
