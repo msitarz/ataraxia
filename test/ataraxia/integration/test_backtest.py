@@ -20,10 +20,10 @@ from test.ataraxia.backtest_support import (
 
 
 class ConsumerBeforeSinkAdapter(ComputedMapping):
-    """Test-local view that changes iteration order of real computed steps.
+    """Test-local view constructed from a real step, sink, and consumer.
 
-    Lookups and values stay delegated; this order belongs only to the lookup
-    regression below, so the adapter stays beside its sole consumer.
+    It iterates consumer-first and sink-last while delegating lookups unchanged;
+    this order belongs only to the regression below.
     """
 
     def __init__(
@@ -55,10 +55,10 @@ class ConsumerBeforeSinkAdapter(ComputedMapping):
 
 
 class ConsumerBeforeSinkCompute:
-    """Callable adapter installed at backtest.compute for the ordering test.
+    """Instantiate and install at backtest.compute for the ordering test.
 
-    It delegates to real compute and wraps each step consumer-first; normal
-    graph sorting puts the selected consumer root last.
+    It delegates to real compute and wraps steps; normal sorting puts the
+    consumer root last, so inspect orders after running the backtest.
     """
 
     def __init__(self) -> None:
