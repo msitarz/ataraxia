@@ -12,7 +12,7 @@ stay under disposable state; no subprocess or patched backtest_dir. The existing
 `test_main_print_error_and_exit` is a backtest outcome, remains untouched here,
 and migrates to a real command failure later.
 
-- **AC-1 TODO** Given parser-only arguments, public main reports exact parser
+- **AC-1 DONE** Given parser-only arguments, public main reports exact parser
   exits/options before real work starts, with precise tests and restored process
   state rather than an internal backtest double.
 
