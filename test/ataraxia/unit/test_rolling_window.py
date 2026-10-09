@@ -3,6 +3,8 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from hypothesis import example, given
+from hypothesis import strategies as st
 import pytest
 
 from ataraxia.compute import Computable, Runner
@@ -62,3 +64,36 @@ def test_rolling_window() -> None:
     assert node.deps()["item"] is source
     assert first_results == ((0,), (3, 0))
     assert fresh_result == (5,)
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/hypothesis/window/README.md", ac="AC-1"
+)
+@given(
+    capacity=st.integers(min_value=0, max_value=8),
+    values=st.lists(st.integers(min_value=-100, max_value=100), max_size=24),
+)
+@example(capacity=0, values=[1, 1])
+@example(capacity=3, values=[])
+@example(capacity=1, values=[-2, 7])
+@example(capacity=3, values=[4, 4])
+@example(capacity=2, values=[0, 1, 2])
+def test_rolling_window_matches_every_generated_prefix(
+    capacity: int, values: list[int]
+) -> None:
+    """Compare every runner prefix with an independent newest-first slice."""
+    # Given
+    runner = RollingWindowRunner[int](maxlen=capacity)
+    seen: list[int] = []
+    actual_prefixes: list[tuple[int, ...]] = []
+    expected_prefixes: list[tuple[int, ...]] = []
+
+    # When
+    for value in values:
+        seen.append(value)
+        actual_prefixes.append(runner(value))
+        newest = seen[-capacity:] if capacity else []
+        expected_prefixes.append(tuple(reversed(newest)))
+
+    # Then
+    assert actual_prefixes == expected_prefixes
