@@ -38,32 +38,32 @@ their historical execution evidence.
 
 ## Acceptance
 
-- **AC-1 TODO** Given the completed cleanup, changed tests exercise their named
+- **AC-1 DONE** Given the completed cleanup, changed tests exercise their named
   public boundaries with independent expectations and preserve existing
   contracts and Work coverage; tests create files only in disposable
   arrangements.
 
   Validation: independently review child diffs and their focused
   execution evidence against common and relevant test-type guidance.
-- **AC-2 TODO** Given Make orchestration targets, real Make with fake uv proves
+- **AC-2 DONE** Given Make orchestration targets, real Make with fake uv proves
   command arguments, environment, ordering obligations, and failure propagation;
   real Git and selected real tools retain distinct repository-boundary coverage.
 
   Validation: review the Make subtree's criterion-marked execution evidence and
   retained regressions; confirm normal test and CI selection includes all cases.
-- **AC-3 TODO** Given prepared offline runs, Make timing evidence compares three
+- **AC-3 DONE** Given prepared offline runs, Make timing evidence compares three
   baseline and three final runs under matched conditions, reporting full-suite
   and unmarked-case medians, failures, and skips without an assumed speedup.
 
   Validation: review the declared measurement protocol and retained
   observations; timing alone cannot justify loss of contract coverage.
-- **AC-4 TODO** Given fresh per-example arrangements, separate Hypothesis pilots
+- **AC-4 DONE** Given fresh per-example arrangements, separate Hypothesis pilots
   prove window ordering, Work-path containment, and literal Make argument
   transport while preserving named examples.
 
   Validation: review each pilot's independent oracle, generated execution
   evidence, state isolation, and bounded configuration.
-- **AC-5 TODO** Given normal type checking and CI, strict enforcement includes
+- **AC-5 DONE** Given normal type checking and CI, strict enforcement includes
   the pilot test module and incrementally includes modules/helpers changed by
   later cleanup leaves without weakening source precision or expectation cases.
 
