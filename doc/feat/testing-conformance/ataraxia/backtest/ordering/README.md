@@ -24,7 +24,7 @@ If this cannot satisfy precise existing contracts, stop/report the explicit
 constraint for review instead of removing the regression or claiming natural
 execution covers it. A production/interface repair requires a separate Work.
 
-- **AC-1 TODO** Given genuine computation exposed in consumer-before-sink order,
+- **AC-1 DONE** Given genuine computation exposed in consumer-before-sink order,
   backtest selects the keyed consumer result independently of mapping iteration
   while preserving precise lookup signatures and real computation/lifecycle.
 
