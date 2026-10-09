@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+# Copyright (C) 2026 by Michal Sitarz
 """User-visible refusal effects for malformed sample runs."""
 
 from dataclasses import dataclass
@@ -35,55 +36,55 @@ class FailurePaths:
 
 
 FAILURE_CASES = (
-    FailureCase("False-no-shards", None, "No backtest completed", None),
-    FailureCase("False-empty-file", "", "CSV file must contain a header", None),
+    FailureCase("no-shards-False", None, "No backtest completed", None),
+    FailureCase("empty-file-False", "", "CSV file must contain a header", None),
     FailureCase(
-        "False-header-only",
+        "header-only-False",
         "timestamp,open,high,low,close,volume\n",
         "contains no bars",
         None,
     ),
     FailureCase(
-        "False-bad-header", "wrong,header\n", "CSV file must contain a header", None
+        "bad-header-False", "wrong,header\n", "CSV file must contain a header", None
     ),
     FailureCase(
-        "False-bad-value",
+        "bad-value-False",
         "timestamp,open,high,low,close,volume\n"
         "1,100,200,50,150,1\n2,invalid,200,50,150,1\n",
         "Invalid bar",
         None,
     ),
     FailureCase(
-        "False-short-row",
+        "short-row-False",
         "timestamp,open,high,low,close,volume\n1,100\n",
         "Invalid bar",
         None,
     ),
-    FailureCase("True-no-shards", None, "No backtest completed", PREVIOUS_OUTPUT),
+    FailureCase("no-shards-True", None, "No backtest completed", PREVIOUS_OUTPUT),
     FailureCase(
-        "True-empty-file", "", "CSV file must contain a header", PREVIOUS_OUTPUT
+        "empty-file-True", "", "CSV file must contain a header", PREVIOUS_OUTPUT
     ),
     FailureCase(
-        "True-header-only",
+        "header-only-True",
         "timestamp,open,high,low,close,volume\n",
         "contains no bars",
         PREVIOUS_OUTPUT,
     ),
     FailureCase(
-        "True-bad-header",
+        "bad-header-True",
         "wrong,header\n",
         "CSV file must contain a header",
         PREVIOUS_OUTPUT,
     ),
     FailureCase(
-        "True-bad-value",
+        "bad-value-True",
         "timestamp,open,high,low,close,volume\n"
         "1,100,200,50,150,1\n2,invalid,200,50,150,1\n",
         "Invalid bar",
         PREVIOUS_OUTPUT,
     ),
     FailureCase(
-        "True-short-row",
+        "short-row-True",
         "timestamp,open,high,low,close,volume\n1,100\n",
         "Invalid bar",
         PREVIOUS_OUTPUT,
