@@ -16,8 +16,9 @@
 - **DONE** Export and strategy failures: seven retained real-loader cases
   preserve absent/invalid exports, contextual causes and module/construction
   `AttributeError` outcomes in the typed integration tests.
-- **TODO** [Result/input refusals](refusals/README.md): two invalid results,
-  header-only shard and missing directory.
+- **DONE** Result/input refusals: two invalid selected results, a header-only
+  shard and a missing directory retain exact contextual errors and input state
+  through the real backtest and directory boundaries.
 - **TODO** [Mapping-order selection](ordering/README.md): retain the distinct
   consumer-before-sink mapping regression through a justified narrow adapter.
 
