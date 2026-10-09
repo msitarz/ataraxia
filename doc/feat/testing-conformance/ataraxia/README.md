@@ -12,17 +12,14 @@ results while preserving trading, graph, resource, and user-visible contracts.
   deferred to the Compute plan.
 - **DONE** Backtest/loading: named typed modules, real results and
   export/error paths, and the distinct reordered-mapping regression.
+- **TODO** [CLI](cli/README.md): typed reporting fixtures, argument-only units
+  and isolated real-command success/failure artifacts.
 
-Values, Input and Backtest/loading are delivered. Define the remaining groups
-in separate planning PRs, in the order below, before implementation:
+Values, Input and Backtest/loading are delivered. Merge the CLI map before its
+ordered deliveries. Define the remaining Compute group in a separate planning
+PR before implementation:
 
-1. CLI: `unit/test_cli.py` and `acceptance/test_crossover_sample.py`. Plan typed
-   result fixtures before display/serialization consumers, argument-only units,
-   then isolated real-command support and complete sample golden artifacts
-   before success/failure flows. Preserve absent/unchanged output and exact
-   exits; retain lower-level malformed-input coverage before reducing
-   duplicates.
-2. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
+1. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
    `typecheck/compute_contracts.py`. Separate typed collaborator arrangements,
    graph/results/sharing, lifecycle, and binding reviews; retain real execution
    and precise positive/negative type contracts on their existing routes.
