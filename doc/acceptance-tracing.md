@@ -94,19 +94,32 @@ See [test ownership](test-ownership.md) for removed-probe evidence.
 
 Pytest registers the strict `covers` marker in
 [`pyproject.toml`](../pyproject.toml). Use keyword arguments to identify the
-owning file and criterion:
+owning file and criterion. Repeat the decorator when a test covers multiple
+criteria. Let the marker identify the owning Work and criterion; use the
+docstring to describe the behavior or coverage slice the test actually proves,
+adding any material limit when it covers only part of the criterion. Copying
+the criterion verbatim is not required; the Work contract remains authoritative.
 
 ```python
 @pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-8")
-def test_inbound_links(): ...
+def test_valid_inputs_select_the_expected_record():
+    """Selects the expected record using the real selector."""
+    ...
+
+
+@pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-8")
+def test_missing_metadata_is_rejected():
+    """Rejects missing metadata; does not cover malformed metadata."""
+    ...
 ```
 
-Repeat the decorator when a test covers multiple criteria. Include the covered
-criterion text in the test docstring. The checker counts direct `covers`
-decorators only on top-level `test_` functions and `test_` methods of top-level
-`Test` classes in pytest-style `test_*.py` or `*_test.py` files. It does not
-infer collection or count marker assignments, calls inside function bodies,
-nested helpers, or decorated helpers.
+The first description suits a test of the complete criterion behavior. The
+second identifies the tested slice and its material limit; neither repeats the
+full criterion text. The checker counts direct `covers` decorators only on
+top-level `test_` functions and `test_` methods of top-level `Test` classes in
+pytest-style `test_*.py` or `*_test.py` files. It does not infer collection or
+count marker assignments, calls inside function bodies, nested helpers, or
+decorated helpers.
 
 Acceptance tooling checks and selects tests from both `test/` and `example/`.
 The checker statically inspects Python test candidates in those roots, while
