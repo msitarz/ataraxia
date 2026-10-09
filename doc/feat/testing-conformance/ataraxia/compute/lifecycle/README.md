@@ -13,7 +13,7 @@ presence/forwarding; context observations do not replace the closed-state check.
 Run actual compute; source collaborators implement the boundary faithfully.
 Real file closure is the separate resource leaf, not claimed by these units.
 
-- **AC-1 TODO** Given retained faithful source/failing-runner arrangements, real
+- **AC-1 DONE** Given retained faithful source/failing-runner arrangements, real
   compute exhaustion, error and explicit close leave the source closed and
   preserve complete results and precise context/error propagation.
 
