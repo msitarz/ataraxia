@@ -31,6 +31,7 @@ type InvalidResultFixture = Literal[
 ]
 type InvalidStrategyFixture = InvalidExportFixture | InvalidResultFixture
 type StrategyBasename = Literal[
+    "strategy.py",
     "broker_strategy.py",
     "sink_result_strategy.py",
     "missing_export.py",
