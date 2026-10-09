@@ -12,7 +12,13 @@ def load_sample_expected() -> object:
 
 
 def normalize_sample_paths_and_order(value: object, project: Path) -> object:
-    """Make only absolute project paths and shard order checkout-independent."""
+    """Normalize actual output's checkout-specific paths and shard order.
+
+    The CLI emits absolute strategy and shard paths, and shard order follows
+    unspecified directory iteration. Convert paths to project-relative form and
+    sort by shard path; golden paths are already stable. Preserve every other
+    field, including unexpected ones, for complete comparison.
+    """
     if not isinstance(value, list):
         raise ValueError("sample CLI result must be a JSON array")
 
