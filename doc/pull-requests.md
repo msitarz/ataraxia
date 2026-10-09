@@ -7,14 +7,13 @@ Read when publishing or updating a PR or writing its description.
 Determine the PR base from explicit task instructions or repository metadata,
 following [contribution branch rules](../CONTRIBUTING.md#submitting-a-change).
 For Work deliveries with acceptance criteria, follow the
-[commit-preservation procedure](acceptance-tracing.md#work-delivery-commits).
+[commit-preservation procedure](acceptance-tracing.md#work-delivery-commits)
+to complete and independently review both commits before publication. Publish
+the reviewed sequence once; require full CI on the final reviewed PR head before
+merge. A later material correction remains permitted and requires refreshed
+acceptance evidence, independent review, and full CI on the corrected head.
 The owning orchestrator's publication and description responsibilities are
 defined [below](#descriptions).
-
-Follow [acceptance tracing](acceptance-tracing.md) for criterion status and
-verification/cleanup commit preservation. Full CI remains required on the
-latest reviewed PR head before merge; a criterion whose own method explicitly
-requires CI remains `TODO` until its result is observed.
 
 Before starting a rebase of an already-published branch, inspect the remote
 branch and record its commit ID. Verify that this is the
@@ -29,10 +28,9 @@ git push --force-with-lease=refs/heads/<branch>:<expected-remote-oid> origin HEA
 If the remote branch no longer points to that expected commit, the push must
 fail. Inspect and reconcile the new remote work before rewriting and
 publishing again; do not refresh the expected ID just to make the push succeed
-or replace the lease with an unconditional force push. After publishing,
-review the final PR head and require its passing full CI evidence before merge
-consideration, following the [orchestrator handoffs](orchestrator.md) and
-[check and evidence policy](validation.md).
+or replace the lease with an unconditional force push. Follow the
+[orchestrator handoffs](orchestrator.md) and
+[check and evidence policy](validation.md) for review and CI requirements.
 
 ## Descriptions
 
