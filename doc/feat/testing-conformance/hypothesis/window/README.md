@@ -16,7 +16,7 @@ prefix observations so an ordering/truncation error at an intermediate step
 cannot hide behind the final result. Use adopted 100-example in-process
 settings. No helper/public API or production/type-contract changes are required.
 
-- **AC-1 TODO** Given bounded capacities and input sequences, actual runner
+- **AC-1 DONE** Given bounded capacities and input sequences, actual runner
   outputs at every prefix match the independent newest-first model, including
   zero-capacity and truncation boundaries, with fresh state and named cases
   preserved under precise strict typing.
