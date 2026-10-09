@@ -1,13 +1,24 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exercise the registry target's literal arguments and recoverable failures."""
 
+from pathlib import Path
+import string
+import tempfile
+
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
 import pytest
 
 from test.script.registry_transport import (
     RegistryCase,
     RegistryInputs,
+    copy_registry_project,
+    registry_case,
     run_registry_target,
 )
+
+_ARGUMENT_CHARACTERS = string.ascii_letters + string.digits + " '\"$()`;&|\\#=*?[]{}"
+_ARGUMENT_TAIL = st.text(alphabet=_ARGUMENT_CHARACTERS, min_size=0, max_size=64)
 
 
 @pytest.mark.covers(
@@ -117,3 +128,92 @@ def test_registry_target_rejects_missing_inputs_without_creating_destination(
     assert result.exit_code == 2, result.output
     assert "must be nonempty" in result.stderr
     assert result.destination_exists is False
+
+
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/hypothesis/makearguments/README.md", ac="AC-1"
+)
+@settings(max_examples=25, deadline=None)
+@given(
+    cache_tail=_ARGUMENT_TAIL,
+    record_tail=_ARGUMENT_TAIL,
+    preparation_tail=_ARGUMENT_TAIL,
+    destination_tail=_ARGUMENT_TAIL,
+)
+@example(
+    cache_tail="$(shell touch MAKE_PWNED)",
+    record_tail="",
+    preparation_tail="",
+    destination_tail="",
+)
+@example(
+    cache_tail="",
+    record_tail="$(touch SHELL_PWNED)",
+    preparation_tail="",
+    destination_tail="",
+)
+@example(
+    cache_tail="",
+    record_tail="",
+    preparation_tail="`touch TICK_PWNED`",
+    destination_tail="",
+)
+@example(
+    cache_tail=" '$(shell touch MAKE_PWNED) cache arg' ",
+    record_tail="",
+    preparation_tail="",
+    destination_tail="",
+)
+@example(
+    cache_tail="",
+    record_tail=' "$(touch SHELL_PWNED) record arg" ',
+    preparation_tail="",
+    destination_tail="",
+)
+@example(
+    cache_tail="",
+    record_tail="",
+    preparation_tail=" `touch TICK_PWNED` preparation arg ",
+    destination_tail="",
+)
+@example(
+    cache_tail="'$(shell touch MAKE_PWNED) cache space'",
+    record_tail='$(touch SHELL_PWNED) "record space"',
+    preparation_tail="`touch TICK_PWNED` preparation space",
+    destination_tail="destination with 'quotes' and *glob? [chars]",
+)
+def test_registry_target_transports_generated_literal_values(
+    cache_tail: str,
+    record_tail: str,
+    preparation_tail: str,
+    destination_tail: str,
+) -> None:
+    """Check exact four-value transport for bounded hostile generated tails."""
+    # Given
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        root = Path(temporary_directory)
+        project = root / "project"
+        project.mkdir()
+        copy_registry_project(project)
+        prepared = registry_case(project, "record")
+        expected = RegistryInputs(
+            f"cache-prefix-{cache_tail}",
+            f"record-prefix-{record_tail}",
+            f"preparation-prefix-{preparation_tail}",
+            f"destination-prefix-{destination_tail}",
+        )
+        assignments = (
+            f"CACHE={expected.cache}",
+            f"RECORD={expected.record}",
+            f"PREPARATION_SHA256={expected.expected}",
+            f"DESTINATION={expected.destination}",
+        )
+        case = RegistryCase(prepared.directory, prepared.environment, assignments)
+
+        # When
+        result = run_registry_target(case)
+
+        # Then
+        assert result.exit_code == 0, result.output
+        assert result.inputs == expected
+        assert result.markers == ()
