@@ -99,6 +99,8 @@ criteria. Let the marker identify the owning Work and criterion; use the
 docstring to describe the behavior or coverage slice the test actually proves,
 adding any material limit when it covers only part of the criterion. Copying
 the criterion verbatim is not required; the Work contract remains authoritative.
+For example, suppose AC-8 covers selecting the correct record for valid inputs,
+while AC-9 covers rejecting missing or malformed metadata:
 
 ```python
 @pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-8")
@@ -107,19 +109,18 @@ def test_valid_inputs_select_the_expected_record():
     ...
 
 
-@pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-8")
+@pytest.mark.covers(work="doc/feat/example/README.md", ac="AC-9")
 def test_missing_metadata_is_rejected():
     """Rejects missing metadata; does not cover malformed metadata."""
     ...
 ```
 
-The first description suits a test of the complete criterion behavior. The
-second identifies the tested slice and its material limit; neither repeats the
-full criterion text. The checker counts direct `covers` decorators only on
-top-level `test_` functions and `test_` methods of top-level `Test` classes in
-pytest-style `test_*.py` or `*_test.py` files. It does not infer collection or
-count marker assignments, calls inside function bodies, nested helpers, or
-decorated helpers.
+The first description states the full AC-8 behavior. The second identifies the
+AC-9 slice and its material limit; neither repeats the full criterion text. The
+checker counts direct `covers` decorators only on top-level `test_` functions
+and `test_` methods of top-level `Test` classes in pytest-style `test_*.py` or
+`*_test.py` files. It does not infer collection or count marker assignments,
+calls inside function bodies, nested helpers, or decorated helpers.
 
 Acceptance tooling checks and selects tests from both `test/` and `example/`.
 The checker statically inspects Python test candidates in those roots, while
