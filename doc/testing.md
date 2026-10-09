@@ -150,10 +150,8 @@ def test_a_gap_through_the_stop_fills_at_the_open():
   count. The statement-count guidance in
   [engineering conventions](engineering.md) also applies to tests.
 - Follow [acceptance tracing](acceptance-tracing.md#pytest-markers-and-lookup)
-  to use `covers` markers for Work/criterion identity. For covered tests, add a
-  concise docstring describing the behavior or coverage slice proved, including
-  material limits for partial coverage; verbatim criterion text is not
-  required. Otherwise add a docstring only when the name cannot explain what
+  for `covers` marker identity and concise behavior/coverage docstrings. For
+  tests without markers, add a docstring only when the name cannot explain what
   the test proves.
 
 ## Treat test data as data
