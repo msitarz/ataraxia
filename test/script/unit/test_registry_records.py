@@ -22,13 +22,6 @@ def preparation_bytes() -> bytes:
     ).read_bytes()
 
 
-@pytest.fixture
-def preparation_expected() -> object:
-    """Load the reviewed static record for complete equality."""
-    path = ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
 @pytest.mark.covers(
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/README.md",
     ac="AC-1",
@@ -186,17 +179,21 @@ def test_missing_reviewed_evidence_is_rejected(
 )
 def test_supported_preparation_bytes_are_accepted(
     preparation_bytes: bytes,
-    preparation_expected: object,
 ) -> None:
     """Accept the literal record bytes and retain every documented field."""
     # Given
     expected_digest = "86a0bd7e2b6004ca8deaaf776b1f344fa65b1531ccf3585a423635d14f559cff"
+    expected = json.loads(
+        (
+            ROOT / "test/script/fixtures/registry_selection/records/accepted.json"
+        ).read_text(encoding="utf-8")
+    )
 
     # When
     result = accepted_preparation(preparation_bytes, expected_digest)
 
     # Then
-    assert result == preparation_expected
+    assert result == expected
 
 
 @pytest.mark.parametrize(
