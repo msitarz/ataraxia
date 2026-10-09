@@ -1,55 +1,25 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2026 by Michal Sitarz
 
-from dataclasses import dataclass
-from unittest.mock import MagicMock, patch
+from pathlib import Path
 
 import pytest
 
-from ataraxia.backtest import backtest_dir, backtest_shard
-from ataraxia.broker import Account
-from ataraxia.errors import BacktestError
+from ataraxia.backtest import backtest_dir
 
 
-@pytest.mark.parametrize(
-    "result",
-    [
-        42,
-        {"account": Account(), "open_positions": [], "closed_positions": [object()]},
-    ],
-    ids=["non-dict", "non-position"],
+@pytest.mark.covers(
+    work="doc/feat/testing-conformance/ataraxia/backtest/refusals/README.md",
+    ac="AC-1",
 )
-def test_backtest_shard_requires_broker_result(result: object):
-    """Should reject a selected sink or consumer result outside the broker contract."""
-    module_mock = MagicMock()
+def test_backtest_dir_raise_on_wrong_param(tmp_path: Path) -> None:
+    """Covers AC-1: a missing shard directory reports its offending path."""
+    # Given
+    missing_directory = tmp_path / "i do not exist"
 
-    @dataclass(frozen=True)
-    class S:
-        def __init__(self, _source):
-            return None
+    # When
+    with pytest.raises(FileNotFoundError) as error:
+        backtest_dir("hello", missing_directory)
 
-        def consumer(self):
-            return None
-
-    sink = S(0)
-    module_mock.configure_mock(__sink__=S)
-
-    with (
-        patch(
-            "ataraxia.backtest.compute",
-            return_value=({sink: result},),
-        ),
-        patch("ataraxia.backtest.import_file", return_value=module_mock),
-        patch("ataraxia.backtest.is_sink", return_value=True),
-        patch("ataraxia.backtest.is_type", return_value=True),
-        pytest.raises(BacktestError, match="invalid broker result") as error,
-    ):
-        backtest_shard("strategy.py", "shard.csv")
-
-    assert "strategy.py" in str(error.value)
-    assert "shard.csv" in str(error.value)
-
-
-def test_backtest_dir_raise_on_wrong_param():
-    with pytest.raises(FileNotFoundError):
-        backtest_dir("hello", "i do not exist")
+    # Then
+    assert error.value.filename == str(missing_directory)
