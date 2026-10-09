@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Check Work path resolution against generated and named filesystem cases."""
 
-from dataclasses import dataclass
 import os
 from pathlib import Path
 import string
 import tempfile
+from typing import Literal
 
 from hypothesis import example, given
 from hypothesis import strategies as st
@@ -17,63 +17,69 @@ _SEGMENT_CHARACTERS = string.ascii_letters + string.digits + "_-"
 _SEGMENT = st.text(alphabet=_SEGMENT_CHARACTERS, min_size=1, max_size=8)
 _DIRECTORY_SEGMENTS = st.lists(_SEGMENT, min_size=1, max_size=2)
 _CONTRACT_NAME = st.sampled_from(("README.md", "spec.md"))
-
-
-@dataclass(frozen=True)
-class _InvalidWorkPath:
-    name: str
-    requested: str
-    reason: str
-
-
-_EMPTY = _InvalidWorkPath(
+type _InvalidWorkKind = Literal[
     "empty",
-    "",
-    "WORK is required; provide a repo-relative README.md or spec.md path",
-)
-_ABSOLUTE = _InvalidWorkPath(
     "absolute",
-    "/absolute/README.md",
-    "WORK must be a repo-relative README.md or spec.md path",
-)
-_PARENT = _InvalidWorkPath(
-    "parent-traversal", "../README.md", "WORK must be a normalized repo-relative path"
-)
-_DOT = _InvalidWorkPath(
+    "parent-traversal",
     "dot-component",
-    "contracts/./README.md",
-    "WORK must be a normalized repo-relative path",
-)
-_REPEATED_SEPARATOR = _InvalidWorkPath(
     "repeated-separator",
-    "contracts//README.md",
-    "WORK must be a normalized repo-relative path",
-)
-_INVALID_CHARACTER = _InvalidWorkPath(
     "invalid-character",
-    "contracts/bad space/README.md",
-    "WORK must be a repo-relative README.md or spec.md path",
-)
-_WRONG_SUFFIX = _InvalidWorkPath(
     "wrong-suffix",
-    "contracts/README.txt",
-    "WORK must name an owning README.md or spec.md",
-)
-_ABSENT = _InvalidWorkPath(
     "absent-file",
-    "absent/README.md",
-    "WORK does not identify an existing repository file: absent/README.md",
+]
+_INVALID_WORK_KINDS: tuple[_InvalidWorkKind, ...] = (
+    "empty",
+    "absolute",
+    "parent-traversal",
+    "dot-component",
+    "repeated-separator",
+    "invalid-character",
+    "wrong-suffix",
+    "absent-file",
 )
-_INVALID_WORK_PATHS = (
-    _EMPTY,
-    _ABSOLUTE,
-    _PARENT,
-    _DOT,
-    _REPEATED_SEPARATOR,
-    _INVALID_CHARACTER,
-    _WRONG_SUFFIX,
-    _ABSENT,
-)
+
+
+def _construct_invalid_work_path(
+    segments: list[str], filename: str, kind: _InvalidWorkKind
+) -> tuple[str, str]:
+    """Build a named malformed input and its independent expected reason."""
+    canonical = "/".join((*segments, filename))
+    match kind:
+        case "empty":
+            return (
+                "",
+                "WORK is required; provide a repo-relative README.md or spec.md path",
+            )
+        case "absolute":
+            return (
+                f"/{canonical}",
+                "WORK must be a repo-relative README.md or spec.md path",
+            )
+        case "parent-traversal" | "dot-component" | "repeated-separator":
+            match kind:
+                case "parent-traversal":
+                    requested = f"../{canonical}"
+                case "dot-component":
+                    requested = f"./{canonical}"
+                case "repeated-separator":
+                    requested = canonical.replace("/", "//", 1)
+            return requested, "WORK must be a normalized repo-relative path"
+        case "invalid-character":
+            requested = "/".join([segments[0], "bad space", *segments[1:], filename])
+            return (
+                requested,
+                "WORK must be a repo-relative README.md or spec.md path",
+            )
+        case "wrong-suffix":
+            return (
+                "/".join([*segments, "wrong.txt"]),
+                "WORK must name an owning README.md or spec.md",
+            )
+        case "absent-file":
+            return (
+                canonical,
+                f"WORK does not identify an existing repository file: {canonical}",
+            )
 
 
 @pytest.mark.covers(
@@ -107,30 +113,35 @@ def test_resolve_work_file_accepts_generated_canonical_paths(
 @pytest.mark.covers(
     work="doc/feat/testing-conformance/hypothesis/workpaths/README.md", ac="AC-1"
 )
-@given(case=st.sampled_from(_INVALID_WORK_PATHS))
-@example(case=_EMPTY)
-@example(case=_ABSOLUTE)
-@example(case=_PARENT)
-@example(case=_DOT)
-@example(case=_REPEATED_SEPARATOR)
-@example(case=_INVALID_CHARACTER)
-@example(case=_WRONG_SUFFIX)
-@example(case=_ABSENT)
+@given(
+    segments=st.lists(_SEGMENT, min_size=1, max_size=3),
+    filename=_CONTRACT_NAME,
+    kind=st.sampled_from(_INVALID_WORK_KINDS),
+)
+@example(segments=["A"], filename="README.md", kind="empty")
+@example(segments=["A", "b"], filename="spec.md", kind="absolute")
+@example(segments=["nested"], filename="README.md", kind="parent-traversal")
+@example(segments=["folder", "inside"], filename="spec.md", kind="dot-component")
+@example(segments=["folder"], filename="README.md", kind="repeated-separator")
+@example(segments=["contracts", "abc"], filename="spec.md", kind="invalid-character")
+@example(segments=["contracts"], filename="README.md", kind="wrong-suffix")
+@example(segments=["missing", "contract"], filename="spec.md", kind="absent-file")
 def test_resolve_work_file_rejects_generated_named_paths(
-    case: _InvalidWorkPath,
+    segments: list[str], filename: str, kind: _InvalidWorkKind
 ) -> None:
     """Reject named malformed and absent paths with their exact reason."""
     # Given
+    requested, reason = _construct_invalid_work_path(segments, filename, kind)
     with tempfile.TemporaryDirectory() as temporary_directory:
         root = Path(temporary_directory)
 
         # When
         with pytest.raises(ValueError) as raised:
-            resolve_work_file(root, case.requested)
+            resolve_work_file(root, requested)
 
         # Then
         assert type(raised.value) is ValueError
-        assert raised.value.args == (case.reason,)
+        assert raised.value.args == (reason,)
         assert raised.value.__cause__ is None
 
 
