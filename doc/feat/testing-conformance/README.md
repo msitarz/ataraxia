@@ -24,7 +24,8 @@ assertions, checkout mutations, and duplicated process plumbing.
   independent window, Work-path, and Make-argument properties.
 
 Typing adoption, Make cleanup, golden-fixture cleanup, and Ataraxia boundary
-acceptance are delivered. Hypothesis adoption remains separately planned. Merge
+acceptance are delivered. Hypothesis contracts sequence adoption before the
+window, Work-path and Make-argument pilots. Merge
 revised maps before child PRs. Reassess each
 complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
