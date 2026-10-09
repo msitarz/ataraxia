@@ -44,7 +44,7 @@ public mapping iteration to put the consumer before the sink, while delegating
 lookups and values unchanged. It verifies keyed selection independently of
 natural-order result coverage.
 
-- **AC-1 TODO** Given delivered leaves, retained loading/backtest cases observe
+- **AC-1 DONE** Given delivered leaves, retained loading/backtest cases observe
   real modules/graphs, complete independent results and contextual failures,
   preserve the distinct mapping-order selection regression and provenance, and
   precisely type cleaned tests and executable fixtures.
