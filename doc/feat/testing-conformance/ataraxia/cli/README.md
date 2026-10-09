@@ -3,7 +3,7 @@
 ## Delivery map
 
 - **DONE** Reporting arrangements: typed broker-return inputs and complete
-  independent serialization expectations with exact JSON schema validation.
+  independent serialization expectations for whole-value comparison.
 - **TODO** [Reporting units](reporting/README.md): real display/save outcomes.
 - **TODO** [Argument-only units](arguments/README.md): actual parser exits
   before backtesting, without an internal product double.
