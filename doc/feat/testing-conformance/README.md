@@ -17,12 +17,16 @@ assertions, checkout mutations, and duplicated process plumbing.
   consumers.
 - **TODO** [Ataraxia boundaries](ataraxia/README.md): real product execution,
   complete outcomes, and explicit lifecycle and trading boundaries.
+- **TODO** [Golden-fixture validation cleanup](golden-fixtures/README.md): scan
+  all three suites and remove only unnecessary static-expectation validation,
+  preserving structured and external boundaries; deliver before Hypothesis.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
   independent window, Work-path, and Make-argument properties.
 
-Typing adoption and Make cleanup are delivered. The three remaining subtree
-summaries next define leaf contracts in separately reviewable planning
-deliveries. Merge revised maps before child PRs. Reassess each
+Typing adoption and Make cleanup are delivered. Golden-fixture cleanup follows
+the delivered test-data guidance and precedes Hypothesis adoption; serialize
+any shared surfaces with remaining Ataraxia deliveries. Merge revised maps
+before child PRs. Reassess each
 complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
 and publication; split and merge revised maps before expansion. Sequence
