@@ -20,14 +20,12 @@ assertions, checkout mutations, and duplicated process plumbing.
 - **DONE** Three-suite golden scan retained structured, external, and path-
   adaptation checks; registry preparation equality compares the complete
   reviewed static JSON without reconstructing its schema.
-- **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
-  independent window, Work-path, and Make-argument properties.
+- **DONE** Hypothesis pilots: adoption followed by independent window,
+  Work-path, and Make-argument properties.
 
-Typing adoption, Make cleanup, golden-fixture cleanup, and Ataraxia boundary
-acceptance are delivered. Hypothesis contracts sequence adoption before the
-window, Work-path and Make-argument pilots. Merge
-revised maps before child PRs. Reassess each
-complete diff against the
+Typing adoption, Make cleanup, golden-fixture cleanup, Ataraxia boundary
+acceptance, and Hypothesis adoption with its three bounded pilots are delivered.
+Reassess each complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
 and publication; split and merge revised maps before expansion. Sequence
 children sharing helpers, configuration, tests, or parent maps.
