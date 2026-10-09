@@ -12,12 +12,11 @@ results while preserving trading, graph, resource, and user-visible contracts.
   deferred to the Compute plan.
 - **DONE** Backtest/loading: named typed modules, real results and
   export/error paths, and the distinct reordered-mapping regression.
-- **TODO** [CLI](cli/README.md): typed reporting fixtures, argument-only units
-  and isolated real-command success/failure artifacts.
+- **DONE** CLI: typed reporting and argument boundaries, complete sample
+  artifacts, and real-command success/failure outcomes with preserved state.
 
-Values, Input and Backtest/loading are delivered. Merge the CLI map before its
-ordered deliveries. Define the remaining Compute group in a separate planning
-PR before implementation:
+Values, Input, Backtest/loading, and CLI are delivered. Define the remaining
+Compute group in a separate planning PR before implementation:
 
 1. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
    `typecheck/compute_contracts.py`. Separate typed collaborator arrangements,
