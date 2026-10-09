@@ -16,7 +16,7 @@ No checker redesign or broad legacy-test cleanup belongs in this revision.
 The maintainer authorized this proposed style for the current registry
 observations PR; that local adoption does not complete this guidance revision.
 
-- **AC-1 TODO** Owning acceptance/testing guidance and conflicting active Work
+- **AC-1 DONE** Owning acceptance/testing guidance and conflicting active Work
   instructions consistently permit concise behavior/coverage docstrings without
   mandatory verbatim criteria, while preserving marker identity, authoritative
   contracts and truthful material coverage limits.
