@@ -5,8 +5,8 @@ from copy import deepcopy
 import json
 from pathlib import Path
 
-from _pytest.capture import CaptureFixture
 import pytest
+from pytest import CaptureFixture
 
 from ataraxia.cli import display_results, save_results
 from test.ataraxia.cli_result_inputs import (
@@ -21,9 +21,9 @@ from test.ataraxia.cli_result_inputs import (
     work="doc/feat/testing-conformance/ataraxia/cli/reporting/README.md",
     ac="AC-1",
 )
-def test_display_results_reports_complete_account_totals(
+def test_display_results(
     capsys: CaptureFixture[str],
-):
+) -> None:
     """Reports the retained aggregate totals without writing to stderr."""
     # Given
     results = arrange_broker_returns()
@@ -45,7 +45,7 @@ def test_display_results_reports_complete_account_totals(
     work="doc/feat/testing-conformance/ataraxia/cli/reporting/README.md",
     ac="AC-1",
 )
-def test_save_results_writes_the_complete_independent_json(tmp_path: Path):
+def test_save_results(tmp_path: Path) -> None:
     """Writes all retained position fields to the named output file."""
     # Given
     results = arrange_broker_returns()
