@@ -12,7 +12,7 @@ complete Bars/results and exact propagated failure identity/reason. Distinguish
 compute-generator closure from the Input tests' early source-context exit.
 Do not depend on garbage collection, sleeps or context callback counts.
 
-- **AC-1 TODO** Given real CSV-backed computation, exhaustion, runner error and
+- **AC-1 DONE** Given real CSV-backed computation, exhaustion, runner error and
   explicit generator close each close the genuine provider resource and preserve
   literal values/errors at the caller under precise checked tests.
 
