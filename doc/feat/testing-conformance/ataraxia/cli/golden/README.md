@@ -19,7 +19,7 @@ so whole-value comparison detects missing or unexpected data. Do not add
 duplicate schema validation or detailed models solely to type this fixture.
 No product internals belong in acceptance support.
 
-- **AC-1 TODO** Given shipped sample inputs, complete golden artifacts and typed
+- **AC-1 DONE** Given shipped sample inputs, complete golden artifacts and typed
   adaptation preserve independently justified trade/result fields and path
   identity before the sample acceptance consumer runs.
 
