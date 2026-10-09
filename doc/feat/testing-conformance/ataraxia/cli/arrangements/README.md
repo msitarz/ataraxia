@@ -13,7 +13,7 @@ complete; do not generate it through save_results/asdict or observed output.
 Validate loaded JSON at its external boundary without losing fields or exposing
 unchecked broad helper types. Leave legacy consumers unchanged until adoption.
 
-- **AC-1 TODO** Given the retained reporting input, precisely typed arrangements
+- **AC-1 DONE** Given the retained reporting input, precisely typed arrangements
   and independently reviewed complete JSON expectations are available before
   display/serialization consumers, without forward or unchecked dependencies.
 
