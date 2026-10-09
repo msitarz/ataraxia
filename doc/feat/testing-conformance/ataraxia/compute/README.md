@@ -10,7 +10,7 @@
   dependency values, complete steps and real simple computation.
 - **DONE** Shared state: equivalent dependency identity,
   once-per-bar state and fresh runners across executions.
-- **TODO** [Source lifecycle](lifecycle/README.md): retained exhaustion, runner
+- **DONE** Source lifecycle: retained exhaustion, runner
   failure and explicit generator-close state/exception observations.
 - **TODO** [Real resource lifecycle](resources/README.md): actual
   source/provider file closure under compute exhaustion/error/explicit close.
