@@ -2,7 +2,7 @@
 
 ## Delivery map
 
-- **TODO** [Dependency arrangements](dependencies/README.md): typed dependency
+- **DONE** Dependency arrangements: typed dependency
   nodes/runners before graph and result consumers.
 - **TODO** [Source arrangements](sources/README.md): typed integer source/sink
   collaborators and small real-CSV arrangements before consumers.
