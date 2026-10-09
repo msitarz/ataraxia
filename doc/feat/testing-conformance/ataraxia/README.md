@@ -14,18 +14,12 @@ results while preserving trading, graph, resource, and user-visible contracts.
   export/error paths, and the distinct reordered-mapping regression.
 - **DONE** CLI: typed reporting and argument boundaries, complete sample
   artifacts, and real-command success/failure outcomes with preserved state.
+- **TODO** [Compute](compute/README.md): typed collaborators, graph/results and
+  sharing, genuine lifecycle closure and precise dependency binding.
 
-Values, Input, Backtest/loading, and CLI are delivered. Define the remaining
-Compute group in a separate planning PR before implementation:
-
-1. Compute: `unit/compute/test_graph.py`, `unit/compute/test_loop.py`, and
-   `typecheck/compute_contracts.py`. Separate typed collaborator arrangements,
-   graph/results/sharing, lifecycle, and binding reviews; retain real execution
-   and precise positive/negative type contracts on their existing routes.
-
-Paths above are relative to `test/ataraxia`; these are future planning scopes,
-not implementation authorization. Split complete diffs, including supporting
-fixtures and typing, for the five-minute review target. Serialize configuration,
+Merge the Compute map before its ordered deliveries. Split complete diffs,
+including supporting fixtures and typing, for the five-minute review target.
+Serialize configuration,
 helpers, golden artifacts and parent maps; merge dependency owners before their
 consumers. Preserve cases/markers; use session-authorized concise slice
 docstrings. No production repairs or property adoption belong here.
