@@ -14,7 +14,7 @@ parent edits with its active deliveries and preserve independently delivered
 statuses. Split the adoption before expansion if the complete supporting diff
 exceeds five-minute review.
 
-- **AC-1 TODO** Given adopted guidance and affected contracts, ordinary delivery
+- **AC-1 DONE** Given adopted guidance and affected contracts, ordinary delivery
   can publish its independently reviewed two-commit sequence once, preserving
   verified acceptance and final-head CI/maintainer gates without treating
   pending CI or unsupported criteria as complete.

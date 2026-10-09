@@ -45,7 +45,7 @@ Preserve 7's final-head CI gate and 9's observed acceptance/separate cleanup,
 accepted history and independent review. Recheck numbering before delivery.
 No CI automation, tool/test changes or unrelated workflow implementation.
 
-- **AC-1 TODO** Given revised owners/contracts and WDR metadata, ordinary
+- **AC-1 DONE** Given revised owners/contracts and WDR metadata, ordinary
   acceptance reaches verified separate commits before one publication, while
   CI-dependent acceptance stays unsupported until observed and all delivery
   paths retain independent review and final-head CI/maintainer merge gates.
