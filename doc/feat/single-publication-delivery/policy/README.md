@@ -25,9 +25,9 @@ requirements out of behavior-acceptance methods to their existing merge-gate
 prose/validation-owner link, preserving all actual behavior/type review methods.
 Do this prospectively while criteria remain TODO, then execute their revised
 methods. Never rewrite DONE history or weaken a criterion whose actual outcome
-is CI-specific. Serialize these shared edits with #254; do not modify its
-branch, PR or cleanup state. If additional active conflicts appear, return their
-exact scope before expanding this adoption.
+is CI-specific. Coordinate shared Compute parent edits with active deliveries
+and preserve independently delivered statuses. If additional active conflicts
+appear, return their exact scope before expanding this adoption.
 
 Failures or later material corrections still require consolidated same-session
 correction, affected criteria back to TODO, refreshed evidence and independent
