@@ -11,12 +11,12 @@ from .crossover import CrossoverRunner
 
 
 @pytest.fixture
-def bar():
+def bar() -> Bar:
     """Return bar fixture."""
     return Bar(timestamp=1, open=10, high=10, low=10, close=10, volume=10)
 
 
-def test_crossover_on_cold_sma(bar):
+def test_crossover_on_cold_sma(bar: Bar) -> None:
     """Should not send signal when sma not warmed-up."""
     runner = CrossoverRunner()
 
@@ -30,14 +30,14 @@ def test_crossover_on_cold_sma(bar):
     )
 
 
-def test_crossover_on_warm_sma_no_cross(bar):
+def test_crossover_on_warm_sma_no_cross(bar: Bar) -> None:
     """Should not send signal if sma did not cross."""
     runner = CrossoverRunner()
 
     assert runner(bar=bar, fast_sma=[11, 10], slow_sma=[13, 12]) is None
 
 
-def test_crossover_signal_on_sma_cross(bar):
+def test_crossover_signal_on_sma_cross(bar: Bar) -> None:
     """Should not send signal if sma did not cross."""
     runner = CrossoverRunner()
 

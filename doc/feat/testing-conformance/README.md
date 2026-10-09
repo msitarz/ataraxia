@@ -15,17 +15,19 @@ assertions, checkout mutations, and duplicated process plumbing.
   acceptance-tooling, and commit-message tests with typed arrangements, real
   process/Git boundaries, independent expectations, and affected Make
   consumers.
-- **DONE** Ataraxia boundaries: real product execution, complete outcomes, and
-  explicit lifecycle and trading boundaries across all five reviewed groups.
+- **TODO** [Ataraxia boundaries](ataraxia/README.md): five reviewed product
+  groups, with full-folder strict typing and the intentional-negative
+  expectations route preserved.
 - **DONE** Three-suite golden scan retained structured, external, and path-
   adaptation checks; registry preparation equality compares the complete
   reviewed static JSON without reconstructing its schema.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
   independent window, Work-path, and Make-argument properties.
 
-Typing adoption, Make cleanup, golden-fixture cleanup, and Ataraxia boundary
-coverage are delivered. Hypothesis adoption remains separately planned. Merge
-revised maps before child PRs. Reassess each
+Typing adoption, Make cleanup, and golden-fixture cleanup are delivered.
+Ataraxia boundary acceptance now also covers folder-wide strict typing;
+Hypothesis adoption remains separately planned. Merge revised maps before
+child PRs. Reassess each
 complete diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing) before dispatch
 and publication; split and merge revised maps before expansion. Sequence
