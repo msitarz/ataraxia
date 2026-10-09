@@ -9,16 +9,16 @@ examples and independently specified expectations.
   and narrow lasting guidance.
 - **DONE** Window: newest-first results at every input prefix match an
   independent sequence model across bounded capacities and values.
-- **TODO** [Work paths](workpaths/README.md): canonical existing contracts and
-  normalized/escaping-path rejection, including symlink containment.
+- **DONE** Work paths: generated canonical and malformed paths plus contained
+  and escaping relative symlinks are checked at the resolver.
 - **TODO** [Make arguments](makearguments/README.md): literal four-value
   transport through real Make with absent execution markers.
 
 ```mermaid
 flowchart LR
     C[Delivered boundary and golden cleanup] --> A[Adoption]
-    A --> W[Window pilot]
-    A --> P[Work-path pilot]
+    A --> W[Window delivered]
+    A --> P[Work paths delivered]
     A --> M[Make-argument pilot]
 ```
 
@@ -30,10 +30,11 @@ mutable/filesystem state per example instead of suppressing fixture health
 checks. Keep generated inputs bounded and retain named hostile examples.
 
 Each pilot depends on adoption and its corresponding cleanup. These pilots do
-not authorize a wholesale conversion or new broker/Git state machines.
-Merge these contracts before implementation. Deliver adoption first, then
-window, Work paths and Make arguments, serializing shared settings/maps. Each
-complete leaf includes helpers/type changes within about five-minute review;
+not authorize a wholesale conversion or new broker/Git state machines. Merge
+each contract before implementation. Adoption, window and Work paths are
+delivered; Make arguments remains the final pilot. Serialize shared settings
+and maps. Each complete leaf includes helpers/type changes within about
+five-minute review;
 escalate and merge revised contracts before expansion. Reuse full-folder strict
 coverage for `src`, `script`, `test` and `example`, with the existing
 intentional-negative expectations route, rather than per-file lists. No
