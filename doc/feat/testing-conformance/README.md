@@ -17,9 +17,9 @@ assertions, checkout mutations, and duplicated process plumbing.
   consumers.
 - **TODO** [Ataraxia boundaries](ataraxia/README.md): real product execution,
   complete outcomes, and explicit lifecycle and trading boundaries.
-- **TODO** [Golden-fixture validation cleanup](golden-fixtures/README.md): scan
-  all three suites and remove only unnecessary static-expectation validation,
-  preserving structured and external boundaries; deliver before Hypothesis.
+- **DONE** Three-suite golden scan retained structured, external, and path-
+  adaptation checks; registry preparation equality compares the complete
+  reviewed static JSON without reconstructing its schema.
 - **TODO** [Hypothesis pilots](hypothesis/README.md): adoption followed by
   independent window, Work-path, and Make-argument properties.
 
