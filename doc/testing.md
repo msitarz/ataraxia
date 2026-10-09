@@ -195,8 +195,10 @@ from temporary upstream-adoption probes. Exercise our boundary rather than
 only proving that an upstream tool behaves as documented.
 
 Hypothesis settings are selected in [`test/conftest.py`](../test/conftest.py):
-properties use 100 examples normally and deterministic generation in CI while
-retaining shrinking, replay, deadlines, and health checks. A property that
+properties use 100 examples normally and deterministic generation in CI.
+Local runs retain Hypothesis's example database for replay; deterministic CI
+does not use that database. Both profiles retain shrinking, deadlines, and
+health checks. A property that
 invokes a subprocess may set `@settings(max_examples=25, deadline=None)`; its
 process execution helper still needs a timeout. Create mutable and filesystem
 state within each generated invocation and open resources with fresh context
