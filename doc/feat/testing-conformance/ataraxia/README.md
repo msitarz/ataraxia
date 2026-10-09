@@ -24,7 +24,7 @@ helpers, golden artifacts and parent maps; merge dependency owners before their
 consumers. Preserve cases/markers; use session-authorized concise slice
 docstrings. No production repairs or property adoption belong here.
 
-- **AC-1 TODO** Given completed values, input, backtest/loading, CLI and compute
+- **AC-1 DONE** Given completed values, input, backtest/loading, CLI and compute
   deliveries, retained product tests exercise real public boundaries with
   independent complete outcomes, precise failures and resource/lifecycle state,
   preserved case/marker provenance, and strict project typing of all `src`,
