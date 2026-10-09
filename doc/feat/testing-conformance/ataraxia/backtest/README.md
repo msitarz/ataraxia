@@ -19,8 +19,9 @@
 - **DONE** Result/input refusals: two invalid selected results, a header-only
   shard and a missing directory retain exact contextual errors and input state
   through the real backtest and directory boundaries.
-- **TODO** [Mapping-order selection](ordering/README.md): retain the distinct
-  consumer-before-sink mapping regression through a justified narrow adapter.
+- **DONE** Mapping-order selection: real computation retains consumer-before-
+  sink iteration with precise keyed lookup, independently checked against the
+  complete broker result.
 
 Merge this map before implementation; deliver leaves in listed order. All paths
 below are relative to `test/ataraxia`. Serialize shared includes, arrangements,
