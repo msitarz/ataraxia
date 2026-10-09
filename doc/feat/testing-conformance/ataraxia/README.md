@@ -8,17 +8,17 @@ results while preserving trading, graph, resource, and user-visible contracts.
 - **DONE** Values: Bar, rolling windows, SMA, positions, and broker/account
   outcomes through public boundaries.
 - **DONE** Input: real CSV/provider outcomes, source runner identity and
-  context/resource forwarding. Explicit compute-generator lifecycle remains
-  deferred to the Compute plan.
+  context/resource forwarding; Compute separately covers compute-generator
+  lifecycle closure.
 - **DONE** Backtest/loading: named typed modules, real results and
   export/error paths, and the distinct reordered-mapping regression.
 - **DONE** CLI: typed reporting and argument boundaries, complete sample
   artifacts, and real-command success/failure outcomes with preserved state.
-- **TODO** [Compute](compute/README.md): typed collaborators, graph/results and
-  sharing, genuine lifecycle closure and precise dependency binding.
+- **DONE** Compute: typed collaborators, graph/results and sharing, genuine
+  lifecycle closure and precise dependency binding.
 
-Merge the Compute map before its ordered deliveries. Split complete diffs,
-including supporting fixtures and typing, for the five-minute review target.
+All five groups are delivered; the Ataraxia parent acceptance review remains
+outstanding.
 Serialize configuration,
 helpers, golden artifacts and parent maps; merge dependency owners before their
 consumers. Preserve cases/markers; use session-authorized concise slice
