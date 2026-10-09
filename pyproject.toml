@@ -169,6 +169,7 @@ project_includes = [
   "test/ataraxia/compute_source_inputs.py",
   "test/ataraxia/unit/compute/test_graph.py",
   "test/ataraxia/unit/compute/test_results.py",
+  "test/ataraxia/unit/compute/test_sharing.py",
   "test/ataraxia/cli_result_inputs.py",
   "test/ataraxia/cli_sample_expected.py",
   "test/ataraxia/cli_process.py",
