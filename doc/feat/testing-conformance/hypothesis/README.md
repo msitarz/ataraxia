@@ -5,8 +5,8 @@ examples and independently specified expectations.
 
 ## Delivery map
 
-- **TODO** [Adoption](adoption/README.md): development dependency, owned
-  settings and narrow lasting guidance.
+- **DONE** Adoption: locked development dependency, bounded local/CI settings
+  and narrow lasting guidance.
 - **TODO** [Window](window/README.md): newest-first truncation at every prefix
   against an independent sequence model.
 - **TODO** [Work paths](workpaths/README.md): canonical existing contracts and
