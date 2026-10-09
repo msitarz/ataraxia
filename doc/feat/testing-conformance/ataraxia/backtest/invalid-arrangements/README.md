@@ -14,7 +14,7 @@ values honestly in their own typed fixture contracts, without widening the valid
 Strategy or suppressing diagnostics. Reuse merged base definitions only where
 semantics remain faithful; copy/import dependencies are explicit.
 
-- **AC-1 TODO** Given the retained invalid inputs, named strict-checked fixtures
+- **AC-1 DONE** Given the retained invalid inputs, named strict-checked fixtures
   represent every export/error/result variant through real module execution
   without generated edits or broad fallback types.
 
