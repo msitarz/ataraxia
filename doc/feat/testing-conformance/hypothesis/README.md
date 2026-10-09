@@ -7,8 +7,8 @@ examples and independently specified expectations.
 
 - **DONE** Adoption: locked development dependency, bounded local/CI settings
   and narrow lasting guidance.
-- **TODO** [Window](window/README.md): newest-first truncation at every prefix
-  against an independent sequence model.
+- **DONE** Window: newest-first results at every input prefix match an
+  independent sequence model across bounded capacities and values.
 - **TODO** [Work paths](workpaths/README.md): canonical existing contracts and
   normalized/escaping-path rejection, including symlink containment.
 - **TODO** [Make arguments](makearguments/README.md): literal four-value
