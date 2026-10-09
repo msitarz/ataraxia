@@ -22,7 +22,7 @@ and IDs. Contextual diagnostics need not lock incidental traceback formatting.
 No duplicate reduction here; retained provider/backtest malformed-input coverage
 must be independently assessed before any later reduction.
 
-- **AC-1 TODO** Given every retained failure arrangement, the shipped command
+- **AC-1 DONE** Given every retained failure arrangement, the shipped command
   returns precise refusal effects and preserves absent/pre-existing output and
   input bytes without internal doubles, caller mutation or lost provenance.
 
