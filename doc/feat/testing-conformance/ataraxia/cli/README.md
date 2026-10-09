@@ -11,8 +11,9 @@
 - **DONE** Command support: typed offline execution of the prepared shipped
   entry point with bounded capture and disposable process state; consumer
   backtest outcomes remain for later acceptance leaves.
-- **TODO** [Sample golden artifacts](golden/README.md): independently derived
-  complete sample results before their acceptance consumer.
+- **DONE** Sample golden artifacts: independently derived complete results and
+  typed checkout-independent path/order adaptation; the success flow consumes
+  these artifacts.
 - **TODO** [Success flow](success/README.md): exact report and complete
   artifact.
 - **TODO** [Failure flows](failures/README.md): exact exits, diagnostic context
