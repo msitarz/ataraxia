@@ -16,7 +16,7 @@ support imports no package internals and replaces no product components. No
 new fake executable, launcher/tool-location policy or shared helper migration.
 Consumers follow after this owner merges; no forward fixture dependencies.
 
-- **AC-1 TODO** Given prepared tools and disposable arrangements, typed command
+- **AC-1 DONE** Given prepared tools and disposable arrangements, typed command
   support executes the real shipped entry point with bounded captured processes
   and explicit state without caller/checkout mutation or product doubles.
 
