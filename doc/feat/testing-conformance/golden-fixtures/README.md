@@ -51,7 +51,7 @@ or testing-conformance parent closure. Preserve external-output, path-adaptation
 and independent validation contracts under
 [test ownership](../../../test-ownership.md). Use concise slice docstrings.
 
-- **AC-1 TODO** Given the reviewed static expectations and their actual
+- **AC-1 DONE** Given the reviewed static expectations and their actual
   consumers across all three suites, the bounded cleanup removes unnecessary
   equality-only validation while retaining complete independent comparisons,
   justified structured/external checks, named cases and precise strict types;
