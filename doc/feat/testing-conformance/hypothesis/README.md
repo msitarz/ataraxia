@@ -11,15 +11,15 @@ examples and independently specified expectations.
   independent sequence model across bounded capacities and values.
 - **DONE** Work paths: generated canonical and malformed paths plus contained
   and escaping relative symlinks are checked at the resolver.
-- **TODO** [Make arguments](makearguments/README.md): literal four-value
-  transport through real Make with absent execution markers.
+- **DONE** Make arguments: literal four-value transport through real Make with
+  absent execution markers.
 
 ```mermaid
 flowchart LR
     C[Delivered boundary and golden cleanup] --> A[Adoption]
     A --> W[Window delivered]
     A --> P[Work paths delivered]
-    A --> M[Make-argument pilot]
+    A --> M[Make arguments delivered]
 ```
 
 Adoption adds the development dependency and lockfile plus narrowly scoped
@@ -29,19 +29,18 @@ retaining process timeouts; use deterministic CI generation. Construct fresh
 mutable/filesystem state per example instead of suppressing fixture health
 checks. Keep generated inputs bounded and retain named hostile examples.
 
-Each pilot depends on adoption and its corresponding cleanup. These pilots do
-not authorize a wholesale conversion or new broker/Git state machines. Merge
-each contract before implementation. Adoption, window and Work paths are
-delivered; Make arguments remains the final pilot. Serialize shared settings
-and maps. Each complete leaf includes helpers/type changes within about
-five-minute review;
-escalate and merge revised contracts before expansion. Reuse full-folder strict
-coverage for `src`, `script`, `test` and `example`, with the existing
-intentional-negative expectations route, rather than per-file lists. No
-production repair or performance claim. Preserve named cases and provenance.
+The four reviewed pilots depended on adoption and their corresponding cleanup.
+They do not authorize a wholesale conversion or new broker/Git state machines.
+Adoption, window, Work paths, and Make arguments are delivered. Serialize
+shared settings and maps. Each complete leaf includes helpers/type changes
+within about five-minute review; escalate and merge revised contracts before
+expansion. Reuse full-folder strict coverage for `src`, `script`, `test` and
+`example`, with the existing intentional-negative expectations route, rather
+than per-file lists. No production repair or performance claim. Preserve named
+cases and provenance.
 
 - **AC-1 TODO** Given the adopted bounded settings and fresh per-example state,
-  the three independently reviewed pilots prove ordering/truncation, canonical
+  the four independently reviewed pilots prove ordering/truncation, canonical
   Work containment and literal Make transport without replacing named examples
   or weakening behavior, type precision or isolation.
 
