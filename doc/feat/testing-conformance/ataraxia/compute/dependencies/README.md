@@ -10,7 +10,7 @@ Leave legacy consumers unchanged until their owner adopts this helper. Include
 all helper dependencies precisely; do not migrate source or binding
 collaborators here or redesign production heterogeneous mappings.
 
-- **AC-1 TODO** Given retained A/B inputs, named precise arrangements preserve
+- **AC-1 DONE** Given retained A/B inputs, named precise arrangements preserve
   dependency/factory semantics before consumers without dynamic class
   dictionaries or forward fixture dependencies.
 
