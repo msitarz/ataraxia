@@ -97,6 +97,17 @@ Expected values come from the contract, not from running or copying the
 implementation. Use literals or independently reviewed fixtures. Explain
 non-obvious numeric expectations with a hand-derived comment.
 
+For a repository-owned, reviewed static expectation used only for complete
+equality, keep the loaded value opaque and compare the complete actual value to
+it. A
+JSON file does not become external or untrusted merely because it is parsed
+from disk; do not duplicate its schema or contents solely to satisfy typing.
+Complete equality must still detect missing or unexpected fields. Add only the
+validation needed for structured consumer access or adaptation, genuinely
+external or untrusted input, or a separate validation contract. Keep
+meaningful input and output contracts precise, and validate them at their real
+boundary.
+
 ```python
 def test_a_gap_through_the_stop_fills_at_the_open():
     # Given
