@@ -14,7 +14,7 @@ snapshots without aliasing mutable state or deriving expected results from
 compute. Keep the two-run sequence that proves fresh state; do not split away
 its cross-execution observation.
 
-- **AC-1 TODO** Given equivalent dependency specifications, real compute shares
+- **AC-1 DONE** Given equivalent dependency specifications, real compute shares
   state once per bar while preserving complete results/hash identity and fresh
   runner state across both retained executions with precise collaborators.
 
