@@ -167,6 +167,7 @@ project_includes = [
   "test/ataraxia/unit/test_broker.py",
   "test/ataraxia/cli_result_inputs.py",
   "test/ataraxia/unit/test_cli_reporting.py",
+  "test/ataraxia/unit/test_cli_arguments.py",
   "test/ataraxia/unit/test_provider_reads.py",
   "test/ataraxia/unit/test_provider.py",
   "test/ataraxia/unit/test_backtest.py",
