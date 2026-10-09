@@ -14,7 +14,7 @@ production oracle recalculation. Exhaust or explicitly close simple compute
 iteration so no live generator is abandoned. Preserve generic keyed lookup and
 read-only results.
 
-- **AC-1 TODO** Given retained typed nodes/source, real graph/catalog/step and
+- **AC-1 DONE** Given retained typed nodes/source, real graph/catalog/step and
   simple computation produce complete literal mappings/order and precise cycle
   failure without dynamic fixture lookup or weakened result typing.
 
