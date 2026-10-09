@@ -12,7 +12,7 @@
   once-per-bar state and fresh runners across executions.
 - **DONE** Source lifecycle: retained exhaustion, runner
   failure and explicit generator-close state/exception observations.
-- **TODO** [Real resource lifecycle](resources/README.md): actual
+- **DONE** Real resource lifecycle: actual
   source/provider file closure under compute exhaustion/error/explicit close.
 - **TODO** [Dependency binding](binding/README.md): all signature/preparation
   cases and preserved positive/negative static contracts.
