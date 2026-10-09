@@ -29,30 +29,36 @@ sequenceDiagram
     T->>B: Assign independent ready subtree and base ref
     par Subtree A
         A->>EA: Implement leaf A1
+        Note over T,EB: Any subtree may interrupt execution for a decision or split
+        opt Decision or new split during execution
+            A-->>T: Escalate decision or split
+            T->>A: Pause entire requested tree at safe stopping points
+            T->>B: Pause entire requested tree at safe stopping points
+            A->>EA: Stop new implementation; preserve artifacts and evidence
+            B->>EB: Stop new implementation; preserve artifacts and evidence
+            T->>M: Request concrete decision
+            M-->>T: Decide scope
+            T->>T: Wait for required concrete planning PR merge
+            T->>A: Resume only authorized scope after applicable gates
+            T->>B: Resume only authorized scope after applicable gates
+        end
         EA-->>A: Artifact and evidence
         A->>A: Review and verification/cleanup pair
         A->>EA: Implement dependent leaf A2 after local acceptance
         EA-->>A: Artifact and evidence
-        A->>A: Review leaf and parent verification/cleanup pairs
+        A->>A: Review leaf pair; verify child parent and retain contract
     and Subtree B
         B->>EB: Implement sequential leaves with local reviews
         EB-->>B: Artifacts and evidence
-        B->>B: Review leaf and parent verification/cleanup pairs
+        B->>B: Review leaf pairs; verify child parent and retain contract
     end
-    alt Maintainer decision or new split needed anywhere
-        A-->>T: Escalate decision or split
-        T->>A: Pause entire requested tree at safe stopping points
-        T->>B: Pause entire requested tree at safe stopping points
-        T->>M: Preserve artifacts and request concrete decision
-        M-->>T: Decide scope; expanded implementation waits for plan merge
-    else Subtrees ready for integration
-        A-->>T: Retained contract, commits and evidence
-        B-->>T: Retained contract, commits and evidence
-        T->>T: Review interfaces/integration; record child cleanup/maps
-        T->>T: Complete parent verification/cleanup pair
-        T->>M: Publish one final PR; require final-head full CI
-        M->>M: Own merge decision
-    end
+    A-->>T: Retained verified contract, commits and evidence
+    B-->>T: Retained verified contract, commits and evidence
+    T->>T: Review child interfaces/integration
+    T->>T: Record reviewed child cleanup and parent-map updates
+    T->>T: Complete requested parent verification/cleanup pair
+    T->>M: Publish one final PR; require final-head full CI
+    M->>M: Own merge decision
 ```
 
 Merge these concrete contracts before expanded implementation. Adopt the leaves
