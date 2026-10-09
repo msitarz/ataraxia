@@ -26,7 +26,7 @@ execution markers; do not reconstruct shell quoting or assert a copied escaping
 algorithm. Preserve external-log validation and precisely typed harness results.
 No production/tool/helper API changes or fixture-health suppression.
 
-- **AC-1 TODO** Given four bounded hostile literal values and an isolated fresh
+- **AC-1 DONE** Given four bounded hostile literal values and an isolated fresh
   arrangement per example, real `registry-select` transports every value exactly
   through fake external uv without executing caller expressions, while named
   transport/refusal coverage and strict folder typing remain intact.
