@@ -13,7 +13,7 @@ capturable real file handles explicit. Do not create a generic fixture framework
 or adopt unrelated test/source helpers. Leave legacy consumers untouched until
 their owners merge.
 
-- **AC-1 TODO** Given retained source inputs, typed faithful collaborators and
+- **AC-1 DONE** Given retained source inputs, typed faithful collaborators and
   real CSV arrangements expose precise context/state observations and stable
   runner identity before their consumers without forward dependencies.
 
