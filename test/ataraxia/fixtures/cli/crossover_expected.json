@@ -1,0 +1,90 @@
+[
+  {
+    "account": {"pnl": 10, "unrealized_pnl": 0},
+    "closed_positions": [
+      {
+        "side": "sell",
+        "stop_loss": 64976,
+        "take_profit": 64926,
+        "entry_bar": {
+          "timestamp": 1784516400,
+          "open": 64956,
+          "high": 64977,
+          "low": 64932,
+          "close": 64956,
+          "volume": 12525
+        },
+        "entry_level": 64956,
+        "closing_bar": {
+          "timestamp": 1784518200,
+          "open": 64940,
+          "high": 64959,
+          "low": 64899,
+          "close": 64927,
+          "volume": 8773
+        },
+        "closing_level": 64926,
+        "closing_pnl": 30
+      },
+      {
+        "side": "buy",
+        "stop_loss": 64608,
+        "take_profit": 64658,
+        "entry_bar": {
+          "timestamp": 1784543400,
+          "open": 64598,
+          "high": 64655,
+          "low": 64568,
+          "close": 64628,
+          "volume": 10333
+        },
+        "entry_level": 64628,
+        "closing_bar": {
+          "timestamp": 1784544300,
+          "open": 64643,
+          "high": 64661,
+          "low": 64607,
+          "close": 64634,
+          "volume": 9002
+        },
+        "closing_level": 64608,
+        "closing_pnl": -20
+      }
+    ],
+    "open_positions": [],
+    "shard_path": "sample/nq_15m_2026_07_19.csv",
+    "strategy_path": "example/crossover.py"
+  },
+  {
+    "account": {"pnl": 30, "unrealized_pnl": 0},
+    "closed_positions": [
+      {
+        "side": "buy",
+        "stop_loss": 64430,
+        "take_profit": 64480,
+        "entry_bar": {
+          "timestamp": 1784541600,
+          "open": 64430,
+          "high": 64470,
+          "low": 64422,
+          "close": 64450,
+          "volume": 6010
+        },
+        "entry_level": 64450,
+        "closing_bar": {
+          "timestamp": 1784542500,
+          "open": 64454,
+          "high": 64490,
+          "low": 64445,
+          "close": 64471,
+          "volume": 5062
+        },
+        "closing_level": 64480,
+        "closing_pnl": 30
+      }
+    ],
+    "open_positions": [],
+    "shard_path": "sample/nq_15m_2026_07_20.csv",
+    "strategy_path": "example/crossover.py"
+  }
+]
