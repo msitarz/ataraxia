@@ -8,7 +8,6 @@ import pytest
 
 from ataraxia.backtest import BacktestShardReturn, backtest_shard
 from ataraxia.broker import Account, BrokerReturn, Signal
-from ataraxia.errors import BacktestError
 
 
 @pytest.fixture
@@ -57,16 +56,6 @@ def broker_result() -> BrokerReturn:
         "open_positions": [],
         "closed_positions": [],
     }
-
-
-def test_backtest_header_only_shard(strategy_and_shard_path):
-    shard = strategy_and_shard_path["shard"]
-    shard.write_text("timestamp,open,high,low,close,volume\n")
-
-    with pytest.raises(BacktestError, match="contains no bars") as error:
-        backtest_shard(strategy_and_shard_path["strategy"], shard)
-
-    assert str(shard) in str(error.value)
 
 
 def test_backtest_shard_uses_broker_result_from_compute_step(

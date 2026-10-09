@@ -29,8 +29,13 @@ def test_backtest_shard_requires_broker_result(
 ) -> None:
     """Covers AC-1: real invalid results raise the contextual refusal unchanged."""
     # Given
-    paths = arrange_backtest(tmp_path, monkeypatch, strategy_fixture)
-    assert paths.strategy_path.name == strategy_fixture
+    paths = arrange_backtest(
+        tmp_path,
+        monkeypatch,
+        strategy_fixture,
+        strategy_basename="strategy.py",
+    )
+    assert paths.strategy_path.name == "strategy.py"
     strategy_before = paths.strategy_path.read_bytes()
     shard_before = paths.shard_path.read_bytes()
 
