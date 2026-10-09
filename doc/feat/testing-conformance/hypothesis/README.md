@@ -39,7 +39,7 @@ and `example`, with the existing intentional-negative expectations route,
 rather than per-file lists. No production repair or performance claim. Preserve
 named cases and provenance.
 
-- **AC-1 TODO** Given the adopted bounded settings and fresh per-example state,
+- **AC-1 DONE** Given the adopted bounded settings and fresh per-example state,
   the three independently reviewed pilots prove ordering/truncation, canonical
   Work containment and literal Make transport without replacing named examples
   or weakening behavior, type precision or isolation.
