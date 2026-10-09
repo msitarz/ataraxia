@@ -11,9 +11,13 @@ Preserve two shards, accounts 10/0 and 30/0, closed trades sell64926/+30,
 buy64608/-20 and buy64480/+30, and empty open lists. Add every previously
 omitted entry/closing field, bar timestamp/OHLCV, stop/target and exact path
 identity. Path substitution or shard-order normalization may adapt checkout
-locations but must retain all fields and unexpected-field detection. Validate
-external JSON honestly; no imports of product internals into acceptance support
-or broad helper result types hiding unknown data.
+locations but must retain all fields and unexpected-field detection. Treat the
+reviewed JSON as an opaque whole-value expectation; loading a repository-owned
+static fixture does not make it external input. The adapter may inspect only
+the path fields needed to normalize them, and must preserve every other field
+so whole-value comparison detects missing or unexpected data. Do not add
+duplicate schema validation or detailed models solely to type this fixture.
+No product internals belong in acceptance support.
 
 - **AC-1 TODO** Given shipped sample inputs, complete golden artifacts and typed
   adaptation preserve independently justified trade/result fields and path
