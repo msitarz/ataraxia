@@ -11,7 +11,7 @@ merged independent artifact, including all position fields/nulls. Preserve
 `out.json` under tmp_path. Precisely annotate fixture parameters and captures
 with supported public pytest types; avoid production computation in the oracle.
 
-- **AC-1 TODO** Given retained typed broker inputs, real public display/save
+- **AC-1 DONE** Given retained typed broker inputs, real public display/save
   produce the exact report and complete independent serialized values without
   changing input data or writing outside disposable output.
 
