@@ -10,11 +10,12 @@ at medium effort for executor, cleaner, and publisher responsibilities.
 - **TODO** [Role policy adoption](policy/README.md): reconcile role boundaries,
   model routing, concise handoffs, and the workflow decision at their owners.
 
-Merge this plan before adoption. Adoption follows the
-[cleanup guidance](../delegated-cleanup/guidance/README.md) and
-[publisher guidance](../publication-tool-guidance/publisher/README.md)
-deliveries; those Works retain their procedural ownership. Serialize their
-shared orchestrator guidance, glossary, WDR index, and parent-map edits.
+Merge this plan before adoption. Adoption follows the delivered
+[cleanup procedure](../../branch-cleanup.md) and
+[cleaner route](../../orchestrator.md#roles-and-delegation), plus the
+[publisher guidance](../publication-tool-guidance/publisher/README.md). Those
+owners retain their procedural responsibilities. Serialize shared orchestrator
+guidance, glossary, WDR index, and parent-map edits.
 This plan changes no current policy.
 
 - **AC-1 TODO** Given the adoption contract and prerequisite guidance Works,
