@@ -36,5 +36,8 @@ full-CI requirements for delivery remain in force.
 ## Consequences
 
 The operational handoff and verification owner are explicit without changing
-Work leaf policy or existing cleanup safety. Any benefit to orchestrator effort
-remains a hypothesis for the separate operational trial.
+Work leaf policy or existing cleanup safety. Having the orchestrator do each
+cleanup directly avoids a handoff but keeps those operations in orchestration;
+the cleaner adds a handoff and report while separating the state-changing task.
+Any benefit to orchestrator effort remains a hypothesis for the separate
+operational trial.
