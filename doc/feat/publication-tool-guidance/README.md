@@ -9,8 +9,10 @@ and the Make interface.
 - **DONE** Publisher delegation: the mechanical publication role, handoff,
   refusal points, and report are defined in
   [publisher guidance](../../publisher.md) and WDR 19.
-- **TODO** [Make target discovery](tool-discovery/README.md): clarify when
-  contributors consult `make help` and which owner maintains that route.
+- **DONE** Make target discovery: help triggers, target reuse, and target-owned
+  runtime environments are defined in
+  [contributor guidance](../../../CONTRIBUTING.md#make-targets), with a concise
+  AGENTS route.
 
 Merge this plan before either guidance leaf. The publisher leaf owns
 `doc/publisher.md`, its PR-owner links and concise orchestrator handoff; the
