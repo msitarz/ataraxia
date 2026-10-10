@@ -6,6 +6,10 @@ comparisons and state checks, removals, blockers, and orchestrator assessment.
 Use real occurrences only; do not create artificial destructive cases, add a
 logging framework, or claim a benchmark or measured cost reduction.
 
+The actual #271 handoff and cleanup are recorded in the
+[trial observations](observations.md), including the remote-ref verification
+deviation and its report clarification. This was not a fully compliant run.
+
 The earlier #199 cleanup pilot is seed context, not this trial's result: the
 first attempt stopped because the merge commit had not been fetched; after
 correction round 1 fetched before comparisons, the reviewed and merge trees
