@@ -1,0 +1,17 @@
+{
+  "mermaidx_release": "0.9.5",
+  "artifacts": [
+    {
+      "file": "mermaidx-0.9.5-py3-none-any.whl",
+      "sha256": "46dfbdc7c101bd5395f05bca2f0917c467b9c5d5c3cbec1fbe238c546b673039"
+    }
+  ],
+  "bundled_mermaid_js_sha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "actual_engine_version": null,
+  "setup_resolved": {
+    "quickjs-ng": "0.17.0.1",
+    "resvg-py": "0.5.0",
+    "termaid": "0.9.0"
+  },
+  "matrix_executed": false
+}
