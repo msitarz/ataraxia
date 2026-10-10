@@ -27,15 +27,14 @@ The cleaner read the origin remote-tracking ref concurrently with `git fetch`,
 then initially reported the remote tip as verified. That ordering does not
 establish a fresh remote observation. In one report clarification, the cleaner
 said the observed ref was a cached value consistent with the PR head; fetch
-removed it, and the ref was absent after fetch. No live remote tip was verified,
-so the cleaner made no remote deletion. The local checks and scoped removals
-were verified, but the remote-tip check was not; this was not a fully compliant
-trial.
+removed it, and the ref was absent after fetch. No live remote tip was verified.
+No remote deletion occurred. The local checks and scoped removals were verified,
+but the remote-tip check was not; this was not a fully compliant trial.
 
 The cleaner performed zero operational retries or cleanup correction rounds.
 There was one report clarification/correction, tracked separately from
 executor correction rounds. Afterward, root steered future cleaner runs to
-complete fetch before any remote-ref read or comparison and report an absent
-post-fetch remote ref separately.
+complete fetch before any ref read or comparison, local or remote, and report
+an absent post-fetch remote ref separately.
 
 No timing, cost, or speed claim follows from this occurrence.
