@@ -8,18 +8,18 @@ assumed.
 
 ## Delivery map
 
-- **TODO** [Cleanup role guidance and WDR](guidance/README.md): specify
-  operational handoff, verification, safe removal, reporting, and the
-  consequential workflow decision.
+- **DONE** Cleanup role guidance and WDR: the cleaner's operational handoff,
+  verification and reporting are defined in branch-cleanup and orchestrator
+  guidance, with the rationale recorded in WDR 18.
 - **TODO** [Operational trial](trial/README.md): reuse the role for a later
   maintainer-confirmed merge and assess observed outcomes without manufacturing
   destructive cases or claiming a benchmark.
 
-Merge the parent plan before either child. Merge guidance and its WDR before the
-trial. Keep cleanup operations serialized with worktree creation and other
-shared Git mutations. Existing post-merge rules in
-[`doc/branch-cleanup.md`](../../branch-cleanup.md) remain authoritative until
-the guidance child is delivered.
+Merge the parent plan before its trial child. The guidance and WDR are
+delivered; the trial can begin after this guidance merges. Keep cleanup
+operations serialized with worktree creation and other shared Git mutations. The
+post-merge procedure in [`doc/branch-cleanup.md`](../../branch-cleanup.md)
+remains authoritative.
 
 ## Acceptance
 
