@@ -1,0 +1,39 @@
+{
+  "wrapper_repository": "https://github.com/genotrance/quickjs-ng",
+  "wrapper_tag": "v0.17.0.1",
+  "wrapper_sha": "f2ac026f5105b492b15b331bf1b71bd7a4e9cfb2",
+  "initial_gitlink_sha": "6d2a9bacbc9feb5c1f46f80b3cf4c25bedd2187b",
+  "upstream_tag": "v0.17.0",
+  "upstream_sha": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "metadata_change": "pyproject.toml version0.12.1.1->0.17.0.1",
+  "workflow": "https://github.com/genotrance/quickjs-ng/blob/f2ac026f5105b492b15b331bf1b71bd7a4e9cfb2/.github/workflows/build.yml",
+  "wheel": "quickjs_ng-0.17.0.1-cp310-abi3-macosx_10_15_universal2.whl",
+  "wheel_sha256": "996e702f090c0faf53c502ee82bdabb3a9c9383b95d377e3a91fb7ac75ad73ca",
+  "engine_observed": "Mermaid11.16.0",
+  "commands": [
+    "git clone https://github.com/genotrance/quickjs-ng.git /private/tmp/ataraxia-quickjs-complete-source",
+    "git checkout --detach v0.17.0.1",
+    "git submodule update --init --recursive",
+    "git checkout --detach 6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+    "make -f /private/tmp/ataraxia-mermaid-complete-experiment/probe.mk setup build",
+    "make -f /private/tmp/ataraxia-mermaid-complete-experiment/probe.mk install info",
+    "make -f /private/tmp/ataraxia-mermaid-complete-experiment/probe.mk run"
+  ],
+  "mermaidx_artifacts": [
+    {
+      "file": "mermaidx-0.9.5-py3-none-any.whl",
+      "sha256": "46dfbdc7c101bd5395f05bca2f0917c467b9c5d5c3cbec1fbe238c546b673039"
+    }
+  ],
+  "bundled_mermaid_js_sha256": "74d7c46dabca328c2294733910a8aa1ed0c37451776e8d5295da38a2b758fb9b",
+  "python": "3.14.6",
+  "uv": "0.12.19",
+  "setuptools": "84.0.0",
+  "host": "macOS26.6.2 x86_64",
+  "dependencies": {
+    "mermaidx": "0.9.5",
+    "quickjs-ng": "0.17.0.1",
+    "resvg-py": "0.5.0",
+    "termaid": "0.9.0"
+  }
+}
