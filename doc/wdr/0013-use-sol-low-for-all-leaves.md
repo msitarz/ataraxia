@@ -16,6 +16,9 @@ for executor naming only. Low effort, direct execution, ownership, independent
 review, consolidated same-session corrections, and maintainer approval rules
 remain in force.
 
+Amended by
+[20. Route agents by responsibility](0020-route-agents-by-responsibility.md).
+
 ## Context
 
 The bounded leaf-agent comparison in

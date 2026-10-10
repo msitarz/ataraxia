@@ -6,8 +6,8 @@ before rebase. [PR guidance](pull-requests.md) owns publication gates, review,
 descriptions, and orchestrator accountability; the
 [orchestrator handoff](orchestrator.md#roles-and-delegation) supplies reviewed
 inputs. The publisher is an operational subagent, distinct from a Work leaf
-executor, and uses the maintainer-authorized Luna at medium effort. General
-leaf model policy is unchanged.
+executor; [orchestrator guidance](orchestrator.md#roles-and-delegation) owns its
+model and effort routing.
 
 ## Publication procedure
 
