@@ -36,7 +36,7 @@ copied into general orchestration guidance.
 Adoption depends on the delivered
 [branch-cleanup procedure](../../../branch-cleanup.md) and
 [cleaner route](../../../orchestrator.md#roles-and-delegation), plus merged
-[publisher guidance](../../publication-tool-guidance/publisher/README.md). Those
+[publisher guidance](../../../pull-requests.md#mechanical-publisher). Those
 owners retain cleanup and publication procedures and their orchestrator routes.
 Integrate without duplicate procedures or competing model definitions;
 coordinate shared guidance, glossary, parent maps, and WDR index edits serially.
@@ -44,10 +44,11 @@ coordinate shared guidance, glossary, parent maps, and WDR index edits serially.
 Add a WDR for this role/model decision, reconcile the old leaf instruction, and
 amend [WDR 13](../../../wdr/0013-use-sol-low-for-all-leaves.md) with reciprocal
 metadata and index changes in the adoption PR. WDR 18 records cleanup, and 19
-is reserved for publisher; coordinate the next unused number, currently 20, at
-delivery. Preserve accepted history and the original comparison's conclusions.
-Record maintainer judgment and artifact-review rationale without treating this
-small planning output as cost evidence or claiming comparative superiority.
+records publisher delegation; coordinate the next unused number, currently 20,
+at delivery. Preserve accepted history and the original comparison's
+conclusions. Record maintainer judgment and artifact-review rationale without
+treating this small planning output as cost evidence or claiming comparative
+superiority.
 
 Preserve current orchestrator model selection, Work-tree ownership and topology,
 agent-creation authorization, isolated worktrees, consolidated corrections,

@@ -6,8 +6,9 @@ and the Make interface.
 
 ## Delivery map
 
-- **TODO** [Publisher delegation](publisher/README.md): bound the mechanical
-  publication role, its handoff, refusal points, and report.
+- **DONE** Publisher delegation: the mechanical publication role, handoff,
+  refusal points, and report are defined in
+  [PR guidance](../../pull-requests.md#mechanical-publisher) and WDR 19.
 - **TODO** [Make target discovery](tool-discovery/README.md): clarify when
   contributors consult `make help` and which owner maintains that route.
 

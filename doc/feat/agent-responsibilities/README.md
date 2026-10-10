@@ -13,7 +13,7 @@ at medium effort for executor, cleaner, and publisher responsibilities.
 Merge this plan before adoption. Adoption follows the delivered
 [cleanup procedure](../../branch-cleanup.md) and
 [cleaner route](../../orchestrator.md#roles-and-delegation), plus the
-[publisher guidance](../publication-tool-guidance/publisher/README.md). Those
+[publisher guidance](../../pull-requests.md#mechanical-publisher). Those
 owners retain their procedural responsibilities. Serialize shared orchestrator
 guidance, glossary, WDR index, and parent-map edits.
 This plan changes no current policy.
