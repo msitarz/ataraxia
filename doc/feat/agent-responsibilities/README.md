@@ -20,7 +20,7 @@ owners retain their procedural responsibilities. Serialize shared orchestrator
 guidance, glossary, WDR index, and parent-map edits.
 Current role policy is defined by the authoritative orchestrator owner.
 
-- **AC-1 TODO** Given the adoption contract and prerequisite guidance Works,
+- **AC-1 DONE** Given the adoption contract and prerequisite guidance Works,
   their boundaries and sequence define one reviewable policy outcome without
   duplicating operational procedures or weakening independent review.
 
