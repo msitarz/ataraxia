@@ -7,8 +7,11 @@ checker adoption, dependencies or implementation. Keep it independent of the
 
 ## Delivery map
 
-- **TODO** [Validator investigation](investigation/README.md): small parser and
-  renderer probes, compatibility evidence and a proposed adoption contract.
+- **DONE** Validator investigation: defer adoption after mermaidx setup failed
+  on Python 3.14/macOS x86_64; all diagram cases remain unexercised. The
+  [retained report](https://github.com/msitarz/ataraxia/blob/b942f5c77c537654881917b9bc056c027dbf9c94/doc/feat/mermaid-validation/investigation/report.md)
+  preserves preparation evidence, compatibility limits and the proposed next
+  contract.
 
 The complete investigation artifact and supporting probes target about
 five-minute review. Any expanded investigation or adoption needs a concrete
