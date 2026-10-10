@@ -11,15 +11,16 @@ assumed.
 - **DONE** Cleanup role guidance and WDR: the cleaner's operational handoff,
   verification and reporting are defined in branch-cleanup and orchestrator
   guidance, with the rationale recorded in WDR 18.
-- **TODO** [Operational trial](trial/README.md): reuse the role for a later
-  maintainer-confirmed merge and assess observed outcomes without manufacturing
-  destructive cases or claiming a benchmark.
+- **DONE** Operational trial: the #271 cleanup was properly scoped and
+  preserved unrelated work, but a remote-tracking ref was read during fetch and
+  initially reported as a verified remote tip. The report was clarified; no
+  live remote tip was verified and no remote deletion occurred. No cost or
+  speed claim is made.
 
-Merge the parent plan before its trial child. The guidance and WDR are
-delivered; the trial can begin after this guidance merges. Keep cleanup
-operations serialized with worktree creation and other shared Git mutations. The
-post-merge procedure in [`doc/branch-cleanup.md`](../../branch-cleanup.md)
-remains authoritative.
+The guidance, WDR, and operational assessment are delivered. Keep cleanup
+operations serialized with worktree creation and other shared Git mutations.
+The post-merge procedure in
+[`doc/branch-cleanup.md`](../../branch-cleanup.md) remains authoritative.
 
 ## Acceptance
 
