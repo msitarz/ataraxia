@@ -7,8 +7,10 @@ at medium effort for executor, cleaner, and publisher responsibilities.
 
 ## Delivery map
 
-- **TODO** [Role policy adoption](policy/README.md): reconcile role boundaries,
-  model routing, concise handoffs, and the workflow decision at their owners.
+- **DONE** Role policy adoption: responsibility-based model routing and
+  definition handoffs are defined in
+  [orchestrator guidance](../../orchestrator.md#roles-and-delegation), with
+  rationale in WDR 20 and operational procedures at their existing owners.
 
 Merge this plan before adoption. Adoption follows the delivered
 [cleanup procedure](../../branch-cleanup.md) and
@@ -16,7 +18,7 @@ Merge this plan before adoption. Adoption follows the delivered
 [publisher guidance](../../publisher.md). Those
 owners retain their procedural responsibilities. Serialize shared orchestrator
 guidance, glossary, WDR index, and parent-map edits.
-This plan changes no current policy.
+Current role policy is defined by the authoritative orchestrator owner.
 
 - **AC-1 TODO** Given the adoption contract and prerequisite guidance Works,
   their boundaries and sequence define one reviewable policy outcome without

@@ -2,8 +2,8 @@
 
 Extend the existing Work-tree ownership foundation with bounded leaf reviews,
 tree-wide decision pauses and one final publication for the requested Work.
-Keep the definer name/models and role-policy ownership with the pending
-[agent responsibilities Work](../agent-responsibilities/README.md).
+Keep the definer name/models and role-policy ownership with
+[orchestrator guidance](../../orchestrator.md#roles-and-delegation).
 
 ## Delivery map
 
