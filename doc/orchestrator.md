@@ -9,6 +9,14 @@ review and evidence assessment. The executor makes the bounded changes and
 returns the artifact and evidence; it works directly within scope and does not
 recursively delegate the same task.
 
+For post-merge Work cleanup, hand off to the separate operational `cleaner`
+subagent after the maintainer confirms the PR merged. Route it through
+[branch-cleanup guidance](branch-cleanup.md) with the PR, branch, worktree,
+reviewed head, and merge commit IDs. The maintainer authorizes Luna at medium
+effort for this role only; general leaf-executor model policy is unchanged.
+Review the cleaner's concise report instead of repeating its operations, and
+serialize cleanup with worktree creation and other shared Git mutations.
+
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
 agents. Delegate each leaf directly to the executor; the

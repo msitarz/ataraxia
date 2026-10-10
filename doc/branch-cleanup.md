@@ -2,13 +2,25 @@
 
 Read this procedure after the maintainer confirms a Work PR has merged.
 
-Keep either branch if an active PR depends on it. Before deleting a local or
-remote branch, verify that its tip contains no changes beyond the revision that
-was reviewed and merged. A squash merge may make Git's ancestry check
-inconclusive; inspect the branch's later commits and compare its changes with
-the merged revision. Check local and remote tips separately. If the worktree is
-dirty or any comparison is uncertain, preserve the branch and ask the
-maintainer.
+The reusable `cleaner` subagent is the operational role for carrying out this
+procedure, not a Work leaf executor. The orchestrator's handoff identifies the
+PR, branch, worktree, reviewed head, and merge commit IDs. The cleaner does not
+change code, publish or review PRs, merge code, or recursively delegate. It
+reports the refs and comparisons checked, completed removals, and any blockers
+for the orchestrator to assess. On failure or uncertainty, it stops and reports
+without automatic retry or permission bypass; any retry follows the existing
+maintainer-resolution rules below. Serialize cleanup with worktree creation and
+other shared Git mutations.
+
+Before comparing any local or remote tips, refresh remote-tracking refs with
+`git fetch origin`. If fetch fails, stop and report the failure; do not retry
+until its cause has been resolved with the maintainer. Keep either branch if an
+active PR depends on it. Before deleting a local or remote branch, verify that
+its tip contains no changes beyond the revision that was reviewed and merged.
+A squash merge may make Git's ancestry check inconclusive; inspect the branch's
+later commits and compare its changes with the merged revision. Check local and
+remote tips separately. If the worktree is dirty or any comparison is
+uncertain, preserve the branch and ask the maintainer.
 
 Identify the completed branch's worktree with `make worktree-list`. Check its
 status, including untracked files, and verify its tip against the reviewed and
