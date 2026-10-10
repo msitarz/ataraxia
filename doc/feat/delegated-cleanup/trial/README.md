@@ -18,7 +18,7 @@ worktree and branch were cleaned up. Track this role's correction rounds
 separately from executor correction counts. Preserve maintainer confirmation,
 merge authority, and full-CI gates for the documentation delivery.
 
-- **AC-1 TODO** Given a later confirmed merge handled under the adopted
+- **AC-1 DONE** Given a later confirmed merge handled under the adopted
   guidance, an independent report review establishes whether object and state
   checks were correct, cleanup was properly scoped, and actual blockers were
   reported without weakening existing guardrails.
