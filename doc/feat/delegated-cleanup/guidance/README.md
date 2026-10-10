@@ -27,7 +27,7 @@ guardrails, and preserve maintainer review, merge, and full-CI gates for
 documentation delivery. Treat reduced token or orchestrator cost as a
 hypothesis, not a measured benefit or superiority claim.
 
-- **AC-1 TODO** Given a maintainer-confirmed merged PR and complete handoff,
+- **AC-1 DONE** Given a maintainer-confirmed merged PR and complete handoff,
   guidance defines safe verification, scoped cleanup, stop/report behavior,
   serialized shared-Git operations, and concise orchestration without weakening
   existing cleanup or delivery authority.
