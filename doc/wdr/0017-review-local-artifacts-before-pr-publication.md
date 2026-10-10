@@ -10,6 +10,8 @@ Amends
 [5. Review completed handoffs once](0005-review-completed-handoffs-once.md).
 
 Amended by
+[19. Delegate mechanical PR publication](0019-delegate-mechanical-pr-publication.md)
+and
 [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md).
 
 ## Context

@@ -31,6 +31,7 @@ authoritative owners.
 - [16. Use Evaluations for empirical evidence](0016-use-evaluations-for-empirical-evidence.md)
 - [17. Review local artifacts before PR publication](0017-review-local-artifacts-before-pr-publication.md)
 - [18. Delegate verified post-merge cleanup to cleaner](0018-delegate-verified-post-merge-cleanup-to-cleaner.md)
+- [19. Delegate mechanical PR publication](0019-delegate-mechanical-pr-publication.md)
 - [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md)
 
 ## Proposal

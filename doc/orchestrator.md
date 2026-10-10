@@ -30,6 +30,12 @@ available concurrency, and expected shared edits rather than launching the
 entire tree at once. Do not invent intermediary Work nodes solely to justify
 runtime layers.
 
+Mechanical PR publication may use the separate operational `publisher` after
+exact-artifact and description review. Follow the handoff, checks, boundaries,
+and reporting in [PR guidance](pull-requests.md#mechanical-publisher); the
+orchestrator retains publication accountability, acceptance and CI assessment,
+and maintainer handoff.
+
 Use GPT-6.1 Sol at low reasoning effort for every leaf executor.
 This includes Investigation and empirical evaluation leaves as well as
 implementation leaves.

@@ -24,7 +24,7 @@ reciprocal amendment metadata only when warranted. Do not change global leaf
 executor policy or claim cost savings. The explicitly authorized publisher
 pilot for this planning PR is separate from durable-guidance acceptance.
 
-- **AC-1 TODO** Given an approved reviewed head and description, guidance
+- **AC-1 DONE** Given an approved reviewed head and description, guidance
   bounds publication to mechanical actions, verifies exact inputs, stops on
   divergence or uncertainty, and returns inspectable publication state without
   weakening review or CI authority.
