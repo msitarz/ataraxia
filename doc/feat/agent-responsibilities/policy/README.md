@@ -36,7 +36,7 @@ copied into general orchestration guidance.
 Adoption depends on the delivered
 [branch-cleanup procedure](../../../branch-cleanup.md) and
 [cleaner route](../../../orchestrator.md#roles-and-delegation), plus merged
-[publisher guidance](../../../pull-requests.md#mechanical-publisher). Those
+[publisher guidance](../../../publisher.md). Those
 owners retain cleanup and publication procedures and their orchestrator routes.
 Integrate without duplicate procedures or competing model definitions;
 coordinate shared guidance, glossary, parent maps, and WDR index edits serially.

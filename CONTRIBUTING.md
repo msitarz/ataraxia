@@ -113,6 +113,8 @@ For Work PRs with acceptance criteria, follow the
 [commit-preservation rule](doc/acceptance-tracing.md#work-delivery-commits);
 do not squash.
 
+Before preparing a published-branch rewrite, follow
+[publisher rewrite guidance](doc/publisher.md#published-branch-rewrites).
 Follow [Pull requests](doc/pull-requests.md) for publication and descriptions,
 and [orchestrator handoffs](doc/orchestrator.md#review-and-return) for agent
 review, publication ownership, and merge authority.
