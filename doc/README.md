@@ -26,6 +26,7 @@ relevant guidance.
 | Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | PR publication and description guidance | [Pull requests](pull-requests.md) |
+| Mechanical PR publication and published-branch rewrite leases | [Publisher](publisher.md) |
 | PR description format | [PR template](../.github/pull_request_template.md) |
 | Choosing checks and reporting evidence | [Checks and evidence](validation.md) |
 | Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |

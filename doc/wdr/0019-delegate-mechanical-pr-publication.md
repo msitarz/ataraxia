@@ -22,7 +22,7 @@ are measured.
 
 Permit a distinct reusable publisher operational subagent, using the explicitly
 authorized Luna at medium effort, to publish exact reviewed inputs under
-[PR guidance](../pull-requests.md#mechanical-publisher). The orchestrator
+[publisher guidance](../publisher.md). The orchestrator
 retains independent artifact and description review, acceptance and final-CI
 assessment, publication accountability, and maintainer handoff. The publisher
 stops on input mismatch, divergence, refusal, or uncertainty and cannot change

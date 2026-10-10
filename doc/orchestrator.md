@@ -30,11 +30,14 @@ available concurrency, and expected shared edits rather than launching the
 entire tree at once. Do not invent intermediary Work nodes solely to justify
 runtime layers.
 
-Mechanical PR publication may use the separate operational `publisher` after
-exact-artifact and description review. Follow the handoff, checks, boundaries,
-and reporting in [PR guidance](pull-requests.md#mechanical-publisher); the
-orchestrator retains publication accountability, acceptance and CI assessment,
-and maintainer handoff.
+After exact-artifact and description review and acceptance assessment, hand
+mechanical publication to the separate operational `publisher` with
+[its owner](publisher.md), worktree, exact reviewed commit, approved title and
+description file plus a digest or immutable copy, and existing PR when updating.
+Include authorized repository/base overrides and, for a rewrite, the expected
+remote commit captured before rebase. The orchestrator retains publication
+accountability, final-CI assessment, and maintainer handoff; assess the
+publisher's returned publication state and blockers.
 
 Use GPT-6.1 Sol at low reasoning effort for every leaf executor.
 This includes Investigation and empirical evaluation leaves as well as

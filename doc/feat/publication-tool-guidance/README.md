@@ -6,16 +6,15 @@ and the Make interface.
 
 ## Delivery map
 
-- **DONE** Publisher delegation: the mechanical publication role, handoff,
-  refusal points, and report are defined in
-  [PR guidance](../../pull-requests.md#mechanical-publisher) and WDR 19.
+- **TODO** [Publisher delegation](publisher/README.md): bound the mechanical
+  publication role, its handoff, refusal points, and report.
 - **TODO** [Make target discovery](tool-discovery/README.md): clarify when
   contributors consult `make help` and which owner maintains that route.
 
 Merge this plan before either guidance leaf. The publisher leaf owns
-`doc/pull-requests.md` and its concise orchestrator route; the tool-discovery
-leaf owns the `AGENTS.md` route and its `CONTRIBUTING.md` owner. Keep the two
-changes separate and preserve existing review and CI gates.
+`doc/publisher.md`, its PR-owner links and concise orchestrator handoff; the
+tool-discovery leaf owns the `AGENTS.md` route and its `CONTRIBUTING.md` owner.
+Keep the two changes separate and preserve existing review and CI gates.
 
 ## Acceptance
 
