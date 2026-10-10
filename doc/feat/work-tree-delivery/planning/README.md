@@ -12,10 +12,11 @@ owner review; expanded implementation waits for the concrete planning PR to
 merge.
 
 Strongly recommend at most five Work levels: count from the topmost Work as
-level 1 through every descendant Work, including leaves. A deeper proposal
-needs an explicit maintainer decision; never silently renest
-legacy trees. Count Work nodes, not helper/spec directories. Preserve model
-selection and the pending role-policy Work rather than restating their defaults.
+level 1 through every descendant Work, including leaves. A deeper proposal needs
+an explicit maintainer decision; never silently renest legacy trees. Count Work
+nodes, not helper/spec directories. Preserve model selection in
+[orchestrator guidance](../../../orchestrator.md#roles-and-delegation) rather
+than restating its defaults.
 
 - **AC-1 TODO** Given a ready leaf, oversized leaf, deeper proposal or
   maintainer decision, guidance consistently scopes reviewed contracts and
