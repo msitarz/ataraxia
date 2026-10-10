@@ -20,7 +20,7 @@ five-minute review. Any expanded investigation or adoption needs a concrete
 reviewed contract before implementation. Do not rename the route to
 `check-doc` or change tools, CI or guidance in this delivery.
 
-- **AC-1 TODO** Given exercised candidate tools and representative Markdown,
+- **AC-1 DONE** Given exercised candidate tools and representative Markdown,
   an independently reviewed recommendation identifies a suitable bounded
   `doc-check` integration or explains why none is justified, with reproducible
   evidence, compatibility limitations and a proposed adoption scope.
