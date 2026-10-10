@@ -57,7 +57,7 @@ Frozen empirical protocols retain their declared conditions and authorization
 requirements. Add no benchmark, code implementation, acceptance-test policy,
 or changes to the separate PR #205 plan.
 
-- **AC-1 TODO** Given adopted cleanup and publisher guidance, current owners
+- **AC-1 DONE** Given adopted cleanup and publisher guidance, current owners
   consistently route the four responsibilities and selected models, distinguish
   contract definition from implementation, and retain concise verifiable
   handoffs, independent review, and existing delivery authority.
