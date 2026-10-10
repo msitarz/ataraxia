@@ -32,7 +32,11 @@ bounded adoption contract with acceptance/validation methods. Count report and
 probe-support changes toward the five-minute review; escalate additional scope.
 No checker/dependency adoption, CI changes or product repair in this leaf.
 
-- **AC-1 TODO** Given the named candidates and probe matrix, the reviewed report
+The [investigation report](report.md) retains setup failures, unexercised matrix
+inputs, candidate distinctions and the proposed next boundary. No candidate
+rendering result is claimed.
+
+- **AC-1 DONE** Given the named candidates and probe matrix, the reviewed report
   distinguishes parsing, rendering and generation, preserves actual results and
   uncertainty, and proposes a justified `doc-check` adoption boundary with
   explicit compatibility, diagnostic and execution limitations.
