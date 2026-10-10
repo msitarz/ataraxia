@@ -12,10 +12,11 @@ cases, and help-only cases remain unmarked. Normal test and CI commands run both
 groups. For a fast local selection, run:
 
 ```sh
-PYTEST_ADDOPTS='-m "not real_tool"' make test ARGS=test/make/integration
+make test ARGS=test/make/integration PYTEST_ADDOPTS='-m "not real_tool"'
 ```
 
-Use `PYTEST_ADDOPTS='--collect-only'` with the same Make target to inspect full
-selection, adding `-m "not real_tool"` for the filtered selection. `ARGS`
+Pass `PYTEST_ADDOPTS='--collect-only'` as a Make command-line variable after
+`make test` to inspect full selection, adding `-m "not real_tool"` for the
+filtered selection. `ARGS`
 accepts paths only. This filter changes selection, not the coverage obligations
 of CI.

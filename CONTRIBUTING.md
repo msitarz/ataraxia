@@ -56,11 +56,14 @@ Invoke project tools through Make targets. Consult `make help` when a target is
 unfamiliar, current target knowledge is missing, or the Make interface may have
 changed. Reuse known current targets across turns; recheck when uncertain or
 after an interface change. This discovery step does not apply to Git or GitHub
-commands. Use space-separated repo paths in `ARGS` to narrow
-lint, format, test, and type-check runs; full-suite targets keep their full
-defaults. If a required project invocation is not exposed, add or extend a
-Make target instead of bypassing Make. The [Makefile](Makefile) owns executable
-commands and descriptions; read recipes only when their details matter. See the
+commands. Do not prefix Make calls with environment-variable assignments;
+targets own their required runtime environment. Use documented Make command-line
+inputs, such as `make test ARGS=test/make/integration`, instead of an ad hoc
+environment wrapper. Use space-separated repo paths in `ARGS` to narrow lint,
+format, test, and type-check runs; full-suite targets keep their full defaults.
+If a required project invocation is not exposed, add or extend a Make target
+instead of bypassing Make. The [Makefile](Makefile) owns executable commands and
+descriptions; read recipes only when their details matter. See the
 [check and evidence policy](doc/validation.md) when choosing checks or reporting
 evidence.
 
