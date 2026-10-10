@@ -21,7 +21,7 @@ Keep the two changes separate and preserve existing review and CI gates.
 
 ## Acceptance
 
-- **AC-1 TODO** Given both guidance contracts, their responsibilities and
+- **AC-1 DONE** Given both guidance contracts, their responsibilities and
   boundaries preserve independent artifact review, publication authority,
   discoverable Make commands, and the existing delivery gates.
 
