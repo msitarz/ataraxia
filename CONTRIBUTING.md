@@ -52,8 +52,11 @@ follow the same [commit conventions](#commits-and-pull-requests).
 
 ## Make targets
 
-Humans and agents should run `make help` before project tools and invoke those
-tools through Make targets. Use space-separated repo paths in `ARGS` to narrow
+Invoke project tools through Make targets. Consult `make help` when a target is
+unfamiliar, current target knowledge is missing, or the Make interface may have
+changed. Reuse known current targets across turns; recheck when uncertain or
+after an interface change. This discovery step does not apply to Git or GitHub
+commands. Use space-separated repo paths in `ARGS` to narrow
 lint, format, test, and type-check runs; full-suite targets keep their full
 defaults. If a required project invocation is not exposed, add or extend a
 Make target instead of bypassing Make. The [Makefile](Makefile) owns executable

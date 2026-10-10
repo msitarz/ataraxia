@@ -13,7 +13,7 @@ Keep the route concise and consistent between startup and contributor
 guidance. Preserve WDR 8's Make-interface policy; add no automation or new WDR
 unless implementation reveals a consequential decision beyond clarification.
 
-- **AC-1 TODO** Given a known current Make target or missing target knowledge,
+- **AC-1 DONE** Given a known current Make target or missing target knowledge,
   the startup and contributor routes state when to consult `make help`, keep
   project commands on Make, and preserve the missing-target rule without
   requiring unrelated Git or GitHub discovery.
