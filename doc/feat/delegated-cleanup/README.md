@@ -24,7 +24,7 @@ The post-merge procedure in
 
 ## Acceptance
 
-- **AC-1 TODO** Given both child contracts, their sequence and boundaries
+- **AC-1 DONE** Given both child contracts, their sequence and boundaries
   preserve maintainer control and existing cleanup safety while separating role
   guidance from operational evidence.
 
