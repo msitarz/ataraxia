@@ -14,7 +14,7 @@ collaboration.
 ## Prerequisites
 
 - Python 3.14+
-- [`uv`](https://github.com/astral-sh/uv), at the exact version required in
+- [`uv`](https://github.com/astral-sh/uv) satisfying the version requirement in
   `pyproject.toml`
 - `make`
 - Git
@@ -66,29 +66,6 @@ instead of bypassing Make. The [Makefile](Makefile) owns executable commands and
 descriptions; read recipes only when their details matter. See the
 [check and evidence policy](doc/validation.md) when choosing checks or reporting
 evidence.
-
-## Toolchain policy
-
-`pyproject.toml` owns the exact uv pin in `[tool.uv].required-version`.
-Every CI job installs that version through `setup-uv`'s `version-file` input;
-local project commands reject a different uv version. Install the declared
-version before running setup (for example, `uv self update 0.12.19` for a
-standalone uv installation; use your package manager for other installations).
-
-The build backend is pinned separately in `[build-system].requires`, because
-isolated build requirements are not recorded in `uv.lock`. Keep `uv_build` at
-the same exact version as uv so uv builds use its matching bundled backend,
-while other build frontends resolve the same backend version.
-
-Review these pins monthly and when a tooling bug or security advisory warrants
-an update. Update both pins and the `uv-pre-commit` revision in
-`.pre-commit-config.yaml` in one change, install the new uv version, run
-`make deps-lock`, and include any lockfile changes. Follow the
-[check and evidence policy](doc/validation.md) before accepting the update,
-including the installed-wheel smoke test. Dependabot's weekly uv and GitHub
-Actions updates complement this review; they do not replace reviewing the uv
-executable pin. Python remains supported at 3.14+; CI tests the 3.14 minor
-series. OS images and Python patch releases are not pinned by this policy.
 
 ## Submitting a change
 
