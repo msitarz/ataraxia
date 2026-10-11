@@ -1,6 +1,6 @@
 # Render fences and report bounded failures
 
-Depend on accepted [setup](../../setup/README.md) and
+Use the accepted [setup outcome](../../README.md#delivery-map) and depend on
 [extraction](../extraction/README.md). Deliver `check_markdown`, typed results
 and its CLI through the
 [checker boundary](../README.md#proposed-public-boundary). The review question
