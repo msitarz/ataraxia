@@ -20,16 +20,20 @@ because SVG rendering is lazy.
 - **DONE** Reproducible setup: pinned backend installation and offline SVG
   rendering accepted on local Intel macOS and Linux CI, including a manual
   fresh offline Intel macOS worktree check and disposable cleanup.
-- **TODO** [Checker integration](checker/README.md): after accepted setup,
-  deliver the fenced-Markdown boundary and then wire it into `doc-check`.
+- **TODO** [Checker integration](checker/README.md): add a small stdin renderer
+  to rumdl's native fence-tool route, then compose scoped Make/config checking.
+- **TODO** [Upstream blockquote report](upstream-report/README.md): report or
+  identify the native extraction issue; nonblocking for checker implementation.
 
 ```mermaid
 flowchart TD
-    Setup[Delivered pinned setup] --> Extract[Markdown selection and extraction]
-    Extract --> Render[Bounded SVG rendering and diagnostics]
-    Render --> Check[doc-check integration]
-    Rumdl[Existing rumdl checks] --> Check
-    Check --> CI[Offline verification and default CI]
+    Check[doc-check] --> Docs[Existing link and formatting checks]
+    Docs --> Scoped[Scoped uncached fence-tool check]
+    Scoped --> Rumdl[rumdl discovery extraction timeout and diagnostics]
+    Rumdl --> Validator[Python stdin validator]
+    Setup[Delivered pinned QuickJS setup] --> Validator
+    Validator --> SVG[Force SVG rendering and discard output]
+    CI[Existing Check CI] --> Check
 ```
 
 Integrated setup acceptance is complete. Use ordinary
@@ -38,12 +42,24 @@ locked backend selection in [pyproject.toml](../../../pyproject.toml) and
 [uv.lock](../../../uv.lock), and the retained
 [forced-render smoke test](../../../test/script/integration/test_mermaid_backend.py).
 Accepted backend Linux CI evidence suffices; no fresh worktree CI route is
-needed. The checker has ordered extraction, rendering and Make integration
-leaves because each needs a separate review question; each leaf targets about
-five-minute review including incremental tests and supporting docs. Adapt the
-existing parser/backend and append to existing Make routes. Assess
-simplification and suitable reuse before splitting any larger delivery under the
-[scope rules](../../workflow.md#scope-and-sizing).
+needed. The checker has two ordered leaves: the tiny stdin validator, then
+Make/config integration. rumdl owns fence discovery/extraction, timeout and
+diagnostics; our validator only forces actual SVG rendering. Each leaf targets
+about five-minute review including focused boundary tests. Reuse native rumdl
+and the accepted backend; append to existing Make routes without a custom
+parser, diagnostic model or process framework. Assess simplification and
+suitable reuse before splitting any larger delivery under the
+[scope rules](../../workflow.md#scope-and-sizing). Merge this revised plan
+before implementation; the upstream report may wait and does not block either
+leaf.
+
+Pinned rumdl 0.2.78 handles the exercised backtick, tilde and list-container
+fences, but retains leading `>` in blockquoted source. Accept that native
+limitation for this adoption and report it upstream separately; add no blanket
+marker stripping or local extractor workaround. A cached probe also returned
+success after only validator code changed, so the fence-tool route must use
+`--no-cache`. Native rumdl failure policy replaces custom
+aggregation/categories.
 
 Required adoption verification targets are local macOS x86_64 and the Linux
 architecture used by existing CI, under the project's Python 3.14+ policy and
@@ -63,8 +79,10 @@ artifact distribution service or expanded verification responsibility requires
 maintainer steering and a reviewed Work rather than an incidental workaround.
 
 - **AC-1 TODO** Given accepted setup and checker deliveries, the existing
-  `doc-check` route rejects failing selected Mermaid fences offline without
-  checkout outputs, while preserving Markdown and local-link checking.
+  `doc-check` route rejects failing selected Mermaid fences offline without SVG
+  outputs, while preserving Markdown and local-link checking and native rumdl
+  selection, timeout and error behavior subject to the blockquote limitation.
 
   Validation: independently review child evidence and integrated contracts;
-  run doc/ac checks and the focused integration tests on the combined revision.
+  run doc/ac checks and focused integration tests on the combined revision.
+  Upstream-report completion is not required for this criterion.
