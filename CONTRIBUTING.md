@@ -69,26 +69,28 @@ evidence.
 
 ## Toolchain policy
 
-`pyproject.toml` owns the exact uv pin in `[tool.uv].required-version`.
-Every CI job installs that version through `setup-uv`'s `version-file` input;
-local project commands reject a different uv version. Install the declared
-version before running setup (for example, `uv self update 0.12.19` for a
-standalone uv installation; use your package manager for other installations).
+`pyproject.toml` owns the supported uv range in `[tool.uv].required-version`.
+Every CI job installs the highest compatible version through `setup-uv`'s
+`version-file` input; local project commands reject uv versions outside that
+range. Install a compatible version before running setup (for example,
+`uv self update 0.13.0` for a standalone uv installation; use your package
+manager for other installations).
 
 The build backend is pinned separately in `[build-system].requires`, because
 isolated build requirements are not recorded in `uv.lock`. Keep `uv_build` at
-the same exact version as uv so uv builds use its matching bundled backend,
-while other build frontends resolve the same backend version.
+an exact reviewed version; this pin and the `uv-pre-commit` revision remain
+exact even though the uv executable accepts the compatible minor range.
 
 Review these pins monthly and when a tooling bug or security advisory warrants
-an update. Update both pins and the `uv-pre-commit` revision in
-`.pre-commit-config.yaml` in one change, install the new uv version, run
+an update. Update the uv range when a new minor series is reviewed. Update the
+exact `uv_build` pin and `uv-pre-commit` revision together when changing minor
+series, install a compatible uv version, run
 `make deps-lock`, and include any lockfile changes. Follow the
 [check and evidence policy](doc/validation.md) before accepting the update,
 including the installed-wheel smoke test. Dependabot's weekly uv and GitHub
 Actions updates complement this review; they do not replace reviewing the uv
-executable pin. Python remains supported at 3.14+; CI tests the 3.14 minor
-series. OS images and Python patch releases are not pinned by this policy.
+executable requirement. Python remains supported at 3.14+; CI tests the 3.14
+minor series. OS images and Python patch releases are not pinned by this policy.
 
 ## Submitting a change
 
