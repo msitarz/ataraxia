@@ -1,6 +1,7 @@
 # Verify fresh offline worktrees through CI
 
-Depend on the accepted [backend setup](../backend/README.md).
+Depend on the accepted locked backend setup outcome in the
+[setup delivery map](../README.md#delivery-map).
 Consume its prepared uv download cache/environment and reusable
 `test/script/integration/test_mermaid_backend.py` smoke test.
 The review question is whether a fresh worktree of the reviewed revision can
