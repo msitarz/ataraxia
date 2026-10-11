@@ -7,6 +7,9 @@ is whether Markdown selection yields only the intended Mermaid source with
 correct locations. Rendering/process handling and Make wiring belong to
 subsequent Works.
 
+`markdown-it-py` is already present in `uv.lock` through Rich; no production
+extractor exists. The acceptance tool's small fence-skipping regex omits
+container/source-map semantics and does not fulfill this boundary.
 Use `markdown-it-py` with `MarkdownIt("commonmark").parse(text)`, adapting its
 `fence` tokens into the owned fence record. Declare it as a direct,
 development-only locked dependency rather than relying on a transitive install.
@@ -27,8 +30,9 @@ Return empty Mermaid fences for rendering rather than dropping them.
 Selectors are file/directory paths under the existing Make convention;
 directories recursively select Markdown, duplicate selections check each file
 once, and nonexistent inputs fail clearly. No selectors means repository
-Markdown, excluding Git/environment/cache directories consistently with
-existing documentation selection. Discovery/extraction are read-only and
+Markdown, honoring the existing rumdl exclusions and gitignore selection policy
+from `pyproject.toml`; reuse that configuration rather than another maintained
+exclusion list. Discovery/extraction are read-only and
 perform no backend import, rendering or network operation.
 
 - **AC-1 TODO** Given Markdown fence variants above, extraction returns exactly

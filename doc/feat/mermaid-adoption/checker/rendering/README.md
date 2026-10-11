@@ -7,6 +7,12 @@ and its CLI through the
 is whether real backend rendering is bounded and produces correct
 aggregate/contextual failures. Do not reimplement extraction or wire Make.
 
+The prepared mermaidx API supplies SVG as a string; `.svg()` forces its lazy
+rendering without an output file. Its QuickJS engine waits on a thread future
+without a render deadline, so a bounded child is needed to contain stalled
+rendering. Reuse that API with a small worker and ordinary subprocess timeout
+handling; do not introduce a generalized process/protocol framework.
+
 Return exit 0 for no diagrams/all successful fences, 1 for any diagram failure,
 and 2 for setup/input failure. A no-diagram selection succeeds without invoking
 or importing the backend. In each bounded Python worker, use the mermaidx Python
@@ -39,8 +45,8 @@ classification or source location.
   hold, later fences are attempted where setup permits, processes are reaped and
   no checkout artifacts remain.
 
-  Validation: criterion-marked public checker tests use a typed process
-  collaborator for unavailable/timeout cases plus real backend aggregation,
+  Validation: criterion-marked public checker tests use narrow external-process
+  doubles for unavailable/timeout cases plus real backend aggregation,
   no-diagram and artifact checks. Every subprocess has a timeout. Run focused
   tests and affected lint/type/doc/ac checks; unrun backend evidence or
   unexplained skips leave the relevant criterion unresolved.
@@ -50,3 +56,6 @@ Follow current [testing](../../../../testing.md),
 [strict typing](../../../../engineering.md#preserve-type-precision) and
 [test ownership](../../../../test-ownership.md). Retain tests of our boundary
 and concrete compatibility regressions rather than exhaustive upstream probes.
+Reuse the prepared backend smoke evidence for setup; new real tests exercise
+our extraction/rendering/diagnostic boundary. Add only the process adaptation
+and tests necessary for that boundary's timeout and result behavior.

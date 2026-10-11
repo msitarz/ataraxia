@@ -22,21 +22,22 @@ flowchart LR
     Setup --> Checker[Checker implementation unblocked]
 ```
 
-The backend child is complete. The remaining worktree child owns its CI route
-and fresh-worktree verification; it consumes the prepared uv download cache
-and environment, and reuses the backend smoke test. The integrated setup
-criteria below remain open until that child is independently accepted.
+The backend child is complete. Existing `worktree-create` already copies caches,
+installs locked dependencies offline and runs `verify-setup`. The remaining
+child composes that path with the existing forced-render smoke test, adds exact
+revision selection, and owns its disposable cleanup and existing CI route. It
+does not duplicate preparation or introduce a general lifecycle. The integrated
+setup criteria below remain open until that child is independently accepted.
 
 Intel macOS selects the
 [public prebuilt QuickJS-ng wheel](https://github.com/msitarz/quickjs-ng/releases/download/v0.17.0.1-intel-macos/quickjs_ng-0.17.0.1-cp310-abi3-macosx_10_15_x86_64.whl)
 through a platform marker in `tool.uv.sources`; other platforms use ordinary
 PyPI resolution. The asset's expected SHA-256 is
 `39f9634bbec364470982342d7a7ae729dd4b635a652c6300e31e281e7d7e199e`.
-Record the resolved artifact/hash in the lockfile using uv's normal machinery.
-Remove custom checkout, source-build, platform-allowlist and source-cache
-validation machinery and its unnecessary tests/docs. No manual source build or
-temporary-wheel preparation is required; uv's ordinary download cache feeds
-offline verification and worktree cache copying.
+The integrated lockfile records that artifact/hash; custom source-build and
+platform-allowlist machinery was removed in the accepted backend delivery.
+No manual source build or temporary-wheel preparation is required; uv's ordinary
+download cache feeds offline verification and worktree cache copying.
 
 ## Required evidence sequence
 
