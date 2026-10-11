@@ -6,6 +6,14 @@ Make route invokes that boundary once with the promised selection and retains
 all existing checks. Do not add a parallel checker command, rename `doc-check`,
 alter `doc-format`, weaken rumdl or replace CI defaults.
 
+The existing target already runs rumdl link-graph and formatting checks with
+offline/no-sync settings, and `verify-check`/Check CI already reach it. Reuse
+that route and the disposable real-tool
+[Markdown tests](../../../../../test/make/integration/test_markdown_tools.py)
+and their sandbox. Extend them for Mermaid selection/failure and combined
+behavior; existing formatting/link/missing-tool tests retain their owners.
+No second sandbox or comprehensive revalidation of rumdl is needed.
+
 `ARGS` continues to accept paths under the existing Make convention. Mermaid
 inspection uses only those selected files/directories; empty `ARGS` checks all
 repository Markdown using the boundary's discovery rules. Preserve rumdl's

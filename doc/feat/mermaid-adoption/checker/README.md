@@ -20,6 +20,14 @@ or excessive review effort requires a revised reviewed plan before expansion.
 
 ## Proposed public boundary
 
+The prepared mermaidx API already supplies lazy SVG rendering, and
+`markdown-it-py` is already locked transitively through Rich. Neither provides
+our selected Markdown/source-location boundary or aggregate diagnostics.
+Promote the parser to a direct dev dependency in extraction; adapt its tokens
+and the accepted rendering API rather than implementing either upstream engine.
+Existing `doc-check` already owns offline/no-sync execution and rumdl checks;
+the Make leaf only appends the checker and extends existing boundary tests.
+
 Keep this repository tooling under `script/`, outside the trading package.
 Extraction owns a frozen `MermaidFence` record: `path: Path`, `fence_line: int`,
 `content_line: int`, `source: str`; source lines are one-based. It exposes
@@ -35,16 +43,19 @@ CLI entry point. Its typed result holds an exit code `Literal[0, 1, 2]` and
 diagnostics; each diagnostic holds path, fence line, optional mapped Markdown
 line, category `Literal["input", "setup", "syntax", "render"]` and reason.
 Input/setup errors need no fence line. Compose discovery/extraction once and
-render each fence in a bounded child. Inject a typed process collaborator for
-timeout/refusal tests while real backend tests run through the owned checker.
+render each fence in a bounded child. Use ordinary subprocess facilities and
+the existing test-helper patterns for timeout/refusal tests; introduce a narrow
+typed collaborator only where needed to exercise that external boundary.
 The [rendering owner](rendering/README.md) fixes a Python API worker calling
 `mermaidx.render(source, backend="quickjs").svg()`, with our checker CLI owning
 process execution/reporting rather than invoking the upstream mermaidx CLI.
 
-Names/module grouping are proposed; ownership, precise records and observable
-behavior are required. Resolve final signatures here before downstream delivery
-rather than inventing an incompatible interface during Make wiring. Preserve
-one authoritative implementation and current strict typing/test guidance.
+Names/module grouping and record layout are provisional; retain precise types,
+source locations and observable behavior without a process framework or
+duplicated diagnostic models. Extraction settles its public interface before
+rendering consumes it, and rendering settles its interface before Make wiring.
+Preserve one authoritative implementation and current strict typing/test
+guidance.
 
 - **AC-1 TODO** Given accepted extraction, rendering and Make deliveries,
   integrated `doc-check` obeys selected/default path, diagnostic, offline and
