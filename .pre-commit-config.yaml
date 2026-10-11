@@ -4,11 +4,6 @@ default_language_version:
 default_stages: [pre-commit]
 
 repos:
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.0
-    hooks:
-      - id: uv-lock
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -25,6 +20,13 @@ repos:
 
   - repo: local
     hooks:
+      - id: uv-lock
+        name: lock uv dependencies
+        entry: make deps-lock
+        language: system
+        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
+        pass_filenames: false
+        require_serial: true
       - id: ruff-check
         name: ruff check
         entry: uv run --frozen ruff check --force-exclude
