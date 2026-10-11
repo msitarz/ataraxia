@@ -7,6 +7,15 @@ Each Work lives in a directory identified by its repository path. Its short
 the reviewer can tell when it is complete. Add `spec.md` or `design.md` only
 when useful, and link to it from the README.
 
+When defining a Work, apply the
+[repair and scope rules](change-rules.md#fix-the-underlying-problem): inspect
+current machinery, identify which requirements it already fulfills, and define
+the remaining required gap. Reuse suitable existing commands, APIs, helpers,
+and evidence. Introduce new machinery only when the existing path cannot
+fulfill the required outcome, and explain that limitation. Assess existing
+behavior against the required outcome rather than treating it as the intended
+contract.
+
 Explain the problem and verified current behavior when relevant. Define
 completion with observable examples, including preconditions, action, and
 expected outcomes; cover boundaries, failures, or behavior to preserve when
