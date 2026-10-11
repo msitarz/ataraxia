@@ -30,7 +30,7 @@ script, test, `BASE` option, CI route, lifecycle or external-cache machinery;
 leave backend selection and shared guidance unchanged. Defining this plan does
 not execute or complete the check.
 
-- **AC-1 TODO** Given the prepared local Intel macOS environment, one fresh
+- **AC-1 DONE** Given the prepared local Intel macOS environment, one fresh
   worktree created from default `master` prepares offline and the existing
   backend smoke test successfully forces SVG rendering there offline/no-sync;
   its disposable worktree and branch are then removed.
