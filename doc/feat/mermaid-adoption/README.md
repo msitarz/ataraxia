@@ -34,8 +34,9 @@ flowchart TD
 
 Merge this reviewed parent plan before child delivery. Accepted backend setup
 already supplies the pinned renderer, cache preparation and a forced-render
-smoke test. The remaining setup gap is one manual fresh offline worktree/render
-check on prepared local Intel macOS, using ordinary creation and cleanup.
+smoke test. The manual fresh offline worktree/render check on prepared local
+Intel macOS passed using ordinary creation and cleanup. The remaining setup
+step is independent acceptance of the combined backend and worktree evidence.
 Accepted backend Linux CI evidence suffices; no fresh worktree CI route is
 needed. Integrated setup acceptance precedes all checker implementation. The
 checker has ordered extraction, rendering and Make integration leaves because

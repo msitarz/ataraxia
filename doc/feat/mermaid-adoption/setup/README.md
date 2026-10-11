@@ -2,8 +2,9 @@
 
 Prepare the backend proposed by the [adoption plan](../README.md) through
 ordinary locked uv setup and leave it usable offline, including fresh worktrees.
-Backend setup is delivered; integrated setup acceptance remains open until the
-worktree child is reviewed.
+Backend setup is delivered, including the independently accepted manual fresh
+worktree check. Integrated setup acceptance remains open pending review of the
+combined local and CI evidence.
 
 ## Delivery map
 
@@ -12,8 +13,9 @@ worktree child is reviewed.
   verification and forced rendering passed on Intel macOS and exact-head Linux
   CI. See [setup instructions](../../../../CONTRIBUTING.md) and the reusable
   [backend smoke test](../../../../test/script/integration/test_mermaid_backend.py).
-- **TODO** [Manual offline worktree check](worktree/README.md): on prepared
-  local Intel macOS, create one fresh worktree and run the existing SVG smoke.
+- **DONE** Manual offline worktree check: on prepared local Intel macOS, one
+  fresh worktree passed offline setup and the existing SVG smoke test; its
+  disposable worktree and branch were removed.
 
 ```mermaid
 flowchart LR
@@ -22,13 +24,14 @@ flowchart LR
     Setup --> Checker[Checker implementation unblocked]
 ```
 
-The backend child is complete. Existing `worktree-create` already copies caches,
-installs locked dependencies offline and runs `verify-setup`. The remaining
-child manually checks that path with the existing forced-render smoke test on
-local Intel macOS and removes its disposable artifacts using normal commands.
-Accepted backend Linux CI evidence suffices; no fresh Linux worktree CI proof
-or automation change is required. The integrated setup criteria below remain
-open until the manual check is independently accepted.
+The backend delivery and manual worktree check are complete. Existing
+`worktree-create` copies caches, installs locked dependencies offline and runs
+`verify-setup`; the manual check confirmed that path with the existing
+forced-render smoke test on local Intel macOS, then removed its disposable
+artifacts using normal commands. Accepted backend Linux CI evidence suffices;
+no fresh Linux worktree CI proof or automation change is required. The
+integrated setup criteria below remain open pending independent acceptance of
+the combined backend and manual worktree evidence.
 
 Intel macOS selects the
 [public prebuilt QuickJS-ng wheel](https://github.com/msitarz/quickjs-ng/releases/download/v0.17.0.1-intel-macos/quickjs_ng-0.17.0.1-cp310-abi3-macosx_10_15_x86_64.whl)
@@ -42,10 +45,10 @@ download cache feeds offline verification and worktree cache copying.
 
 ## Required evidence sequence
 
-The worktree leaf is the remaining delivery. After this revised plan is merged,
-perform its manual local check and independently review the resulting evidence
-alongside accepted backend evidence. Keep missing or failed evidence unresolved
-and retain the normal latest-head merge gate for delivery PRs.
+The manual worktree leaf is complete. Independently review its local evidence
+alongside the accepted backend evidence to assess integrated setup acceptance.
+Keep missing or failed evidence unresolved and retain the normal latest-head
+merge gate for delivery PRs.
 
 Required verification covers local macOS x86_64 and the existing Linux CI
 architecture; it does not establish a supported-platform allowlist. Keep the
