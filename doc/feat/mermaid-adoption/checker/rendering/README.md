@@ -9,8 +9,11 @@ aggregate/contextual failures. Do not reimplement extraction or wire Make.
 
 Return exit 0 for no diagrams/all successful fences, 1 for any diagram failure,
 and 2 for setup/input failure. A no-diagram selection succeeds without invoking
-or importing the backend. Force `.svg()` with the accepted pinned QuickJS
-backend; lazy construction, ASCII parsing or mocked rendering cannot establish
+or importing the backend. In each bounded Python worker, use the mermaidx Python
+API `render(source, backend="quickjs").svg()` with the accepted pinned backend.
+Do not invoke the upstream mermaidx CLI. Our checker CLI owns worker execution
+and diagnostics; the worker owns the API call and exception adaptation.
+Lazy construction, ASCII parsing or mocked rendering cannot establish
 validity. Do not persist SVG/intermediate outputs in the checkout.
 
 Each renderer child has a 30-second timeout and is reaped on failure;

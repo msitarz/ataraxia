@@ -12,7 +12,11 @@ Make setup owners, necessary bootstrap tooling/tests, and prerequisites in
 setup and CI entry points rather than a second manual installation procedure.
 
 Start with mermaidx 0.9.5, Mermaid 11.16.0 and QuickJS-ng 0.17.0.1 as evidenced
-in the [parent report](../README.md). Resolve complete pinned sources and build
+in the [parent report](../README.md). Prefer compatible published pinned wheels
+on supported targets, including Linux, after checking actual Python/platform
+compatibility. Use an explicit reproducible source route only where needed,
+including macOS x86_64 when compatible wheels are unavailable; native arm64
+remains outside the supported plan. Resolve complete pinned sources and build
 requirements if source compilation is needed: wrapper/upstream commits,
 submodules, release-version adjustment, build-backend pin, compiler and OS
 prerequisites must be explicit and reproducible. A temporary experiment wheel,

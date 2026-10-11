@@ -26,6 +26,9 @@ Extraction owns a frozen `MermaidFence` record: `path: Path`, `fence_line: int`,
 `discover_markdown(root: Path, selectors: Sequence[Path]) -> tuple[Path, ...]`
 and `extract_fences(path: Path, text: str) -> tuple[MermaidFence, ...]`.
 Selection/input failures carry path and reason in a contextual exception.
+The [extraction owner](extraction/README.md) fixes `markdown-it-py` CommonMark
+parsing with fence-token content/source maps and a direct dev-only locked
+dependency.
 
 Rendering owns `check_markdown(root: Path, selectors: Sequence[Path])` and its
 CLI entry point. Its typed result holds an exit code `Literal[0, 1, 2]` and
@@ -34,6 +37,9 @@ line, category `Literal["input", "setup", "syntax", "render"]` and reason.
 Input/setup errors need no fence line. Compose discovery/extraction once and
 render each fence in a bounded child. Inject a typed process collaborator for
 timeout/refusal tests while real backend tests run through the owned checker.
+The [rendering owner](rendering/README.md) fixes a Python API worker calling
+`mermaidx.render(source, backend="quickjs").svg()`, with our checker CLI owning
+process execution/reporting rather than invoking the upstream mermaidx CLI.
 
 Names/module grouping are proposed; ownership, precise records and observable
 behavior are required. Resolve final signatures here before downstream delivery
