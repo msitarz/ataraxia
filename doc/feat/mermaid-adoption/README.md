@@ -19,7 +19,7 @@ because SVG rendering is lazy.
 ## Delivery map
 
 - **TODO** [Reproducible setup](setup/README.md): prepare a pinned backend on
-  the supported local macOS and Linux CI platforms, then run it offline.
+  local Intel macOS and Linux CI verification targets, then run it offline.
 - **TODO** [Checker integration](checker/README.md): after accepted setup,
   deliver the fenced-Markdown boundary and then wire it into `doc-check`.
 
@@ -36,22 +36,22 @@ Merge this reviewed parent plan before child delivery. Setup precedes all
 checker implementation. The checker has ordered extraction, rendering and Make
 integration leaves because each needs a separate review question; each
 leaf targets about five-minute review including its tests and supporting docs.
-If source/bootstrap ownership or delivery grows beyond that target, stop and
+If delivery grows beyond that target, stop and
 define smaller reviewed children before expanding implementation.
 
-Supported adoption targets are Python 3.14 on local macOS x86_64 and the Linux
-architecture used by the existing CI workflow. These are requirements to prove,
-not claims of current support. Setup must record actual tested OS, architecture,
-Python and backend versions; do not switch process architecture automatically.
-Other platforms, including native macOS arm64 and Windows, remain outside this
-plan. If the maintainer needs a different local architecture, or either required
-target cannot be prepared, escalate before changing that boundary or backend.
+Required adoption verification targets are local macOS x86_64 and the Linux
+architecture used by existing CI, under the project's Python 3.14+ policy and
+normal tool compatibility. This evidence scope is not a platform allowlist or
+exact Python-minor cap. Setup records actual tested OS, architecture, Python and
+backend versions without automatically switching architecture. Other platforms
+have no claimed verification here. Escalate failed required setup or expanded
+verification responsibility before changing the backend or scope.
 
 Browser/GitHub rendering parity, visual quality, performance guarantees, PNG
-output and repairing upstream implementation are outside scope. Source build
-maintenance, transitive licensing and opaque diagnostics are adoption risks
-owned by the setup and checker contracts. A new toolchain, patched upstream
-source, artifact distribution service or expanded platform support requires
+output and repairing upstream implementation are outside scope. Binary artifact
+provenance, transitive licensing and opaque diagnostics are adoption risks owned
+by setup and checker contracts. A new toolchain, patched upstream source,
+artifact distribution service or expanded verification responsibility requires
 maintainer steering and a reviewed Work rather than an incidental workaround.
 
 - **AC-1 TODO** Given accepted setup and checker deliveries, the existing

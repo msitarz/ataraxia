@@ -20,7 +20,11 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         ("ci-setup", [("sync", "--locked", "--group", "dev")]),
         (
             "ci-test",
-            [("sync", "--locked", "--group", "dev"), ("run", "pytest", "--cov")],
+            [
+                ("sync", "--locked", "--group", "dev"),
+                ("sync", "--locked", "--group", "dev", "--check", "--offline"),
+                ("run", "pytest", "--cov"),
+            ],
         ),
         (
             "ci-examples",

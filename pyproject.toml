@@ -20,6 +20,8 @@ dev = [
     "commitizen>=4.19.0",
     "debugpy>=1.8.22",
     "hypothesis>=6.168.5",
+    "mermaidx==0.9.5",
+    "quickjs-ng==0.17.0.1",
     "prek>=0.5.3",
     "pyrefly>=1.3.0",
     "pytest>=9.1.1",
@@ -36,6 +38,11 @@ build-backend = "uv_build"
 # CI reads this pin too; see CONTRIBUTING.md for the toolchain update policy.
 [tool.uv]
 required-version = "==0.12.19"
+
+[tool.uv.sources]
+quickjs-ng = [
+  { url = "https://github.com/msitarz/quickjs-ng/releases/download/v0.17.0.1-intel-macos/quickjs_ng-0.17.0.1-cp310-abi3-macosx_10_15_x86_64.whl", marker = "sys_platform == 'darwin' and platform_machine == 'x86_64'" },
+]
 
 [tool.rumdl]
 line-length = 80
