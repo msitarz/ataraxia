@@ -40,11 +40,11 @@ change the formal live-trial protocol.
 
 ## Acceptance
 
-- **AC-1 TODO** Both child outcomes are integrated into `master`, with their
+- **AC-1 DONE** Both child outcomes are integrated into `master`, with their
   lasting guidance at the existing owners and no duplicate reuse policy.
   Validation: inspect integrated child delivery evidence and the two owner
   sections against this map.
-- **AC-2 TODO** The integrated guidance supports defining only a remaining gap
+- **AC-2 DONE** The integrated guidance supports defining only a remaining gap
   and assessing avoidable complexity before splitting, while retaining the
   required safeguards and conditional fit of reuse stated above.
   Validation: independently walk through an already-fulfilled requirement,
