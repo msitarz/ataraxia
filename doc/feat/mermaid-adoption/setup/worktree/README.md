@@ -1,10 +1,12 @@
 # Verify fresh offline worktrees through CI
 
-Depend on accepted [backend setup/cache integrity](../backend/README.md).
-Consume its prepared cache/environment and reusable real-render smoke test.
+Depend on the accepted [backend setup](../backend/README.md).
+Consume its prepared uv download cache/environment and reusable
+`test/script/integration/test_mermaid_backend.py` smoke test.
 The review question is whether a fresh worktree of the reviewed revision can
 prepare and render offline through a bounded existing CI route. Do not change
-bootstrap, dependencies or backend selection.
+dependencies or backend selection. This remains future work; no worktree CI
+implementation is part of the current backend simplification.
 
 Own `make verify-mermaid-worktree`, its existing CI test-route wiring and
 worktree documentation/routing tests. Add optional `BASE` to `worktree-create`
@@ -12,7 +14,7 @@ only if needed, preserving the default `master` and existing refusal/recovery
 behavior. The verification route selects the reviewed `HEAD` explicitly so
 Actions cannot verify older `master` code. It creates a fresh disposable
 worktree, reuses copied prepared caches, runs real offline setup/`verify-setup`
-and the backend leaf's real render test with no-sync/offline settings. Bound
+and the existing backend smoke test with no-sync/offline settings. Bound
 execution with explicit subprocess deadlines; fail on timeout or any failed
 stage. Clean up disposable worktree/branch on success and failure without
 removing caller-owned artifacts or hiding the failure. Preserve existing
@@ -21,10 +23,10 @@ removing caller-owned artifacts or hiding the failure. Preserve existing
 Append this route after ordinary backend validation in existing `ci-test`;
 do not create a new CI job or run setup/network downloads during verification.
 Coordinate shared Make/test helpers and setup docs after backend delivery.
-Retain current platform limits and the
+Use the parent's required Intel macOS/Linux verification scope and the
 [authorized publication/evidence sequence](../README.md#required-evidence-sequence).
 
-- **AC-1 TODO** Given the prepared supported macOS environment, the real
+- **AC-1 TODO** Given the prepared Intel macOS environment, the real
   verification route creates a fresh worktree of the intended revision, prepares
   it offline from copied caches, passes `verify-setup` and renders SVG there.
 

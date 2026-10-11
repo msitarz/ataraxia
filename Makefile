@@ -179,6 +179,7 @@ ci-audit: ## run the network-dependent vulnerability audit
 	uv audit --frozen --preview-features audit
 
 ci-test: ci-setup ## run the CI test suite
+	$(MAKE) verify-setup
 	$(MAKE) verify-test
 
 ci-examples: ci-setup ## run CI example tests
