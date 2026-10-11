@@ -1,7 +1,7 @@
 # Select Markdown and extract Mermaid fences
 
-After accepted [setup](../../setup/README.md), deliver the discovery/extraction
-functions and fence record in the
+Using the accepted [setup outcome](../../README.md#delivery-map), deliver the
+discovery/extraction functions and fence record in the
 [checker boundary](../README.md#proposed-public-boundary). The review question
 is whether Markdown selection yields only the intended Mermaid source with
 correct locations. Rendering/process handling and Make wiring belong to

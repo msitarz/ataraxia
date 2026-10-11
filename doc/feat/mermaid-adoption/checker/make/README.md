@@ -1,6 +1,6 @@
 # Wire fence validation into doc-check
 
-Depend on accepted [setup](../../setup/README.md) and
+Use the accepted [setup outcome](../../README.md#delivery-map) and depend on
 [rendering](../rendering/README.md). The review question is whether the existing
 Make route invokes that boundary once with the promised selection and retains
 all existing checks. Do not add a parallel checker command, rename `doc-check`,

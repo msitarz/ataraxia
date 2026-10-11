@@ -1,7 +1,7 @@
 # Integrate the Markdown Mermaid checker
 
-Depend on accepted [setup](../setup/README.md); no checker implementation starts
-until both required setup targets and offline execution are verified. Deliver
+Use the accepted [setup outcome](../README.md#delivery-map) and ordinary
+[setup commands](../../../../CONTRIBUTING.md#getting-started). Deliver
 one repository tooling boundary, outside `src/ataraxia`, then its Make wiring.
 
 ## Delivery map
