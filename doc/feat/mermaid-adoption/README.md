@@ -34,15 +34,16 @@ flowchart TD
 
 Merge this reviewed parent plan before child delivery. Accepted backend setup
 already supplies the pinned renderer, cache preparation and a forced-render
-smoke test. The remaining setup gap is proof in a fresh offline worktree of the
-reviewed revision through CI, with disposable cleanup; reuse ordinary creation.
-Integrated setup acceptance precedes all checker implementation.
-The checker has ordered extraction, rendering and Make
-integration leaves because each needs a separate review question; each
-leaf targets about five-minute review including incremental tests and supporting
-docs. Adapt the existing parser/backend and append to existing Make routes.
-Assess simplification and suitable reuse before splitting any larger delivery
-under the [scope rules](../../workflow.md#scope-and-sizing).
+smoke test. The remaining setup gap is one manual fresh offline worktree/render
+check on prepared local Intel macOS, using ordinary creation and cleanup.
+Accepted backend Linux CI evidence suffices; no fresh worktree CI route is
+needed. Integrated setup acceptance precedes all checker implementation. The
+checker has ordered extraction, rendering and Make integration leaves because
+each needs a separate review question; each leaf targets about five-minute
+review including incremental tests and supporting docs. Adapt the existing
+parser/backend and append to existing Make routes. Assess simplification and
+suitable reuse before splitting any larger delivery under the
+[scope rules](../../workflow.md#scope-and-sizing).
 
 Required adoption verification targets are local macOS x86_64 and the Linux
 architecture used by existing CI, under the project's Python 3.14+ policy and

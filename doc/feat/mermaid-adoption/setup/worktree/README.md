@@ -1,75 +1,42 @@
-# Verify fresh offline worktrees through CI
+# Check fresh offline worktree rendering manually
 
-Depend on the accepted locked backend setup outcome in the
-[setup delivery map](../README.md#delivery-map).
-Consume its prepared uv download cache/environment and reusable
-`test/script/integration/test_mermaid_backend.py` smoke test.
-The review question is whether a fresh worktree of the reviewed revision can
-prepare and render offline through a bounded existing CI route. Do not change
-dependencies or backend selection. This remains future work; no worktree CI
-implementation is part of the current backend simplification.
+Depend on the accepted locked backend setup in the
+[setup delivery map](../README.md#delivery-map). The remaining question is
+whether a fresh worktree on the prepared local Intel macOS environment can
+render SVG offline using existing commands. Accepted backend Linux CI evidence
+suffices for Linux; this Work requires no fresh Linux worktree CI run.
 
-`worktree-create` already creates a branch worktree from `master`, copies
+`worktree-create` already creates a branch worktree from local `master`, copies
 `.cache`, installs locked dependencies offline into a fresh `.venv`, and runs
-`verify-setup` before reporting readiness. Existing
-[creation tests](../../../../../test/make/integration/test_worktree_creation.py)
-cover cache/environment routing, failed preparation and refusal preservation;
-they use a setup double and do not prove real renderer availability there.
-The existing backend smoke test already forces SVG rendering with a 30-second
-deadline. Reuse these owners rather than repeat setup or renderer logic.
+`verify-setup`. From the prepared source tree, run
+`make worktree-create WORKTREE=<new-path> BRANCH=<new-branch>` once with new
+disposable selectors; record the actual committed revision it creates. From
+inside the new worktree, run the existing forced QuickJS SVG smoke test through
+Make:
 
-Deliver `make verify-mermaid-worktree` as a small composition: select the
-reviewed revision explicitly, call `worktree-create`, then run only the existing
-backend smoke test there offline/no-sync. Add optional `BASE` to
-`worktree-create` for this missing revision selection, retaining default
-`master` and ordinary refusal/recovery behavior. Do not run a second
-`verify-setup` after creation. Actions may check out a PR merge revision;
-identify the actual checked-out commit and its relation to the reviewed PR head
-so older `master` or another head cannot supply the evidence.
+```sh
+make test ARGS=test/script/integration/test_mermaid_backend.py UV_OFFLINE=true UV_NO_SYNC=true
+```
 
-Clean up only the route's newly created disposable worktree and branch on
-success or failure; leave caller-owned files, refs and worktrees intact.
-Preserve the original failure and report cleanup failure. Bound external
-execution and reap timed-out children using ordinary subprocess facilities; a
-process framework or generalized worktree lifecycle is outside this outcome.
+The smoke test forces actual rendering with a 30-second timeout and keeps its
+diagram files outside the checkout. Creation already checks the environment;
+no second `verify-setup` is needed. Remove the disposable worktree manually with
+`make worktree-remove WORKTREE=<path>` from the source tree, then delete only
+its disposable branch with Git. Preserve caller-owned artifacts and report
+failed preparation, rendering or cleanup rather than claiming completion.
 
-Append this route after ordinary backend validation in existing `ci-test`;
-do not create a new CI job or run setup/network downloads during verification.
-Coordinate shared Make/test helpers and setup docs after backend delivery.
-Use the parent's required Intel macOS/Linux verification scope and the
-[authorized publication/evidence sequence](../README.md#required-evidence-sequence).
+This is a manual evidence Work sized for one short review. Add no target,
+script, test, `BASE` option, CI route, lifecycle or external-cache machinery;
+leave backend selection and shared guidance unchanged. Defining this plan does
+not execute or complete the check.
 
-- **AC-1 TODO** Given the prepared Intel macOS environment, the real
-  verification route creates a fresh worktree of the intended revision, prepares
-  it offline from copied caches, passes `verify-setup` and renders SVG there.
+- **AC-1 TODO** Given the prepared local Intel macOS environment, one fresh
+  worktree created from default `master` prepares offline and the existing
+  backend smoke test successfully forces SVG rendering there offline/no-sync;
+  its disposable worktree and branch are then removed.
 
-  Validation: execute the actual route locally before publication and retain
-  revision, versions, commands/results, offline settings and cleanup state.
-  A cache/routing shim does not establish this outcome.
-- **AC-2 TODO** Given accepted backend setup on Linux, Actions on the exact
-  reviewed head run the same fresh-worktree offline verification successfully,
-  including actual setup/environment check and rendering there.
-
-  Validation: publish the independently reviewed implementation retaining this
-  criterion `TODO`, then independently inspect exact-reviewed-head Actions
-  route execution and actual backend evidence before acceptance/cleanup.
-- **AC-3 TODO** Given the new route succeeds, fails or times out, its disposable
-  artifacts are removed, the failure remains visible, and caller state is
-  preserved. Explicit revision selection works while ordinary creation still
-  defaults to `master` and retains its refusal/recovery behavior.
-
-  Validation: extend existing disposable Make/Git helpers and creation tests
-  only for explicit revision selection and the new route's CI/offline routing,
-  cleanup on success/preparation failure/render failure/timeout, and
-  preservation of caller state. Reuse existing default/refusal/recovery tests
-  without a new failure matrix for every creation stage. Doubles prove
-  routing/failure effects only; real evidence above proves rendering. Run
-  affected lint/type/doc/ac checks.
-
-Follow [integration testing](../../../../testing-integration.md),
-[testing](../../../../testing.md),
-[test ownership](../../../../test-ownership.md) and
-[strict typing](../../../../engineering.md#preserve-type-precision). Keep tests
-at our worktree/Make boundary; add coverage references only for behavior the
-reused tests actually establish. This leaf targets one five-minute review of
-the missing proof route, including incremental tests and supporting docs.
+  Validation: execute the existing creation and smoke-test commands manually,
+  then the normal cleanup commands. Retain the actual committed revision,
+  offline preparation/render results and cleanup outcome in the execution
+  evidence for independent review. Failed or unrun steps leave this criterion
+  unresolved; no new inventory or report is required.
