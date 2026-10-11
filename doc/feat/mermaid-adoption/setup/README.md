@@ -59,7 +59,7 @@ evidence. Stop with evidence for failed required setup or expanded
 responsibility and seek maintainer steering under the
 [scope rules](../../../workflow.md#scope-and-sizing).
 
-- **AC-1 TODO** Given clean disposable checkouts and project prerequisites on
+- **AC-1 DONE** Given clean disposable checkouts and project prerequisites on
   both required verification platforms, ordinary `make setup` locally and
   `make ci-setup` on Linux install the pinned backend without manual build or
   temporary-wheel steps, and force actual SVG rendering successfully.
@@ -68,7 +68,7 @@ responsibility and seek maintainer steering under the
   Intel macOS setup and exact-reviewed-head Linux Actions setup/rendering,
   including versions, provenance, licensing and reproducibility. Assess the
   integrated artifact; run doc/ac checks. Shims cannot establish platform proof.
-- **AC-2 TODO** Given each prepared environment, offline `verify-setup` and
+- **AC-2 DONE** Given each prepared environment, offline `verify-setup` and
   forced SVG rendering succeed with no dependency resolution or download;
   worktree preparation remains usable from prepared uv caches.
 
@@ -77,7 +77,7 @@ responsibility and seek maintainer steering under the
   fresh-worktree preparation/render/cleanup evidence. Assess their integrated
   interface without requiring fresh Linux worktree CI evidence. Cache-routing
   tests alone do not prove offline operation; run doc/ac checks.
-- **AC-3 TODO** Given failed locked dependency setup, existing Make routes
+- **AC-3 DONE** Given failed locked dependency setup, existing Make routes
   propagate failure and do not report readiness; uv dependency errors remain
   visible and actionable without silently replacing the backend or changing
   architecture.
