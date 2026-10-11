@@ -88,6 +88,9 @@ def setup_calls(destination: Path) -> tuple[UvCall, ...]:
     work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
     ac="AC-1",
 )
+@pytest.mark.covers(
+    work="doc/feat/mermaid-adoption/setup/worktree/README.md", ac="AC-3"
+)
 def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) -> None:
     """AC-1: Given usable, missing, partial, or verification-failing setup,
     creation succeeds with independent destination caches/environment or fails
@@ -101,6 +104,9 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
     case = arrange_case(tmp_path, "agent's worktree;touch PWNED")
     source = case.repository.sandbox.directory
     write_cache(case.repository, (("uv/ready", "cached"), ("prek/example", "cached")))
+    external_uv_cache = tmp_path / "parent-uv-cache"
+    external_uv_cache.mkdir()
+    (external_uv_cache / "external-ready").write_text("cached externally")
     (source / ".venv").mkdir()
     (source / ".venv/parent-only").write_text("do not copy")
     before_cache = cache_files(source / ".cache")
@@ -110,11 +116,13 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
         "worktree-create",
         f"WORKTREE={case.destination}",
         "BRANCH=work/example",
-        f"UV_CACHE_DIR={source / 'parent-cache'}",
         f"PREK_HOME={source / 'parent-prek'}",
         f"UV_PROJECT_ENVIRONMENT={source / 'parent-venv'}",
         "UV_NO_SYNC=true",
-        environment={"VIRTUAL_ENV": str(source / ".venv")},
+        environment={
+            "UV_CACHE_DIR": str(external_uv_cache),
+            "VIRTUAL_ENV": str(source / ".venv"),
+        },
     )
 
     # Then
@@ -122,9 +130,11 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
     assert "Worktree ready" in result.stdout
     assert cache_files(case.destination / ".cache") == {
         "uv/ready": b"cached",
+        "uv/external-ready": b"cached externally",
         "prek/example": b"cached",
     }
     assert cache_files(source / ".cache") == before_cache
+    assert cache_files(external_uv_cache) == {"external-ready": b"cached externally"}
     assert not (source / "PWNED").exists()
     assert not (case.destination / ".venv/parent-only").exists()
     assert (source / ".venv/parent-only").read_text() == "do not copy"

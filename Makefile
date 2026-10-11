@@ -243,6 +243,21 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 			echo "Cache copy failed; worktree retained at $$destination. Retry by copying .cache contents there, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit 1; \
 		fi; \
 	fi; \
+	configured_uv_cache=$${UV_CACHE_DIR-}; \
+	if [ -n "$$configured_uv_cache" ]; then \
+		case "$$configured_uv_cache" in /*) ;; *) configured_uv_cache="$$source/$$configured_uv_cache" ;; esac; \
+		if [ -d "$$configured_uv_cache" ]; then \
+			source_uv_cache="$$source/.cache/uv"; \
+			source_uv_cache_real=$$(cd "$$source_uv_cache" 2>/dev/null && pwd -P || true); \
+			configured_uv_cache_real=$$(cd "$$configured_uv_cache" 2>/dev/null && pwd -P || true); \
+			if [ -n "$$configured_uv_cache_real" ] && [ "$$configured_uv_cache_real" != "$$source_uv_cache_real" ]; then \
+				mkdir -p "$$destination/.cache/uv"; \
+				if ! cp -R "$$configured_uv_cache/." "$$destination/.cache/uv/"; then \
+					echo "Configured uv cache copy failed; worktree retained at $$destination. Retry by copying the configured cache contents there, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit 1; \
+				fi; \
+			fi; \
+		fi; \
+	fi; \
 	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
 		$(MAKE) --no-print-directory -C "$$destination" ci-setup \
 			UV_CACHE_DIR="$$destination/.cache/uv" PREK_HOME="$$destination/.cache/prek" \
