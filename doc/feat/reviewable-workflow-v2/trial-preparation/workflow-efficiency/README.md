@@ -76,8 +76,9 @@ general duplication rule.
 - **DONE** Vocabulary guidance: clarified reuse of established terms for the
   same concepts while distinguishing repeated words from duplicated
   definitions or instructions.
-- **TODO** [Reuse guidance](reuse-guidance/README.md): apply existing reuse
-  principles during Work definition and orchestrator scope review.
+- **DONE** Reuse guidance: applied existing principles during
+  [Work definition](../../../../workflow.md) and
+  [orchestrator scope review](../../../../orchestrator.md).
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.
 - **DONE** Validation plan: distinguished planned methods from reviewed
