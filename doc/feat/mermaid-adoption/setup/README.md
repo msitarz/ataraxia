@@ -7,14 +7,13 @@ worktree child is reviewed.
 
 ## Delivery map
 
-- **DONE** [Backend locked setup](backend/README.md): Intel macOS uses the
-  published QuickJS-ng wheel with its locked hash; other platforms use PyPI.
-  Ordinary setup, offline verification and forced rendering passed on Intel
-  macOS and Linux Actions. See [setup instructions](../../../../CONTRIBUTING.md)
-  and the reusable
+- **DONE** Backend locked setup: Intel macOS uses the published QuickJS-ng wheel
+  with its locked hash; other platforms use PyPI. Ordinary setup, offline
+  verification and forced rendering passed on Intel macOS and exact-head Linux
+  CI. See [setup instructions](../../../../CONTRIBUTING.md) and the reusable
   [backend smoke test](../../../../test/script/integration/test_mermaid_backend.py).
 - **TODO** [Offline worktree CI validation](worktree/README.md): after backend
-  setup, prove fresh offline worktree setup/rendering through existing CI.
+  acceptance, prove fresh offline worktree setup/rendering through existing CI.
 
 ```mermaid
 flowchart LR
