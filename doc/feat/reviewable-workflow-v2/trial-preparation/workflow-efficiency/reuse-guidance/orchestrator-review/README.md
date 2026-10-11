@@ -24,20 +24,20 @@ protocol; do not change Mermaid Works or the formal live trial.
 
 ## Acceptance
 
-- **AC-1 TODO** Expected-change and actual-diff review guidance assess
+- **AC-1 DONE** Expected-change and actual-diff review guidance assess
   simplification and suitable reuse before requesting infrastructure or
   partitioning an oversized implementation.
   Validation: independently inspect both review checkpoints and walk through
   a plan whose complexity can be removed by using an existing command; confirm
   simplification is assessed before adding machinery or children.
-- **AC-2 TODO** When simplification cannot meet the actual required outcome
+- **AC-2 DONE** When simplification cannot meet the actual required outcome
   within the review target, the existing independently reviewable split and
   parent-plan review rules still apply, with required safeguards and gates
   intact.
   Validation: independently walk through an oversized change with necessary
   safeguards and inspect the whole affected sections for preserved
   independent review, maintainer control, CI, isolation, and scope exceptions.
-- **AC-3 TODO** The clarification links to the existing definition and repair
+- **AC-3 DONE** The clarification links to the existing definition and repair
   owners without duplicating policy or requiring new planning artifacts or
   mismatched abstraction reuse.
   Validation: independently compare the diff with the integrated Work-definition

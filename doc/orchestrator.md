@@ -58,11 +58,18 @@ remote commit captured before rebase. The orchestrator retains publication
 accountability, final-CI assessment, and maintainer handoff; assess the
 publisher's returned publication state and blockers.
 
+Before requesting new infrastructure or splitting scope, apply the
+[Work-definition guidance](workflow.md) and underlying
+[repair and scope rules](change-rules.md#fix-the-underlying-problem): assess
+whether simplification and suitable reuse can fulfill the actual required
+outcome with less machinery or review scope. Preserve required safeguards.
+
 Before handoff, assess the full
 expected change—including behavior, supporting changes, tests, and new
 concepts—against the quick maintainer review target in
-[Work scope and sizing](workflow.md#scope-and-sizing). If it is too large, split
-it into independently reviewable nested Works first. For an ad hoc handoff,
+[Work scope and sizing](workflow.md#scope-and-sizing). If the necessary change
+remains too large after that assessment, split it into independently reviewable
+nested Works first. For an ad hoc handoff,
 define a parent Work and child Works; for an existing Work, nest children and
 update its parent map. Review and merge the revised plan before expanded work
 begins. Preserve the explicit maintainer scope exception; plan approval alone
@@ -140,14 +147,16 @@ review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
 
 Before publishing, reassess maintainer review effort from the actual diff,
-including tests, supporting changes, and concepts. If it exceeds the target,
-stop publication and partition the completed work into at least two cohesive,
-independently reviewable child Work PRs within the target. Define their
-contracts and dependencies, update the parent map, and get the revised parent
-plan reviewed and merged before child delivery continues. Preserve and reuse
-completed implementation and valid evidence, identify remaining merge
-resolution, and reassess each child diff before publication. The explicit
-maintainer scope exception in
+including tests, supporting changes, and concepts. Assess simplification and
+suitable reuse as before handoff, preserving required safeguards, before
+requesting infrastructure or partitioning the work. If the necessary diff still
+exceeds the target, stop publication and partition the completed work into at
+least two cohesive, independently reviewable child Work PRs within the target.
+Define their contracts and dependencies, update the parent map, and get the
+revised parent plan reviewed and merged before child delivery continues.
+Preserve and reuse completed implementation and valid evidence, identify
+remaining merge resolution, and reassess each child diff before publication. The
+explicit maintainer scope exception in
 [Work scope and sizing](workflow.md#scope-and-sizing) still applies.
 
 Repository merge settings do not replace maintainer review or maintainer
