@@ -7,11 +7,16 @@ is whether Markdown selection yields only the intended Mermaid source with
 correct locations. Rendering/process handling and Make wiring belong to
 subsequent Works.
 
-Rumdl is the current Markdown tool; no reusable Python parser has been
-established. Choose a suitable parser or focused implementation within this
-scope, including a development-only parser dependency and lock update if needed.
-Explain that choice and its line mapping; do not promote the investigation's
-fixture-only regex to production. Recognize fenced blocks whose first
+Use `markdown-it-py` with `MarkdownIt("commonmark").parse(text)`, adapting its
+`fence` tokens into the owned fence record. Declare it as a direct,
+development-only locked dependency rather than relying on a transitive install.
+The [usage guide](https://markdown-it-py.readthedocs.io/en/latest/using.html)
+describes CommonMark parsing and its token stream; the
+[token API](https://markdown-it-py.readthedocs.io/en/latest/api/markdown_it.token.html)
+defines `info`, `content` and source `map`. Use token content as diagram source
+and convert zero-based map starts to one-based fence/content lines. Do not
+promote the investigation's fixture-only regex to production or render Markdown
+to HTML. Recognize fenced blocks whose first
 info-string token is exactly `mermaid`, including backtick and tilde fences,
 valid varying lengths/indentation and container nesting. Exclude inline code,
 indented code and Mermaid-looking text inside other fences. Honor Markdown
@@ -31,8 +36,9 @@ perform no backend import, rendering or network operation.
   fence lines and content lines; unrelated code/text is excluded.
 
   Validation: criterion-marked public extraction unit tests cover the stated
-  cases, including containers and EOF closure. Independently review parser
-  choice, line mapping and explicit expected records.
+  cases, including containers and EOF closure. Independently review the parser
+  adapter, line mapping and explicit expected records; do not exhaustively
+  revalidate upstream CommonMark parsing.
 - **AC-2 TODO** Given selected files/directories, duplicates, invalid inputs and
   empty selectors, discovery returns the promised Markdown scope or contextual
   input failure without checkout outputs or backend execution.
