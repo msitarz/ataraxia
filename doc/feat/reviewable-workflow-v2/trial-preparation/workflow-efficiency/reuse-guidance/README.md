@@ -16,14 +16,15 @@ and reuse.
 
 ## Works
 
-- **TODO** [Work definition](work-definition/README.md): apply the existing
-  principle while defining outcomes and remaining scope.
+- **DONE** Work definition: applied existing repair and scope rules to
+  inspect current machinery, reuse suitable paths, and define the remaining gap.
 - **TODO** [Orchestrator review](orchestrator-review/README.md): assess
   simplification and reuse before requesting infrastructure or splitting scope.
 
-Deliver Work definition first; Orchestrator review depends on its integrated
-wording and links to that owner. Merge this parent map before child delivery.
-Each leaf changes one guidance owner and presents one review question.
+Orchestrator review depends on the integrated Work-definition guidance in
+[the Work workflow](../../../../../workflow.md). Merge this parent map before
+child delivery. Each leaf changes one guidance owner and presents one review
+question.
 
 These Works operationalize existing policy and need no new WDR. They do not
 add an inventory, checklist, report, guidance owner, runtime tooling, or a
