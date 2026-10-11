@@ -18,8 +18,9 @@ and reuse.
 
 - **DONE** Work definition: applied existing repair and scope rules to
   inspect current machinery, reuse suitable paths, and define the remaining gap.
-- **TODO** [Orchestrator review](orchestrator-review/README.md): assess
-  simplification and reuse before requesting infrastructure or splitting scope.
+- **DONE** Orchestrator review: added simplification and suitable reuse
+  assessment before infrastructure requests or splitting at both review
+  checkpoints.
 
 Orchestrator review depends on the integrated Work-definition guidance in
 [the Work workflow](../../../../../workflow.md). Merge this parent map before
