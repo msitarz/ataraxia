@@ -181,6 +181,7 @@ ci-audit: ## run the network-dependent vulnerability audit
 ci-test: ci-setup ## run the CI test suite
 	$(MAKE) verify-setup
 	$(MAKE) verify-test
+	$(MAKE) verify-mermaid-worktree
 
 ci-examples: ci-setup ## run CI example tests
 	$(MAKE) verify-examples
@@ -195,6 +196,8 @@ ci-package-setup:
 ##@ Worktrees
 # Cleanup selectors are literal values, not recursively expanded Make expressions.
 unexport WORKTREE EXPIRE
+# `BASE` is a literal selector and may contain shell or Make syntax.
+unexport BASE
 .PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
 worktree-list: ## list linked worktrees, branches, locks, and stale registrations
 	git worktree list --porcelain
@@ -217,9 +220,9 @@ worktree-prune-preview worktree-prune:
 	git worktree prune --verbose $(if $(filter worktree-prune-preview,$@),--dry-run) --expire="$$expiry"
 
 .PHONY: worktree-create
-worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path BRANCH=work/name
+worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path BRANCH=work/name [BASE=master]
 	@set -eu; \
-	source=$(call _SHELL_VALUE,$(CURDIR)); destination=$(call _SHELL_VALUE,$(WORKTREE)); branch=$(call _SHELL_VALUE,$(BRANCH)); \
+	source=$(call _SHELL_VALUE,$(CURDIR)); destination=$(call _SHELL_VALUE,$(WORKTREE)); branch=$(call _SHELL_VALUE,$(BRANCH)); base=$(call _SHELL_VALUE,$(if $(value BASE),$(value BASE),master)); \
 	if [ -z "$$destination" ] || [ -z "$$branch" ]; then \
 		echo "Usage: make worktree-create WORKTREE=/path BRANCH=work/name" >&2; exit 2; \
 	fi; \
@@ -233,7 +236,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 	if git -C "$$source" show-ref --verify --quiet "refs/heads/$$branch"; then \
 		echo "Branch already exists: $$branch" >&2; exit 2; \
 	fi; \
-	git -C "$$source" worktree add -b "$$branch" "$$destination" master || exit $$?; \
+	git -C "$$source" worktree add -b "$$branch" "$$destination" "$$base" || exit $$?; \
 	if [ -d "$$source/.cache" ]; then \
 		mkdir -p "$$destination/.cache"; \
 		if ! cp -R "$$source/.cache/." "$$destination/.cache/"; then \
@@ -256,4 +259,10 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 	else \
 		status=$$?; echo "Environment check failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
 	fi; \
-	echo "✓ Worktree ready: $$destination (branch $$branch)"
+	echo "✓ Worktree ready: $$destination (branch $$branch, base $$base)"
+
+.PHONY: verify-mermaid-worktree
+verify-mermaid-worktree: export UV_OFFLINE := true
+verify-mermaid-worktree: export UV_NO_SYNC := true
+verify-mermaid-worktree: ## prepare and render Mermaid in a disposable offline worktree of this revision
+	uv run --no-sync python script/verify_mermaid_worktree.py

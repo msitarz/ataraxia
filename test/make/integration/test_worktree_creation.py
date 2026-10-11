@@ -293,3 +293,91 @@ def test_existing_branch_is_preserved_without_creating_a_worktree(
     assert not case.destination.exists()
     assert result.calls == ()
     assert case.repository.state() == before
+
+
+@pytest.mark.covers(
+    work="doc/feat/mermaid-adoption/setup/worktree/README.md", ac="AC-3"
+)
+def test_explicit_base_selects_revision_while_default_remains_master(
+    tmp_path: Path,
+) -> None:
+    """Selects the requested revision and leaves default selection unchanged."""
+    # Given
+    case = arrange_case(tmp_path, "selected-base")
+    write_cache(case.repository, (("uv/ready", "cached"),))
+    master_revision = case.repository.git("rev-parse", "master").stdout.strip()
+    case.repository.git("checkout", "-b", "work/source-head")
+    selected = case.repository.sandbox.directory / "selected"
+    selected.write_text("selected revision")
+    case.repository.git("add", "selected")
+    case.repository.git(
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "commit.gpgsign=false",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "-m",
+        "selected revision",
+    )
+    revision = case.repository.git("rev-parse", "HEAD").stdout.strip()
+    assert master_revision != revision
+
+    # When
+    result = case.repository.sandbox.run(
+        "worktree-create",
+        f"WORKTREE={case.destination}",
+        "BRANCH=work/selected",
+        f"BASE={revision}",
+    )
+
+    # Then
+    assert result.exit_code == 0, result.output
+    assert (
+        case.repository.git("rev-parse", "HEAD", cwd=case.destination).stdout.strip()
+        == revision
+    )
+    assert (case.destination / "selected").read_text() == "selected revision"
+
+    # Default selection still starts at master even when source HEAD has moved.
+    default_destination = tmp_path / "default-base"
+    default = case.repository.sandbox.run(
+        "worktree-create",
+        f"WORKTREE={default_destination}",
+        "BRANCH=work/default-base",
+    )
+    assert default.exit_code == 0, default.output
+    assert (
+        case.repository.git("rev-parse", "HEAD", cwd=default_destination).stdout.strip()
+        == master_revision
+    )
+
+
+@pytest.mark.covers(
+    work="doc/feat/mermaid-adoption/setup/worktree/README.md", ac="AC-3"
+)
+def test_hostile_base_is_literal_and_does_not_mutate_caller_state(
+    tmp_path: Path,
+) -> None:
+    """A Make expression passed as BASE is inert and fails without side effects."""
+    # Given
+    case = arrange_case(tmp_path, "hostile-base")
+    before = case.repository.state()
+    marker = case.repository.sandbox.directory / "PWNED"
+
+    # When
+    result = case.repository.sandbox.run(
+        "worktree-create",
+        f"WORKTREE={case.destination}",
+        "BRANCH=work/hostile-base",
+        "BASE=$(shell touch PWNED)",
+    )
+
+    # Then
+    assert result.exit_code != 0
+    assert not marker.exists()
+    assert not case.destination.exists()
+    assert case.repository.state() == before

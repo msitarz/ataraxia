@@ -24,6 +24,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
                 ("sync", "--locked", "--group", "dev"),
                 ("sync", "--locked", "--group", "dev", "--check", "--offline"),
                 ("run", "pytest", "--cov"),
+                ("run", "--no-sync", "python", "script/verify_mermaid_worktree.py"),
             ],
         ),
         (
@@ -76,6 +77,31 @@ def test_ci_targets_prepare_dependencies_before_their_consumer(
     # Then
     assert result.exit_code == 0, result.output
     assert [call.argv for call in result.calls] == expected
+
+
+@pytest.mark.covers(
+    work="doc/feat/mermaid-adoption/setup/worktree/README.md", ac="AC-3"
+)
+def test_ci_test_mermaid_route_is_offline_and_without_sync(
+    sandbox: MakeSandbox,
+) -> None:
+    """CI test routing runs the Mermaid route with offline Make settings."""
+    # Given
+    expected_route = (
+        "run",
+        "--no-sync",
+        "python",
+        "script/verify_mermaid_worktree.py",
+    )
+
+    # When
+    result = sandbox.run("ci-test")
+
+    # Then
+    assert result.exit_code == 0, result.output
+    assert result.calls[-1].argv == expected_route
+    assert result.calls[-1].environment["UV_OFFLINE"] == "true"
+    assert result.calls[-1].environment["UV_NO_SYNC"] == "true"
 
 
 @pytest.mark.covers(
@@ -133,6 +159,31 @@ def test_setup_prepares_hooks_and_wheel_after_dependencies(
         ),
         ("build", "--wheel", "--out-dir", ".cache/build"),
     ]
+
+
+@pytest.mark.covers(
+    work="doc/feat/mermaid-adoption/setup/worktree/README.md", ac="AC-3"
+)
+def test_mermaid_route_runs_through_make_offline_and_without_sync(
+    sandbox: MakeSandbox,
+) -> None:
+    """The standalone route is invoked with Make-owned offline settings."""
+    # Given: the sandbox fixture supplies the disposable Make arrangement.
+
+    # When
+    result = sandbox.run("verify-mermaid-worktree")
+
+    # Then
+    assert result.exit_code == 0, result.output
+    assert len(result.calls) == 1
+    assert result.calls[0].argv == (
+        "run",
+        "--no-sync",
+        "python",
+        "script/verify_mermaid_worktree.py",
+    )
+    assert result.calls[0].environment["UV_OFFLINE"] == "true"
+    assert result.calls[0].environment["UV_NO_SYNC"] == "true"
 
 
 @pytest.mark.covers(

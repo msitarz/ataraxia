@@ -39,7 +39,7 @@ Coordinate shared Make/test helpers and setup docs after backend delivery.
 Use the parent's required Intel macOS/Linux verification scope and the
 [authorized publication/evidence sequence](../README.md#required-evidence-sequence).
 
-- **AC-1 TODO** Given the prepared Intel macOS environment, the real
+- **AC-1 DONE** Given the prepared Intel macOS environment, the real
   verification route creates a fresh worktree of the intended revision, prepares
   it offline from copied caches, passes `verify-setup` and renders SVG there.
 
@@ -53,7 +53,7 @@ Use the parent's required Intel macOS/Linux verification scope and the
   Validation: publish the independently reviewed implementation retaining this
   criterion `TODO`, then independently inspect exact-reviewed-head Actions
   route execution and actual backend evidence before acceptance/cleanup.
-- **AC-3 TODO** Given the new route succeeds, fails or times out, its disposable
+- **AC-3 DONE** Given the new route succeeds, fails or times out, its disposable
   artifacts are removed, the failure remains visible, and caller state is
   preserved. Explicit revision selection works while ordinary creation still
   defaults to `master` and retains its refusal/recovery behavior.

@@ -77,3 +77,34 @@ def creation_repository(directory: Path) -> CreationRepository:
         "init",
     )
     return repository
+
+
+def mermaid_repository(
+    directory: Path, *, cache_files: tuple[tuple[str, str], ...] = ()
+) -> CreationRepository:
+    """Create a Git fixture carrying the verification route for Make tests."""
+    repository = creation_repository(directory)
+    root = repository.sandbox.directory
+    route = root / "script/verify_mermaid_worktree.py"
+    route.parent.mkdir(parents=True)
+    shutil.copyfile(ROOT / "script/verify_mermaid_worktree.py", route)
+    (root / ".gitignore").write_text("/.cache/\n/.venv/\n")
+    repository.git("add", "script/verify_mermaid_worktree.py", ".gitignore")
+    repository.git(
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=test@example.com",
+        "-c",
+        "commit.gpgsign=false",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "commit",
+        "-m",
+        "add Mermaid verification route",
+    )
+    for relative, contents in cache_files:
+        cache_file = root / relative
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+        cache_file.write_text(contents)
+    return repository
