@@ -20,19 +20,19 @@ Works and does not implement or rewrite Mermaid validation contracts.
 
 ## Acceptance
 
-- **AC-1 TODO** When defining a Work, the guidance explicitly calls for
+- **AC-1 DONE** When defining a Work, the guidance explicitly calls for
   inspecting current machinery, distinguishing already-fulfilled requirements
   from the remaining required gap, and defining scope from that gap.
   Validation: independently inspect the changed owner section and walk through
   a requirement already fulfilled by an existing command; confirm the guidance
   leads to no duplicate machinery for that requirement.
-- **AC-2 TODO** The guidance calls for suitable reuse of existing commands,
+- **AC-2 DONE** The guidance calls for suitable reuse of existing commands,
   APIs, helpers, and evidence, and explains the limitation when existing
   machinery cannot fulfill a required outcome.
   Validation: independently walk through a genuine missing capability and a
   mismatched abstraction; confirm the guidance permits the necessary addition
   without requiring inappropriate reuse.
-- **AC-3 TODO** The clarification links to the existing repair owner, introduces
+- **AC-3 DONE** The clarification links to the existing repair owner, introduces
   no mandatory planning artifact or owner, and preserves substantive Work
   requirements and the review-effort target.
   Validation: independently review the whole affected section and related
