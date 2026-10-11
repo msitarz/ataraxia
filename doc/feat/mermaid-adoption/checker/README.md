@@ -1,65 +1,46 @@
-# Integrate the Markdown Mermaid checker
+# Integrate Mermaid validation through rumdl
 
-Use the accepted [setup outcome](../README.md#delivery-map) and ordinary
-[setup commands](../../../../CONTRIBUTING.md#getting-started). Deliver
-one repository tooling boundary, outside `src/ataraxia`, then its Make wiring.
+Use the accepted [setup outcome](../README.md#delivery-map). Pinned rumdl 0.2.78
+already supplies fence discovery, stdin extraction, tool execution, timeouts and
+file/fence diagnostics. The remaining repository boundary is a small stdin
+renderer plus scoped Make/config integration, outside `src/ataraxia`.
 
 ## Delivery map
 
-- **TODO** [Markdown selection and extraction](extraction/README.md): select
-  Markdown and return Mermaid fences with original source locations.
-- **TODO** [Rendering and reporting](rendering/README.md): after extraction is
-  accepted, force bounded SVG rendering and return contextual failures.
-- **TODO** [Make integration](make/README.md): after rendering is accepted,
-  use it once from the existing read-only `doc-check` route.
+- **TODO** [Stdin validator](validator/README.md): force QuickJS SVG rendering
+  of the supplied source and expose failure without saving output.
+- **TODO** [Make and rumdl configuration](make/README.md): after validator
+  acceptance, append scoped uncached fence validation to existing `doc-check`.
 
-These ordered leaves each target about five-minute review including tests.
-Each leaf owns its behavior; the next consumes its accepted public boundary.
-Sequence shared Make/test helpers and parent-map edits. Further responsibility
-or excessive review effort requires a revised reviewed plan before expansion.
+Merge this revised plan before implementation. Deliver the validator first,
+then Make/config wiring; sequence shared parent-map edits. Each leaf targets
+about five-minute review, including incremental boundary tests. Reuse native
+rumdl behavior and ordinary subprocess test helpers rather than adding parser,
+fence records, diagnostic models or process machinery. No direct
+`markdown-it-py` dependency is required. Preserve the existing backend smoke.
 
-## Proposed public boundary
+## Native boundary and limitation
 
-The prepared mermaidx API already supplies lazy SVG rendering, and
-`markdown-it-py` is already locked transitively through Rich. Neither provides
-our selected Markdown/source-location boundary or aggregate diagnostics.
-Promote the parser to a direct dev dependency in extraction; adapt its tokens
-and the accepted rendering API rather than implementing either upstream engine.
-Existing `doc-check` already owns offline/no-sync execution and rumdl checks;
-the Make leaf only appends the checker and extends existing boundary tests.
+rumdl owns Markdown selection/extraction and native execution/error policy.
+Our validator reads stdin and calls
+`mermaidx.render(source, backend="quickjs").svg()`, discarding the SVG string.
+Lazy construction alone does not establish validity. rumdl supplies the
+30-second tool deadline and anchors failures to the Markdown file/fence; useful
+backend errors pass through stderr. There is no repository-owned aggregation,
+category taxonomy or diagram-line mapping requirement.
 
-Keep this repository tooling under `script/`, outside the trading package.
-Extraction owns a frozen `MermaidFence` record: `path: Path`, `fence_line: int`,
-`content_line: int`, `source: str`; source lines are one-based. It exposes
-`discover_markdown(root: Path, selectors: Sequence[Path]) -> tuple[Path, ...]`
-and `extract_fences(path: Path, text: str) -> tuple[MermaidFence, ...]`.
-Selection/input failures carry path and reason in a contextual exception.
-The [extraction owner](extraction/README.md) fixes `markdown-it-py` CommonMark
-parsing with fence-token content/source maps and a direct dev-only locked
-dependency.
+The pinned-wheel probe exercised backtick, tilde and list-container fences with
+the actual renderer. It also found blockquoted fence content still prefixed by
+`>`; valid quoted Mermaid can consequently fail. Accept that native limitation
+for this bounded adoption. Do not strip `>` globally or add a local extractor
+workaround. The separate [upstream report](../upstream-report/README.md) is
+nonblocking and can wait; its completion is not an implementation prerequisite.
 
-Rendering owns `check_markdown(root: Path, selectors: Sequence[Path])` and its
-CLI entry point. Its typed result holds an exit code `Literal[0, 1, 2]` and
-diagnostics; each diagnostic holds path, fence line, optional mapped Markdown
-line, category `Literal["input", "setup", "syntax", "render"]` and reason.
-Input/setup errors need no fence line. Compose discovery/extraction once and
-render each fence in a bounded child. Use ordinary subprocess facilities and
-the existing test-helper patterns for timeout/refusal tests; introduce a narrow
-typed collaborator only where needed to exercise that external boundary.
-The [rendering owner](rendering/README.md) fixes a Python API worker calling
-`mermaidx.render(source, backend="quickjs").svg()`, with our checker CLI owning
-process execution/reporting rather than invoking the upstream mermaidx CLI.
+- **AC-1 TODO** Given the accepted validator and Make/config deliveries,
+  `doc-check` preserves existing Markdown/link checks and reaches selected
+  Mermaid validation offline with no SVG output, using rumdl's native fence,
+  timeout and failure behavior subject to the documented blockquote limitation.
 
-Names/module grouping and record layout are provisional; retain precise types,
-source locations and observable behavior without a process framework or
-duplicated diagnostic models. Extraction settles its public interface before
-rendering consumes it, and rendering settles its interface before Make wiring.
-Preserve one authoritative implementation and current strict typing/test
-guidance.
-
-- **AC-1 TODO** Given accepted extraction, rendering and Make deliveries,
-  integrated `doc-check` obeys selected/default path, diagnostic, offline and
-  read-only contracts without weakening existing checks.
-
-  Validation: independently review child evidence and run focused Make/backend
-  integration tests on the combined revision, plus doc/ac checks.
+  Validation: independently review child evidence and the integrated
+  Make/config/validator boundary; run focused integration tests and doc/ac
+  checks. No exhaustive upstream Markdown/parser or timeout suite is required.

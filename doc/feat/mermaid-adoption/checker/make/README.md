@@ -1,57 +1,64 @@
-# Wire fence validation into doc-check
+# Wire scoped rumdl fence tools into doc-check
 
-Use the accepted [setup outcome](../../README.md#delivery-map) and depend on
-[rendering](../rendering/README.md). The review question is whether the existing
-Make route invokes that boundary once with the promised selection and retains
-all existing checks. Do not add a parallel checker command, rename `doc-check`,
-alter `doc-format`, weaken rumdl or replace CI defaults.
+Depend on the accepted [stdin validator](../validator/README.md). Configure a
+Mermaid lint tool in `pyproject.toml` under `[tool.rumdl.code-block-tools]`,
+its `tools` and `languages.mermaid` sections with `enabled=true`. Invoke the
+prepared Python validator with stdin enabled, `stdout=false`,
+`on-error="fail"`, `on-missing-tool-binary="fail"` and a
+30,000-millisecond timeout so a missing validator cannot silently skip the
+check. Keep other languages unconfigured with their native ignored default.
 
-The existing target already runs rumdl link-graph and formatting checks with
-offline/no-sync settings, and `verify-check`/Check CI already reach it. Reuse
-that route and the disposable real-tool
-[Markdown tests](../../../../../test/make/integration/test_markdown_tools.py)
-and their sandbox. Extend them for Mermaid selection/failure and combined
-behavior; existing formatting/link/missing-tool tests retain their owners.
-No second sandbox or comprehensive revalidation of rumdl is needed.
+Add a small scoped target, such as `doc-check-mermaid`, using rumdl
+`check --only-code-block-tools --no-cache` with selected `ARGS` paths or `.`
+by default. Use existing config exclusions, `force-exclude` and gitignore
+policy; directory scans omit ignored files, explicitly named gitignored files
+are processed, and configured excludes still apply. The probe's cached success
+following a validator-only edit justifies `--no-cache`; no cache framework or
+cache-invalidation investigation is needed.
 
-`ARGS` continues to accept paths under the existing Make convention. Mermaid
-inspection uses only those selected files/directories; empty `ARGS` checks all
-repository Markdown using the boundary's discovery rules. Preserve rumdl's
-existing selected-path plus `.` link-graph check and selected-path formatting
-check and their existing fail-fast behavior. Append the checker after those
-checks; any reached stage's failure makes the target fail. Mermaid failures
-aggregate within the checker. Preserve offline/no-sync
-execution and read-only behavior. `verify-check` and existing default Check CI
-reach the checker through `doc-check ARGS=`; no new CI job is needed.
+Compose that target sequentially after existing `doc-check` stages. Disable
+code-block tools in the existing selected-path-plus-`.` link-graph stage and
+selected formatting stage so neither validates Mermaid at graph scope or
+repeats it. Preserve their current ordering and fail-fast behavior. The scoped
+stage follows rumdl's native error policy: reached validator/tool failures fail
+the target; do not add custom aggregation, categories or continued execution.
+Keep `doc-format` a formatting-only operation. All checking remains read-only
+and offline/no-sync. `verify-check` and existing Check CI reach it through
+`doc-check ARGS=`; no new CI job or setup route is needed.
 
-Update command help and the authoritative documentation-tool ownership summary
-only as needed to describe implemented behavior. Do not require diagrams when
-plain prose suffices or claim GitHub/browser rendering equivalence.
+Reuse the existing real-tool
+[Markdown sandbox/tests](../../../../../test/make/integration/test_markdown_tools.py)
+with only necessary validator-file copying and focused assertions. Keep
+existing formatting/link/missing-tool regressions at their current owners.
+Document the native blockquote limitation and command help as needed; do not
+promise full container support or GitHub/browser parity.
 
-- **AC-1 TODO** Given selected paths and an invalid Mermaid fence outside them,
-  `make doc-check ARGS=<paths>` limits Mermaid inspection to the selection,
-  while preserving existing formatting/local-link graph checks and rumdl
-  fail-fast behavior.
+- **AC-1 TODO** Given selected files/directories and an invalid Mermaid fence
+  outside them, `doc-check` validates only selected Mermaid while preserving
+  the full existing link graph and selected formatting checks. The ordinary
+  stages have fence tooling disabled and the scoped stage reaches the actual
+  validator with native failure diagnostics and the configured deadline;
+  missing validator binaries fail rather than silently skip.
 
-  Validation: criterion-marked Make integration tests in disposable checkouts
-  exercise real target/boundary behavior, including selected malformed diagrams,
-  an excluded malformed diagram and a broken local-link graph. Use shims only
-  for routing properties, not backend validity or link-check behavior.
-- **AC-2 TODO** Given empty `ARGS` and successful rumdl stages, all repository
-  Markdown is checked and multiple diagram failures are reported and fail the
-  target; a rumdl failure retains existing fail-fast behavior. Valid
-  and no-diagram selections succeed without checkout outputs or network access.
+  Validation: criterion-marked Make integration tests reuse the real Markdown
+  sandbox, rumdl and validator for selected valid/invalid fences, an unselected
+  invalid fence and the existing broken-link regression. Inspect command/config
+  routing for disabled ordinary stages, missing-binary failure and the 30,000ms
+  tool timeout; bounded test calls prove actual validator execution, not only
+  shim routing. Preserve
+  native fail-fast behavior without an exhaustive parser/timeout matrix.
+- **AC-2 TODO** Given empty `ARGS`, valid or malformed repository Mermaid and
+  no-diagram selections, the scoped uncached stage uses default `.` and current
+  exclusion policy, succeeds or fails through native rumdl behavior, and emits
+  no SVG or checkout changes offline. Ordinary-stage failures still stop
+  `doc-check` before the scoped stage.
 
-  Validation: criterion-marked Make integration tests run the real prepared
-  backend and rumdl with bounded subprocesses and artifact checks offline.
-  Independently inspect `verify-check`/Check CI routing and unchanged defaults;
-  run default `make doc-check` on the delivery revision.
-- **AC-3 TODO** Given the completed wiring, help and documentation identify the
-  owned checker and its embedded-rendering limitations without duplicating
-  setup contracts or introducing mandatory diagrams.
-
-  Validation: independently review affected documentation ownership and command
-  descriptions; run affected doc/ac checks and focused tests under current
-  [testing](../../../../testing.md),
+  Validation: focused real-tool Make tests cover default selection, relevant
+  exclusion behavior, valid/invalid and no-diagram cases with bounded subprocess
+  calls and file observations. Inspect `--no-cache`, offline/no-sync settings,
+  unchanged CI routing and formatting-only `doc-format`; run default
+  `make doc-check` on the delivery revision plus affected lint/type/doc/ac
+  checks. Independently review help and the stated blockquote limitation under
+  current [testing](../../../../testing.md),
   [test ownership](../../../../test-ownership.md) and
   [evidence policy](../../../../validation.md).
