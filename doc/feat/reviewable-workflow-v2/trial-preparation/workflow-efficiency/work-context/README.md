@@ -14,10 +14,10 @@ was aborted.
 - **ABORT** Completion routing: current focused owners cover completion
   responsibilities; a generated or selected Definition of Done layer is not
   justified.
-- **TODO** [Make guidance reminders](guidance-reminders/README.md): selected
-  successful top-level documentation, Mermaid, acceptance-check, commit, and
-  test-execution targets emit optional quality questions; recursive invocations
-  suppress questions and failures retain ordinary diagnostics.
+- **DONE** Make guidance reminders: selected successful top-level
+  documentation, Mermaid, test-execution, acceptance-check, and commit targets
+  ask optional quality questions; recursive invocations suppress questions
+  and failures retain ordinary diagnostics.
 - **DONE** Snapshot tracing: recommended retaining Work path and AC markers
   with Git history navigation; optional verification SHA did not justify
   compatibility and rebase-maintenance cost.
