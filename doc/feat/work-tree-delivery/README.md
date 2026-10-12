@@ -9,8 +9,8 @@ Keep the definer name/models and role-policy ownership with
 
 - **DONE** Planning and escalation: bounded leaf sizing, reviewed contract
   iteration, safe whole-tree pauses and explicit decisions beyond five levels.
-- **TODO** [Sequential delivery](sequential/README.md): one executor/session and
-  accumulating isolated branch for a requested parent's direct leaves.
+- **DONE** Sequential delivery: independently reviewed direct leaves on one
+  executor/session and accumulating isolated branch with ordered local pairs.
 - **TODO** [Recursive integration](integration/README.md): child-parent
   ownership, dependency-ready parallel subtrees, integration cleanup and final
   publication.
