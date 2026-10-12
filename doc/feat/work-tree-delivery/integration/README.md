@@ -29,7 +29,7 @@ adoption. Preserve accepted history and reserved WDR18/19/20 model/operational
 Works. No claimed speed/cost benefit from #257, new tools or model-policy
 changes.
 
-- **AC-1 TODO** Given dependency-ready child parents and reviewed leaf
+- **AC-1 DONE** Given dependency-ready child parents and reviewed leaf
   histories, guidance integrates parallel isolated subtrees with correct
   retained contracts, parent-owned maps and one top-owner publication without
   weakened review, evidence, final-head CI or maintainer control.

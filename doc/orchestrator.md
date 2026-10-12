@@ -49,6 +49,32 @@ available concurrency, and expected shared edits rather than launching the
 entire tree at once. Do not invent intermediary Work nodes solely to justify
 runtime layers.
 
+The maintainer's requested Work defines the delivery boundary. Delegating a
+child does not make it a new publication root. Each child parent uses a separate
+isolated branch/worktree at the base ref assigned by its immediate parent owner;
+its direct leaves use the sequential execution route below. Independent child
+parents may run in parallel when dependencies, capacity, and shared edits
+permit. Serialize shared owner/map edits and integrate subtree commits as linear
+history without dropping their verification/cleanup pairs.
+
+The immediate parent reviews child-parent interfaces and composition, reusing
+valid leaf evidence. Retain the child's verified parent contract through this
+integration review; afterward the immediate parent owner records reviewed child
+cleanup and its own map update under
+[acceptance tracing](acceptance-tracing.md#work-delivery-commits).
+
+```mermaid
+flowchart TD
+    T[Requested Work owner] --> A[Child parent A: isolated tree and assigned base]
+    T --> B[Child parent B: isolated tree and assigned base]
+    A --> EA[Same executor: A1 then review then A2]
+    B --> EB[Same executor: B1 then review then B2]
+    A --> I[Immediate parent integration review: retain child contracts]
+    B --> I
+    I --> C[Parent-owned child cleanup and map updates]
+    C --> P[Requested Work verification and cleanup: one final PR]
+```
+
 After exact-artifact and description review and acceptance assessment, hand
 mechanical publication to the separate operational `publisher` with
 [its owner](publisher.md), worktree, exact reviewed commit, approved title and
@@ -111,6 +137,13 @@ branch, and base ref and gives the creation command, for example:
 make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
 ```
 
+This target creates from local `master`. For an assigned child base, first
+prepare the new clean tree with that command, then set its branch to the
+assigned ref using a separate ordinary Git operation before editing. Verify the
+resulting base and environment; use `make ci-setup` and `make verify-setup` if
+dependencies need synchronization. Do not invent a base argument for the
+creation target.
+
 If implementation reveals out-of-scope work, stop before expanding and report
 the finding and evidence. Route a new split or needed maintainer decision
 through the [whole requested-tree pause](workflow.md#decisions-and-new-splits),
@@ -127,7 +160,9 @@ each accepted leaf. Within that accumulating branch, local acceptance of a
 dependency permits its next dependent leaf without a `master` merge. The parent
 owner owns map changes; the executor applies only reviewed updates. Do not
 publish child leaf PRs from this requested-parent run. After the leaves, review
-the parent's own acceptance and verification/cleanup pair before publication.
+the parent's own acceptance and verification/cleanup sequence under its
+immediate parent's integration review, or before publication if it is the
+requested Work.
 
 After handoff and each correction request, wait for the completed artifact or a
 blocker needing maintainer steering before reviewing. Do not poll for routine
@@ -162,20 +197,16 @@ commits. Follow
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
 
-Before publishing, reassess maintainer review effort from the actual diff,
-including tests, supporting changes, and concepts. Assess simplification and
-suitable reuse as before handoff, preserving required safeguards, before
-requesting infrastructure or partitioning the work. If the necessary diff still
-exceeds the target, stop publication and partition the completed work into at
-least two cohesive, independently reviewable child Work PRs within the target.
-Define their contracts and dependencies, update the parent map, and get the
-revised parent plan reviewed and merged under the
-[planning and tree-wide pause rules](workflow.md#decisions-and-new-splits)
-before child delivery continues.
-Preserve and reuse completed implementation and valid evidence, identify
-remaining merge resolution, and reassess each child diff before publication. The
-explicit maintainer scope exception in
-[Work scope and sizing](workflow.md#scope-and-sizing) still applies.
+Before publishing, reassess each complete leaf's actual diff, including tests,
+supporting changes, and concepts, under
+[Work scope and sizing](workflow.md#scope-and-sizing). If simplification and
+reuse cannot meet the target, stop publication and apply the
+[planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
+preserving valid implementation and evidence. Integrated parent review assesses
+interfaces and composition rather than requiring the entire parent batch to fit
+one leaf's review target. Preserve substantive scope requirements and identify
+remaining merge resolution. Only the requested Work owner hands off its final
+reviewed branch and description for [publication](pull-requests.md#publishing).
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the

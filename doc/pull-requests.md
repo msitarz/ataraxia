@@ -6,14 +6,19 @@ Read when publishing or updating a PR or writing its description.
 
 Determine the PR base from explicit task instructions or repository metadata,
 following [contribution branch rules](../CONTRIBUTING.md#submitting-a-change).
+The maintainer's requested Work is the publication boundary: a requested leaf
+uses its usual Work PR; a requested parent publishes one final PR for its whole
+tree. Delegated child parents and leaves do not publish independently. Nested
+local delivery follows
+[orchestrator guidance](orchestrator.md#roles-and-delegation).
 For Work deliveries with acceptance criteria, follow the
 [commit-preservation procedure](acceptance-tracing.md#work-delivery-commits)
-to complete and independently review both commits before publication. Publish
-the reviewed sequence once; require full CI on the final reviewed PR head before
-merge. A later material correction remains permitted and requires refreshed
-acceptance evidence, independent review, and full CI on the corrected head.
-The owning orchestrator's publication and description responsibilities are
-defined [below](#descriptions).
+to complete and independently review every required leaf and parent pair before
+publication. Publish the reviewed sequence once; require full CI on the final
+reviewed PR head before merge. A later material correction remains permitted and
+requires refreshed acceptance evidence, independent review, and full CI on the
+corrected head. The owning orchestrator's publication and description
+responsibilities are defined [below](#descriptions).
 
 Before preparing a rewrite of a published branch, follow the
 [expected-remote capture and lease procedure](publisher.md#published-branch-rewrites).

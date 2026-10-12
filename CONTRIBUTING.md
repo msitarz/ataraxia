@@ -83,9 +83,13 @@ silently or manipulate Git lock files.
 
 ### Work branches, review, and merge
 
-Start each Work branch from current `master` and target its PR to `master`. Only
-an explicit maintainer instruction permits another base and PR target; identify
-the exception in the PR.
+Start the maintainer's requested Work branch from current `master` and target
+its final PR to `master`. Within that requested tree, child parents use the
+isolated branches and base refs assigned by their immediate parent owners under
+[orchestrator guidance](doc/orchestrator.md#roles-and-delegation); direct leaves
+accumulate locally and do not open separate PRs. Only an explicit maintainer
+instruction permits another requested-Work base or PR target; identify the
+exception in the PR.
 
 Follow the [Work scope and sizing rules](doc/workflow.md#scope-and-sizing) for
 reviewable deliveries. Material changes to an approved direction or contract

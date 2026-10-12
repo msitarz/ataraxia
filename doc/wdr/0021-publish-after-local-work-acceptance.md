@@ -6,6 +6,9 @@ Date: 2026-10-09
 
 Accepted
 
+Amended by
+[22. Deliver requested Work trees in one PR](0022-deliver-requested-work-trees-in-one-pr.md).
+
 Amends
 [15. Use CI results as evidence of mechanical checks](0015-use-ci-results-as-evidence-of-mechanical-checks.md)
 and
