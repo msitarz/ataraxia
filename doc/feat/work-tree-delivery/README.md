@@ -11,9 +11,8 @@ Keep the definer name/models and role-policy ownership with
   iteration, safe whole-tree pauses and explicit decisions beyond five levels.
 - **DONE** Sequential delivery: independently reviewed direct leaves on one
   executor/session and accumulating isolated branch with ordered local pairs.
-- **TODO** [Recursive integration](integration/README.md): child-parent
-  ownership, dependency-ready parallel subtrees, integration cleanup and final
-  publication.
+- **DONE** Recursive integration: isolated child-parent ownership, reviewed
+  linear subtree integration and one final requested-Work publication.
 - **TODO** [Visually descriptive contracts](visuals/README.md): proportionate
   before/after relationships, interactions and public API descriptions.
 
