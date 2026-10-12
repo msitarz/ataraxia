@@ -2,10 +2,10 @@
 
 Make existing guidance easier to encounter at selected command boundaries while
 preserving the owning Work as the source of scope and acceptance. The
-[workflow-efficiency parent](../README.md#works) maps this outcome. Make
-guidance reminders are implemented as scoped recipes and covered by focused
-integration checks. They point to existing owners without performing artifact
-review or changing acceptance ownership. The independent snapshot-tracing
+[workflow-efficiency parent](../README.md#works) maps this outcome. The active
+[guidance-reminders Work](guidance-reminders/README.md) specifies optional
+success-only questions at selected Make boundaries while preserving normal
+command failures and acceptance ownership. The independent snapshot-tracing
 Investigation completed with a no-change recommendation; completion routing
 was aborted.
 
@@ -14,10 +14,10 @@ was aborted.
 - **ABORT** Completion routing: current focused owners cover completion
   responsibilities; a generated or selected Definition of Done layer is not
   justified.
-- **DONE** Make guidance reminders: selected top-level document,
-  acceptance-check, and commit targets emit optional outcome-specific quality
-  questions or failure guidance while preserving failures and suppressing
-  nested reminders.
+- **TODO** [Make guidance reminders](guidance-reminders/README.md): add optional
+  success-only quality questions at selected documentation,
+  declaration-check, and commit boundaries while preserving normal failure
+  behavior and suppressing nested reminders.
 - **DONE** Snapshot tracing: recommended retaining Work path and AC markers
   with Git history navigation; optional verification SHA did not justify
   compatibility and rebase-maintenance cost.
