@@ -96,9 +96,11 @@ general duplication rule.
 - **DONE** Work context: selected successful Make outcomes provide optional
   owner questions; snapshot tracing recommended no change, while completion
   routing was aborted.
-- **TODO** [Single-agent execution](single-agent-execution/README.md): split
-  plan drafted; protocol and fixture work precedes an explicitly authorized
-  direct-versus-orchestrated comparison.
+- **ABORT** Single-agent execution: the maintainer has no current need for
+  topology evidence; the controlled comparison remains unrun and the current
+  orchestrator-to-executor workflow is retained. Git preserves the prepared
+  protocol and fixture in evidence commit
+  `7e33df59e29160655e1145e50a03a1353acdf36d`.
 - **DONE**
   [Leaf-agent policy](../../../../wdr/0013-use-sol-low-for-all-leaves.md):
   adopted Sol-low for all leaf executors while preserving independent review and
