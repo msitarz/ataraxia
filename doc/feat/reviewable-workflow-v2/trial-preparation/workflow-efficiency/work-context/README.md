@@ -2,24 +2,26 @@
 
 Reduce repeated Work-contract and completion-guidance lookup while preserving
 the owning Work as the source of scope and acceptance. The
-[workflow-efficiency parent](../README.md#works) maps this outcome. First
-deliver completion routing and bounded context gathering; then investigate
-optional acceptance-snapshot provenance independently. These Works plan
+[workflow-efficiency parent](../README.md#works) maps this outcome. Reassess
+bounded context gathering before execution and investigate optional
+acceptance-snapshot provenance independently. These Works plan
 capabilities only: policy adoption or implementation requires their own
 review.
 
 ## Works
 
-- **TODO** [Completion routing](completion-routing/README.md): provide a small
-  applicable executor Definition of Done from its existing owner.
+- **ABORT** Completion routing: current focused owners cover completion
+  responsibilities; a generated or selected Definition of Done layer is not
+  justified.
 - **TODO** [Context tool](context-tool/README.md): gather selected Work context
-  and applicable guidance for orchestrators and executors through Make.
+  and applicable guidance for orchestrators and executors through Make;
+  reassess before execution after the selected Definition of Done dependency
+  was aborted.
 - **TODO** [Snapshot tracing](snapshot-tracing/README.md): recommend whether an
   optional test marker can preserve an acceptance snapshot SHA.
 
-Completion routing precedes the context tool, which consumes the same selected
-Definition of Done. Snapshot tracing starts after those two Works and remains
-an Investigation. Coordinate shared owner-file edits with the existing
+Snapshot tracing remains an independent Investigation, with no context-tool
+prerequisite. Coordinate shared owner-file edits with the existing
 [guidance-application Work](../guidance-application/README.md); do not rewrite
 its contract. Preserve completed
 [handoff guidance](../../../../../orchestrator.md). Preserve the completed
@@ -31,19 +33,18 @@ recorded; do not add a redundant report, template, or status ledger.
 
 ## Acceptance
 
-- **AC-1 TODO** Completion routing is integrated before the context tool, and
-  the tool consumes the same authoritative route and applicable Definition of
-  Done.
-  Validation: inspect both integrated outcomes and delivery evidence,
-  confirming dependency order and that the tool selects the routed DoD from its
-  owner.
-- **AC-2 TODO** Snapshot tracing follows the completed routing and context
-  outcomes and recommends change, no change, or an inconclusive result without
-  adopting a marker or policy.
-  Validation: inspect the Investigation result and verify the two dependency
-  outcomes are integrated first.
-- **AC-3 TODO** All mapped outcomes are integrated with verified criteria and
-  evidence at their owners, and shared guidance changes remain coordinated
-  with the linked Works.
-  Validation: check integrated parent status and delivery evidence for each
-  child, then inspect shared-owner changes against their existing contracts.
+- **AC-1 TODO** The context-tool contract is reassessed before execution and
+  its resulting outcome is supported by evidence at existing guidance owners.
+  Validation: inspect the reassessed contract, review, and delivery evidence;
+  confirm the aborted selected Definition of Done dependency is not assumed.
+- **AC-2 TODO** The independent snapshot-tracing Investigation recommends
+  change, no change, or an inconclusive result without adopting a marker or
+  policy.
+  Validation: inspect the Investigation result against its evidence and
+  verify it has no completion-routing or context-tool prerequisite.
+- **AC-3 TODO** Remaining outcomes have verified criteria and evidence at
+  their owners, shared guidance changes remain coordinated with linked Works,
+  and the map distinguishes the aborted Work from delivered outcomes.
+  Validation: check parent status and delivery evidence for remaining children,
+  then inspect shared-owner changes against their existing contracts and
+  confirm completion routing is recorded as aborted rather than delivered.

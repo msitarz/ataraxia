@@ -3,10 +3,11 @@
 Provide a read-only Make tool that gathers bounded context for an orchestrator
 or executor from an explicitly selected Work and applicable guidance through
 `make work-context`. Read selected files from the identified worktree; do not
-fall back to a default worktree. This depends on
-[completion routing](../completion-routing/README.md), whose DoD the tool
-presents from its owner. The
-[Work-context parent](../README.md#works) maps the result. Coordinate shared
+fall back to a default worktree. The
+[Work-context parent](../README.md#works) records the aborted selected
+Definition of Done dependency and maps this planned outcome. Reassess this
+tool's need, scope, and guidance selection before execution; reassessment does
+not authorize tool adoption or abort it. Coordinate shared
 guidance-owner edits with
 [guidance application](../../guidance-application/README.md); do not rewrite
 its contract. Preserve completed
@@ -19,7 +20,7 @@ the completed [PR guidance](../../../../../../pull-requests.md) and
 - **AC-1 TODO** The Make-owned, read-only command accepts explicit role and
   Work selections, reports worktree path, branch, and revision, and presents
   the selected Work's local contract plus applicable guidance sections with
-  source links and the filtered DoD; it reads those files from that worktree.
+  source links; it reads those files from that worktree.
   Validation: invoke `make work-context` for both roles on a sample Work and
   compare output and source links with files in the identified worktree.
 - **AC-2 TODO** Ambiguous task or guidance selection requires explicit
@@ -32,7 +33,7 @@ the completed [PR guidance](../../../../../../pull-requests.md) and
   confirm actionable nonzero diagnostics, then select explicitly and verify
   excluded linked and neighboring material is absent.
 - **AC-3 TODO** The tool does not mutate files or Git state and its selected
-  guidance agrees with the existing owners and completion-routing contract.
+  guidance agrees with the existing owners and the reassessed tool contract.
   Validation: compare status and tracked-file hashes before and after both
   role invocations, then review source references against their owner text.
 
