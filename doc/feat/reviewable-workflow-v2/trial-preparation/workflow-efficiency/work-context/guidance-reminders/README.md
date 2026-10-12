@@ -107,7 +107,7 @@ its contract. Preserve completed
 
 ## Acceptance
 
-- **AC-1 TODO** The four selected top-level targets emit one short advisory
+- **AC-1 DONE** The four selected top-level targets emit one short advisory
   reminder after their own output on success or failure, using the mapped
   quality questions, owner anchors, and outcome distinctions. Both `ac-check`
   outcomes explicitly address independent review without implying tool review
@@ -121,7 +121,7 @@ its contract. Preserve completed
   Preserve captured underlying statuses; do not rebuild hook, setup, or cache
   regression suites or mirror echo formatting. Independently review questions
   against their owners and their conditional applicability.
-- **AC-2 TODO** Recursive selected-target invocations suppress only reminders;
+- **AC-2 DONE** Recursive selected-target invocations suppress only reminders;
   top-level invocation retains them. No broader machinery, mandatory reading,
   automatic review, or automated Git action is introduced.
   Validation: exercise `doc-check` directly and through recursive Make,

@@ -91,15 +91,26 @@ _DOC_PATHS = $(_TARGET_PATHS)
 _DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(_ARGS) . ,.)
 
 doc-check: ## check Markdown links, formatting and Mermaid fences (read only)
-	uv run rumdl check --no-code-block-tools $(_DOC_GRAPH_PATHS)
-	uv run rumdl fmt --check --no-code-block-tools $(_DOC_PATHS)
-	$(MAKE) --no-print-directory doc-check-mermaid ARGS=$(call _SHELL_VALUE,$(ARGS))
+	@if uv run rumdl check --no-code-block-tools $(_DOC_GRAPH_PATHS) && \
+	  uv run rumdl fmt --check --no-code-block-tools $(_DOC_PATHS) && \
+	  $(MAKE) --no-print-directory doc-check-mermaid ARGS=$(call _SHELL_VALUE,$(ARGS)); then \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Was the whole affected section reviewed at its owner for duplication and accuracy? doc/README.md#review'; fi; \
+	else \
+	  status=$$?; \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Documentation checks failed; inspect diagnostics before review. Optional guidance: doc/README.md#review'; fi; \
+	  exit $$status; \
+	fi
 
 doc-check-mermaid: ## validate selected Mermaid fences; ARGS selects files or directories
 	uv run rumdl check --only-code-block-tools --no-cache $(_DOC_PATHS)
 
 doc-format: ## format Markdown; ARGS selects files or directories
-	uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS)
+	@uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS); status=$$?; \
+	if [ $$status -ne 0 ]; then \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Documentation formatting failed; inspect diagnostics before retrying. Optional guidance: doc/README.md#review'; fi; \
+	  exit $$status; \
+	fi; \
+	if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If defining a Work: does its contract solve the underlying problem using inspected existing commands/APIs/helpers? doc/work-definition.md#work-definition'; fi
 
 .PHONY: test
 test: ## run full tests with coverage; ARGS=paths runs a focused selection
@@ -122,7 +133,12 @@ endif
 commit: export ATARAXIA_COMMIT_SUBJECT := $(value SUBJECT)
 commit: export ATARAXIA_COMMIT_BODY := $(value BODY)
 commit: ## commit staged changes; requires SUBJECT=... [BODY=...]
-	uv run python script/commit_command.py
+	@uv run python script/commit_command.py; status=$$?; \
+	if [ $$status -ne 0 ]; then \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Commit failed; inspect diagnostics before retrying. Optional guidance: CONTRIBUTING.md#commits-and-pull-requests'; fi; \
+	  exit $$status; \
+	fi; \
+	if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If a fundamentally wrong approach was discarded: were it and compensating changes reverted before reimplementation? doc/change-rules.md#fix-the-underlying-problem'; fi
 
 deps-lock: ## update uv.lock after dependency changes
 	uv lock
@@ -135,7 +151,12 @@ ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
 	uv run python script/acceptance_tests.py test
 
 ac-check: ## validate AC declarations/references (WORK=path/to/README.md)
-	uv run python script/acceptance_coverage.py check
+	@uv run python script/acceptance_coverage.py check; status=$$?; \
+	if [ $$status -ne 0 ]; then \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Orchestrator review: declarations failed; affected criteria remain unresolved. Inspect diagnostics before review. doc/orchestrator.md#review-and-return'; fi; \
+	  exit $$status; \
+	fi; \
+	if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Independent orchestrator review: underlying problem solved? Existing concepts reused? Outcome supported by observed evidence? doc/orchestrator.md#review-and-return'; fi
 
 .PHONY: clean
 clean: ## remove the virtual environment and test/lint caches
