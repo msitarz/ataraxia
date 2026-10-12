@@ -12,7 +12,7 @@ fence extraction, process timeout and Markdown diagnostics; the following
 framework, custom failure categories or direct Markdown dependency is needed.
 Do not alter the accepted backend selection or existing backend smoke test.
 
-- **AC-1 TODO** Given valid and invalid raw Mermaid on stdin, the actual
+- **AC-1 DONE** Given valid and invalid raw Mermaid on stdin, the actual
   validator forces QuickJS rendering: valid source succeeds without output,
   invalid source exits 1 with useful backend stderr, and input/checkout files
   remain unchanged.
