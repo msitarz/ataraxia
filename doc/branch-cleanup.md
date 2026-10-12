@@ -3,9 +3,10 @@
 Read this procedure after the maintainer confirms a Work PR has merged.
 
 The reusable `cleaner` subagent is the operational role for carrying out this
-procedure, with model and effort routed by
-[orchestrator guidance](orchestrator.md#roles-and-delegation). It is not a Work
-leaf executor. The orchestrator's handoff identifies the
+procedure. The assigning orchestrator owns role, model, effort, and handoff
+under [orchestrator guidance](orchestrator.md#roles-and-delegation); the cleaner
+need not read that guidance to execute this procedure. It is not a Work leaf
+executor. The orchestrator's handoff identifies the
 PR, branch, worktree, reviewed head, and merge commit IDs. The cleaner does not
 change code, publish or review PRs, merge code, or recursively delegate. It
 reports the refs and comparisons checked, completed removals, and any blockers

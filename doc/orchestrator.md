@@ -85,7 +85,7 @@ accountability, final-CI assessment, and maintainer handoff; assess the
 publisher's returned publication state and blockers.
 
 Before requesting new infrastructure or splitting scope, apply the
-[Work-definition guidance](workflow.md) and underlying
+[Work-definition guidance](work-definition.md) and underlying
 [repair and scope rules](change-rules.md#fix-the-underlying-problem): assess
 whether simplification and suitable reuse can fulfill the actual required
 outcome with less machinery or review scope. Preserve required safeguards.
@@ -97,10 +97,10 @@ concepts—against the quick maintainer review target in
 remains too large after that assessment, split it into independently reviewable
 nested Works through the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
-For an ad hoc handoff,
-define a parent Work and child Works; for an existing Work, nest children and
-update its parent map. Apply the workflow owner's contract review, depth, and
-planning gates before expanded work.
+For an ad hoc handoff, define a parent Work and child Works; for an existing
+Work, nest children and update its parent map. Apply
+[contract review guidance](work-definition.md) and the workflow owner’s depth
+and planning gates before expanded work.
 
 Before dispatch, identify dependencies and shared edit surfaces. Coordinate
 shared owners, parent maps, indexes, exact wording, formatter-valid snippets,

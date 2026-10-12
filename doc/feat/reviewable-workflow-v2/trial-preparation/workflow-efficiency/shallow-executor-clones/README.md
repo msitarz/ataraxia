@@ -25,12 +25,12 @@ review and delivery gates.
   separate evidence and cleanup commits and an advanced upstream base.
 
 Each Investigation owns one recommendation and checked evidence under the
-[Investigation rules](../../../../../workflow.md#investigations). Isolation and
-communication may prepare independent disposable fixtures; the integrated
-delivery demonstration uses their verified configuration and handoff. Treat a
-blocked boundary as evidence against a candidate rather than bypassing it.
-Combine the reports into one adoption recommendation and identify further Work;
-production implementation is outside these Investigations.
+[Investigation rules](../../../../../work-definition.md#investigations).
+Isolation and communication may prepare independent disposable fixtures; the
+integrated delivery demonstration uses their verified configuration and handoff.
+Treat a blocked boundary as evidence against a candidate rather than bypassing
+it. Combine the reports into one adoption recommendation and identify further
+Work; production implementation is outside these Investigations.
 
 ## Implementation follow-up
 

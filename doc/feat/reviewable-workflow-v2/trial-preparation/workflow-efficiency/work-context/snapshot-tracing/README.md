@@ -1,14 +1,14 @@
 # Acceptance snapshot tracing
 
 Investigate whether an optional `pytest.mark.covers` SHA reference is useful
-when a completed Work contract is removed, or whether current no-change
-behavior is preferable. This is an
-[Investigation](../../../../../../workflow.md#investigations), not authorization
-to adopt a marker or change acceptance policy. It follows
+when a completed Work contract is removed, or whether current no-change behavior
+is preferable. This is an
+[Investigation](../../../../../../work-definition.md#investigations), not
+authorization to adopt a marker or change acceptance policy. It follows
 [completion routing](../completion-routing/README.md) and the
 [context tool](../context-tool/README.md). Preserve completed
-[handoff guidance](../../../../../../orchestrator.md) and
-the completed [PR guidance](../../../../../../pull-requests.md) and
+[handoff guidance](../../../../../../orchestrator.md) and the completed
+[PR guidance](../../../../../../pull-requests.md) and
 [acceptance tracing](../../../../../../acceptance-tracing.md).
 
 ## Acceptance

@@ -53,8 +53,9 @@ inconclusive result.
   Validation: compare the recorded recommendation with the evidence and
   thresholds declared before the trials.
 
-Follow [Investigation guidance](../../../../../workflow.md#investigations),
-the existing [documentation review owner](../../../../../README.md#review),
-and [orchestrator guidance](../../../../../orchestrator.md). Coordinate with
-the mapped [handoff, PR-evidence, tree, and editing Works](../README.md#works)
-when recommendations touch their owners; avoid duplicating their contracts.
+Follow
+[Investigation guidance](../../../../../work-definition.md#investigations), the
+existing [documentation review owner](../../../../../README.md#review), and
+[orchestrator guidance](../../../../../orchestrator.md). Coordinate with the
+mapped [handoff, PR-evidence, tree, and editing Works](../README.md#works) when
+recommendations touch their owners; avoid duplicating their contracts.

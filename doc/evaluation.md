@@ -2,8 +2,9 @@
 
 Read when designing, running, or interpreting an empirical evaluation, whether
 it is an independent Evaluation Work, supports an Investigation, or is a small
-comparison kept inline. [Work workflow](workflow.md#evaluations) owns Work kinds
-and lifecycle; a specific Work README and linked protocol own the experiment.
+comparison kept inline. [Work definition](work-definition.md#evaluations) owns
+Evaluation contract requirements; [Work workflow](workflow.md) owns lifecycle; a
+specific Work README and linked protocol own the experiment.
 
 ## Declare the protocol before execution
 
