@@ -2,11 +2,11 @@
 
 Reduce repeated Work-contract and completion-guidance lookup while preserving
 the owning Work as the source of scope and acceptance. The
-[workflow-efficiency parent](../README.md#works) maps this outcome. Reassess
-bounded context gathering before execution and investigate optional
-acceptance-snapshot provenance independently. These Works plan
-capabilities only: policy adoption or implementation requires their own
-review.
+[workflow-efficiency parent](../README.md#works) maps this outcome. The
+context-tool contract remains subject to reassessment before execution; the
+independent snapshot-tracing Investigation completed with a no-change
+recommendation. These Works plan capabilities only: policy adoption or
+implementation requires their own review.
 
 ## Works
 
@@ -17,12 +17,12 @@ review.
   and applicable guidance for orchestrators and executors through Make;
   reassess before execution after the selected Definition of Done dependency
   was aborted.
-- **TODO** [Snapshot tracing](snapshot-tracing/README.md): recommend whether an
-  optional verification-commit SHA improves historical contract lookup enough
-  to justify its maintenance cost compared with existing Git navigation.
+- **DONE** Snapshot tracing: recommended retaining Work path and AC markers
+  with Git history navigation; optional verification SHA did not justify
+  compatibility and rebase-maintenance cost.
 
-Snapshot tracing remains an independent Investigation, with no context-tool
-prerequisite. Coordinate shared owner-file edits with the existing
+Snapshot tracing completed independently, with no context-tool prerequisite.
+Coordinate shared owner-file edits with the existing
 [guidance-application Work](../guidance-application/README.md); do not rewrite
 its contract. Preserve completed
 [handoff guidance](../../../../../orchestrator.md). Preserve the completed
