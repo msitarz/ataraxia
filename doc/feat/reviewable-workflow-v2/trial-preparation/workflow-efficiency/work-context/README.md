@@ -14,8 +14,8 @@ implementation requires their own review.
   responsibilities; a generated or selected Definition of Done layer is not
   justified.
 - **TODO** [Make guidance reminders](guidance-reminders/README.md): add short
-  optional owner reminders at selected Make success and failure boundaries,
-  emphasizing independent orchestrator review.
+  optional quality questions at documentation, declaration-check, and commit
+  boundaries, emphasizing independent orchestrator review.
 - **DONE** Snapshot tracing: recommended retaining Work path and AC markers
   with Git history navigation; optional verification SHA did not justify
   compatibility and rebase-maintenance cost.
