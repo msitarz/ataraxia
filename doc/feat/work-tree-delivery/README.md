@@ -69,7 +69,7 @@ Do not reopen the delivered tree-orchestration child in workflow-efficiency.
 The sequential trial in PR #257 is seed context, not cost or parallel evidence.
 No tool, product, model-policy or automatic legacy-tree reorganization scope.
 
-- **AC-1 TODO** Given adopted owner guidance, requested leaves and parent trees
+- **AC-1 DONE** Given adopted owner guidance, requested leaves and parent trees
   retain bounded independent reviews, safe decision pauses and verified linear
   delivery history through one final publication with preserved authority and
   proportionate verified visual descriptions of meaningful changes.
