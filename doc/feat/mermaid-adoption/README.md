@@ -25,8 +25,9 @@ because SVG rendering is lazy.
   rendering through scoped [Make](../../../Makefile) and
   [rumdl configuration](../../../pyproject.toml) after existing documentation
   checks, with offline execution, native diagnostics and no SVG output.
-- **TODO** [Upstream blockquote report](upstream-report/README.md): report or
-  identify the native extraction issue; nonblocking for adoption acceptance.
+- **DONE** Upstream report: filed
+  [rumdl issue #949](https://github.com/rvben/rumdl/issues/949) documenting
+  blockquote markers retained in custom stdin source by rumdl 0.2.78.
 
 ```mermaid
 flowchart TD
@@ -48,13 +49,14 @@ Accepted backend Linux CI evidence suffices; no fresh worktree CI route is
 needed. Integrated checker acceptance is also complete. rumdl owns fence
 discovery/extraction, timeout and diagnostics; the stdin validator only forces
 actual SVG rendering and discards output. The boundary reuses native rumdl
-behavior and the prepared backend. The upstream report remains
+behavior and the prepared backend. The upstream report is tracked in
+[rumdl issue #949](https://github.com/rvben/rumdl/issues/949); its fix remains
 independent and does not block adoption acceptance.
 
 The delivered route uses uncached native fence tools after fence-disabled
 link-graph and formatting stages. The known blockquote extraction and renderer
 parity limits remain in [documentation guidance](../../README.md#review);
-the upstream report owns the separate issue follow-up.
+the upstream issue tracks the separate fix follow-up.
 
 Required adoption verification targets are local macOS x86_64 and the Linux
 architecture used by existing CI, under the project's Python 3.14+ policy and
