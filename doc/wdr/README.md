@@ -34,6 +34,7 @@ authoritative owners.
 - [19. Delegate mechanical PR publication](0019-delegate-mechanical-pr-publication.md)
 - [20. Route agents by responsibility](0020-route-agents-by-responsibility.md)
 - [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md)
+- [22. Deliver requested Work trees in one PR](0022-deliver-requested-work-trees-in-one-pr.md)
 
 ## Proposal
 

@@ -82,13 +82,16 @@ A parent README maps its immediate child Works. `TODO` links to an active
 child's README, `DONE` names the delivered outcome, and `ABORT` records why the
 Work stopped. The child does not duplicate its parent-owned status.
 Status entries describe the checked-out branch; use `master` to determine
-integrated status. Merge a parent map to `master` before starting child PRs that
-edit it.
+integrated status. Merge the concrete requested-tree plan before implementation;
+local delivery maps within that tree follow
+[orchestrator ownership](orchestrator.md#roles-and-delegation).
 
 Delivery or abandonment updates the parent's entry and removes the finished
-child directory in the same PR. Before removing a finished Work, promote
-lasting contracts and decisions to their authoritative owners. PRs hold review
-discussion; Git preserves removed contracts and exact changes.
+child directory in the same delivery sequence, following the nested integration
+gate in [Work delivery commits](acceptance-tracing.md#work-delivery-commits).
+Before removing a finished Work, promote lasting contracts and decisions to
+their authoritative owners. PRs hold review discussion; Git preserves removed
+contracts and exact changes.
 
 Before removing a completed Work, follow the
 [Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).

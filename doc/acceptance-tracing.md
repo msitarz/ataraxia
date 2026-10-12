@@ -73,6 +73,14 @@ the parent's own independently reviewed verification and later cleanup pair. Any
 required unsupported criterion prevents its Work's cleanup and requires steering
 under the evidence rules above.
 
+For a child parent within the requested tree, commit its independently verified
+implementation with its contract retained. Its immediate parent reviews that
+contract and subtree integration before recording the child's separate cleanup
+and map update. Preserve leaf and parent verification/cleanup order when
+integrating subtree commits into linear history. The requested Work completes
+its own reviewed pair after child integration; publication occurs at that
+[delivery boundary](pull-requests.md#publishing).
+
 Before first publication, independently review both commits, the resulting
 artifact, and its PR description. Publish the reviewed verification and cleanup
 sequence only after that review.

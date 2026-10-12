@@ -9,6 +9,9 @@ Accepted
 Amended by
 [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md).
 
+Amended by
+[22. Deliver requested Work trees in one PR](0022-deliver-requested-work-trees-in-one-pr.md).
+
 Amends
 [4. Delegate repository changes for independent review](0004-delegate-repository-changes-for-independent-review.md).
 WDR 4's low-effort leaf execution, no same-task recursive delegation,
