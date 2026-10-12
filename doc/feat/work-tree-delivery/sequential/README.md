@@ -20,7 +20,7 @@ child leaf PRs from a requested-parent run. CI-specific acceptance remains TODO
 until observed; unsupported acceptance prevents cleanup and requires tree-wide
 steering.
 
-- **AC-1 TODO** Given a requested leaf or direct-leaf parent, guidance selects
+- **AC-1 DONE** Given a requested leaf or direct-leaf parent, guidance selects
   the appropriate isolated execution sequence and retains independently reviewed
   leaf and parent verification/cleanup pairs, allowing locally accepted
   dependencies without premature publication or unsupported DONE.

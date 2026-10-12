@@ -99,9 +99,13 @@ completed definitions before implementation begins; execution returns identify
 the artifact revision and evidence. Use the same consolidated correction and
 review gates below for either responsibility.
 
-Every definer and executor creates and uses an isolated Git worktree before
-editing. Before work begins, the handoff names the destination path and branch
-and gives the command, for example:
+Definers and executors use an isolated Git worktree before editing. For a
+requested leaf, create its isolated branch/worktree and follow the usual Work
+PR flow. For a requested parent with direct leaves, assign those leaves
+sequentially to the same executor/session in one accumulating isolated
+branch/worktree. Reuse that tree for successive leaves rather than creating a
+tree per leaf. Before work begins, the handoff names the destination path,
+branch, and base ref and gives the creation command, for example:
 
 ```sh
 make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
@@ -115,6 +119,15 @@ independent responsibility or exceeds the review target. A different delegated
 agent still requires the maintainer's explicit approval.
 
 ## Review and return
+
+For a requested parent's direct leaves, complete the local artifact/evidence
+review and any consolidated corrections before assigning the next leaf. Follow
+the [local delivery sequence](acceptance-tracing.md#work-delivery-commits) for
+each accepted leaf. Within that accumulating branch, local acceptance of a
+dependency permits its next dependent leaf without a `master` merge. The parent
+owner owns map changes; the executor applies only reviewed updates. Do not
+publish child leaf PRs from this requested-parent run. After the leaves, review
+the parent's own acceptance and verification/cleanup pair before publication.
 
 After handoff and each correction request, wait for the completed artifact or a
 blocker needing maintainer steering before reviewing. Do not poll for routine

@@ -44,7 +44,9 @@ behavior evidence. If a criterion or its method explicitly requires a CI
 result, keep it `TODO` until that result is observed. Never treat pending CI as
 completed evidence or silently waive a CI-specific method to fit the ordinary
 publication sequence. Get maintainer steering when that method cannot be
-satisfied before cleanup.
+satisfied before cleanup, through the
+[whole requested-tree pause](workflow.md#decisions-and-new-splits) when working
+in a requested Work tree.
 
 ## Work delivery commits
 
@@ -59,6 +61,17 @@ satisfied before cleanup.
    must not be squashed.
 3. In the cleanup commit, remove the contract and update the parent map. Review
    tests under [test ownership](test-ownership.md) and retain regression tests.
+
+For a requested parent with direct leaves, apply this procedure locally to each
+leaf in execution order on the accumulating branch. Keep each leaf's verified
+retained-contract commit followed by its separate cleanup/map commit before the
+next leaf's pair. The parent owner reviews map updates before the executor
+applies them. Local acceptance permits dependent work under
+[orchestrator guidance](orchestrator.md#review-and-return); it does not
+establish CI outcomes or authorize child publication. After all leaves, retain
+the parent's own independently reviewed verification and later cleanup pair. Any
+required unsupported criterion prevents its Work's cleanup and requires steering
+under the evidence rules above.
 
 Before first publication, independently review both commits, the resulting
 artifact, and its PR description. Publish the reviewed verification and cleanup
