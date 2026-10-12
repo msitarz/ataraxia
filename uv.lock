@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14"
 resolution-markers = [
     "platform_machine != 'x86_64' or sys_platform != 'darwin'",
@@ -52,7 +52,7 @@ dev = [
     { name = "quickjs-ng", marker = "platform_machine != 'x86_64' or sys_platform != 'darwin'", specifier = "==0.17.0.1" },
     { name = "quickjs-ng", marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'", url = "https://github.com/msitarz/quickjs-ng/releases/download/v0.17.0.1-intel-macos/quickjs_ng-0.17.0.1-cp310-abi3-macosx_10_15_x86_64.whl" },
     { name = "ruff", specifier = ">=0.16.8" },
-    { name = "rumdl", specifier = "==0.2.78" },
+    { name = "rumdl", specifier = ">=0.2.78" },
     { name = "tach", specifier = ">=0.35.1" },
 ]
 
