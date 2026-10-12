@@ -35,7 +35,7 @@ for this bounded adoption. Do not strip `>` globally or add a local extractor
 workaround. The separate [upstream report](../upstream-report/README.md) is
 nonblocking and can wait; its completion is not an implementation prerequisite.
 
-- **AC-1 TODO** Given the accepted validator and Make/config deliveries,
+- **AC-1 DONE** Given the accepted validator and Make/config deliveries,
   `doc-check` preserves existing Markdown/link checks and reaches selected
   Mermaid validation offline with no SVG output, using rumdl's native fence,
   timeout and failure behavior subject to the documented blockquote limitation.
