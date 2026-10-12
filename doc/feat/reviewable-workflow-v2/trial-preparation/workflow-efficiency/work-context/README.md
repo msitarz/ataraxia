@@ -18,7 +18,8 @@ review.
   reassess before execution after the selected Definition of Done dependency
   was aborted.
 - **TODO** [Snapshot tracing](snapshot-tracing/README.md): recommend whether an
-  optional test marker can preserve an acceptance snapshot SHA.
+  optional verification-commit SHA improves historical contract lookup enough
+  to justify its maintenance cost compared with existing Git navigation.
 
 Snapshot tracing remains an independent Investigation, with no context-tool
 prerequisite. Coordinate shared owner-file edits with the existing
