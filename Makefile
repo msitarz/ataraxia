@@ -17,6 +17,8 @@ singlequote := $(shell echo "'")
 _SHELL_WORDS = $(foreach arg,$(1),'$(subst $(singlequote),'"'"',$(arg))')
 # Quote one shell value while preserving embedded spaces and apostrophes.
 _SHELL_VALUE = '$(subst $(singlequote),'"'"',$(1))'
+# Prevent automatic recursive evaluation of raw commit inputs in child Make processes.
+unexport SUBJECT BODY
 _ARGS = $(call _SHELL_WORDS,$(ARGS))
 _CLI_ARGS = $(call _SHELL_WORDS,$(CLI_ARGS))
 _TARGET_PATHS = $(if $(strip $(ARGS)),$(_ARGS),.)
@@ -115,6 +117,12 @@ ifeq ($(strip $(CLI_ARGS)),)
 else
 	uv run ataraxia $(_CLI_ARGS)
 endif
+
+.PHONY: commit
+commit: export ATARAXIA_COMMIT_SUBJECT := $(value SUBJECT)
+commit: export ATARAXIA_COMMIT_BODY := $(value BODY)
+commit: ## commit staged changes; requires SUBJECT=... [BODY=...]
+	uv run python script/commit_command.py
 
 deps-lock: ## update uv.lock after dependency changes
 	uv lock

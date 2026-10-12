@@ -117,6 +117,24 @@ imperative subject, aiming for 50 characters including type and scope. Separate
 the body with a blank line; hard-wrap prose and bullet continuations at 72
 columns, preserving unbreakable URLs and tokens.
 
+For staged changes, `make commit` formats the optional body with rumdl and runs
+ordinary `git commit` with installed hooks. Quote Make inputs in the caller's
+shell. For example:
+
+```sh
+make commit SUBJECT='fix: describe the change' BODY='Why it matters.'
+make commit SUBJECT='fix: describe the change' BODY=$'First line.\nSecond line.'
+make commit SUBJECT='fix: describe the change' BODY='Run this command:
+
+    printf "%s\\n" "$HOME"'
+```
+
+Four-space indentation marks literal commands and preserves their line breaks;
+unmarked prose can reflow.
+
+Rumdl does not preserve Git trailer syntax specially; for example, a long
+`Signed-off-by:` line can be split, so do not put trailers in `BODY`.
+
 External contributions are gated pending CLA setup (see [Status](#status)).
 
 ## License

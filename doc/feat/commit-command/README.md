@@ -59,7 +59,7 @@ small adapter, Make help and minimal
 precise types under [engineering conventions](../../engineering.md). This is
 one leaf targeting about five-minute review including focused tests.
 
-- **AC-1 TODO** Given prose, bullets, long tokens and marked commands, the
+- **AC-1 DONE** Given prose, bullets, long tokens and marked commands, the
   adapter formats only BODY through isolated native rumdl, leaves SUBJECT
   untouched, and uses the unchanged checker to accept the formatted message or
   reject unchanged incompatible literal text. Missing BODY yields subject-only
@@ -70,7 +70,7 @@ one leaf targeting about five-minute review including focused tests.
   marked 72/73-column commands and formatter failure. Inspect formatting scope,
   configured width reuse and unchanged checker/comment/scissors behavior;
   reuse its existing regressions without an exhaustive MD013 or Markdown suite.
-- **AC-2 TODO** Given quoting and Make/shell-looking input, the Make route
+- **AC-2 DONE** Given quoting and Make/shell-looking input, the Make route
   transports literal data safely and commits only staged changes with ordinary
   hooks, or fails visibly with HEAD unchanged.
 
