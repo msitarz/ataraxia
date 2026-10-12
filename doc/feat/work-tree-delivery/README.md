@@ -13,8 +13,9 @@ Keep the definer name/models and role-policy ownership with
   executor/session and accumulating isolated branch with ordered local pairs.
 - **DONE** Recursive integration: isolated child-parent ownership, reviewed
   linear subtree integration and one final requested-Work publication.
-- **TODO** [Visually descriptive contracts](visuals/README.md): proportionate
-  before/after relationships, interactions and public API descriptions.
+- **DONE** Visually descriptive contracts: verified proportionate before/after
+  relationships, interactions and public API descriptions with rendered
+  examples.
 
 ```mermaid
 sequenceDiagram
