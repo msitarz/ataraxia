@@ -155,12 +155,7 @@ def test_static_checks_request_equivalent_read_only_documentation_commands(
     sandbox: MakeSandbox,
     target: str,
 ) -> None:
-    """AC-2: Given local/CI static checks and full test/static/example
-    targets with caller selectors, documentation commands remain read-only and
-    equivalent, and full targets retain full scope rather than caller paths.
-
-    This case covers documentation command/flag parity.
-    """
+    """Run equivalent read-only documentation checks in local and CI targets."""
     # Given: the sandbox fixture supplies the isolated static-check environment.
 
     # When
@@ -170,8 +165,16 @@ def test_static_checks_request_equivalent_read_only_documentation_commands(
     assert result.exit_code == 0, result.output
     docs = tuple(call for call in result.calls if call.argv[:2] == ("run", "rumdl"))
     assert tuple(call.argv for call in docs) == (
-        ("run", "rumdl", "check", "."),
-        ("run", "rumdl", "fmt", "--check", "."),
+        ("run", "rumdl", "check", "--no-code-block-tools", "."),
+        ("run", "rumdl", "fmt", "--check", "--no-code-block-tools", "."),
+        (
+            "run",
+            "rumdl",
+            "check",
+            "--only-code-block-tools",
+            "--no-cache",
+            ".",
+        ),
     )
     assert {
         (call.environment["UV_OFFLINE"], call.environment["UV_NO_SYNC"])
@@ -222,12 +225,7 @@ def test_full_test_targets_ignore_caller_selectors(
     ac="AC-2",
 )
 def test_full_static_checks_ignore_caller_paths(sandbox: MakeSandbox) -> None:
-    """AC-2: Given local/CI static checks and full test/static/example
-    targets with caller selectors, documentation commands remain read-only and
-    equivalent, and full targets retain full scope rather than caller paths.
-
-    This case covers full static-check scope.
-    """
+    """Keep full static-check scope when caller paths are supplied."""
     # Given
     selector = "src/ataraxia/feature.py"
 
@@ -239,8 +237,16 @@ def test_full_static_checks_ignore_caller_paths(sandbox: MakeSandbox) -> None:
     assert {
         ("run", "ruff", "check", "."),
         ("run", "ruff", "format", "--check", "."),
-        ("run", "rumdl", "check", "."),
-        ("run", "rumdl", "fmt", "--check", "."),
+        ("run", "rumdl", "check", "--no-code-block-tools", "."),
+        ("run", "rumdl", "fmt", "--check", "--no-code-block-tools", "."),
+        (
+            "run",
+            "rumdl",
+            "check",
+            "--only-code-block-tools",
+            "--no-cache",
+            ".",
+        ),
         ("run", "pyrefly", "check"),
     } <= {call.argv for call in result.calls}
     assert not any(selector in call.argv for call in result.calls)
