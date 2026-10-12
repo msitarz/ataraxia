@@ -74,6 +74,21 @@ exclude = [
     "**/__pycache__/**",
 ]
 
+[tool.rumdl.code-block-tools]
+enabled = true
+on-error = "fail"
+on-missing-tool-binary = "fail"
+timeout = 30000
+
+[tool.rumdl.code-block-tools.tools.mermaid-validate]
+command = ["python", "script/validate_mermaid.py"]
+stdin = true
+stdout = false
+
+[tool.rumdl.code-block-tools.languages.mermaid]
+enabled = true
+lint = ["mermaid-validate"]
+
 [tool.rumdl.MD013]
 line-length = 80
 reflow = true

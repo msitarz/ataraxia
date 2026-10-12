@@ -29,7 +29,7 @@ relevant guidance.
 | Mechanical PR publication and published-branch rewrite leases | [Publisher](publisher.md) |
 | PR description format | [PR template](../.github/pull_request_template.md) |
 | Choosing checks and reporting evidence | [Checks and evidence](validation.md) |
-| Markdown formatting and local-link checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
+| Markdown formatting, local-link, and Mermaid fence checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
 | One architectural choice and its rationale | The relevant [ADR](adr/) |
@@ -108,9 +108,11 @@ do not shorten guidance at the expense of meaning. Verify local links and
 anchors, distinguish history from current instructions, and walk through
 affected reading routes. Check that moved requirements remain discoverable and
 examples agree with their owning contracts. Run `make doc-check` to check
-Markdown formatting and local links; run `make doc-format` to apply the
-configured formatting. Check that prose, headings, and examples use the same
-glossary terms. Follow
+Markdown formatting and local links and validate Mermaid fences with the
+embedded renderer; run `make doc-format` to apply the configured formatting.
+Blockquoted Mermaid may fail because native extraction can retain `>` prefixes,
+and validation does not establish GitHub or browser rendering parity. Check
+that prose, headings, and examples use the same glossary terms. Follow
 [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
 cohesive changes.
 

@@ -63,7 +63,7 @@ def test_make_exposes_configured_failure_and_stops_later_commands(
     # When
     result = sandbox.run(
         "doc-check",
-        fail_args=("run", "rumdl", "check", "."),
+        fail_args=("run", "rumdl", "check", "--no-code-block-tools", "."),
         exit_code=7,
         stdout="fixture output\n",
         stderr="fixture error\n",
@@ -72,7 +72,7 @@ def test_make_exposes_configured_failure_and_stops_later_commands(
     # Then
     assert result.exit_code == 2, result.output
     assert tuple(call.argv for call in result.calls) == (
-        ("run", "rumdl", "check", "."),
+        ("run", "rumdl", "check", "--no-code-block-tools", "."),
     )
     assert result.calls[0].environment["UV_OFFLINE"] == "true"
     assert result.calls[0].environment["UV_NO_SYNC"] == "true"

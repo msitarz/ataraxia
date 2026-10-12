@@ -128,12 +128,7 @@ def expected_size_advisory(*paths: str) -> list[str]:
 def test_make_tool_targets_preserve_defaults_and_route_selectors(
     sandbox: MakeSandbox, target: str, args: tuple[str, ...], expected: list[list[str]]
 ) -> None:
-    """AC-1: Given ordinary targets and hostile arguments, recorded commands
-    match promised routing, invalid inputs fail before tool invocation, and shell
-    expressions never create marker files.
-
-    This case covers the named command forwarding obligation.
-    """
+    """Route default and selected paths to ordinary Make tool targets."""
     # Given: the sandbox fixture supplies an isolated real-Make arrangement.
 
     # When
@@ -174,15 +169,10 @@ def test_lint_target_does_not_suppress_advisory_tool_failures(
     work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
     ac="AC-1",
 )
-def test_markdown_targets_pass_selected_paths_to_both_checkers(
+def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
     sandbox: MakeSandbox,
 ) -> None:
-    """AC-1: Given ordinary targets and hostile arguments, recorded commands
-    match promised routing, invalid inputs fail before tool invocation, and shell
-    expressions never create marker files.
-
-    This case covers the named command forwarding obligation.
-    """
+    """Route Markdown link checks over the graph and Mermaid over selected paths."""
     # Given: the sandbox fixture supplies an isolated real-Make arrangement.
 
     # When
@@ -191,8 +181,30 @@ def test_markdown_targets_pass_selected_paths_to_both_checkers(
     # Then
     assert result.exit_code == 0, result.output
     assert [list(call.argv) for call in result.calls] == [
-        ["run", "rumdl", "check", "doc/acceptance-tracing.md", "."],
-        ["run", "rumdl", "fmt", "--check", "doc/acceptance-tracing.md"],
+        [
+            "run",
+            "rumdl",
+            "check",
+            "--no-code-block-tools",
+            "doc/acceptance-tracing.md",
+            ".",
+        ],
+        [
+            "run",
+            "rumdl",
+            "fmt",
+            "--check",
+            "--no-code-block-tools",
+            "doc/acceptance-tracing.md",
+        ],
+        [
+            "run",
+            "rumdl",
+            "check",
+            "--only-code-block-tools",
+            "--no-cache",
+            "doc/acceptance-tracing.md",
+        ],
     ]
 
 
@@ -219,6 +231,7 @@ def test_markdown_format_target_passes_selected_paths(sandbox: MakeSandbox) -> N
             "run",
             "rumdl",
             "fmt",
+            "--no-code-block-tools",
             "--config",
             "pyproject.toml",
             "doc/acceptance-tracing.md",
