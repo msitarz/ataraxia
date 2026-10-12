@@ -126,12 +126,19 @@ the artifact revision and evidence. Use the same consolidated correction and
 review gates below for either responsibility.
 
 Definers and executors use an isolated Git worktree before editing. For a
-requested leaf, create its isolated branch/worktree and follow the usual Work
-PR flow. For a requested parent with direct leaves, assign those leaves
-sequentially to the same executor/session in one accumulating isolated
-branch/worktree. Reuse that tree for successive leaves rather than creating a
-tree per leaf. Before work begins, the handoff names the destination path,
-branch, and base ref and gives the creation command, for example:
+requested leaf, create its isolated branch/worktree and follow the usual Work PR
+flow. When assigning an executor to that leaf, use a fresh session. For each
+parent's implementation run, assign a fresh executor session and reuse it only
+for that parent's direct leaves and correction cycles, sequentially in one
+accumulating isolated branch/worktree. Distinct child parents use distinct fresh
+executor sessions even when scheduled sequentially; do not share an executor
+session across parents. Reuse the tree for successive leaves rather than
+creating a tree per leaf. Retire the executor session when the parent run or
+requested leaf delivery and its corrections are complete; never repurpose it for
+another Work. Retirement means stop assigning tasks, without requiring teardown,
+automatic termination, or cache purging. Before work begins, the handoff names
+the destination path, branch, and base ref and gives the creation command, for
+example:
 
 ```sh
 make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
@@ -168,7 +175,7 @@ After handoff and each correction request, wait for the completed artifact or a
 blocker needing maintainer steering before reviewing. Do not poll for routine
 status, inspect partial diffs, or send fragmented corrections. Review the
 completed diff once against acceptance and owner guidance, using reported
-evidence. Send one consolidated finding list to the same agent session;
+evidence. Send one consolidated finding list to the same active agent session;
 review corrections as needed. Reuse reported evidence and rerun focused checks
 only when a change, failure, or unresolved concern warrants it. Context reuse
 may help token caching, but caching is not guaranteed. If the same finding
@@ -188,7 +195,9 @@ contract, parent map, branch or PR, and available evidence. Establish which
 changes remain, which evidence applies to the current revision, and which
 criteria are unresolved before continuing. If uncertain, state that and ask for
 steering rather than treating the handoff as complete. A fresh session in the
-same role may continue the same scope after recovery.
+same role may continue the same approved scope after recovery. Delayed
+corrections after a completed executor run likewise use a fresh session after
+recovery; do not repurpose the retired session.
 
 Follow [acceptance tracing](acceptance-tracing.md) for criterion status,
 coverage semantics, evidence methods, and the retained verification/cleanup
