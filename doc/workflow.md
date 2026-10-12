@@ -51,6 +51,31 @@ revision; ordinary manual review and merge gates still apply. Approval of a
 Work plan alone does not waive the review-effort target if delivery proves
 harder to assess, even when scope has not changed.
 
+The owning orchestrator assesses the full expected leaf change against this
+target before dispatch and reassesses the actual diff before publication. When
+simplification and suitable reuse cannot keep it bounded, the definer iterates
+concrete child contracts and dependencies under independent owner review. Merge
+the concrete planning PR before expanded implementation begins.
+
+Strongly recommend at most five Work levels, counting the topmost Work as level
+1 and every descendant Work, including leaves. Count Work nodes rather than
+helper or specification directories. A proposal beyond five levels requires an
+explicit maintainer decision; do not automatically renest existing trees.
+
+## Decisions and new splits
+
+A new split or any needed maintainer decision pauses the entire requested Work
+tree, including other active subtrees. The discovering owner escalates through
+its parent owners to the requested Work owner, who coordinates safe stopping
+points: stop new dispatch and implementation, preserve in-flight artifacts and
+evidence, and report the concrete decision and affected scope to the maintainer.
+Contract preparation needed for steering may continue under owner review.
+
+Resume only the authorized scope after the maintainer decision and applicable
+planning gates. Expanded implementation waits for the concrete planning PR to
+merge; a decision alone does not bypass that gate. The explicit scope exception
+above still applies, without waiving independent review or merge gates.
+
 ## Lifecycle
 
 A parent README maps its immediate child Works. `TODO` links to an active
@@ -74,9 +99,10 @@ After a Work PR merges, follow the
 Before completing a Work, review tests added during it. Read
 [test ownership](test-ownership.md) when completing a Work.
 
-Discovery may add children without maintaining a fixed execution list. Nest
-when it reduces necessary context; strongly discourage more than five levels.
-Directory ancestry does not select a Git base.
+Discovery may add children without maintaining a fixed execution list, following
+the [scope and sizing](#scope-and-sizing) and
+[decision and split rules](#decisions-and-new-splits). Nest when it reduces
+necessary context. Directory ancestry does not select a Git base.
 
 ## Investigations
 

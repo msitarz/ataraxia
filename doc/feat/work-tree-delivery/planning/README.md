@@ -18,7 +18,7 @@ nodes, not helper/spec directories. Preserve model selection in
 [orchestrator guidance](../../../orchestrator.md#roles-and-delegation) rather
 than restating its defaults.
 
-- **AC-1 TODO** Given a ready leaf, oversized leaf, deeper proposal or
+- **AC-1 DONE** Given a ready leaf, oversized leaf, deeper proposal or
   maintainer decision, guidance consistently scopes reviewed contracts and
   safely pauses the whole requested tree before unapproved expanded
   implementation.
