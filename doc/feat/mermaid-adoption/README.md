@@ -1,8 +1,8 @@
 # Adopt bounded Markdown Mermaid checking
 
 Catch Mermaid fence failures through `make doc-check` using the accepted
-reproducible backend setup. Checker integration remains proposed; no checker or
-new diagram requirement is delivered here. Current
+reproducible backend setup and delivered rumdl integration. Final adoption
+acceptance remains open; no new diagram requirement is introduced. Current
 [Work guidance](../../workflow.md) already asks for diagrams when useful.
 
 The
@@ -20,10 +20,13 @@ because SVG rendering is lazy.
 - **DONE** Reproducible setup: pinned backend installation and offline SVG
   rendering accepted on local Intel macOS and Linux CI, including a manual
   fresh offline Intel macOS worktree check and disposable cleanup.
-- **TODO** [Checker integration](checker/README.md): add a small stdin renderer
-  to rumdl's native fence-tool route, then compose scoped Make/config checking.
+- **DONE** Checker integration: the
+  [stdin validator](../../../script/validate_mermaid.py) forces QuickJS SVG
+  rendering through scoped [Make](../../../Makefile) and
+  [rumdl configuration](../../../pyproject.toml) after existing documentation
+  checks, with offline execution, native diagnostics and no SVG output.
 - **TODO** [Upstream blockquote report](upstream-report/README.md): report or
-  identify the native extraction issue; nonblocking for checker implementation.
+  identify the native extraction issue; nonblocking for adoption acceptance.
 
 ```mermaid
 flowchart TD
@@ -42,24 +45,16 @@ locked backend selection in [pyproject.toml](../../../pyproject.toml) and
 [uv.lock](../../../uv.lock), and the retained
 [forced-render smoke test](../../../test/script/integration/test_mermaid_backend.py).
 Accepted backend Linux CI evidence suffices; no fresh worktree CI route is
-needed. The checker has two ordered leaves: the tiny stdin validator, then
-Make/config integration. rumdl owns fence discovery/extraction, timeout and
-diagnostics; our validator only forces actual SVG rendering. Each leaf targets
-about five-minute review including focused boundary tests. Reuse native rumdl
-and the accepted backend; append to existing Make routes without a custom
-parser, diagnostic model or process framework. Assess simplification and
-suitable reuse before splitting any larger delivery under the
-[scope rules](../../workflow.md#scope-and-sizing). Merge this revised plan
-before implementation; the upstream report may wait and does not block either
-leaf.
+needed. Integrated checker acceptance is also complete. rumdl owns fence
+discovery/extraction, timeout and diagnostics; the stdin validator only forces
+actual SVG rendering and discards output. The boundary reuses native rumdl
+behavior and the prepared backend. The upstream report remains
+independent and does not block adoption acceptance.
 
-Pinned rumdl 0.2.78 handles the exercised backtick, tilde and list-container
-fences, but retains leading `>` in blockquoted source. Accept that native
-limitation for this adoption and report it upstream separately; add no blanket
-marker stripping or local extractor workaround. A cached probe also returned
-success after only validator code changed, so the fence-tool route must use
-`--no-cache`. Native rumdl failure policy replaces custom
-aggregation/categories.
+The delivered route uses uncached native fence tools after fence-disabled
+link-graph and formatting stages. The known blockquote extraction and renderer
+parity limits remain in [documentation guidance](../../README.md#review);
+the upstream report owns the separate issue follow-up.
 
 Required adoption verification targets are local macOS x86_64 and the Linux
 architecture used by existing CI, under the project's Python 3.14+ policy and
@@ -73,8 +68,8 @@ verification responsibility before changing the backend or scope.
 Browser/GitHub rendering parity, visual quality, performance guarantees, PNG
 output and repairing upstream implementation are outside scope. Binary artifact
 provenance and transitive licensing were reviewed during setup; maintainer-fork
-wheel hosting remains a limitation. Opaque diagnostics belong to the active
-checker contracts. A new toolchain, patched upstream source,
+wheel hosting remains a limitation. Diagnostic behavior is owned by native
+rumdl and the delivered validator. A new toolchain, patched upstream source,
 artifact distribution service or expanded verification responsibility requires
 maintainer steering and a reviewed Work rather than an incidental workaround.
 

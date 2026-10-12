@@ -2,10 +2,10 @@
 
 Pinned rumdl 0.2.78 forwards leading blockquote markers to a code-block stdin
 tool. For a quoted Mermaid fence, expected raw source is
-`graph LR\n  X --> Y\n`; observed source is `> graph LR\n>   X --> Y\n`.
-This can reject otherwise valid Mermaid. This tiny nonblocking Work owns only
-an upstream issue report or identification of an existing matching issue;
-[checker implementation](../checker/README.md) can proceed independently.
+`graph LR\n  X --> Y\n`; observed source is `> graph LR\n>   X --> Y\n`. This
+can reject otherwise valid Mermaid. This tiny nonblocking Work owns only an
+upstream issue report or identification of an existing matching issue. The
+[delivered checker](../README.md#delivery-map) is independent of this report.
 
 Minimal Markdown input for the stdin recorder:
 
