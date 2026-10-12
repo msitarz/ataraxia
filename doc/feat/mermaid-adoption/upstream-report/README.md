@@ -16,7 +16,7 @@ Minimal Markdown input for the stdin recorder:
 > ```
 ````
 
-- **AC-1 TODO** Given a fresh upstream duplicate search, the matching issue URL
+- **AC-1 DONE** Given a fresh upstream duplicate search, the matching issue URL
   is recorded, or a minimal report is submitted to rumdl with pinned version
   0.2.78, a quoted fence/stdin recorder reproduction, and expected raw source
   versus actual leading `>` markers.
