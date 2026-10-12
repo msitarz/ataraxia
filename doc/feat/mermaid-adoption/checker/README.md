@@ -1,24 +1,21 @@
 # Integrate Mermaid validation through rumdl
 
 Use the accepted [setup outcome](../README.md#delivery-map). Pinned rumdl 0.2.78
-already supplies fence discovery, stdin extraction, tool execution, timeouts and
-file/fence diagnostics. The remaining repository boundary is scoped Make/config
-integration around the delivered stdin renderer, outside `src/ataraxia`.
+supplies fence discovery, stdin extraction, tool execution, timeouts and
+file/fence diagnostics. The checker integrates scoped Make/config around the
+delivered stdin renderer, outside `src/ataraxia`.
 
 ## Delivery map
 
-- **DONE** Added `script/validate_mermaid.py` to force QuickJS SVG rendering
-  from stdin and expose failure without saving output; its public-process tests
-  cover valid and malformed source.
-- **TODO** [Make and rumdl configuration](make/README.md): append scoped
-  uncached fence validation to existing `doc-check` using the delivered
-  validator.
+- **DONE** Added the [stdin validator](../../../../script/validate_mermaid.py)
+  to force QuickJS SVG rendering and expose failure without saving output; its
+  public-process tests cover valid and malformed source.
+- **DONE** Configured scoped fence validation in [Make](../../../../Makefile)
+  and [rumdl settings](../../../../pyproject.toml), using the validator after
+  existing `doc-check` stages.
 
-Merge this revised plan before implementation. Deliver the validator first,
-then Make/config wiring; sequence shared parent-map edits. Each leaf targets
-about five-minute review, including incremental boundary tests. Reuse native
-rumdl behavior and ordinary subprocess test helpers rather than adding parser,
-fence records, diagnostic models or process machinery. No direct
+Reuse native rumdl behavior and ordinary subprocess test helpers rather than
+adding parser, fence records, diagnostic models or process machinery. No direct
 `markdown-it-py` dependency is required. Preserve the existing backend smoke.
 
 ## Native boundary and limitation
