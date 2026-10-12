@@ -79,12 +79,12 @@ general duplication rule.
 - **DONE** Reuse guidance: applied existing principles during
   [Work definition](../../../../work-definition.md) and
   [orchestrator scope review](../../../../orchestrator.md).
-- **TODO** [Guidance application](guidance-application/README.md): investigate
-  consistent application in fresh and long-running sessions.
+- **ABORT** Guidance application: the maintainer is satisfied with current
+  guidance and has no current need for a controlled application comparison.
 - **DONE** Validation plan: distinguished planned methods from reviewed
   evidence and made `ac-check` declaration-only.
-- **TODO** [Guidance format](guidance-format/README.md): compare itemized and
-  paragraph formats for applying semantically equivalent guidance.
+- **ABORT** Guidance format: the maintainer is satisfied with current
+  guidance and has no current need for a controlled format comparison.
 - **DONE**
   [Leaf-agent selection results](https://github.com/msitarz/ataraxia/blob/d79a39c45961fd3d58519572a45ccbeae707d443/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/leaf-agent-selection/controlled-comparison/results.md):
   documentation missed the thresholds; code Sol-low is a numerical candidate for
@@ -156,8 +156,9 @@ differently sized Works.
   Validation: review the
   next iteration's existing PR evidence or trial-contract record against the
   declared basis and available measurements.
-- **AC-5 TODO** All mapped child Works are integrated and the bounded
-  comparison is captured before this parent is completed.
+- **AC-5 TODO** All mapped child outcomes are integrated or explicitly recorded
+  as aborted, and the bounded comparison is captured before this parent is
+  completed.
   Validation: check `master` status for each mapped child and inspect the
   comparison record.
 - **AC-6 TODO** The existing documentation review owner requires a whole-section
