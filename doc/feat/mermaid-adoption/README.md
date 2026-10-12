@@ -75,7 +75,7 @@ rumdl and the delivered validator. A new toolchain, patched upstream source,
 artifact distribution service or expanded verification responsibility requires
 maintainer steering and a reviewed Work rather than an incidental workaround.
 
-- **AC-1 TODO** Given accepted setup and checker deliveries, the existing
+- **AC-1 DONE** Given accepted setup and checker deliveries, the existing
   `doc-check` route rejects failing selected Mermaid fences offline without SVG
   outputs, while preserving Markdown and local-link checking and native rumdl
   selection, timeout and error behavior subject to the blockquote limitation.
