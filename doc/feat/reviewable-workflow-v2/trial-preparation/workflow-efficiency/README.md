@@ -93,9 +93,9 @@ general duplication rule.
   [policy decision](../../../../wdr/0013-use-sol-low-for-all-leaves.md)
   records the maintainer's adoption of Sol-low.
 - **ABORT** Leaf-session reuse: stopped at maintainer request.
-- **TODO** [Work context](work-context/README.md): route a small applicable
-  completion definition, gather bounded Work context for both roles, and
-  investigate optional acceptance snapshot provenance.
+- **TODO** [Work context](work-context/README.md): add optional Make guidance
+  reminders at selected command outcomes; retain the completed no-change
+  snapshot-tracing recommendation and aborted completion-routing outcome.
 - **TODO** [Single-agent execution](single-agent-execution/README.md): split
   plan drafted; protocol and fixture work precedes an explicitly authorized
   direct-versus-orchestrated comparison.
