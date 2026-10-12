@@ -113,9 +113,9 @@ embedded renderer; run `make doc-format` to apply the configured formatting.
 Native rumdl extraction can retain `>` prefixes from blockquoted Mermaid, which
 may cause checks to fail
 ([rumdl issue #949](https://github.com/rvben/rumdl/issues/949)). Embedded
-rendering does not establish GitHub or browser rendering parity. Check that prose,
-headings, and examples use the same glossary terms.
-Follow [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
+rendering does not establish GitHub or browser rendering parity. Check that
+prose, headings, and examples use the same glossary terms. Follow
+[repair and scope rules](change-rules.md#fix-the-underlying-problem) for
 cohesive changes.
 
 Background:
