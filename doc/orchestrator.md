@@ -69,11 +69,12 @@ expected change—including behavior, supporting changes, tests, and new
 concepts—against the quick maintainer review target in
 [Work scope and sizing](workflow.md#scope-and-sizing). If the necessary change
 remains too large after that assessment, split it into independently reviewable
-nested Works first. For an ad hoc handoff,
+nested Works through the
+[planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
+For an ad hoc handoff,
 define a parent Work and child Works; for an existing Work, nest children and
-update its parent map. Review and merge the revised plan before expanded work
-begins. Preserve the explicit maintainer scope exception; plan approval alone
-does not waive the review target.
+update its parent map. Apply the workflow owner's contract review, depth, and
+planning gates before expanded work.
 
 Before dispatch, identify dependencies and shared edit surfaces. Coordinate
 shared owners, parent maps, indexes, exact wording, formatter-valid snippets,
@@ -107,9 +108,11 @@ make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
 ```
 
 If implementation reveals out-of-scope work, stop before expanding and report
-the finding and evidence. Apply the split rule when it adds an independent
-responsibility or exceeds the review target. A different delegated agent still
-requires the maintainer's explicit approval.
+the finding and evidence. Route a new split or needed maintainer decision
+through the [whole requested-tree pause](workflow.md#decisions-and-new-splits),
+including other active subtrees. Apply the split rule when it adds an
+independent responsibility or exceeds the review target. A different delegated
+agent still requires the maintainer's explicit approval.
 
 ## Review and return
 
@@ -153,7 +156,9 @@ requesting infrastructure or partitioning the work. If the necessary diff still
 exceeds the target, stop publication and partition the completed work into at
 least two cohesive, independently reviewable child Work PRs within the target.
 Define their contracts and dependencies, update the parent map, and get the
-revised parent plan reviewed and merged before child delivery continues.
+revised parent plan reviewed and merged under the
+[planning and tree-wide pause rules](workflow.md#decisions-and-new-splits)
+before child delivery continues.
 Preserve and reuse completed implementation and valid evidence, identify
 remaining merge resolution, and reassess each child diff before publication. The
 explicit maintainer scope exception in
