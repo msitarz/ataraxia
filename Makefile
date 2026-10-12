@@ -81,19 +81,23 @@ arch-check: ## check architecture boundaries
 	uv run tach check
 	uv run tach check-external
 
-.PHONY: doc-check doc-format
-doc-check doc-format: export UV_OFFLINE := true
-doc-check doc-format: export UV_NO_SYNC := true
+.PHONY: doc-check doc-check-mermaid doc-format
+doc-check doc-check-mermaid doc-format: export UV_OFFLINE := true
+doc-check doc-check-mermaid doc-format: export UV_NO_SYNC := true
 
 _DOC_PATHS = $(_TARGET_PATHS)
 _DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(_ARGS) . ,.)
 
-doc-check: ## check Markdown formatting and local links (read only)
-	uv run rumdl check $(_DOC_GRAPH_PATHS)
-	uv run rumdl fmt --check $(_DOC_PATHS)
+doc-check: ## check Markdown links, formatting and Mermaid fences (read only)
+	uv run rumdl check --no-code-block-tools $(_DOC_GRAPH_PATHS)
+	uv run rumdl fmt --check --no-code-block-tools $(_DOC_PATHS)
+	$(MAKE) --no-print-directory doc-check-mermaid ARGS=$(call _SHELL_VALUE,$(ARGS))
+
+doc-check-mermaid: ## validate selected Mermaid fences; ARGS selects files or directories
+	uv run rumdl check --only-code-block-tools --no-cache $(_DOC_PATHS)
 
 doc-format: ## format Markdown; ARGS selects files or directories
-	uv run rumdl fmt --config pyproject.toml $(_DOC_PATHS)
+	uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS)
 
 .PHONY: test
 test: ## run full tests with coverage; ARGS=paths runs a focused selection

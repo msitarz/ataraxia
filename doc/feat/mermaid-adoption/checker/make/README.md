@@ -35,7 +35,7 @@ existing formatting/link/missing-tool regressions at their current owners.
 Document the native blockquote limitation and command help as needed; do not
 promise full container support or GitHub/browser parity.
 
-- **AC-1 TODO** Given selected files/directories and an invalid Mermaid fence
+- **AC-1 DONE** Given selected files/directories and an invalid Mermaid fence
   outside them, `doc-check` validates only selected Mermaid while preserving
   the full existing link graph and selected formatting checks. The ordinary
   stages have fence tooling disabled and the scoped stage reaches the actual
@@ -49,7 +49,7 @@ promise full container support or GitHub/browser parity.
   tool timeout; bounded test calls prove actual validator execution, not only
   shim routing. Preserve
   native fail-fast behavior without an exhaustive parser/timeout matrix.
-- **AC-2 TODO** Given empty `ARGS`, valid or malformed repository Mermaid and
+- **AC-2 DONE** Given empty `ARGS`, valid or malformed repository Mermaid and
   no-diagram selections, the scoped uncached stage uses default `.` and current
   exclusion policy, succeeds or fails through native rumdl behavior, and emits
   no SVG or checkout changes offline. Ordinary-stage failures still stop
