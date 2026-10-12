@@ -3,9 +3,9 @@
 Make existing guidance easier to encounter at selected command boundaries while
 preserving the owning Work as the source of scope and acceptance. The
 [workflow-efficiency parent](../README.md#works) maps this outcome. Make
-guidance reminders now provide optional questions at selected successful
+guidance reminders provide optional questions at selected successful
 top-level targets, including a conditional visual-clarity question for direct
-Mermaid validation. The independent snapshot-tracing
+Mermaid validation and test-quality questions. The independent snapshot-tracing
 Investigation completed with a no-change recommendation; completion routing
 was aborted.
 
@@ -14,10 +14,10 @@ was aborted.
 - **ABORT** Completion routing: current focused owners cover completion
   responsibilities; a generated or selected Definition of Done layer is not
   justified.
-- **DONE** Make guidance reminders: selected successful top-level
-  documentation, Mermaid, acceptance-check, and commit targets emit optional
-  quality questions; recursive invocations suppress questions and failures
-  retain ordinary diagnostics.
+- **TODO** [Make guidance reminders](guidance-reminders/README.md): selected
+  successful top-level documentation, Mermaid, acceptance-check, commit, and
+  test-execution targets emit optional quality questions; recursive invocations
+  suppress questions and failures retain ordinary diagnostics.
 - **DONE** Snapshot tracing: recommended retaining Work path and AC markers
   with Git history navigation; optional verification SHA did not justify
   compatibility and rebase-maintenance cost.

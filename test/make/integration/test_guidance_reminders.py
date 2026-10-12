@@ -113,3 +113,80 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
     assert "nested output" in result.stdout
     assert "Was the whole affected section" not in result.stdout
     assert "For meaningful changes:" not in result.stdout
+
+
+@pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
+    ac="AC-1",
+)
+@pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
+    ac="AC-2",
+)
+@pytest.mark.parametrize(
+    ("arguments", "expected_calls"),
+    [
+        (("test",), (("run", "pytest", "--cov"),)),
+        (
+            ("test", "ARGS=test/make/integration/test_guidance_reminders.py"),
+            (("run", "pytest", "test/make/integration/test_guidance_reminders.py"),),
+        ),
+        (("ac-test",), (("run", "python", "script/acceptance_tests.py", "test"),)),
+        (("verify-test",), (("run", "pytest", "--cov"),)),
+        (("verify-examples",), (("run", "pytest", "example/"),)),
+        (
+            ("ci-test",),
+            (
+                ("sync", "--locked", "--group", "dev"),
+                ("sync", "--locked", "--group", "dev", "--check", "--offline"),
+                ("run", "pytest", "--cov"),
+            ),
+        ),
+        (
+            ("ci-examples",),
+            (("sync", "--locked", "--group", "dev"), ("run", "pytest", "example/")),
+        ),
+    ],
+    ids=[
+        "test-full",
+        "test-args",
+        "ac-test",
+        "verify-test",
+        "verify-examples",
+        "ci-test",
+        "ci-examples",
+    ],
+)
+def test_selected_test_targets_remind_once_after_success(
+    sandbox: MakeSandbox,
+    arguments: tuple[str, ...],
+    expected_calls: tuple[tuple[str, ...], ...],
+) -> None:
+    """AC-1/AC-2: successful test targets emit one optional owner reminder."""
+    # Given: the recorder returns success and reports output for every command.
+
+    # When
+    result = sandbox.run(*arguments, stdout="command output\n")
+
+    # Then
+    assert result.exit_code == 0, result.output
+    assert tuple(call.argv for call in result.calls) == expected_calls
+    assert result.stdout.rindex("command output") < result.stdout.index(
+        "Are tests in the right layer/layout?"
+    )
+    assert (
+        tuple(
+            result.stdout.count(fragment)
+            for fragment in (
+                "At Work closure",
+                "reviewed static fixtures",
+                "independent expectations at the real boundary",
+                "doc/testing.md#layout-ownership-and-adoption",
+                "doc/test-ownership.md#test-ownership",
+                "doc/testing.md#treat-test-data-as-data",
+                "doc/testing.md#what-a-test-proves",
+                "doc/testing.md#make-expectations-independent",
+            )
+        )
+        == (1,) * 8
+    )
