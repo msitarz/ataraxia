@@ -35,18 +35,18 @@ recorded; do not add a redundant report, template, or status ledger.
 
 ## Acceptance
 
-- **AC-1 TODO** Selected Make command outcomes provide optional owner
+- **AC-1 DONE** Selected Make command outcomes provide optional owner
   reminders that preserve failure behavior and prompt independent orchestrator
   review; the former context-assembly contract is replaced.
   Validation: inspect the reminder contract, focused integration evidence, and
   independent review; confirm the aborted selected Definition of Done
   dependency is not assumed and no context assembler is introduced.
-- **AC-2 TODO** The independent snapshot-tracing Investigation recommends
+- **AC-2 DONE** The independent snapshot-tracing Investigation recommends
   change, no change, or an inconclusive result without adopting a marker or
   policy.
   Validation: inspect the Investigation result against its evidence and
   verify it has no completion-routing or context-tool prerequisite.
-- **AC-3 TODO** Remaining outcomes have verified criteria and evidence at
+- **AC-3 DONE** Remaining outcomes have verified criteria and evidence at
   their owners, shared guidance changes remain coordinated with linked Works,
   and the map distinguishes the aborted Work from delivered outcomes.
   Validation: check parent status and delivery evidence for remaining children,
