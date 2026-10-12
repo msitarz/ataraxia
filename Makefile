@@ -97,7 +97,8 @@ doc-check: ## check Markdown links, formatting and Mermaid fences (read only)
 	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Was the whole affected section reviewed at its owner for duplication and accuracy? doc/README.md#review'; fi
 
 doc-check-mermaid: ## validate selected Mermaid fences; ARGS selects files or directories
-	uv run rumdl check --only-code-block-tools --no-cache $(_DOC_PATHS)
+	@uv run rumdl check --only-code-block-tools --no-cache $(_DOC_PATHS) && \
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'For meaningful changes: would a Mermaid diagram or before/after visual clarify what changes? doc/work-definition.md#describing-changes'; fi
 
 doc-format: ## format Markdown; ARGS selects files or directories
 	@uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS) && \

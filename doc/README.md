@@ -69,6 +69,9 @@ conflicts with an approved contract, surface the mismatch rather than treating
 implementation as the intended design. Resolve inconsistent copies at the owner
 and remove or link the others; do not add an exception to reconcile them.
 
+When a guidance file or heading linked by a Make reminder moves or is renamed,
+update the reminder link in the same change and verify its target.
+
 Keep accepted ADR and WDR history intact, using the [ADR
 workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
 decisions. A new change owns its own evidence. Issue and PR records link to

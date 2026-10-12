@@ -19,7 +19,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     ac="AC-1",
 )
 @pytest.mark.parametrize(
-    ("target", "command", "anchor", "question"),
+    ("target", "command", "anchor", "question", "other_question"),
     [
         (
             "doc-format",
@@ -34,11 +34,20 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             ),
             "doc/work-definition.md#work-definition",
             "existing commands/APIs/helpers",
+            "For meaningful changes",
         ),
         (
             "doc-check",
             ("run", "rumdl", "check", "--only-code-block-tools", "--no-cache", "."),
             "doc/README.md#review",
+            "whole affected section",
+            "For meaningful changes",
+        ),
+        (
+            "doc-check-mermaid",
+            ("run", "rumdl", "check", "--only-code-block-tools", "--no-cache", "."),
+            "doc/work-definition.md#describing-changes",
+            "would a Mermaid diagram or before/after visual clarify what changes?",
             "whole affected section",
         ),
         (
@@ -46,15 +55,17 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             ("run", "python", "script/acceptance_coverage.py", "check"),
             "doc/orchestrator.md#review-and-return",
             "Independent orchestrator review",
+            "For meaningful changes",
         ),
         (
             "commit",
             ("run", "python", "script/commit_command.py"),
             "doc/change-rules.md#fix-the-underlying-problem",
             "fundamentally wrong approach",
+            "For meaningful changes",
         ),
     ],
-    ids=["doc-format", "doc-check", "ac-check", "commit"],
+    ids=["doc-format", "doc-check", "doc-check-mermaid", "ac-check", "commit"],
 )
 def test_selected_top_level_targets_remind_after_success(
     sandbox: MakeSandbox,
@@ -62,6 +73,7 @@ def test_selected_top_level_targets_remind_after_success(
     command: tuple[str, ...],
     anchor: str,
     question: str,
+    other_question: str,
 ) -> None:
     """AC-1: Successful selected targets emit their owner question afterward."""
     # Given: the existing recorder returns success for the selected command.
@@ -75,6 +87,7 @@ def test_selected_top_level_targets_remind_after_success(
     assert result.stdout.rindex("command output") < result.stdout.index(question)
     assert result.stdout.count(anchor) == 1
     assert result.stdout.count(question) == 1
+    assert other_question not in result.stdout
 
 
 @pytest.mark.covers(
@@ -99,27 +112,4 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
     )
     assert "nested output" in result.stdout
     assert "Was the whole affected section" not in result.stdout
-
-
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
-    ac="AC-2",
-)
-def test_mermaid_target_has_no_reminder(sandbox: MakeSandbox) -> None:
-    """AC-2: The unselected Mermaid helper remains reminder-free."""
-    # Given: a direct helper invocation reaches the recording command.
-
-    # When
-    result = sandbox.run("doc-check-mermaid")
-
-    # Then
-    assert result.exit_code == 0, result.output
-    assert result.calls[0].argv == (
-        "run",
-        "rumdl",
-        "check",
-        "--only-code-block-tools",
-        "--no-cache",
-        ".",
-    )
-    assert "doc/README.md#review" not in result.stdout
+    assert "For meaningful changes:" not in result.stdout
