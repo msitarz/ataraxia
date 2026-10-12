@@ -44,12 +44,7 @@ material corrections. The orchestrator remains accountable for publication of
 the Work branch and any rewrite to its PR; mechanical execution may use the
 [publisher](publisher.md).
 
-Do not publish draft PRs. Ready means agent review passed and maintainer review
-is requested; it does not mean maintainer approval, merge, or successful CI.
-Apply the [decision-record status rule](decision-records.md#record-format) to
-ADRs and WDRs before publication. Follow the
-[check and evidence policy](validation.md) for mechanical-check
-evidence and the latest-head CI gate.
+Follow the [publication requirements](#publication-requirements).
 
 Use the [PR description template](../.github/pull_request_template.md) and
 remove its instruction comments before publishing. Write the description to a
@@ -62,3 +57,14 @@ material limitations that help assess the change.
 Do not add evidence links, evidence prose, acceptance criteria, or check
 inventories. Do not add PR comments or discussion to record review or report
 checks.
+
+## Publication requirements
+
+Read when preparing or mechanically publishing a PR.
+
+Do not publish draft PRs. Ready means agent review passed and maintainer review
+is requested; it does not mean maintainer approval, merge, or successful CI.
+Apply the [decision-record status rule](decision-records.md#record-format) to
+ADRs and WDRs before publication. Follow the
+[check and evidence policy](validation.md) for mechanical-check
+evidence and the latest-head CI gate.

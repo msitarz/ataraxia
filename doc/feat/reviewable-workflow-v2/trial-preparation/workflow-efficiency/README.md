@@ -77,7 +77,7 @@ general duplication rule.
   same concepts while distinguishing repeated words from duplicated
   definitions or instructions.
 - **DONE** Reuse guidance: applied existing principles during
-  [Work definition](../../../../workflow.md) and
+  [Work definition](../../../../work-definition.md) and
   [orchestrator scope review](../../../../orchestrator.md).
 - **TODO** [Guidance application](guidance-application/README.md): investigate
   consistent application in fresh and long-running sessions.

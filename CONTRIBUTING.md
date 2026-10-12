@@ -84,12 +84,14 @@ silently or manipulate Git lock files.
 ### Work branches, review, and merge
 
 Start the maintainer's requested Work branch from current `master` and target
-its final PR to `master`. Within that requested tree, child parents use the
-isolated branches and base refs assigned by their immediate parent owners under
-[orchestrator guidance](doc/orchestrator.md#roles-and-delegation); direct leaves
-accumulate locally and do not open separate PRs. Only an explicit maintainer
-instruction permits another requested-Work base or PR target; identify the
-exception in the PR.
+its final PR to `master`. Within that requested tree, the orchestrator assigns
+isolated child-parent branches/worktrees and base refs under
+[orchestrator guidance](doc/orchestrator.md#roles-and-delegation). An executor
+uses the branch/worktree and base supplied in its handoff, verifies that base
+before editing, and reports a missing or inconsistent assignment to its owner.
+Direct leaves accumulate locally and do not open separate PRs. Only an explicit
+maintainer instruction permits another requested-Work base or PR target;
+identify the exception in the PR.
 
 Follow the [Work scope and sizing rules](doc/workflow.md#scope-and-sizing) for
 reviewable deliveries. Material changes to an approved direction or contract
@@ -102,14 +104,16 @@ do not squash.
 
 Before preparing a published-branch rewrite, follow
 [publisher rewrite guidance](doc/publisher.md#published-branch-rewrites).
-Follow [Pull requests](doc/pull-requests.md) for publication and descriptions,
-and [orchestrator handoffs](doc/orchestrator.md#review-and-return) for agent
-review, publication ownership, and merge authority.
+When publishing or writing a description, follow
+[Pull requests](doc/pull-requests.md). When acting as orchestrator, follow
+[orchestrator handoffs](doc/orchestrator.md#review-and-return) for agent review
+and publication ownership. The maintainer reviews and merges; agents merge
+only with explicit maintainer instruction.
 
 After the maintainer confirms a Work PR merged, follow
 [post-merge branch cleanup](doc/branch-cleanup.md). Retained branches and GitHub
 status queries are not routine Work tracking; use the
-[Work lifecycle](doc/workflow.md) for parent status rules.
+[Work lifecycle](doc/workflow.md#lifecycle) for parent status rules.
 
 ## Commits and pull requests
 

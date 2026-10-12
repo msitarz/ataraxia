@@ -16,12 +16,12 @@ assign ownership of evidence from a declared empirical protocol.
 
 ## Decision
 
-Use Evaluation as a Work kind owning empirical evidence, with reusable
-methods in [empirical evaluation guidance](../evaluation.md) and relationships
-in [Work workflow](../workflow.md#evaluations). A specific Work and protocol own
-the question, inputs, limits, thresholds, and observations. Keep the normal
-Work lifecycle, review, and evidence procedures; allow independent Evaluations,
-support for Investigations, and small inline comparisons.
+Use Evaluation as a Work kind owning empirical evidence, with reusable methods
+in [empirical evaluation guidance](../evaluation.md) and relationships in
+[Work definition](../work-definition.md#evaluations). A specific Work and
+protocol own the question, inputs, limits, thresholds, and observations. Keep
+the normal Work lifecycle, review, and evidence procedures; allow independent
+Evaluations, support for Investigations, and small inline comparisons.
 
 Keeping all methods local avoids a new kind but loses discoverability after
 cleanup. Putting them only under Investigation ties evidence to recommendations;
