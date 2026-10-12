@@ -7,8 +7,8 @@ Keep the definer name/models and role-policy ownership with
 
 ## Delivery map
 
-- **TODO** [Planning and escalation](planning/README.md): leaf sizing, contract
-  iteration, safe whole-tree pauses and the five-level recommendation.
+- **DONE** Planning and escalation: bounded leaf sizing, reviewed contract
+  iteration, safe whole-tree pauses and explicit decisions beyond five levels.
 - **TODO** [Sequential delivery](sequential/README.md): one executor/session and
   accumulating isolated branch for a requested parent's direct leaves.
 - **TODO** [Recursive integration](integration/README.md): child-parent
