@@ -104,12 +104,16 @@ doc-format: ## format Markdown; ARGS selects files or directories
 	@uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS) && \
 	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If defining a Work: does its contract solve the underlying problem using inspected existing commands/APIs/helpers? doc/work-definition.md#work-definition'; fi
 
+_TEST_QUALITY_QUESTIONS = Are tests in the right layer/layout? At Work closure, are retained tests project regressions rather than temporary adoption probes? doc/testing.md\#layout-ownership-and-adoption doc/test-ownership.md\#test-ownership\nAre reviewed static fixtures treated as data without redundant validation? doc/testing.md\#treat-test-data-as-data\nDo assertions catch the named defect with independent expectations at the real boundary? doc/testing.md\#what-a-test-proves doc/testing.md\#make-expectations-independent
+
 .PHONY: test
 test: ## run full tests with coverage; ARGS=paths runs a focused selection
 ifeq ($(strip $(ARGS)),)
 	uv run pytest --cov
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 else
 	uv run pytest $(_ARGS)
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 endif
 
 .PHONY: run deps-lock
@@ -137,6 +141,7 @@ ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
 
 ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
 	uv run python script/acceptance_tests.py test
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 
 ac-check: ## validate AC declarations/references (WORK=path/to/README.md)
 	@uv run python script/acceptance_coverage.py check && \
@@ -169,9 +174,11 @@ verify-check: ## run static checks offline
 	$(MAKE) arch-check
 verify-test: ## run tests offline
 	$(MAKE) test ARGS=
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 
 verify-examples: ## run example tests offline
 	$(MAKE) test ARGS=example/
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 
 verify-package: ## build and smoke-test a temporary package install
 	uv run python script/smoke_installed_package.py
@@ -198,9 +205,11 @@ ci-audit: ## run the network-dependent vulnerability audit
 ci-test: ci-setup ## run the CI test suite
 	$(MAKE) verify-setup
 	$(MAKE) verify-test
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 
 ci-examples: ci-setup ## run CI example tests
 	$(MAKE) verify-examples
+	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 
 ci-package: ci-package-setup ## build and smoke-test the installed package
 	$(MAKE) verify-package
