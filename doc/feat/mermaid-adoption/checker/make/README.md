@@ -1,7 +1,9 @@
 # Wire scoped rumdl fence tools into doc-check
 
-Depend on the accepted [stdin validator](../validator/README.md). Configure a
-Mermaid lint tool in `pyproject.toml` under `[tool.rumdl.code-block-tools]`,
+Invoke the repository's
+[stdin validator](../../../../../script/validate_mermaid.py). Configure a
+Mermaid lint tool in `pyproject.toml` under
+`[tool.rumdl.code-block-tools]`,
 its `tools` and `languages.mermaid` sections with `enabled=true`. Invoke the
 prepared Python validator with stdin enabled, `stdout=false`,
 `on-error="fail"`, `on-missing-tool-binary="fail"` and a
