@@ -2,15 +2,17 @@
 
 Use the accepted [setup outcome](../README.md#delivery-map). Pinned rumdl 0.2.78
 already supplies fence discovery, stdin extraction, tool execution, timeouts and
-file/fence diagnostics. The remaining repository boundary is a small stdin
-renderer plus scoped Make/config integration, outside `src/ataraxia`.
+file/fence diagnostics. The remaining repository boundary is scoped Make/config
+integration around the delivered stdin renderer, outside `src/ataraxia`.
 
 ## Delivery map
 
-- **TODO** [Stdin validator](validator/README.md): force QuickJS SVG rendering
-  of the supplied source and expose failure without saving output.
-- **TODO** [Make and rumdl configuration](make/README.md): after validator
-  acceptance, append scoped uncached fence validation to existing `doc-check`.
+- **DONE** Added `script/validate_mermaid.py` to force QuickJS SVG rendering
+  from stdin and expose failure without saving output; its public-process tests
+  cover valid and malformed source.
+- **TODO** [Make and rumdl configuration](make/README.md): append scoped
+  uncached fence validation to existing `doc-check` using the delivered
+  validator.
 
 Merge this revised plan before implementation. Deliver the validator first,
 then Make/config wiring; sequence shared parent-map edits. Each leaf targets
