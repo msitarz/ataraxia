@@ -25,7 +25,7 @@ before/after accuracy. Keep the complete guidance/example change within about
 five-minute review; no tooling, mandatory template or unrelated retrospective
 Work edits.
 
-- **AC-1 TODO** Given a meaningful structural, interaction, lifecycle or public
+- **AC-1 DONE** Given a meaningful structural, interaction, lifecycle or public
   API change, reviewed Work guidance yields accurate proportionate before/after
   descriptions with suitable visuals and compact API detail; tiny changes and
   parent/leaf placement remain clear without duplicated context or weakened

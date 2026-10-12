@@ -26,11 +26,102 @@ feasibility needs checking. For performance claims, give a representative
 workload, baseline, measurement method, and success threshold. Scale detail to
 the Work; these are prompts, not mandatory fields or headings.
 
-Use standard relative Markdown links. Use Mermaid when a diagram helps explain
-behavior, relationships, or design choices; small changes do not need one.
+Use standard relative Markdown links. Follow the proportionate descriptions
+below for meaningful changes; small changes may need only prose.
 
 Do not require fixed headings, YAML frontmatter, a journal, or separate
 human-facing and agent-facing versions of the same contract.
+
+## Describing changes
+
+For meaningful architecture, package/module relationships, interactions or
+lifecycle changes, include proportionate before/after visuals. Inspect the
+current source or contract first and identify the verified revision; distinguish
+that before state from proposed additions, changes and removals. Update a
+proposal's description when the verified implementation differs. Label
+historical examples and illustrative designs so they cannot be mistaken for
+current or approved behavior.
+
+Choose a GitHub-supported Mermaid type suited to the question: flowcharts for
+relationships, sequence diagrams for interactions, class diagrams for type
+relationships, or state diagrams for lifecycle transitions. Show only the
+affected context. Include compact affected public API descriptions for
+functions, classes and data structures, with useful signatures, inputs/outputs,
+behavior and compatibility changes. Tiny edits may use clear before/after prose.
+
+Put shared context in the parent overview and local detail in the affected leaf;
+link between them instead of copying diagrams or API descriptions. These are
+content choices, not mandatory headings or a template. Review before/after
+accuracy against the source and contract, and run `make doc-check` on real
+Mermaid fences for embedded rendering. Rendering checks syntax, not acceptance
+or GitHub/browser parity. Visuals support the criterion's method and evidence
+under
+[acceptance tracing](acceptance-tracing.md#planned-validation-and-evidence).
+
+### Examples
+
+This historical relationship example describes the commit command delivered
+between `2a51814` (no `make commit` target) and `25814906` (target and helper
+present), verified in their Makefiles and the latter's
+[commit helper](../script/commit_command.py). It illustrates an added call path;
+the checker and normal Git hooks remain in place.
+
+```mermaid
+flowchart LR
+    subgraph Before
+        G1[git commit] --> H1[Normal Git hooks]
+    end
+    subgraph After
+        M[make commit: added] --> C[Commit helper: added]
+        C --> R[Pinned rumdl body formatting]
+        C --> V[Existing message checker]
+        C --> G2[git commit]
+        G2 --> H2[Normal Git hooks]
+    end
+```
+
+The same historical change can instead show the interaction relevant to a leaf:
+previously the caller supplied the message directly to Git; afterward the added
+Make route formats an optional body and validates the message before invoking
+Git. Validation failure returns before Git; successful validation reaches the
+ordinary hooks. A parent can link to this leaf detail while showing only the
+shared relationship overview above.
+
+```mermaid
+sequenceDiagram
+    participant C as Caller
+    participant H as Commit helper
+    participant G as Git
+    C->>H: Subject and optional body
+    H->>H: Format optional body and validate message
+    alt Formatting or validation fails
+        H-->>C: Refusal without calling Git
+    else Valid message
+        H->>G: Commit existing index
+        G->>G: Normal hooks
+        G-->>H: Git commit status
+        H-->>C: Git commit status
+    end
+```
+
+For that command's public interface, before: no Make commit target. After:
+`make commit SUBJECT='fix: describe change' [BODY='Why it matters.']` commits
+the existing index after formatting an optional body and checking the message;
+SUBJECT must be nonempty and one line. See
+[contribution guidance](../CONTRIBUTING.md#commits-and-pull-requests) for its
+use.
+
+An illustrative Python API change, unrelated to repository plans, might say:
+before `Catalog.find(key: str) -> Item` raises `KeyError` for missing keys;
+proposed `Catalog.find(key: str) -> Item | None` returns `None` instead.
+Describe the affected `Catalog` class and returned `Item` data structure, and
+require callers to handle the optional result. This small signature/behavior
+change needs compact prose; add a class diagram only if type relationships also
+change.
+
+A tiny edit can say: “Before, the help text misspells `subject`; after, it
+spells `subject` correctly. Arguments and behavior are unchanged.” No diagram is
+needed.
 
 ## Scope and sizing
 
