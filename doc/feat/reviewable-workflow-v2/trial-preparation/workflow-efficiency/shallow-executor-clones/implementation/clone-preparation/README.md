@@ -17,11 +17,11 @@ Make target, helper, cache filter or offline environment reconstruction.
 Reuse native operations and existing evidence; do not add tests of upstream Git
 or setup fixtures, or rerun the Investigation. Runtime owns sandbox enforcement,
 actual start and exact-session resume; import owns accepted-output delivery.
-Keep this leaf within a five-minute complete review.
+Keep this leaf within a five-minute complete review. All criteria remain TODO.
 
 ## Acceptance
 
-- **AC-1 DONE** Given a fresh final destination and frozen committed input,
+- **AC-1 TODO** Given a fresh final destination and frozen committed input,
   the procedure prepares an independent depth-one single-selected-branch clone
   at the exact recorded HEAD without tags, origin, alternates, hardlinked
   objects, extra source refs or dirty source inputs. It assigns the executor
@@ -36,7 +36,7 @@ Keep this leaf within a five-minute complete review.
   stopped gates. Any future manual check freezes the current selected input,
   tools/platform and final paths before execution; it is not a new experiment
   authorized by this plan.
-- **AC-2 DONE** Existing locked online Make setup prepares fresh clone-local
+- **AC-2 TODO** Existing locked online Make setup prepares fresh clone-local
   virtual environment, caches and installed pinned hooks in the final location;
   readiness is accepted before handoff. Sanitized configuration, resolved
   interpreter paths and permitted dependency reads are explicit. No old
@@ -51,7 +51,7 @@ Keep this leaf within a five-minute complete review.
   caches alone establish no privacy guarantee. Further approved manual checks
   freeze the current condition and use its actual privacy controls, preserving
   failures; do not duplicate historical cache inventories.
-- **AC-3 DONE** The handoff freezes permitted files/references and excludes
+- **AC-3 TODO** The handoff freezes permitted files/references and excludes
   prohibited current-tree answers/history evidence as required by the intended
   evaluation. Readiness under the actual intended restricted boundary confirms
   useful prepared tools/hooks and denied source/history/network access before
