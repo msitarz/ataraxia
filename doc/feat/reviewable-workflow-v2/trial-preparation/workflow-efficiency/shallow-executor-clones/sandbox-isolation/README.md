@@ -95,6 +95,6 @@ contracts and incomplete criteria remain.
   that every untested boundary is disclosed.
 
 Return the tested configuration and evidence for
-[Executor communication](../executor-communication/README.md) and
-[Artifact delivery](../artifact-delivery/README.md). Preserve reports and
+[Executor communication](../../../../../evaluation-sandboxes/executor-communication/README.md)
+and [Artifact delivery](../artifact-delivery/README.md). Preserve reports and
 promote lasting findings under the normal Investigation lifecycle.

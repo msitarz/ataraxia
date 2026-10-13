@@ -20,10 +20,15 @@ Preparation evidence supports only the tested Darwin Intel deterministic
 condition; it establishes neither filtered-answer exclusion nor model-session
 isolation, and did not capture the full effective environment.
 
+Before this ownership correction at `0a83600a6be11daa369ddbfd2ca3d421fae75e1c`,
+managed preparation/runtime planning already existed while import and
+communication remained in the shallow-clone tree. The correction moves their
+owners without delivering commands.
+
 ```mermaid
 flowchart LR
-    B[Before: manual clone contracts and linked-worktree tooling]
-    B --> G[Delivered: reconciled owners and Work-owned inputs]
+    B[Before: managed preparation/runtime, shallow-tree import/communication]
+    B --> G[Reconciliation: owners and Work-owned inputs]
     subgraph Proposed[Proposed: project managed root]
         W[Child-readable workspace: clone, tools, scratch]
         P[Private control: auth, Codex state, raw sessions, reviewer outputs]
@@ -31,6 +36,8 @@ flowchart LR
         E[Enforcement and readiness] --> X[Native sandbox-exec]
         X --> W
         X --> P
+        X --> A[Accepted artifact import]
+        Q[Executor communication Investigation] --> X
         P --> R[Conditional session report]
     end
     G --> C
@@ -63,10 +70,9 @@ remain distinct from the host transport needed to call the model service.
 
 ## Children and gates
 
-- **DONE** Preparation and ownership reconciliation: preserved useful manual
-  inputs inside this Work in [preparation input](preparation-input.md), with
-  managed creation/enforcement/execution replacing the unimplemented old
-  contracts and artifact import retaining its existing owner and TODO outcomes.
+- **TODO** [Preparation and ownership reconciliation](reconciliation/README.md):
+  review corrected ownership, preserved manual input and superseded wrapper
+  disposition before implementation.
 - **TODO** [Create prepared sandboxes](creation/README.md): online independent
   clone, native setup/hooks/readiness and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
@@ -77,6 +83,14 @@ remain distinct from the host transport needed to call the model service.
 - **TODO** [Native execution and retained artifacts](execution/README.md):
   `sandbox-exec` initial/exact-session resume and failure preservation; after
   enforcement and lifecycle active-state guards.
+- **TODO**
+  [Executor communication Investigation](executor-communication/README.md):
+  investigate native exec/resume behavior, routing, failure/recovery and whether
+  app-server control is needed; findings inform native execution without owning
+  its implementation.
+- **TODO** [Accepted executor commit import](artifact-import/README.md):
+  accepted output into a designated full-history Work branch after reviewed
+  execution.
 - **TODO** [Session statistics Investigation](statistics/README.md): compare
   tokenuse, suitable Python alternatives and native CLI data; independent of
   model execution.
@@ -85,13 +99,14 @@ remain distinct from the host transport needed to call the model service.
   or record an explicit reviewed unsupported/no-fit disposition; no tool
   adoption is predetermined.
 
-Reviewed reconciliation resolved overlap with the
-[existing implementation](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/README.md)
-under the approved #315 disposition: creation supersedes manual clone
-preparation, enforcement/execution supersede the old runtime, and artifact
-import stays active in its existing tree. Do not run concurrent duplicate
-runtime implementations. Each leaf is one coherent review outcome; reassess its
-complete expected and actual diff against the
+The maintainer-authorized #315 correction assigns existing artifact import and
+executor communication directly to this parent. Creation supersedes manual
+clone preparation; enforcement/execution supersede the old runtime. The old
+implementation Work has no active child and is superseded; its delivered
+[registry usage owner](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-selection.md)
+survives pending separate consumer-gated cleanup. Do not run concurrent
+duplicate runtime implementations. Each leaf is one coherent review outcome;
+reassess its complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting
 before execution/publication when required.
 
@@ -105,16 +120,17 @@ remain. Consequential policy changes follow the
 ## Acceptance
 
 - **AC-1 TODO** The reviewed child outcomes compose from owned preparation to
-  enforced execution and retained output, with trustworthy supported reports or
-  an explicit independently reviewed unsupported/no-fit reporting disposition,
-  without duplicate owners or changes to ordinary Work delivery.
+  enforced execution, retained output and accepted Work-branch import, with
+  trustworthy supported reports or an explicit independently reviewed
+  unsupported/no-fit reporting disposition, without duplicate owners or changes
+  to ordinary Work delivery.
 
   Validation: independent integration review of child evidence and owner links,
   including consistent root/owner resolution, failed preparation, denied launch,
-  exact resume and retained work;
-  reuse leaf evidence rather than repeat probes or model runs. A no-fit finding
-  does not fake report implementation or automatic adoption; follow reviewed
-  Work lifecycle disposition for any unsatisfied integration outcome.
+  exact resume, retained work, accepted tip/base and import boundaries; reuse
+  leaf evidence rather than repeat probes or model runs. A no-fit finding does
+  not fake report implementation or automatic adoption; follow reviewed Work
+  lifecycle disposition for any unsatisfied integration outcome.
 - **AC-2 TODO** On real command delivery, lasting usage and supported-condition
   limits are promoted from Work-owned inputs to one focused owner, discoverable
   from Make help, documentation, orchestrator and evaluation routes; measurement

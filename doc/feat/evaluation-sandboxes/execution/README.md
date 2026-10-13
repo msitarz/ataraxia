@@ -7,7 +7,11 @@ PROMPT_FILE instead of PROMPT, and an explicit UUID resume input. Reject absent
 or conflicting prompt inputs and implicit/latest-session resume. Wrap existing
 native Codex CLI, using its
 [non-interactive JSON interface](https://learn.chatgpt.com/docs/non-interactive-mode)
-as a primary reference rather than building another agent controller. The
+as a primary reference rather than building another agent controller. Use
+reviewed findings from the
+[communication Investigation](../executor-communication/README.md) to resolve
+exec/resume behavior and recovery before implementing that affected routing; its
+trials and recommendations do not deliver this wrapper. The
 [reconciled map](../README.md#children-and-gates) assigns this outcome
 exclusively here, replacing the unimplemented old executor-runtime contract.
 
@@ -36,14 +40,15 @@ directory before invocation.
 - **AC-2 TODO** Success, failure, interruption and timeout preserve changes in
   the workspace. Final message when available, raw JSON events, exit/status,
   elapsed timing boundaries, session identity, artifact paths and reviewer
-  artifacts remain on the private side outside child reads.
-  Incomplete final messages/events are identified explicitly. Initial output
-  waits for independent acceptance before resume; final acceptance/import stays
-  under existing review gates. There is no automatic retry or replacement.
+  artifacts remain on the private side outside child reads. Incomplete final
+  messages/events are identified explicitly. Initial output waits for
+  independent acceptance before resume; final acceptance/import stays under
+  existing review gates. There is no automatic retry or replacement.
 
   Validation: criterion-marked lifecycle tests inspect retained artifacts and
   released active state for partial events, failed CLI, interruption/timeout and
   rejected resume. Independent review accepts initial output before actual
-  resume and final output before import; reuse existing artifact-import
-  ownership. Reporting interpretation is separate so this leaf remains one
-  bounded native execution/preservation review.
+  resume and final output before import; follow the
+  [artifact-import owner](../artifact-import/README.md). Reporting
+  interpretation is separate so this leaf remains one bounded native
+  execution/preservation review.

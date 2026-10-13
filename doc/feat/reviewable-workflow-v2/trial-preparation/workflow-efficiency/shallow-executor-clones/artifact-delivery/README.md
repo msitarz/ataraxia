@@ -7,9 +7,10 @@ patches, or publish directly from the clone after review?
 Follow the [parent's execution gate](../README.md#execution-gate-and-limits).
 Use demonstrated outcomes from
 [Sandbox isolation](../sandbox-isolation/README.md) and
-[Executor communication](../executor-communication/README.md) for one integrated
-artifact-to-publication demonstration. Deterministic Git candidate probes may
-use independent disposable fixtures before those outcomes are ready.
+[Executor communication](../../../../../evaluation-sandboxes/executor-communication/README.md)
+for one integrated artifact-to-publication demonstration. Deterministic Git
+candidate probes may use independent disposable fixtures before those outcomes
+are ready.
 
 If isolation or communication is infeasible, retain the dependency evidence and
 complete deterministic transport probes independently. Report the integrated

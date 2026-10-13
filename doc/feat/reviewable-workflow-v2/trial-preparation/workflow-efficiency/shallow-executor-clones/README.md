@@ -19,9 +19,6 @@ they are not requirements of the proposed manual evaluation preparation.
 - **TODO** [Sandbox isolation](sandbox-isolation/README.md): test actual Codex
   read denial, clone preparation, local commits, and isolation across resumed
   sessions; compare custom agents with separately launched executors.
-- **TODO** [Executor communication](executor-communication/README.md): test
-  handoff, completion, failure, and same-session corrections through
-  `codex exec` and assess whether app-server control is needed.
 - **TODO** [Artifact delivery](artifact-delivery/README.md): test commit import,
   patch transfer, and orchestrator publication from the clone, including
   separate evidence and cleanup commits and an advanced upstream base.
@@ -33,7 +30,10 @@ they are not requirements of the proposed manual evaluation preparation.
 
 Each Investigation owns one recommendation and checked evidence under the
 [Investigation rules](../../../../../work-definition.md#investigations).
-Isolation and communication may prepare independent disposable fixtures; the
+The relocated
+[communication Investigation](../../../../evaluation-sandboxes/executor-communication/README.md)
+remains an input to the combined recommendation. Isolation and communication
+may prepare independent disposable fixtures; the
 integrated delivery demonstration uses their verified configuration and handoff.
 Treat a blocked boundary as evidence against a candidate rather than bypassing
 it. Combine the reports into one adoption recommendation and identify further
@@ -43,12 +43,17 @@ Work; production implementation is outside these Investigations.
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
 owns replacement preparation/runtime planning under the approved #315
-disposition. Reconciliation is delivered; this tree retains
-Investigations, artifact import and registry-selector maintenance.
+disposition. The ownership correction awaits review; this tree retains isolation
+and artifact-delivery Investigations, the combined recommendation and registry
+maintenance.
 
-- **TODO** [Optional shallow executor workflow](implementation/README.md):
-  retain accepted artifact import and registry-selection ownership without
-  changing linked-worktree policy. Retained Investigation criteria remain TODO.
+- **ABORT** Optional shallow executor implementation Work: superseded by managed
+  creation, enforcement, execution and relocated import; no active child
+  remains. Its [retained contract](implementation/README.md) awaits reviewed
+  cleanup; delivered
+  [registry usage](implementation/dependency-snapshot/registry-selection.md)
+  remains until separate consumer-gated cleanup. Unsatisfied outcomes are not
+  DONE.
 - **TODO** [Registry selector cleanup](registry-selector-cleanup/README.md):
   independently scoped maintenance leaf; remove obsolete tooling after the
   revised plan merges and consumer/owner-link review permits safe removal.
@@ -65,8 +70,9 @@ Investigations, artifact import and registry-selector maintenance.
 - Managed [enforcement](../../../../evaluation-sandboxes/enforcement/README.md)
   and [execution](../../../../evaluation-sandboxes/execution/README.md) own
   boundaries, actual start and exact-session corrections after readiness.
-  [Import](implementation/artifact-import/README.md) owns accepted commits into
-  a designated full-history Work branch, preserving review and
+  [Import](../../../../evaluation-sandboxes/artifact-import/README.md) owns
+  accepted commits into a designated full-history Work branch, preserving review
+  and
   [evidence-before-cleanup order](../../../../../acceptance-tracing.md#work-delivery-commits).
   Publication remains orchestrator-owned under existing gates.
 - For an evaluation that excludes history, declare its frozen base, permitted
@@ -104,10 +110,14 @@ independent clones are not described as linked worktrees.
 
 ## Acceptance
 
-- **AC-1 TODO** All four Investigations are integrated with inspectable actual
-  evidence, candidate tradeoffs, recommendations, and unresolved limits.
-  Validation: check `master` for the child outcomes and review retained
-  evidence; distinguish documented capabilities from tested behavior.
+- **AC-1 TODO** The isolation and artifact-delivery Investigations, delivered
+  preparation findings and relocated communication findings are integrated with
+  inspectable actual evidence, candidate tradeoffs, recommendations, and
+  unresolved limits.
+
+  Validation: check `master` for the owned child outcomes and relocated
+  communication outcome, then review retained evidence; distinguish documented
+  capabilities from tested behavior.
 - **AC-2 TODO** The combined recommendation selects or rejects a concrete path
   from isolated handoff through corrections to reviewable publication, preserves
   review and commit gates, and identifies any further implementation Work.
@@ -125,21 +135,23 @@ The completed environment-preparation Investigation supports the native online
 candidate only in its tested Darwin Intel deterministic condition; no model
 session or filtered-answer condition was tested. The maintainer authorized this
 revised planning direction and abandonment of the unrun snapshot subtree, not
-implementation or policy adoption. The implementation parent records ABORT
-rationale; delivered registry selection and historical evidence remain intact.
-The approved #315 reconciliation replaces the unimplemented manual preparation
-and runtime contracts with managed owners; import retains its own gates. Cleanup
-is independently schedulable after consumer review; it preserves the active
-Investigation examples through frozen source links. Follow the
+implementation or policy adoption. The retained implementation contract records
+supersession and ABORT rationale; delivered registry selection and historical
+evidence remain intact. The approved #315 reconciliation replaces the
+unimplemented manual preparation and runtime contracts with managed owners;
+import retains its own gates. Cleanup is independently schedulable after
+consumer review; it preserves the active Investigation examples through frozen
+source links. Follow the
 [planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and
-trials, including failed attempts. The implementation follow-up is planning only
-and changes no current preparation policy. Merge its reviewed parent map before
-implementation child execution. Before any model-backed trial, declare fixtures,
-prompts, conditions, selected model and effort, maximum runs and corrections, a
-time or token budget, and stop handling; obtain applicable maintainer approval.
-Use the existing leaf policy and reassess each delivery against the
+trials, including failed attempts. The managed follow-up is planning only and
+changes no current preparation policy. Merge the reviewed ownership correction
+before implementation execution. Before any model-backed trial, declare
+fixtures, prompts, conditions, selected model and effort, maximum runs and
+corrections, a time or token budget, and stop handling; obtain applicable
+maintainer approval. Use the existing leaf policy and reassess each delivery
+against the
 [review target](../../../../../workflow.md#scope-and-sizing).
 
 Do not change model selection, review topology, current-code reuse policy, or

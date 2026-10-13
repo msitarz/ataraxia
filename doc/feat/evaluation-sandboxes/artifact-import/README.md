@@ -1,10 +1,10 @@
 # Accepted executor commit import
 
 Depend on
-[accepted runtime output](../../../../../../evaluation-sandboxes/execution/README.md).
+[accepted runtime output](../execution/README.md).
 Own orchestrator-controlled explicit fetch/rebase into a full-history designated
 Work branch after independent acceptance and final correction. Use the
-[reviewed delivery path](../../artifact-delivery/delivery-protocol.md).
+[reviewed delivery path](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/artifact-delivery/delivery-protocol.md).
 Executor state/auth and permissions remain untouched; master is not a delivery
 target. Host production operations retain signing settings and normal hooks.
 
