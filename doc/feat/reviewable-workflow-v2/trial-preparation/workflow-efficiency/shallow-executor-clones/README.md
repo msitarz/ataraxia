@@ -12,8 +12,7 @@ The [preparation target](../../../../../../Makefile) creates a branch from local
 setup. Any adopted replacement must preserve a fresh locked environment,
 verified readiness and the existing independent review and delivery gates.
 Cache copying and offline reconstruction describe current worktree behavior;
-they are not requirements of the delivered manual evaluation preparation
-procedure.
+they are not requirements of the proposed manual evaluation preparation.
 
 ## Investigations
 
@@ -48,9 +47,9 @@ overlapping implementation routes before execution; existing statuses below
 remain unchanged pending reviewed disposition and maintainer clarification.
 
 - **TODO** [Optional shallow executor workflow](implementation/README.md):
-  manual preparation procedure delivered; restricted runtime and accepted
-  import remain planned without changing linked-worktree policy. Retained
-  Investigation criteria remain TODO.
+  deliver manual trusted online preparation, restricted runtime and accepted
+  import without changing linked-worktree policy. Retained Investigation
+  criteria remain TODO.
 - **TODO** [Registry selector cleanup](registry-selector-cleanup/README.md):
   independently scoped maintenance leaf; remove obsolete tooling after the
   revised plan merges and consumer/owner-link review permits safe removal.
@@ -60,13 +59,10 @@ remain unchanged pending reviewed disposition and maintainer clarification.
 - The trusted orchestrator initially prepares an independent shallow clone
   manually using native Git and existing online `make setup` / offline
   `make verify-setup`, with fresh final-location environment, caches and pinned
-  hooks. The delivered
-  [contribution procedure](../../../../../../CONTRIBUTING.md#preparing-an-evaluated-fixture-clone)
-  and
-  [evaluation boundary owner](../../../../../evaluation.md#prepared-clone-boundary-and-handoff)
-  own exact committed input, object independence, readiness, privacy inspection,
-  recovery and pre-handoff gates. Readiness remains per actual future condition;
-  no snapshot reconstruction or new preparation tooling is planned.
+  hooks. The [clone contract](implementation/clone-preparation/README.md) owns
+  exact committed input, object independence, readiness, privacy inspection,
+  recovery and pre-handoff gates; no snapshot reconstruction or new preparation
+  tooling is planned.
 - [Runtime](implementation/executor-runtime/README.md) owns enforced sandbox
   boundaries, actual start and exact-session corrections after readiness.
   [Import](implementation/artifact-import/README.md) owns accepted commits into
@@ -90,10 +86,9 @@ This Work does not build a new sandbox or network-control system.
 
 ## Ownership and dependencies
 
-For this optional workflow,
-[CONTRIBUTING.md](../../../../../../CONTRIBUTING.md#preparing-an-evaluated-fixture-clone)
-owns the delivered manual preparation procedure and existing Make targets own
-setup behavior;
+For this proposed workflow, the clone-preparation contract owns the manual
+preparation procedure and existing Make targets own setup behavior;
+[CONTRIBUTING.md](../../../../../../CONTRIBUTING.md) owns its use and setup;
 [orchestrator guidance](../../../../../orchestrator.md) owns executor handoff
 and artifact return. Follow the [WDR workflow](../../../../../wdr-workflow.md)
 for any consequential policy adoption; Investigations recommend rather than
@@ -128,20 +123,19 @@ independent clones are not described as linked worktrees.
 The completed environment-preparation Investigation supports the native online
 candidate only in its tested Darwin Intel deterministic condition; no model
 session or filtered-answer condition was tested. The maintainer authorized this
-revised planning direction and abandonment of the unrun snapshot subtree at that
-planning stage, without adopting policy. The implementation parent records ABORT
+revised planning direction and abandonment of the unrun snapshot subtree, not
+implementation or policy adoption. The implementation parent records ABORT
 rationale; delivered registry selection and historical evidence remain intact.
-The manual preparation procedure is now delivered; route runtime next, then
-import under their own gates. Readiness remains per actual future condition.
-Selector cleanup is independently schedulable after consumer review; it
-preserves the active Investigation examples through frozen source links. Follow
-the
+Merge this revised plan before clone-preparation execution, then route runtime
+and import under their own gates. Cleanup is independently schedulable after
+consumer review; it preserves the active Investigation examples through frozen
+source links. Follow the
 [planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and
-trials, including failed attempts. The delivered manual preparation procedure
-changes no default linked-worktree policy; runtime and import remain planned.
-Before any model-backed trial, declare fixtures,
+trials, including failed attempts. The implementation follow-up is planning only
+and changes no current preparation policy. Merge its reviewed parent map before
+implementation child execution. Before any model-backed trial, declare fixtures,
 prompts, conditions, selected model and effort, maximum runs and corrections, a
 time or token budget, and stop handling; obtain applicable maintainer approval.
 Use the existing leaf policy and reassess each delivery against the
