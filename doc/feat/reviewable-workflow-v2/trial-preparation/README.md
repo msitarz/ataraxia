@@ -34,6 +34,9 @@ success criteria.
   post-cleanup reviewed PR delivery to the maintainer.
 - **DONE** Executor guidance and handoffs: added direct executor role discovery
   and contextual assignments with role-specific returns.
+- **TODO** [Definer guidance](definer-guidance/README.md): give assigned
+  definers a focused owner and direct role route while preserving existing
+  responsibilities.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
@@ -46,9 +49,9 @@ success criteria.
 
 Each child owns a separate review outcome. Complete the trial contract after
 completion evidence, handoff recovery, and Make Work reminders so it exercises
-the delivered rules. Complete executor guidance and handoffs before the live
-trial begins. CI scheduling and CI preparation share files; deliver
-scheduling first to keep their changes independently reviewable.
+the delivered rules. Complete executor guidance and handoffs and definer
+guidance before the live trial begins. CI scheduling and CI preparation share
+files; deliver scheduling first to keep their changes independently reviewable.
 
 ## Acceptance
 
