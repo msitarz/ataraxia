@@ -1,6 +1,7 @@
 # Accepted executor commit import
 
-Depend on [accepted runtime output](../executor-runtime/README.md).
+Depend on
+[accepted runtime output](../../../../../../evaluation-sandboxes/execution/README.md).
 Own orchestrator-controlled explicit fetch/rebase into a full-history designated
 Work branch after independent acceptance and final correction. Use the
 [reviewed delivery path](../../artifact-delivery/delivery-protocol.md).

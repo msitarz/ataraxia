@@ -42,28 +42,28 @@ Work; production implementation is outside these Investigations.
 ## Implementation follow-up
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
-preserves related replacement planning. Its first reconciliation leaf gates both
-overlapping implementation routes before execution; existing statuses below
-remain unchanged pending reviewed disposition and maintainer clarification.
+owns replacement preparation/runtime planning under the approved #315
+disposition. Its reconciliation leaf gates execution; this tree retains
+Investigations, artifact import and registry-selector maintenance.
 
 - **TODO** [Optional shallow executor workflow](implementation/README.md):
-  deliver manual trusted online preparation, restricted runtime and accepted
-  import without changing linked-worktree policy. Retained Investigation
-  criteria remain TODO.
+  retain accepted artifact import and registry-selection ownership without
+  changing linked-worktree policy. Retained Investigation criteria remain TODO.
 - **TODO** [Registry selector cleanup](registry-selector-cleanup/README.md):
   independently scoped maintenance leaf; remove obsolete tooling after the
   revised plan merges and consumer/owner-link review permits safe removal.
 
 ## Proposed outcome and boundaries
 
-- The trusted orchestrator initially prepares an independent shallow clone
-  manually using native Git and existing online `make setup` / offline
-  `make verify-setup`, with fresh final-location environment, caches and pinned
-  hooks. The [clone contract](implementation/clone-preparation/README.md) owns
-  exact committed input, object independence, readiness, privacy inspection,
-  recovery and pre-handoff gates; no snapshot reconstruction or new preparation
-  tooling is planned.
-- [Runtime](implementation/executor-runtime/README.md) owns enforced sandbox
+- The historical manual direction used trusted online native Git preparation and
+  existing `make setup` / offline `make verify-setup`, with fresh final-location
+  environment, caches and pinned hooks. The
+  [focused sandbox owner](../../../../../evaluation-sandboxes.md) preserves
+  manual inputs;
+  [managed creation](../../../../evaluation-sandboxes/creation/README.md) owns
+  future preparation, exact input, object independence and recovery.
+- Managed [enforcement](../../../../evaluation-sandboxes/enforcement/README.md)
+  and [execution](../../../../evaluation-sandboxes/execution/README.md) own
   boundaries, actual start and exact-session corrections after readiness.
   [Import](implementation/artifact-import/README.md) owns accepted commits into
   a designated full-history Work branch, preserving review and
@@ -86,9 +86,9 @@ This Work does not build a new sandbox or network-control system.
 
 ## Ownership and dependencies
 
-For this proposed workflow, the clone-preparation contract owns the manual
-preparation procedure and existing Make targets own setup behavior;
-[CONTRIBUTING.md](../../../../../../CONTRIBUTING.md) owns its use and setup;
+The [focused sandbox owner](../../../../../evaluation-sandboxes.md) retains
+manual implementation inputs and receives managed usage as delivered. Existing
+Make targets own setup behavior;
 [orchestrator guidance](../../../../../orchestrator.md) owns executor handoff
 and artifact return. Follow the [WDR workflow](../../../../../wdr-workflow.md)
 for any consequential policy adoption; Investigations recommend rather than
@@ -126,10 +126,10 @@ session or filtered-answer condition was tested. The maintainer authorized this
 revised planning direction and abandonment of the unrun snapshot subtree, not
 implementation or policy adoption. The implementation parent records ABORT
 rationale; delivered registry selection and historical evidence remain intact.
-Merge this revised plan before clone-preparation execution, then route runtime
-and import under their own gates. Cleanup is independently schedulable after
-consumer review; it preserves the active Investigation examples through frozen
-source links. Follow the
+The approved #315 reconciliation replaces the unimplemented manual preparation
+and runtime contracts with managed owners; import retains its own gates. Cleanup
+is independently schedulable after consumer review; it preserves the active
+Investigation examples through frozen source links. Follow the
 [planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and

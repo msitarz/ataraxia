@@ -20,7 +20,7 @@ flowchart LR
         F --> O[Planned offline reconstruction]
     end
     subgraph Proposed[Proposed workflow: not implemented]
-        P[Manual trusted online clone preparation] --> R[Restricted executor runtime]
+        P[Managed creation: replacement owner] --> R[Managed enforcement and execution: replacement owners]
         R --> A[Accepted artifact import]
     end
 ```
@@ -33,12 +33,18 @@ flowchart LR
   and offline environment reconstruction. Their required outcomes were not
   verified; abandonment does not mark them DONE. Git preserves those contracts
   and the retained Investigation/audit evidence is unchanged.
-- **TODO** [Clone preparation](clone-preparation/README.md): manual native Git
-  and existing online Make setup, fresh readiness and handoff record.
-- **TODO** [Executor runtime](executor-runtime/README.md): restrictive start and
-  exact-session correction; depends on accepted prepared-clone readiness.
+- **ABORT** Unimplemented manual clone-preparation contract: superseded by
+  [managed creation](../../../../../evaluation-sandboxes/creation/README.md).
+  Useful manual inputs survive in the
+  [focused owner](../../../../../../evaluation-sandboxes.md); its requirements
+  were not delivered by #315.
+- **ABORT** Unimplemented executor-runtime contract: superseded by managed
+  [enforcement](../../../../../evaluation-sandboxes/enforcement/README.md) and
+  [execution](../../../../../evaluation-sandboxes/execution/README.md).
+  Runtime ownership is not duplicated and its criteria are not DONE.
 - **TODO** [Artifact import](artifact-import/README.md): accepted output into a
-  full-history Work branch; depends on accepted runtime output.
+  full-history Work branch; depends on accepted
+  [managed execution output](../../../../../evaluation-sandboxes/execution/README.md).
 
 The shallow-clone parent separately owns
 [registry selector cleanup](../registry-selector-cleanup/README.md), an
@@ -52,16 +58,18 @@ until that separate cleanup. Its
 [verified historical delivery](https://github.com/msitarz/ataraxia/blob/e15059213964809026ca09505a190ad09701b64b/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/evidence.md)
 is preserved; snapshot abandonment does not undo that delivered outcome.
 
-Merge this revised planning map before implementation. Route clone preparation,
-then executor runtime, then artifact import; cleanup may be scheduled separately
-under its consumer gate. Each leaf aims at one five-minute complete review,
-including tests and supporting changes; split before oversized execution.
-Follow existing contribution, acceptance, review and publication contracts.
-Host commits retain signing settings; never disable production signing.
+The approved #315 reconciliation retains this parent for artifact import and its
+delivered registry-selection ownership. Managed creation, enforcement and
+execution own preparation/runtime; import follows accepted managed output.
+Selector cleanup may be scheduled separately under its consumer gate. Each leaf
+aims at one five-minute complete review, including tests and supporting changes;
+split before oversized execution. Follow existing contribution, acceptance,
+review and publication contracts. Host commits retain signing settings; never
+disable production signing.
 
 ## Acceptance
 
-- **AC-1 TODO** The three workflow outcomes compose from a frozen manually
+- **AC-1 TODO** The three workflow outcomes compose from a frozen
   prepared clone through restrictive execution to accepted Work-branch import,
   while existing worktree behavior remains available.
 
@@ -73,7 +81,7 @@ Host commits retain signing settings; never disable production signing.
   authoritative owners without changing default policy or claiming untested
   configurations are supported.
 
-  Validation: independently review contribution/orchestrator guidance and any
-  implemented Make help against the retained report and leaf evidence. Review
-  required WDR/owner changes before consequential adoption; normal latest-head
-  PR/CI gates apply. No live PR/CI experiment is required.
+  Validation: independently review the focused sandbox owner/orchestrator
+  guidance and any implemented Make help against the retained report and leaf
+  evidence. Review required WDR/owner changes before consequential adoption;
+  normal latest-head PR/CI gates apply. No live PR/CI experiment is required.
