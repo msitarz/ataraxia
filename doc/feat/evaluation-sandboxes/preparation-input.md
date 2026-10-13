@@ -1,8 +1,8 @@
 # Preserved manual preparation input
 
-Read for reconciliation, creation or enforcement. This supporting file preserves
+Read for creation or enforcement. This supporting file preserves
 useful historical/proposed instructions, not current guidance or authorization
-to run them. It survives reconciliation-leaf cleanup; reviewed lasting guidance
+to run them. Reviewed lasting guidance
 belongs to one focused owner.
 
 Source:

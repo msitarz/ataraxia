@@ -23,7 +23,7 @@ isolation, and did not capture the full effective environment.
 ```mermaid
 flowchart LR
     B[Before: manual clone contracts and linked-worktree tooling]
-    B --> G[First: reconcile existing owners and PR 315]
+    B --> G[Delivered: reconciled owners and manual inputs]
     subgraph Proposed[Proposed: project managed root]
         W[Child-readable workspace: clone, tools, scratch]
         P[Private control: auth, Codex state, raw sessions, reviewer outputs]
@@ -63,35 +63,33 @@ remain distinct from the host transport needed to call the model service.
 
 ## Children and gates
 
-- **TODO** [Reconcile preparation and ownership](reconciliation/README.md):
-  first gate for this tree and the overlapping implementation/runtime/import
-  Works; preserve manual inputs and agree one route before either executes.
+- **DONE** Preparation and ownership reconciliation: useful manual inputs
+  preserved in the [focused owner](../../evaluation-sandboxes.md); managed
+  creation/enforcement/execution replace the unimplemented old contracts, while
+  artifact import and existing Investigation/maintenance ownership remain.
 - **TODO** [Create prepared sandboxes](creation/README.md): online independent
-  clone, native setup/hooks/readiness and retained failed state; after
-  reconciliation.
+  clone, native setup/hooks/readiness and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
   trustworthy local discovery and preservation-aware removal; after creation.
 - **TODO** [Enforced runtime readiness](enforcement/README.md): reuse native
   boundary controls, private state separation and effective start/resume gates;
-  after reconciliation and creation.
+  after creation.
 - **TODO** [Native execution and retained artifacts](execution/README.md):
   `sandbox-exec` initial/exact-session resume and failure preservation; after
   enforcement and lifecycle active-state guards.
 - **TODO** [Session statistics Investigation](statistics/README.md): compare
-  tokenuse, suitable Python alternatives and native CLI data; after
-  reconciliation, independent of model execution.
+  tokenuse, suitable Python alternatives and native CLI data; independent of
+  model execution.
 - **TODO** [Conditional report integration](reporting/README.md): only after
   reviewed statistics findings, integrate a fitting method using declared data
   or record an explicit reviewed unsupported/no-fit disposition; no tool
   adoption is predetermined.
 
-Merge this concrete plan before expanded implementation. The first leaf resolves
-overlap with the
+Reviewed reconciliation resolved overlap with the
 [existing implementation](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/README.md)
 under the approved #315 disposition: creation supersedes manual clone
 preparation, enforcement/execution supersede the old runtime, and artifact
-import stays active in its existing tree. Reconciliation remains subject to
-independent review before later leaves execute. Do not run concurrent duplicate
+import stays active in its existing tree. Do not run concurrent duplicate
 runtime implementations. Each leaf is one coherent review outcome; reassess its
 complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting

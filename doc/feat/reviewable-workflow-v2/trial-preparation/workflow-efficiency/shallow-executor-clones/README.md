@@ -43,7 +43,7 @@ Work; production implementation is outside these Investigations.
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
 owns replacement preparation/runtime planning under the approved #315
-disposition. Its reconciliation leaf gates execution; this tree retains
+disposition. Reconciliation is delivered; this tree retains
 Investigations, artifact import and registry-selector maintenance.
 
 - **TODO** [Optional shallow executor workflow](implementation/README.md):

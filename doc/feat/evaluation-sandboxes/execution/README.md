@@ -8,8 +8,8 @@ or conflicting prompt inputs and implicit/latest-session resume. Wrap existing
 native Codex CLI, using its
 [non-interactive JSON interface](https://learn.chatgpt.com/docs/non-interactive-mode)
 as a primary reference rather than building another agent controller. The
-reconciliation gate must assign this outcome exclusively against the old
-executor-runtime Work before implementation.
+[reconciled map](../README.md#children-and-gates) assigns this outcome
+exclusively here, replacing the unimplemented old executor-runtime contract.
 
 Reuse the shared
 [root/ownership resolution](../README.md#shared-root-and-ownership), including

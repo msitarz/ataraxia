@@ -1,7 +1,7 @@
 # Enforced runtime readiness
 
-After [reconciliation](../reconciliation/README.md) assigns one runtime owner
-and [creation](../creation/README.md) supplies a prepared workspace, reuse
+Under the [reconciled ownership](../README.md#children-and-gates), after
+[creation](../creation/README.md) supplies a prepared workspace, reuse
 existing native Codex boundary controls. Own effective enforcement and readiness
 shared by initial start and exact UUID resume; the execution leaf consumes this
 gate. No new sandbox system or general platform framework is planned.
