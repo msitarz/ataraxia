@@ -28,7 +28,7 @@ owners without delivering commands.
 ```mermaid
 flowchart LR
     B[Before: managed preparation/runtime, shallow-tree import/communication]
-    B --> G[Reconciliation: owners and Work-owned inputs]
+    B --> G[Delivered reconciliation: owners and Work-owned inputs]
     subgraph Proposed[Proposed: project managed root]
         W[Child-readable workspace: clone, tools, scratch]
         P[Private control: auth, Codex state, raw sessions, reviewer outputs]
@@ -70,9 +70,9 @@ remain distinct from the host transport needed to call the model service.
 
 ## Children and gates
 
-- **TODO** [Preparation and ownership reconciliation](reconciliation/README.md):
-  review corrected ownership, preserved manual input and superseded wrapper
-  disposition before implementation.
+- **DONE** Preparation and ownership reconciliation: preserved manual input,
+  moved import and communication into direct children and superseded the empty
+  implementation Work without completing its undelivered outcomes.
 - **TODO** [Create prepared sandboxes](creation/README.md): online independent
   clone, native setup/hooks/readiness and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
