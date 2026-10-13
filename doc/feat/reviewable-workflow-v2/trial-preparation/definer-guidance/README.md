@@ -45,18 +45,18 @@ WDR is planned unless inspection reveals a consequential policy choice.
 
 ## Acceptance
 
-- **AC-1 TODO** An agent assigned only the definer role can discover its focused
+- **AC-1 DONE** An agent assigned only the definer role can discover its focused
   owner directly; contract content and shared policy remain at their owners.
   Validation: independently walk AGENTS, documentation ownership, and glossary
   routes; inspect the new owner's trigger and linked policy boundaries, and
   confirm the executor route and instructions are preserved.
-- **AC-2 TODO** Extraction preserves existing definer and orchestrator
+- **AC-2 DONE** Extraction preserves existing definer and orchestrator
   responsibilities without duplicated rules.
   Validation: independently compare the baseline orchestrator sections with
   the changed owners and surrounding sections; trace each moved requirement
   and the complete return inventory above, then verify affected links and
   anchors.
-- **AC-3 TODO** The guidance supports valid assignments, blockers, completion,
+- **AC-3 DONE** The guidance supports valid assignments, blockers, completion,
   corrections, and recovery without permitting implementation or self-approval.
   Validation: independently walk a supplied isolated assignment through reading,
   base/setup verification, definition, and completed return; walk an
