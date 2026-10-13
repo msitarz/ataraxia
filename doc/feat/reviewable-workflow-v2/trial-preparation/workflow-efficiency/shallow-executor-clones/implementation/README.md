@@ -12,11 +12,11 @@ and the existing WDR route. This plan adds no executable behavior or trial.
 
 ## Child Works and dependencies
 
-Preparation execution is paused by the
-[environment-preparation decision](../README.md#execution-gate-and-limits).
-Its Investigation may recommend simplifying or replacing this pipeline; these
-contracts and current policy remain in force pending results, maintainer
-decision and any required revised planning merge.
+Preparation execution remains paused under the
+[completed environment-preparation gate](../README.md#execution-gate-and-limits).
+The reviewed condition-specific report recommends native online preparation as
+a candidate; these contracts and current policy remain in force pending
+maintainer decision and any required revised planning merge.
 
 - **TODO** [Dependency snapshot](dependency-snapshot/README.md): select and
   freeze safe offline dependency inputs.

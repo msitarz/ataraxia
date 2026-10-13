@@ -23,10 +23,11 @@ review and delivery gates.
 - **TODO** [Artifact delivery](artifact-delivery/README.md): test commit import,
   patch transfer, and orchestrator publication from the clone, including
   separate evidence and cleanup commits and an advanced upstream base.
-- **TODO**
-  [Orchestrator-prepared evaluation environments](environment-preparation/README.md):
-  assess fresh online preparation before restricted evaluation, reusing native
-  setup and hook operations.
+- **DONE**
+  [Orchestrator-prepared evaluation environments](https://github.com/msitarz/ataraxia/blob/c9a24b3f8cccfb9392ec12db2029dfe03887786d/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/environment-preparation/README.md):
+  native online preparation, readiness, installed hooks, and bounded denied-
+  access controls passed in the tested condition. The report recommends this
+  candidate condition-specifically; it does not adopt policy.
 
 Each Investigation owns one recommendation and checked evidence under the
 [Investigation rules](../../../../../work-definition.md#investigations).
@@ -65,9 +66,10 @@ Work; production implementation is outside these Investigations.
 - Preserve cache reuse, a fresh virtual environment, locked offline setup,
   environment checking, and recoverable setup failures. Do not share a
   mutable virtual environment or silently fall back to a full-history clone.
-  This existing implementation prerequisite does not forbid investigating the
-  [online orchestrator alternative](environment-preparation/README.md); it
-  remains current until results and a maintainer decision revise the plan.
+  This existing implementation prerequisite does not forbid the tested
+  [online orchestrator alternative](https://github.com/msitarz/ataraxia/blob/c9a24b3f8cccfb9392ec12db2029dfe03887786d/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/environment-preparation/README.md);
+  it remains current pending a maintainer decision and any required revised
+  planning merge.
 - For an evaluation that excludes history, declare its frozen base, permitted
   files and references, session freshness, and filesystem and network access.
   Check current-tree reports, answer fixtures, and links for prohibited prior
@@ -119,11 +121,13 @@ independent clones are not described as linked worktrees.
 
 ## Execution gate and limits
 
-The environment-preparation decision pauses execution of the existing
-cache-selection, hook-selection, snapshot-delivery, recurring compatibility and
-clone-preparation Works until its outcome and maintainer decision. Preserve
-their contracts, delivered registry selector and historical evidence; this is
-not abandonment. Follow the
+The completed environment-preparation Investigation recommends native online
+preparation as a candidate for its tested condition; this does not adopt it.
+Execution of the existing cache-selection, hook-selection, snapshot-delivery,
+recurring compatibility and clone-preparation Works remains paused pending a
+maintainer decision and any required revised planning merge. Preserve their
+contracts, delivered registry selector and historical evidence; this is not
+abandonment. Follow the
 [tree-wide pause and planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and
