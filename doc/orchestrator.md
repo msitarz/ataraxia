@@ -27,10 +27,8 @@ bounded investigation or evaluation execution uses the executor.
 
 The definer owns assigned Work contract changes and serial coordination of
 shared parent maps, without implementing code or approving its own definitions.
-The executor makes bounded changes directly, returns the artifact and evidence,
-and reports contract gaps before expanding scope. Neither recursively delegates
-the assigned task. Cleaner and publisher gain no artifact-review or merge
-authority.
+Definers do not recursively delegate the assigned task. Cleaner and publisher
+gain no artifact-review or merge authority.
 
 For post-merge Work cleanup, hand off to the separate operational `cleaner`
 subagent after the maintainer confirms the PR merged. Route it through
@@ -113,20 +111,28 @@ ordering to hide a conflict. Start the assigned agent promptly once necessary
 preflight is complete; remaining reviewer reading may overlap execution when
 it does not defer integration preflight.
 
-A Work README and its linked contracts define acceptance criteria. Give the
-definer or executor the Work path and requested action, plus only missing
-steering and necessary branch or delivery context. The assigned agent reads the
-Work and applicable contracts; consult ancestor READMEs only as needed, without
-recursively loading every parent. Without a Work contract, state acceptance
-criteria in the handoff. Link background instead of forwarding the full
-conversation by default. Routine choices within the agreed contract need no
-approval.
+A Work README and its linked contracts define acceptance criteria. Keep the
+handoff contextual rather than duplicating the Work contract. Supply four
+groups of information:
 
-Definition returns identify the contract revision, dependencies, risks, and
-unverified criteria. The owning orchestrator independently reviews the
-completed definitions before implementation begins; execution returns identify
-the artifact revision and evidence. Use the same consolidated correction and
-review gates below for either responsibility.
+- **Task:** Work path, requested action, and only missing steering.
+- **Workspace:** destination path, branch, assigned base, create or resume
+  instruction, and the existing creation or setup route when applicable.
+- **Authority and stopping point:** approved scope, where to report a gap, and
+  owner review before criteria become `DONE` or the contract is removed.
+- **Return:** use the assigned role's requirements: [Definer
+  returns](#definer-returns) or [Executor guidance](executor.md). Identify
+  changes awaiting review or needed steering.
+
+The assigned agent reads the Work and applicable contracts; consult ancestor
+READMEs only as needed, without recursively loading every parent. Without a Work
+contract, state acceptance criteria in the handoff. Link background instead of
+forwarding the full conversation by default. For approved Work scope, follow
+the [routine-choice rule](workflow.md#scope-and-sizing).
+
+The owning orchestrator independently reviews completed definitions before
+implementation begins. Use the same consolidated correction and review gates
+below for either responsibility.
 
 Definers and executors use an isolated Git worktree before editing. For a
 requested leaf, create its isolated branch/worktree and follow the usual Work PR
@@ -154,12 +160,13 @@ resulting base and environment; use `make ci-setup` and `make verify-setup` if
 dependencies need synchronization. Do not invent a base argument for the
 creation target.
 
-If implementation reveals out-of-scope work, stop before expanding and report
-the finding and evidence. Route a new split or needed maintainer decision
-through the [whole requested-tree pause](workflow.md#decisions-and-new-splits),
-including other active subtrees. Apply the split rule when it adds an
-independent responsibility or exceeds the review target. A different delegated
-agent still requires the maintainer's explicit approval.
+When delegated implementation reveals out-of-scope work, the executor stops
+and reports it under [executor guidance](executor.md). Route a new split or
+needed maintainer decision through the
+[whole requested-tree pause](workflow.md#decisions-and-new-splits), including
+other active subtrees. Apply the split rule when it adds an independent
+responsibility or exceeds the review target. A different delegated agent still
+requires the maintainer's explicit approval.
 
 ## Review and return
 
@@ -168,8 +175,8 @@ review and any consolidated corrections before assigning the next leaf. Follow
 the [local delivery sequence](acceptance-tracing.md#work-delivery-commits) for
 each accepted leaf. Within that accumulating branch, local acceptance of a
 dependency permits its next dependent leaf without a `master` merge. The parent
-owner owns map changes; the executor applies only reviewed updates. Do not
-publish child leaf PRs from this requested-parent run. After the leaves, review
+owner owns map changes; child leaf PRs are not published from this
+requested-parent run. After the leaves, review
 the parent's own acceptance and verification/cleanup sequence under its
 immediate parent's integration review, or before publication if it is the
 requested Work.
@@ -227,16 +234,18 @@ merge. Agents must not merge autonomously; an agent may merge only with explicit
 maintainer instruction. Do not change repository settings, use an admin
 override, or bypass review or CI requirements.
 
-Definers and executors return the contract or artifact revision, outcome,
-acceptance evidence, commands run, unrun checks, unresolved criteria, and
-blockers to their owning orchestrator. After session recovery, include the
-recovered state. A blocked delegated return states what remains and what input
-or decision is needed. A completed delegated return identifies changes
-awaiting orchestrator review.
-
 The requested Work owner continues from executor completion through the
 existing independent review and corrections, publication via the publisher,
 and final-head CI assessment, then returns the PR, outcome, and material
 blockers or limitations to the maintainer. Complete this without waiting for
 another maintainer instruction unless a concrete blocker or decision needs
 steering.
+
+### Definer returns
+
+Definers return the contract revision, outcome, dependencies, risks, unverified
+criteria, acceptance evidence, commands run, unrun checks, unresolved criteria,
+and blockers to their owning orchestrator. After session recovery, include the
+recovered state and which evidence applies to the current revision. A blocked
+return identifies what remains and the input or decision needed; a completed
+return identifies changes awaiting orchestrator review.

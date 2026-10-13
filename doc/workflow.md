@@ -32,6 +32,10 @@ simplification and suitable reuse cannot keep it bounded, the definer iterates
 concrete child contracts and dependencies under independent owner review. Merge
 the concrete planning PR before expanded implementation begins.
 
+Routine choices within the agreed contract need no additional approval,
+whether its acceptance criteria are in a Work contract or supplied in the
+handoff.
+
 Strongly recommend at most five Work levels, counting the topmost Work as level
 1 and every descendant Work, including leaves. Count Work nodes rather than
 helper or specification directories. A proposal beyond five levels requires an
