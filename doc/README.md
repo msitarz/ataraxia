@@ -19,6 +19,7 @@ relevant guidance.
 | Post-merge Work branch cleanup | [Branch cleanup](branch-cleanup.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
+| Acting as executor for changes | [Executor guidance](executor.md) |
 | ADR eligibility and architectural decision process | [ADR workflow](adr-workflow.md) |
 | Shared ADR/WDR record format and lifecycle | [Decision record format](decision-records.md) |
 | Workflow decision eligibility, routing, and index | [WDR workflow](wdr-workflow.md) |

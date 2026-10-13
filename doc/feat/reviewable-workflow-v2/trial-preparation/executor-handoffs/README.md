@@ -50,16 +50,16 @@ before expanding scope under
 
 ## Acceptance
 
-- **AC-1 TODO** AGENTS routes executors directly to their focused owner;
+- **AC-1 DONE** AGENTS routes executors directly to their focused owner;
   ownership, glossary, and shared-guidance routes agree without duplication.
   Validation: manually walk executor startup from AGENTS through affected
   routes, checking reading triggers and authoritative owners.
-- **AC-2 TODO** Extraction preserves executor obligations, definer discovery
+- **AC-2 DONE** Extraction preserves executor obligations, definer discovery
   and requirements, and orchestrator responsibilities and existing gates.
   Validation: independently compare changed guidance and surrounding sections
   against the verified baseline and linked contracts; trace each moved
   obligation and distinguish executor actions from owner decisions.
-- **AC-3 TODO** Handoffs supply the four context groups, a bounded reviewable
+- **AC-3 DONE** Handoffs supply the four context groups, a bounded reviewable
   return, and onward owner delivery without duplicating Work acceptance.
   Validation: manually walk a fresh requested leaf, the next accumulating leaf,
   a missing/inconsistent assignment, and an interrupted return/recovery; check

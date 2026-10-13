@@ -86,9 +86,9 @@ silently or manipulate Git lock files.
 Start the maintainer's requested Work branch from current `master` and target
 its final PR to `master`. Within that requested tree, the orchestrator assigns
 isolated child-parent branches/worktrees and base refs under
-[orchestrator guidance](doc/orchestrator.md#roles-and-delegation). An executor
-uses the branch/worktree and base supplied in its handoff, verifies that base
-before editing, and reports a missing or inconsistent assignment to its owner.
+[orchestrator guidance](doc/orchestrator.md#roles-and-delegation). Executors
+follow [executor guidance](doc/executor.md) to verify the supplied assignment
+before editing.
 Direct leaves accumulate locally and do not open separate PRs. Only an explicit
 maintainer instruction permits another requested-Work base or PR target;
 identify the exception in the PR.
