@@ -43,14 +43,13 @@ Work; production implementation is outside these Investigations.
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
 owns replacement preparation/runtime planning under the approved #315
-disposition. The ownership correction awaits review; this tree retains isolation
-and artifact-delivery Investigations, the combined recommendation and registry
+disposition. Reconciliation is delivered; this tree retains isolation and
+artifact-delivery Investigations, the combined recommendation and registry
 maintenance.
 
 - **ABORT** Optional shallow executor implementation Work: superseded by managed
   creation, enforcement, execution and relocated import; no active child
-  remains. Its [retained contract](implementation/README.md) awaits reviewed
-  cleanup; delivered
+  remains. Git preserves its unsatisfied contract; delivered
   [registry usage](implementation/dependency-snapshot/registry-selection.md)
   remains until separate consumer-gated cleanup. Unsatisfied outcomes are not
   DONE.
@@ -135,13 +134,13 @@ The completed environment-preparation Investigation supports the native online
 candidate only in its tested Darwin Intel deterministic condition; no model
 session or filtered-answer condition was tested. The maintainer authorized this
 revised planning direction and abandonment of the unrun snapshot subtree, not
-implementation or policy adoption. The retained implementation contract records
-supersession and ABORT rationale; delivered registry selection and historical
-evidence remain intact. The approved #315 reconciliation replaces the
-unimplemented manual preparation and runtime contracts with managed owners;
-import retains its own gates. Cleanup is independently schedulable after
-consumer review; it preserves the active Investigation examples through frozen
-source links. Follow the
+implementation or policy adoption. The superseded implementation Work stopped
+without satisfying its composition/usage criteria; Git preserves the contract.
+Delivered registry selection and historical evidence remain intact. The approved
+reconciliation in PR #315 replaces the unimplemented manual preparation and
+runtime contracts with managed owners; import retains its own gates. Cleanup is
+independently schedulable after consumer review; it preserves the active
+Investigation examples through frozen source links. Follow the
 [planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and

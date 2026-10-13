@@ -3,7 +3,7 @@
 Read this document when using the retained internal registry selector. It owns
 usage, preparation record schema and trust boundary until the separate
 [cleanup Work](../../registry-selector-cleanup/README.md) removes obsolete
-tooling. The [implementation plan](../README.md) has abandoned snapshot
+tooling. The [shallow-clone plan](../../README.md) has abandoned snapshot
 reconstruction; this delivered partial capability remains available and produces
 only a selected-entry inventory, not an operational offline sandbox. It is not a
 prerequisite of manual native clone preparation.
