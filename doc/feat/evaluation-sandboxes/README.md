@@ -23,7 +23,7 @@ isolation, and did not capture the full effective environment.
 ```mermaid
 flowchart LR
     B[Before: manual clone contracts and linked-worktree tooling]
-    B --> G[Review: reconciled owners and Work-owned inputs]
+    B --> G[Delivered: reconciled owners and Work-owned inputs]
     subgraph Proposed[Proposed: project managed root]
         W[Child-readable workspace: clone, tools, scratch]
         P[Private control: auth, Codex state, raw sessions, reviewer outputs]
@@ -63,9 +63,10 @@ remain distinct from the host transport needed to call the model service.
 
 ## Children and gates
 
-- **TODO** [Reconcile preparation and ownership](reconciliation/README.md):
-  preserve manual inputs inside this Work and review superseded contract
-  dispositions before later leaves execute.
+- **DONE** Preparation and ownership reconciliation: preserved useful manual
+  inputs inside this Work in [preparation input](preparation-input.md), with
+  managed creation/enforcement/execution replacing the unimplemented old
+  contracts and artifact import retaining its existing owner and TODO outcomes.
 - **TODO** [Create prepared sandboxes](creation/README.md): online independent
   clone, native setup/hooks/readiness and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
@@ -84,12 +85,11 @@ remain distinct from the host transport needed to call the model service.
   or record an explicit reviewed unsupported/no-fit disposition; no tool
   adoption is predetermined.
 
-Reconciliation reviews the approved dispositions against the
+Reviewed reconciliation resolved overlap with the
 [existing implementation](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/README.md)
 under the approved #315 disposition: creation supersedes manual clone
 preparation, enforcement/execution supersede the old runtime, and artifact
-import stays active in its existing tree. Later leaves wait for reconciliation
-review. Do not run concurrent duplicate
+import stays active in its existing tree. Do not run concurrent duplicate
 runtime implementations. Each leaf is one coherent review outcome; reassess its
 complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting

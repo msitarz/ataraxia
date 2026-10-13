@@ -43,7 +43,7 @@ Work; production implementation is outside these Investigations.
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
 owns replacement preparation/runtime planning under the approved #315
-disposition. Reconciliation review gates execution; this tree retains
+disposition. Reconciliation is delivered; this tree retains
 Investigations, artifact import and registry-selector maintenance.
 
 - **TODO** [Optional shallow executor workflow](implementation/README.md):
@@ -59,7 +59,7 @@ Investigations, artifact import and registry-selector maintenance.
   existing `make setup` / offline `make verify-setup`, with fresh final-location
   environment, caches and pinned hooks. The
   [Work-owned preparation inputs](../../../../evaluation-sandboxes/preparation-input.md)
-  preserves manual inputs;
+  preserve manual inputs;
   [managed creation](../../../../evaluation-sandboxes/creation/README.md) owns
   future preparation, exact input, object independence and recovery.
 - Managed [enforcement](../../../../evaluation-sandboxes/enforcement/README.md)
