@@ -6,10 +6,6 @@ comparison kept inline. [Work definition](work-definition.md#evaluations) owns
 Evaluation contract requirements; [Work workflow](workflow.md) owns lifecycle; a
 specific Work README and linked protocol own the experiment.
 
-For explicitly approved sandbox preparation or execution, read the focused
-[evaluation-sandbox owner](evaluation-sandboxes.md); its historical inputs and
-pending managed commands do not authorize a trial.
-
 ## Declare the protocol before execution
 
 State the bounded question, conditions, budget, common quality and preservation
