@@ -32,8 +32,8 @@ success criteria.
   checks, and traced Make regressions to their acceptance criteria.
 - **DONE** Delivered Make Work reminders for pre-dispatch review sizing and
   post-cleanup reviewed PR delivery to the maintainer.
-- **TODO** [Executor guidance and handoffs](executor-handoffs/README.md): make
-  executor obligations directly discoverable and bounded assignments complete.
+- **DONE** Executor guidance and handoffs: added direct executor role discovery
+  and contextual assignments with role-specific returns.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
