@@ -30,9 +30,8 @@ success criteria.
 - **DONE** CI preparation: measured and reduced unused CI setup work, prepared
   the package job's managed Python from `.python-version` before offline smoke
   checks, and traced Make regressions to their acceptance criteria.
-- **TODO** [Make Work reminders](make-work-reminders/README.md): clarify
-  pre-dispatch review sizing and make the post-cleanup review checkpoint carry
-  the requested Work through reviewed publication and maintainer handoff.
+- **DONE** Delivered Make Work reminders for pre-dispatch review sizing and
+  post-cleanup reviewed PR delivery to the maintainer.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
