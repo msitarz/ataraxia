@@ -33,14 +33,14 @@ final `work-review` checkpoint, but should not duplicate its full handoff
 prompt. Do not add these lifecycle reminders to routine test, documentation, or
 CI targets.
 
-- **AC-1 TODO** Before dispatch, `worktree-create` displays a concise reminder
+- **AC-1 DONE** Before dispatch, `worktree-create` displays a concise reminder
   to assess the complete expected Work change against the maintainer review
   target and pause for a split or explicit larger-review decision when needed.
 
   Validation: a criterion-marked Make integration test observes the reminder
   at the `worktree-create` boundary; manually verify its timing and links
   against Work sizing guidance.
-- **AC-2 TODO** `make help` lists a `work-review` checkpoint that prompts the
+- **AC-2 DONE** `make help` lists a `work-review` checkpoint that prompts the
   orchestrator to assess the final local diff and prepare the complete
   maintainer handoff before publication, while keeping that handoff separate
   from the PR description and leaving publication to the normal publisher

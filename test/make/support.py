@@ -80,6 +80,7 @@ class MakeSandbox:
         timeout: float = 30,
         environment: Mapping[str, str] | None = None,
         cwd: Path | None = None,
+        merge_output: bool = False,
     ) -> MakeResult:
         """Run actual Make; optional exact uv arguments select a failed call."""
         log = self.directory / "uv-calls.jsonl"
@@ -96,12 +97,13 @@ class MakeSandbox:
             ["make", *arguments],
             cwd=self.directory if cwd is None else cwd,
             env=child,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT if merge_output else subprocess.PIPE,
             text=True,
             timeout=timeout,
         )
         return MakeResult(
-            process.returncode, process.stdout, process.stderr, read_calls(log)
+            process.returncode, process.stdout, process.stderr or "", read_calls(log)
         )
 
 

@@ -81,6 +81,37 @@ def setup_calls(destination: Path) -> tuple[UvCall, ...]:
 
 
 @pytest.mark.covers(
+    work="doc/feat/reviewable-workflow-v2/trial-preparation/make-work-reminders/README.md",
+    ac="AC-1",
+)
+def test_creation_reminds_about_expected_review_size_before_dispatch(
+    tmp_path: Path,
+) -> None:
+    """Shows the sizing prompt before worktree creation and setup begin."""
+    # Given
+    case = arrange_case(tmp_path, "review-sized-worktree")
+    write_cache(case.repository, (("uv/ready", "cached"),))
+
+    # When
+    result = case.repository.sandbox.run(
+        "worktree-create",
+        f"WORKTREE={case.destination}",
+        "BRANCH=work/example",
+        merge_output=True,
+    )
+
+    # Then
+    reminder = "Before dispatch: does the complete expected leaf change fit"
+    assert result.exit_code == 0, result.output
+    assert result.stdout.count(reminder) == 1
+    assert "doc/workflow.md#scope-and-sizing" in result.stdout
+    assert "doc/workflow.md#decisions-and-new-splits" in result.stdout
+    git_creation = "Preparing worktree (new branch 'work/example')"
+    assert git_creation in result.stdout
+    assert result.stdout.index(reminder) < result.stdout.index(git_creation)
+
+
+@pytest.mark.covers(
     work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
     ac="AC-1",
 )
