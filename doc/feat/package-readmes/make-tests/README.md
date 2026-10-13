@@ -3,10 +3,8 @@
 Plan ordered bounded leaves: overview; sandbox/recorder; acceptance/worktree
 helpers; integration and executable fixtures. Cover `test/make` and integration,
 with fixture descriptions at their nearest owner. Explain real Make/Git/tool
-boundaries and process isolation; the registry selector reuse described in the
-reviewed baseline was retired by the
-[selector cleanup](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/registry-selector-cleanup/README.md).
-Preserve real_tool selection commands and prepared-environment notes.
+boundaries and process isolation. Preserve real_tool selection commands and
+prepared-environment notes.
 
 Follow [parent scope, convention and delivery validation](../README.md).
 

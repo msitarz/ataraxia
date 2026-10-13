@@ -1,11 +1,8 @@
 # Repository script documentation
 
-Plan ordered bounded leaves: Python scripts; shell scripts. The registry
-selection utility in the reviewed baseline was retired by the
-[selector cleanup](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/registry-selector-cleanup/README.md)
-and is outside this documentation plan. Cover actual command entry points,
-reusable functions/types and relationships to Make and owning workflow
-contracts. Preserve commands and
+Plan ordered bounded leaves: Python scripts; shell scripts. Cover actual
+command entry points, reusable functions/types and relationships to Make and
+owning workflow contracts. Preserve commands and
 operational constraints; describe shell interfaces by their actual arguments,
 environment and effects without copying implementation or inventing APIs.
 

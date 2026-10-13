@@ -1,7 +1,7 @@
 # Script tests
 
-Repository script tests: `unit/` and `integration/`, with acceptance and
-commit-message helpers owned beside their consuming tests.
+`unit/` and `integration/` contain the repository script tests. Shared
+acceptance and commit-message helpers live in adjacent suite support modules.
 
 Read [common testing guidance](../../doc/testing.md) and the relevant
 test-type guidance linked there.

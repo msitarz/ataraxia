@@ -102,9 +102,9 @@ remain distinct from the host transport needed to call the model service.
 The maintainer-authorized #315 correction assigns existing artifact import and
 executor communication directly to this parent. Creation supersedes manual
 clone preparation; enforcement/execution supersede the old runtime. The old
-implementation Work has no active child and is superseded. Its obsolete
-registry selector and usage contract are handled by the separate
-[consumer-gated cleanup](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/registry-selector-cleanup/README.md).
+implementation Work has no active child and is superseded. Its registry
+selector cleanup is recorded as complete in the
+[shallow-clone parent map](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/README.md#implementation-follow-up).
 Do not run concurrent duplicate runtime implementations. Each leaf is one
 coherent review outcome;
 reassess its complete expected and actual diff against the

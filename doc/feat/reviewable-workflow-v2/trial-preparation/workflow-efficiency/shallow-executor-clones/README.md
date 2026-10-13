@@ -49,13 +49,11 @@ maintenance.
 
 - **ABORT** Optional shallow executor implementation Work: superseded by managed
   creation, enforcement, execution and relocated import; no active child
-  remains. Git preserves its unsatisfied contract; the separate
-  [registry selector cleanup](registry-selector-cleanup/README.md) removes its
-  obsolete delivered utility and usage contract after consumer review.
-  Unsatisfied outcomes are not DONE.
-- **TODO** [Registry selector cleanup](registry-selector-cleanup/README.md):
-  independently scoped maintenance leaf; remove obsolete tooling after the
-  revised plan merges and consumer/owner-link review permits safe removal.
+  remains. Git preserves its unsatisfied contract. Unsatisfied outcomes are not
+  DONE.
+- **DONE** Registry selector cleanup: removed the obsolete selector, usage
+  contract, and dedicated tests and fixtures after consumer review; active
+  Investigation seeds retain frozen source links.
 
 ## Proposed outcome and boundaries
 
@@ -136,12 +134,9 @@ session or filtered-answer condition was tested. The maintainer authorized this
 revised planning direction and abandonment of the unrun snapshot subtree, not
 implementation or policy adoption. The superseded implementation Work stopped
 without satisfying its composition/usage criteria; Git preserves the contract.
-The registry selector and usage contract are removed by the separate cleanup;
-historical reports and delivered evidence remain discoverable. The approved
-reconciliation in PR #315 replaces the unimplemented manual preparation and
-runtime contracts with managed owners; import retains its own gates. Cleanup is
-independently schedulable after consumer review; it preserves the active
-Investigation examples through frozen source links. Follow the
+The approved reconciliation in PR #315 replaces the unimplemented manual
+preparation and runtime contracts with managed owners; import retains its own
+gates. Follow the
 [planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and
