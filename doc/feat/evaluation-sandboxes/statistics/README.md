@@ -3,8 +3,7 @@
 Which existing method can accurately report only declared managed Codex sessions
 through headless JSON or a suitable Python API, including custom temporary
 state, token accounting, API-equivalent cost estimates and successful/failed
-tools? After
-[reconciliation](../reconciliation/README.md), compare
+tools? With [ownership reconciled](../README.md#children-and-gates), compare
 [tokenuse source](https://github.com/russmckendrick/tokenuse), its
 [Codex documentation](https://tokenuse.app/docs/development/tools/codex/),
 suitable Python alternatives and the

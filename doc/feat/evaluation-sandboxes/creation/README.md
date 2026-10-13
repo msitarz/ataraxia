@@ -1,6 +1,7 @@
 # Create prepared sandboxes
 
-After [reconciliation](../reconciliation/README.md), deliver
+Using the reconciled [preparation inputs](../../../evaluation-sandboxes.md),
+deliver
 `make sandbox-create NAME=...` for trusted online preparation at a final
 project-scoped temporary location. Freeze the selected committed base and
 executor branch under existing contribution rules. Reuse native Git and Make
