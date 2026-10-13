@@ -30,6 +30,9 @@ success criteria.
 - **DONE** CI preparation: measured and reduced unused CI setup work, prepared
   the package job's managed Python from `.python-version` before offline smoke
   checks, and traced Make regressions to their acceptance criteria.
+- **TODO** [Make Work reminders](make-work-reminders/README.md): surface scope
+  sizing before dispatch and the actual-diff and maintainer-handoff checks
+  before publication at focused Make lifecycle gates.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
@@ -41,9 +44,9 @@ success criteria.
   residual tree; this is not completion of the unfinished comparison.
 
 Each child owns a separate review outcome. Complete the trial contract after
-completion evidence and handoff recovery so it exercises the delivered rules.
-CI scheduling and CI preparation share files; deliver scheduling first to keep
-their changes independently reviewable.
+completion evidence, handoff recovery, and Make Work reminders so it exercises
+the delivered rules. CI scheduling and CI preparation share files; deliver
+scheduling first to keep their changes independently reviewable.
 
 ## Acceptance
 
@@ -67,7 +70,8 @@ PR.
   scheduling and setup, example-test tracing, delegation cost, total maintainer
   effort, and misleading contributor instructions.
   Validation: map each finding to the delivered child outcome or to an
-  explicit measurement and decision in the live-trial contract.
+  explicit measurement and decision in the live-trial contract, including the
+  scope-sizing and handoff reminder gap identified during delivery.
 
 This Work prepares the trial; it does not implement parallel shard execution or
 claim that the workflow's efficiency has already been demonstrated. Preserve
