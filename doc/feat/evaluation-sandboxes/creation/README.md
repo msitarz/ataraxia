@@ -20,7 +20,7 @@ list, remove and exec; preserve the launcher's TMPDIR while resolving the root.
 
 ## Acceptance
 
-- **AC-1 TODO** A safe NAME creates one absent owned child beneath the managed
+- **AC-1 DONE** A safe NAME creates one absent owned child beneath the managed
   root, bound to canonical source Git common directory, project and exact base.
   Unsafe names, traversal, symlinks,
   source/root destinations, unsuitable ownership/permissions and collisions
@@ -33,7 +33,7 @@ list, remove and exec; preserve the launcher's TMPDIR while resolving the root.
   checks. Cover native temp selection, project-name derivation, SANDBOX_ROOT,
   unsafe fallback/roots, linked-worktree agreement and conflicting checkout
   refusal at our boundary. Do not create a new upstream fixture framework.
-- **AC-2 TODO** Successful creation yields an independent depth-one selected
+- **AC-2 DONE** Successful creation yields an independent depth-one selected
   clone with no origin/tags/alternates/hardlinked source objects or extra refs,
   fresh final-location environment/caches and installed pinned hooks through
   online `make setup`, followed by `make verify-setup`. Failed clone/setup/check
