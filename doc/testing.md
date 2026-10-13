@@ -82,9 +82,9 @@ Keep simple, unique arrangements in the test or its module. Extract reusable
 fixtures and substantial plumbing, especially subprocess execution and
 external-tool setup. Read existing helpers before adding another; an owning
 suite's `conftest.py` and `support.py` are appropriate for suite-wide reuse,
-while narrower helpers belong with their users. Shared registry arrangements
-live under `test/script`, with narrow reuse by the Make suite. Name helpers for
-what they provide and avoid hiding behavior in setup.
+while narrower helpers belong with their users. Share helpers across suites
+only when surviving callers need the same behavior. Name helpers for what they
+provide and avoid hiding behavior in setup.
 
 Repeated setup is a signal to consider sharing it, not a reason to force every
 arrangement into a central file. A process helper should set a timeout and

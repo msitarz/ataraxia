@@ -1,12 +1,14 @@
 # Recent script test package documentation
 
-Plan ordered bounded leaves: overview; inputs/records; manifest/process/
-transport; other helpers/fixtures; unit and integration inventories. Cover
-`test/script`, its unit/integration namespaces and nearest fixture ownership.
-Document canonical imports, typed domains, actual process boundaries and shared
-Make reuse, preserving existing selection/digest/provenance operational notes.
-Keep shared conftest/support edits serial and reusable API inventories distinct
-from case-module summaries.
+Plan ordered bounded leaves: overview; remaining helpers/fixtures; unit and
+integration inventories. Cover `test/script`, its unit/integration namespaces
+and nearest fixture ownership. Document canonical imports, actual process
+boundaries and shared Make reuse. The registry-selector inputs, records,
+manifest/process/transport helpers and selection/digest/provenance notes in the
+reviewed baseline were retired by the
+[selector cleanup](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/registry-selector-cleanup/README.md);
+exclude them from this package documentation plan. Keep shared support edits
+serial and reusable API inventories distinct from case-module summaries.
 
 Follow [parent scope, convention and delivery validation](../README.md).
 

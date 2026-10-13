@@ -1,7 +1,6 @@
 # Make tests
 
-Make target tests: `integration/`. Registry arrangements are reused from
-`../script/`.
+Make target tests: `integration/`.
 
 Read [common testing guidance](../../doc/testing.md) and the relevant
 test-type guidance linked there.

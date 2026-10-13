@@ -1,8 +1,8 @@
 # Match selection investigation
 
 Investigate tooling and guidance for suitable single-value branching. The
-transformed seed is `unsafe_case` in
-[worktree removal tests](../../../test/make/integration/test_worktree_removal.py).
+transformed seed is `unsafe_case` in the
+[worktree-removal source at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/make/integration/test_worktree_removal.py#L29).
 Its original repeated conditional arrangement was:
 
 ```python
@@ -20,8 +20,8 @@ including an explicit main-worktree case; shared worktree preparation remains
 outside selection. This example motivates investigation, not a general rule.
 
 A second seed is `arrange_changed_input` in
-[registry selection inputs](../../../test/script/selection_inputs.py). Its
-original exclusive chain was:
+[registry selection inputs at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L93).
+Its original exclusive chain was:
 
 ```python
 if change in destinations:
@@ -44,8 +44,9 @@ else:
 The helper now matches explicit declaration/evidence, file, link and record
 cases. The declaration/evidence destination mapping remains shared outside the
 match; indexing occurs only in those matching cases, and unmatched input keeps
-the same ValueError. Preserve this example for the investigation alongside the
-first seed; it records no tooling recommendation or policy.
+the same ValueError. The first source link preserves the worktree example after
+cleanup; the frozen selector helper link above preserves this example. Neither
+records a tooling recommendation or policy.
 
 Evaluate the repository's pinned Ruff capabilities against these seeds and small
 counterexamples. Compare supported Ruff options with other linters or a
