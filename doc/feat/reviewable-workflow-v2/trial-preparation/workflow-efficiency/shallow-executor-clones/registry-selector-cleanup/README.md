@@ -1,11 +1,11 @@
 # Obsolete registry selector cleanup
 
 Remove the unused snapshot selector as one small maintenance outcome after
-[the native preparation plan](../implementation/README.md) merges and consumer
-review confirms safe removal. Do not remove tooling in the planning PR. Aim for
-a five-minute complete review; split or report an active-consumer gap before
-expanding scope. No runtime/import dependency is needed once the consumer gate
-passes.
+[the corrected managed plan](../../../../../evaluation-sandboxes/README.md)
+merges and consumer review confirms safe removal. Do not remove tooling in the
+planning PR. Aim for a five-minute complete review; split or report an
+active-consumer gap before expanding scope. No runtime/import dependency is
+needed once the consumer gate passes.
 
 Inspection at `1c1ae02` found the production selector's only command route in
 `Makefile` (`registry-select` invoking `script/registry_selection.py`), its

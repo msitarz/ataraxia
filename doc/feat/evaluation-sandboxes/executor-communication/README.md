@@ -4,7 +4,10 @@ Can the orchestrator hand off a bounded task to a restricted executor, receive
 its artifact or blocker, and send corrections to the same session without
 granting access to the source repository?
 
-Follow the [parent's execution gate](../README.md#execution-gate-and-limits).
+Follow this Work's [execution gate](#execution-gate-and-limits). Findings inform
+[native execution](../execution/README.md) and
+[accepted import](../artifact-import/README.md); this Investigation does not
+implement those commands.
 Compare `codex exec` with explicit session resumption against an app-server
 controller where live steering or cancellation needs it. Use current
 [non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
@@ -16,7 +19,7 @@ distinguish documented features from observed installed-client behavior.
 Predeclare a tiny disposable task and one consolidated correction observable
 in the clone. Test initial handoff, final artifact, same-session correction,
 and a blocker or failed process. Declare run and correction budgets before
-execution under the parent gate; use the existing leaf model policy without
+execution under this Work's gate; use the existing leaf model policy without
 a model comparison.
 
 Attempt the integrated restricted-session trials only when the isolation Work
@@ -38,7 +41,7 @@ artifacts without false completion. Identify how the orchestrator stops a stuck
 process and preserves recovery evidence.
 
 Assess whether completion followed by resume meets
-[current review rules](../../../../../../orchestrator.md). If live control is
+[current review rules](../../../orchestrator.md). If live control is
 required, exercise app-server thread start, events, follow-up turns, steering,
 and interruption under the same boundary; otherwise label that alternative
 documentation-only and explain why a controller is unnecessary. No production
@@ -51,8 +54,9 @@ controller or general messaging framework belongs in this Work.
   Where a usable isolation boundary exists, verify it before both turns;
   otherwise disclose the dependency failure and limits of independent probes.
   Validation: inspect transcripts and revisions or the established blocker;
-  rerun [source-denial probes](../sandbox-isolation/README.md) when a usable
-  restricted path exists.
+  rerun
+  [source-denial probes](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/sandbox-isolation/README.md)
+  when a usable restricted path exists.
 - **AC-2 TODO** Routing and failure cases return a recoverable artifact or
   explicit blocker without silent fallback, cross-session correction,
   unapproved permissions, or false completion.
@@ -65,5 +69,28 @@ controller or general messaging framework belongs in this Work.
   review gates, and any untested live-control claims.
 
 Return the demonstrated handoff and correction path for
-[Artifact delivery](../artifact-delivery/README.md). Preserve evidence and
-promote lasting findings under the normal Investigation lifecycle.
+[Artifact delivery](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/artifact-delivery/README.md).
+Preserve evidence and promote lasting findings under the normal Investigation
+lifecycle.
+
+## Execution gate and limits
+
+The [preserved preparation input](../preparation-input.md) supports only the
+tested Darwin Intel deterministic condition; no model session or filtered-answer
+condition was established. Merge the reviewed ownership correction before Work
+execution. Before any model-backed trial, declare frozen fixtures and revisions,
+prompts, conditions, permitted resources, selected model and effort, maximum
+runs and corrections, a time or token budget and stop handling; obtain
+applicable maintainer approval. Use the existing leaf policy without a model
+comparison. This plan authorizes no runs.
+
+Use disposable repositories and non-secret canaries. Verify the intended
+source/history, command-network and other-session exclusions before initial and
+resumed restricted trials; preparation alone proves no session isolation.
+A failed boundary blocks integrated trials without broader-access rescue;
+preserve failures, partial artifacts, timing and deviations. Independent
+communication probes require declared conditions and applicable authorization
+and cannot claim enforced isolation. Retain existing review, evidence-before-
+cleanup, signing and publication gates. New sandbox systems, production tooling,
+comparative performance and live GitHub publication trials need separate scope
+and applicable authorization; this relocation adopts no default policy.

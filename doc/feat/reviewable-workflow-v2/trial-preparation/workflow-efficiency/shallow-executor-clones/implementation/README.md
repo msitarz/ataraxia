@@ -1,7 +1,9 @@
-# Optional shallow executor workflow
+# Superseded shallow executor implementation contract
 
-Deliver trusted orchestrator preparation, restrictive executor control and
-accepted-artifact import. The
+This retained contract awaits reviewed supersession cleanup. Its former
+composition outcome now belongs to
+[managed evaluation sandboxes](../../../../../evaluation-sandboxes/README.md),
+including the relocated import Work; no active child remains here. The
 [verified native-preparation Investigation](https://github.com/msitarz/ataraxia/blob/c9a24b3f8cccfb9392ec12db2029dfe03887786d/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/environment-preparation/README.md)
 supports the simpler candidate only for its Darwin Intel deterministic
 condition; it tested no model session. The
@@ -15,14 +17,16 @@ trial approval gates. Any consequential adoption still needs the existing
 
 ```mermaid
 flowchart LR
-    subgraph Before[Old plan: only registry selector implemented]
-        S[Registry and planned hook selection] --> F[Planned frozen snapshot]
-        F --> O[Planned offline reconstruction]
+    subgraph Before[Before correction: import inside shallow implementation]
+        M[Managed creation, enforcement and execution] --> A[Artifact import in shallow tree]
+        U[Delivered registry usage]
     end
-    subgraph Proposed[Proposed workflow: not implemented]
-        P[Managed creation: replacement owner] --> R[Managed enforcement and execution: replacement owners]
-        R --> A[Accepted artifact import]
+    subgraph After[Authorized managed owners: not implemented]
+        C[Creation] --> E[Enforcement and execution]
+        E --> I[Relocated artifact import]
     end
+    A --> I
+    U --> R[Retained registry usage until consumer-gated cleanup]
 ```
 
 ## Child Works and dependencies
@@ -42,9 +46,11 @@ flowchart LR
   [enforcement](../../../../../evaluation-sandboxes/enforcement/README.md) and
   [execution](../../../../../evaluation-sandboxes/execution/README.md).
   Runtime ownership is not duplicated and its criteria are not DONE.
-- **TODO** [Artifact import](artifact-import/README.md): accepted output into a
-  full-history Work branch; depends on accepted
-  [managed execution output](../../../../../evaluation-sandboxes/execution/README.md).
+
+Artifact import is now a direct TODO child of
+[managed evaluation sandboxes](../../../../../evaluation-sandboxes/README.md#children-and-gates),
+with all required import outcomes and gates retained. It is no longer a child
+of this superseded Work.
 
 The shallow-clone parent separately owns
 [registry selector cleanup](../registry-selector-cleanup/README.md), an
@@ -58,14 +64,15 @@ until that separate cleanup. Its
 [verified historical delivery](https://github.com/msitarz/ataraxia/blob/e15059213964809026ca09505a190ad09701b64b/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/evidence.md)
 is preserved; snapshot abandonment does not undo that delivered outcome.
 
-The approved #315 reconciliation retains this parent for artifact import and its
-delivered registry-selection ownership. Managed creation, enforcement and
-execution own preparation/runtime; import follows accepted managed output.
-Selector cleanup may be scheduled separately under its consumer gate. Each leaf
-aims at one five-minute complete review, including tests and supporting changes;
-split before oversized execution. Follow existing contribution, acceptance,
-review and publication contracts. Host commits retain signing settings; never
-disable production signing.
+The maintainer-authorized #315 ownership correction supersedes this Work:
+managed creation, enforcement, execution and import own its workflow composition
+and usage promotion. The two unsatisfied criteria below remain TODO as the
+retained pre-cleanup contract; they are not delivered by abandonment. The old
+parent records ABORT rather than an empty active implementation wrapper.
+After independent review, remove only this obsolete README; the registry usage
+owner and its implementation remain until the separately owned cleanup passes
+its consumer gate. Host production signing and ordinary review/publication gates
+remain unchanged.
 
 ## Acceptance
 
