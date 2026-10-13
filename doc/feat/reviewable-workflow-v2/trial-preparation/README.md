@@ -32,6 +32,8 @@ success criteria.
   checks, and traced Make regressions to their acceptance criteria.
 - **DONE** Delivered Make Work reminders for pre-dispatch review sizing and
   post-cleanup reviewed PR delivery to the maintainer.
+- **TODO** [Executor guidance and handoffs](executor-handoffs/README.md): make
+  executor obligations directly discoverable and bounded assignments complete.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
@@ -44,7 +46,8 @@ success criteria.
 
 Each child owns a separate review outcome. Complete the trial contract after
 completion evidence, handoff recovery, and Make Work reminders so it exercises
-the delivered rules. CI scheduling and CI preparation share files; deliver
+the delivered rules. Complete executor guidance and handoffs before the live
+trial begins. CI scheduling and CI preparation share files; deliver
 scheduling first to keep their changes independently reviewable.
 
 ## Acceptance
