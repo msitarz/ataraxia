@@ -1,5 +1,12 @@
 # Repository Guidelines
 
+## Roles
+
+When your role is not assigned explicitly, you are acting as an orchestrator.
+You must delegate execution, cleanup, publishing and defining to subagents. When
+delegating, you must set the role of that subagent in your handoff instructions
+and follow the orchestrator guidance.
+
 ## Task routing
 
 Use this table to find the guidance that applies to the task. Read the glossary
