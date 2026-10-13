@@ -6,13 +6,16 @@ and session-scoped measurements. This is a new planning parent with direct
 leaves, rather than another level beneath the existing shallow-clone tree.
 It changes no executable behavior or current linked-worktree policy.
 
-Verified baseline: `master` at `21d22e7847842d41aa34800593b6b193129c55f8`
-(#314) has manual clone-preparation, runtime and import contracts, existing
-`worktree-create` and native Make setup, but no managed sandbox targets. Open
+Historical planning baseline: `master` at
+`21d22e7847842d41aa34800593b6b193129c55f8` (#314) has manual clone-preparation,
+runtime and import contracts, existing `worktree-create` and native Make setup,
+but no managed sandbox targets. Frozen
 [#315](https://github.com/msitarz/ataraxia/pull/315) at
-`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input.
-Its manual procedure is preserved through
-[preparation input](preparation-input.md).
+`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input. Current
+integration base is merged #316 at `a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`.
+The maintainer approved reconciling #315 onto it, retaining useful manual inputs
+at the [focused owner](../../evaluation-sandboxes.md).
+[Preparation input](preparation-input.md) preserves immutable provenance.
 Preparation evidence supports only the tested Darwin Intel deterministic
 condition; it establishes neither filtered-answer exclusion nor model-session
 isolation, and did not capture the full effective environment.
@@ -85,8 +88,10 @@ remain distinct from the host transport needed to call the model service.
 Merge this concrete plan before expanded implementation. The first leaf resolves
 overlap with the
 [existing implementation](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/README.md)
-and maintainer clarification of PRs 314 and 315; this preservation PR leaves the
-open PR and old outcome statuses untouched. Do not run concurrent duplicate
+under the approved #315 disposition: creation supersedes manual clone
+preparation, enforcement/execution supersede the old runtime, and artifact
+import stays active in its existing tree. Reconciliation remains subject to
+independent review before later leaves execute. Do not run concurrent duplicate
 runtime implementations. Each leaf is one coherent review outcome; reassess its
 complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting

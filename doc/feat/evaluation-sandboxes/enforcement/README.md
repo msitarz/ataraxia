@@ -7,7 +7,7 @@ shared by initial start and exact UUID resume; the execution leaf consumes this
 gate. No new sandbox system or general platform framework is planned.
 
 Use the
-[preserved boundary/handoff input](../preparation-input.md#boundary-and-handoff-input)
+[preserved boundary/handoff input](../../../evaluation-sandboxes.md#boundary-and-handoff-input)
 without treating historical controls as current readiness.
 
 ## Acceptance
