@@ -29,8 +29,9 @@ harder to assess, even when scope has not changed.
 The owning orchestrator assesses the full expected leaf change against this
 target before dispatch and reassesses the actual diff before publication. When
 simplification and suitable reuse cannot keep it bounded, the definer iterates
-concrete child contracts and dependencies under independent owner review. Merge
-the concrete planning PR before expanded implementation begins.
+concrete child contracts and dependencies under independent owner review,
+following [Definer guidance](definer.md). Merge the concrete planning PR before
+expanded implementation begins.
 
 Routine choices within the agreed contract need no additional approval,
 whether its acceptance criteria are in a Work contract or supplied in the

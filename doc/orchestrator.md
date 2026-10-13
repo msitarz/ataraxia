@@ -25,10 +25,9 @@ their declared conditions and require alignment or explicit authorization before
 execution. Investigation and Evaluation contract definition uses the definer;
 bounded investigation or evaluation execution uses the executor.
 
-The definer owns assigned Work contract changes and serial coordination of
-shared parent maps, without implementing code or approving its own definitions.
-Definers do not recursively delegate the assigned task. Cleaner and publisher
-gain no artifact-review or merge authority.
+The [Definer](definer.md) owns assigned Work contract changes and serial
+coordination of shared parent-map edits. Cleaner and publisher gain no
+artifact-review or merge authority.
 
 For post-merge Work cleanup, hand off to the separate operational `cleaner`
 subagent after the maintainer confirms the PR merged. Route it through
@@ -121,8 +120,8 @@ groups of information:
 - **Authority and stopping point:** approved scope, where to report a gap, and
   owner review before criteria become `DONE` or the contract is removed.
 - **Return:** use the assigned role's requirements: [Definer
-  returns](#definer-returns) or [Executor guidance](executor.md). Identify
-  changes awaiting review or needed steering.
+  guidance](definer.md) or [Executor guidance](executor.md). Identify changes
+  awaiting review or needed steering.
 
 The assigned agent reads the Work and applicable contracts; consult ancestor
 READMEs only as needed, without recursively loading every parent. Without a Work
@@ -135,9 +134,12 @@ implementation begins. Use the same consolidated correction and review gates
 below for either responsibility.
 
 Definers and executors use an isolated Git worktree before editing. For a
-requested leaf, create its isolated branch/worktree and follow the usual Work PR
-flow. When assigning an executor to that leaf, use a fresh session. For each
-parent's implementation run, assign a fresh executor session and reuse it only
+requested leaf, create its isolated branch/worktree and follow the usual
+[Work PR flow](../CONTRIBUTING.md#work-branches-review-and-merge). Follow
+[Definer guidance](definer.md) or [Executor guidance](executor.md) for the
+assigned role's setup and work. When assigning an executor to that leaf, use a
+fresh session. For each parent's implementation run, assign a fresh executor
+session and reuse it only
 for that parent's direct leaves and correction cycles, sequentially in one
 accumulating isolated branch/worktree. Distinct child parents use distinct fresh
 executor sessions even when scheduled sequentially; do not share an executor
@@ -240,12 +242,3 @@ and final-head CI assessment, then returns the PR, outcome, and material
 blockers or limitations to the maintainer. Complete this without waiting for
 another maintainer instruction unless a concrete blocker or decision needs
 steering.
-
-### Definer returns
-
-Definers return the contract revision, outcome, dependencies, risks, unverified
-criteria, acceptance evidence, commands run, unrun checks, unresolved criteria,
-and blockers to their owning orchestrator. After session recovery, include the
-recovered state and which evidence applies to the current revision. A blocked
-return identifies what remains and the input or decision needed; a completed
-return identifies changes awaiting orchestrator review.
