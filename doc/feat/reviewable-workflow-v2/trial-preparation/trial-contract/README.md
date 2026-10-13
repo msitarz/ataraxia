@@ -47,7 +47,8 @@ so each delivery has a reviewable outcome.
 The trial starts only after the preparation parent is complete and integrated.
 This child defines evaluation; the trial supplies its observed evidence.
 
-The [workflow-efficiency comparison](../workflow-efficiency/README.md) is
-another bounded input to this evaluation. Capture its observations and limits
-in existing PR evidence; do not claim topology speedup from Works of different
-size.
+The workflow-efficiency comparison was abandoned at maintainer request;
+[historical observations](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md)
+remain bounded input, without a completed comparison or topology-speedup claim.
+This trial owns its own declared measurements and evidence; it cannot inherit
+completion from those observations.

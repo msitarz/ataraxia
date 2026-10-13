@@ -1,5 +1,15 @@
 # Reviewed fork import and Work-branch delivery preparation
 
+Historical input for [accepted executor commit import](README.md), preserved
+from the retired workflow-efficiency Investigation. The original preparation and
+results below describe past disposable fixtures; commands, approvals and TODO
+references are historical. This grants no new execution authorization, adopts no
+configuration or policy and completes no current Work criterion. Original
+[protocol and report](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/artifact-delivery/delivery-protocol.md)
+and
+[retained delivery audit](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/sandbox-isolation/audit/retained/ataraxia-delivery-9f2b7c18db15)
+remain immutable evidence.
+
 The maintainer authorized this bounded deterministic candidate: after reviewer
 acceptance and final executor correction, the orchestrator fetches approved fork
 commits into a full-history repository, rebases onto its designated Work branch,
@@ -19,7 +29,7 @@ branch is `refs/heads/master`, with initial commit
 `efefa0ed26c20eb532c94990f0019f2b7c53a531` and resumed commit
 `dcc22b3f7596dc01789c8eac59531b2b0e669672`, above base
 `83bc8542fad85d7f49fc0205d578bf8c5e40bbbb`. This uses the
-[reviewed standalone result](../sandbox-isolation/standalone-model.md#completed-standalone-b-actual-executor-and-resume).
+[reviewed standalone result](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/sandbox-isolation/standalone-model.md#completed-standalone-b-actual-executor-and-resume).
 No auth/session directory is copied or inspected.
 
 The integrated receiver is a new full-history clone of the original disposable
@@ -45,7 +55,7 @@ A newly constructed full-history fixture has older history, selected master
 base and assigned Work commits. Its implementation includes changed text,
 binary bytes `00ff0a0304`, rename, deletion and executable mode `100755`.
 Fixture criteria/evidence and parent-map files simulate the
-[delivery commit contract](../../../../../../acceptance-tracing.md#work-delivery-commits);
+[delivery commit contract](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/acceptance-tracing.md#work-delivery-commits);
 they are disposable data, not completion of real Work criteria.
 
 Root independently reviews staged fixture criteria at a first checkpoint before
@@ -88,7 +98,7 @@ four heads/trees/base ancestry, exactly those refs plus unchanged master, and no
 shallow receiver. There is no live GitHub PR/push, real root mutation, CI run or
 maintainer merge. The normal next path remains orchestrator-owned ready PR after
 review, latest-head CI and maintainer review under
-[PR publication](../../../../../../pull-requests.md).
+[PR publication](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/pull-requests.md).
 
 ## Exact execution boundary and limits
 
