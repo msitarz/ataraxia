@@ -43,7 +43,7 @@ Work; production implementation is outside these Investigations.
 
 [Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
 owns replacement preparation/runtime planning under the approved #315
-disposition. Reconciliation is delivered; this tree retains
+disposition. Reconciliation review gates execution; this tree retains
 Investigations, artifact import and registry-selector maintenance.
 
 - **TODO** [Optional shallow executor workflow](implementation/README.md):
@@ -58,8 +58,8 @@ Investigations, artifact import and registry-selector maintenance.
 - The historical manual direction used trusted online native Git preparation and
   existing `make setup` / offline `make verify-setup`, with fresh final-location
   environment, caches and pinned hooks. The
-  [focused sandbox owner](../../../../../evaluation-sandboxes.md) preserves
-  manual inputs;
+  [Work-owned preparation inputs](../../../../evaluation-sandboxes/preparation-input.md)
+  preserves manual inputs;
   [managed creation](../../../../evaluation-sandboxes/creation/README.md) owns
   future preparation, exact input, object independence and recovery.
 - Managed [enforcement](../../../../evaluation-sandboxes/enforcement/README.md)
@@ -86,9 +86,10 @@ This Work does not build a new sandbox or network-control system.
 
 ## Ownership and dependencies
 
-The [focused sandbox owner](../../../../../evaluation-sandboxes.md) retains
-manual implementation inputs and receives managed usage as delivered. Existing
-Make targets own setup behavior;
+The
+[Work-owned preparation inputs](../../../../evaluation-sandboxes/preparation-input.md)
+retain transitional manual implementation inputs. Lasting usage is promoted
+only when managed commands deliver. Existing Make targets own setup behavior;
 [orchestrator guidance](../../../../../orchestrator.md) owns executor handoff
 and artifact return. Follow the [WDR workflow](../../../../../wdr-workflow.md)
 for any consequential policy adoption; Investigations recommend rather than

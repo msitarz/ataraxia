@@ -14,8 +14,8 @@ but no managed sandbox targets. Frozen
 `a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input. Current
 integration base is merged #316 at `a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`.
 The maintainer approved reconciling #315 onto it, retaining useful manual inputs
-at the [focused owner](../../evaluation-sandboxes.md).
-[Preparation input](preparation-input.md) preserves immutable provenance.
+at the [Work-owned inputs](preparation-input.md).
+Those inputs preserve immutable provenance.
 Preparation evidence supports only the tested Darwin Intel deterministic
 condition; it establishes neither filtered-answer exclusion nor model-session
 isolation, and did not capture the full effective environment.
@@ -23,7 +23,7 @@ isolation, and did not capture the full effective environment.
 ```mermaid
 flowchart LR
     B[Before: manual clone contracts and linked-worktree tooling]
-    B --> G[Delivered: reconciled owners and manual inputs]
+    B --> G[Review: reconciled owners and Work-owned inputs]
     subgraph Proposed[Proposed: project managed root]
         W[Child-readable workspace: clone, tools, scratch]
         P[Private control: auth, Codex state, raw sessions, reviewer outputs]
@@ -63,10 +63,9 @@ remain distinct from the host transport needed to call the model service.
 
 ## Children and gates
 
-- **DONE** Preparation and ownership reconciliation: useful manual inputs
-  preserved in the [focused owner](../../evaluation-sandboxes.md); managed
-  creation/enforcement/execution replace the unimplemented old contracts, while
-  artifact import and existing Investigation/maintenance ownership remain.
+- **TODO** [Reconcile preparation and ownership](reconciliation/README.md):
+  preserve manual inputs inside this Work and review superseded contract
+  dispositions before later leaves execute.
 - **TODO** [Create prepared sandboxes](creation/README.md): online independent
   clone, native setup/hooks/readiness and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
@@ -85,11 +84,12 @@ remain distinct from the host transport needed to call the model service.
   or record an explicit reviewed unsupported/no-fit disposition; no tool
   adoption is predetermined.
 
-Reviewed reconciliation resolved overlap with the
+Reconciliation reviews the approved dispositions against the
 [existing implementation](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/README.md)
 under the approved #315 disposition: creation supersedes manual clone
 preparation, enforcement/execution supersede the old runtime, and artifact
-import stays active in its existing tree. Do not run concurrent duplicate
+import stays active in its existing tree. Later leaves wait for reconciliation
+review. Do not run concurrent duplicate
 runtime implementations. Each leaf is one coherent review outcome; reassess its
 complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting
@@ -115,9 +115,10 @@ remain. Consequential policy changes follow the
   reuse leaf evidence rather than repeat probes or model runs. A no-fit finding
   does not fake report implementation or automatic adoption; follow reviewed
   Work lifecycle disposition for any unsatisfied integration outcome.
-- **AC-2 TODO** Lasting usage and supported-condition limits have one focused
-  owner, discoverable from Make help, documentation, orchestrator and evaluation
-  routes; measurement limits remain explicit.
+- **AC-2 TODO** On real command delivery, lasting usage and supported-condition
+  limits are promoted from Work-owned inputs to one focused owner, discoverable
+  from Make help, documentation, orchestrator and evaluation routes; measurement
+  limits remain explicit.
 
   Validation: independently walk those routes and verify promotion before Work
   cleanup. CONTRIBUTING routes existing tool discovery and gains no sandbox

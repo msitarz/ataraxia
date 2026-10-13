@@ -1,6 +1,6 @@
 # Create prepared sandboxes
 
-Using the reconciled [preparation inputs](../../../evaluation-sandboxes.md),
+Using the reconciled [preparation inputs](../preparation-input.md),
 deliver
 `make sandbox-create NAME=...` for trusted online preparation at a final
 project-scoped temporary location. Freeze the selected committed base and
@@ -11,7 +11,7 @@ boundary and necessary preparation/ownership logic, without snapshot tooling,
 cache reconstruction or a global registry.
 
 Use the
-[preserved native preparation input](../../../evaluation-sandboxes.md#native-preparation-input)
+[preserved native preparation input](../preparation-input.md#native-preparation-input)
 to retain useful commands, checks and provenance through the ownership revision.
 
 Own the shared implementation of the parent's

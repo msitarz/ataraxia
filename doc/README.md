@@ -12,7 +12,6 @@ relevant guidance.
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
-| Evaluation sandbox preparation, usage and supported-condition limits | [Evaluation sandboxes](evaluation-sandboxes.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
 | Work contract authoring and review | [Work definition](work-definition.md) |
 | General Work rules | [Work workflow](workflow.md) |

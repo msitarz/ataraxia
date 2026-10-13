@@ -36,8 +36,8 @@ flowchart LR
 - **ABORT** Unimplemented manual clone-preparation contract: superseded by
   [managed creation](../../../../../evaluation-sandboxes/creation/README.md).
   Useful manual inputs survive in the
-  [focused owner](../../../../../../evaluation-sandboxes.md); its requirements
-  were not delivered by #315.
+  [Work-owned inputs](../../../../../evaluation-sandboxes/preparation-input.md);
+  its requirements were not delivered by #315.
 - **ABORT** Unimplemented executor-runtime contract: superseded by managed
   [enforcement](../../../../../evaluation-sandboxes/enforcement/README.md) and
   [execution](../../../../../evaluation-sandboxes/execution/README.md).
@@ -81,7 +81,8 @@ disable production signing.
   authoritative owners without changing default policy or claiming untested
   configurations are supported.
 
-  Validation: independently review the focused sandbox owner/orchestrator
-  guidance and any implemented Make help against the retained report and leaf
-  evidence. Review required WDR/owner changes before consequential adoption;
-  normal latest-head PR/CI gates apply. No live PR/CI experiment is required.
+  Validation: independently review promoted usage/orchestrator guidance upon
+  command delivery and any implemented Make help against the retained report and
+  leaf evidence. Review required WDR/owner changes before consequential
+  adoption; normal latest-head PR/CI gates apply. No live PR/CI experiment is
+  required.
