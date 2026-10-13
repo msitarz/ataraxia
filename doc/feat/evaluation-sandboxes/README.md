@@ -75,8 +75,8 @@ remain distinct from the host transport needed to call the model service.
 - **DONE** Preparation and ownership reconciliation: preserved manual input,
   moved import and communication into direct children and superseded the empty
   implementation Work without completing its undelivered outcomes.
-- **TODO** [Create prepared sandboxes](creation/README.md): online independent
-  clone, native setup/hooks/readiness and retained failed state.
+- **DONE** Delivered managed sandbox creation: online independent shallow
+  clone, native setup/hooks/readiness, and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
   trustworthy local discovery and preservation-aware removal; after creation.
 - **TODO** [Enforced runtime readiness](enforcement/README.md): reuse native
