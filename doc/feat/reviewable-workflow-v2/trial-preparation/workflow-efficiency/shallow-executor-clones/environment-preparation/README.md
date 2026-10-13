@@ -87,14 +87,14 @@ policy.
 
 ## Acceptance
 
-- **AC-1 TODO** Given the selected committed input and initially absent
+- **AC-1 DONE** Given the selected committed input and initially absent
   environment/cache, actual fresh online native preparation records whether
   canonical pinned dependencies and hooks become ready, with failures retained.
 
   Validation: independently inspect the commands, selected input/tool
   provenance, preparation outputs and environment/hook paths against canonical
   declarations.
-- **AC-2 TODO** Under the frozen current restricted condition, deterministic
+- **AC-2 DONE** Under the frozen current restricted condition, deterministic
   controls record usable installed tools/hooks and denied command network,
   original repository and excluded history; unsupported or failed gates block
   launch without installation, synchronization or silent network fallback.
@@ -102,7 +102,7 @@ policy.
   Validation: review actual sandbox outputs and matching unrestricted controls,
   environment/editable/dependency exposure inspection and retained failures;
   distinguish historical results from observed current enforcement.
-- **AC-3 TODO** A bounded recommendation compares the native path with the
+- **AC-3 DONE** A bounded recommendation compares the native path with the
   existing snapshot plan, maps preserved requirements and remaining constraints,
   and names precise Work replacement or simplification, including no-change or
   inconclusive outcomes when supported by evidence.
@@ -112,12 +112,103 @@ policy.
   approval gates are explicit and the complete result fits one five-minute
   review.
 
-This contract PR runs no experiments and changes no runtime. Investigation
-execution excludes models, actual executor turns, controllers/import utilities,
-benchmarks, custom permanent helpers, cache-entry filters, registry schemas and
-new regression-fixture hierarchies. Readiness does not establish a complete
-model-session/tool boundary. Any model trial needs separate authorization under
+This Work records one preparation and enforcement attempt and changes no
+runtime. Execution excludes models, actual executor turns,
+controllers/import utilities, benchmarks, custom permanent helpers,
+cache-entry filters, registry schemas and new regression-fixture hierarchies.
+Readiness does not establish a complete model-session/tool boundary. Any model
+trial needs separate authorization under
 the [parent execution gate](../README.md#execution-gate-and-limits). The
 existing preparation policy remains authoritative; adoption and implementation
 require maintainer decision, applicable WDR and revised planning/review/merge
 gates.
+
+## Observed attempt
+
+The clean source `master` and independent depth-one clone both used
+`d8b3dd7be98a26e6b2fd70c09cc7edefb41fff5b`; the clone had no remote, alternates,
+`.venv`, or cache before preparation. On Darwin 25.6 x86_64, Codex 0.162.1, Git
+2.56.0, GNU Make 4.4.1, uv 0.13.0, and Python 3.15.0 were frozen; hashes and
+selected process records are in [evidence.json](evidence.json). The unchanged
+profile is [runtime.config.toml.txt](runtime.config.toml.txt), SHA256
+`f713ec33370bf362ee77659d3b74056c87b36c65255f9f279a0b7c879c2695c3`. It denies
+source/report/state/root/temp paths and network; permits clone writes, an
+explicit `/usr` read concession, and pinned tool/runtime reads. The profile
+requests environment isolation, and captured Make arguments isolate relevant
+paths. The complete effective host/child environment was not captured; the
+actual model runtime remains untested. Project setup used Python 3.15;
+installed hook execution also ran a
+Python 3.14 hook environment. No obsolete Framework path from older reports was
+reused.
+
+`gmake setup` completed locked online preparation, installed 46 packages and
+both pinned hooks, and built the wheel. Offline `verify-setup` passed. The
+editable environment points to the clone; symlinks resolved within the clone or
+to the permitted Python runtime, and bounded text search found no source or
+report paths in `.venv` or `.cache`. `verify-check` passed under the unchanged
+profile: pre-commit checks, Ruff, format, documentation, Pyrefly and
+architecture checks succeeded. Three fixture-size findings were advisory
+(`--exit-zero`). Both installed hooks passed in matched host and restricted
+runs. Full hook argv, Make environment arguments, timestamps, statuses and
+streams are captured in evidence.json; no commit was created.
+
+| Control | Matched control | Restricted observation |
+| --- | --- | --- |
+| Source file and Git metadata | Host source read and `rev-parse` passed | Source file read denied; corrected-cwd Git probe denied source access |
+| Excluded history | Parent `044e0617…` exists in source; absent in clone | Source `cat-file` access denied at source directory; clone reports object absent |
+| Direct local fetch | Source-to-separate-bare-control fetch and object check passed | Fetch into trial clone separately denied source `.git/HEAD`; postcheck object absent |
+| Source symlink | Host read through clone-local link passed | Read failed and logged the source target denial |
+| Command networking | Host curl received local canary response | Same curl failed to connect; logger recorded outbound denial; server saw no restricted request |
+| Readiness, checks, hooks | Matching host setup/hook controls passed | Approved readiness repeat, `verify-check`, pre-commit and commit-msg passed |
+
+Initial restricted readiness exited 71 at `sandbox_apply`. With root approval,
+the unchanged profile launched outside the outer sandbox; readiness passed in
+0.21 seconds. This output is root-transcribed. The first post-approval
+restricted Git result was output-truncated and remains unknown. A later repeat
+inherited the denied report-worktree cwd; it is preserved as an invalid control.
+Root approved correcting only the wrapper cwd to the clone, after which the
+matched source Git control passed and the restricted probe recorded the source
+denial. The initial host loopback bind was denied by the outer sandbox; its
+complete transcript/time was not retained. A default-outer-sandbox host curl
+then failed (captured in evidence.json). After escalation, the matching host
+curl passed while the loopback server was active; the unchanged restricted curl
+was then tested. These outer-sandbox setup/control results are distinct from
+the inner-profile result. These launcher deviations and failed controls remain
+in the evidence record.
+
+The original task's 20-minute cap excluded independent review, but exact
+initial-preparation timestamps and aggregate active time were not retained.
+The separately approved 10-minute continuation spanned about 07:39:21 to
+07:47:40 UTC (8 minutes 19 seconds wall time); approval and tool waits were not
+separately measured. The exact first Git output, full earlier host environment,
+and original setup argv are not recoverable; the report does not infer them.
+Individual captured calls include cwd, argv, UTC timestamps, status, stdout
+and stderr.
+
+This clone's committed tree visibly contains historical audit reports and
+runner artifacts under `sandbox-isolation/audit/`. They are permitted current-
+tree content, so this run does not claim hidden reports or answer exclusion.
+The profile denied source history, separate source/report trees and evidence
+state outside the clone. This is one Darwin/x86_64 deterministic condition; no
+model or evaluated-executor call ran. Setup-failure recovery, other platforms,
+other network protocols, filtered task content, model/session start or resume,
+and artifact delivery remain untested. The loopback result covers only local
+command TCP/HTTP.
+
+**Recommendation:** use the native online-prepared environment as the candidate
+for this tested clone condition; it passed readiness, useful restricted checks,
+hooks, and the matched denied-access controls. Keep adoption and current policy
+gated until the parent reviews a revised plan that preserves remaining duties.
+
+| Requirement | Proposed Work disposition |
+| --- | --- |
+| Fresh clone/base, locked online setup, hook install and readiness | Assign these operations to `implementation/clone-preparation`; this is the native candidate demonstrated here. |
+| Offline dependency snapshot, pinned hook-source selection, snapshot delivery and recurring compatibility | Propose replacing or aborting `implementation/dependency-snapshot/`, `pinned-hook-sources/`, `snapshot-delivery/` and `current-dependency-compatibility/` in a separate approved plan. Keep the delivered registry selector unchanged; its removal is a separate decision. |
+| Enforced boundary and actual session start/resume | Retain `implementation/executor-runtime/`; this investigation tested deterministic commands, not model-session behavior. |
+| Accepted output import, review and publication | Retain `implementation/artifact-import/` and existing parent review/commit gates. |
+| Default linked-worktree policy | Retain until maintainer decision and applicable WDR/planning gates. No contract or policy is changed here. |
+
+The report makes a condition-specific recommendation, not an adoption decision.
+The [prior sandbox
+recipe and audit evidence](../sandbox-isolation/successful-recipe.md) remain
+historical support and do not substitute for the captured current condition.
