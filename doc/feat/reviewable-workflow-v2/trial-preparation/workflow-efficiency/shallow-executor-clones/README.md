@@ -41,6 +41,11 @@ Work; production implementation is outside these Investigations.
 
 ## Implementation follow-up
 
+[Managed evaluation sandboxes](../../../../evaluation-sandboxes/README.md)
+preserves related replacement planning. Its first reconciliation leaf gates both
+overlapping implementation routes before execution; existing statuses below
+remain unchanged pending reviewed disposition and maintainer clarification.
+
 - **TODO** [Optional shallow executor workflow](implementation/README.md):
   deliver manual trusted online preparation, restricted runtime and accepted
   import without changing linked-worktree policy. Retained Investigation
