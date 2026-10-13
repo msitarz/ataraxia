@@ -11,11 +11,12 @@ rewriting. See the
 
 ## Child Works and composition
 
-Execution of this snapshot subtree, including recurring compatibility, is paused
-by the
-[environment-preparation decision](../../README.md#execution-gate-and-limits).
-Retain the delivered registry selector and existing contracts pending that
-Investigation's outcome and maintainer decision.
+Execution of this snapshot subtree, including recurring compatibility, remains
+paused under the
+[completed environment-preparation gate](../../README.md#execution-gate-and-limits).
+Its reviewed report recommends a native online-preparation candidate for the
+tested condition. Retain the delivered registry selector and existing
+contracts pending maintainer decision and any required revised planning merge.
 
 - **DONE** Optional reviewed registry selection verifies pinned registry
   payloads and preserves their complete resolver metadata; see
