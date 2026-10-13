@@ -30,9 +30,9 @@ success criteria.
 - **DONE** CI preparation: measured and reduced unused CI setup work, prepared
   the package job's managed Python from `.python-version` before offline smoke
   checks, and traced Make regressions to their acceptance criteria.
-- **TODO** [Make Work reminders](make-work-reminders/README.md): surface scope
-  sizing before dispatch and the actual-diff and maintainer-handoff checks
-  before publication at focused Make lifecycle gates.
+- **DONE** Delivered Make Work lifecycle reminders: added pre-dispatch review
+  sizing and a post-cleanup, pre-publication actual-diff and maintainer-handoff
+  checkpoint.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
