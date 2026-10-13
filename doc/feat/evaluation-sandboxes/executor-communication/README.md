@@ -22,10 +22,11 @@ and a blocker or failed process. Declare run and correction budgets before
 execution under this Work's gate; use the existing leaf model policy without
 a model comparison.
 
-Attempt the integrated restricted-session trials only when the isolation Work
-establishes a usable boundary. If it cannot, retain that failure evidence and
-test communication mechanics independently without claiming enforced isolation;
-an evidence-based negative recommendation can complete this Investigation.
+Attempt the integrated restricted-session trials only when
+[enforcement](../enforcement/README.md) establishes a usable boundary. If it
+cannot, retain that failure evidence and test communication mechanics
+independently without claiming enforced isolation; an evidence-based negative
+recommendation can complete this Investigation.
 
 For exec, exercise stdin delivery, JSONL events, final-message capture, process
 exit handling, and saving the explicit session ID. Resume that ID with the same
@@ -55,7 +56,7 @@ controller or general messaging framework belongs in this Work.
   otherwise disclose the dependency failure and limits of independent probes.
   Validation: inspect transcripts and revisions or the established blocker;
   rerun
-  [source-denial probes](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/sandbox-isolation/README.md)
+  [enforcement readiness checks](../enforcement/README.md)
   when a usable restricted path exists.
 - **AC-2 TODO** Routing and failure cases return a recoverable artifact or
   explicit blocker without silent fallback, cross-session correction,
@@ -69,20 +70,23 @@ controller or general messaging framework belongs in this Work.
   review gates, and any untested live-control claims.
 
 Return the demonstrated handoff and correction path for
-[Artifact delivery](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/artifact-delivery/README.md).
+[accepted executor commit import](../artifact-import/README.md).
 Preserve evidence and promote lasting findings under the normal Investigation
 lifecycle.
 
 ## Execution gate and limits
 
-The [preserved preparation input](../preparation-input.md) supports only the
-tested Darwin Intel deterministic condition; no model session or filtered-answer
-condition was established. Merge the reviewed ownership correction before Work
-execution. Before any model-backed trial, declare frozen fixtures and revisions,
-prompts, conditions, permitted resources, selected model and effort, maximum
-runs and corrections, a time or token budget and stop handling; obtain
-applicable maintainer approval. Use the existing leaf policy without a model
-comparison. This plan authorizes no runs.
+The [preparation input](../preparation-input.md) supports only its tested Darwin
+Intel deterministic condition. The separate
+[isolation input](../isolation-input.md) records a tiny standalone model/session
+result under its own frozen condition; it establishes no full-project model
+session or filtered current-tree answer exclusion. Neither input completes
+enforcement readiness for this Work. Merge the reviewed ownership correction
+before Work execution. Before any model-backed trial, declare frozen fixtures
+and revisions, prompts, conditions, permitted resources, selected model and
+effort, maximum runs and corrections, a time or token budget and stop handling;
+obtain applicable maintainer approval. Use the existing leaf policy without a
+model comparison. This plan authorizes no runs.
 
 Use disposable repositories and non-secret canaries. Verify the intended
 source/history, command-network and other-session exclusions before initial and

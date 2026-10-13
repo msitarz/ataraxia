@@ -4,7 +4,10 @@ Depend on
 [accepted runtime output](../execution/README.md).
 Own orchestrator-controlled explicit fetch/rebase into a full-history designated
 Work branch after independent acceptance and final correction. Use the
-[reviewed delivery path](../../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/artifact-delivery/delivery-protocol.md).
+[historical delivery input](delivery-protocol.md).
+Its bounded fixture results do not complete this Work or authorize adoption.
+Runtime boundary ownership belongs to [enforcement](../enforcement/README.md),
+with prior observations in the [isolation input](../isolation-input.md).
 Executor state/auth and permissions remain untouched; master is not a delivery
 target. Host production operations retain signing settings and normal hooks.
 

@@ -32,8 +32,13 @@ success criteria.
   checks, and traced Make regressions to their acceptance criteria.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
-- **TODO** [Workflow efficiency](workflow-efficiency/README.md): use a bounded
-  comparison to refine handoffs, PR evidence, and worktree preparation.
+- **ABORT** Workflow efficiency: delivered guidance and decisions remain in
+  [their owners](../../../orchestrator.md) and the
+  [historical outcome map](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md).
+  Bounded isolation findings and delivery evidence are preserved as
+  [managed-sandbox inputs](../../evaluation-sandboxes/isolation-input.md).
+  The maintainer abandoned the remaining comparative outcomes and the entire
+  residual tree; this is not completion of the unfinished comparison.
 
 Each child owns a separate review outcome. Complete the trial contract after
 completion evidence and handoff recovery so it exercises the delivered rules.
@@ -47,11 +52,12 @@ Validation annotations below describe planned checks; passing a declaration
 check does not establish completion. Record observed evidence in the delivery
 PR.
 
-- **AC-1 TODO** Every child outcome is integrated into `master`, with its
-  acceptance evidence available in its delivery PR and lasting contracts in
-  their owners.
-  Validation: review the integrated child outcomes and their delivery PRs
-  against the map above before closing this parent Work.
+- **AC-1 TODO** Every child is integrated into `master` or explicitly abandoned
+  at maintainer request, with delivered acceptance evidence in its PR and
+  lasting contracts in their owners. Abandonment does not establish the
+  unfinished outcome.
+  Validation: review integrated outcomes, their delivery PRs and explicit
+  abandonment records against the map above before closing this parent Work.
 - **AC-2 TODO** The live trial has a usable acceptance contract and explicitly
   depends on this preparation; it has not started before preparation completes.
   Validation: inspect the live-trial contract, run its declaration check,

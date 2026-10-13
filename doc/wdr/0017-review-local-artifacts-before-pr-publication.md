@@ -19,7 +19,7 @@ and
 WDR 5 uses a draft PR to signal executor completion. Current
 [PR guidance](../pull-requests.md#descriptions) instead assigns local artifact
 review and publication to the owning orchestrator. The
-[workflow-efficiency Work](../feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md)
+[workflow-efficiency Work](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md)
 reconciles this history with the current ownership boundary.
 
 ## Decision

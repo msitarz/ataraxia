@@ -3,7 +3,7 @@
 Preserve the approved direction for project-scoped temporary sandboxes: trusted
 online workspace preparation, enforced native Codex execution, retained output
 and session-scoped measurements. This is a new planning parent with direct
-leaves, rather than another level beneath the existing shallow-clone tree.
+leaves, established independently of the historical shallow-clone tree.
 It changes no executable behavior or current linked-worktree policy.
 
 Historical planning baseline: `master` at
@@ -11,14 +11,16 @@ Historical planning baseline: `master` at
 runtime and import contracts, existing `worktree-create` and native Make setup,
 but no managed sandbox targets. Frozen
 [#315](https://github.com/msitarz/ataraxia/pull/315) at
-`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input. Current
-integration base is merged #316 at `a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`.
-The maintainer approved reconciling #315 onto it, retaining useful manual inputs
-at the [Work-owned inputs](preparation-input.md).
-Those inputs preserve immutable provenance.
-Preparation evidence supports only the tested Darwin Intel deterministic
-condition; it establishes neither filtered-answer exclusion nor model-session
-isolation, and did not capture the full effective environment.
+`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input.
+Historical integration base was merged #316 at
+`a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`. The maintainer approved reconciling
+PR #315 onto it, retaining useful manual inputs at the
+[Work-owned inputs](preparation-input.md). Those inputs preserve immutable
+provenance. The additional [isolation findings](isolation-input.md) retain the
+bounded standalone model result and separate project setup evidence from the
+retired shallow-clone tree. Preparation evidence supports only the tested Darwin
+Intel deterministic condition; it establishes neither filtered-answer exclusion
+nor model-session isolation, and did not capture the full effective environment.
 
 Before this ownership correction at `0a83600a6be11daa369ddbfd2ca3d421fae75e1c`,
 managed preparation/runtime planning already existed while import and
@@ -100,11 +102,11 @@ remain distinct from the host transport needed to call the model service.
   adoption is predetermined.
 
 The maintainer-authorized #315 correction assigns existing artifact import and
-executor communication directly to this parent. Creation supersedes manual
-clone preparation; enforcement/execution supersede the old runtime. The old
-implementation Work has no active child and is superseded. Its registry
-selector cleanup is recorded as complete in the
-[shallow-clone parent map](../reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/README.md#implementation-follow-up).
+executor communication directly to this parent. Creation supersedes manual clone
+preparation; enforcement/execution supersede the old runtime. The residual
+shallow-clone tree was abandoned at maintainer request. Its registry selector
+cleanup is recorded as complete in the historical
+[shallow-clone parent map](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/README.md#implementation-follow-up).
 Do not run concurrent duplicate runtime implementations. Each leaf is one
 coherent review outcome;
 reassess its complete expected and actual diff against the

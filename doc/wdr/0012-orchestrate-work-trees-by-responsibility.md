@@ -36,7 +36,7 @@ initial overlap despite available slots, about 11 minutes to draft PR evidence,
 shared-file conflicts, and formatting rework. They span different scopes and do
 not establish causal attribution or a topology speedup. Token cost and actual
 human review time remain unavailable. This Work carries the change:
-[Workflow efficiency](../feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md).
+[Workflow efficiency](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/README.md).
 
 ## Decision
 

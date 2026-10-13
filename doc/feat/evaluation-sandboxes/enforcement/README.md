@@ -8,7 +8,8 @@ gate. No new sandbox system or general platform framework is planned.
 
 Use the
 [preserved boundary/handoff input](../preparation-input.md#boundary-and-handoff-input)
-without treating historical controls as current readiness.
+and [bounded isolation findings](../isolation-input.md) without treating
+historical controls as current readiness.
 
 ## Acceptance
 
