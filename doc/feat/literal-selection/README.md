@@ -2,8 +2,9 @@
 
 Investigate whether tooling or guidance should identify suitable closed string
 domains. The first seed is `arrange_changed_input` in
-[registry selection inputs](../../../test/script/selection_inputs.py),
-before local Literal adoption:
+[registry selection inputs at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L93),
+before local Literal adoption. The frozen source preserves the condition and
+its fixture context after the selector cleanup:
 
 ```python
 def arrange_changed_input(case: PreparedSelection, change: str) -> None:
@@ -31,6 +32,8 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
 ```
 
 A second historical seed is the original record-input signature:
+
+[`copy_selection_fixture` at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L34):
 
 ```python
 def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection: ...

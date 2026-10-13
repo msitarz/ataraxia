@@ -9,7 +9,7 @@ needed once the consumer gate passes.
 
 Inspection at `1c1ae02` found the production selector's only command route in
 `Makefile` (`registry-select` invoking `script/registry_selection.py`), its
-[usage owner](../implementation/dependency-snapshot/registry-selection.md),
+[usage owner at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-selection.md),
 dedicated `test_registry_*` tests and `test/script/fixtures/registry_selection`
 fixtures. No source runtime calls it. Test helpers such as
 `selection_inputs.py`, `selection_manifest.py`, `selection_process.py`,
@@ -30,7 +30,7 @@ revision, preserving shared helpers/tests required by any surviving behavior.
 
 ## Acceptance
 
-- **AC-1 TODO** Consumer review establishes that removed selector routes,
+- **AC-1 DONE** Consumer review establishes that removed selector routes,
   documentation, code and dedicated tests/fixtures have no active consumers;
   shared helpers/tests needed by surviving behavior remain usable, and active
   Investigation examples have reviewed frozen source links before deletion.
@@ -39,7 +39,7 @@ revision, preserving shared helpers/tests required by any surviving behavior.
   active Work criteria at the cleanup revision. Independently review the exact
   removal list and preserved consumers; historical coverage markers alone do
   not block removal. Stop and report any unresolved active consumer.
-- **AC-2 TODO** Obsolete registry tooling and its dedicated usage/tests are
+- **AC-2 DONE** Obsolete registry tooling and its dedicated usage/tests are
   removed together; `make help` no longer advertises `registry-select`, and
   normal setup/worktree preparation plus surviving script/Make consumers retain
   their behavior. Retained historical reports and delivered evidence remain

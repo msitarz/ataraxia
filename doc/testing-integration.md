@@ -49,18 +49,17 @@ fixture can copy an argument-logging executable before making it discoverable:
 @pytest.fixture
 def fake_uv(tmp_path, monkeypatch):
     script = tmp_path / "uv"
-    shutil.copyfile(ROOT / "test/script/fixtures/registry_uv.py", script)
+    shutil.copyfile(ROOT / "test/script/fixtures/argument_logger.py", script)
     script.chmod(0o755)
-    monkeypatch.setenv("UV_PROXY_MODE", "record")
     monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.environ['PATH']}")
     return tmp_path / "argv.json"
 ```
 
 The example assumes `ROOT` identifies the checkout and the module imports `os`,
 `shutil`, and `pytest`. The existing
-[`registry_uv.py`](../test/script/fixtures/registry_uv.py) fixture records
-arguments in `argv.json` in the child's working directory; run the child in
-`tmp_path`.
+[`argument_logger.py`](../test/script/fixtures/argument_logger.py) fixture
+records arguments in `argv.json` in the child's working directory; run the
+child in `tmp_path`.
 
 - A shim proves only the effects it observes, such as argument routing or error
   propagation. It does not establish that the replaced tool really installs
