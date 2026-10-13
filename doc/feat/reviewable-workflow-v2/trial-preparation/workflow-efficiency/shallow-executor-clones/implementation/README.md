@@ -19,9 +19,9 @@ flowchart LR
         S[Registry and planned hook selection] --> F[Planned frozen snapshot]
         F --> O[Planned offline reconstruction]
     end
-    subgraph Proposed[Optional workflow: runtime and import planned]
-        P[Manual preparation procedure delivered] --> R[Restricted executor runtime planned]
-        R --> A[Accepted artifact import planned]
+    subgraph Proposed[Proposed workflow: not implemented]
+        P[Manual trusted online clone preparation] --> R[Restricted executor runtime]
+        R --> A[Accepted artifact import]
     end
 ```
 
@@ -33,11 +33,8 @@ flowchart LR
   and offline environment reconstruction. Their required outcomes were not
   verified; abandonment does not mark them DONE. Git preserves those contracts
   and the retained Investigation/audit evidence is unchanged.
-- **DONE** Manual native clone preparation procedure in
-  [contribution guidance](../../../../../../../CONTRIBUTING.md#preparing-an-evaluated-fixture-clone)
-  and
-  [evaluation boundary guidance](../../../../../../evaluation.md#prepared-clone-boundary-and-handoff).
-  Readiness remains per actual future condition.
+- **TODO** [Clone preparation](clone-preparation/README.md): manual native Git
+  and existing online Make setup, fresh readiness and handoff record.
 - **TODO** [Executor runtime](executor-runtime/README.md): restrictive start and
   exact-session correction; depends on accepted prepared-clone readiness.
 - **TODO** [Artifact import](artifact-import/README.md): accepted output into a
@@ -55,10 +52,9 @@ until that separate cleanup. Its
 [verified historical delivery](https://github.com/msitarz/ataraxia/blob/e15059213964809026ca09505a190ad09701b64b/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/implementation/dependency-snapshot/registry-cache-selection/evidence.md)
 is preserved; snapshot abandonment does not undo that delivered outcome.
 
-The manual preparation procedure is delivered; route executor runtime next,
-then artifact import under their own gates. Prepared-clone readiness remains per
-actual future condition. Selector cleanup may be scheduled separately under its
-consumer gate. Each leaf aims at one five-minute complete review,
+Merge this revised planning map before implementation. Route clone preparation,
+then executor runtime, then artifact import; cleanup may be scheduled separately
+under its consumer gate. Each leaf aims at one five-minute complete review,
 including tests and supporting changes; split before oversized execution.
 Follow existing contribution, acceptance, review and publication contracts.
 Host commits retain signing settings; never disable production signing.
