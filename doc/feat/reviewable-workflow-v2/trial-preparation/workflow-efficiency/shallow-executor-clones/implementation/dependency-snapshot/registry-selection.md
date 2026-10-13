@@ -1,14 +1,12 @@
 # Optional reviewed registry selection
 
-Read this document when using or composing the current internal registry
-selector during the active dependency-snapshot Work. It owns the selector's
-usage, preparation record schema and trust boundary. This partial capability
-produces a selected-entry inventory; it does not deliver an operational offline
-sandbox. Pinned hook sources, immutable snapshot delivery and actual fresh
-offline Make validation remain active child Works in the [parent](README.md).
-Final workflow documentation belongs to the
-[implementation parent's](../README.md) planned promotion after the complete
-workflow is verified.
+Read this document when using the retained internal registry selector. It owns
+usage, preparation record schema and trust boundary until the separate
+[cleanup Work](../../registry-selector-cleanup/README.md) removes obsolete
+tooling. The [implementation plan](../README.md) has abandoned snapshot
+reconstruction; this delivered partial capability remains available and produces
+only a selected-entry inventory, not an operational offline sandbox. It is not a
+prerequisite of manual native clone preparation.
 
 `make registry-select CACHE=/absolute/dedicated-cache RECORD=/absolute/record.json PREPARATION_SHA256=<externally-accepted-sha256> DESTINATION=/absolute/new-result`
 validates a registry selection for later snapshot composition. It produces
