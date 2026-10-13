@@ -1,12 +1,12 @@
 # Discover and safely remove sandboxes
 
-After [creation](../creation/README.md), deliver `make sandbox-list` and
-`make sandbox-remove NAME=...` through the shared
+After [managed sandbox creation](../../../evaluation-sandboxes.md), deliver
+`make sandbox-list` and `make sandbox-remove NAME=...` through the shared
 [root/ownership resolution](../README.md#shared-root-and-ownership), including
-the optional SANDBOX_ROOT argument.
-Discover direct children locally without a global registry. Listing is read
-only; it reports each child's identity, location and observed preparation,
-execution or failure state, distinguishing unknown or invalid ownership.
+the optional SANDBOX_ROOT argument. Discover direct children locally without a
+global registry. Listing is read only; it reports each child's identity,
+location and observed preparation, execution or failure state, distinguishing
+unknown or invalid ownership.
 
 Listing and removal share one maintenance outcome and narrow ownership/state
 boundary. Reassess the complete implementation and tests before dispatch and
