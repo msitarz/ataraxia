@@ -239,7 +239,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 	if [ -z "$$destination" ] || [ -z "$$branch" ]; then \
 		echo "Usage: make worktree-create WORKTREE=/path BRANCH=work/name" >&2; exit 2; \
 	fi; \
-	printf '%s\n' 'Before dispatch: does the complete expected leaf change fit a quick maintainer review? If not, pause to split it or get an explicit larger-review decision from the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits'; \
+	printf '%s\n' 'Before dispatch: does the complete expected leaf change fit a maintainer review in about five minutes? If not, pause to split it or get an explicit larger-review decision from the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits'; \
 	case "$$destination" in /*) ;; *) destination="$$source/$$destination" ;; esac; \
 	if [ -e "$$destination" ] || [ -L "$$destination" ]; then \
 		echo "Worktree destination already exists: $$destination" >&2; exit 2; \
@@ -277,8 +277,8 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 
 ##@ Work review
 .PHONY: work-review
-work-review: ## review actual Work diff and prepare maintainer handoff before publication
-	@printf '%s\n' 'After Work cleanup and before publication: reassess actual-diff review effort; pause to split or get an explicit larger-review decision from the maintainer if needed. Return the artifact and revision, outcome, acceptance evidence, commands run, unrun checks, unresolved criteria, and blockers. Keep this handoff separate from the PR description; publication remains with the normal publisher flow. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/orchestrator.md#review-and-return doc/pull-requests.md#descriptions'
+work-review: ## review Work sizing and remind owner to publish and deliver PR
+	@printf '%s\n' 'After Work cleanup: does the complete leaf diff fit review in about five minutes? If not, pause and ask the maintainer to split it or explicitly approve a larger review. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/orchestrator.md#review-and-return'
 
 .PHONY: sandbox-create
 ##@ Evaluation sandboxes

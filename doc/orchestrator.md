@@ -214,7 +214,8 @@ supporting changes, and concepts, under
 [Work scope and sizing](workflow.md#scope-and-sizing). If simplification and
 reuse cannot meet the target, stop publication and apply the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
-preserving valid implementation and evidence. Integrated parent review assesses
+preserving valid implementation and evidence. Run `make work-review` after
+cleanup as a reminder at this checkpoint. Integrated parent review assesses
 interfaces and composition rather than requiring the entire parent batch to fit
 one leaf's review target. Preserve substantive scope requirements and identify
 remaining merge resolution. Only the requested Work owner hands off its final
@@ -226,8 +227,16 @@ merge. Agents must not merge autonomously; an agent may merge only with explicit
 maintainer instruction. Do not change repository settings, use an admin
 override, or bypass review or CI requirements.
 
-Return the reviewable artifact (branch and revision or PR), outcome, acceptance
-evidence, commands run, unrun checks, unresolved criteria, and blockers. After
-session recovery, include the recovered state.
-A blocked return states what remains and what input or decision is needed. A
-completed return identifies changes awaiting orchestrator review.
+Definers and executors return the contract or artifact revision, outcome,
+acceptance evidence, commands run, unrun checks, unresolved criteria, and
+blockers to their owning orchestrator. After session recovery, include the
+recovered state. A blocked delegated return states what remains and what input
+or decision is needed. A completed delegated return identifies changes
+awaiting orchestrator review.
+
+The requested Work owner continues from executor completion through the
+existing independent review and corrections, publication via the publisher,
+and final-head CI assessment, then returns the PR, outcome, and material
+blockers or limitations to the maintainer. Complete this without waiting for
+another maintainer instruction unless a concrete blocker or decision needs
+steering.
