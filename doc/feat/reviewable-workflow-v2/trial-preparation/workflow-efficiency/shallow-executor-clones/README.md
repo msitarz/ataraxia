@@ -23,6 +23,10 @@ review and delivery gates.
 - **TODO** [Artifact delivery](artifact-delivery/README.md): test commit import,
   patch transfer, and orchestrator publication from the clone, including
   separate evidence and cleanup commits and an advanced upstream base.
+- **TODO**
+  [Orchestrator-prepared evaluation environments](environment-preparation/README.md):
+  assess fresh online preparation before restricted evaluation, reusing native
+  setup and hook operations.
 
 Each Investigation owns one recommendation and checked evidence under the
 [Investigation rules](../../../../../work-definition.md#investigations).
@@ -61,6 +65,9 @@ Work; production implementation is outside these Investigations.
 - Preserve cache reuse, a fresh virtual environment, locked offline setup,
   environment checking, and recoverable setup failures. Do not share a
   mutable virtual environment or silently fall back to a full-history clone.
+  This existing implementation prerequisite does not forbid investigating the
+  [online orchestrator alternative](environment-preparation/README.md); it
+  remains current until results and a maintainer decision revise the plan.
 - For an evaluation that excludes history, declare its frozen base, permitted
   files and references, session freshness, and filesystem and network access.
   Check current-tree reports, answer fixtures, and links for prohibited prior
@@ -95,7 +102,7 @@ independent clones are not described as linked worktrees.
 
 ## Acceptance
 
-- **AC-1 TODO** All three Investigations are integrated with inspectable actual
+- **AC-1 TODO** All four Investigations are integrated with inspectable actual
   evidence, candidate tradeoffs, recommendations, and unresolved limits.
   Validation: check `master` for the child outcomes and review retained
   evidence; distinguish documented capabilities from tested behavior.
@@ -111,6 +118,13 @@ independent clones are not described as linked worktrees.
   WDR against [documentation ownership](../../../../../README.md).
 
 ## Execution gate and limits
+
+The environment-preparation decision pauses execution of the existing
+cache-selection, hook-selection, snapshot-delivery, recurring compatibility and
+clone-preparation Works until its outcome and maintainer decision. Preserve
+their contracts, delivered registry selector and historical evidence; this is
+not abandonment. Follow the
+[tree-wide pause and planning gates](../../../../../workflow.md#decisions-and-new-splits).
 
 The retained child reports and audit preserve completed bounded probes and
 trials, including failed attempts. The implementation follow-up is planning only
