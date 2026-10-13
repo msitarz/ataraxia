@@ -1,7 +1,11 @@
 # Restrictive executor start and resume
 
-Depend on [clone readiness](../clone-preparation/README.md). Own optional
-standalone executor launch/control using the
+Depend on prepared-clone readiness under the delivered
+[contribution procedure](../../../../../../../../CONTRIBUTING.md#preparing-an-evaluated-fixture-clone)
+and
+[evaluation boundary owner](../../../../../../../evaluation.md#prepared-clone-boundary-and-handoff);
+readiness remains per actual future condition. Own optional standalone executor
+launch/control using the
 [tested condition](../../sandbox-isolation/successful-recipe.md#requested-profile-and-effective-runtime-review)
 and [actual result](../../sandbox-isolation/standalone-model.md).
 Fresh private state/auth stays outside child access; no unrelated sessions,
