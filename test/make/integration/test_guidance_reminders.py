@@ -208,7 +208,7 @@ def test_help_discloses_the_prepublication_work_review_checkpoint(
     # Then
     assert result.exit_code == 0, result.output
     assert "make work-review" in result.stdout
-    assert "before publication" in result.stdout
+    assert "deliver PR" in result.stdout
     assert "Work review" in result.stdout
     assert result.stdout.index("Work review") < result.stdout.index("make work-review")
 
@@ -217,10 +217,10 @@ def test_help_discloses_the_prepublication_work_review_checkpoint(
     work="doc/feat/reviewable-workflow-v2/trial-preparation/make-work-reminders/README.md",
     ac="AC-2",
 )
-def test_work_review_prompts_full_handoff_and_keeps_ac_check_focused(
+def test_work_review_prompts_concise_delivery_and_keeps_ac_check_focused(
     sandbox: MakeSandbox,
 ) -> None:
-    """Prompts the actual-diff handoff while ac-check retains its own role."""
+    """Prompts concise review and delivery while ac-check keeps its own role."""
     # Given: both targets run in the existing disposable Make sandbox.
 
     # When
@@ -229,21 +229,24 @@ def test_work_review_prompts_full_handoff_and_keeps_ac_check_focused(
 
     # Then
     assert review.exit_code == 0, review.output
-    assert "After Work cleanup and before publication" in review.stdout
-    assert "actual-diff review effort" in review.stdout
-    assert "explicit larger-review decision from the maintainer" in review.stdout
-    assert "artifact and revision" in review.stdout
-    assert "outcome" in review.stdout
-    assert "acceptance evidence" in review.stdout
-    assert "commands run" in review.stdout
-    assert "unrun checks" in review.stdout
-    assert "unresolved criteria" in review.stdout
-    assert "blockers" in review.stdout
-    assert "separate from the PR description" in review.stdout
+    assert "After Work cleanup" in review.stdout
+    assert "complete leaf diff" in review.stdout
+    assert "about five minutes" in review.stdout
+    assert "pause and ask the maintainer" in review.stdout
+    assert "normal publisher flow" in review.stdout
+    assert "return the PR to the maintainer" in review.stdout
     assert "doc/workflow.md#scope-and-sizing" in review.stdout
     assert "doc/workflow.md#decisions-and-new-splits" in review.stdout
     assert "doc/orchestrator.md#review-and-return" in review.stdout
-    assert "doc/pull-requests.md#descriptions" in review.stdout
+    assert all(
+        inventory not in review.stdout
+        for inventory in (
+            "acceptance evidence",
+            "commands run",
+            "unrun checks",
+            "unresolved criteria",
+        )
+    )
     assert acceptance.exit_code == 0, acceptance.output
     assert "Independent orchestrator review:" in acceptance.stdout
     assert "artifact and revision" not in acceptance.stdout
