@@ -11,6 +11,12 @@ rewriting. See the
 
 ## Child Works and composition
 
+Execution of this snapshot subtree, including recurring compatibility, is paused
+by the
+[environment-preparation decision](../../README.md#execution-gate-and-limits).
+Retain the delivered registry selector and existing contracts pending that
+Investigation's outcome and maintainer decision.
+
 - **DONE** Optional reviewed registry selection verifies pinned registry
   payloads and preserves their complete resolver metadata; see
   [usage](registry-selection.md)
@@ -21,12 +27,13 @@ rewriting. See the
 - **TODO** [Snapshot delivery](snapshot-delivery/README.md): compose both
   selections into a frozen snapshot with safe copying and recoverable failures.
 
-Registry and hook selection can proceed independently. Each returns its selected
-relative entries, dependency provenance and supported condition to snapshot
-delivery; that child depends on both reviewed results. Define concrete formats
-with implementation rather than introducing a general cache framework. Delivery
-must validate the composed snapshot through actual fresh offline Make setup;
-hashes and path scans alone cannot establish safe provenance or completeness.
+Under the existing plan, registry and hook selection are independent. Each
+returns its selected relative entries, dependency provenance and supported
+condition to snapshot delivery; that child depends on both reviewed results.
+Define concrete formats with implementation rather than introducing a general
+cache framework. Delivery must validate the composed snapshot through actual
+fresh offline Make setup; hashes and path scans alone cannot establish safe
+provenance or completeness.
 
 Each child owns criterion-marked tests and aims at a five-minute review
 including tests and documentation. Reassess and split before oversized
