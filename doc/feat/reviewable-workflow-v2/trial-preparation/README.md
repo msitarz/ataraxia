@@ -34,9 +34,8 @@ success criteria.
   post-cleanup reviewed PR delivery to the maintainer.
 - **DONE** Executor guidance and handoffs: added direct executor role discovery
   and contextual assignments with role-specific returns.
-- **TODO** [Definer guidance](definer-guidance/README.md): give assigned
-  definers a focused owner and direct role route while preserving existing
-  responsibilities.
+- **DONE** Definer guidance: added a focused role owner and direct routes while
+  preserving contract-writing policy and review boundaries.
 - **TODO** [Trial contract](trial-contract/README.md): define the trial's
   acceptance, total effort measurements, and parallel-feature preparation.
 - **ABORT** Workflow efficiency: delivered guidance and decisions remain in
