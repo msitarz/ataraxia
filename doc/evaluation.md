@@ -5,6 +5,8 @@ it is an independent Evaluation Work, supports an Investigation, or is a small
 comparison kept inline. [Work definition](work-definition.md#evaluations) owns
 Evaluation contract requirements; [Work workflow](workflow.md) owns lifecycle; a
 specific Work README and linked protocol own the experiment.
+When an Evaluation uses a managed sandbox, follow its
+[usage and supported-condition limits](evaluation-sandboxes.md).
 
 ## Declare the protocol before execution
 

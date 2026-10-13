@@ -11,6 +11,7 @@ help: ## display this command index
 		/^##@/ { if (section++) printf "\n"; printf "%s\n", substr($$0, 5); next } \
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo "Run project tools through Make targets; use ARGS=repo/path for focused checks."
+	@echo "Managed sandbox usage and supported limits: doc/evaluation-sandboxes.md"
 
 singlequote := $(shell echo "'")
 # Quote caller selectors as literal, whitespace-separated shell words.
@@ -209,7 +210,7 @@ ci-package-setup:
 
 ##@ Worktrees
 # Cleanup selectors are literal values, not recursively expanded Make expressions.
-unexport WORKTREE EXPIRE
+unexport WORKTREE EXPIRE NAME SANDBOX_ROOT
 .PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
 worktree-list: ## list linked worktrees, branches, locks, and stale registrations
 	git worktree list --porcelain
@@ -272,3 +273,9 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 		status=$$?; echo "Environment check failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
 	fi; \
 	echo "✓ Worktree ready: $$destination (branch $$branch)"
+
+.PHONY: sandbox-create
+##@ Evaluation sandboxes
+sandbox-create: ## create an independent prepared evaluation sandbox; requires NAME=name [SANDBOX_ROOT=/path]
+	@uv run --no-sync python script/sandbox.py create $(call _SHELL_VALUE,$(value NAME)) \
+		$(call _SHELL_VALUE,$(CURDIR)) $(call _SHELL_VALUE,$(value SANDBOX_ROOT))

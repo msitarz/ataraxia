@@ -13,6 +13,7 @@ relevant guidance.
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
+| Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
 | Work contract authoring and review | [Work definition](work-definition.md) |
 | General Work rules | [Work workflow](workflow.md) |
 | Post-merge Work branch cleanup | [Branch cleanup](branch-cleanup.md) |
