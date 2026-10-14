@@ -78,7 +78,9 @@ Simple sequential guards may be clearer inside that boundary; isolated scalar
 helpers alone do not establish record validity.
 
 The [validated core guidance Work](../validated-core/README.md) owns the general
-engineering outcome. This Investigation applies that proposed direction when
+engineering outcome, including complete validation that permits fail-fast
+errors and validated construction of new results/state transitions without
+mutation or bypass. This Investigation applies that proposed direction when
 comparing representations; it may proceed independently and must reconcile its
 recommendation with the adopted guidance before any later adoption. Illustrate
 external parsing, complete record construction, a typed pure decision such as
