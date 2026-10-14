@@ -217,6 +217,37 @@ def read_execution_state(scope: sandbox.SandboxScope) -> ExecutionState | None:
     return _read_state(current.record)
 
 
+def work_binding(
+    scope: sandbox.SandboxScope,
+    *,
+    owner_id: str,
+    source_repository: Path | None = None,
+    work: str | None = None,
+) -> WorkBinding:
+    """Return the existing host binding or establish one for failed preparation.
+
+    Existing bindings remain valid after their source Work file is removed. An
+    unbound sandbox requires both the source repository and its Work README.
+
+    Raises:
+        ValueError: If the lease, owner, Work path, or reserved sandbox is invalid.
+    """
+    current = sandbox.refresh_scope(scope)
+    if current.record is None:
+        raise ValueError("Work binding requires a reserved sandbox")
+    state = read_execution_state(current)
+    if state is not None:
+        binding = state["binding"]
+        if binding["owner_id"] != owner_id or (
+            work is not None and binding["work"] != work
+        ):
+            raise ValueError("Work or owner does not match the existing binding")
+        return binding
+    if source_repository is None or work is None:
+        raise ValueError("unbound sandbox requires source repository and Work README")
+    return _binding(current, source_repository, work, owner_id)
+
+
 def _parse_attempt(raw: object) -> AttemptRecord | None:
     if not isinstance(raw, dict):
         return None
@@ -488,6 +519,8 @@ def _check_existing_attempts(
     if _pending_attempts(state):
         _reject_existing(scope, state, "recovery required")
         raise ValueError("an execution attempt requires host-side recovery")
+    if mode == "initial" and not state["attempts"]:
+        return None
     prior_sessions = {
         item["session_id"]
         for item in state["attempts"]

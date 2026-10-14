@@ -54,7 +54,7 @@ this child supplies the reusable current-binding validation under exclusion.
 
 ## Acceptance
 
-- **AC-1 TODO** Only the owning orchestrator can record a current explicit
+- **AC-1 DONE** Only the owning orchestrator can record a current explicit
   cleanup disposition after preservation and maintainer review. Inactivity,
   clean status, a session ending or executor-written claims cannot supply
   approval. Host authority binds review and exact retained/discarded material;
@@ -66,7 +66,7 @@ this child supplies the reusable current-binding validation under exclusion.
   Independently review existing evidence bindings and child/private trust
   boundary; test lock contention with shared launch/deletion fixtures. No model
   run or speculative controller is required for this shared safety outcome.
-- **AC-2 TODO** New, resumed, failed or rejected execution and changed output
+- **AC-2 DONE** New, resumed, failed or rejected execution and changed output
   cannot reuse stale approval; failed preparation and unknown execution receive
   no automatic exemption. Missing/inconsistent generation, run/session,
   workspace, preparation or inventory bindings refuse approval/removal.
