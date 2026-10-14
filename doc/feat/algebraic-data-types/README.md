@@ -29,7 +29,7 @@ inventing lifecycle rules. `match` selection alone is not an algebraic type
 model. [Match selection](../match-selection/README.md) already owns suitable
 single-value branching; the delivered
 [finite-string-domain guidance](../../engineering.md#preserve-type-precision)
-records the recommendation for Literal versus Enum and domain ownership. That
+records the recommendation for Literal and domain ownership. That
 concern is separate from this Work's variant-specific fields and state-specific
 field relationships. These Works and
 [nested exceptions](../nested-exceptions/README.md) are related, not merge
