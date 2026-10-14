@@ -27,8 +27,8 @@ flowchart LR
 ## Child outcomes
 
 - **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
-  the stable lock, lifecycle marker/disposition, and creation participation as
-  one shared safety outcome. This Work builds on delivered creation; its own
+  the shared safety outcome through serial lock/marker, execution recovery and
+  reviewed disposition children. This Work builds on delivered creation; its own
   creation update has no prerequisite on a later consumer.
 - **TODO** [Read-only sandbox discovery](listing/README.md): report direct
   children and observed lifecycle state without filesystem mutation; after
@@ -38,9 +38,9 @@ flowchart LR
   after active-state delivery.
 
 [Native execution](../execution/README.md) also depends on active-state
-delivery. Each child is a bounded short-review outcome: shared safety/creation,
-observation, and guarded deletion. Reassess complete expected and actual review
-effort before implementation or publication under
+delivery. Active-state maps its own bounded short-review children; listing and
+removal remain observation and guarded-deletion leaves. Reassess complete
+expected and actual review effort before implementation or publication under
 [Work sizing](../../../workflow.md#scope-and-sizing). This plan does not deliver
 commands, run probes or models, or complete criteria.
 
