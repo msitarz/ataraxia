@@ -23,7 +23,7 @@ it or introduce a new prerequisite. Exclude general match lint, checker
 dependencies, codebase migration, upstream probes, production examples, and
 frameworks.
 
-- **AC-1 TODO** Engineering integrates the proposed selection meaning in its
+- **AC-1 DONE** Engineering integrates the proposed selection meaning in its
   existing code-style section within the paragraph limit and scope above.
 
   Validation: manually read the whole owner and surrounding guidance for
