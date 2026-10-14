@@ -1,38 +1,59 @@
-# Discover and safely remove sandboxes
+# Sandbox lifecycle
 
-After [managed sandbox creation](../../../evaluation-sandboxes.md), deliver
-`make sandbox-list` and `make sandbox-remove NAME=...` through the shared
-[root/ownership resolution](../README.md#shared-root-and-ownership), including
-the optional SANDBOX_ROOT argument. Discover direct children locally without a
-global registry. Listing is read only; it reports each child's identity,
-location and observed preparation, execution or failure state, distinguishing
-unknown or invalid ownership.
+Own local discovery and safe disposal of children created by
+[managed sandbox creation](../../../evaluation-sandboxes.md). Reuse the existing
+private ownership record as the persistent, uncommitted lifecycle marker; the
+[active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
+OS-held lock, creation integration, and cleanup disposition. Listing and removal
+consume that delivered protocol rather than define another registry or proof
+owner. The maintainer selected explicit orchestrator disposition after artifact
+preservation and maintainer review; no disposability Investigation is required.
 
-Listing and removal share one maintenance outcome and narrow ownership/state
-boundary. Reassess the complete implementation and tests before dispatch and
-publication; split through the parent planning gate if they exceed one short
-review rather than expanding this leaf during execution.
+At planning baseline `1b31bba`, creation writes preparation ownership/state;
+there is no execution or removal command and no lifecycle lock. No sandboxes
+currently need migration. Proposed behavior follows:
 
-## Acceptance
+```mermaid
+flowchart LR
+    B[Before: create with preparation record] --> A[Active-state Work: marker, OS lock, create integration]
+    A --> L[Read-only listing]
+    A --> R[Removal after explicit reviewed disposition]
+    A --> E[Execution automatically holds lock and retains results]
+    E --> O[Orchestrator preserves artifacts and obtains maintainer review]
+    O --> D[Disposition bound to current sandbox and output]
+    D --> R
+```
 
-- **AC-1 TODO** Listing discovers owned ready, partial, failed and active
-  children and identifies invalid/unowned entries without following symlinks,
-  mutating state or reading unrelated host data. Missing root yields an empty
-  result; unsafe root/metadata is reported rather than trusted.
+## Child outcomes
 
-  Validation: criterion-marked Make-boundary tests inspect listing and unchanged
-  filesystem state for mixed children, missing root and malformed ownership;
-  reuse creation's narrow metadata contract and existing Make helpers. Verify
-  root agreement with creation and classification of a different canonical Git
-  common-directory owner without permitting management of its children.
-- **AC-2 TODO** Removal deletes only the named owned inactive disposable child.
-  It refuses source/root/unowned/symlink/escaped paths, active execution, dirty
-  files, meaningful committed work not delivered, or undelivered output. Failed
-  preparation may be removed only when no meaningful work is lost. Refusal
-  preserves workspace, private artifacts and diagnostics; no force bypass is
-  introduced.
+- **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
+  the stable lock, lifecycle marker/disposition, and creation participation as
+  one shared safety outcome. This Work builds on delivered creation; its own
+  creation update has no prerequisite on a later consumer.
+- **TODO** [Read-only sandbox discovery](listing/README.md): report direct
+  children and observed lifecycle state without filesystem mutation; after
+  active-state delivery.
+- **TODO** [Preservation-aware sandbox removal](removal/README.md): delete
+  only an exclusively locked, owned child with a current explicit disposition;
+  after active-state delivery.
 
-  Validation: criterion-marked Make-boundary tests verify successful removal and
-  unchanged rejected trees, including committed-but-undelivered output and
-  active-state races. Independently review the explicit accepted-delivery proof
-  used to preserve meaningful work; a clean Git status alone is insufficient.
+[Native execution](../execution/README.md) also depends on active-state
+delivery. Each child is a bounded short-review outcome: shared safety/creation,
+observation, and guarded deletion. Reassess complete expected and actual review
+effort before implementation or publication under
+[Work sizing](../../../workflow.md#scope-and-sizing). This plan does not deliver
+commands, run probes or models, or complete criteria.
+
+## Parent acceptance
+
+- **AC-1 TODO** Creation, execution and removal share exclusion; listing stays
+  observational. Persistent ownership and execution results survive inactivity,
+  and removal requires current orchestrator disposition after preservation and
+  maintainer review. Unknown execution, unsupported records, foreign ownership
+  and unsafe paths preserve the child. Same-name reuse cannot redirect waiters.
+
+  Validation: independently review child evidence and shared owner links,
+  including crash/descendant handling, failed preparation cleanup, disposition
+  invalidation, read-only probes and check/delete exclusion. Verify successful
+  removal retains the stable lock and permits a fresh generation; reuse leaf
+  evidence without repeating probes or model runs.

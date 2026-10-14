@@ -55,16 +55,29 @@ Resolve system temp with `tempfile.gettempdir()` using its native
 TMPDIR/TEMP/TMP and platform-default selection, and read the project name from
 `pyproject.toml` `[project].name`; do not hardcode a macOS path or project name.
 An optional `SANDBOX_ROOT` Make argument overrides the managed root. Create,
-list, remove and exec share one authoritative resolution and validation path.
-Reject unsafe resolved roots, including an unsuitable current-directory
-fallback, unsafe project-name path components and invalid overrides, under the
-existing containment, symlink, collision, ownership and permission safeguards.
+list, remove and exec share one authoritative resolution and ownership
+validation. The [active-state owner](lifecycle/active-state-exclusion/README.md)
+extends the existing private ownership record into a persistent uncommitted
+lifecycle marker and delivers creation participation in a stable OS-held
+per-name lock. Listing only observes existing locks; execution and removal
+acquire exclusion automatically. Reject unsafe
+resolved roots, including an unsuitable current-directory fallback, unsafe
+project-name path components and invalid overrides, under the existing
+containment, symlink, collision, ownership and permission safeguards.
 
-Discover children locally, with only necessary per-child project/base ownership
-metadata and no global registry. Bind repository ownership to the canonical Git
-common directory: linked worktrees agree, while independent checkouts sharing a
-project name cannot manage each other's children. A conflicting owner blocks
-creation, removal and execution rather than reassigning an existing child.
+Discover children locally, with per-child ownership metadata and no global
+registry. Each lifecycle marker includes an opaque unique generation ID and
+the native identity of its created child directory; its Evaluation ownership,
+session/run provenance, retained output and explicit orchestrator cleanup
+disposition are defined at that active-state owner. No existing sandboxes need
+migration; unsupported records are rejected safely. Bind repository ownership
+to the canonical Git common directory: linked worktrees agree, while independent
+checkouts sharing a project name cannot manage each other's children. A
+conflicting owner blocks creation, removal and execution rather than
+reassigning an existing child.
+Keep a stable root-private per-name lock object across successful removal and
+same-name recreation. It is coordination state rather than an ownership record
+or registry, and direct-child listing ignores it.
 The private control side remains inaccessible
 to child commands even if physically beneath that root. A prepared workspace
 does not itself enforce isolation. Source/history and command-network denial
@@ -78,7 +91,8 @@ remain distinct from the host transport needed to call the model service.
 - **DONE** Delivered managed sandbox creation: online independent shallow
   clone, native setup/hooks/readiness, and retained failed state.
 - **TODO** [Discover and safely remove sandboxes](lifecycle/README.md):
-  trustworthy local discovery and preservation-aware removal; after creation.
+  shared lifecycle safety with creation integration, then read-only discovery
+  and removal after explicit reviewed disposition.
 - **TODO** [Enforced runtime readiness](enforcement/README.md): reuse native
   boundary controls, private state separation and effective start/resume gates;
   after creation.
