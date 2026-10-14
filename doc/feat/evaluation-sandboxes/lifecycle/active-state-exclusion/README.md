@@ -77,7 +77,7 @@ helper and existing Make routing where needed.
 
 ## Parent acceptance
 
-- **AC-1 TODO** Reviewed child outcomes compose to the original shared safety
+- **AC-1 DONE** Reviewed child outcomes compose to the original shared safety
   outcome: automatic same-name exclusion, stable lock/fresh generation, durable
   ready/failed preparation, retained execution through supervisor-attested
   stoppage and results, and current explicit orchestrator disposition after
@@ -93,4 +93,5 @@ helper and existing Make routing where needed.
   remaining shared lifecycle outcomes; original AC-2 by the delivered
   foundation and the delivered execution protocol; original AC-4 by the
   delivered execution protocol and reviewed cleanup disposition.
-  Consumer command integration remains verified in its existing Work.
+  Native execution, listing and removal command integration remain separate
+  consumer outcomes and are not delivered by this Work.
