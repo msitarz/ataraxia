@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: Apache-2.0
+"""One-time Ruff branch-selection probe."""
+
+
+def constant_return(value: int) -> str:
+    """Return a selected fixed phrase."""
+    if value == 1:
+        return "one"
+    elif value == 2:
+        return "two"
+    elif value == 3:
+        return "three"
+    else:
+        return "other"
+
+
+def independent_actions(value: int, threshold: int) -> tuple[bool, bool]:
+    """Report both independent conditions.
+
+    Returns:
+        The outcomes of each condition.
+    """
+    first = False
+    second = False
+    if value > 0:
+        first = True
+    if value > threshold:
+        second = True
+    return first, second
