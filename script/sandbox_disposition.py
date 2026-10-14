@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 import re
 import stat
-from typing import Literal, TypedDict, cast
+from typing import Literal, TypedDict, TypeGuard, cast
 
 from script import sandbox, sandbox_execution
 
@@ -31,7 +31,7 @@ class MaterialSnapshot(TypedDict):
     destination_device: int
     destination_inode: int
     owned_digest: str
-    preparation_state: str
+    preparation_state: Literal["ready", "failed"]
     workspace_head: str | None
     workspace_digest: str
     outputs_digest: str
@@ -48,6 +48,16 @@ class DispositionRecord(TypedDict):
     workspace: DecisionRecord
     outputs: DecisionRecord
     diagnostics_reference: str | None
+
+
+DECISION_FIELDS = DecisionRecord.__required_keys__ | DecisionRecord.__optional_keys__
+MATERIAL_FIELDS = (
+    MaterialSnapshot.__required_keys__ | MaterialSnapshot.__optional_keys__
+)
+DISPOSITION_FIELDS = (
+    DispositionRecord.__required_keys__ | DispositionRecord.__optional_keys__
+)
+MAX_REFERENCE_LENGTH = 2048
 
 
 @dataclass(frozen=True)
@@ -217,17 +227,15 @@ def _git_head(workspace: Path) -> str | None:
     return head
 
 
-def _state_value(scope: sandbox.SandboxScope) -> sandbox.SandboxScope:
-    return sandbox.refresh_scope(scope)
-
-
 def _current_material(scope: sandbox.SandboxScope) -> MaterialSnapshot:
-    scope = _state_value(scope)
     if scope.record is None or scope.generation is None:
+        raise ValueError("cleanup disposition requires a reserved sandbox")
+    state = sandbox_execution.read_execution_state(scope)
+    if scope.record is None:
         raise ValueError("cleanup disposition requires a reserved sandbox")
     if scope.record.owned["state"] == "preparing":
         raise ValueError("sandbox preparation must finish or fail before disposition")
-    state = sandbox_execution.read_execution_state(scope)
+    preparation_state = scope.record.owned["state"]
     if state is not None and any(
         attempt["status"] in ("running", "unknown") for attempt in state["attempts"]
     ):
@@ -246,7 +254,7 @@ def _current_material(scope: sandbox.SandboxScope) -> MaterialSnapshot:
         "destination_device": owned["destination_device"],
         "destination_inode": owned["destination_inode"],
         "owned_digest": _digest(owned),
-        "preparation_state": owned["state"],
+        "preparation_state": preparation_state,
         "workspace_head": head,
         "workspace_digest": workspace_digest,
         "outputs_digest": output_digest,
@@ -323,11 +331,7 @@ def _decision(
     material_present: bool,
     scope: sandbox.SandboxScope,
 ) -> DecisionRecord:
-    if (
-        not decision.reference
-        or len(decision.reference) > 2048
-        or any(ord(character) < 32 for character in decision.reference)
-    ):
+    if not _is_bounded_text(decision.reference):
         raise ValueError("material decision requires a bounded review reference")
     if decision.action == "discard":
         if decision.destination is not None:
@@ -361,110 +365,116 @@ def _decision(
     }
 
 
-def _parse_disposition(raw: object) -> DispositionRecord | None:
-    if not isinstance(raw, dict):
+def _is_bounded_text(value: object) -> TypeGuard[str]:
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and len(value) <= MAX_REFERENCE_LENGTH
+        and not any(ord(character) < 32 for character in value)
+    )
+
+
+def _is_hex(value: object, *, lengths: range | tuple[int, ...]) -> TypeGuard[str]:
+    return (
+        isinstance(value, str)
+        and len(value) in lengths
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _parse_decision(raw: object) -> DecisionRecord | None:
+    if not isinstance(raw, dict) or set(raw) != DECISION_FIELDS:
         return None
-    material = raw.get("material")
-    workspace, outputs = raw.get("workspace"), raw.get("outputs")
+    action = raw.get("action")
+    reference = raw.get("reference")
+    destination = raw.get("destination")
+    if action not in ("retain", "discard") or not _is_bounded_text(reference):
+        return None
+    if action == "retain":
+        if not isinstance(destination, str):
+            return None
+        return {"action": "retain", "reference": reference, "destination": destination}
+    if destination is not None:
+        return None
+    return {"action": "discard", "reference": reference, "destination": None}
+
+
+def _parse_material(raw: object) -> MaterialSnapshot | None:
+    if not isinstance(raw, dict) or set(raw) != MATERIAL_FIELDS:
+        return None
+    generation = raw.get("generation")
+    state = raw.get("preparation_state")
+    owned_digest = raw.get("owned_digest")
+    workspace_digest = raw.get("workspace_digest")
+    outputs_digest = raw.get("outputs_digest")
+    execution_digest = raw.get("execution_digest")
+    device = raw.get("destination_device")
+    inode = raw.get("destination_inode")
+    head = raw.get("workspace_head")
     if (
-        set(raw)
-        != {
-            "owner_id",
-            "reviewer_id",
-            "review_reference",
-            "material",
-            "workspace",
-            "outputs",
-            "diagnostics_reference",
-        }
-        or not isinstance(raw.get("owner_id"), str)
-        or not isinstance(raw.get("reviewer_id"), str)
-        or not isinstance(raw.get("review_reference"), str)
-        or not isinstance(material, dict)
-        or not isinstance(workspace, dict)
-        or not isinstance(outputs, dict)
+        not _is_hex(generation, lengths=(32,))
+        or state not in ("ready", "failed")
+        or not _is_hex(owned_digest, lengths=(64,))
+        or not _is_hex(workspace_digest, lengths=(64,))
+        or not _is_hex(outputs_digest, lengths=(64,))
+        or not _is_hex(execution_digest, lengths=(64,))
+        or not isinstance(device, int)
+        or isinstance(device, bool)
+        or not isinstance(inode, int)
+        or isinstance(inode, bool)
+        or (head is not None and not _is_hex(head, lengths=range(40, 65)))
+        or (state == "ready" and head is None)
     ):
         return None
-    for decision in (workspace, outputs):
-        if (
-            set(decision) != {"action", "reference", "destination"}
-            or decision.get("action") not in ("retain", "discard")
-            or not isinstance(decision.get("reference"), str)
-            or not decision.get("reference")
-            or len(decision["reference"]) > 2048
-            or any(ord(character) < 32 for character in decision["reference"])
-            or (
-                decision.get("destination") is not None
-                and not isinstance(decision.get("destination"), str)
-            )
-            or (decision["action"] == "retain")
-            != (decision.get("destination") is not None)
-        ):
-            return None
-    keys = MaterialSnapshot.__annotations__.keys()
-    if set(material) != set(keys):
+    return {
+        "generation": generation,
+        "destination_device": device,
+        "destination_inode": inode,
+        "owned_digest": owned_digest,
+        "preparation_state": state,
+        "workspace_head": head,
+        "workspace_digest": workspace_digest,
+        "outputs_digest": outputs_digest,
+        "execution_digest": execution_digest,
+    }
+
+
+def _parse_disposition(raw: object) -> DispositionRecord | None:
+    if not isinstance(raw, dict) or set(raw) != DISPOSITION_FIELDS:
         return None
-    if not all(
-        isinstance(material.get(key), str)
-        for key in (
-            "generation",
-            "owned_digest",
-            "preparation_state",
-            "workspace_digest",
-            "outputs_digest",
-            "execution_digest",
-        )
-    ):
+    owner_id = raw.get("owner_id")
+    reviewer_id = raw.get("reviewer_id")
+    review_reference = raw.get("review_reference")
+    diagnostics = raw.get("diagnostics_reference")
+    material = _parse_material(raw.get("material"))
+    workspace = _parse_decision(raw.get("workspace"))
+    outputs = _parse_decision(raw.get("outputs"))
+    if not _is_bounded_text(owner_id):
         return None
-    if any(
-        re.fullmatch(r"[0-9a-f]{64}", material[key]) is None
-        for key in (
-            "owned_digest",
-            "workspace_digest",
-            "outputs_digest",
-            "execution_digest",
-        )
-    ):
+    if not _is_bounded_text(reviewer_id):
         return None
-    if material["preparation_state"] not in ("ready", "failed"):
+    if not _is_bounded_text(review_reference):
         return None
-    if not all(
-        isinstance(material.get(key), int) and not isinstance(material.get(key), bool)
-        for key in ("destination_device", "destination_inode")
-    ):
+    if material is None or workspace is None or outputs is None:
         return None
-    if material.get("workspace_head") is not None and (
-        not isinstance(material.get("workspace_head"), str)
-        or re.fullmatch(r"[0-9a-f]{40,64}", material["workspace_head"]) is None
-    ):
+    if diagnostics is not None and not _is_bounded_text(diagnostics):
         return None
-    if material["preparation_state"] == "ready" and material["workspace_head"] is None:
-        return None
-    for key in ("owner_id", "reviewer_id", "review_reference"):
-        if (
-            not raw[key]
-            or len(raw[key]) > 2048
-            or any(ord(character) < 32 for character in raw[key])
-        ):
-            return None
-    diagnostics = raw["diagnostics_reference"]
-    if diagnostics is not None and (
-        not isinstance(diagnostics, str)
-        or not diagnostics
-        or len(diagnostics) > 2048
-        or any(ord(character) < 32 for character in diagnostics)
-    ):
-        return None
-    return cast(DispositionRecord, raw)
+    return {
+        "owner_id": owner_id,
+        "reviewer_id": reviewer_id,
+        "review_reference": review_reference,
+        "material": material,
+        "workspace": workspace,
+        "outputs": outputs,
+        "diagnostics_reference": diagnostics,
+    }
 
 
 def _validate_reviewed_input(
     scope: sandbox.SandboxScope, reviewed: ReviewedDisposition
 ) -> None:
-    if not reviewed.reviewer_id or not reviewed.review_reference:
-        raise ValueError("cleanup disposition requires reviewer and review reference")
-    if any(
-        len(value) > 2048 or any(ord(character) < 32 for character in value)
+    if not all(
+        _is_bounded_text(value)
         for value in (reviewed.reviewer_id, reviewed.review_reference)
     ):
         raise ValueError("review identity and reference must be bounded plain text")
@@ -495,7 +505,6 @@ def record_disposition(
     Raises:
         ValueError: If identity, review, material, or preservation checks fail.
     """
-    scope = _state_value(scope)
     if scope.record is None:
         raise ValueError("cleanup disposition requires a reserved sandbox")
     binding = sandbox_execution.work_binding(
@@ -507,7 +516,7 @@ def record_disposition(
     state = sandbox_execution.read_execution_state(scope)
     if state is None:
         state = sandbox_execution.ExecutionState(binding=binding, attempts=[])
-        scope = sandbox.update_marker(
+        sandbox.update_marker(
             scope,
             {
                 "execution": cast(sandbox.JsonValue, state),
@@ -567,7 +576,6 @@ def validate_disposition(
     Raises:
         ValueError: If the approval or any bound material is missing or stale.
     """
-    scope = _state_value(scope)
     if scope.record is None:
         raise ValueError("cleanup disposition requires a reserved sandbox")
     state = sandbox_execution.read_execution_state(scope)

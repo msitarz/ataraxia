@@ -5,7 +5,6 @@ import fcntl
 import json
 import os
 from pathlib import Path
-import select
 import shutil
 import stat
 import subprocess
@@ -31,9 +30,9 @@ def reserve_sandbox(root: Path, name: str) -> str:
         "base": "a" * 40,
     }
     with sandbox.locked_sandbox(root, name, None, create=True) as empty:
-        scope = sandbox.reserve_destination(empty, owner)
-    assert scope.generation is not None
-    return scope.generation
+        sandbox.reserve_destination(empty, owner)
+    assert empty.generation is not None
+    return empty.generation
 
 
 def persistent_snapshot(root: Path) -> dict[str, tuple[bytes | None, int, int, int]]:
@@ -52,7 +51,7 @@ def persistent_snapshot(root: Path) -> dict[str, tuple[bytes | None, int, int, i
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_marker_updates_are_atomic_and_keep_future_fields(
@@ -67,7 +66,10 @@ def test_marker_updates_are_atomic_and_keep_future_fields(
 
     # When
     with sandbox.locked_sandbox(root, "marker", generation) as scope:
-        scope = sandbox.update_marker(scope, {"future_extension": {"run": 3}})
+        sandbox.update_marker(scope, {"future_extension": {"run": 3}})
+        assert scope.record is not None
+        assert scope.record.extensions["future_extension"] == {"run": 3}
+        assert scope.generation == generation
         extended = marker.read_bytes()
         with pytest.raises(ValueError, match="owned identity"):
             sandbox.update_marker(scope, {"generation": "0" * 32})
@@ -88,7 +90,31 @@ def test_marker_updates_are_atomic_and_keep_future_fields(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
+)
+def test_marker_write_refuses_a_stale_scope_view(tmp_path: Path) -> None:
+    """Refuse to overwrite marker changes made outside the held scope."""
+    # Given
+    root = managed_root(tmp_path)
+    generation = reserve_sandbox(root, "stale-marker")
+    marker = root / ".stale-marker.ataraxia-sandbox.json"
+
+    # When
+    with sandbox.locked_sandbox(root, "stale-marker", generation) as scope:
+        disk_record = json.loads(marker.read_text()) | {"state": "ready"}
+        marker.write_text(json.dumps(disk_record))
+        changed = marker.read_bytes()
+        with pytest.raises(ValueError, match="outside the active scope"):
+            sandbox.update_marker(scope, {"state": "ready"})
+
+    # Then
+    assert marker.read_bytes() == changed
+    assert json.loads(marker.read_text()) == disk_record
+
+
+@pytest.mark.covers(
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -> None:
@@ -99,7 +125,7 @@ def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -
 
     # When
     with sandbox.locked_sandbox(root, "failed", generation) as scope:
-        failed = sandbox.update_marker(
+        sandbox.update_marker(
             scope,
             {
                 "state": "failed",
@@ -110,7 +136,7 @@ def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -
             },
         )
         with pytest.raises(ValueError, match="cannot be reassigned"):
-            sandbox.update_marker(failed, {"state": "ready"})
+            sandbox.update_marker(scope, {"state": "ready"})
 
     # Then
     record = json.loads((root / ".failed.ataraxia-sandbox.json").read_text())
@@ -119,7 +145,7 @@ def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_probe_reports_free_and_held_locks_without_persistent_writes(
@@ -145,18 +171,25 @@ def test_probe_reports_free_and_held_locks_without_persistent_writes(
     assert after_active == before
 
 
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
+)
 def test_scope_cannot_update_after_context_even_when_descriptor_number_is_reused(
     tmp_path: Path,
 ) -> None:
     """A closed lease remains revoked after the OS reuses its descriptor."""
+    # Given
     root = managed_root(tmp_path)
     generation = reserve_sandbox(root, "lease")
+    # When
     with sandbox.locked_sandbox(root, "lease", generation) as scope:
         stale = scope
     with sandbox.locked_sandbox(root, "empty-lease", None, create=True) as empty:
         stale_empty = empty
     replacement = os.open(root / ".lease.ataraxia-sandbox.lock", os.O_RDWR)
     try:
+        # Then
         assert replacement == stale.lease.descriptor
         with pytest.raises(ValueError, match="active lock scope"):
             sandbox.update_marker(stale, {"state": "ready"})
@@ -174,7 +207,7 @@ def test_scope_cannot_update_after_context_even_when_descriptor_number_is_reused
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -209,7 +242,7 @@ def test_probe_reports_unsafe_locks_as_unknown_without_repair(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -251,7 +284,7 @@ def test_create_rejects_old_or_malformed_markers_without_rewriting(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize("kind", ["fifo", "encoding"])
@@ -259,6 +292,7 @@ def test_unsafe_marker_fails_public_acquisition_and_probe_without_hanging(
     tmp_path: Path, kind: str
 ) -> None:
     """Special marker files and invalid UTF-8 fail closed in bounded calls."""
+    # Given
     root = managed_root(tmp_path)
     marker = root / ".unsafe.ataraxia-sandbox.json"
     if kind == "fifo":
@@ -266,6 +300,7 @@ def test_unsafe_marker_fails_public_acquisition_and_probe_without_hanging(
     else:
         marker.write_bytes(b"\xff")
         marker.chmod(0o600)
+    # When
     child = """
 import sys
 from pathlib import Path
@@ -286,11 +321,12 @@ except ValueError:
         text=True,
         timeout=3,
     )
+    # Then
     assert result.returncode == 0, result.stderr
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_missing_partial_destination_stays_reserved_and_old_generation_is_rejected(
@@ -319,11 +355,7 @@ def test_missing_partial_destination_stays_reserved_and_old_generation_is_reject
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_failed_marker_reservation_keeps_the_destination_reserved(
@@ -361,7 +393,7 @@ def test_failed_marker_reservation_keeps_the_destination_reserved(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_lock_replacement_after_open_is_rejected(
@@ -374,16 +406,30 @@ def test_lock_replacement_after_open_is_rejected(
     lock = root / ".replace.ataraxia-sandbox.lock"
     retained = root / ".retained-lock"
     real_flock = fcntl.flock
+    real_close = os.close
+    lock_events: list[tuple[str, int]] = []
+    lock_descriptor: int | None = None
+
+    def track_close(descriptor: int) -> None:
+        if descriptor == lock_descriptor:
+            lock_events.append(("close", descriptor))
+        real_close(descriptor)
 
     def replace_during_acquire(descriptor: int, operation: int) -> None:
+        nonlocal lock_descriptor
         if operation == fcntl.LOCK_EX:
+            lock_descriptor = descriptor
+            lock_events.append(("acquire", descriptor))
             lock.rename(retained)
             replacement = os.open(lock, os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
             os.close(replacement)
+        elif operation == fcntl.LOCK_UN and descriptor == lock_descriptor:
+            lock_events.append(("release", descriptor))
         real_flock(descriptor, operation)
 
     # When
     monkeypatch.setattr(fcntl, "flock", replace_during_acquire)
+    monkeypatch.setattr(os, "close", track_close)
     with (
         pytest.raises(ValueError, match="lock was replaced"),
         sandbox.locked_sandbox(root, "replace", generation),
@@ -394,10 +440,16 @@ def test_lock_replacement_after_open_is_rejected(
     assert retained.is_file()
     assert lock.is_file()
     assert (root / ".replace.ataraxia-sandbox.json").is_file()
+    assert lock_descriptor is not None
+    assert lock_events == [
+        ("acquire", lock_descriptor),
+        ("release", lock_descriptor),
+        ("close", lock_descriptor),
+    ]
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_probe_replacement_during_acquire_is_unknown_without_marker_repair(
@@ -426,7 +478,103 @@ def test_probe_replacement_during_acquire_is_unknown_without_marker_repair(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
+)
+def test_lock_is_acquired_before_yield_and_released_and_closed_after_exit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Manage the descriptor around a caller's normal locked scope."""
+    # Given
+    root = managed_root(tmp_path)
+    generation = reserve_sandbox(root, "managed-lock")
+    real_flock = fcntl.flock
+    real_close = os.close
+    events: list[tuple[str, int]] = []
+    descriptor: int | None = None
+
+    def track_flock(fd: int, operation: int) -> None:
+        nonlocal descriptor
+        if operation == fcntl.LOCK_EX:
+            descriptor = fd
+            events.append(("acquire", fd))
+        elif operation == fcntl.LOCK_UN and fd == descriptor:
+            events.append(("release", fd))
+        real_flock(fd, operation)
+
+    def track_close(fd: int) -> None:
+        if fd == descriptor:
+            events.append(("close", fd))
+        real_close(fd)
+
+    monkeypatch.setattr(fcntl, "flock", track_flock)
+    monkeypatch.setattr(os, "close", track_close)
+
+    # When
+    with sandbox.locked_sandbox(root, "managed-lock", generation):
+        assert descriptor is not None
+        assert events == [("acquire", descriptor)]
+
+    # Then
+    assert descriptor is not None
+    assert events == [
+        ("acquire", descriptor),
+        ("release", descriptor),
+        ("close", descriptor),
+    ]
+
+
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
+)
+def test_lock_is_released_and_closed_when_scope_body_raises(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Release the acquired descriptor when caller work raises."""
+    # Given
+    root = managed_root(tmp_path)
+    generation = reserve_sandbox(root, "exception-lock")
+    real_flock = fcntl.flock
+    real_close = os.close
+    events: list[tuple[str, int]] = []
+    descriptor: int | None = None
+
+    def track_flock(fd: int, operation: int) -> None:
+        nonlocal descriptor
+        if operation == fcntl.LOCK_EX:
+            descriptor = fd
+            events.append(("acquire", fd))
+        elif operation == fcntl.LOCK_UN and fd == descriptor:
+            events.append(("release", fd))
+        real_flock(fd, operation)
+
+    def track_close(fd: int) -> None:
+        if fd == descriptor:
+            events.append(("close", fd))
+        real_close(fd)
+
+    monkeypatch.setattr(fcntl, "flock", track_flock)
+    monkeypatch.setattr(os, "close", track_close)
+
+    # When
+    with (
+        pytest.raises(RuntimeError, match="body failed"),
+        sandbox.locked_sandbox(root, "exception-lock", generation),
+    ):
+        raise RuntimeError("body failed")
+
+    # Then
+    assert descriptor is not None
+    assert events == [
+        ("acquire", descriptor),
+        ("release", descriptor),
+        ("close", descriptor),
+    ]
+
+
+@pytest.mark.covers(
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
 def test_same_name_recreation_keeps_lock_inode_and_changes_generation(
@@ -451,8 +599,8 @@ def test_same_name_recreation_keeps_lock_inode_and_changes_generation(
         "base": "a" * 40,
     }
     with sandbox.locked_sandbox(root, "cycle", None, create=True) as empty:
-        fresh = sandbox.reserve_destination(empty, owner)
-    new_generation = fresh.generation
+        sandbox.reserve_destination(empty, owner)
+    new_generation = empty.generation
 
     # Then
     assert new_generation is not None
@@ -466,69 +614,33 @@ def test_same_name_recreation_keeps_lock_inode_and_changes_generation(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
     ac="AC-1",
 )
-def test_waiter_captured_before_recreation_refuses_the_new_generation(
-    tmp_path: Path,
+def test_waiter_refuses_generation_replaced_at_flock_boundary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A process waiting on generation A cannot enter recreated generation B."""
+    """Revalidate the generation captured before lock acquisition."""
     # Given
     root = managed_root(tmp_path)
     old_generation = reserve_sandbox(root, "stale")
     marker = root / ".stale.ataraxia-sandbox.json"
-    destination = root / "stale"
-    lock = root / ".stale.ataraxia-sandbox.lock"
-    lock_identity = (lock.stat().st_dev, lock.stat().st_ino)
-    waiter_script = (
-        Path(__file__).resolve().parents[3]
-        / "test/make/fixtures/sandbox_stale_waiter.py"
-    )
-    owner: sandbox.SandboxOwner = {
-        "common_dir": str(root / "source.git"),
-        "project": "fixture-project",
-        "base": "a" * 40,
-    }
+    real_flock = fcntl.flock
+
+    def replace_generation(fd: int, operation: int) -> None:
+        if operation == fcntl.LOCK_EX:
+            record = json.loads(marker.read_text())
+            record["generation"] = "b" * 32
+            marker.write_text(json.dumps(record))
+        real_flock(fd, operation)
 
     # When
-    waiter: subprocess.Popen[str] | None = None
-    try:
-        with sandbox.locked_sandbox(root, "stale", old_generation) as original:
-            waiter = subprocess.Popen(
-                [
-                    sys.executable,
-                    str(waiter_script),
-                    str(root),
-                    "stale",
-                    old_generation,
-                ],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            assert waiter.stdout is not None
-            ready, _, _ = select.select([waiter.stdout], (), (), 5)
-            assert ready, "waiter did not reach the lock syscall"
-            assert waiter.stdout.readline() == "captured\n"
-            acquired_early = select.select([waiter.stdout], (), (), 0.2)[0]
-            shutil.rmtree(destination)
-            marker.unlink()
-            empty = sandbox.SandboxScope(
-                root, "stale", None, None, None, False, original.lease
-            )
-            recreated = sandbox.reserve_destination(empty, owner)
-        waiter_stdout, waiter_stderr = waiter.communicate(timeout=30)
-    finally:
-        if waiter is not None and waiter.poll() is None:
-            waiter.kill()
-            waiter.communicate(timeout=5)
+    monkeypatch.setattr(fcntl, "flock", replace_generation)
+    with (
+        pytest.raises(ValueError, match="generation changed"),
+        sandbox.locked_sandbox(root, "stale", old_generation),
+    ):
+        pytest.fail("the pre-lock generation must be revalidated")
 
     # Then
-    assert not acquired_early
-    assert recreated.generation is not None
-    assert recreated.generation != old_generation
-    assert (lock.stat().st_dev, lock.stat().st_ino) == lock_identity
-    assert waiter.returncode == 1
-    assert "generation changed" in waiter_stderr
-    assert waiter_stdout == ""
+    assert json.loads(marker.read_text())["generation"] == "b" * 32

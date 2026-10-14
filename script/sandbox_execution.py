@@ -3,15 +3,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 import math
 import os
 from pathlib import Path
-import re
 import secrets
 import stat
-from typing import Literal, NotRequired, Protocol, TypedDict, cast
+from typing import Literal, NotRequired, Protocol, TypedDict, TypeGuard, cast
 from uuid import UUID
 
 from script import sandbox
@@ -26,6 +25,11 @@ class WorkBinding(TypedDict):
     owner_id: str
 
 
+type AttemptStatus = Literal[
+    "running", "completed", "failed", "unknown", "rejected", "incomplete"
+]
+
+
 class AttemptRecord(TypedDict):
     """One durable initial or resumed process attempt."""
 
@@ -34,9 +38,7 @@ class AttemptRecord(TypedDict):
     workspace_device: int
     workspace_inode: int
     session_id: str | None
-    status: Literal[
-        "running", "completed", "failed", "unknown", "rejected", "incomplete"
-    ]
+    status: AttemptStatus
     artifact_dir: str
     message: NotRequired[str]
     exit_code: NotRequired[int]
@@ -211,10 +213,10 @@ def read_execution_state(scope: sandbox.SandboxScope) -> ExecutionState | None:
     Raises:
         ValueError: If the lease is stale or the durable execution state is malformed.
     """
-    current = sandbox.refresh_scope(scope)
-    if current.record is None:
+    sandbox.reload_marker(scope)
+    if scope.record is None:
         raise ValueError("execution state requires a reserved sandbox")
-    return _read_state(current.record)
+    return _read_state(scope.record)
 
 
 def work_binding(
@@ -232,10 +234,7 @@ def work_binding(
     Raises:
         ValueError: If the lease, owner, Work path, or reserved sandbox is invalid.
     """
-    current = sandbox.refresh_scope(scope)
-    if current.record is None:
-        raise ValueError("Work binding requires a reserved sandbox")
-    state = read_execution_state(current)
+    state = read_execution_state(scope)
     if state is not None:
         binding = state["binding"]
         if binding["owner_id"] != owner_id or (
@@ -245,67 +244,128 @@ def work_binding(
         return binding
     if source_repository is None or work is None:
         raise ValueError("unbound sandbox requires source repository and Work README")
-    return _binding(current, source_repository, work, owner_id)
+    return _binding(scope, source_repository, work, owner_id)
+
+
+def _hex_id(value: object) -> TypeGuard[str]:
+    return (
+        isinstance(value, str)
+        and len(value) == 32
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _attempt_status(value: object) -> TypeGuard[AttemptStatus]:
+    return value in (
+        "running",
+        "completed",
+        "failed",
+        "unknown",
+        "rejected",
+        "incomplete",
+    )
+
+
+def _nonnegative_integer(value: object) -> TypeGuard[int]:
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _canonical_optional_session(value: object) -> TypeGuard[str | None]:
+    if value is None:
+        return True
+    if not isinstance(value, str):
+        return False
+    try:
+        return _canonical_session(value) == value
+    except ValueError:
+        return False
+
+
+def _attempt_status_fields_match(
+    status: AttemptStatus,
+    session_id: str | None,
+    message: str | None,
+    exit_code: int | None,
+    observed_session_id: str | None,
+) -> bool:
+    if observed_session_id is not None and observed_session_id == session_id:
+        return False
+    match status:
+        case "running":
+            return message is None and exit_code is None and observed_session_id is None
+        case "completed":
+            return exit_code == 0 and message is None and observed_session_id is None
+        case "failed":
+            return (
+                exit_code is not None
+                and exit_code != 0
+                and message is None
+                and (observed_session_id is None)
+            )
+        case "rejected":
+            return (
+                session_id is None
+                and message is not None
+                and bool(message)
+                and exit_code is None
+                and observed_session_id is None
+            )
+        case "unknown" | "incomplete":
+            return message is not None and bool(message)
 
 
 def _parse_attempt(raw: object) -> AttemptRecord | None:
     if not isinstance(raw, dict):
         return None
     value: Mapping[str, object] = raw
-    run_id, generation = value.get("run_id"), value.get("generation")
-    device, inode = value.get("workspace_device"), value.get("workspace_inode")
-    session_id, status = value.get("session_id"), value.get("status")
-    artifact_dir, message = value.get("artifact_dir"), value.get("message")
+    run_id = value.get("run_id")
+    generation = value.get("generation")
+    device = value.get("workspace_device")
+    inode = value.get("workspace_inode")
+    session_id = value.get("session_id")
+    status = value.get("status")
+    artifact_dir = value.get("artifact_dir")
+    message = value.get("message")
     exit_code = value.get("exit_code")
     observed_session_id = value.get("observed_session_id")
-    try:
-        if any(
-            isinstance(session, str) and _canonical_session(session) != session
-            for session in (session_id, observed_session_id)
-        ):
-            return None
-    except ValueError:
+    if not _hex_id(run_id) or not _hex_id(generation):
         return None
-    if (
-        not isinstance(run_id, str)
-        or re.fullmatch(r"[0-9a-f]{32}", run_id) is None
-        or not isinstance(generation, str)
-        or re.fullmatch(r"[0-9a-f]{32}", generation) is None
-        or not isinstance(device, int)
-        or isinstance(device, bool)
-        or device < 0
-        or not isinstance(inode, int)
-        or isinstance(inode, bool)
-        or inode < 0
-        or (session_id is not None and not isinstance(session_id, str))
-        or status
-        not in ("running", "completed", "failed", "unknown", "rejected", "incomplete")
-        or not isinstance(artifact_dir, str)
-        or (status == "rejected" and artifact_dir != "")
-        or (status != "rejected" and not artifact_dir)
-        or (message is not None and not isinstance(message, str))
-        or (
-            exit_code is not None
-            and (not isinstance(exit_code, int) or isinstance(exit_code, bool))
-        )
-        or (
-            observed_session_id is not None and not isinstance(observed_session_id, str)
-        )
-        or (status == "running" and (message is not None or exit_code is not None))
-        or (
-            status == "rejected"
-            and (
-                session_id is not None
-                or exit_code is not None
-                or observed_session_id is not None
-            )
-        )
-        or (status == "completed" and exit_code != 0)
-        or (status == "failed" and (exit_code is None or exit_code == 0))
-        or (status in ("unknown", "rejected", "incomplete") and not message)
-        or (status in ("completed", "failed") and message is not None)
-        or (observed_session_id is not None and status not in ("unknown", "incomplete"))
-        or (observed_session_id is not None and observed_session_id == session_id)
+    if not _nonnegative_integer(device) or not _nonnegative_integer(inode):
+        return None
+    if not _canonical_optional_session(session_id):
+        return None
+    if not _canonical_optional_session(observed_session_id):
+        return None
+    if not _attempt_status(status):
+        return None
+    if not isinstance(artifact_dir, str):
+        return None
+    if (status == "rejected" and artifact_dir != "") or (
+        status != "rejected" and not artifact_dir
+    ):
+        return None
+    if message is not None and not isinstance(message, str):
+        return None
+    if exit_code is not None and (
+        not isinstance(exit_code, int) or isinstance(exit_code, bool)
+    ):
+        return None
+    if session_id is not None and not isinstance(session_id, str):
+        return None
+    if observed_session_id is not None and not isinstance(observed_session_id, str):
+        return None
+    attempt_status = status
+    attempt_message = message if isinstance(message, str) else None
+    attempt_exit_code = exit_code if isinstance(exit_code, int) else None
+    observed_session = (
+        observed_session_id if isinstance(observed_session_id, str) else None
+    )
+    if not _attempt_status_fields_match(
+        attempt_status,
+        session_id,
+        attempt_message,
+        attempt_exit_code,
+        observed_session,
     ):
         return None
     parsed: AttemptRecord = {
@@ -314,15 +374,15 @@ def _parse_attempt(raw: object) -> AttemptRecord | None:
         "workspace_device": device,
         "workspace_inode": inode,
         "session_id": session_id,
-        "status": status,
+        "status": attempt_status,
         "artifact_dir": artifact_dir,
     }
-    if isinstance(message, str):
-        parsed["message"] = message
-    if isinstance(exit_code, int) and not isinstance(exit_code, bool):
-        parsed["exit_code"] = exit_code
-    if isinstance(observed_session_id, str):
-        parsed["observed_session_id"] = observed_session_id
+    if attempt_message is not None:
+        parsed["message"] = attempt_message
+    if attempt_exit_code is not None:
+        parsed["exit_code"] = attempt_exit_code
+    if observed_session is not None:
+        parsed["observed_session_id"] = observed_session
     return parsed
 
 
@@ -396,35 +456,29 @@ def _evidence_matches(
     )
 
 
-def _pending_attempts(state: ExecutionState) -> Sequence[AttemptRecord]:
-    return tuple(
-        item for item in state["attempts"] if item["status"] in ("running", "unknown")
-    )
-
-
 def _save(
     scope: sandbox.SandboxScope,
     state: ExecutionState,
-) -> sandbox.SandboxScope:
+) -> None:
     changes: sandbox.SandboxExtensions = {
         "execution": cast(sandbox.JsonValue, state),
         "cleanup_disposition": None,
     }
-    return sandbox.update_marker(scope, changes)
+    sandbox.update_marker(scope, changes)
 
 
 def _reject_existing(
     scope: sandbox.SandboxScope,
     state: ExecutionState | None,
     message: str,
-) -> sandbox.SandboxScope:
+) -> None:
     if state is None or scope.record is None:
-        return scope
+        return
     identity = scope.record.owned
     workspace = sandbox.DestinationIdentity(
         identity["destination_device"], identity["destination_inode"]
     )
-    return _save(scope, _rejected_attempt(scope, state, workspace, message))
+    _save(scope, _rejected_attempt(scope, state, workspace, message))
 
 
 def _unknown_attempt(
@@ -516,7 +570,7 @@ def _check_existing_attempts(
     if state["binding"] != binding:
         _reject_existing(scope, state, "Work or owner mismatch")
         raise ValueError("Evaluation Work or owner does not match the binding")
-    if _pending_attempts(state):
+    if any(item["status"] in ("running", "unknown") for item in state["attempts"]):
         _reject_existing(scope, state, "recovery required")
         raise ValueError("an execution attempt requires host-side recovery")
     if mode == "initial" and not state["attempts"]:
@@ -563,7 +617,7 @@ def _begin_attempt(
     generation: str,
     workspace: sandbox.DestinationIdentity,
     session_id: str | None,
-) -> tuple[sandbox.SandboxScope, ExecutionState, AttemptRecord, Path]:
+) -> tuple[ExecutionState, AttemptRecord, Path]:
     run_id = secrets.token_hex(16)
     artifact_dir = _artifact_path(scope, run_id)
     attempt: AttemptRecord = {
@@ -577,7 +631,7 @@ def _begin_attempt(
     }
     state = state or {"binding": binding, "attempts": []}
     state = {"binding": state["binding"], "attempts": [*state["attempts"], attempt]}
-    scope = _save(scope, state)
+    _save(scope, state)
     try:
         artifact_dir = _artifact_directory(scope, run_id)
     except (OSError, ValueError) as error:
@@ -586,7 +640,7 @@ def _begin_attempt(
         attempt["message"] = f"artifact setup failed: {error}"
         _save(scope, state)
         raise
-    return scope, state, attempt, artifact_dir
+    return state, attempt, artifact_dir
 
 
 def run_attempt(
@@ -609,12 +663,11 @@ def run_attempt(
         ValueError: If the source Work or host ownership is unsafe or mismatched.
         OSError: If durable marker or artifact setup fails.
     """
-    scope = sandbox.refresh_scope(scope)
     if scope.generation is None or scope.record is None:
         raise ValueError("execution requires a reserved sandbox")
     _workspace(scope)
     generation = scope.generation
-    scope = sandbox.update_marker(scope, {"cleanup_disposition": None})
+    sandbox.update_marker(scope, {"cleanup_disposition": None})
     state = read_execution_state(scope)
     try:
         binding, requested_session, workspace = _validated_request(
@@ -630,7 +683,7 @@ def run_attempt(
     )
     if rejected is not None:
         return rejected
-    scope, state, attempt, artifact_dir = _begin_attempt(
+    state, attempt, artifact_dir = _begin_attempt(
         scope, state, binding, generation, workspace, requested_session
     )
 
@@ -714,12 +767,11 @@ def recover_attempt(
     Raises:
         ValueError: If identity, stoppage, or retained artifact evidence differs.
     """
-    scope = sandbox.refresh_scope(scope)
     if scope.record is None or scope.generation is None:
         raise ValueError("recovery requires a reserved sandbox")
     _workspace(scope)
     generation = scope.generation
-    scope = sandbox.update_marker(scope, {"cleanup_disposition": None})
+    sandbox.update_marker(scope, {"cleanup_disposition": None})
     state = read_execution_state(scope)
     if state is None:
         raise ValueError("sandbox has no execution record to recover")

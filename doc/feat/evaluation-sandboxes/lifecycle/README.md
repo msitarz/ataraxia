@@ -29,9 +29,10 @@ flowchart LR
 
 ## Child outcomes
 
-- **DONE** Delivered active-state exclusion: lock and marker, creation
-  integration, bound execution recovery and reviewed disposition compose into
-  the shared safety protocol. Consumer command integration remains pending.
+- **TODO** [Active-state exclusion](active-state-exclusion/README.md): simplify
+  and review the delivered lock, marker, execution recovery, and disposition
+  implementation while preserving its safety contract; consumer command
+  integration remains pending.
 - **TODO** [Read-only sandbox discovery](listing/README.md): report direct
   children and observed lifecycle state without filesystem mutation; after
   active-state delivery.

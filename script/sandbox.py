@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from copy import deepcopy
 from dataclasses import dataclass
 import fcntl
 import json
@@ -71,7 +72,7 @@ class LockLease:
     active: bool = True
 
 
-@dataclass
+@dataclass(frozen=True)
 class Marker:
     """Validated owned fields separated from forward-compatible extensions."""
 
@@ -95,17 +96,29 @@ class DestinationIdentity:
     inode: int
 
 
-@dataclass(frozen=True)
+@dataclass
 class SandboxScope:
-    """Validated sandbox identity held under its per-name OS lock."""
+    """One current marker view held under its per-name OS lock."""
 
     root: Path
     name: str
-    generation: str | None
     record: Marker | None
-    destination_identity: DestinationIdentity | None
-    destination_present: bool
     lease: LockLease
+
+    @property
+    def generation(self) -> str | None:
+        """Current marker generation, if reserved."""
+        return None if self.record is None else self.record.owned["generation"]
+
+    @property
+    def destination_identity(self) -> DestinationIdentity | None:
+        """Current marker's destination identity."""
+        return None if self.record is None else _record_identity(self.record.owned)
+
+    @property
+    def destination_present(self) -> bool:
+        """Whether the reserved directory currently exists."""
+        return _destination_identity(self.root / self.name) is not None
 
 
 @dataclass(frozen=True)
@@ -407,7 +420,7 @@ def _validated_scope(
     create: bool,
     lease: LockLease,
 ) -> SandboxScope:
-    """Compare the waited-on generation and destination with their snapshots.
+    """Compare the waited-on generation and destination with current state.
 
     Returns:
         A validated scope bound to the held lock descriptor.
@@ -435,10 +448,7 @@ def _validated_scope(
     return SandboxScope(
         root,
         name,
-        expected_generation,
         record,
-        identity,
-        actual is not None,
         lease,
     )
 
@@ -676,11 +686,8 @@ def locked_sandbox(
 
 def update_marker(
     scope: SandboxScope, changes: SandboxChanges | SandboxExtensions
-) -> SandboxScope:
+) -> None:
     """Durably update supported fields while preserving future extensions.
-
-    Returns:
-        The updated scope, still valid only while its lock context is active.
 
     Raises:
         ValueError: If the lock or persisted identity is no longer valid.
@@ -689,8 +696,8 @@ def update_marker(
         raise ValueError("cannot update an unreserved sandbox")
     _require_active_scope(scope)
     current = _read_marker(scope.root, scope.name)
-    if current is None or current.owned["generation"] != scope.generation:
-        raise ValueError("sandbox generation changed before marker update")
+    if current is None or current.owned != scope.record.owned:
+        raise ValueError("sandbox marker changed outside the active scope")
     immutable = (
         "schema_version",
         "generation",
@@ -715,25 +722,14 @@ def update_marker(
     if actual is not None and actual != identity:
         raise ValueError("sandbox destination identity changed before marker update")
     updated = _validate_record(
-        current.serialized() | changes, marker_path(scope.root, scope.name)
+        current.serialized() | deepcopy(changes), marker_path(scope.root, scope.name)
     )
     _atomic_record(scope.root, scope.name, updated.serialized(), create=False)
-    return SandboxScope(
-        scope.root,
-        scope.name,
-        scope.generation,
-        updated,
-        identity,
-        actual is not None,
-        scope.lease,
-    )
+    scope.record = updated
 
 
-def refresh_scope(scope: SandboxScope) -> SandboxScope:
-    """Refresh a held scope from durable marker state.
-
-    Returns:
-        The latest validated generation and marker while the same lease is held.
+def reload_marker(scope: SandboxScope) -> None:
+    """Reload the current validated marker into an active scope.
 
     Raises:
         ValueError: If the lease, generation, marker, or destination changed.
@@ -741,25 +737,17 @@ def refresh_scope(scope: SandboxScope) -> SandboxScope:
     _require_active_scope(scope)
     validate_existing_root(scope.root)
     if scope.generation is None:
-        raise ValueError("refresh requires a reserved sandbox")
+        raise ValueError("marker reload requires a reserved sandbox")
     marker = _read_marker(scope.root, scope.name)
     if marker is None or marker.owned["generation"] != scope.generation:
-        raise ValueError("sandbox generation changed before scope refresh")
+        raise ValueError("sandbox generation changed before marker reload")
     identity = _record_identity(marker.owned)
     if identity != scope.destination_identity:
-        raise ValueError("sandbox destination identity changed before scope refresh")
+        raise ValueError("sandbox destination identity changed before marker reload")
     actual = _destination_identity(scope.root / scope.name)
     if actual not in (None, identity):
-        raise ValueError("sandbox destination identity changed before scope refresh")
-    return SandboxScope(
-        scope.root,
-        scope.name,
-        scope.generation,
-        marker,
-        identity,
-        actual is not None,
-        scope.lease,
-    )
+        raise ValueError("sandbox destination identity changed before marker reload")
+    scope.record = marker
 
 
 def _observation_matches(
@@ -849,11 +837,8 @@ def failed_record(stage: str, error: Exception) -> SandboxChanges:
     }
 
 
-def reserve_destination(scope: SandboxScope, owner: SandboxOwner) -> SandboxScope:
+def reserve_destination(scope: SandboxScope, owner: SandboxOwner) -> None:
     """Atomically reserve an absent child and its private ownership record.
-
-    Returns:
-        The new marker and destination identity within the held lock scope.
 
     Raises:
         ValueError: If the supplied scope is already reserved or identity fails.
@@ -882,15 +867,7 @@ def reserve_destination(scope: SandboxScope, owner: SandboxOwner) -> SandboxScop
     }
     validated = _validate_record(record, marker_path(scope.root, scope.name))
     _atomic_record(scope.root, scope.name, validated.serialized(), create=True)
-    return SandboxScope(
-        scope.root,
-        scope.name,
-        generation,
-        validated,
-        identity,
-        True,
-        scope.lease,
-    )
+    scope.record = validated
 
 
 def verify_clone(source: Path, destination: Path, name: str, base: str) -> None:
@@ -1108,9 +1085,9 @@ def create(source: Path, sandbox_name: str, override: str | None) -> Path:
     branch = f"work/sandbox-{sandbox_name}"
     run(["git", "check-ref-format", "--branch", branch])
     check_root_owner(root, owner["common_dir"])
-    with locked_sandbox(root, sandbox_name, None, create=True) as empty_scope:
+    with locked_sandbox(root, sandbox_name, None, create=True) as scope:
         check_root_owner(root, owner["common_dir"])
-        scope = reserve_destination(empty_scope, owner)
+        reserve_destination(scope, owner)
         destination = root / sandbox_name
         try:
             clone_and_prepare(source, destination, sandbox_name, base, branch, scope)
