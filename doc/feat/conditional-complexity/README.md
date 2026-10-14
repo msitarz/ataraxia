@@ -35,12 +35,13 @@ counts, with blocking lint and separate advisory counts through Make. complexipy
 is absent. These are verified configuration facts, not capability experiments.
 
 The intended guidance applies to `if`, `elif` and `match` guards: expose
-cohesive validation steps and simple decisions instead of Boolean expressions
-that hide independent responsibilities, type prerequisites or evaluation order.
-Moving the same expression into a guard, comprehension or helper per term is not
-a repair. Short independent guards may remain clearer than structural matching.
-Decide precise measurable limits and reviewed exceptions from examples during
-the investigation; do not equate every Boolean operator with unreadable code.
+explicit validation boundaries and simple decisions instead of clever compound
+short-circuit validation that hides independent responsibilities or type
+prerequisites. Moving the same expression into a guard, comprehension or helper
+per term is not a repair. Short independent guards may remain clearer than
+structural matching. Decide precise measurable limits and reviewed exceptions
+from examples during the investigation; do not equate every Boolean operator
+with unreadable code.
 
 complexipy measures function-level cognitive complexity. Its
 [usage guide](https://complexipy.com/usage-guide/) and
@@ -51,14 +52,19 @@ condition. Evaluate Ruff's
 as a complementary per-condition check. The guidance must explain any remaining
 manual review obligation without claiming either metric guarantees readability.
 
-Preserve short-circuiting, evaluation order, error text and exception causes.
-For the seed, missing, wrong-type, Boolean and negative identity values must
-still raise the same ValueError without evaluating invalid comparisons;
-nonnegative integer pairs pass. Preserve lifecycle/diagnostic rejection,
-arbitrary valid extension fields, and malformed persisted-state behavior when
-any repairs touch the surrounding validator. PR #328 remains independent:
-inspect then-integrated source at execution; do not edit its branch or require
-it to merge before defining this Work.
+Preserve observable accepted/rejected inputs, relevant documented errors and
+exception causes, state invariants, safety guarantees and necessary side-effect
+ordering. The earlier plan's requirement to preserve implementation
+short-circuiting/evaluation order was an overconstraint, not existing
+engineering guidance. Validation order and branch organization may change when
+the observable contract is unchanged. This is no blanket ban on Python Boolean
+semantics or simple guards. For the seed, missing, wrong-type, Boolean and
+negative identity values must still raise the relevant ValueError rather than an
+incidental comparison error; nonnegative integer pairs pass. Preserve
+lifecycle/diagnostic rejection, arbitrary valid extension fields, and malformed
+persisted-state behavior when any repairs touch the surrounding validator.
+PR #328 remains independent: inspect then-integrated source at execution; do
+not edit its branch or require it to merge before defining this Work.
 
 - TODO [Capability and threshold investigation](investigate/README.md): select
   a supported complexipy candidate and concrete complementary guidance/checks.
@@ -74,6 +80,14 @@ for maintainer steering or a concrete bounded split. The
 planning, not a dependency. The independent
 [algebraic data type Investigation](../algebraic-data-types/README.md) considers
 whether modeling improves this seed's broader lifecycle contract.
+
+The distinct [validated core guidance Work](../validated-core/README.md) owns
+complete consumed-record validation, frozen values, pure functions, module
+responsibilities and Protocol ports/adapters guidance. Its guidance must be
+integrated before the adoption leaf edits the shared engineering owner; the
+capability investigation may proceed independently. Neither Work authorizes a
+repository-wide source migration. A repair needed for enforcement must use the
+validated boundary guidance and remain bounded.
 
 - **AC-1 TODO** Both serial outcomes are independently reviewed and integrated:
   engineering guidance forbids dense conditions with useful allowed examples,

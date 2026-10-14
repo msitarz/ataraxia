@@ -5,11 +5,17 @@ Deliver the [parent outcome](../README.md) after independent review of the
 candidate, threshold, supported settings, scope and bounded repair inventory;
 unresolved gaps require maintainer steering before adoption.
 
+Depend also on integrated
+[validated core guidance](../../validated-core/README.md). Serialize edits to
+the shared engineering owner after that Work; link to its boundary rules rather
+than duplicating them. The capability investigation does not depend on it.
+
 Integrate guidance at
 [engineering conventions](../../../engineering.md#code-style), reviewing the
 surrounding composition/type-precision rules as a whole. Include a compact
 seed-derived before/after example and clear distinctions between simple guards,
-cohesive validation, function complexity and dense conditions. Cover `if`,
+complete consumed-record validation, typed pure decisions, function complexity
+and dense conditions. Cover `if`,
 `elif` and `match` guards and prohibit relocating complexity or extracting
 helpers merely to lower scores. Link to machine configuration rather than
 duplicating settings inventories.
@@ -35,8 +41,9 @@ probes belong to the investigation's historical evidence.
   tool limits, simple guards and cohesive extraction.
 
   Validation: independently review the affected engineering section and examples
-  against the parent and investigation, including short-circuit type checks and
-  dense match guards. Run documentation and acceptance checks.
+  against the parent, investigation and integrated boundary guidance, including
+  simple type prerequisites and dense match guards. Run documentation and
+  acceptance checks.
 
 - **AC-2 TODO** The locked reviewed complexipy candidate and any approved
   complementary Ruff configuration enforce agreed thresholds/scope through
@@ -49,12 +56,17 @@ probes belong to the investigation's historical evidence.
   exclusion. Run selected tests and lint through Make and inspect lock/setup/CI
   wiring. Full latest-head CI remains the ordinary merge gate.
 
-- **AC-3 TODO** Necessary repairs preserve evaluation order, short-circuiting,
-  exceptions and meaningful types, including all affected validator acceptance,
-  rejection and extension compatibility.
+- **AC-3 TODO** Necessary repairs preserve observable accepted/rejected inputs,
+  relevant documented errors/causes, meaningful types, state invariants, safety
+  and necessary side-effect ordering, including affected validator and extension
+  compatibility. Validation order and branch organization may change without
+  changing that contract.
 
   Validation: inspect affected call paths and run focused existing behavior/type
   checks through Make. Add criterion-marked regressions only for uncovered
   affected boundaries: missing/wrong-type/Boolean/negative identity, valid zero,
   lifecycle diagnostics, malformed persisted state and valid extensions. If no
   repairs are needed, independently review the inventory under this criterion.
+  Pure-rule tests use valid typed values; constructor/boundary tests cover whole
+  consumed records and cross-field failures. Effects remain covered at their
+  owning adapter/integration boundary under existing testing guidance.

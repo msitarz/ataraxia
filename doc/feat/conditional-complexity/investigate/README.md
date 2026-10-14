@@ -17,13 +17,15 @@ actual coverage of guards and expressions. Do not treat Boolean counting and
 function cognitive complexity as interchangeable.
 
 Inspect a baseline score distribution and concrete high-score functions within
-the existing lint scope, including source, scripts, tests and examples. Select
-a threshold from readability judgments on the seed, simple counterexamples and
-the necessary repair inventory, rather than adopting the default 15 or raising
-it just to pass. Propose precise scope, exceptions, diagnostic format and
-blocking semantics; show below-threshold, exact-threshold and above-threshold
-outcomes. Exclude transient environments, caches and build output consistently
-with existing lint discovery; do not exempt tests or scripts wholesale.
+the existing lint scope, including source, scripts, tests and examples. Select a
+threshold from readability judgments on the seed, simple counterexamples and the
+necessary repair inventory, including whether a complete consumed-record
+boundary and typed pure decisions remove the seed's dense conditions, rather
+than adopting the default 15 or raising it just to pass. Propose precise scope,
+exceptions, diagnostic format and blocking semantics; show below-threshold,
+exact-threshold and above-threshold outcomes. Exclude transient environments,
+caches and build output consistently with existing lint discovery; do not exempt
+tests or scripts wholesale.
 
 Describe the smallest Make integration supporting focused path arguments and
 full CI. Run project-tool experiments through Make only; existing `ARGS` inputs

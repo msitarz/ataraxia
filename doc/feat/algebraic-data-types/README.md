@@ -18,7 +18,8 @@ four diagnostic strings for `failed` and forbids diagnostic fields for
 `preparing`/`ready`. Destination device/inode form product data: both values are
 required nonnegative integers excluding Boolean values. The
 [condition complexity Work](../conditional-complexity/README.md) preserves the
-exact six-term check and owns guidance/enforcement; this Work owns the separate
+observable input/error/safety contract and owns guidance/enforcement; it permits
+validation order and branch organization to change. This Work owns the separate
 question of variant-specific fields, invariants and typed handling.
 
 Compare a union of frozen dataclass variants, a tagged TypedDict union and the
@@ -68,43 +69,60 @@ def failure_details(state: Lifecycle) -> FailureDiagnostics | None:
 ```
 
 Boundary validation is still required. A class pattern `int()` accepts Boolean
-values; a type annotation does not establish nonnegativity. Compare the dense
-identity check with this illustrative scalar validation, and consider whether
-ordinary sequential `if` guards are clearer:
+values; annotations and `frozen=True` do not establish nonnegativity or runtime
+field types. Compare candidates at a complete consumed-record boundary,
+constructing truthful validated product inputs/results and lifecycle sum
+variants. Focused constructors or `__post_init__` must enforce consumed fields
+and cross-field invariants, including diagnostics associated with the state.
+Simple sequential guards may be clearer inside that boundary; isolated scalar
+helpers alone do not establish record validity.
 
-```python
-def nonnegative_identity_part(value: object, path: Path) -> int:
-    match value:
-        case bool():
-            raise ValueError(f"malformed sandbox destination identity: {path}")
-        case int() as number if number >= 0:
-            return number
-        case _:
-            raise ValueError(f"malformed sandbox destination identity: {path}")
-```
+The [validated core guidance Work](../validated-core/README.md) owns the general
+engineering outcome. This Investigation applies that proposed direction when
+comparing representations; it may proceed independently and must reconcile its
+recommendation with the adopted guidance before any later adoption. Illustrate
+external parsing, complete record construction, a typed pure decision such as
+`failure_details(state: Lifecycle) -> FailureDiagnostics | None`, and
+serialization as distinct responsibilities. No raw JSON, disk paths or repeated
+defensive `isinstance` checks belong in that pure decision. A decision invoking
+an effectful port is not pure. Compare immutable field ownership as well as
+frozen dataclass declarations; frozen records containing mutable containers do
+not establish immutable values.
 
-Validate untyped input once before exposing a truthful typed domain. Compare
-callers, construction, mutation/update needs and JSON roundtrips, retaining
-missing/wrong-type/Boolean/negative rejection, original error messages/causes,
-diagnostic presence semantics and arbitrary valid extensions. Do not move dense
-Boolean conditions into match guards. Python `match` is not inherently
-exhaustive: verify narrowing and missing-variant rejection using `assert_never`
-or another supported mechanism under locked Pyrefly (1.3.1 at planning baseline
-`cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`). Observed checker behavior remains
-unknown; do not use casts, broad types or suppression to claim completeness.
+Validate a complete consumed record once per boundary crossing. Fields needed
+for ownership, persistence or security remain consumed even if a pure decision
+does not read them: generation, schema, owner and destination device/inode
+cannot be dropped. Preserve unrelated extensions as opaque data subject to
+required transport/persistence compatibility; avoid speculative validation of
+unused external schema. Compare callers, construction, mutation/update needs and
+JSON roundtrips, retaining missing/wrong-type/Boolean/negative rejection,
+relevant documented errors/causes, diagnostic presence semantics and valid
+extensions. Mutable filesystem generation/inode and held-lock freshness still
+require effectful adapter checks under lock at the lifecycle's required points;
+a frozen record cannot ensure live resource safety or replace fail-closed TOCTOU
+checks. Do not move dense Boolean conditions into match guards. Python `match`
+is not inherently exhaustive: verify narrowing and missing-variant rejection
+using `assert_never` or another supported mechanism under locked Pyrefly (1.3.1
+at planning baseline `cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`). Observed
+checker behavior remains unknown; do not use casts, broad types or suppression
+to claim completeness.
 
 - **AC-1 TODO** A short reviewable comparison recommends whether and where a
   variant model improves the seed, comparing dataclass unions, tagged TypedDict
   unions and retained flat records. It explains product versus sum data, typed
   exhaustive handling, simple guards and boundaries where independent `if`
-  validation remains clearer; checked evidence and uncertainty are distinct.
+  validation remains clearer. Complete consumed-record validation precedes pure
+  typed decisions and preserves ownership/persistence/security fields and opaque
+  extensions; checked evidence and uncertainty are distinct.
 
   Validation: independently review compact before/after models, affected
   deserialization/typed-consumer/serialization interfaces and candidate
   tradeoffs against the frozen seed and existing engineering/type contracts. Run
   bounded typing/runtime examples through Make during execution, showing useful
-  narrowing, missing-variant diagnostics, valid roundtrips and
-  malformed-input/extension compatibility. Preserve one-time tool probe results
-  under test ownership; recommend a concrete later adoption scope only if
-  justified. Run documentation and acceptance checks; split before the
-  comparison exceeds a short sitting.
+  narrowing, missing-variant diagnostics, valid roundtrips and whole-record
+  invalid-field/cross-field cases and extension compatibility. Review live
+  resource revalidation separately from model invariants. Pure-rule examples use
+  valid typed values; adapter/lifecycle evidence stays at its owning effectful
+  boundary. Preserve one-time tool probe results under test ownership; recommend
+  a concrete later adoption scope only if justified. Run documentation and
+  acceptance checks; split before the comparison exceeds a short sitting.
