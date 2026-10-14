@@ -5,7 +5,7 @@ Own local discovery and safe disposal of children created by
 private ownership record as the persistent, uncommitted lifecycle marker; the
 [active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
 OS-held lock, creation integration, bound execution attempt/recovery protocol
-and planned cleanup disposition. Listing and removal consume that shared
+and reviewed cleanup disposition. Listing and removal consume that shared
 protocol rather than define another registry or proof owner. Native execution
 consumes the attempt/recovery boundary but supplies its own containment
 supervisor. The maintainer selected explicit orchestrator disposition after
@@ -30,9 +30,9 @@ flowchart LR
 ## Child outcomes
 
 - **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
-  the shared safety outcome through serial lock/marker, execution recovery and
-  reviewed disposition children. This Work builds on delivered creation; its own
-  creation update has no prerequisite on a later consumer.
+  the shared safety outcome through lock/marker, execution recovery and
+  reviewed disposition. This builds on delivered creation; its parent
+  acceptance review remains, while consumer command integration is pending.
 - **TODO** [Read-only sandbox discovery](listing/README.md): report direct
   children and observed lifecycle state without filesystem mutation; after
   active-state delivery.

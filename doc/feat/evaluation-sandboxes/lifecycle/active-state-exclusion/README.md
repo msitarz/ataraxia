@@ -35,17 +35,17 @@ flowchart LR
   artifacts, and requires trusted host evidence bound to the same generation
   and workspace before resolving unknown lifetime. Native containment remains
   with the execution consumer.
-- **TODO** [Reviewed cleanup disposition](cleanup-disposition/README.md):
-  record host authority bound to exact current preserved state and review;
-  invalidate it on execution or state changes. After delivered execution
+- **DONE** Delivered reviewed cleanup disposition: records trusted host review,
+  retention destinations and explicit discard decisions against exact current
+  sandbox state; changes and rejected attempts invalidate approval. Destructive
+  consumers must revalidate under the lock. This followed delivered execution
   attempts and recovery.
 
-The cleanup-disposition child consumes the delivered foundation and execution
-protocol. Their shared marker/helper edits are deliberate dependencies, not
-parallel surfaces. Creation never waits for later execution, disposition or
-removal implementation. Creation works without execution provenance; the
-execution protocol extends the validated record rather than rewriting
-ownership.
+The delivered cleanup disposition consumes the foundation and execution
+protocol. Shared marker/helper changes are deliberate extensions, not parallel
+surfaces. Creation never waits for later execution, disposition or removal
+implementation. Creation works without execution provenance; the execution
+protocol extends the validated record rather than rewriting ownership.
 
 [Native execution](../../execution/README.md),
 [listing](../listing/README.md) and [removal](../removal/README.md) depend on
@@ -73,7 +73,7 @@ helper and existing Make routing where needed.
 | --- | --- |
 | Delivered lock and marker foundation | Root/name, captured generation or create absence, native destination identity; acquired and revalidated exclusive scope or refusal. Supported validated marker updates persist durably; observational probes return activity/unknown without mutation. |
 | Delivered execution protocol | Locked sandbox, source Work/orchestrator binding, optional exact resume UUID and process attempt; retained identity/outcome/artifacts, or unknown refusal until trusted host recovery establishes stopped processes and preserved output. |
-| [Cleanup disposition](cleanup-disposition/README.md) | Host owner/review, exact current identity/workspace/output inventory, retained destinations and retain/discard decisions; validated persisted disposition or refusal without approval. |
+| Delivered cleanup disposition | Trusted host review, exact current identity/workspace/output state, retained destinations and explicit discard decisions; validated persisted disposition or refusal without approval. |
 
 ## Parent acceptance
 
@@ -92,5 +92,5 @@ helper and existing Make routing where needed.
   runs. Original leaf AC-1 and AC-3 are owned by the delivered foundation and
   remaining shared lifecycle outcomes; original AC-2 by the delivered
   foundation and the delivered execution protocol; original AC-4 by the
-  delivered execution protocol and cleanup-disposition AC-1/AC-2.
+  delivered execution protocol and reviewed cleanup disposition.
   Consumer command integration remains verified in its existing Work.

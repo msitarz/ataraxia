@@ -46,10 +46,20 @@ workspace and retained artifact directory. Lock release after wrapper death,
 parent-PID exit or process-group signaling alone does not prove descendants
 stopped. This is a shared attempt and recovery protocol, not a native
 containment backend; the native execution consumer must supply a supervisor
-with explained platform limits. Reviewed cleanup disposition after
-preservation and maintainer review remains planned in the
-[lifecycle contract](feat/evaluation-sandboxes/lifecycle/README.md). No existing
-sandboxes require migration; unsupported old records are rejected safely.
+with explained platform limits.
+
+The delivered cleanup disposition records the trusted host owner's review,
+preservation or explicit discard decisions, and retained destinations against
+the exact current marker, preparation, attempt, workspace and private output.
+Review references are host-supplied evidence, not independently authenticated
+by the sandbox. Any relevant change or rejected attempt invalidates approval;
+unknown execution cannot be approved. A recorded disposition is not lasting
+authority to delete: a destructive command must revalidate the binding and
+retained evidence under the lock immediately before deletion. Listing remains
+observational and does not read or hash private artifact contents, so it cannot
+claim that a disposition is currently valid. Native execution, listing and
+removal command integration remain pending. No existing sandboxes require
+migration; unsupported old records are rejected safely.
 
 Preparation is trusted host work, not an isolation boundary. Root-private file
 modes do not isolate same-UID preparation commands; enforced native execution
