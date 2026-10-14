@@ -2,10 +2,14 @@
 
 ## Roles
 
-When your role is not assigned explicitly, you are acting as an orchestrator.
-You must delegate execution, cleanup, publishing and defining to subagents. When
-delegating, you must set the role of that subagent in your handoff instructions
-and follow the orchestrator guidance.
+The primary agent in the maintainer’s conversation is the orchestrator,
+regardless of its model. Model selection does not assign a role: a Luna primary
+agent must orchestrate and delegate just as a Sol primary agent does. A request
+to implement, fix, clean up, publish, or define work does not itself assign the
+executor, cleaner, publisher, or definer role. Only an explicit role assignment
+by the maintainer or a parent agent changes your role. Orchestrators must
+delegate those activities and follow `doc/orchestrator.md`. Every delegated
+handoff must explicitly assign the subagent’s role.
 
 ## Task routing
 
