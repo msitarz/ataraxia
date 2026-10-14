@@ -8,9 +8,8 @@ outcome; the delivered investigation and guidance complete its scope.
   [investigation comparison](https://github.com/msitarz/ataraxia/blob/a0c90fe24cfa430a81b360fa10fd5aa13f8b2029/doc/feat/nested-exceptions/investigate/comparison.md)
   preserves the capability gap and the empty repair inventory at its inspected
   base.
-- TODO [Guidance adoption](adopt/README.md): integrate one short bullet or
-  paragraph into the existing engineering owner, with accurate scope boundaries
-  and behavior-preserving repair advice.
+- DONE Guidance adopted in
+  [engineering conventions](../../engineering.md#code-style).
 
 The independent [focused exception lint Work](../exception-lint/README.md)
 remains planned separately. Its rules cannot enforce this exact nesting ban.
