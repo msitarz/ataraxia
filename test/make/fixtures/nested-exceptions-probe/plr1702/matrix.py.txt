@@ -1,0 +1,123 @@
+def handler_body():
+    try:
+        try:
+            pass
+        except ValueError:
+            pass
+    except OSError:
+        pass
+
+
+def handler_in_handler():
+    try:
+        pass
+    except OSError:
+        try:
+            pass
+        except ValueError:
+            pass
+
+
+def handler_in_else():
+    try:
+        pass
+    except OSError:
+        pass
+    else:
+        try:
+            pass
+        except ValueError:
+            pass
+
+
+def handler_in_finally():
+    try:
+        pass
+    except OSError:
+        pass
+    finally:
+        try:
+            pass
+        except ValueError:
+            pass
+
+
+def sequential():
+    try:
+        pass
+    except OSError:
+        pass
+    try:
+        pass
+    except ValueError:
+        pass
+
+
+def branches_and_loops():
+    try:
+        if True:
+            for _ in range(1):
+                pass
+    except OSError:
+        pass
+
+
+def cleanup_only():
+    try:
+        try:
+            pass
+        finally:
+            pass
+    except OSError:
+        pass
+
+
+def cleanup_parent():
+    try:
+        try:
+            pass
+        except ValueError:
+            pass
+    finally:
+        pass
+
+
+def context_manager():
+    try:
+        with open(__file__):
+            pass
+    except OSError:
+        pass
+
+
+def nested_function():
+    try:
+        pass
+    except OSError:
+        def inner():
+            try:
+                pass
+            except ValueError:
+                pass
+        inner()
+
+
+async def async_handlers():
+    try:
+        try:
+            pass
+        except* ValueError:
+            pass
+    except* OSError:
+        pass
+
+
+async def async_sequential():
+    try:
+        pass
+    except* OSError:
+        pass
+    try:
+        pass
+    except* ValueError:
+        pass

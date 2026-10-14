@@ -1,0 +1,44 @@
+def _open_stable_lock(root: Path, name: str) -> int:
+    """Open or atomically initialize the stable root-private lock file.
+
+    Returns:
+        An open descriptor for the existing or newly created lock.
+
+    Raises:
+        ValueError: If the lock path is unsafe or missing for a reserved name.
+    """
+    path = lock_path(root, name)
+    destination = root / name
+    metadata = marker_path(root, name)
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        if any(
+            candidate.exists() or candidate.is_symlink()
+            for candidate in (destination, metadata)
+        ):
+            raise ValueError(f"missing stable sandbox lock: {path}") from None
+        try:
+            created = os.open(
+                path,
+                os.O_RDWR | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+                0o600,
+            )
+        except FileExistsError:
+            pass
+        else:
+            try:
+                _private_regular(path, os.fstat(created), "sandbox lock")
+                os.fsync(created)
+                _fsync_directory(root)
+            finally:
+                os.close(created)
+        info = path.lstat()
+    _private_regular(path, info, "sandbox lock")
+    descriptor = os.open(path, os.O_RDWR | getattr(os, "O_NOFOLLOW", 0))
+    try:
+        _private_regular(path, os.fstat(descriptor), "sandbox lock")
+    except Exception:
+        os.close(descriptor)
+        raise
+    return descriptor

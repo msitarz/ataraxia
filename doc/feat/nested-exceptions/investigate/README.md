@@ -15,8 +15,8 @@ addresses returns in `try`, and
 [TRY301](https://docs.astral.sh/ruff/rules/raise-within-try/)
 addresses explicitly raising exceptions caught by the same `try`. These
 documented purposes do not establish exact enforcement of the requested ban.
-Current documentation is not evidence of the pinned version's observed behavior.
-No tool experiment or exact-enforcement finding has yet been recorded.
+Current documentation is not evidence of the pinned version's observed behavior;
+see the [pinned-version comparison](comparison.md) for Make observations.
 
 Compare any promising pinned Ruff configuration with a minimal alternative
 only if necessary. A targeted checker is a candidate requiring explicit
@@ -39,15 +39,19 @@ Use this shared matrix for the recommendation and adoption examples:
 | Async functions and supported `except*` nesting | Apply the same lexical rule |
 
 Execute project-tool experiments only through Make. `make lint-check ARGS=paths`
-accepts paths, not arbitrary Ruff options; if controlled candidate experiments
-need a new route, define the smallest Make extension under owner review before
-using it. Record exact locked version, candidate settings, commands, exit
-status, diagnostics and limitations in a small comparison linked from this
-README while it exists. Inspect the relevant source/configuration and
-then-integrated violations to bound adoption. Testing a candidate is not
-permission to adopt it.
+accepts paths, not arbitrary Ruff options. A temporary local Ruff configuration
+that extends the repository configuration allows candidate settings to be
+observed through that existing route. If that route proves insufficient, define
+the smallest Make extension under owner review before using it. Record exact
+locked version, candidate settings, commands, exit status, diagnostics and
+limitations in a small comparison linked from this README while it exists.
+Inspect the relevant source/configuration and then-integrated violations to
+bound adoption. Testing a candidate is not permission to adopt it.
 
-- **AC-1 TODO** A reviewable comparison identifies what the pinned Ruff version
+See [Pinned Ruff comparison](comparison.md) for the observed matrix, source
+inventory and recommendation.
+
+- **AC-1 DONE** A reviewable comparison identifies what the pinned Ruff version
   can and cannot enforce using observed seed/matrix diagnostics, recommends a
   supported precise mechanism, and bounds the necessary violation repairs. If no
   Ruff mechanism fits, it reports the specific gap and maintainer choice between
