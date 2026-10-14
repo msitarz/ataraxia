@@ -2,10 +2,11 @@
 
 Deliver the rule and behavior defined by the [parent contract](../README.md).
 Depends on the independently reviewed
-[enforcement investigation](../investigate/README.md) and any explicit
-maintainer authorization it requires. Start only when the supported mechanism
-and bounded repair inventory are concrete. An unresolved capability gap blocks
-this Work.
+[Ruff investigation comparison](https://github.com/msitarz/ataraxia/blob/a0c90fe24cfa430a81b360fa10fd5aa13f8b2029/doc/feat/nested-exceptions/investigate/comparison.md).
+That comparison found no precise supported Ruff mechanism. Adoption remains
+blocked until the maintainer chooses to wait for a supported Ruff rule or
+explicitly authorizes a narrowly scoped alternative, and the selected mechanism
+and bounded repair inventory are concrete.
 
 Integrate lasting guidance in
 [engineering conventions](../../../engineering.md#code-style) alongside

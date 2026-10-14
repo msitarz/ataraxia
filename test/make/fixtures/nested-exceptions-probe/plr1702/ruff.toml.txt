@@ -1,7 +1,0 @@
-extend = "../../../../../pyproject.toml"
-
-[lint]
-select = ["PLR1702"]
-
-[lint.pylint]
-max-nested-blocks = 1
