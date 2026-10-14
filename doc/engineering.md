@@ -50,6 +50,11 @@ files.
   parameterized protocols/classes, and `Literal` for closed sets (signal sides).
   Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`);
   require mutability only when needed.
+- Use `match` when one stable value selects among distinct cases and only one
+  case should run; preserve required unmatched-input behavior. Keep independent
+  `if` statements when multiple conditions may apply, and use guard clauses or
+  simple `if`/`else` when clearer. A dictionary lookup can suit a pure mapping
+  from keys to fixed values.
 - Use context managers for files/providers, preserving source/provider lifecycle
   delegation and cleanup on success/failure; use `pathlib.Path`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
