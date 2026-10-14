@@ -2,9 +2,13 @@
 
 Investigate whether tooling or guidance should identify suitable closed string
 domains. The first seed is `arrange_changed_input` in
-[registry selection inputs at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L93),
-before local Literal adoption. The frozen source preserves the condition and
-its fixture context after the selector cleanup:
+[the predecessor before Literal adoption](https://github.com/msitarz/ataraxia/blob/403081936833e579384d138aa0da43517ba6d09c/test/script/selection_inputs.py#L93).
+The later
+[reviewed source revision](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L93)
+already includes the local Literal adoption from
+[the narrowing change](https://github.com/msitarz/ataraxia/commit/63d2a7b).
+The frozen predecessor source preserves the condition and fixture context after
+the selector cleanup:
 
 ```python
 def arrange_changed_input(case: PreparedSelection, change: str) -> None:
@@ -33,7 +37,7 @@ def arrange_changed_input(case: PreparedSelection, change: str) -> None:
 
 A second historical seed is the original record-input signature:
 
-[`copy_selection_fixture` at the reviewed baseline](https://github.com/msitarz/ataraxia/blob/5d37d04b0640e1a72c0751ddb7a9141783583ceb/test/script/selection_inputs.py#L34):
+[`copy_selection_fixture` before narrowing](https://github.com/msitarz/ataraxia/blob/403081936833e579384d138aa0da43517ba6d09c/test/script/selection_inputs.py#L28):
 
 ```python
 def copy_selection_fixture(directory: Path, record_name: str) -> PreparedSelection: ...
@@ -43,20 +47,24 @@ Its supported names are accepted, uv, index, platform, layout, metadata,
 undeclared and version, a distinct domain from the five changed-input names.
 Paths and digest strings do not define finite domains.
 
-Both local examples now use distinct Literal aliases, with domain-specific
-narrowing after `parameter_name` validates the untyped `request.param` as `str`.
-The changed-input match retains its unknown-name ValueError. This maintainer
-adoption supplies concrete examples, not tooling findings or repository-wide
-policy. Compare Literal with retaining `str`, and explain when Enum adds useful
-identity or behavior. Preserve truthful boundary/caller types without casts or
-checker suppression, runtime rejection and one authoritative domain inventory.
+The preserved adopted revision uses distinct Literal aliases, with
+domain-specific narrowing after `parameter_name` validates the untyped
+`request.param` as `str`; the changed-input validator retains unknown-name
+`ValueError` rejection. These are historical examples, not live helpers in the
+current checkout. The linked investigation report records the bounded tool
+comparison and recommendation. Preserve truthful boundary/caller types without
+casts or checker suppression, runtime rejection and one authoritative domain
+inventory.
+
+See the bounded [investigation report](investigation.md) for historical
+provenance, pinned-tool probes, candidate comparison, and recommendation.
 
 Compare the locked Ruff/Pyrefly capabilities with other tooling and guidance
 only. Match arms alone cannot establish a closed domain: assess open-domain
 matches, meaningful defaults, overlapping conditions and future extensions.
 Review false positives and safe adoption limits with positive and negative
-examples. This Work recommends a direction; no general rule adoption or tooling
-investigation result is delivered by this contract.
+examples. This Work investigates a direction; it does not adopt general policy
+or a tooling rule.
 
 - **AC-1 TODO** An inspectable recommendation compares Literal, retained str
   and justified Enum usage, evaluates tooling versus guidance for suitable
