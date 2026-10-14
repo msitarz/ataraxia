@@ -66,7 +66,7 @@ Review false positives and safe adoption limits with positive and negative
 examples. This Work investigates a direction; it does not adopt general policy
 or a tooling rule.
 
-- **AC-1 TODO** An inspectable recommendation compares Literal, retained str
+- **AC-1 DONE** An inspectable recommendation compares Literal, retained str
   and justified Enum usage, evaluates tooling versus guidance for suitable
   closed string domains, and explains truthful boundary/caller typing, runtime
   rejection, false positives and inventory ownership with examples; it states
