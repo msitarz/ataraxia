@@ -1,14 +1,22 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exercise the managed sandbox creation boundary with disposable Git repos."""
 
+from errno import ENXIO
 import json
+import os
 from pathlib import Path
+import re
+import select
 import shutil
 import stat
+import subprocess
 import sys
+from time import monotonic, sleep
+from typing import BinaryIO, TextIO, cast
 
 import pytest
 
+from script import sandbox as sandbox_script
 from test.make.support import ROOT, MakeResult, MakeSandbox
 from test.make.worktree_support import CreationRepository, creation_repository
 
@@ -74,6 +82,48 @@ def make_create(
     return repository.sandbox.run(*arguments, environment=extra_environment, cwd=cwd)
 
 
+def process_line(stream: TextIO, timeout: float) -> str:
+    """Read one subprocess line only after a bounded readiness check."""
+    ready, _, _ = select.select([stream], (), (), timeout)
+    if not ready:
+        raise TimeoutError("subprocess did not reach its output barrier")
+    return stream.readline()
+
+
+def open_fifo_writer(path: Path, process: subprocess.Popen[str]) -> BinaryIO:
+    """Open a FIFO writer with a deadline and stop if its reader exits."""
+    deadline = monotonic() + 30
+    while True:
+        try:
+            descriptor = os.open(path, os.O_WRONLY | os.O_NONBLOCK)
+        except OSError as error:
+            if error.errno != ENXIO:
+                raise
+            if process.poll() is not None or monotonic() >= deadline:
+                raise TimeoutError(
+                    "sandbox creator did not open the setup gate"
+                ) from error
+            sleep(0.01)
+        else:
+            return os.fdopen(descriptor, "wb", buffering=0)
+
+
+def stop_child(process: subprocess.Popen[str] | None) -> None:
+    """Kill and reap an unfinished child without communicating through stdin."""
+    if process is None:
+        return
+    if process.poll() is None:
+        process.kill()
+    try:
+        process.wait(timeout=10)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        process.wait(timeout=10)
+    for stream in (process.stdin, process.stdout, process.stderr):
+        if stream is not None and not stream.closed:
+            stream.close()
+
+
 def assert_prepared_clone(
     repository: CreationRepository, destination: Path, metadata: Path
 ) -> None:
@@ -136,26 +186,38 @@ def test_make_creates_owned_shallow_clone_and_refuses_unsafe_names(
 
     # Then
     destination = managed / "run-1"
+    record = json.loads(metadata.read_text())
     assert result.exit_code == 0, result.output
-    assert json.loads(metadata.read_text()) == {
-        "common_dir": str((source.sandbox.directory / ".git").resolve()),
-        "project": "fixture-project",
-        "base": source.git("rev-parse", "master").stdout.strip(),
-        "state": "ready",
-    }
+    assert record["common_dir"] == str((source.sandbox.directory / ".git").resolve())
+    assert record["project"] == "fixture-project"
+    assert record["base"] == source.git("rev-parse", "master").stdout.strip()
+    assert record["state"] == "ready"
+    assert record["schema_version"] == 1
+    assert re.fullmatch(r"[0-9a-f]{32}", record["generation"])
+    assert record["destination_device"] == destination.stat().st_dev
+    assert record["destination_inode"] == destination.stat().st_ino
+    assert "execution" not in record
     assert stat.S_IMODE(metadata.stat().st_mode) == 0o600
+    lock = managed / ".run-1.ataraxia-sandbox.lock"
+    assert stat.S_IMODE(lock.stat().st_mode) == 0o600
+    lock_identity = (lock.stat().st_dev, lock.stat().st_ino)
     assert_prepared_clone(source, destination, metadata)
     assert rejected.exit_code == 2
     assert invalid_ref.exit_code == 2
     assert hostile.exit_code == 2
     assert not marker.exists()
     assert metadata.read_bytes() == before
+    assert (lock.stat().st_dev, lock.stat().st_ino) == lock_identity
     assert not (tmp_path / "escape").exists()
     assert not (managed / "bad..name").exists()
     assert not (managed / ".bad..name.ataraxia-sandbox.json").exists()
     assert not (managed / f"bad; touch {marker}").exists()
 
 
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/lock-and-marker/README.md",
+    ac="AC-1",
+)
 @pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_setup_failure_retains_owned_clone_and_diagnostics(tmp_path: Path) -> None:
     """AC-2: Given a setup double failure, creation retains the owned partial clone."""
@@ -214,6 +276,10 @@ def test_clone_failure_retains_status_and_diagnostics(tmp_path: Path) -> None:
     assert retry.exit_code == 2
 
 
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/lock-and-marker/README.md",
+    ac="AC-1",
+)
 @pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_readiness_failure_retains_status_and_setup_artifacts(tmp_path: Path) -> None:
     """AC-2: Retain verify-setup failure state without marking the child ready."""
@@ -420,3 +486,96 @@ def test_changed_master_after_selection_fails_and_retains_clone(
     assert cloned_head == current_master
     assert (destination / ".git").is_dir()
     assert "ready_at" not in metadata
+
+
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/lock-and-marker/README.md",
+    ac="AC-1",
+)
+@pytest.mark.covers(
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/lock-and-marker/README.md",
+    ac="AC-3",
+)
+def test_creation_holds_stable_lock_through_readiness_and_waiters_revalidate(
+    tmp_path: Path,
+) -> None:
+    """Serialize create and shared operations while preparation owns the name."""
+    # Given
+    source = sandbox_source(tmp_path / "source")
+    managed = tmp_path / "managed"
+    managed.mkdir(mode=0o700)
+    gate = managed / ".concurrent.sandbox-setup-gate"
+    os.mkfifo(gate)
+    creator_environment = source.sandbox.environment | {
+        "UV_TEST_PYTHON": sys.executable,
+        "REAL_GIT_PATH": shutil.which("git") or "git",
+        "REAL_MAKE_PATH": shutil.which("make") or "make",
+        "STUB_UV_LOG": str(tmp_path / "creator-uv.jsonl"),
+        "STUB_UV_FAIL_ARGS": "[]",
+        "STUB_UV_EXIT": "1",
+        "STUB_UV_STDOUT": "",
+        "STUB_UV_STDERR": "",
+    }
+    creator = subprocess.Popen(
+        ["make", "sandbox-create", "NAME=concurrent", f"SANDBOX_ROOT={managed}"],
+        cwd=source.sandbox.directory,
+        env=creator_environment,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    writer: BinaryIO | None = None
+    waiter: subprocess.Popen[str] | None = None
+    try:
+        writer = open_fifo_writer(gate, creator)
+
+        # When
+        marker = managed / ".concurrent.ataraxia-sandbox.json"
+        record = json.loads(marker.read_text())
+        generation = record["generation"]
+        lock = managed / ".concurrent.ataraxia-sandbox.lock"
+        lock_identity = (lock.stat().st_dev, lock.stat().st_ino)
+        busy_probe = sandbox_script.probe_sandbox(managed, "concurrent", generation)
+        waiter = subprocess.Popen(
+            [
+                sys.executable,
+                str(ROOT / "test/make/fixtures/sandbox_lock_waiter.py"),
+                str(managed),
+                "concurrent",
+                generation,
+            ],
+            cwd=ROOT,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        assert waiter.stdout is not None
+        assert process_line(cast(TextIO, waiter.stdout), 5) == "waiting\n"
+        second_create = make_create(source, "concurrent", managed)
+        no_early_acquire = select.select([waiter.stdout], (), (), 0.2)[0]
+        writer.write(b"continue")
+        writer.close()
+        writer = None
+        creator_stdout, creator_stderr = creator.communicate(timeout=60)
+        waiter_output = process_line(cast(TextIO, waiter.stdout), 10)
+        if waiter.stdin is not None:
+            waiter.stdin.write("x")
+            waiter.stdin.flush()
+        waiter_stdout, waiter_stderr = waiter.communicate(timeout=30)
+
+        # Then
+        assert busy_probe.activity == "active"
+        assert no_early_acquire == []
+        assert second_create.exit_code == 2
+        assert "already exists" in second_create.output
+        assert creator.returncode == 0, creator_stdout + creator_stderr
+        assert waiter_output == "acquired\n"
+        assert waiter.returncode == 0, waiter_stdout + waiter_stderr
+        assert (lock.stat().st_dev, lock.stat().st_ino) == lock_identity
+        assert json.loads(marker.read_text())["state"] == "ready"
+    finally:
+        if writer is not None:
+            writer.close()
+        stop_child(waiter)
+        stop_child(creator)

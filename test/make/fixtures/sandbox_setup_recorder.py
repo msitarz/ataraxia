@@ -36,6 +36,10 @@ with record.open("a") as stream:
         })
         + "\n"
     )
+gate = directory.parent / f".{directory.name}.sandbox-setup-gate"
+if sys.argv[1:] == ["setup"] and gate.is_fifo():
+    with gate.open("rb") as stream:
+        stream.read(1)
 if directory.name == "failed" and sys.argv[1:] == ["setup"]:
     sys.stderr.write("simulated setup failure\n")
     raise SystemExit(17)

@@ -13,10 +13,14 @@ shared identity, persistence, lock acquisition and observational probe APIs;
 Extend the existing root-private
 `.<NAME>.ataraxia-sandbox.json` with canonical Git common directory, project,
 base, preparation state and failure diagnostics, rather than add a second
-acceptance record. Keep it uncommitted and inaccessible
-to child commands. Validated host-side updates preserve unrelated fields and
-retain diagnostics; interrupted writes must never turn partial metadata into
-valid ownership or approval.
+acceptance record. Keep it uncommitted under the managed root, outside the
+cloned destination, and out of setup/readiness environments. Creation setup and
+readiness are trusted host-side preparation and run outside the later native
+execution boundary; root-private modes alone do not isolate those same-UID
+commands. Enforced execution must deny access to the private control paths.
+Validated host-side updates preserve unrelated fields and retain diagnostics;
+interrupted writes must never turn partial metadata into valid ownership or
+approval.
 
 Creation records a supported schema version, opaque unique sandbox generation,
 native destination identity and preparation state; execution provenance is
@@ -36,7 +40,9 @@ Creation initializes it atomically if absent only when no destination/marker
 exists. Never unlink or replace it, including after successful deletion and
 same-name reuse. Other operations fail closed on a missing, unsafe or symlinked
 lock. Revalidate the open file against its path after acquisition to detect
-replacement; child commands cannot access it.
+replacement. As with the marker, this is private host coordination state; the
+later native execution boundary denies child access, while trusted preparation
+is not isolated by file modes alone.
 
 Capture generation (or explicit absence for create) before waiting; after
 acquisition reread it and revalidate destination identity. Abort if it changed.
@@ -67,7 +73,7 @@ partial directory is missing, so interrupted removal cannot enable reuse.
 
 ## Acceptance
 
-- **AC-1 TODO** Shared exclusion and creation integration serialize same-name
+- **AC-1 DONE** Shared exclusion and creation integration serialize same-name
   create/execution/removal, safely reserve missing names and retain ready/failed
   preparation markers without requiring execution provenance. Consumers need no
   manual lock commands; listing probes leave persistent state unchanged.
@@ -77,7 +83,7 @@ partial directory is missing, so interrupted removal cannot enable reuse.
   failure and reservation failure. Inspect creation metadata and private modes;
   each consumer Work verifies its command integration. Execution/removal
   fixtures acquire the real shared API, without delivering those commands.
-- **AC-2 TODO** Interrupted marker updates, unsupported metadata, unsafe lock
+- **AC-2 DONE** Interrupted marker updates, unsupported metadata, unsafe lock
   paths and stale identity cannot become authority. Held/free/unobservable
   listing probes preserve all persistent filesystem state and report generation
   changes as unknown.
@@ -87,7 +93,7 @@ partial directory is missing, so interrupted removal cannot enable reuse.
   lock replacement after open and before validation, and unchanged persistent
   state through each probe. Independently review durable update semantics and
   the child/private boundary.
-- **AC-3 TODO** Stable lock identity and fresh generation prevent old waiters
+- **AC-3 DONE** Stable lock identity and fresh generation prevent old waiters
   from acting on same-name recreation. Failed preparation remains reserved;
   interrupted removal retains its marker and prevents unsafe name reuse.
 
