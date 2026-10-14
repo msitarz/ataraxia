@@ -30,18 +30,22 @@ flowchart LR
   locking retained across reuse; durable updates and nonmutating probes; and
   creation integration through preparation/readiness. This foundation depends
   only on delivered creation.
-- **TODO** [Execution attempts and recovery](execution-recovery/README.md):
-  bind Evaluation ownership, retain attempts/results and protect descendant
-  lifetime with fail-closed unknown recovery. After the delivered foundation.
+- **DONE** Delivered bound execution attempts and fail-closed recovery: records
+  source Work/owner and run/session identity, retains prior outcomes and
+  artifacts, and requires trusted host evidence bound to the same generation
+  and workspace before resolving unknown lifetime. Native containment remains
+  with the execution consumer.
 - **TODO** [Reviewed cleanup disposition](cleanup-disposition/README.md):
   record host authority bound to exact current preserved state and review;
-  invalidate it on execution or state changes. After execution recovery.
+  invalidate it on execution or state changes. After delivered execution
+  attempts and recovery.
 
-Implement and independently review these children serially in this order. Their
-shared marker/helper edits are deliberate dependencies, not parallel surfaces.
-Creation never waits for later execution, disposition or removal implementation.
-The first child supports creation with absent execution provenance; subsequent
-children extend its validated record rather than rewrite its ownership.
+The cleanup-disposition child consumes the delivered foundation and execution
+protocol. Their shared marker/helper edits are deliberate dependencies, not
+parallel surfaces. Creation never waits for later execution, disposition or
+removal implementation. Creation works without execution provenance; the
+execution protocol extends the validated record rather than rewriting
+ownership.
 
 [Native execution](../../execution/README.md),
 [listing](../listing/README.md) and [removal](../removal/README.md) depend on
@@ -62,29 +66,31 @@ under [pause rules](../../../../workflow.md#decisions-and-new-splits).
 ## Shared interfaces
 
 These are required behaviors, not prescribed Python names or a new service.
-Local signatures and fields belong to the child linked below; use a small
-shared helper and existing Make routing where needed.
+Local signatures and fields belong to the owning Work; use a small shared
+helper and existing Make routing where needed.
 
 | Owner | Input and observable result |
 | --- | --- |
 | Delivered lock and marker foundation | Root/name, captured generation or create absence, native destination identity; acquired and revalidated exclusive scope or refusal. Supported validated marker updates persist durably; observational probes return activity/unknown without mutation. |
-| [Execution recovery](execution-recovery/README.md) | Locked sandbox, source Work/orchestrator binding, optional exact resume UUID and process attempt; retained identity/outcome/artifacts, or unknown refusal until safe host recovery. |
+| Delivered execution protocol | Locked sandbox, source Work/orchestrator binding, optional exact resume UUID and process attempt; retained identity/outcome/artifacts, or unknown refusal until trusted host recovery establishes stopped processes and preserved output. |
 | [Cleanup disposition](cleanup-disposition/README.md) | Host owner/review, exact current identity/workspace/output inventory, retained destinations and retain/discard decisions; validated persisted disposition or refusal without approval. |
 
 ## Parent acceptance
 
 - **AC-1 TODO** Reviewed child outcomes compose to the original shared safety
   outcome: automatic same-name exclusion, stable lock/fresh generation, durable
-  ready/failed preparation, retained execution through descendant stoppage and
-  results, and current explicit orchestrator disposition after preservation and
-  maintainer review. Unsupported/unsafe/stale identity and unknown execution
-  fail closed; listing observations grant no cleanup authority.
+  ready/failed preparation, retained execution through supervisor-attested
+  stoppage and results, and current explicit orchestrator disposition after
+  preservation and maintainer review. Unsupported/unsafe/stale identity and
+  unknown execution fail closed; listing observations grant no cleanup
+  authority. The delivered protocol does not itself provide native process
+  containment.
 
   Validation: independently review child evidence and shared APIs together,
   including create without execution binding and consumer ownership boundaries;
   reuse process and host fixture evidence without repeating probes or model
   runs. Original leaf AC-1 and AC-3 are owned by the delivered foundation and
   remaining shared lifecycle outcomes; original AC-2 by the delivered
-  foundation and execution-recovery AC-2;
-  original AC-4 by execution-recovery AC-1 and cleanup-disposition AC-1/AC-2.
+  foundation and the delivered execution protocol; original AC-4 by the
+  delivered execution protocol and cleanup-disposition AC-1/AC-2.
   Consumer command integration remains verified in its existing Work.

@@ -246,7 +246,7 @@ class WrapperSupervisor:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 def test_initial_attempt_binds_source_work_and_retains_artifact(tmp_path: Path) -> None:
@@ -289,7 +289,7 @@ def test_initial_attempt_binds_source_work_and_retains_artifact(tmp_path: Path) 
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 def test_initial_attempt_rejects_supplied_session_identity(tmp_path: Path) -> None:
@@ -334,7 +334,7 @@ def test_initial_attempt_rejects_supplied_session_identity(tmp_path: Path) -> No
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 def test_resume_identity_mismatch_is_retained_and_invalidates_disposition(
@@ -421,7 +421,7 @@ def corrupt_execution_marker(marker_path: Path, corruption: str) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -464,7 +464,7 @@ def test_execution_state_rejects_corrupt_identity_and_outcomes(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -511,7 +511,7 @@ def test_invalid_source_work_revokes_disposition_without_an_attempt(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -643,8 +643,8 @@ def test_invalid_resume_preserves_prior_identity_and_artifact(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
-    ac="AC-2",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
 )
 def test_interrupted_attempt_marker_write_prevents_launch(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -711,8 +711,8 @@ def test_interrupted_attempt_marker_write_prevents_launch(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
-    ac="AC-2",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
 )
 @pytest.mark.parametrize(
     "case",
@@ -821,8 +821,8 @@ def _verify_live_attempt_blocks_and_recovers(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/execution-recovery/README.md",
-    ac="AC-2",
+    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    ac="AC-1",
 )
 def test_live_process_keeps_attempt_unknown_and_blocks_another_launch(
     tmp_path: Path,

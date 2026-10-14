@@ -4,10 +4,13 @@ Own local discovery and safe disposal of children created by
 [managed sandbox creation](../../../evaluation-sandboxes.md). Reuse the existing
 private ownership record as the persistent, uncommitted lifecycle marker; the
 [active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
-OS-held lock, creation integration, and cleanup disposition. Listing and removal
-consume that delivered protocol rather than define another registry or proof
-owner. The maintainer selected explicit orchestrator disposition after artifact
-preservation and maintainer review; no disposability Investigation is required.
+OS-held lock, creation integration, bound execution attempt/recovery protocol
+and planned cleanup disposition. Listing and removal consume that shared
+protocol rather than define another registry or proof owner. Native execution
+consumes the attempt/recovery boundary but supplies its own containment
+supervisor. The maintainer selected explicit orchestrator disposition after
+artifact preservation and maintainer review; no disposability Investigation is
+required.
 
 At planning baseline `1b31bba`, creation writes preparation ownership/state;
 there is no execution or removal command and no lifecycle lock. No sandboxes
@@ -18,7 +21,7 @@ flowchart LR
     B[Before: create with preparation record] --> A[Active-state Work: marker, OS lock, create integration]
     A --> L[Read-only listing]
     A --> R[Removal after explicit reviewed disposition]
-    A --> E[Execution automatically holds lock and retains results]
+    A --> E[Native execution holds lock and retains results]
     E --> O[Orchestrator preserves artifacts and obtains maintainer review]
     O --> D[Disposition bound to current sandbox and output]
     D --> R

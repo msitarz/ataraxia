@@ -69,8 +69,11 @@ Discover children locally, with per-child ownership metadata and no global
 registry. The
 [delivered lifecycle foundation](../../evaluation-sandboxes.md#delivered-lifecycle-safety)
 provides the persistent marker, fresh generation, stable per-name lock and
-creation integration. Evaluation ownership, session/run provenance, retained
-output and cleanup disposition remain with the active-state owner. Bind
+creation integration. The active-state owner also delivers source Work and
+orchestrator-bound attempts, observed session/run provenance and fail-closed
+recovery through a trusted supervisor boundary. Native process containment
+remains with the execution consumer; reviewed cleanup disposition remains
+planned here. Bind
 repository ownership to the canonical Git common directory: linked worktrees
 agree, while independent checkouts sharing a project name cannot manage each
 other's children. A conflicting owner blocks creation, removal and execution

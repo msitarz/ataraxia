@@ -1,8 +1,9 @@
 # Reviewed cleanup disposition
 
-After [execution recovery](../execution-recovery/README.md), deliver one
-host recording and validation interface for current explicit cleanup authority.
-[Removal](../../removal/README.md) consumes it and owns deletion;
+After the
+[delivered execution protocol](../README.md#child-outcomes-and-dependencies),
+deliver one host recording and validation interface for current explicit cleanup
+authority. [Removal](../../removal/README.md) consumes it and owns deletion;
 [native execution](../../../execution/README.md) consumes attempt invalidation.
 Reuse the existing private marker and validated lock/update APIs. Creation
 remains independent of Evaluation binding; failed preparation can receive a
@@ -30,19 +31,19 @@ bindings under the same exclusive lock; it cannot race launch or deletion.
 Do not require a new review system: reuse existing Work/PR review and artifact
 preservation evidence. Removal consumes the validated disposition.
 
-The [execution protocol](../execution-recovery/README.md#binding-and-attempts)
-owns safe invalidation before identified launch/resume attempts, including
-failed/rejected requests. Any changed run, workspace, preparation state or
-output invalidates the binding; missing/inconsistent bindings always refuse
-removal. Failed preparation also requires explicit reviewed disposition covering
-its partial workspace and diagnostics; no absence-of-work bypass is allowed.
-The recording API and read validation require exact current generation,
-attempt/session when known, workspace tip/changes, preparation state and private
-output inventory/revisions. Changed bindings make a previously persisted
-record unusable even if no writer cleared it. Exercise invalidation through the
-execution child's API, so initial/resumed/failed/rejected attempt handling has
-one owner. Host recording validates source Work binding through that same
-protocol; it never accepts executor claims as host authority.
+The delivered execution protocol owns safe invalidation before identified
+launch/resume attempts, including failed/rejected requests. Any changed run,
+workspace, preparation state or output invalidates the binding;
+missing/inconsistent bindings always refuse removal. Failed preparation also
+requires explicit reviewed disposition covering its partial workspace and
+diagnostics; no absence-of-work bypass is allowed. The recording API and read
+validation require exact current generation, attempt/session when known,
+workspace tip/changes, preparation state and private output inventory/revisions.
+Changed bindings make a previously persisted record unusable even if no writer
+cleared it. Exercise invalidation through the delivered attempt API, so
+initial/resumed/failed/rejected attempt handling has one owner. Host recording
+validates source Work binding through that same protocol; it never accepts
+executor claims as host authority.
 
 Failed preparation with no run/session has explicit absent execution provenance
 and still needs disposition covering partial workspace and diagnostics. Unknown

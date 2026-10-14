@@ -35,12 +35,21 @@ workspace before deciding how to recover.
 The shared lifecycle foundation extends this record with a versioned private
 identity marker, fresh generation, stable per-name OS lock and create
 integration. Lock probes do not mutate persistent state, and unsafe or
-inconsistent observations are unknown. Execution attempts/recovery and
-cleanup disposition remain planned in the
-[lifecycle contract](feat/evaluation-sandboxes/lifecycle/README.md); cleanup
-requires explicit owning-orchestrator disposition after preservation and
-maintainer review. No existing sandboxes require migration; unsupported old
-records are rejected safely.
+inconsistent observations are unknown.
+
+The delivered execution lifecycle binds attempts to the source Work, owning
+orchestrator, generation and native workspace identity. It retains prior
+attempts and private artifact paths; a session UUID is recorded only when
+observed. Uncertain process lifetime stays unknown and blocks another attempt.
+Recovery requires trusted host evidence tied to the same run, generation,
+workspace and retained artifact directory. Lock release after wrapper death,
+parent-PID exit or process-group signaling alone does not prove descendants
+stopped. This is a shared attempt and recovery protocol, not a native
+containment backend; the native execution consumer must supply a supervisor
+with explained platform limits. Reviewed cleanup disposition after
+preservation and maintainer review remains planned in the
+[lifecycle contract](feat/evaluation-sandboxes/lifecycle/README.md). No existing
+sandboxes require migration; unsupported old records are rejected safely.
 
 Preparation is trusted host work, not an isolation boundary. Root-private file
 modes do not isolate same-UID preparation commands; enforced native execution
