@@ -103,11 +103,14 @@ does not justify losing information about values or their relationships.
   type ChangedInput = Literal["declaration", "file"]
   type RecordName = Literal["accepted", "version"]
 
+
   def is_changed_input(value: str) -> TypeIs[ChangedInput]:
       return value in get_args(ChangedInput.__value__)
 
+
   def is_record_name(value: str) -> TypeIs[RecordName]:
       return value in get_args(RecordName.__value__)
+
 
   def changed_input(value: object) -> ChangedInput:
       if not isinstance(value, str):
@@ -116,6 +119,7 @@ does not justify losing information about values or their relationships.
           raise ValueError("unsupported changed input")
       return value
 
+
   def record_name(value: object) -> RecordName:
       if not isinstance(value, str):
           raise ValueError("record name must be a string")
@@ -123,8 +127,10 @@ does not justify losing information about values or their relationships.
           raise ValueError("unsupported record name")
       return value
 
+
   def consume_changed_input(value: ChangedInput) -> str:
       return f"changed:{value}"
+
 
   def describe_change(value: ChangedInput) -> str:
       match value:
@@ -132,6 +138,7 @@ does not justify losing information about values or their relationships.
               return "update declaration"
           case "file":
               return "replace file"
+
 
   changed = changed_input("file")
   record = record_name("accepted")
@@ -166,7 +173,6 @@ does not justify losing information about values or their relationships.
   def rejected_calls(open_value: str) -> None:
       consume_changed_input(open_value)  # Rejected: str was not validated.
       consume_changed_input("future-option")  # Not a ChangedInput member.
-
   ```
 
   Use an `Enum` when member identity or behavior is useful and the runtime API
@@ -184,6 +190,7 @@ does not justify losing information about values or their relationships.
   for the executed evidence and its version limits. This does not require a
   linter, checker migration, or exhaustive matches for intentionally open
   domains.
+
 - Verify both behavior and static guarantees. Run strict Pyrefly and inspect the
   affected signatures and inferred types; for generic or variant contracts, add
   focused type-checking cases that demonstrate precise results and rejection of
