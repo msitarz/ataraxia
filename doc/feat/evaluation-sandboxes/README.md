@@ -55,16 +55,23 @@ Resolve system temp with `tempfile.gettempdir()` using its native
 TMPDIR/TEMP/TMP and platform-default selection, and read the project name from
 `pyproject.toml` `[project].name`; do not hardcode a macOS path or project name.
 An optional `SANDBOX_ROOT` Make argument overrides the managed root. Create,
-list, remove and exec share one authoritative resolution and validation path.
-Reject unsafe resolved roots, including an unsuitable current-directory
-fallback, unsafe project-name path components and invalid overrides, under the
-existing containment, symlink, collision, ownership and permission safeguards.
+list, remove and exec share one authoritative resolution, ownership validation,
+and per-name coordination object
+([claim contract](lifecycle/active-state-exclusion/README.md)). Reject unsafe
+resolved roots, including an unsuitable current-directory fallback, unsafe
+project-name path components and invalid overrides, under the existing
+containment, symlink, collision, ownership and permission safeguards.
 
-Discover children locally, with only necessary per-child project/base ownership
-metadata and no global registry. Bind repository ownership to the canonical Git
-common directory: linked worktrees agree, while independent checkouts sharing a
-project name cannot manage each other's children. A conflicting owner blocks
-creation, removal and execution rather than reassigning an existing child.
+Discover children locally, with per-child ownership metadata and no global
+registry. Each ownership record includes an opaque unique generation ID and
+the native identity of its created child directory. Bind repository ownership
+to the canonical Git common directory: linked worktrees agree, while independent
+checkouts sharing a project name cannot manage each other's children. A
+conflicting owner blocks creation, removal and execution rather than
+reassigning an existing child.
+Keep a stable root-private per-name lock object across successful removal and
+same-name recreation. It is coordination state rather than an ownership record
+or registry, and direct-child listing ignores it.
 The private control side remains inaccessible
 to child commands even if physically beneath that root. A prepared workspace
 does not itself enforce isolation. Source/history and command-network denial

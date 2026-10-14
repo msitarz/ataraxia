@@ -1,38 +1,65 @@
-# Discover and safely remove sandboxes
+# Sandbox lifecycle
 
-After [managed sandbox creation](../../../evaluation-sandboxes.md), deliver
-`make sandbox-list` and `make sandbox-remove NAME=...` through the shared
-[root/ownership resolution](../README.md#shared-root-and-ownership), including
-the optional SANDBOX_ROOT argument. Discover direct children locally without a
-global registry. Listing is read only; it reports each child's identity,
-location and observed preparation, execution or failure state, distinguishing
-unknown or invalid ownership.
+Own local discovery and safe disposal of children created by
+[managed sandbox creation](../../../evaluation-sandboxes.md). This parent maps
+one prerequisite Investigation, one shared active-state exclusion contract,
+and two independently reviewable command outcomes. Both commands reuse the one
+[root and ownership contract](../README.md#shared-root-and-ownership); neither
+defines a second root resolver, owner record, or registry.
 
-Listing and removal share one maintenance outcome and narrow ownership/state
-boundary. Reassess the complete implementation and tests before dispatch and
-publication; split through the parent planning gate if they exceed one short
-review rather than expanding this leaf during execution.
+```mermaid
+flowchart LR
+    B[Delivered creation baseline] --> L[Read-only listing]
+    B --> I[Disposability-proof Investigation]
+    B --> C[Creation claim update]
+    A[Per-name active-state claim contract] --> C
+    A --> L
+    A --> R[Preservation-aware removal with claim]
+    I --> R
+    A --> E[Execution with claim]
+```
 
-## Acceptance
+## Child outcomes
 
-- **AC-1 TODO** Listing discovers owned ready, partial, failed and active
-  children and identifies invalid/unowned entries without following symlinks,
-  mutating state or reading unrelated host data. Missing root yields an empty
-  result; unsafe root/metadata is reported rather than trusted.
+- **TODO** [Disposability proof Investigation](disposability-proof/README.md):
+  compare evidence and ownership choices for when executor commits and private
+  output may be discarded. This must complete and merge before removal
+  implementation begins; its result informs the removal contract.
+- **TODO** [Active-state exclusion](active-state-exclusion/README.md):
+  define the stable per-name claim, opaque generation identity, and safe reuse
+  protocol. Creation, listing, removal, and execution consume it; complete and
+  merge this contract before updating those commands.
+- **TODO** [Read-only sandbox discovery](listing/README.md): list direct
+  children with trustworthy identity/state classification, including malformed
+  and symlink entries, without changing the filesystem.
+- **TODO** [Preservation-aware sandbox removal](removal/README.md): remove
+  only an owned, inactive child after guarding workspace changes, meaningful
+  commits and private output; refusal preserves the child and its diagnostics.
 
-  Validation: criterion-marked Make-boundary tests inspect listing and unchanged
-  filesystem state for mixed children, missing root and malformed ownership;
-  reuse creation's narrow metadata contract and existing Make helpers. Verify
-  root agreement with creation and classification of a different canonical Git
-  common-directory owner without permitting management of its children.
-- **AC-2 TODO** Removal deletes only the named owned inactive disposable child.
-  It refuses source/root/unowned/symlink/escaped paths, active execution, dirty
-  files, meaningful committed work not delivered, or undelivered output. Failed
-  preparation may be removed only when no meaningful work is lost. Refusal
-  preserves workspace, private artifacts and diagnostics; no force bypass is
-  introduced.
+All lifecycle outcomes build on the delivered creation/ownership contract and
+its shared root resolution. The active-state exclusion also specifies the
+required creation reservation claim, and is an independent prerequisite for
+that create update, listing's read-only transient probe, removal's exclusive
+delete claim, and [native execution](../execution/README.md)'s execution claim.
+The disposability Investigation is a separate prerequisite only for removal
+implementation; its findings must be completed and merged, then reflected in
+the removal contract before implementation. A child belonging to another
+canonical Git common-directory owner is identified but never managed.
+Parent-owned root/owner semantics remain linked above.
 
-  Validation: criterion-marked Make-boundary tests verify successful removal and
-  unchanged rejected trees, including committed-but-undelivered output and
-  active-state races. Independently review the explicit accepted-delivery proof
-  used to preserve meaningful work; a clean Git status alone is insufficient.
+## Parent acceptance
+
+- **AC-1 TODO** The Investigation resolves evidence source, owner, trust
+  boundary, and preservation semantics for disposability; the active-state
+  contract prevents concurrent create/execution/removal claims; listing never
+  mutates; removal deletes only a child proven disposable under the reviewed
+  result and preserves all evidence on refusal. Invalid ownership and symlink
+  paths cannot be followed into trusted children.
+
+  Validation: review the completed Investigation decision and its link from
+  removal and active-state dependencies, then independently review command
+  evidence and shared root/owner links. Confirm listing has no mutation path
+  and removal's guarded delete uses the same resolved root and ownership as
+  creation. Confirm successful removal retains the lock object and permits a
+  fresh generation ID on reuse. Reuse leaf evidence; do not repeat probes or
+  model runs.

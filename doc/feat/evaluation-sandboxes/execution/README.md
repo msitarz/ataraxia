@@ -1,7 +1,8 @@
 # Native execution and retained artifacts
 
-After [enforcement](../enforcement/README.md) and
-[active/removal guards](../lifecycle/README.md), deliver
+After [enforcement](../enforcement/README.md) and the completed
+[active-state exclusion contract](../lifecycle/active-state-exclusion/README.md),
+deliver
 `make sandbox-exec NAME=... PROMPT='...' MODEL=...`, with optional EFFORT,
 PROMPT_FILE instead of PROMPT, and an explicit UUID resume input. Reject absent
 or conflicting prompt inputs and implicit/latest-session resume. Wrap existing
@@ -18,7 +19,10 @@ exclusively here, replacing the unimplemented old executor-runtime contract.
 Reuse the shared
 [root/ownership resolution](../README.md#shared-root-and-ownership), including
 optional SANDBOX_ROOT; reject a child belonging to another canonical Git common
-directory before invocation.
+directory before invocation. Capture the generation ID before waiting on the
+same per-name claim used by creation and removal. After acquiring it, revalidate
+the generation and destination identity; abort before invocation if either
+changed.
 
 ## Acceptance
 
@@ -31,12 +35,13 @@ directory before invocation.
   Validation: criterion-marked Make-boundary tests exercise real routing and
   artifact/state effects with a narrow CLI process double, plus independent
   review of effective configuration and model authorization. Verify agreement
-  with creation/list/removal and rejected conflicting ownership. An actual
-  initial start and exact UUID resume through the new wrapper are required
-  before this criterion completes; declare prompts, model/effort, fixtures,
-  maximum one initial plus one resume, 15 minutes each/shared 30 minutes, stop
-  handling and obtain applicable maintainer approval first. This plan authorizes
-  no runs.
+  with creation/list/removal, reject a waiter whose captured generation no
+  longer matches after claim acquisition, and reject conflicting ownership. An
+  actual initial start and exact UUID resume through the new wrapper are
+  required before this criterion completes; declare prompts, model/effort,
+  fixtures, maximum one initial plus one resume, 15 minutes each/shared 30
+  minutes, stop handling and obtain applicable maintainer approval first. This
+  plan authorizes no runs.
 - **AC-2 TODO** Success, failure, interruption and timeout preserve changes in
   the workspace. Final message when available, raw JSON events, exit/status,
   elapsed timing boundaries, session identity, artifact paths and reviewer

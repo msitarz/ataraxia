@@ -30,6 +30,11 @@ setup, or readiness fails, the partial sandbox and failure diagnostics remain;
 the name cannot be retried or overwritten. Inspect the state record and partial
 workspace before deciding how to recover.
 
+The planned [lifecycle contract](feat/evaluation-sandboxes/lifecycle/README.md)
+adds a shared per-name claim and generation identity to creation, listing,
+removal, and execution. These planned additions are not part of the delivered
+creation behavior described above.
+
 Preparation is not an isolation boundary. It does not restrict filesystem,
 Git-history, network, credentials, references, or model-session access. Use
 only under the controls and protocol approved for the intended Evaluation.
