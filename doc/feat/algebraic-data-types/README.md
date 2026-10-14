@@ -26,7 +26,7 @@ Compare a union of frozen dataclass variants, a tagged TypedDict union and the
 existing flat record. Model shared ownership/identity separately from lifecycle
 variants where it clarifies responsibility; avoid duplicating shared fields or
 inventing lifecycle rules. `match` selection alone is not an algebraic type
-model. [Match selection guidance](../match-selection-guidance/README.md) owns
+model. The delivered [selection guidance](../../engineering.md#code-style) owns
 the separate question of suitable single-value branching; the delivered
 [finite-string-domain guidance](../../engineering.md#preserve-type-precision)
 records the recommendation for Literal and domain ownership. That
