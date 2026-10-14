@@ -1,7 +1,8 @@
 # Execution attempts and recovery
 
-After [lock and marker](../lock-and-marker/README.md), deliver the shared
-execution-attempt and recovery protocol consumed by
+After the
+[delivered lifecycle foundation](../README.md#child-outcomes-and-dependencies),
+deliver the shared execution-attempt and recovery protocol consumed by
 [native execution](../../../execution/README.md). This child owns Work/session
 binding, retained attempt state and process lifetime protection; native CLI
 inputs, readiness/model gates, exec/resume routing and actual model runs remain

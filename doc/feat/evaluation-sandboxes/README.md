@@ -66,22 +66,17 @@ project-name path components and invalid overrides, under the existing
 containment, symlink, collision, ownership and permission safeguards.
 
 Discover children locally, with per-child ownership metadata and no global
-registry. Each lifecycle marker includes an opaque unique generation ID and
-the native identity of its created child directory; its Evaluation ownership,
-session/run provenance, retained output and explicit orchestrator cleanup
-disposition are defined at that active-state owner. No existing sandboxes need
-migration; unsupported records are rejected safely. Bind repository ownership
-to the canonical Git common directory: linked worktrees agree, while independent
-checkouts sharing a project name cannot manage each other's children. A
-conflicting owner blocks creation, removal and execution rather than
-reassigning an existing child.
-Keep a stable root-private per-name lock object across successful removal and
-same-name recreation. It is coordination state rather than an ownership record
-or registry, and direct-child listing ignores it.
-The private control side remains inaccessible
-to child commands even if physically beneath that root. A prepared workspace
-does not itself enforce isolation. Source/history and command-network denial
-remain distinct from the host transport needed to call the model service.
+registry. The
+[delivered lifecycle foundation](../../evaluation-sandboxes.md#delivered-lifecycle-safety)
+provides the persistent marker, fresh generation, stable per-name lock and
+creation integration. Evaluation ownership, session/run provenance, retained
+output and cleanup disposition remain with the active-state owner. Bind
+repository ownership to the canonical Git common directory: linked worktrees
+agree, while independent checkouts sharing a project name cannot manage each
+other's children. A conflicting owner blocks creation, removal and execution
+rather than reassigning an existing child. A prepared workspace does not itself
+enforce isolation. Source/history and command-network denial remain distinct
+from the host transport needed to call the model service.
 
 ## Children and gates
 

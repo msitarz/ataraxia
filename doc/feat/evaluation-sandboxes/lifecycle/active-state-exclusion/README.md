@@ -10,8 +10,9 @@ Verified baseline `5577cbb`: `script/sandbox.py` has `ownership`,
 Git common directory, project, base, preparation state and failure diagnostics.
 `update_state` truncates its existing file; there is no lifecycle lock,
 execution-attempt protocol or disposition recorder. Existing creation/root
-machinery remains the owner; children fill these gaps rather than add another
-record or resolver. Private control remains inaccessible to child commands.
+machinery remains the owner; serial child deliveries fill these gaps rather than
+add another record or resolver. Enforced execution must deny sandboxed child
+access to private control paths; trusted preparation is not isolated by modes.
 
 ```mermaid
 flowchart LR
@@ -24,13 +25,14 @@ flowchart LR
 
 ## Child outcomes and dependencies
 
-- **TODO** [Stable lock and durable marker](lock-and-marker/README.md):
-  reserve an absent name, persist its generation/destination identity and
-  serialize creation; expose safe acquisition, validated updates and read-only
-  probes. Depends only on delivered creation.
+- **DONE** Delivered lock and marker foundation: a versioned private identity
+  marker, fresh generation and native destination identity; stable per-name OS
+  locking retained across reuse; durable updates and nonmutating probes; and
+  creation integration through preparation/readiness. This foundation depends
+  only on delivered creation.
 - **TODO** [Execution attempts and recovery](execution-recovery/README.md):
   bind Evaluation ownership, retain attempts/results and protect descendant
-  lifetime with fail-closed unknown recovery. After lock and marker delivery.
+  lifetime with fail-closed unknown recovery. After the delivered foundation.
 - **TODO** [Reviewed cleanup disposition](cleanup-disposition/README.md):
   record host authority bound to exact current preserved state and review;
   invalidate it on execution or state changes. After execution recovery.
@@ -65,7 +67,7 @@ shared helper and existing Make routing where needed.
 
 | Owner | Input and observable result |
 | --- | --- |
-| [Lock and marker](lock-and-marker/README.md) | Root/name, captured generation or create absence, native destination identity; acquired and revalidated exclusive scope or refusal. Supported validated marker updates persist durably; observational probes return activity/unknown without mutation. |
+| Delivered lock and marker foundation | Root/name, captured generation or create absence, native destination identity; acquired and revalidated exclusive scope or refusal. Supported validated marker updates persist durably; observational probes return activity/unknown without mutation. |
 | [Execution recovery](execution-recovery/README.md) | Locked sandbox, source Work/orchestrator binding, optional exact resume UUID and process attempt; retained identity/outcome/artifacts, or unknown refusal until safe host recovery. |
 | [Cleanup disposition](cleanup-disposition/README.md) | Host owner/review, exact current identity/workspace/output inventory, retained destinations and retain/discard decisions; validated persisted disposition or refusal without approval. |
 
@@ -81,7 +83,8 @@ shared helper and existing Make routing where needed.
   Validation: independently review child evidence and shared APIs together,
   including create without execution binding and consumer ownership boundaries;
   reuse process and host fixture evidence without repeating probes or model
-  runs. Original leaf AC-1 and AC-3 are owned by lock-and-marker AC-1 through
-  AC-3; original AC-2 by lock-and-marker AC-2/AC-3 and execution-recovery AC-2;
+  runs. Original leaf AC-1 and AC-3 are owned by the delivered foundation and
+  remaining shared lifecycle outcomes; original AC-2 by the delivered
+  foundation and execution-recovery AC-2;
   original AC-4 by execution-recovery AC-1 and cleanup-disposition AC-1/AC-2.
   Consumer command integration remains verified in its existing Work.

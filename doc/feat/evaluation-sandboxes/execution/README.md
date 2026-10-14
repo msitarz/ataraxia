@@ -38,7 +38,7 @@ or rejected attempts, under the shared host-update rules. Retain unknown or
 incomplete execution after a crash; lock availability alone cannot authorize
 resume or removal. The owning orchestrator preserves artifacts and records
 explicit cleanup disposition only after maintainer review under the
-[shared marker contract](../lifecycle/active-state-exclusion/README.md).
+[shared active-state lifecycle](../lifecycle/active-state-exclusion/README.md).
 
 ## Acceptance
 
