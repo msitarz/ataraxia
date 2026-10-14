@@ -37,7 +37,7 @@ dependency, or grandfather findings with blanket suppressions. Any lasting
 guidance belongs in the existing engineering owner as at most one concise
 sentence or paragraph, without a tutorial or historical links.
 
-- **AC-1 TODO** The configuration adds exactly TRY300, TRY301 and PLW0717,
+- **AC-1 DONE** The configuration adds exactly TRY300, TRY301 and PLW0717,
   retains preview and the default five-statement limit, and enforces them as
   blocking checks through ordinary full/focused lint and the existing CI route.
   The repository passes lint after necessary repairs.
@@ -52,7 +52,7 @@ sentence or paragraph, without a tutorial or historical links.
   source report/artifact and retained verification Git history before removing
   them under [test ownership](../../test-ownership.md).
 
-- **AC-2 TODO** Necessary repairs preserve observable success, failure and
+- **AC-2 DONE** Necessary repairs preserve observable success, failure and
   resource behavior at each affected boundary, including the provider's
   contextual errors/causes and SourceNode's exact lifecycle forwarding.
 

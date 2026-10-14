@@ -140,6 +140,9 @@ select = [
   "D",    # pydocstyle - presence and formatting of docstrings
   "DOC",  # pydoclint - args/returns match signature in docstrings
   "T20",  # flake8-print - no stray print statements
+  "try-consider-else",
+  "raise-within-try",
+  "too-many-statements-in-try-clause",
 ]
 extend-ignore = [
   "undocumented-magic-method",
