@@ -1,7 +1,7 @@
 # Native execution and retained artifacts
 
-After [enforcement](../enforcement/README.md) and delivery of
-[active-state exclusion](../lifecycle/active-state-exclusion/README.md),
+After [enforcement](../enforcement/README.md) and delivery of the
+[shared lifecycle safety protocol](../../../evaluation-sandboxes.md#delivered-lifecycle-safety),
 deliver
 `make sandbox-exec NAME=... EVALUATION_WORK=repository/relative/path
 PROMPT='...' MODEL=...`, with optional EFFORT,
@@ -38,7 +38,7 @@ or rejected attempts, under the shared host-update rules. Retain unknown or
 incomplete execution after a crash; lock availability alone cannot authorize
 resume or removal. The owning orchestrator preserves artifacts and records
 explicit cleanup disposition only after maintainer review under the
-[shared active-state lifecycle](../lifecycle/active-state-exclusion/README.md).
+[shared lifecycle safety protocol](../../../evaluation-sandboxes.md#delivered-lifecycle-safety).
 
 ## Acceptance
 

@@ -215,7 +215,7 @@ def test_make_creates_owned_shallow_clone_and_refuses_unsafe_names(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
@@ -277,7 +277,7 @@ def test_clone_failure_retains_status_and_diagnostics(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
@@ -489,11 +489,11 @@ def test_changed_master_after_selection_fails_and_retains_clone(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_creation_holds_stable_lock_through_readiness_and_waiters_revalidate(

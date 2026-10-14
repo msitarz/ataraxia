@@ -1,10 +1,9 @@
 # Managed evaluation sandboxes
 
-Preserve the approved direction for project-scoped temporary sandboxes: trusted
-online workspace preparation, enforced native Codex execution, retained output
-and session-scoped measurements. This is a new planning parent with direct
-leaves, established independently of the historical shallow-clone tree.
-It changes no executable behavior or current linked-worktree policy.
+Map the delivered and planned outcomes for project-scoped temporary sandboxes:
+trusted online workspace preparation, enforced native Codex execution,
+retained output and session-scoped measurements. This parent preserves the
+current linked-worktree policy.
 
 Historical planning baseline: `master` at
 `21d22e7847842d41aa34800593b6b193129c55f8` (#314) has manual clone-preparation,
@@ -56,31 +55,32 @@ TMPDIR/TEMP/TMP and platform-default selection, and read the project name from
 `pyproject.toml` `[project].name`; do not hardcode a macOS path or project name.
 An optional `SANDBOX_ROOT` Make argument overrides the managed root. Create,
 list, remove and exec share one authoritative resolution and ownership
-validation. The [active-state owner](lifecycle/active-state-exclusion/README.md)
-extends the existing private ownership record into a persistent uncommitted
-lifecycle marker and delivers creation participation in a stable OS-held
+validation. The
+[delivered lifecycle safety rules](../../evaluation-sandboxes.md#delivered-lifecycle-safety)
+extend the existing private ownership record into a persistent uncommitted
+lifecycle marker and deliver creation participation in a stable OS-held
 per-name lock. Listing only observes existing locks; execution and removal
-acquire exclusion automatically. Reject unsafe
-resolved roots, including an unsuitable current-directory fallback, unsafe
-project-name path components and invalid overrides, under the existing
-containment, symlink, collision, ownership and permission safeguards.
+acquire exclusion automatically. Reject unsafe resolved roots, including an
+unsuitable current-directory fallback, unsafe project-name path components and
+invalid overrides, under the existing containment, symlink, collision, ownership
+and permission safeguards.
 
 Discover children locally, with per-child ownership metadata and no global
 registry. The
 [delivered lifecycle foundation](../../evaluation-sandboxes.md#delivered-lifecycle-safety)
 provides the persistent marker, fresh generation, stable per-name lock and
-creation integration. The active-state owner also delivers source Work and
-orchestrator-bound attempts, observed session/run provenance and fail-closed
+creation integration. The shared lifecycle protocol also delivers source Work
+and orchestrator-bound attempts, observed session/run provenance and fail-closed
 recovery through a trusted supervisor boundary, and explicit reviewed cleanup
-disposition bound to current preserved state. Native process containment
-remains with the execution consumer; native execution, listing and removal
-command integration remain pending. Bind
-repository ownership to the canonical Git common directory: linked worktrees
-agree, while independent checkouts sharing a project name cannot manage each
-other's children. A conflicting owner blocks creation, removal and execution
-rather than reassigning an existing child. A prepared workspace does not itself
-enforce isolation. Source/history and command-network denial remain distinct
-from the host transport needed to call the model service.
+disposition bound to current preserved state. Native process containment remains
+with the execution consumer; native execution, listing and removal command
+integration remain pending. Bind repository ownership to the canonical Git
+common directory: linked worktrees agree, while independent checkouts sharing a
+project name cannot manage each other's children. A conflicting owner blocks
+creation, removal and execution rather than reassigning an existing child. A
+prepared workspace does not itself enforce isolation. Source/history and
+command-network denial remain distinct from the host transport needed to call
+the model service.
 
 ## Children and gates
 
@@ -126,8 +126,8 @@ reassess its complete expected and actual diff against the
 [five-minute review target](../../workflow.md#scope-and-sizing), splitting
 before execution/publication when required.
 
-No implementation, sandbox probes, model runs, statistics adoption, host-auth
-reads, trial authorization or default-policy adoption is included here. Runtime
+Sandbox probes, model runs, statistics adoption, host-auth reads, trial
+authorization and default-policy adoption are not included here. Runtime
 validation needs separately approved frozen conditions and model/effort/budget;
 existing import, publication, independent review and latest-head CI gates
 remain. Consequential policy changes follow the

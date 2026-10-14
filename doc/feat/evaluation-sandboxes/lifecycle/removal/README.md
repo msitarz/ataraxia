@@ -1,11 +1,13 @@
 # Preservation-aware sandbox removal
 
-After [active-state delivery](../active-state-exclusion/README.md), deliver
-`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` using shared
+After
+[active-state delivery](../../../../evaluation-sandboxes.md#delivered-lifecycle-safety),
+deliver `make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` using
+shared
 [root and ownership resolution](../../README.md#shared-root-and-ownership).
 Acquire the stable exclusive OS lock before final checks and hold it through
 deletion. Revalidate captured generation and destination identity before acting.
-The shared active-state owner defines marker, disposition and recovery; this
+The shared lifecycle protocol defines marker, disposition and recovery; this
 Work consumes them without another proof record or Investigation.
 
 Delete only the named direct child and its explicitly owned private artifacts.

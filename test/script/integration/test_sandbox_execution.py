@@ -247,7 +247,7 @@ class WrapperSupervisor:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_initial_attempt_binds_source_work_and_retains_artifact(tmp_path: Path) -> None:
@@ -290,7 +290,7 @@ def test_initial_attempt_binds_source_work_and_retains_artifact(tmp_path: Path) 
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_initial_attempt_rejects_supplied_session_identity(tmp_path: Path) -> None:
@@ -335,7 +335,7 @@ def test_initial_attempt_rejects_supplied_session_identity(tmp_path: Path) -> No
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_resume_identity_mismatch_is_retained_and_invalidates_disposition(
@@ -422,7 +422,7 @@ def corrupt_execution_marker(marker_path: Path, corruption: str) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -465,7 +465,7 @@ def test_execution_state_rejects_corrupt_identity_and_outcomes(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -512,7 +512,7 @@ def test_invalid_source_work_revokes_disposition_without_an_attempt(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -644,7 +644,7 @@ def test_invalid_resume_preserves_prior_identity_and_artifact(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_interrupted_attempt_marker_write_prevents_launch(
@@ -712,7 +712,7 @@ def test_interrupted_attempt_marker_write_prevents_launch(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -822,7 +822,7 @@ def _verify_live_attempt_blocks_and_recovers(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_live_process_keeps_attempt_unknown_and_blocks_another_launch(
@@ -955,7 +955,7 @@ def _recorded_disposition(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_disposition_binds_review_workspace_tip_and_retained_outputs(
@@ -969,7 +969,7 @@ def test_disposition_binds_review_workspace_tip_and_retained_outputs(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_bound_disposition_does_not_require_historical_work_readme(
@@ -1000,7 +1000,7 @@ def test_bound_disposition_does_not_require_historical_work_readme(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_changed_workspace_invalidates_disposition(tmp_path: Path) -> None:
@@ -1015,7 +1015,7 @@ def test_changed_workspace_invalidates_disposition(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_changed_private_output_invalidates_disposition(tmp_path: Path) -> None:
@@ -1031,7 +1031,7 @@ def test_changed_private_output_invalidates_disposition(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_changed_retention_destination_invalidates_disposition(tmp_path: Path) -> None:
@@ -1046,7 +1046,7 @@ def test_changed_retention_destination_invalidates_disposition(tmp_path: Path) -
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_rejected_resume_invalidates_prior_disposition(tmp_path: Path) -> None:
@@ -1073,7 +1073,7 @@ def test_rejected_resume_invalidates_prior_disposition(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -1109,7 +1109,7 @@ def test_first_disposition_requires_valid_source_work(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_failed_preparation_requires_reviewed_diagnostics(tmp_path: Path) -> None:
@@ -1157,7 +1157,7 @@ def test_failed_preparation_requires_reviewed_diagnostics(tmp_path: Path) -> Non
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_missing_failed_workspace_requires_explicit_disposition(tmp_path: Path) -> None:
@@ -1199,7 +1199,7 @@ def test_missing_failed_workspace_requires_explicit_disposition(tmp_path: Path) 
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_disposition_refuses_mismatched_owner(tmp_path: Path) -> None:
@@ -1224,7 +1224,7 @@ def test_disposition_refuses_mismatched_owner(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_disposition_rejects_symlink_retention_destination(tmp_path: Path) -> None:
@@ -1257,7 +1257,7 @@ def test_disposition_rejects_symlink_retention_destination(tmp_path: Path) -> No
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_unknown_execution_cannot_receive_disposition(tmp_path: Path) -> None:
@@ -1297,7 +1297,7 @@ def test_unknown_execution_cannot_receive_disposition(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_replacement_with_fifo_during_public_snapshot_is_bounded(
@@ -1328,7 +1328,7 @@ def test_replacement_with_fifo_during_public_snapshot_is_bounded(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 @pytest.mark.parametrize("destination_kind", ["ancestor", "descendant"])
@@ -1363,7 +1363,7 @@ def test_retention_destination_cannot_overlap_managed_root(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_invalid_review_record_refuses_without_changing_preserved_bytes(
@@ -1410,7 +1410,7 @@ def test_invalid_review_record_refuses_without_changing_preserved_bytes(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_missing_required_diagnostics_field_fails_closed(tmp_path: Path) -> None:
@@ -1431,7 +1431,7 @@ def test_missing_required_diagnostics_field_fails_closed(tmp_path: Path) -> None
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_disposition_only_binding_allows_first_initial_attempt(tmp_path: Path) -> None:
@@ -1476,7 +1476,7 @@ def test_disposition_only_binding_allows_first_initial_attempt(tmp_path: Path) -
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_recovered_unknown_run_can_receive_explicit_disposition(tmp_path: Path) -> None:

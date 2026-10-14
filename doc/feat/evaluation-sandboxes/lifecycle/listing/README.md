@@ -4,17 +4,19 @@ After [managed sandbox creation](../../../../evaluation-sandboxes.md), deliver
 `make sandbox-list [SANDBOX_ROOT=/absolute/path]` using the shared
 [root and ownership resolution](../../README.md#shared-root-and-ownership).
 Its active/inactive classification observes the
-[active-state exclusion contract](../active-state-exclusion/README.md)
+[delivered lifecycle safety protocol](../../../../evaluation-sandboxes.md#delivered-lifecycle-safety)
 with a transient nonblocking probe. If the probe acquires the claim, release it
 immediately and do no work under it. Depend on delivery of that shared protocol,
 including creation integration. Capture the current generation ID (or absence)
 before the probe, then re-read after it; if it changed, report the claim state
 as unknown. Inspect only direct children and the narrow per-child lifecycle
-marker owned by the active-state Work; do not add a registry or a second
-resolver. Report identity, location, Evaluation Work owner, known session/run
-identity, artifact paths, recorded preparation/execution/failure outcome,
-observed activity and disposition validity, and whether ownership is valid,
-unknown, or invalid. This command is observational and does not repair entries.
+marker described by the shared lifecycle safety rules; do not add a registry or
+a second resolver. Report identity, location, Evaluation Work owner, known
+session/run identity, artifact paths, recorded preparation/execution/failure
+outcome, observed activity and recorded disposition state. Because listing does
+not inspect private artifact contents, current preservation validity is
+unknown. Report whether ownership is valid, unknown, or invalid. This command is
+observational and does not repair entries.
 
 ## Acceptance
 

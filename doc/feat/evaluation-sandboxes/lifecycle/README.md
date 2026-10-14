@@ -3,14 +3,14 @@
 Own local discovery and safe disposal of children created by
 [managed sandbox creation](../../../evaluation-sandboxes.md). Reuse the existing
 private ownership record as the persistent, uncommitted lifecycle marker; the
-[active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
-OS-held lock, creation integration, bound execution attempt/recovery protocol
-and reviewed cleanup disposition. Listing and removal consume that shared
-protocol rather than define another registry or proof owner. Native execution
-consumes the attempt/recovery boundary but supplies its own containment
-supervisor. The maintainer selected explicit orchestrator disposition after
-artifact preservation and maintainer review; no disposability Investigation is
-required.
+[delivered lifecycle safety rules](../../../evaluation-sandboxes.md#delivered-lifecycle-safety)
+cover the private marker, exclusive OS-held lock, creation integration, bound
+execution attempt/recovery protocol and reviewed cleanup disposition. Listing
+and removal consume that shared protocol rather than define another registry or
+proof owner. Native execution consumes the attempt/recovery boundary but
+supplies its own containment supervisor. The maintainer selected explicit
+orchestrator disposition after artifact preservation and maintainer review; no
+disposability Investigation is required.
 
 At planning baseline `1b31bba`, creation writes preparation ownership/state;
 there is no execution or removal command and no lifecycle lock. No sandboxes
@@ -29,10 +29,9 @@ flowchart LR
 
 ## Child outcomes
 
-- **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
-  the shared safety outcome through lock/marker, execution recovery and
-  reviewed disposition. This builds on delivered creation; its parent
-  acceptance review remains, while consumer command integration is pending.
+- **DONE** Delivered active-state exclusion: lock and marker, creation
+  integration, bound execution recovery and reviewed disposition compose into
+  the shared safety protocol. Consumer command integration remains pending.
 - **TODO** [Read-only sandbox discovery](listing/README.md): report direct
   children and observed lifecycle state without filesystem mutation; after
   active-state delivery.
