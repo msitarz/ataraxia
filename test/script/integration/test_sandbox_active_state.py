@@ -51,7 +51,7 @@ def persistent_snapshot(root: Path) -> dict[str, tuple[bytes | None, int, int, i
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_marker_updates_are_atomic_and_keep_future_fields(
@@ -90,7 +90,7 @@ def test_marker_updates_are_atomic_and_keep_future_fields(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_marker_write_refuses_a_stale_scope_view(tmp_path: Path) -> None:
@@ -114,7 +114,7 @@ def test_marker_write_refuses_a_stale_scope_view(tmp_path: Path) -> None:
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -> None:
@@ -145,7 +145,7 @@ def test_failed_preparation_state_cannot_be_rewritten_as_ready(tmp_path: Path) -
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_probe_reports_free_and_held_locks_without_persistent_writes(
@@ -172,7 +172,7 @@ def test_probe_reports_free_and_held_locks_without_persistent_writes(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_scope_cannot_update_after_context_even_when_descriptor_number_is_reused(
@@ -207,7 +207,7 @@ def test_scope_cannot_update_after_context_even_when_descriptor_number_is_reused
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -242,7 +242,7 @@ def test_probe_reports_unsafe_locks_as_unknown_without_repair(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize(
@@ -284,7 +284,7 @@ def test_create_rejects_old_or_malformed_markers_without_rewriting(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 @pytest.mark.parametrize("kind", ["fifo", "encoding"])
@@ -326,7 +326,7 @@ except ValueError:
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_missing_partial_destination_stays_reserved_and_old_generation_is_rejected(
@@ -355,7 +355,7 @@ def test_missing_partial_destination_stays_reserved_and_old_generation_is_reject
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_failed_marker_reservation_keeps_the_destination_reserved(
@@ -393,7 +393,7 @@ def test_failed_marker_reservation_keeps_the_destination_reserved(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_lock_replacement_after_open_is_rejected(
@@ -449,7 +449,7 @@ def test_lock_replacement_after_open_is_rejected(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_probe_replacement_during_acquire_is_unknown_without_marker_repair(
@@ -478,7 +478,7 @@ def test_probe_replacement_during_acquire_is_unknown_without_marker_repair(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_lock_is_acquired_before_yield_and_released_and_closed_after_exit(
@@ -525,7 +525,7 @@ def test_lock_is_acquired_before_yield_and_released_and_closed_after_exit(
 
 
 @pytest.mark.covers(
-    work="doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md",
+    work="doc/feat/evaluation-sandboxes/lifecycle/README.md",
     ac="AC-1",
 )
 def test_lock_is_released_and_closed_when_scope_body_raises(
@@ -574,7 +574,7 @@ def test_lock_is_released_and_closed_when_scope_body_raises(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_same_name_recreation_keeps_lock_inode_and_changes_generation(
@@ -614,7 +614,7 @@ def test_same_name_recreation_keeps_lock_inode_and_changes_generation(
 
 
 @pytest.mark.covers(
-    work=("doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md"),
+    work=("doc/feat/evaluation-sandboxes/lifecycle/README.md"),
     ac="AC-1",
 )
 def test_waiter_refuses_generation_replaced_at_flock_boundary(
