@@ -55,6 +55,14 @@ files.
   `if` statements when multiple conditions may apply, and use guard clauses or
   simple `if`/`else` when clearer. A dictionary lookup can suit a pure mapping
   from keys to fixed values.
+- Do not nest a handler-bearing `try` inside another handler-bearing `try` in
+  the same execution scope, including through branches or loops and within
+  handlers, `else`, or `finally`; this applies equally to `async` and `except*`.
+  A `try` without handlers may be nested or contain a handler-bearing `try`.
+  Context managers, sequential handlers, and separate nested function or
+  method scopes are allowed. Extract cohesive helpers that preserve
+  operation-specific catches, exception causes, cleanup, and resource
+  ownership; avoid a helper per line.
 - Use context managers for files/providers, preserving source/provider lifecycle
   delegation and cleanup on success/failure; use `pathlib.Path`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
