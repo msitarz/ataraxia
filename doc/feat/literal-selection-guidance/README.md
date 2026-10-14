@@ -65,7 +65,7 @@ checker changes, production templates or tests of upstream behavior. If example
 review discovers an implementation defect, report it for a separately approved,
 bounded Work rather than expanding this delivery.
 
-- **AC-1 TODO** The existing engineering owner integrates intentional finite
+- **AC-1 DONE** The existing engineering owner integrates intentional finite
   string domains, truthful consumed-boundary validation, distinct domain aliases
   and one authoritative member inventory or justified complete action-case
   enumeration. A compact comparison demonstrates actual runtime rejection and
@@ -80,7 +80,7 @@ bounded Work rather than expanding this delivery.
   observed outcomes; annotations alone are insufficient. Run `make doc-format`,
   `make doc-check` and `make ac-check` for this Work.
 
-- **AC-2 TODO** The same compact guidance distinguishes useful Enum identity
+- **AC-2 DONE** The same compact guidance distinguishes useful Enum identity
   and wire conversion from ordinary finite strings and preserves open-domain
   defaults, paths, hashes, plugins, extensions and overlapping classifications.
   It states the observed tooling limits accurately and integrates existing
