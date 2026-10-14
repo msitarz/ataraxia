@@ -68,9 +68,11 @@ The compact guidance must require the following outcomes:
   without requiring broad variant rewrites here.
 - Give applicable Python modules/functions clear responsibilities for input
   acquisition, output/effects, parsing if needed, validation if needed and pure
-  decisions, with typed input/output and documented error/effect contracts.
-  Pure decisions consume valid domain values instead of raw JSON/disk paths or
-  repeated defensive type checks. Cohesive small modules can separate functions
+  decisions, with typed input/output and documented error/effect contracts. Pure
+  decisions consume valid domain values without raw/unvalidated representations,
+  repeated defensive type checks or filesystem/process probes. Typed
+  path/location values and pure transformations of them are permitted under the
+  declared input/output contract. Cohesive small modules can separate functions
   within one file; do not prescribe five files, functions or classes per module
   or retain wrappers without a useful contract. Shells/adapters own locks,
   processes, filesystem/persistence and coordinate pure functions. Mutable

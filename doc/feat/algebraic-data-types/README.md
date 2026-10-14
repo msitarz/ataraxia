@@ -83,8 +83,11 @@ comparing representations; it may proceed independently and must reconcile its
 recommendation with the adopted guidance before any later adoption. Illustrate
 external parsing, complete record construction, a typed pure decision such as
 `failure_details(state: Lifecycle) -> FailureDiagnostics | None`, and
-serialization as distinct responsibilities. No raw JSON, disk paths or repeated
-defensive `isinstance` checks belong in that pure decision. A decision invoking
+serialization as distinct responsibilities. Pure decisions consume validated
+domain values without raw/unvalidated representations, repeated defensive type
+checks or filesystem/process probes. Typed path/location values and pure
+transformations of them are permitted under the declared input/output contract.
+A decision invoking
 an effectful port is not pure. Compare immutable field ownership as well as
 frozen dataclass declarations; frozen records containing mutable containers do
 not establish immutable values.

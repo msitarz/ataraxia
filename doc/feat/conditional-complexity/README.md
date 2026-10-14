@@ -54,9 +54,7 @@ manual review obligation without claiming either metric guarantees readability.
 
 Preserve observable accepted/rejected inputs, relevant documented errors and
 exception causes, state invariants, safety guarantees and necessary side-effect
-ordering. The earlier plan's requirement to preserve implementation
-short-circuiting/evaluation order was an overconstraint, not existing
-engineering guidance. Validation order and branch organization may change when
+ordering. Validation order and branch organization may change when
 the observable contract is unchanged. This is no blanket ban on Python Boolean
 semantics or simple guards. For the seed, missing, wrong-type, Boolean and
 negative identity values must still raise the relevant ValueError rather than an
