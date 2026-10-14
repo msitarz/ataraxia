@@ -29,9 +29,9 @@ propagation, explicit causes, bare reraises, intentional `from None` and
 cleanup/resource ownership. Extract only cohesive helpers needed for readable
 repairs. Stop and report if the complete adoption exceeds a five-minute review.
 
-This is a standalone leaf with no dependency on
-[nested exception handling](../nested-exceptions/README.md). These three rules
-do not enforce that Work's exact lexical nesting ban and cannot complete it.
+This is a standalone leaf with no dependency on the delivered
+[nested-exception guidance](../../engineering.md#code-style). These three rules
+do not enforce its exact lexical nesting ban.
 Do not rewrite PR #328, add other TRY/PL selections, a custom checker or new
 dependency, or grandfather findings with blanket suppressions. Any lasting
 guidance belongs in the existing engineering owner as at most one concise
