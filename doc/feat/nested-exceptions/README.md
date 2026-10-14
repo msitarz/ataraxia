@@ -3,10 +3,8 @@
 Deliver engineering guidance forbidding nested exception handlers and automatic
 lint prevention through the existing Ruff, Make and CI path where supported.
 Both outcomes are required; an investigation or guidance alone does not complete
-this Work. Like [match selection](../match-selection/README.md), begin with a
-bounded tooling question grounded in a maintainer-reviewed example. Unlike that
-investigation, this parent also owns adoption of the requested policy and
-enforcement.
+this Work. This Work separates the bounded tooling investigation from
+policy/enforcement adoption.
 
 The seed is the maintainer's
 [comment on PR #328](https://github.com/msitarz/ataraxia/pull/328#discussion_r4271457416),
