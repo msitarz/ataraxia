@@ -729,6 +729,39 @@ def update_marker(
     )
 
 
+def refresh_scope(scope: SandboxScope) -> SandboxScope:
+    """Refresh a held scope from durable marker state.
+
+    Returns:
+        The latest validated generation and marker while the same lease is held.
+
+    Raises:
+        ValueError: If the lease, generation, marker, or destination changed.
+    """
+    _require_active_scope(scope)
+    validate_existing_root(scope.root)
+    if scope.generation is None:
+        raise ValueError("refresh requires a reserved sandbox")
+    marker = _read_marker(scope.root, scope.name)
+    if marker is None or marker.owned["generation"] != scope.generation:
+        raise ValueError("sandbox generation changed before scope refresh")
+    identity = _record_identity(marker.owned)
+    if identity != scope.destination_identity:
+        raise ValueError("sandbox destination identity changed before scope refresh")
+    actual = _destination_identity(scope.root / scope.name)
+    if actual not in (None, identity):
+        raise ValueError("sandbox destination identity changed before scope refresh")
+    return SandboxScope(
+        scope.root,
+        scope.name,
+        scope.generation,
+        marker,
+        identity,
+        actual is not None,
+        scope.lease,
+    )
+
+
 def _observation_matches(
     root: Path, name: str, generation: str, identity: DestinationIdentity
 ) -> bool:

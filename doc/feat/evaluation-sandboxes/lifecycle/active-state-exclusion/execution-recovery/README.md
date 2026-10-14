@@ -38,30 +38,41 @@ invalidation and current attempt identity rather than moving launch ownership.
 
 ## Protected process lifetime
 
-`sandbox-exec` acquires automatically before launch and holds exclusion until
-execution and all descendants capable of accessing the workspace/private output
-are stopped and results retained. The orchestrator owns review and disposal,
-not manual liveness unlocking. Implement OS lock lifetime and process handling
-so a crashed wrapper cannot release exclusion while descendants still operate.
-Do not let descendants escape the protected lifetime. If stopping or observing
-all descendants cannot be established, retain an unknown execution marker and
-refuse launch/removal until host-side recovery establishes stoppage and retains
-results under the lock. OS release after process death alone does not establish
-completed execution or disposability. No stale active bit needs manual clearing.
+The host caller acquires the existing sandbox lock before launch and holds it
+through result recording. A trusted host supervisor must attest that every
+process capable of accessing the workspace/private output has stopped before
+the attempt can be recorded as completed or failed. The orchestrator owns
+review and disposal, not manual liveness unlocking. If stopping or observing all
+descendants cannot be established, retain an unknown execution marker and
+refuse another attempt until host-side recovery establishes stoppage and
+retains results under the lock. OS release after wrapper death alone does not
+establish completed execution or disposability. No stale active bit needs
+manual clearing.
+
+This child defines and tests the supervisor boundary; it does not provide
+native process containment. Parent-PID exit, process-group signaling, or a
+caller-supplied boolean cannot prove descendant stoppage. The host supervisor
+must use an OS mechanism whose supported limits it can explain and report
+run-, generation-, and workspace-bound evidence. Where that evidence is
+unavailable or uncertain, execution stays unknown. The API fixture tests prove
+that the boundary fails closed and recovery rejects mismatched identities;
+they do not prove that a future native supervisor contains every descendant.
+Evidence values are trusted host reports, not cryptographic proof; untrusted
+callers must not construct or supply them.
 
 The shared attempt API accepts a locked sandbox, validated source Work/owner,
 initial or exact-session resume identity and a process invocation; it persists
-unique attempt/provenance before launch, retains outcomes/artifacts, and returns
-completed/incomplete/unknown state. The recovery API accepts the same locked
-identity and host-side stoppage/preservation evidence; it refuses while safety
-cannot be established and retains prior results before permitting later action.
-These are semantic interfaces, not fixed Python signatures. Keep mechanism and
-supported OS limits explicit; do not add a controller or permit an escaped
-child to operate after exclusion ends.
+unique attempt/provenance before launch, retains outcomes/artifact paths, and
+returns completed/failed/incomplete/unknown state. Recovery accepts the same
+locked identity and matching host-side stoppage evidence plus the exact
+retained artifact directory; it refuses while safety cannot be established.
+These are semantic interfaces, not fixed Python signatures. Actual command
+integration, native containment, and supported-platform evidence remain with
+the later execution consumer.
 
 ## Acceptance
 
-- **AC-1 TODO** Initial execution accepts only a contained existing source Work
+- **AC-1 DONE** Initial execution accepts only a contained existing source Work
   README and host-controlled owning orchestrator binding; exact UUID resume
   agrees with recorded Work/owner/session and cannot reassign it. Each attempt
   has unique run identity, honest available UUID, outcome and private artifact
@@ -74,7 +85,7 @@ child to operate after exclusion ends.
   UUID, successive attempts, failed/rejected launch and retained artifacts.
   Inspect private modes, provenance and unchanged unsafe records; native
   execution verifies command integration and authorization separately.
-- **AC-2 TODO** Normal completion, interruption and crashes retain outcomes
+- **AC-2 DONE** Normal completion, interruption and crashes retain outcomes
   and artifacts; exclusion lasts through descendants and result retention.
   Unknown execution fails closed until safe recovery. OS release after death
   alone grants no completed outcome or disposability.
