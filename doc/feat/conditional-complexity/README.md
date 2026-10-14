@@ -73,9 +73,9 @@ not edit its branch or require it to merge before defining this Work.
 Reuse existing lint, setup and CI machinery. No generic lint framework, custom
 scanner, blanket exemptions, suppressions or unrelated refactor is authorized.
 A compatibility/enforcement gap or an oversized repair inventory pauses adoption
-for maintainer steering or a concrete bounded split. The
-[nested exception Work](../nested-exceptions/README.md) is related guardrail
-planning, not a dependency. The independent
+for maintainer steering or a concrete bounded split. The delivered
+[nested-exception guidance](../../engineering.md#code-style) is a related manual
+guardrail, not a dependency. The independent
 [algebraic data type Investigation](../algebraic-data-types/README.md) considers
 whether modeling improves this seed's broader lifecycle contract.
 

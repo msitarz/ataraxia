@@ -31,10 +31,10 @@ the separate question of suitable single-value branching; the delivered
 [finite-string-domain guidance](../../engineering.md#preserve-type-precision)
 records the recommendation for Literal and domain ownership. That
 concern is separate from this Work's variant-specific fields and state-specific
-field relationships. These Works and
-[nested exceptions](../nested-exceptions/README.md) are related, not merge
-dependencies. PR #328 remains independent; inspect then-integrated source when
-executing this Investigation.
+field relationships. The delivered
+[nested-exception guidance](../../engineering.md#code-style) and these Works
+are related, not merge dependencies. PR #328 remains independent; inspect
+then-integrated source when executing this Investigation.
 
 The following reduced illustration shows a proposed sum of lifecycle variants,
 not current or approved code. Shared marker fields and four-string diagnostics
