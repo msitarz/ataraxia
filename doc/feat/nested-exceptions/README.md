@@ -54,8 +54,9 @@ translation. This illustrates shape and ownership, not an approved patch.
 Use two serial leaves so the uncertain tool decision and the eventual policy
 change each fit a short review:
 
-- TODO [Enforcement investigation](investigate/README.md): establish a supported
-  mechanism and report a concrete choice if Ruff cannot enforce the rule.
+- DONE The pinned Ruff candidates do not enforce the exact rule; adoption awaits
+  maintainer choice. See the
+  [investigation comparison](https://github.com/msitarz/ataraxia/blob/a0c90fe24cfa430a81b360fa10fd5aa13f8b2029/doc/feat/nested-exceptions/investigate/comparison.md).
 - TODO [Guidance and enforcement adoption](adopt/README.md): after independent
   review of that mechanism and any required maintainer steering, deliver both
   lasting guidance and prevention with only necessary violation repairs.

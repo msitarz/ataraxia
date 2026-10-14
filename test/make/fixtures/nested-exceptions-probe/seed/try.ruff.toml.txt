@@ -1,4 +1,0 @@
-extend = "../../../../../pyproject.toml"
-
-[lint]
-select = ["TRY300", "TRY301"]
