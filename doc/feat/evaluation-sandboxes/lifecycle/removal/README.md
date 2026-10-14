@@ -1,61 +1,60 @@
 # Preservation-aware sandbox removal
 
-Removal implementation depends on the completed and merged
-[disposability-proof Investigation](../disposability-proof/README.md). Before
-implementation, update this contract under review to name the accepted proof
-and owner for commits and private output; the Investigation must not be
-bypassed by assuming a design here.
-
-Removal also depends on the completed and merged
-[active-state exclusion contract](../active-state-exclusion/README.md). Acquire
-its per-sandbox claim before final removal checks and hold it through deletion;
-execution uses the same claim protocol. This Work consumes that contract and
-does not redefine locking or crash recovery. Capture the generation ID before
-waiting for the claim; after acquisition, abort if the name or destination now
-identifies another generation.
-
-After [managed sandbox creation](../../../../evaluation-sandboxes.md), deliver
-`make sandbox-remove NAME=...` using the shared
+After [active-state delivery](../active-state-exclusion/README.md), deliver
+`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` using shared
 [root and ownership resolution](../../README.md#shared-root-and-ownership).
-Removal is limited to the named direct child and its owned private artifacts.
+Acquire the stable exclusive OS lock before final checks and hold it through
+deletion. Revalidate captured generation and destination identity before acting.
+The shared active-state owner defines marker, disposition and recovery; this
+Work consumes them without another proof record or Investigation.
 
-The [disposability-proof Investigation](../disposability-proof/README.md) owns
-the decision about evidence that permits disposal of meaningful commits and
-private output. Until its result is accepted and this contract updated, missing
-or inconsistent delivery proof must preserve the child and its artifacts. A
-clean Git status alone is not delivery. Do not add a force option or registry.
+Delete only the named direct child and its explicitly owned private artifacts.
+Require a current disposition recorded by its owning orchestrator after artifact
+preservation and maintainer review, bound to the current workspace, run and
+output. Verify retained destinations/evidence before destructive action; reject
+missing or inconsistent preservation. Meaningful commits, dirty/staged/untracked
+content and private output must all be covered by preserved exact artifacts or
+explicit reviewed discard decisions. Clean Git status and inactivity alone are
+insufficient. No force option bypasses these guards.
+
+Failed preparation requires the same disposition, including partial workspace
+and failure diagnostics; a missing partial directory does not authorize deleting
+its remaining marker/output. Unknown execution or potentially live descendants
+refuse cleanup. Refusal preserves workspace, private output and diagnostics.
+After successful deletion remove the generation marker last and keep the stable
+lock file. Partial failure/interruption retains the marker and remaining
+material, records incomplete cleanup when safe, and blocks name reuse; retry
+revalidates identity, disposition and retained evidence under the lock. Never
+follow symlinks or recursively traverse another owned sandbox/private tree by
+artifact path.
 
 ## Acceptance
 
-- **AC-1 TODO** Removal deletes only a named, direct, owned child under the
-  shared managed root. It refuses the source/root, unowned or conflicting-owner
-  child, symlinked or escaped paths, malformed ownership, and a child whose
-  active-state claim cannot be acquired. Failed preparation is removable only
-  when the child contains no meaningful work or undelivered output. After
-  successful deletion, remove the generation metadata last, but retain the
-  stable per-name lock object so a later create can use the name with a fresh
-  ID. If cleanup fails or is interrupted, preserve the generation record and
-  fail closed on name reuse.
+- **AC-1 TODO** Only a named, direct, owned child with supported metadata,
+  verified inactive execution and current reviewed disposition can be removed
+  under exclusion. Unsafe root/source, foreign ownership, symlinks, escapes,
+  malformed metadata, stale generation, busy lock and unknown descendants
+  refuse.
 
-  Validation: criterion-marked Make-boundary tests cover successful removal
-  and each refusal class, including symlink/dangling-symlink, escaped-path,
-  and held-claim cases. Reuse the active-state Work's concurrency evidence;
-  independently review its claim is acquired before final checks and held
-  through deletion. Verify the generation record is removed only after owned
-  child/private data is gone, the per-name lock object remains intact, and a
-  subsequent create uses a new generation ID; confirm owner/root agreement
-  with creation.
-- **AC-2 TODO** Removal refuses dirty tracked, staged, or untracked workspace
-  content; meaningful commits beyond the recorded preparation base without
-  delivery proof selected by the completed Investigation; and private output
-  without the accepted retention/disposition proof. No refusal deletes or
-  rewrites workspace, private artifacts, or failure diagnostics. Successful
-  removal is allowed after work/output is proven disposable and the child is
-  inactive.
+  Validation: criterion-marked Make-boundary fixtures cover success and every
+  refusal, plus a launch racing final checks/deletion. Independently review
+  claim lifetime and exact root/owner agreement; reuse shared concurrency
+  evidence.
+- **AC-2 TODO** Exact workspace work, commits, private artifacts and failed
+  preparation diagnostics are preserved or covered by an explicit reviewed
+  discard decision before removal. Changed or absent bindings invalidate
+  approval and all refusals leave protected data unchanged.
 
-  Validation: criterion-marked fixtures exercise dirty/staged/untracked files,
-  a meaningful commit without delivery proof, accepted delivery proof, and
-  retained private output without disposition. Assert rejected workspace and
-  private trees are byte-for-byte unchanged; independently inspect proof
-  against the owner named by the completed Investigation rather than treating
-  clean status as proof.
+  Validation: criterion-marked fixtures cover dirty/staged/untracked content,
+  meaningful commits, private output, failed preparation, missing retention,
+  valid disposition, wrong owner and changed run/output/workspace after
+  approval. Assert refusal preserves bytes; independently inspect
+  review/preservation evidence without treating clean status as delivery.
+- **AC-3 TODO** Successful cleanup removes the marker last, retains stable lock
+  identity and permits a new generation. Failed/interrupted cleanup preserves
+  remaining evidence and blocks unsafe reuse; safely validated retry can finish.
+
+  Validation: criterion-marked staged-failure fixtures interrupt child/private
+  deletion and marker removal, inspect remaining material and refusal of create,
+  then exercise guarded retry and same-name recreation. Verify retained
+  artifacts outside the cleanup set remain intact.

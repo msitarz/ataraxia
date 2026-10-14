@@ -1,118 +1,136 @@
 # Per-sandbox active-state exclusion
 
-Own the shared per-name claim mechanism and generation-revalidation contract.
-This Work adds claim participation to `sandbox-create`; listing, removal, and
-execution consume the protocol through their respective command Works.
-Keep managed-root resolution and canonical repository-owner identity exactly
-as defined by the existing
-[root and ownership rules](../../README.md#shared-root-and-ownership). Extend
-only each per-child owner record with the lifecycle generation ID and native
-destination identity needed to distinguish and revalidate a sandbox instance;
-do not add a global registry or redefine root/repository ownership. The
-coordination state is private from child commands. This Work defines protocol
-semantics, not a particular platform locking API.
+Deliver the shared lifecycle marker and exclusive per-name OS-held lock,
+including their integration into `sandbox-create`. Listing, removal and native
+execution depend on this outcome and verify their own command integration. Reuse
+[root and ownership resolution](../../README.md#shared-root-and-ownership).
+There is no global registry, manual active bit, or controller service.
 
-## Identity and lock-object lifetime
+## Persistent private marker
 
-The current root-private creation record `.<NAME>.ataraxia-sandbox.json`
-contains source Git common directory, project, selected base, and preparation
-state. Under the parent
-[shared ownership contract](../../README.md#shared-root-and-ownership), it will
-also contain an opaque unique generation ID and the platform-native identity of
-the created child directory. These are per-child lifecycle identity fields;
-root resolution and repository ownership continue to use the existing
-canonical common-directory rules.
+At `1b31bba`, `script/sandbox.py` writes the root-private
+`.<NAME>.ataraxia-sandbox.json` with canonical Git common directory, project,
+base, preparation state and failure diagnostics. Extend this existing record
+rather than add a second acceptance record. Keep it uncommitted and inaccessible
+to child commands. Validated host-side updates preserve unrelated fields and
+retain diagnostics; interrupted writes must never turn partial metadata into
+valid ownership or approval.
 
-Use one regular, root-private lock object per `NAME`, at
-`.<NAME>.ataraxia-sandbox.lock`. Create it atomically when first needed and
-never unlink, replace, or treat it as an ownership record. Keep it across
-successful removal and same-name recreation. It is coordination state, not a
-registry; child discovery ignores it. Its stable identity ensures all
-contenders for a name serialize across generations. A lock object without a
-valid owner record does not establish that a sandbox exists.
+Record a supported schema version, opaque unique sandbox generation, native
+destination identity, owning Evaluation Work repository path, and owning
+orchestrator identity. For each execution attempt record a unique run identity,
+Codex session UUID when available, preparation/execution outcome (including
+incomplete or unknown), and private output/artifact paths. A Codex session UUID
+is distinct from a delegated agent identifier; add an agent identifier only if
+needed for provenance. Never invent a missing UUID. Keep prior attempts and
+artifacts when resuming or failing rather than overwrite their provenance.
 
-Creation is the only command that initializes a missing lock object, and only
-when no owner generation or destination exists. Other consumers fail closed if
-the lock object is missing, not a regular file, or reached through a symlink.
-After acquiring it, a claimant verifies that its open lock object still matches
-the root-private per-name path; a replaced path invalidates the claim.
+Creation gains a required `EVALUATION_WORK=repository/relative/path` Make input
+identifying the owning Evaluation Work with its README; reject absent, escaped
+or unrelated paths before reservation. The orchestrator supplies host-side
+owner provenance for creation and disposition. The shared host recording
+interface accepts that owner, current identity/inventory bindings, retained
+destinations, review reference and explicit retain/discard decisions; it returns
+a validated persisted disposition or refuses without approval. Execution updates
+only run/outcome/artifact fields and invalidation, never disposal approval.
+Implementation may use a small shared helper and existing Make routing; no new
+controller or external review service is required.
 
-Every operation captures the current generation ID (or the explicit “no
-generation” state) before waiting for the per-name claim. After acquiring the
-claim, it rereads and compares the state before acting. Execution and removal
-also verify the destination identity against the owner record. If the name now
-identifies a different generation, the operation aborts without acting on it.
-Creation may reserve only if it captured no generation and the name and
-destination are still absent after claiming. This makes a waiter from an old
-generation harmless after removal and recreation.
+The owning orchestrator explicitly records cleanup disposition only after
+artifacts are preserved and the maintainer has reviewed the cleanup decision.
+It identifies that owner and review, the generation, current run/attempt and
+session identity when known, exact workspace state (tip and changes), and exact
+private output/artifact inventory or revisions, with retained destinations and
+accepted import evidence or reviewed discard decisions where applicable.
+Inactivity, clean status, a session ending, or executor-written claims cannot
+supply this approval. Disposition is private host authority, not delegated to
+the executor. Its host recording operation validates ownership and current
+bindings under the same exclusive lock; it cannot race launch or deletion.
+Do not require a new review system: reuse existing Work/PR review and artifact
+preservation evidence. Removal consumes the validated disposition.
 
-## Contract
+Clear disposition before any attempted new execution or resume, including one
+that fails or is rejected after identifying the owned sandbox. A refused request
+without enough trusted identity to update safely must leave the record untouched
+and cannot confer approval. Any changed run, workspace, preparation state or
+output invalidates the binding; missing/inconsistent bindings always refuse
+removal. Failed preparation also requires explicit reviewed disposition covering
+its partial workspace and diagnostics; no absence-of-work bypass is allowed.
+There are currently no sandboxes requiring compatibility: reject old,
+unsupported or malformed records safely without rewriting, migrating or deleting
+them. Listing may report them as unsupported.
 
-- A claim is exclusive per `NAME` using the stable private lock object above.
-  `sandbox-create` acquires it before reservation and holds it through durable
-  generation/owner metadata, destination identity, and final ready or failed
-  preparation state. Execution acquires it before invocation and holds it
-  until the process stops and final status/output state is recorded. Removal
-  acquires it before final safety checks and holds it through deletion.
-- A second create, execution, removal, or conflicting operation cannot acquire
-  while the claim is held. Acquisition is atomic. A caller that cannot establish
-  the claim, verify the identity, or safely observe claim state fails closed
-  before executing or deleting anything.
-- Release on every normal exit. A process failure or crash must not leave a
-  durable active bit that blocks recovery. A stale process identifier or
-  child-written metadata does not prove that a claim is free.
-  After a crash, the next operation may retry only after the OS-backed claim
-  is verifiably available and it revalidates the same sandbox identity and
-  reruns its own readiness or removal guards. Incomplete output remains subject
-  to the separate [disposability proof](../disposability-proof/README.md).
-- Removal must not replace or unlink coordination state while another contender
-  could use it, and an old waiter must not act on a later sandbox that reuses
-  the same name. A refused removal releases its claim and leaves workspace,
-  private output, and diagnostics intact.
-- Listing may make a transient nonblocking claim probe to observe whether the
-  claim is held. If it acquires the claim, it releases it immediately and does
-  no work under it; it never changes persistent coordination state. An unsafe,
-  failed, or unavailable observation is reported as unknown, not inactive.
+## Stable lock and exclusion
 
-The parent [lifecycle map](../README.md) sequences this contract before create
-adds claim participation and before listing, removal, and execution consume it.
-The [removal outcome](../removal/README.md) also depends on the separate
-disposability Investigation; that Investigation does not determine claim
-mechanics.
+Use one regular private `.<NAME>.ataraxia-sandbox.lock` with an exclusive lock
+held by the operating system. File existence and PIDs never establish liveness.
+Creation initializes it atomically if absent only when no destination/marker
+exists. Never unlink or replace it, including after successful deletion and
+same-name reuse. Other operations fail closed on a missing, unsafe or symlinked
+lock. Revalidate the open file against its path after acquisition to detect
+replacement; child commands cannot access it.
+
+Capture generation (or explicit absence for create) before waiting; after
+acquisition reread it and revalidate destination identity. Abort if it changed.
+Create reserves only a still-absent name, holds the lock through preparation and
+durable ready/failed state, and retains failures without overwrite. Removal
+holds the same lock from final safety/disposition checks through deletion, so
+an inactivity check cannot race a new launch. Refusal releases without deletion.
+
+`sandbox-exec` acquires automatically before launch and holds exclusion until
+execution and all descendants capable of accessing the workspace/private output
+are stopped and results retained. The orchestrator owns review and disposal,
+not manual liveness unlocking. Implement OS lock lifetime and process handling
+so a crashed wrapper cannot release exclusion while descendants still operate.
+Do not let descendants escape the protected lifetime. If stopping or observing
+all descendants cannot be established, retain an unknown execution marker and
+refuse launch/removal until host-side recovery establishes stoppage and retains
+results under the lock. OS release after process death alone does not establish
+completed execution or disposability. No stale active bit needs manual clearing.
+
+Listing opens existing safe locks only and performs an immediate nonblocking
+probe, releasing on acquisition without writing, creating, replacing or
+repairing anything. A busy lock reports active operation; a free lock reports
+observed inactivity, separately from recorded outcome/disposition. Unsafe or
+unavailable observations and generation changes report unknown. These are
+momentary observations, never cleanup authority.
 
 ## Acceptance
 
-- **AC-1 TODO** `sandbox-create` uses one atomic, per-name exclusive claim;
-  execution and removal consumers cannot enter while it is held, and listing
-  can observe the claim without persistent mutation. Claims are released on
-  normal completion, and refusal releases without changing protected data.
+- **AC-1 TODO** Shared exclusion and creation integration serialize same-name
+  create/execution/removal, safely reserve missing names and retain ready/failed
+  preparation markers with Evaluation ownership. Consumers need no manual lock
+  commands; listing probes leave persistent state unchanged.
 
-  Validation: criterion-marked tests cover create/create contention and the
-  shared claim primitive's create/execution, create/removal, and
-  execution/removal contention cases. Assert only one operation enters each
-  contested interval; each consumer Work verifies its own command integration.
-- **AC-2 TODO** Crash or unverifiable state fails closed without treating a
-  stale PID or child-controlled metadata as authority. Once the OS claim is
-  verifiably released, a retry revalidates sandbox identity and reruns the
-  consumer's guards; incomplete output remains preserved. Listing uses a
-  transient nonblocking probe, releases any claim immediately, and reports an
-  unsafe or unavailable observation as unknown.
+  Validation: criterion-marked subprocess tests cover create/create and shared
+  create/execution, create/removal and execution/removal contention, readiness
+  failure and reservation failure. Inspect creation metadata and private modes;
+  each consumer Work verifies its command integration.
+- **AC-2 TODO** Normal completion, interruption and crashes retain outcomes
+  and artifacts; exclusion lasts through descendants and result retention.
+  Unknown execution fails closed until safe recovery. Unsupported metadata,
+  unsafe lock paths and stale identity cannot become authority.
 
-  Validation: criterion-marked subprocess tests terminate a claim holder,
-  verify safe reacquisition and identity checks, and assert that incomplete
-  output/diagnostics remain. Test listing probes for held, free, and
-  unobservable claims; verify immediate release and unchanged persistent
-  filesystem/metadata. Independently review lock-object lifetime and behavior
-  if the platform cannot provide the required atomic claim.
-- **AC-3 TODO** A stable private per-name lock object and opaque generation ID
-  prevent old contenders from acting on a sandbox recreated under the same
-  name. Successful removal deletes the owned child and generation metadata
-  under the claim but retains the lock object, allowing later creation with a
-  fresh ID. A failed preparation retains its partial state and generation ID;
-  that name cannot be retried or overwritten until safely removed.
+  Validation: criterion-marked process fixtures terminate wrappers with live
+  descendants and verify exclusion or unknown-state refusal until stoppage and
+  preservation; cover interrupted marker updates and safe reacquisition. Review
+  supported OS semantics, descendant lifetime and recovery. Test held/free/
+  unobservable listing probes without persistent filesystem changes.
+- **AC-3 TODO** Stable lock identity and fresh generation prevent old waiters
+  from acting on same-name recreation. Failed preparation remains reserved;
+  interrupted removal retains its marker and prevents unsafe name reuse.
 
-  Validation: inspect creation/removal metadata lifecycle and use a
-  barrier-controlled process fixture: a waiter captures generation A, waits
-  while the lock owner completes A's removal and B's creation, then aborts on
-  B's different ID. Verify removal never unlinks/replaces the per-name lock
-  object, and listing ignores it as a child.
+  Validation: barrier-controlled fixtures capture generation A, remove A and
+  create B before a waiting operation enters, then assert it aborts. Verify lock
+  inode stability, fresh generation, retained failure identity and interrupted
+  deletion behavior, with consumer integration in removal.
+- **AC-4 TODO** Only the owning orchestrator can record a current explicit
+  cleanup disposition after preservation and maintainer review. New, resumed,
+  failed or rejected execution and changed output cannot reuse stale approval;
+  failed preparation and unknown execution receive no automatic exemption.
+
+  Validation: criterion-marked host-record fixtures exercise missing review,
+  wrong owner, generation/run/output/workspace mismatch, changed artifacts,
+  rejected/failed/resumed launch and failed preparation. Independently review
+  existing evidence bindings and child/private trust boundary; no model run or
+  speculative controller is required for this shared safety outcome.

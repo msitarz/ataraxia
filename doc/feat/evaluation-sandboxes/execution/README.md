@@ -1,7 +1,7 @@
 # Native execution and retained artifacts
 
-After [enforcement](../enforcement/README.md) and the completed
-[active-state exclusion contract](../lifecycle/active-state-exclusion/README.md),
+After [enforcement](../enforcement/README.md) and delivery of
+[active-state exclusion](../lifecycle/active-state-exclusion/README.md),
 deliver
 `make sandbox-exec NAME=... PROMPT='...' MODEL=...`, with optional EFFORT,
 PROMPT_FILE instead of PROMPT, and an explicit UUID resume input. Reject absent
@@ -20,9 +20,19 @@ Reuse the shared
 [root/ownership resolution](../README.md#shared-root-and-ownership), including
 optional SANDBOX_ROOT; reject a child belonging to another canonical Git common
 directory before invocation. Capture the generation ID before waiting on the
-same per-name claim used by creation and removal. After acquiring it, revalidate
-the generation and destination identity; abort before invocation if either
-changed.
+stable per-name OS-held lock used by creation and removal. Acquire automatically
+before launch and hold through execution/descendant stoppage and result
+retention, following the shared crash/recovery guards. Revalidate the generation
+and destination identity; abort before invocation if either changed.
+
+Reuse the persistent private lifecycle marker for Evaluation ownership, run
+identity, known Codex session UUID, outcome and artifact paths. Invalidate
+cleanup disposition before initial/resumed execution attempts, including failed
+or rejected attempts, under the shared host-update rules. Retain unknown or
+incomplete execution after a crash; lock availability alone cannot authorize
+resume or removal. The owning orchestrator preserves artifacts and records
+explicit cleanup disposition only after maintainer review under the
+[shared marker contract](../lifecycle/active-state-exclusion/README.md).
 
 ## Acceptance
 
@@ -30,7 +40,9 @@ changed.
   one native initial invocation or explicitly bound UUID resume. Resume retains
   its workspace/private-state identity and enforced boundary. Invalid inputs,
   unavailable model approval, changed readiness or unrelated UUID fail before
-  invocation; the sandbox is visibly active until execution has stopped.
+  invocation; the sandbox is visibly active until execution and relevant
+  descendants have stopped and results are retained; no manual unlock is
+  required.
 
   Validation: criterion-marked Make-boundary tests exercise real routing and
   artifact/state effects with a narrow CLI process double, plus independent
@@ -51,8 +63,11 @@ changed.
   existing review gates. There is no automatic retry or replacement.
 
   Validation: criterion-marked lifecycle tests inspect retained artifacts and
-  released active state for partial events, failed CLI, interruption/timeout and
-  rejected resume. Independent review accepts initial output before actual
+  automatic lock release only after descendant stoppage and retention for
+  partial events, failed CLI, interruption/timeout and rejected resume. Verify
+  crash recovery retains unknown outcomes, records known session UUIDs without
+  guessing, and invalidates old disposition on new/resumed/failed/rejected
+  attempts. Independent review accepts initial output before actual
   resume and final output before import; follow the
   [artifact-import owner](../artifact-import/README.md). Reporting
   interpretation is separate so this leaf remains one bounded native

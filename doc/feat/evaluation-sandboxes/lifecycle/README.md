@@ -1,65 +1,59 @@
 # Sandbox lifecycle
 
 Own local discovery and safe disposal of children created by
-[managed sandbox creation](../../../evaluation-sandboxes.md). This parent maps
-one prerequisite Investigation, one shared active-state exclusion contract,
-and two independently reviewable command outcomes. Both commands reuse the one
-[root and ownership contract](../README.md#shared-root-and-ownership); neither
-defines a second root resolver, owner record, or registry.
+[managed sandbox creation](../../../evaluation-sandboxes.md). Reuse the existing
+private ownership record as the persistent, uncommitted lifecycle marker; the
+[active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
+OS-held lock, creation integration, and cleanup disposition. Listing and removal
+consume that delivered protocol rather than define another registry or proof
+owner. The maintainer selected explicit orchestrator disposition after artifact
+preservation and maintainer review; no disposability Investigation is required.
+
+At planning baseline `1b31bba`, creation writes preparation ownership/state;
+there is no execution or removal command and no lifecycle lock. No sandboxes
+currently need migration. Proposed behavior follows:
 
 ```mermaid
 flowchart LR
-    B[Delivered creation baseline] --> L[Read-only listing]
-    B --> I[Disposability-proof Investigation]
-    B --> C[Creation claim update]
-    A[Per-name active-state claim contract] --> C
-    A --> L
-    A --> R[Preservation-aware removal with claim]
-    I --> R
-    A --> E[Execution with claim]
+    B[Before: create with preparation record] --> A[Active-state Work: marker, OS lock, create integration]
+    A --> L[Read-only listing]
+    A --> R[Removal after explicit reviewed disposition]
+    A --> E[Execution automatically holds lock and retains results]
+    E --> O[Orchestrator preserves artifacts and obtains maintainer review]
+    O --> D[Disposition bound to current sandbox and output]
+    D --> R
 ```
 
 ## Child outcomes
 
-- **TODO** [Disposability proof Investigation](disposability-proof/README.md):
-  compare evidence and ownership choices for when executor commits and private
-  output may be discarded. This must complete and merge before removal
-  implementation begins; its result informs the removal contract.
-- **TODO** [Active-state exclusion](active-state-exclusion/README.md):
-  define the stable per-name claim, opaque generation identity, and safe reuse
-  protocol. Creation, listing, removal, and execution consume it; complete and
-  merge this contract before updating those commands.
-- **TODO** [Read-only sandbox discovery](listing/README.md): list direct
-  children with trustworthy identity/state classification, including malformed
-  and symlink entries, without changing the filesystem.
-- **TODO** [Preservation-aware sandbox removal](removal/README.md): remove
-  only an owned, inactive child after guarding workspace changes, meaningful
-  commits and private output; refusal preserves the child and its diagnostics.
+- **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
+  the stable lock, lifecycle marker/disposition, and creation participation as
+  one shared safety outcome. This Work builds on delivered creation; its own
+  creation update has no prerequisite on a later consumer.
+- **TODO** [Read-only sandbox discovery](listing/README.md): report direct
+  children and observed lifecycle state without filesystem mutation; after
+  active-state delivery.
+- **TODO** [Preservation-aware sandbox removal](removal/README.md): delete
+  only an exclusively locked, owned child with a current explicit disposition;
+  after active-state delivery.
 
-All lifecycle outcomes build on the delivered creation/ownership contract and
-its shared root resolution. The active-state exclusion also specifies the
-required creation reservation claim, and is an independent prerequisite for
-that create update, listing's read-only transient probe, removal's exclusive
-delete claim, and [native execution](../execution/README.md)'s execution claim.
-The disposability Investigation is a separate prerequisite only for removal
-implementation; its findings must be completed and merged, then reflected in
-the removal contract before implementation. A child belonging to another
-canonical Git common-directory owner is identified but never managed.
-Parent-owned root/owner semantics remain linked above.
+[Native execution](../execution/README.md) also depends on active-state
+delivery. Each child is a bounded short-review outcome: shared safety/creation,
+observation, and guarded deletion. Reassess complete expected and actual review
+effort before implementation or publication under
+[Work sizing](../../../workflow.md#scope-and-sizing). This plan does not deliver
+commands, run probes or models, or complete criteria.
 
 ## Parent acceptance
 
-- **AC-1 TODO** The Investigation resolves evidence source, owner, trust
-  boundary, and preservation semantics for disposability; the active-state
-  contract prevents concurrent create/execution/removal claims; listing never
-  mutates; removal deletes only a child proven disposable under the reviewed
-  result and preserves all evidence on refusal. Invalid ownership and symlink
-  paths cannot be followed into trusted children.
+- **AC-1 TODO** Creation, execution and removal share exclusion; listing stays
+  observational. Persistent ownership and execution results survive inactivity,
+  and removal requires current orchestrator disposition after preservation and
+  maintainer review. Unknown execution, unsupported records, foreign ownership
+  and unsafe paths preserve the child. Same-name reuse cannot redirect waiters.
 
-  Validation: review the completed Investigation decision and its link from
-  removal and active-state dependencies, then independently review command
-  evidence and shared root/owner links. Confirm listing has no mutation path
-  and removal's guarded delete uses the same resolved root and ownership as
-  creation. Confirm successful removal retains the lock object and permits a
-  fresh generation ID on reuse. Reuse leaf evidence; do not repeat probes or
-  model runs.
+  Validation: independently review child evidence and shared owner links,
+  including crash/descendant handling, failed preparation cleanup, disposition
+  invalidation, read-only probes and check/delete exclusion. Verify successful
+  removal retains the stable lock and permits a fresh generation; reuse leaf
+  evidence without repeating probes or model runs.

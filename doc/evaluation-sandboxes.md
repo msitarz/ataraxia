@@ -31,9 +31,12 @@ the name cannot be retried or overwritten. Inspect the state record and partial
 workspace before deciding how to recover.
 
 The planned [lifecycle contract](feat/evaluation-sandboxes/lifecycle/README.md)
-adds a shared per-name claim and generation identity to creation, listing,
-removal, and execution. These planned additions are not part of the delivered
-creation behavior described above.
+extends this private record into a persistent lifecycle marker and adds a
+stable OS-held per-name lock with automatic creation/execution/removal
+exclusion. Planned cleanup requires explicit owning-orchestrator disposition
+after preservation and maintainer review; inactivity alone is insufficient.
+These additions are not part of delivered creation. No existing sandboxes
+require migration; unsupported old records will be rejected safely.
 
 Preparation is not an isolation boundary. It does not restrict filesystem,
 Git-history, network, credentials, references, or model-session access. Use
