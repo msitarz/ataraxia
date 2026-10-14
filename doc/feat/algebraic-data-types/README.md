@@ -27,8 +27,10 @@ existing flat record. Model shared ownership/identity separately from lifecycle
 variants where it clarifies responsibility; avoid duplicating shared fields or
 inventing lifecycle rules. `match` selection alone is not an algebraic type
 model. [Match selection](../match-selection/README.md) already owns suitable
-single-value branching; [literal selection](../literal-selection/README.md)
-owns finite string domains and Literal versus Enum. Neither closes the gap in
+single-value branching; the
+[proposed finite-string-domain guidance](../literal-selection-guidance/README.md)
+records the recommendation for Literal versus Enum and domain ownership.
+That concern is separate from this Work's variant-specific fields and
 state-specific field relationships. These Works and
 [nested exceptions](../nested-exceptions/README.md) are related, not merge
 dependencies. PR #328 remains independent; inspect then-integrated source when
