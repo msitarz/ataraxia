@@ -16,7 +16,7 @@ remains planned separately. Its rules cannot enforce this exact nesting ban.
 This Work authorizes no lint configuration, checker, dependency, code or test
 changes, production repairs, or changes to PR #328.
 
-- **AC-1 TODO** The investigation and concise guidance are independently
+- **AC-1 DONE** The investigation and concise guidance are independently
   reviewed and integrated, with the nesting rule owned by engineering
   conventions and the automatic enforcement gap stated accurately.
 
