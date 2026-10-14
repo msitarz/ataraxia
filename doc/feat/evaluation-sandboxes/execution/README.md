@@ -3,7 +3,8 @@
 After [enforcement](../enforcement/README.md) and delivery of
 [active-state exclusion](../lifecycle/active-state-exclusion/README.md),
 deliver
-`make sandbox-exec NAME=... PROMPT='...' MODEL=...`, with optional EFFORT,
+`make sandbox-exec NAME=... EVALUATION_WORK=repository/relative/path
+PROMPT='...' MODEL=...`, with optional EFFORT,
 PROMPT_FILE instead of PROMPT, and an explicit UUID resume input. Reject absent
 or conflicting prompt inputs and implicit/latest-session resume. Wrap existing
 native Codex CLI, using its
@@ -25,7 +26,12 @@ before launch and hold through execution/descendant stoppage and result
 retention, following the shared crash/recovery guards. Revalidate the generation
 and destination identity; abort before invocation if either changed.
 
-Reuse the persistent private lifecycle marker for Evaluation ownership, run
+Before initial launch, bind the Evaluation Work and host-controlled owning
+orchestrator identity in the persistent private lifecycle marker under the lock.
+Validate the required `EVALUATION_WORK` against its README in the owning source
+repository/Work branch, not the sandbox frozen clone. Resume must match this
+recorded Work/orchestrator identity and exact session UUID; missing or invalid
+initial bindings and resume mismatches refuse launch. Reuse the marker for run
 identity, known Codex session UUID, outcome and artifact paths. Invalidate
 cleanup disposition before initial/resumed execution attempts, including failed
 or rejected attempts, under the shared host-update rules. Retain unknown or
@@ -39,21 +45,23 @@ explicit cleanup disposition only after maintainer review under the
 - **AC-1 TODO** An approved selected model/effort and accepted readiness admit
   one native initial invocation or explicitly bound UUID resume. Resume retains
   its workspace/private-state identity and enforced boundary. Invalid inputs,
-  unavailable model approval, changed readiness or unrelated UUID fail before
-  invocation; the sandbox is visibly active until execution and relevant
-  descendants have stopped and results are retained; no manual unlock is
-  required.
+  unavailable model approval, changed readiness, missing/invalid initial Work
+  binding, resume ownership mismatch or unrelated UUID fail before invocation;
+  the sandbox is visibly active until execution and relevant descendants have
+  stopped and results are retained; no manual unlock is required.
 
   Validation: criterion-marked Make-boundary tests exercise real routing and
   artifact/state effects with a narrow CLI process double, plus independent
   review of effective configuration and model authorization. Verify agreement
   with creation/list/removal, reject a waiter whose captured generation no
-  longer matches after claim acquisition, and reject conflicting ownership. An
-  actual initial start and exact UUID resume through the new wrapper are
-  required before this criterion completes; declare prompts, model/effort,
-  fixtures, maximum one initial plus one resume, 15 minutes each/shared 30
-  minutes, stop handling and obtain applicable maintainer approval first. This
-  plan authorizes no runs.
+  longer matches after claim acquisition, and reject conflicting ownership.
+  Cover initial Work paths absent from the frozen clone but valid in the source
+  Work branch, missing/invalid paths and resume identity mismatch. An actual
+  initial start and exact UUID resume through the new wrapper are required
+  before this criterion completes; declare prompts, model/effort, fixtures,
+  maximum one initial plus one resume, 15 minutes each/shared 30 minutes, stop
+  handling and obtain applicable maintainer approval first. This plan authorizes
+  no runs.
 - **AC-2 TODO** Success, failure, interruption and timeout preserve changes in
   the workspace. Final message when available, raw JSON events, exit/status,
   elapsed timing boundaries, session identity, artifact paths and reviewer

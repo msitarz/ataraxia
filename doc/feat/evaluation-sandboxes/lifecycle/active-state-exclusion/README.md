@@ -16,25 +16,32 @@ to child commands. Validated host-side updates preserve unrelated fields and
 retain diagnostics; interrupted writes must never turn partial metadata into
 valid ownership or approval.
 
-Record a supported schema version, opaque unique sandbox generation, native
-destination identity, owning Evaluation Work repository path, and owning
-orchestrator identity. For each execution attempt record a unique run identity,
+Creation records a supported schema version, opaque unique sandbox generation,
+native destination identity and preparation state; execution provenance is
+initially absent. Before initial execution, bind the owning Evaluation Work
+repository path and owning orchestrator identity under the exclusive lock.
+For each execution attempt record a unique run identity,
 Codex session UUID when available, preparation/execution outcome (including
 incomplete or unknown), and private output/artifact paths. A Codex session UUID
 is distinct from a delegated agent identifier; add an agent identifier only if
 needed for provenance. Never invent a missing UUID. Keep prior attempts and
 artifacts when resuming or failing rather than overwrite their provenance.
 
-Creation gains a required `EVALUATION_WORK=repository/relative/path` Make input
-identifying the owning Evaluation Work with its README; reject absent, escaped
-or unrelated paths before reservation. The orchestrator supplies host-side
-owner provenance for creation and disposition. The shared host recording
-interface accepts that owner, current identity/inventory bindings, retained
-destinations, review reference and explicit retain/discard decisions; it returns
-a validated persisted disposition or refuses without approval. Execution updates
-only run/outcome/artifact fields and invalidation, never disposal approval.
-Implementation may use a small shared helper and existing Make routing; no new
-controller or external review service is required.
+Initial `sandbox-exec` requires `EVALUATION_WORK=repository/relative/path` and
+host-controlled owning-orchestrator provenance. Validate a contained path with a
+Work README in the owning source repository/Work branch; the Work need not exist
+in the sandbox frozen clone. Missing, escaped or invalid bindings refuse launch.
+Resume requires agreement with the recorded Work/orchestrator identity and exact
+session UUID; it cannot reassign ownership. Creation keeps its delivered inputs
+and does not require an Evaluation binding. Failed preparation may receive a
+validated host-side Work/orchestrator binding under the lock before disposition
+and cleanup. The shared host recording interface accepts that owner, current
+identity/inventory bindings, retained destinations, review reference and
+explicit retain/discard decisions; it returns a validated persisted disposition
+or refuses without approval. Execution records binding and run/outcome/artifact
+fields and invalidation, never disposal approval. Implementation may use a small
+shared helper and existing Make routing; no new controller or external review
+service is required.
 
 The owning orchestrator explicitly records cleanup disposition only after
 artifacts are preserved and the maintainer has reviewed the cleanup decision.
@@ -99,8 +106,8 @@ momentary observations, never cleanup authority.
 
 - **AC-1 TODO** Shared exclusion and creation integration serialize same-name
   create/execution/removal, safely reserve missing names and retain ready/failed
-  preparation markers with Evaluation ownership. Consumers need no manual lock
-  commands; listing probes leave persistent state unchanged.
+  preparation markers without requiring execution provenance. Consumers need no
+  manual lock commands; listing probes leave persistent state unchanged.
 
   Validation: criterion-marked subprocess tests cover create/create and shared
   create/execution, create/removal and execution/removal contention, readiness
@@ -130,7 +137,8 @@ momentary observations, never cleanup authority.
   failed preparation and unknown execution receive no automatic exemption.
 
   Validation: criterion-marked host-record fixtures exercise missing review,
-  wrong owner, generation/run/output/workspace mismatch, changed artifacts,
+  wrong owner, missing/invalid initial Work binding, resume ownership mismatch,
+  generation/run/output/workspace mismatch, changed artifacts,
   rejected/failed/resumed launch and failed preparation. Independently review
   existing evidence bindings and child/private trust boundary; no model run or
   speculative controller is required for this shared safety outcome.
