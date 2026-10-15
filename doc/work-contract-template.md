@@ -1,7 +1,7 @@
 # <Work name>
 
 <!-- Replace the heading with the Work name and remove all instruction comments
-before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Use each term consistently; avoid synonyms for the same concept. -->
+before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Use each term consistently; avoid synonyms for the same concept. Use relative Markdown links. -->
 
 ## Purpose
 
@@ -35,7 +35,12 @@ Example:
 
 ## Visuals
 
-<!-- Mermaid graph or graphs as described in the guidance. -->
+<!-- For meaningful architecture, module relationships, interactions, or lifecycle changes, show proportionate before/after visuals using a suitable GitHub-supported Mermaid type. Tiny changes may use clear before/after prose.
+
+Inspect current source or contracts and identify the verified before revision. Distinguish proposed additions, changes, and removals; label historical or illustrative designs, and correct the proposal when verified implementation differs. Show only affected context.
+
+Check diagram accuracy against source and contracts. Use real Mermaid fences so `make doc-check` validates rendering syntax; passing rendering does not establish acceptance or GitHub/browser parity.
+-->
 
 ## Acceptance criteria
 
@@ -43,7 +48,7 @@ Example:
 
 - Each criterion defines one observable outcome. Together, the criteria fulfill the Work’s purpose and goals.
 - Name the outcome in the heading and state what becomes possible or changes when it is delivered.
-- Include only the conditions, boundaries, and affected interfaces needed to determine completion.
+- Include preconditions, expected results, relevant failure/preservation boundaries, and affected interfaces with useful signatures and types needed to determine completion. Describe inputs, outputs, behavior, and compatibility changes where relevant.
 - Split independently assessable outcomes into separate criteria.
 - Describe the delivered result rather than listing implementation tasks or instructions to the executor.
 - Leave implementation details owned by child Works in those contracts.
@@ -94,4 +99,4 @@ Example:
 
 ## Additional context
 
-<!-- Prose that will be useful to include in this Work. Do not duplicate information from previous sections. -->
+<!-- Include useful context not covered above, including assumptions and open risks that affect the Work. Distinguish required contracts from provisional design. Keep shared context in the parent and local detail in the affected leaf; link instead of copying diagrams or API descriptions. -->

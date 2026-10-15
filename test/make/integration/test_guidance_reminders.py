@@ -46,7 +46,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         (
             "doc-check-mermaid",
             ("run", "rumdl", "check", "--only-code-block-tools", "--no-cache", "."),
-            "doc/work-definition.md#describing-changes",
+            "doc/work-contract-template.md#visuals",
             "would a Mermaid diagram or before/after visual clarify what changes?",
             "whole affected section",
         ),
