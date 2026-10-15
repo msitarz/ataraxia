@@ -32,7 +32,7 @@ General repair rules remain at their existing owner. Redundant historical
 examples and repeated explanations are removed without losing requirements or
 reading routes.
 
-### **AC-2 TODO** Evidence assessed without mandatory validation plans or markers
+### **AC-2 DONE** Evidence assessed without mandatory validation plans or markers
 
 Acceptance/evidence guidance defines the evidence used for implementation,
 guidance, Investigation, and Evaluation outcomes, with maintainer acceptance and
@@ -71,7 +71,7 @@ from assumptions. Production adoption requires a separate reviewed contract
 covering missing production and integration requirements. Existing historical
 references retain their original meaning.
 
-### **AC-6 TODO** One README contract per Work
+### **AC-6 DONE** One README contract per Work
 
 Work definition and acceptance guidance identify `README.md` as the Work
 contract, without offering separate specification or design contracts.
