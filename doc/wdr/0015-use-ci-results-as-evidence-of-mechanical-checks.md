@@ -15,6 +15,9 @@ for PR review-reporting records. Other decisions remain in force.
 Amended by
 [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md).
 
+Amended by
+[26. Keep evidence at its source](0026-keep-evidence-at-its-source.md).
+
 ## Context
 
 Agent-written prose about checks can be inaccurate and later mistaken for

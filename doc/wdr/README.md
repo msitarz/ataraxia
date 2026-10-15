@@ -35,6 +35,11 @@ authoritative owners.
 - [20. Route agents by responsibility](0020-route-agents-by-responsibility.md)
 - [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md)
 - [22. Deliver requested Work trees in one PR](0022-deliver-requested-work-trees-in-one-pr.md)
+- [23. Use readable README contracts](0023-use-readable-readme-contracts.md)
+- [24. Assess outcomes without per-criterion plans](0024-assess-outcomes-without-per-criterion-plans.md)
+- [25. Retire test-to-criterion markers](0025-retire-test-to-criterion-markers.md)
+- [26. Keep evidence at its source](0026-keep-evidence-at-its-source.md)
+- [27. Use prototyping within Investigations](0027-use-prototyping-within-investigations.md)
 
 ## Proposal
 

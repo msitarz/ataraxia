@@ -51,7 +51,7 @@ contract and evidence responsibilities. Links to moved/removed sections remain
 valid. The template is discoverable through documentation ownership and task
 routing, without making unrelated guidance mandatory reading.
 
-### **AC-4 TODO** Lasting workflow decision recorded
+### **AC-4 DONE** Lasting workflow decision recorded
 
 WDRs record adopting README-only outcome contracts, retiring test-to-AC
 bookkeeping, and folding Prototype into Investigation, with meaningful

@@ -14,6 +14,9 @@ Amends
 and
 [17. Review local artifacts before PR publication](0017-review-local-artifacts-before-pr-publication.md).
 
+Amended by
+[24. Assess outcomes without per-criterion plans](0024-assess-outcomes-without-per-criterion-plans.md).
+
 ## Context
 
 Recent deliveries routinely published implementation and ran CI first, then
