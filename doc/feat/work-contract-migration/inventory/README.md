@@ -19,7 +19,7 @@ migration changes their format or removes acceptance bookkeeping.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Complete active-contract inventory
+### **AC-1 DONE** Complete active-contract inventory
 
 The [migration inventory](../inventory.md) identifies every active Work README,
 including planning parents without ACs, and classifies linked files as live
@@ -33,7 +33,7 @@ The initial inventory records 31 existing Work READMEs and three supporting
 sandbox Markdown files at the planning baseline. This is a starting inventory,
 not a claim that every linked requirement has already been reviewed.
 
-### **AC-2 TODO** All migration-sensitive references identified
+### **AC-2 DONE** All migration-sensitive references identified
 
 The inventory identifies current format/evidence conflicts, Make and script
 entry points, marker registration and usages, dedicated tests/fixtures, and
