@@ -37,11 +37,6 @@ Routine choices within the agreed contract need no additional approval,
 whether its acceptance criteria are in a Work contract or supplied in the
 handoff.
 
-Strongly recommend at most five Work levels, counting the topmost Work as level
-1 and every descendant Work, including leaves. Count Work nodes rather than
-helper or specification directories. A proposal beyond five levels requires an
-explicit maintainer decision; do not automatically renest existing trees.
-
 ## Decisions and new splits
 
 A new split or any needed maintainer decision pauses the entire requested Work
