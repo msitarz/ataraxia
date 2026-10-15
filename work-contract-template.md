@@ -5,15 +5,15 @@ before publishing. Keep only the relevant headings unless instruction comment sa
 
 ## Purpose
 
- <!-- Write one sentence stating why this change is needed. REQUIRED. -->
+ <!-- Write one sentence stating **why** this change is needed. REQUIRED. -->
 
 ## Goals
 
-<!-- List goals of this Work contract, each in one sentence. REQUIRED. -->
+<!-- List goals of this Work contract, each in one sentence. This section is meant to summarize intended capabilities. REQUIRED. -->
 
 ## Non-Goals
 
-<!-- List non-goals of this Work contract, each in one sentence. REQUIRED. -->
+<!-- List non-goals of this Work contract, each in one sentence. -->
 
 ## Mechanisms
 
@@ -33,29 +33,32 @@ Example:
 
 <!-- List of acceptance criteria. REQUIRED.
 
-In the example, if a subheading of criterion would remain empty, then do not print it.
+Acceptance criteria define completion of this Work, which must cover Goals. A single acceptance criterion might cover multiple goals. Multiple acceptance criteria might cover a single goal.
+
+In the example, if a subheading of criterion would remain empty, then do not print it the heading as well.
 
 Example:
 
 ### **AC-1 TODO** Criterion name
 
-Describe outcome of the criterion. List and describe created, removed and changed machinery. Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include API with types if outcome is code.
+Describe outcome of the criterion. List and describe created, removed and changed machinery in accordance to the purpose of this Work and criterion. Do not describe internal machinery that might be covered by children Works. Keep the Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include consumer interface with types if the outcome is code.
 
 Example:
-Introduce `script/sandbox.py` module with a `create(path: Path)` API to be run via `make sandbox-create PATH=path`.
+Introduce `make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
 
 #### What exists
 
-What exists right now and which requirements it already fulfills. Print it only if it helps explain that criterion.
+What machinery exists right now but should be modified or expanded. Print it only if it helps explain that criterion.
 -->
 
 ## Dependencies
 
-<!-- List of links to other Works, *not* including direct children, with one sentence description.
+<!-- List of links to other Works, their purpose and prerequisite explanation. Do **NOT** include direct children.
 
 Example:
 
 - TODO [Dependency Work name](link/to/work/README.md): Dependency purpose from its Work contract.
+    It provides API or mechanism that this Work consumes.
 -->
 
 ## Children
