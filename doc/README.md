@@ -28,7 +28,7 @@ relevant guidance.
 | Coding and typing conventions | [Engineering](engineering.md) |
 | Common testing rules and test-type guidance | [Testing](testing.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
-| Work acceptance IDs, coverage markers, and test lookup | [Acceptance tracing](acceptance-tracing.md) |
+| Work acceptance status and delivery evidence | [Acceptance tracing](acceptance-tracing.md) |
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | PR publication and description guidance | [Pull requests](pull-requests.md) |
 | Mechanical PR publication and published-branch rewrite leases | [Publisher](publisher.md) |

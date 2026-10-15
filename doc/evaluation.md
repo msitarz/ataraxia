@@ -35,7 +35,7 @@ delegating; an evaluation itself does not require agents or nesting.
 Keep initial and final artifacts, severity findings, executor checks, parent
 checks, and the provenance of reused evidence. Identify artifact revisions and
 which checks apply to each. Apply [checks and evidence](validation.md) and
-[acceptance tracing](acceptance-tracing.md#planned-validation-and-evidence);
+[acceptance tracing](acceptance-tracing.md#evidence);
 planned checks and reported assertions do not establish observed outcomes.
 
 Record timestamps and timing boundaries, including preparation, dispatch,

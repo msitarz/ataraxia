@@ -4,8 +4,7 @@ Read this file when writing, changing, or reviewing tests. It owns common
 rules and routes to each test type. [Engineering conventions](engineering.md)
 own code style and typing; [check and evidence policy](validation.md) owns
 check selection and reporting. Read [test ownership](test-ownership.md) when
-reviewing tests for cleanup and [acceptance tracing](acceptance-tracing.md)
-when adding or reviewing Work coverage markers.
+reviewing tests for cleanup.
 
 ## Pick the test type
 
@@ -21,9 +20,11 @@ process. Keep higher-level tests for behavior that lower levels cannot prove.
 | Integration | `test/ataraxia/integration`, `test/script/integration`, `test/make/integration` | real components or external tools across a boundary | [Integration tests](testing-integration.md) |
 | Acceptance | `test/ataraxia/acceptance` | the shipped command as a user runs it | [Acceptance tests](testing-acceptance.md) |
 
-Read the guidance for the type you are writing or reviewing after this file.
-Run a focused selection with `make test ARGS=<paths>`; example strategy tests
-use the example targets in the [Makefile](../Makefile).
+Choose tests from the changed behavior and existing coverage. Reuse suitable
+existing tests; an acceptance criterion does not automatically require a new
+test. Read the guidance for the type you are writing or reviewing after this
+file. Run a focused selection with `make test ARGS=<paths>`; example strategy
+tests use the example targets in the [Makefile](../Makefile).
 
 ## What a test proves
 
@@ -149,10 +150,8 @@ def test_a_gap_through_the_stop_fills_at_the_open():
   cohesive plumbing or separate unrelated behaviors, not code solely to meet a
   count. The statement-count guidance in
   [engineering conventions](engineering.md) also applies to tests.
-- Follow [acceptance tracing](acceptance-tracing.md#pytest-markers-and-lookup)
-  for `covers` marker identity and concise behavior/coverage docstrings. For
-  tests without markers, add a docstring only when the name cannot explain what
-  the test proves.
+- Add a docstring when the name cannot explain what the test proves or its
+  material limits.
 
 ## Treat test data as data
 
