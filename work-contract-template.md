@@ -51,7 +51,16 @@ What exists right now and which requirements it already fulfills. Print it only 
 
 ## Dependencies
 
-<!-- List of links to other Works, including direct children, with one sentence description. Include guidaCan be empty if there are none, which means that is a leaf Work.
+<!-- List of links to other Works, *not* including direct children, with one sentence description.
+
+Example:
+
+- TODO [Dependency Work name](link/to/work/README.md): Dependency purpose from its Work contract.
+-->
+
+## Children
+
+<!-- List of links to direct children Works, with one sentence description.
 
 Example:
 
@@ -60,7 +69,7 @@ Example:
 
 ## Links
 
-<!-- List of other relevenant links, e.g. to previously closed Investigation or Evaluation Works with one sentence description of why are they relevant to this Work. -->
+<!-- List of other relevant links, e.g. to previously closed Investigation or Evaluation Works with one sentence description of why are they relevant to this Work. -->
 
 ## Additional context
 
