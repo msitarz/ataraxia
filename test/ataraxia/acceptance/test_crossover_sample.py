@@ -143,10 +143,6 @@ def assert_failure_state(
 @pytest.mark.parametrize(
     "case", FAILURE_CASES, ids=[case.case_id for case in FAILURE_CASES]
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/failures/README.md",
-    ac="AC-1",
-)
 def test_cli_shard_failure_preserves_output(tmp_path: Path, case: FailureCase) -> None:
     """Checks refusal effects and preserves absent or pre-existing output state."""
     # Given
@@ -165,10 +161,6 @@ def test_cli_shard_failure_preserves_output(tmp_path: Path, case: FailureCase) -
     assert_failure_state(result, paths, case)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/failures/README.md",
-    ac="AC-1",
-)
 def test_main_print_error_and_exit(tmp_path: Path) -> None:
     """Checks the empty-directory refusal and omitted-output default."""
     # Given

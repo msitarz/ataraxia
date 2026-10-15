@@ -16,10 +16,6 @@ from test.ataraxia.backtest_support import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/results/README.md",
-    ac="AC-1",
-)
 def test_backtest_shard(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Compare the complete real broker result for the retained one-bar shard."""
     # Given
@@ -35,10 +31,6 @@ def test_backtest_shard(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/results/README.md",
-    ac="AC-1",
-)
 def test_backtest_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Compare results by resolved shard path without relying on directory order."""
     # Given
@@ -69,10 +61,6 @@ def test_backtest_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert observed == expected
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/results/README.md",
-    ac="AC-1",
-)
 def test_backtest_shard_include_shard_path_strategy_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -50,9 +50,6 @@ class IntegerProvider(Provider[int]):
         return object.__hash__(self)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
-)
 def test_source_runner() -> None:
     """Return a directly stored item."""
     # Given
@@ -66,9 +63,6 @@ def test_source_runner() -> None:
     assert actual == 1
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
-)
 def test_source_node() -> None:
     """Forward integer items while retaining its provider and runner."""
     # Given
@@ -96,9 +90,6 @@ def test_source_node() -> None:
 
 @pytest.mark.parametrize(
     "exit_result", [False, True, None], ids=["false", "true", "none"]
-)
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/forwarding/README.md", ac="AC-1"
 )
 def test_source_node_delegates_provider_lifecycle(exit_result: bool | None) -> None:
     """Forward context entry, exact errors, traceback, and exit outcomes."""

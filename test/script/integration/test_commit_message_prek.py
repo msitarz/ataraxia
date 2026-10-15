@@ -3,8 +3,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from test.script.commit_message_prek import (
     prepare_project,
     project_input_snapshot,
@@ -16,10 +14,6 @@ from test.script.commit_message_support import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/prek/README.md",
-    ac="AC-1",
-)
 def test_prek_forwards_valid_message_filename(tmp_path: Path) -> None:
     """Pass a valid named message through the configured real hook."""
     # Given
@@ -39,10 +33,6 @@ def test_prek_forwards_valid_message_filename(tmp_path: Path) -> None:
     assert observe_git_state(project.root, project.env) == project.git_state
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/prek/README.md",
-    ac="AC-1",
-)
 def test_prek_refuses_unformatted_message_filename(tmp_path: Path) -> None:
     """Refuse the named malformed message without changing project inputs or refs."""
     # Given

@@ -79,10 +79,6 @@ class ConsumerBeforeSinkCompute:
             yield reordered
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/ordering/README.md",
-    ac="AC-1",
-)
 def test_backtest_shard_uses_broker_result_from_compute_step(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -24,9 +24,6 @@ def two_bar_shard(tmp_path: Path) -> Path:
     return shard
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/contexts/README.md", ac="AC-1"
-)
 def test_source_csv_context_closes_after_exhaustion(two_bar_shard: Path) -> None:
     """Exhaustion forwards both complete Bars and closes the real file."""
     # Given
@@ -56,9 +53,6 @@ def test_source_csv_context_closes_after_exhaustion(two_bar_shard: Path) -> None
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/contexts/README.md", ac="AC-1"
-)
 def test_source_csv_context_closes_after_body_error(two_bar_shard: Path) -> None:
     """A body error propagates by identity after the real file closes."""
     # Given
@@ -84,9 +78,6 @@ def test_source_csv_context_closes_after_body_error(two_bar_shard: Path) -> None
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/contexts/README.md", ac="AC-1"
-)
 def test_source_csv_context_closes_on_early_exit(two_bar_shard: Path) -> None:
     """Early scope exit sends the first Bar and closes with another row unread."""
     # Given

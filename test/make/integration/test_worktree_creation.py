@@ -80,10 +80,6 @@ def setup_calls(destination: Path) -> tuple[UvCall, ...]:
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/make-work-reminders/README.md",
-    ac="AC-1",
-)
 def test_creation_reminds_about_expected_review_size_before_dispatch(
     tmp_path: Path,
 ) -> None:
@@ -113,14 +109,6 @@ def test_creation_reminds_about_expected_review_size_before_dispatch(
     assert result.stdout.index(reminder) < result.stdout.index(git_creation)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
-    ac="AC-1",
-)
 def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) -> None:
     """AC-1: Given usable, missing, partial, or verification-failing setup,
     creation succeeds with independent destination caches/environment or fails
@@ -171,14 +159,6 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
     [((), {}), ((("uv/partial", "partial"),), {"uv/partial": b"partial"})],
     ids=["absent-cache", "incomplete-cache"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
-    ac="AC-1",
-)
 def test_unusable_cache_retains_a_recoverable_worktree(
     tmp_path: Path,
     files: tuple[tuple[str, str], ...],
@@ -214,14 +194,6 @@ def test_unusable_cache_retains_a_recoverable_worktree(
     assert case.repository.state() == created_state(case, "work/failed")
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
-    ac="AC-1",
-)
 def test_failed_verification_retains_the_prepared_worktree(tmp_path: Path) -> None:
     """AC-1: Given usable, missing, partial, or verification-failing setup,
     creation succeeds with independent destination caches/environment or fails
@@ -258,14 +230,6 @@ def test_failed_verification_retains_the_prepared_worktree(tmp_path: Path) -> No
     assert case.repository.state() == created_state(case, "work/verify")
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
-    ac="AC-1",
-)
 def test_existing_destination_is_preserved_before_setup(tmp_path: Path) -> None:
     """AC-2: Given an existing destination or branch, refusal preserves
     existing files/refs/registrations and creates no unintended worktree.
@@ -292,14 +256,6 @@ def test_existing_destination_is_preserved_before_setup(tmp_path: Path) -> None:
     assert case.repository.state() == case.before
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/cases/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/workspace-preparation/README.md",
-    ac="AC-1",
-)
 def test_existing_branch_is_preserved_without_creating_a_worktree(
     tmp_path: Path,
 ) -> None:

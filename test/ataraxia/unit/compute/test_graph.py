@@ -11,10 +11,6 @@ from ataraxia.errors import CycleError
 from test.ataraxia.compute_dependency_inputs import single_dependency
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_dependency_graph_good_path() -> None:
     """Build the exact graph from A to its shared B dependency."""
     # Given
@@ -27,10 +23,6 @@ def test_dependency_graph_good_path() -> None:
     assert actual == {a: (b,), b: ()}
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_sort_graph() -> None:
     """Order B before A so its dependency is available first."""
     # Given
@@ -44,10 +36,6 @@ def test_sort_graph() -> None:
     assert actual == (b, a)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_sort_graph_cycle_error() -> None:
     """Report the cycle reason and retain graphlib's cause."""
     # Given

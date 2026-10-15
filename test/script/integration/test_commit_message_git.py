@@ -17,10 +17,6 @@ from test.script.commit_message_support import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/git/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("comment_prefix", "body", "expected_exit", "expected_stderr"),
     [
@@ -94,10 +90,6 @@ def test_verbose_diff_below_scissors(
     assert path.read_bytes() == message_bytes
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/git/README.md",
-    ac="AC-1",
-)
 def test_commit_hook_preserves_refs_on_refusal_and_stores_stripped_message(
     tmp_path: Path,
 ) -> None:

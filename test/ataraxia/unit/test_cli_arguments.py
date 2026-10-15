@@ -27,10 +27,6 @@ def _run_main(
     return captured.out, captured.err
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/arguments/README.md",
-    ac="AC-1",
-)
 def test_main_requires_sink_before_backtest(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
@@ -50,10 +46,6 @@ def test_main_requires_sink_before_backtest(
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/arguments/README.md",
-    ac="AC-1",
-)
 def test_main_requires_shards_directory_before_backtest(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
@@ -73,10 +65,6 @@ def test_main_requires_shards_directory_before_backtest(
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/arguments/README.md",
-    ac="AC-1",
-)
 def test_main_rejects_unknown_option_before_backtest(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
@@ -101,10 +89,6 @@ def test_main_rejects_unknown_option_before_backtest(
     assert stderr == USAGE + "ataraxia: error: unrecognized arguments: --mystery\n"
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/arguments/README.md",
-    ac="AC-1",
-)
 def test_main_help_lists_supported_options(
     monkeypatch: MonkeyPatch,
     capsys: CaptureFixture[str],

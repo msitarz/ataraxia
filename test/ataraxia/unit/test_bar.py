@@ -19,9 +19,6 @@ def data() -> dict[str, str]:
     }
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
-)
 def test_bar_from_map(data: Mapping[str, str]) -> None:
     """Normalize integer and quarter-price fields through the public mapping."""
     # Given
@@ -34,9 +31,6 @@ def test_bar_from_map(data: Mapping[str, str]) -> None:
     assert bar == Bar(timestamp=1234, open=41, high=122, low=40, close=103, volume=4321)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
-)
 def test_bar_from_map_rounds_fractional_tick_value(data: Mapping[str, str]) -> None:
     """Preserve the established rounding result for a fractional tick value."""
     # Given
@@ -54,9 +48,6 @@ def test_bar_from_map_rounds_fractional_tick_value(data: Mapping[str, str]) -> N
     ("value", "expected"),
     [(4, False), (5, True), (14, True), (20, True), (21, False)],
     ids=["below-low", "at-low", "inside-range", "at-high", "above-high"],
-)
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/bar/README.md", ac="AC-1"
 )
 def test_bar_within_includes_both_range_boundaries(value: int, expected: bool) -> None:
     """Treat both ends of the Bar price range as inclusive."""

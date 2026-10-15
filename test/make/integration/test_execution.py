@@ -23,14 +23,6 @@ REQUIRED_CONSUMERS = {
 }
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_verify_runs_required_consumers_offline_without_preparation_or_audit(
     sandbox: MakeSandbox,
 ) -> None:
@@ -64,14 +56,6 @@ def test_verify_runs_required_consumers_offline_without_preparation_or_audit(
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_verify_stops_after_the_prepared_environment_check_fails(
     sandbox: MakeSandbox,
 ) -> None:
@@ -99,14 +83,6 @@ def test_verify_stops_after_the_prepared_environment_check_fails(
     assert tuple(call.argv for call in result.calls) == (failed,)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_ci_runs_local_checks_before_propagating_audit_failure(
     sandbox: MakeSandbox,
 ) -> None:
@@ -147,10 +123,6 @@ def test_ci_runs_local_checks_before_propagating_audit_failure(
 
 
 @pytest.mark.parametrize("target", ["verify-check", "ci-check"], ids=["local", "ci"])
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-2",
-)
 def test_static_checks_request_equivalent_read_only_documentation_commands(
     sandbox: MakeSandbox,
     target: str,
@@ -194,10 +166,6 @@ def test_static_checks_request_equivalent_read_only_documentation_commands(
     ],
     ids=["full-tests", "full-examples"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-2",
-)
 def test_full_test_targets_ignore_caller_selectors(
     sandbox: MakeSandbox,
     target: str,
@@ -220,10 +188,6 @@ def test_full_test_targets_ignore_caller_selectors(
     assert tuple(call.argv for call in result.calls) == (expected,)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/execution/README.md",
-    ac="AC-2",
-)
 def test_full_static_checks_ignore_caller_paths(sandbox: MakeSandbox) -> None:
     """Keep full static-check scope when caller paths are supplied."""
     # Given

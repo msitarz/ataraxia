@@ -118,16 +118,18 @@ checks, experimental protocol, planned verification, or actual evidence.
 ## Tooling and tests
 
 - [Makefile](../../../Makefile): ac-collect/ac-test invoke
-  [acceptance_tests.py](../../../script/acceptance_tests.py); ac-check invokes
+  [acceptance_tests.py](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/script/acceptance_tests.py);
+  ac-check invokes
   [acceptance_coverage.py](../../../script/acceptance_coverage.py).
 - [acceptance_coverage.py](../../../script/acceptance_coverage.py): list-based
   parser, Validation annotation parser, AST marker scanner, and marker reports.
 - [work_paths.py](../../../script/work_paths.py) is imported by the checker,
   selector, and its dedicated unit tests. Retain it for a surviving checker or
   remove it with that surface if ac-check is retired.
-- [test_roots.py](../../../script/test_roots.py) is imported only by the checker
-  marker scanner and selector. It has no unrelated production caller and can
-  leave with those features. Test fixture copying also names both helpers.
+- [test_roots.py](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/script/test_roots.py)
+  is imported only by the checker marker scanner and selector. It has no
+  unrelated production caller and can leave with those features. Test fixture
+  copying also names both helpers.
 - [pyproject.toml](../../../pyproject.toml): strict pytest covers registration.
 - [Script acceptance helpers](../../../test/script/acceptance_support.py),
   [Make acceptance helpers](../../../test/make/acceptance_support.py), dedicated
@@ -160,8 +162,8 @@ checks, experimental protocol, planned verification, or actual evidence.
 | Surface | Migration disposition |
 | --- | --- |
 | [Declaration parsing](../../../test/script/unit/test_acceptance_declaration_parsing.py), [declaration reports](../../../test/script/unit/test_acceptance_declaration_reports.py), [Make declarations](../../../test/make/integration/test_acceptance_declarations.py) | Keep meaningful declaration/path cases only if ac-check survives, rewrite them for heading syntax, and retire Validation/marker expectations. |
-| [Marker discovery](../../../test/script/unit/test_acceptance_marker_discovery.py) | Retire AST marker-scanning tests with that feature. |
-| [Command construction](../../../test/script/unit/test_acceptance_command_construction.py), [command summaries](../../../test/script/unit/test_acceptance_command_summaries.py), [Make selection](../../../test/make/integration/test_acceptance_selection.py) | Retire tests solely exercising ac-collect/ac-test, marker filtering, or empty selections. |
+| [Marker discovery](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_marker_discovery.py) | Retire AST marker-scanning tests with that feature. |
+| [Command construction](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_command_construction.py), [command summaries](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_command_summaries.py), [Make selection](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/make/integration/test_acceptance_selection.py) | Retire tests solely exercising ac-collect/ac-test, marker filtering, or empty selections. |
 | [Work paths](../../../test/script/unit/test_work_paths.py) | Preserve supported path safety if the checker/helper remains. |
 | [Make guidance reminders](../../../test/make/integration/test_guidance_reminders.py) | Update hard-coded ac-check/ac-test command expectations alongside target/reminder changes; retain unrelated reminder and test-routing coverage. |
 | `test/script/fixtures/acceptance_markers_*.py`, `acceptance_report_marker_source.py` | Five marker scanner/report fixture files; remove with their retired consumers or replace only data needed by a surviving declaration checker. |

@@ -60,9 +60,6 @@ def lint_check_fixture(tmp_path: Path, name: str) -> MakeResult:
     ids=["25-clean", "26-advisory", "50-advisory-ceiling"],
 )
 @pytest.mark.real_tool
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/size-guardrails/README.md", ac="AC-1"
-)
 def test_lint_check_reports_size_advice_without_failing(
     tmp_path: Path,
     fixture_name: str,
@@ -93,9 +90,6 @@ def test_lint_check_reports_size_advice_without_failing(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/size-guardrails/README.md", ac="AC-1"
-)
 def test_lint_check_blocks_after_50(tmp_path: Path) -> None:
     """AC-1: Given the four statement-count fixtures, 25 is clean, 26 and 50
     are advisory successes, and 51 blocks lint through real Make/Ruff.

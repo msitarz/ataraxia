@@ -14,10 +14,6 @@ from test.ataraxia.backtest_support import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/exports/README.md",
-    ac="AC-1",
-)
 def test_backtest_shard_requires_sink_export(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -36,10 +32,6 @@ def test_backtest_shard_requires_sink_export(
     assert isinstance(error.value.__cause__, AttributeError)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/exports/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("strategy_fixture", "sink_guard", "type_guard"),
     [
@@ -76,10 +68,6 @@ def test_backtest_shard_requires_sink_class(
     assert error.value.__cause__ is None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/exports/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     "strategy_fixture",
     ["module_error.py", "construction_error.py"],

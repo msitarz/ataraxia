@@ -92,10 +92,6 @@ class FailingSink(Sink[[Bar], int]):
         return None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/resources/README.md",
-    ac="AC-1",
-)
 def test_compute_closes_csv_provider_after_exhaustion(tmp_path: Path) -> None:
     """Exhaust real CSV computation and verify both complete steps and file closure."""
     # Given
@@ -119,10 +115,6 @@ def test_compute_closes_csv_provider_after_exhaustion(tmp_path: Path) -> None:
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/resources/README.md",
-    ac="AC-1",
-)
 def test_compute_closes_csv_provider_after_runner_error(tmp_path: Path) -> None:
     """Propagate the exact sink error and close the real file after a bar arrives."""
     # Given
@@ -146,10 +138,6 @@ def test_compute_closes_csv_provider_after_runner_error(tmp_path: Path) -> None:
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/resources/README.md",
-    ac="AC-1",
-)
 def test_compute_close_closes_csv_provider_with_row_unread(tmp_path: Path) -> None:
     """Close compute after the first of two real bars and verify provider closure."""
     # Given

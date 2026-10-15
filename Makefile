@@ -125,15 +125,8 @@ commit: ## commit staged changes; requires SUBJECT=... [BODY=...]
 deps-lock: ## update uv.lock after dependency changes
 	uv lock
 
-.PHONY: ac-collect ac-test ac-check
-ac-collect: ## collect tests for WORK=path/to/README.md [AC=AC-8]
-	uv run python script/acceptance_tests.py collect
-
-ac-test: ## run tests for WORK=path/to/README.md [AC=AC-8]
-	uv run python script/acceptance_tests.py test
-	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
-
-ac-check: ## validate AC declarations/references (WORK=path/to/README.md)
+.PHONY: ac-check
+ac-check: ## validate AC declarations (WORK=path/to/README.md)
 	@uv run python script/acceptance_coverage.py check && \
 	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Independent orchestrator review: underlying problem solved? Existing concepts reused? Outcome supported by observed evidence? doc/orchestrator.md#review-and-return'; fi
 

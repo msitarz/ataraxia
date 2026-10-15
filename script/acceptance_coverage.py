@@ -3,18 +3,15 @@
 
 from __future__ import annotations
 
-import ast
 from dataclasses import dataclass
 import os
 from pathlib import Path
 import re
 import sys
 
-from test_roots import existing_test_roots
 from work_paths import resolve_work_file
 
 ROOT = Path(__file__).resolve().parents[1]
-_AC_ID = re.compile(r"AC-[1-9][0-9]*\Z")
 _DECLARATION = re.compile(
     r"^ {0,3}-\s+\*\*(AC-[1-9][0-9]*) (TODO|DONE)\*\*(?:\s+(.*))?\s*$"
 )
@@ -31,19 +28,6 @@ class Criterion:
 
     status: str
     has_validation: bool
-
-
-def _is_covers_call(node: ast.Call) -> bool:
-    """Return whether a call uses the documented pytest marker spelling."""
-    function = node.func
-    return (
-        isinstance(function, ast.Attribute)
-        and function.attr == "covers"
-        and isinstance(function.value, ast.Attribute)
-        and function.value.attr == "mark"
-        and isinstance(function.value.value, ast.Name)
-        and function.value.value.id == "pytest"
-    )
 
 
 def _markdown_lines(text: str) -> list[tuple[int, str]]:
@@ -159,132 +143,17 @@ def parse_criteria(text: str, work: str) -> tuple[dict[str, Criterion], list[str
     return criteria, errors
 
 
-def _literal_string(node: ast.expr) -> str | None:
-    """Return a string constant value, if the AST node is one."""
-    if isinstance(node, ast.Constant) and isinstance(node.value, str):
-        return node.value
-    return None
+def _criterion_report(ac: str, criterion: Criterion) -> str:
+    """Describe a declared method without judging its outcome.
 
-
-def _test_functions(tree: ast.Module) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
-    """Return only statically recognizable pytest test functions."""
-    functions: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
-    for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if node.name.startswith("test_"):
-                functions.append(node)
-        elif isinstance(node, ast.ClassDef) and node.name.startswith("Test"):
-            functions.extend(
-                child
-                for child in node.body
-                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
-                and child.name.startswith("test_")
-            )
-    return functions
-
-
-def _test_candidate_files(test_root: Path) -> list[Path]:
-    """Return repository test files that may contain collected test functions."""
-    return sorted(
-        path
-        for path in test_root.rglob("*.py")
-        if path.name.startswith("test_") or path.name.endswith("_test.py")
+    Returns:
+        A neutral summary of the criterion's declared method.
+    """
+    declaration = (
+        "Validation method declared"
+        if criterion.has_validation
+        else "no Validation method declared"
     )
-
-
-def _read_test_module(path: Path, root: Path) -> tuple[ast.Module | None, str | None]:
-    """Read and parse one test source.
-
-    Returns:
-        The parsed module and no error, or no module and a contextual error.
-    """
-    relative = path.relative_to(root).as_posix()
-    try:
-        return ast.parse(path.read_text(encoding="utf-8"), filename=relative), None
-    except (OSError, SyntaxError) as exc:
-        return None, f"{relative}: cannot inspect marker declarations: {exc}"
-
-
-def _selected_marker_criterion(
-    decorator: ast.Call, relative: str, work: str
-) -> tuple[str | None, str | None]:
-    """Validate one marker and return its criterion when it selects this Work.
-
-    Returns:
-        The selected criterion and no error, or no criterion and an error.
-    """
-    marker = f"{relative}:{decorator.lineno}"
-    work_args = [item.value for item in decorator.keywords if item.arg == "work"]
-    if len(work_args) != 1 or (selected_work := _literal_string(work_args[0])) is None:
-        return None, f"{marker}: covers marker needs one literal work path"
-    if selected_work != work:
-        return None, None
-
-    ac_args = [item.value for item in decorator.keywords if item.arg == "ac"]
-    has_unpacking = any(item.arg is None for item in decorator.keywords)
-    known_names = {"work", "ac"}
-    unsupported = (
-        decorator.args
-        or has_unpacking
-        or any(item.arg not in known_names for item in decorator.keywords)
-        or len(ac_args) != 1
-    )
-    if unsupported or (ac := _literal_string(ac_args[0])) is None:
-        return (
-            None,
-            f"{marker}: selected covers marker needs literal work and ac strings",
-        )
-    if not _AC_ID.fullmatch(ac):
-        return None, f"{marker}: invalid criterion ID {ac!r}"
-    return ac, None
-
-
-def _test_markers(root: Path, work: str) -> tuple[dict[str, int], list[str]]:
-    """Count literal covers markers for one Work across repository tests.
-
-    Returns:
-        Marker counts by criterion ID and any source or marker diagnostics.
-    """
-    counts: dict[str, int] = {}
-    errors: list[str] = []
-    for name in existing_test_roots(root):
-        for path in _test_candidate_files(root / name):
-            relative = path.relative_to(root).as_posix()
-            tree, read_error = _read_test_module(path, root)
-            if read_error:
-                errors.append(read_error)
-                continue
-            assert tree is not None
-
-            for function in _test_functions(tree):
-                for decorator in function.decorator_list:
-                    if not isinstance(decorator, ast.Call) or not _is_covers_call(
-                        decorator
-                    ):
-                        continue
-                    ac, marker_error = _selected_marker_criterion(
-                        decorator, relative, work
-                    )
-                    if marker_error:
-                        errors.append(marker_error)
-                    if ac is None:
-                        continue
-                    counts[ac] = counts.get(ac, 0) + 1
-    return counts, errors
-
-
-def _criterion_report(ac: str, criterion: Criterion, marker_count: int) -> str:
-    """Describe declarations for one criterion without judging its outcome.
-
-    Returns:
-        A neutral summary of the criterion's declared markers or method.
-    """
-    if marker_count:
-        declaration = f"{marker_count} test marker(s) declared"
-    elif criterion.has_validation:
-        declaration = "Validation method declared"
-    else:
-        declaration = "no test marker or Validation method declared"
     return f"{ac} {criterion.status}: {declaration}"
 
 
@@ -296,16 +165,7 @@ def check_work(root: Path, work: str) -> tuple[list[str], list[str]]:
     """
     contract = resolve_work_file(root, work)
     criteria, errors = parse_criteria(contract.read_text(encoding="utf-8"), work)
-    markers, marker_errors = _test_markers(root.resolve(), work)
-    errors.extend(marker_errors)
-
-    for ac in markers.keys() - criteria.keys():
-        errors.append(f"{work}: marker refers to undeclared criterion {ac}")
-
-    reports = [
-        _criterion_report(ac, criterion, markers.get(ac, 0))
-        for ac, criterion in criteria.items()
-    ]
+    reports = [_criterion_report(ac, criterion) for ac, criterion in criteria.items()]
     return errors, reports
 
 

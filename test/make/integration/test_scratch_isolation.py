@@ -4,18 +4,10 @@
 from pathlib import Path
 import shutil
 
-import pytest
-
 from test.make.support import ROOT
 from test.make.worktree_support import creation_repository, files_under
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/scratch-isolation/README.md", ac="AC-1"
-)
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/scratch-witness/README.md", ac="AC-1"
-)
 def test_make_process_caches_preserve_repository_snapshot(tmp_path: Path) -> None:
     """AC-1: Given a complete repository snapshot before execution and
     process home/scratch outside that repository, writes during a real Make

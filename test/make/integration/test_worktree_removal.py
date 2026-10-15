@@ -62,18 +62,6 @@ def unsafe_case(tmp_path: Path, request: pytest.FixtureRequest) -> RefusalCase:
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_clean_literal_removal_retains_refs_and_unrelated_worktree(
     tmp_path: Path,
 ) -> None:
@@ -116,10 +104,6 @@ def test_clean_literal_removal_retains_refs_and_unrelated_worktree(
     assert str(unrelated) in listing.stdout
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-1",
-)
 def test_help_lists_all_worktree_cleanup_targets(tmp_path: Path) -> None:
     """AC-1: Given an eligible clean worktree with a hostile literal path,
     removal deletes only that worktree while retaining its branch and unrelated
@@ -153,14 +137,6 @@ def test_help_lists_all_worktree_cleanup_targets(tmp_path: Path) -> None:
     indirect=True,
     ids=["main", "dirty", "untracked", "locked"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_unsafe_removal_preserves_complete_relevant_state(
     unsafe_case: RefusalCase,
 ) -> None:
@@ -185,14 +161,6 @@ def test_unsafe_removal_preserves_complete_relevant_state(
     assert unsafe_case.repository.state() == unsafe_case.before
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_missing_removal_input_preserves_repository_state(tmp_path: Path) -> None:
     """AC-2: Given missing input, an unknown worktree, or an unsafe main,
     dirty, untracked, locked, or submodule worktree, refusal preserves required
@@ -216,14 +184,6 @@ def test_missing_removal_input_preserves_repository_state(tmp_path: Path) -> Non
     assert files_under(repository.sandbox.directory) == files
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_unknown_worktree_refusal_preserves_files_and_repository(
     tmp_path: Path,
 ) -> None:
@@ -252,14 +212,6 @@ def test_unknown_worktree_refusal_preserves_files_and_repository(
     assert repository.state() == before
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/removal/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_populated_submodule_refusal_preserves_complete_worktree_state(
     tmp_path: Path,
 ) -> None:

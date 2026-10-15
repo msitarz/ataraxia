@@ -42,9 +42,7 @@ def acceptance_sandbox(directory: Path) -> AcceptanceSandbox:
     script = directory / "script"
     script.mkdir()
     for name in (
-        "acceptance_tests.py",
         "acceptance_coverage.py",
-        "test_roots.py",
         "work_paths.py",
     ):
         shutil.copyfile(ROOT / "script" / name, script / name)

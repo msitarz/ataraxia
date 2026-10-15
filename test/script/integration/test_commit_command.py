@@ -73,7 +73,6 @@ def prepare_staged_repository(
     return repository, env, observe_git_state(repository, env)
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-1")
 def test_body_formatting_preserves_expected_prose_list_and_token() -> None:
     """Reflow a paragraph and retain list structure and an unbreakable token."""
     # Given
@@ -101,7 +100,6 @@ def test_body_formatting_preserves_expected_prose_list_and_token() -> None:
     assert check_message("fix: title\n\n" + formatted) == []
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-1")
 @pytest.mark.parametrize(
     ("body", "expected_errors"),
     [
@@ -131,7 +129,6 @@ def test_marked_command_uses_existing_checker(
     assert check_message("fix: title\n\n" + formatted) == list(expected_errors)
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-1")
 def test_formatter_failure_refuses_before_advancing_head(tmp_path: Path) -> None:
     """Refuse a commit when the real formatter process exits unsuccessfully."""
     # Given
@@ -153,7 +150,6 @@ def test_formatter_failure_refuses_before_advancing_head(tmp_path: Path) -> None
     assert observe_git_state(repository, env) == before
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-2")
 @pytest.mark.parametrize(
     ("body", "expected_message"),
     [
@@ -195,7 +191,6 @@ def test_commit_stores_message_through_hooks_and_preserves_unstaged_file(
     )
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-2")
 def test_commitizen_rejects_nonconventional_subject_without_moving_head(
     tmp_path: Path,
 ) -> None:
@@ -218,7 +213,6 @@ def test_commitizen_rejects_nonconventional_subject_without_moving_head(
     )
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-2")
 @pytest.mark.parametrize(
     ("subject", "body", "expected_exit", "diagnostic"),
     [
