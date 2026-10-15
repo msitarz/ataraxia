@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Remove test-to-AC bookkeeping while keeping only acceptance checks that provide
-useful feedback on the new contracts.
+Remove obsolete acceptance tooling and test-to-AC bookkeeping without losing
+ordinary regression coverage.
 
 ## Goals
 
 - Retire pytest covers markers and acceptance-specific test selection.
-- Support heading-based criteria without Validation-clause parsing.
+- Retire ac-check and its obsolete declaration parser completely.
 - Preserve normal test discovery and behavior regression coverage.
 
 ## Non-Goals
@@ -21,8 +21,8 @@ useful feedback on the new contracts.
 ## Mechanisms
 
 - Existing Make test commands select relevant paths and pytest cases.
-- Existing acceptance scripts and fixtures are reduced or removed according to
-  the retained command surface.
+- Existing acceptance scripts, fixtures, and orphan helpers are removed with
+  their retired interfaces.
 
 ## Acceptance criteria
 
@@ -35,24 +35,22 @@ only for surviving callers. Behavioral tests keep their assertions and execution
 scope unless they solely exercise the retired infrastructure. Normal product,
 script, Make, and example test routes continue to work.
 
-### **AC-2 TODO** Declaration checking matches the new contract
+### **AC-2 TODO** Obsolete declaration checker retired
 
-If retained, `make ac-check WORK=path/to/README.md` recognizes heading
-declarations such as `### **AC-1 TODO** Outcome`, handles nested explanatory
-headings, rejects malformed/duplicate IDs and missing names, and ignores
-fenced/commented examples. It neither scans tests nor parses Validation clauses
-nor claims completion from DONE labels. Work inputs identify `README.md`
-contracts only; path safety remains intact. Support for separate specification
-contracts is removed with its obsolete cases. A decision to remove ac-check
-instead is explained in the reviewed change and reflected consistently in
-guidance and callers; no replacement checker is introduced.
+Make no longer exposes ac-check. `script/acceptance_coverage.py`, its dedicated
+tests and fixtures, and obsolete declaration/Validation parsing are removed.
+The orphan `script/work_paths.py` helper and its dedicated tests leave with its
+last callers. Current guidance, reminders, and callers no longer advertise or
+invoke any retired acceptance command. This Work introduces no replacement
+checker; the sibling [work-check Work](../work-check/README.md) owns that tool.
 
 ### **AC-3 TODO** Tests cover the surviving tooling behavior
 
-Focused tests exercise the retained Make boundary and meaningful parser/path
-failure cases, without preserving obsolete marker/selector expectations.
-Fixtures and helper cleanup leaves other tooling tests usable. Ordinary test
-commands collect and execute the relevant surviving tests without markers.
+Surviving Make guidance and test-routing behavior remains covered without
+obsolete marker, selector, declaration-parser, or orphan-path-helper
+expectations. Fixture and helper cleanup leaves unrelated tooling tests usable.
+Ordinary test commands collect and execute the relevant surviving tests without
+markers.
 
 ## Dependencies
 

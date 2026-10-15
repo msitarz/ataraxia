@@ -11,6 +11,8 @@ instructions and acceptance bookkeeping needed to define and deliver them.
 - Give contract-writing instructions one authoritative home.
 - Treat prototyping as an Investigation method rather than a separate Work kind.
 - Remove pytest acceptance markers and their test-selection commands.
+- Replace obsolete acceptance checking with structural checks of active Work
+  contracts.
 - Preserve Work scope, useful regression tests, observed evidence, and review
   gates.
 
@@ -47,7 +49,8 @@ flowchart LR
     I[Inventory] --> G[Focused guidance]
     G --> T[Tooling simplification]
     T --> C[Contract rewrites by existing tree]
-    C --> V[Integrated verification]
+    C --> W[work-check integration]
+    W --> V[Integrated verification]
 ```
 
 ## Acceptance criteria
@@ -69,9 +72,16 @@ reports.
 
 ### **AC-3 TODO** Acceptance bookkeeping removed without losing regression coverage
 
-The covers marker, its registration, and ac-collect/ac-test are retired. Any
-retained ac-check validates declarations only. Ordinary focused test commands
-remain usable, and removal of marker infrastructure preserves unrelated tests.
+The covers marker, its registration, and ac-collect/ac-test/ac-check are
+retired. Ordinary focused test commands remain usable, and removal of marker
+infrastructure preserves unrelated tests.
+
+### **AC-4 TODO** Structural Work checking follows migration
+
+The sibling work-check tool discovers active contracts independently of their
+contents and reports actionable structural errors through doc-check after the
+contract migration. Parser selection and the reusable Markdown boundary belong
+to its child contract; checks do not infer semantic quality or completion.
 
 ## Children
 
@@ -81,9 +91,11 @@ remain usable, and removal of marker infrastructure preserves unrelated tests.
   README-only outcome contracts, source-based evidence, and Investigation
   prototyping, with decisions in [WDRs 23–27](../../wdr/README.md).
 - **TODO** [Acceptance tooling simplification](tooling/README.md): retire marker
-  selection and reduce acceptance tooling to useful declaration checks.
+  selection and the obsolete acceptance checker.
 - **TODO** [Active contract migration](contracts/README.md): rewrite existing
   Works in separately reviewable groups.
+- **TODO** [Structural Work checking](work-check/README.md): select a Markdown
+  parser and introduce work-check after the contracts are migrated.
 - **TODO** [Integrated migration verification](verification/README.md): assess
   complete coverage, preserved scope, and consistency across the final tree.
 
@@ -100,7 +112,8 @@ remain usable, and removal of marker infrastructure preserves unrelated tests.
 This is contract preparation only. Existing Works remain owned at their current
 paths; migration children own their rewrites, not their implementation. The
 migration Work tree itself already uses the new format and is included in final
-consistency review. Inventory, guidance, tooling, contract groups, and final
-verification proceed in dependency order. Shared guidance edits remain at their
-authoritative owners; children report conflicts to the migration owner rather
-than create copies.
+consistency review. Inventory, guidance, tooling, contract groups,
+work-check integration, and final verification proceed in dependency order;
+bounded parser selection may proceed before contract migration completes.
+Shared guidance edits remain at their authoritative owners; children report
+conflicts to the migration owner rather than create copies.

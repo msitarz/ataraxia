@@ -30,8 +30,9 @@ are absent from current guidance, allowing clearly identified history.
 ### **AC-2 TODO** Integrated command behavior verified
 
 Documentation links, formatting, and Mermaid checks pass for affected artifacts.
-Focused surviving tooling tests establish the final declaration/test-command
-behavior; retired target/marker references no longer appear as live interfaces.
+Focused surviving tooling tests establish the final work-check/test-command
+behavior, including automatic structural checking through doc-check; retired
+target/marker references no longer appear as live interfaces.
 Review reuses applicable child evidence and reports outstanding failures or
 unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
 
@@ -45,6 +46,9 @@ unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
   rules and lasting decisions.
 - **TODO** [Tooling simplification](../tooling/README.md): supplies retained
   command behavior and focused execution evidence.
+- **TODO** [Structural Work checking](../work-check/README.md): supplies the
+  parser selection, explicit discovery convention, and integrated work-check
+  behavior after contract migration.
 
 ## Links
 
