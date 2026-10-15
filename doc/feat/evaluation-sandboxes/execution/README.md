@@ -25,57 +25,61 @@ its work and private results through failure and recovery.
 
 ### **AC-1 TODO** Invoke only the approved bound session
 
-`make sandbox-exec NAME=... EVALUATION_WORK=repository/relative/path PROMPT='...' MODEL=...`
-admits one approved native initial invocation or explicit UUID resume, with
-optional `EFFORT`, `PROMPT_FILE` instead of `PROMPT`, and `SANDBOX_ROOT`.
-Absent/conflicting prompt inputs and implicit/latest-session resume fail before
-invocation. Selected model/effort approval and current effective readiness are
-required for both start and resume; changed readiness or unavailable approval
-refuses launch without extra grants.
+`sandbox-exec` invokes only an approved, bound native initial session or exact
+UUID resume.
 
-The command consumes shared
-[root/ownership resolution](../README.md#shared-root-and-ownership) and
-[attempt binding](../lifecycle/active-state-exclusion/execution-recovery/README.md#binding-and-attempts).
-Initial `EVALUATION_WORK` must identify a contained Work with a README in the
-owning source repository/Work branch, even when absent from the frozen clone.
-Resume matches recorded host-controlled Work/orchestrator identity and exact
-UUID,
-retaining workspace/private-state identity and the enforced boundary. Missing or
-invalid binding, ownership mismatch or unrelated UUID refuses launch.
+```sh
+make sandbox-exec NAME=... EVALUATION_WORK=repository/relative/path PROMPT='...' MODEL=...
+```
 
-Automatic acquisition uses the stable per-name lock shared with
-creation/removal. It rejects foreign canonical Git common-directory ownership
-and aborts before invocation if the captured generation or native destination
-identity changed while waiting. The sandbox is visibly active under shared
-exclusion, without manual unlock; AC-2 owns its protected lifetime.
+- Optional inputs are `EFFORT`, `SANDBOX_ROOT` and `PROMPT_FILE` instead of
+  `PROMPT`, with absent/conflicting prompts and implicit/latest-session resume
+  rejected.
+- Both start/resume require selected model/effort approval and current effective
+  readiness, refusing unavailable approval or changed readiness without extra
+  grants.
+- Initial
+  [Work/owner binding](../lifecycle/active-state-exclusion/execution-recovery/README.md#binding-and-attempts)
+  validates a contained Work with a README in the owning source repository/Work
+  branch even when absent from the frozen clone.
+- Resume matches recorded host-controlled Work/orchestrator and exact UUID,
+  retaining workspace/private-state identity and boundary without
+  missing/invalid bindings, ownership mismatch or unrelated sessions.
+- Automatic shared locking rejects foreign canonical Git common-directory
+  ownership and changed captured generation/native destination identity before
+  invocation under
+  [shared root/ownership](../README.md#shared-root-and-ownership).
+- The sandbox stays visibly active without manual unlock for AC-2's protected
+  lifetime.
 
 Completion requires an actual initial start and exact UUID resume through this
-wrapper. Before execution, the frozen protocol declares prompts, model/effort,
-fixtures and stop handling and obtains applicable maintainer approval. Its
-maximum is one initial invocation plus one resume, 15 minutes each and 30
-minutes shared. This contract authorizes no runs.
+wrapper under applicable maintainer approval and frozen prompts, model/effort,
+fixtures and stop handling. The maximum is one initial invocation plus one
+resume, 15 minutes each and 30 minutes shared; this contract authorizes no runs.
 
 ### **AC-2 TODO** Retain work and private results for review
 
-Success, failure, interruption and timeout preserve workspace changes. Final
-message when available, raw JSON events, exit/status, elapsed timing boundaries,
-session identity, artifact paths and reviewer artifacts remain private and
-inaccessible to child commands. Partial/missing final messages and events are
-explicit; known UUIDs are recorded without guessing, and earlier attempts
-survive failure/resume. There is no automatic retry or replacement.
+Every outcome preserves workspace changes and attributable private results for
+independent review.
 
-[Shared execution recovery](../lifecycle/active-state-exclusion/execution-recovery/README.md#ac-2-todo-protect-execution-through-safe-recovery)
-keeps exclusion through descendant stoppage and result retention. Crashes retain
-incomplete/unknown outcomes and block unsafe action; lock availability alone
-authorizes neither resume nor removal. The shared attempt API invalidates prior
-disposition before identified initial/resumed attempts, including
-failed/rejected requests, while unsafe identity preserves the record.
+- Final message when available, raw JSON events, exit/status, elapsed timing
+  boundaries, session identity, artifact paths and reviewer artifacts stay
+  outside child access.
+- Success, failure, interruption, timeout and rejected resume retain prior
+  attempts and honest partial/missing/incomplete/unknown output, with known
+  UUIDs recorded without guessing and no automatic retry/replacement.
+- [Shared recovery](../lifecycle/active-state-exclusion/execution-recovery/README.md#ac-2-todo-protect-execution-through-safe-recovery)
+  holds exclusion through descendant stoppage/retention and blocks unsafe action
+  after crashes regardless of lock availability.
+- The shared attempt API invalidates disposition before identified
+  initial/resumed/failed/rejected attempts, while unsafe identity preserves the
+  record.
+- Independent acceptance precedes resume and final
+  [import](../artifact-import/README.md), and only the owning orchestrator
+  records
+  [cleanup disposition](../lifecycle/active-state-exclusion/cleanup-disposition/README.md)
+  after preservation and maintainer review.
 
-Initial output requires independent acceptance before resume; final output
-requires independent acceptance before [import](../artifact-import/README.md).
-The owning orchestrator preserves artifacts and records cleanup disposition only
-after maintainer review under the
-[disposition contract](../lifecycle/active-state-exclusion/cleanup-disposition/README.md).
 Reporting interpretation remains with its separate owner.
 
 ## Dependencies

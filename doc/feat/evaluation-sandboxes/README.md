@@ -30,38 +30,41 @@ controls rather than a new sandbox framework or controller service.
 
 ### Shared root and ownership
 
-The default child location is `<system temp>/<project name>/sandboxes/<NAME>`.
-Resolve system temp with `tempfile.gettempdir()` using its native
-TMPDIR/TEMP/TMP and platform-default selection, and read the project name from
-`pyproject.toml` `[project].name`; do not hardcode a macOS path or project name.
-An optional `SANDBOX_ROOT` Make argument overrides the managed root. Create,
-list, remove and exec share one authoritative resolution and ownership
-validation. The [active-state owner](lifecycle/active-state-exclusion/README.md)
-extends the existing private ownership record into a persistent uncommitted
-lifecycle marker and delivers creation participation in a stable OS-held
-per-name lock. Listing only observes existing locks; execution and removal
-acquire exclusion automatically. Reject unsafe
-resolved roots, including an unsuitable current-directory fallback, unsafe
-project-name path components and invalid overrides, under the existing
-containment, symlink, collision, ownership and permission safeguards.
+#### Root selection
 
-Discover children locally, with per-child ownership metadata and no global
-registry. Each lifecycle marker includes an opaque unique generation ID and
-the native identity of its created child directory; its Evaluation ownership,
-session/run provenance, retained output and explicit orchestrator cleanup
-disposition are defined at that active-state owner. No existing sandboxes need
-migration; unsupported records are rejected safely. Bind repository ownership
-to the canonical Git common directory: linked worktrees agree, while independent
-checkouts sharing a project name cannot manage each other's children. A
-conflicting owner blocks creation, removal and execution rather than
-reassigning an existing child.
-Keep a stable root-private per-name lock object across successful removal and
-same-name recreation. It is coordination state rather than an ownership record
-or registry, and direct-child listing ignores it.
-The private control side remains inaccessible
-to child commands even if physically beneath that root. A prepared workspace
-does not itself enforce isolation. Source/history and command-network denial
-remain distinct from the host transport needed to call the model service.
+- Creation, listing, removal and execution share one root resolver and ownership
+  validator.
+- The default child path is `<system temp>/<project name>/sandboxes/<NAME>`.
+- `tempfile.gettempdir()` selects system temp through native TMPDIR/TEMP/TMP and
+  platform defaults, without a hardcoded macOS path.
+- The project name comes from `pyproject.toml` `[project].name`, without a
+  hardcoded name.
+- Optional `SANDBOX_ROOT` overrides the managed root through the Make interface.
+- Unsafe resolved roots, including unsuitable current-directory fallbacks,
+  unsafe project-name components and invalid overrides, are rejected under
+  existing containment, symlink, collision, ownership and permission safeguards.
+
+#### Ownership and private control
+
+- Local per-child metadata needs no registry and binds repository ownership to
+  the canonical Git common directory, so linked worktrees agree and independent
+  checkouts cannot manage one another's children.
+- Conflicting ownership blocks creation, removal and execution without
+  reassigning the child.
+- The [active-state owner](lifecycle/active-state-exclusion/README.md) extends
+  the existing record into an uncommitted lifecycle marker with opaque unique
+  generation and native directory identity, and owns execution provenance and
+  reviewed cleanup disposition.
+- Creation, execution and removal automatically share its stable root-private
+  per-name OS lock, retained across removal/recreation as coordination state and
+  ignored by direct-child listing.
+- Listing observes existing locks without creating or changing them.
+- Unsupported records are safely rejected, and no existing sandboxes need
+  migration.
+- Private control remains inaccessible to child commands even beneath the
+  managed root.
+- Preparation enforces no isolation, and source/history and command-network
+  denial remain separate from host model-service transport.
 
 ## Visuals
 
@@ -90,27 +93,30 @@ child commands cannot read it. Statistics may conclude that no method fits.
 
 ### **AC-1 TODO** Compose owned sandbox delivery
 
-Reviewed child outcomes compose from owned preparation to enforced execution,
-retained output and accepted Work-branch import, with supported trustworthy
-reports or an explicit independently reviewed unsupported/no-fit reporting
-disposition. Root/owner resolution agrees across commands; failed preparation,
-denied launch, exact resume, retained work and accepted tip/base import retain
-their child-owned boundaries. Ordinary Work delivery and independent review
-remain governed by [their owners](../../orchestrator.md#review-and-return).
+Reviewed children compose safe preparation, enforced execution, retained output
+and accepted Work-branch import.
 
-A no-fit finding establishes no report implementation or automatic adoption;
-any unsatisfied integration outcome receives a reviewed
-[Work lifecycle disposition](../../workflow.md#lifecycle).
+- Commands agree on shared root/ownership and preserve their child-owned
+  failure, resume and import boundaries.
+- Reporting delivers trustworthy supported measurements or an independently
+  reviewed unsupported/no-fit disposition without claiming implementation or
+  adoption.
+- Unsatisfied integration outcomes receive a reviewed
+  [lifecycle disposition](../../workflow.md#lifecycle), while ordinary delivery
+  and independent review retain
+  [their owners](../../orchestrator.md#review-and-return).
 
 ### **AC-2 TODO** Publish discoverable command usage and limits
 
-As real commands deliver, lasting usage and supported-condition limits are
-promoted from Work-owned inputs to one
-[focused owner](../../evaluation-sandboxes.md), discoverable from Make help,
-documentation, orchestrator and evaluation routes before Work cleanup.
-Measurement limits stay explicit. CONTRIBUTING continues to route tool discovery
-without gaining a sandbox procedure section; recommendations and estimates do
-not become policy.
+Delivered command usage and supported-condition limits reach one
+[focused owner](../../evaluation-sandboxes.md) before Work cleanup.
+
+- Make help, documentation, orchestrator and evaluation routes discover that
+  owner as real commands deliver.
+- Measurement limits stay explicit, and recommendations/estimates do not become
+  policy.
+- CONTRIBUTING retains tool-discovery routing without a sandbox procedure
+  section.
 
 ## Children
 

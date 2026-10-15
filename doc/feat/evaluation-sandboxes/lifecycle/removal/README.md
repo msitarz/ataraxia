@@ -21,46 +21,50 @@ current reviewed cleanup disposition.
 
 ### **AC-1 TODO** Remove only an owned safely stopped sandbox
 
-`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` removes only the
-named direct owned child and its explicitly owned private artifacts using the
-shared
-[root and ownership contract](../../README.md#shared-root-and-ownership).
-It captures generation before waiting, acquires the stable exclusive OS lock,
-and revalidates generation and native destination identity before final checks.
-It holds exclusion through deletion so launch cannot race a check/delete gap.
+`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` deletes only the
+named direct owned child and its explicitly owned private artifacts.
 
-Only supported metadata, verified stopped execution and current reviewed
-orchestrator disposition admit deletion. Unsafe root/source, foreign ownership,
-symlinks, escapes, malformed metadata, stale generation, busy lock and unknown
-or potentially live descendants refuse cleanup. No force option bypasses these
-guards. Deletion never follows symlinks or recursively traverses another owned
-sandbox/private tree by artifact path.
+- It uses [shared root/ownership](../../README.md#shared-root-and-ownership),
+  captures generation before waiting and revalidates generation/native
+  destination identity after acquiring the stable OS lock.
+- Exclusion lasts through final checks and deletion, closing the
+  launch/check/delete race.
+- Supported metadata, stopped execution and current reviewed orchestrator
+  disposition are required without a force bypass.
+- Unsafe root/source, foreign ownership, symlinks, escapes, malformed metadata,
+  stale generation, busy lock and unknown/potentially live descendants refuse
+  cleanup.
+- Deletion never follows symlinks or traverses another owned sandbox/private
+  tree through artifact paths.
 
 ### **AC-2 TODO** Cover exact protected material before deletion
 
-Current disposition follows artifact preservation and maintainer review and
-covers exact workspace state, meaningful commits, dirty/staged/untracked content
-and private output through preserved exact artifacts or explicit reviewed
-discard decisions. Retained destinations and evidence are verified before
-destructive action. Clean status and inactivity alone are insufficient.
+Deletion requires verified preservation or reviewed discard of all protected
+material.
 
-Wrong owner, missing retention and changed/absent run, workspace, output or
-other bindings refuse deletion and invalidate approval. Failed preparation
-requires the same review covering partial workspace and diagnostics; an absent
-partial directory does not authorize deleting its marker or output. Every
-refusal leaves workspace, private output and diagnostics unchanged.
+- Current maintainer-reviewed disposition covers exact workspace state,
+  meaningful commits, dirty/staged/untracked content and private output.
+- Retained destinations and evidence are verified before destructive action,
+  while clean status/inactivity confer no authority.
+- Wrong owner, missing retention or changed/absent run, workspace, output or
+  other bindings invalidate approval and refuse deletion.
+- Failed preparation requires the same review for partial workspace/diagnostics,
+  and an absent directory never authorizes deleting its marker/output.
+- Every refusal leaves workspace, private output and diagnostics unchanged.
 
 ### **AC-3 TODO** Retain recovery authority through incomplete cleanup
 
-Successful deletion removes the generation marker last, retains stable lock
-identity and permits a fresh same-name generation. Artifacts outside the
-explicit cleanup set remain intact.
+Cleanup either finishes safely or retains the reservation and material needed
+for guarded retry.
 
-Partial failure or interruption during workspace/private deletion or marker
-removal retains the marker and remaining material, records incomplete cleanup
-when safe and blocks name reuse. Retry revalidates identity, current disposition
-and retained evidence under the same lock before finishing; retained
-reservations cannot be bypassed when partial directories are absent.
+- Success removes the generation marker last, retains stable lock identity and
+  permits a fresh same-name generation without touching artifacts outside the
+  cleanup set.
+- Failure/interruption during workspace/private deletion or marker removal
+  retains marker/material, records incomplete cleanup when safe and blocks name
+  reuse even with absent partial directories.
+- Retry revalidates identity, current disposition and retained evidence under
+  the same lock before finishing.
 
 ## Dependencies
 
