@@ -126,9 +126,9 @@ commands, and existing documentation checks retain their behavior.
 - **DONE** The completed [tooling simplification outcome](../README.md#children)
   retired ac-check and its obsolete scripts/helpers; this Work owns the new
   interface.
-- **TODO** [Active contract migration](../contracts/README.md): supplies the
-  migrated tree before automatic doc-check enforcement is enabled. Parser
-  selection and focused implementation may proceed earlier.
+- **DONE** [Active contract migration](../README.md#children): supplies the
+  migrated tree for automatic doc-check enforcement. Parser selection and
+  focused implementation may proceed earlier.
 - [Work contract template](../../../work-contract-template.md) and
   [Work acceptance](../../../acceptance-tracing.md): own required structure and
   supported criterion statuses.
