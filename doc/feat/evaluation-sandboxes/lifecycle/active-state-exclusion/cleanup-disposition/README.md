@@ -1,79 +1,73 @@
 # Reviewed cleanup disposition
 
-After [execution recovery](../execution-recovery/README.md), deliver one
-host recording and validation interface for current explicit cleanup authority.
-[Removal](../../removal/README.md) consumes it and owns deletion;
-[native execution](../../../execution/README.md) consumes attempt invalidation.
-Reuse the existing private marker and validated lock/update APIs. Creation
-remains independent of Evaluation binding; failed preparation can receive a
-validated host-side Work/orchestrator binding under the lock before disposition
-and cleanup.
+## Purpose
 
-## Host authority and preservation bindings
+Make sandbox cleanup authority depend on current preserved material and explicit
+maintainer-reviewed host disposition.
 
-The shared host recording interface accepts the owning orchestrator, current
+## Goals
+
+- Record host-controlled cleanup decisions under shared exclusion.
+- Bind authority to exact current identity, workspace and private output.
+- Refuse stale approval and unknown execution without exemptions for failed
+  preparation.
+
+## Mechanisms
+
+- The existing private lifecycle marker stores host cleanup authority alongside
+  the preserved identity and attempt state it binds.
+- Shared exclusive acquisition and validated updates serialize disposition
+  recording with launch and deletion.
+- Existing Work/PR review evidence supplies review and preservation provenance
+  without a new controller or external review service.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Record only reviewed host cleanup authority
+
+The host recording interface accepts the owning orchestrator, current
 identity/inventory bindings, retained destinations, review reference and
-explicit retain/discard decisions; it returns a validated persisted disposition
-or refuses without approval. Implementation may use a small shared helper and
-existing Make routing; no new controller or external review service is required.
+explicit retain/discard decisions. Only that owner can record disposition after
+artifact preservation and maintainer review. It returns validated persisted
+authority or refuses without approval under the same exclusive lock as
+launch/deletion. Implementation may use a small helper and existing Make
+routing.
 
-The owning orchestrator explicitly records cleanup disposition only after
-artifacts are preserved and the maintainer has reviewed the cleanup decision.
-It identifies that owner and review, the generation, current run/attempt and
-session identity when known, exact workspace state (tip and changes), and exact
-private output/artifact inventory or revisions, with retained destinations and
-accepted import evidence or reviewed discard decisions where applicable.
-Inactivity, clean status, a session ending, or executor-written claims cannot
-supply this approval. Disposition is private host authority, not delegated to
-the executor. Its host recording operation validates ownership and current
-bindings under the same exclusive lock; it cannot race launch or deletion.
-Do not require a new review system: reuse existing Work/PR review and artifact
-preservation evidence. Removal consumes the validated disposition.
+Disposition identifies owner/review, sandbox generation, current run/attempt and
+session when known, exact workspace tip/changes and preparation state, and exact
+private output/artifact inventory or revisions. Retained destinations and
+accepted import evidence or explicit reviewed discard decisions cover the
+material where applicable. Missing review, wrong owner, missing/invalid source
+Work binding, missing preservation or review/import evidence refuses approval.
+Source Work validation uses the execution protocol; executor claims never supply
+host authority.
 
-The [execution protocol](../execution-recovery/README.md#binding-and-attempts)
-owns safe invalidation before identified launch/resume attempts, including
-failed/rejected requests. Any changed run, workspace, preparation state or
-output invalidates the binding; missing/inconsistent bindings always refuse
-removal. Failed preparation also requires explicit reviewed disposition covering
-its partial workspace and diagnostics; no absence-of-work bypass is allowed.
-The recording API and read validation require exact current generation,
-attempt/session when known, workspace tip/changes, preparation state and private
-output inventory/revisions. Changed bindings make a previously persisted
-record unusable even if no writer cleared it. Exercise invalidation through the
-execution child's API, so initial/resumed/failed/rejected attempt handling has
-one owner. Host recording validates source Work binding through that same
-protocol; it never accepts executor claims as host authority.
+Inactivity, clean status and a session ending do not grant approval. Disposition
+stays private and is never delegated to the executor.
+[Removal](../../removal/README.md) consumes current-binding validation and
+verifies retained destinations/evidence immediately before deletion; this Work
+does not delete material.
 
-Failed preparation with no run/session has explicit absent execution provenance
-and still needs disposition covering partial workspace and diagnostics. Unknown
-execution cannot be approved for removal by disposition recording; only the
-execution owner's safe recovery can establish stoppage and preserve results.
-Removal verifies retained destinations/evidence immediately before deletion;
-this child supplies the reusable current-binding validation under exclusion.
+### **AC-2 TODO** Reject stale or incomplete disposition
 
-## Acceptance
+The [attempt protocol](../execution-recovery/README.md#binding-and-attempts)
+invalidates disposition before identified initial, resumed, failed or rejected
+launch attempts. Missing, inconsistent or changed generation, attempt/session,
+workspace, preparation or output/inventory bindings make approval unusable even
+if no writer cleared it. Changed artifact bytes/revisions cannot reuse approval.
+Refusal preserves protected bytes and supplies no approval.
 
-- **AC-1 TODO** Only the owning orchestrator can record a current explicit
-  cleanup disposition after preservation and maintainer review. Inactivity,
-  clean status, a session ending or executor-written claims cannot supply
-  approval. Host authority binds review and exact retained/discarded material;
-  recording holds the same exclusive lock and cannot race launch or deletion.
+Failed preparation has no exemption: it can receive a validated source
+Work/owner binding under the lock, but a partial or absent workspace and
+explicitly absent run/session provenance still require disposition covering
+partial material and diagnostics. Creation remains independent of Evaluation
+binding. Unknown execution cannot be approved for removal; only safe recovery by
+the execution owner can establish stoppage and preserve results first.
 
-  Validation: criterion-marked host-record fixtures exercise missing review,
-  wrong owner, missing/invalid source Work binding, missing preservation or
-  review/import evidence, retained destinations and explicit discard decisions.
-  Independently review existing evidence bindings and child/private trust
-  boundary; test lock contention with shared launch/deletion fixtures. No model
-  run or speculative controller is required for this shared safety outcome.
-- **AC-2 TODO** New, resumed, failed or rejected execution and changed output
-  cannot reuse stale approval; failed preparation and unknown execution receive
-  no automatic exemption. Missing/inconsistent generation, run/session,
-  workspace, preparation or inventory bindings refuse approval/removal.
+## Dependencies
 
-  Validation: criterion-marked host-record fixtures exercise generation/run/
-  session/output/workspace/preparation mismatch, changed artifacts,
-  rejected/failed/resumed launch using the shared attempt API, failed
-  preparation with partial or absent workspace, and unknown execution
-  before/after safe recovery. Assert refusal preserves protected bytes and
-  supplies no approval; removal verifies its own destructive command
-  integration.
+- **TODO** [Execution attempts and recovery](../execution-recovery/README.md):
+  supplies source binding, current attempt identity, invalidation and safe
+  recovery.
+- **TODO** [Stable lock and durable marker](../lock-and-marker/README.md):
+  supplies the validated private record and exclusive update scope.

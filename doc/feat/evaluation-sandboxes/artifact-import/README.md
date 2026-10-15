@@ -1,43 +1,63 @@
 # Accepted executor commit import
 
-Depend on
-[accepted runtime output](../execution/README.md).
-Own orchestrator-controlled explicit fetch/rebase into a full-history designated
-Work branch after independent acceptance and final correction. Use the
-[historical delivery input](delivery-protocol.md).
-Its bounded fixture results do not complete this Work or authorize adoption.
-Runtime boundary ownership belongs to [enforcement](../enforcement/README.md),
-with prior observations in the [isolation input](../isolation-input.md).
-Executor state/auth and permissions remain untouched; master is not a delivery
-target. Host production operations retain signing settings and normal hooks.
+## Purpose
 
-Keep this leaf within a five-minute review; split before oversized execution.
-Automated tests use criterion markers scoped to this README; manual judgments
-remain independent review. All criteria are planned, not observed evidence.
+Deliver independently accepted executor commits to the designated full-history
+Work branch without expanding executor access.
 
-## Acceptance
+## Goals
 
-- **AC-1 TODO** Import requires the exact accepted executor tip/base and
-  expected Work HEAD, fetches only the explicit assigned ref into a nonshallow
-  receiver and rejects stale acceptance, missing ancestry or unexpected refs
-  without publication.
+- Import only accepted identities through an explicit assigned ref.
+- Preserve work and delivery commit boundaries during reconciliation.
+- Hand reviewed latest-head output to the existing publication owner.
 
-  Validation: Criterion-marked local Git tests inspect
-  fetch refs, receiver history, accepted identities and compare-and-swap guards;
-  independently review acceptance/evidence bindings.
-- **AC-2 TODO** Unchanged-base import preserves identity; advanced-base rebase
-  preserves authors/order, binary bytes, modes, rename/delete and
-  implementation/evidence-before-cleanup boundaries. Conflict halts publication
-  until reviewer-owned resolution and evidence refresh.
+## Mechanisms
 
-  Validation: Criterion-marked fixtures cover unchanged, clean advanced and
-  conflicting bases plus exact tree/metadata/boundary checks; manual independent
-  review accepts refreshed latest-head evidence after rewriting.
-- **AC-3 TODO** Only reviewed latest Work-branch output is handed to
-  orchestrator publication under usual PR/CI and maintainer gates, without
-  master rewrite, source mutation or executor publication access.
+- Explicit Git fetch imports an assigned accepted ref into a full-history
+  receiver.
+- Git rebase reconciles accepted commits onto the designated Work branch.
+- Expected Work HEAD supplies the compare-and-swap guard on branch updates.
 
-  Validation: Criterion-marked local publication/guard tests verify designated
-  refs and unchanged source/master; independently review the orchestrator
-  handoff. Live GitHub PR/CI experiments, alternate patch transport and
-  default-policy adoption are outside scope.
+## Acceptance criteria
+
+### **AC-1 TODO** Import the exact accepted ref into a guarded receiver
+
+Orchestrator-controlled import requires the exact accepted executor tip/base and
+expected Work HEAD after independent acceptance and final correction. It fetches
+only the explicit assigned ref into a nonshallow receiver with full history and
+rejects stale acceptance, missing ancestry, unrelated/unexpected refs and failed
+compare-and-swap guards without publication.
+
+### **AC-2 TODO** Preserve work through unchanged or advanced bases
+
+Unchanged-base import preserves commit identity. Advanced-base rebase preserves
+authors/author metadata, commit subjects/order, exact binary bytes, modes,
+rename/delete changes and implementation/evidence-before-cleanup boundaries,
+including the upstream content of a clean advanced base. Conflict halts
+publication until reviewer-owned resolution and refreshed evidence accepted for
+the rewritten latest head. Executor state/auth, permissions and source input
+remain untouched; host production operations retain signing settings and normal
+hooks.
+
+### **AC-3 TODO** Hand off only reviewed latest-head output
+
+Only reviewed latest Work-branch output reaches orchestrator-controlled
+[publication](../../../pull-requests.md#publishing), subject to
+[latest-head CI](../../../validation.md) and maintainer review. Master is never
+a delivery target or rewritten; source is unchanged and executor permissions
+gain no publication access. Live GitHub PR/CI experiments, alternate patch
+transport and default-policy adoption remain outside scope.
+
+## Dependencies
+
+- **TODO** [Native execution and retained artifacts](../execution/README.md):
+  supplies exact independently accepted runtime output after final correction.
+
+## Links
+
+- [Historical delivery input](delivery-protocol.md): bounded fixture
+  observations supply context without completing this Work or authorizing
+  adoption.
+- [Runtime enforcement](../enforcement/README.md) and
+  [historical isolation input](../isolation-input.md): own the runtime boundary
+  and its separate prior observations.

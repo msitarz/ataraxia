@@ -1,99 +1,94 @@
 # Stable lock and durable marker
 
-Deliver safe named ownership and creation exclusion using the existing
-`script/sandbox.py` record and root resolver described in the
-[parent baseline](../README.md). Creation remains usable before later children
-and requires no Evaluation binding or execution provenance. This child owns
-shared identity, persistence, lock acquisition and observational probe APIs;
-[execution recovery](../execution-recovery/README.md) and
-[cleanup disposition](../cleanup-disposition/README.md) extend them serially.
+## Purpose
 
-## Marker and creation
+Prevent same-name lifecycle operations and interrupted metadata writes from
+acting on an unowned or replaced sandbox.
 
-Extend the existing root-private
-`.<NAME>.ataraxia-sandbox.json` with canonical Git common directory, project,
-base, preparation state and failure diagnostics, rather than add a second
-acceptance record. Keep it uncommitted and inaccessible
-to child commands. Validated host-side updates preserve unrelated fields and
-retain diagnostics; interrupted writes must never turn partial metadata into
+## Goals
+
+- Integrate stable per-name exclusion and durable identity into existing
+  creation.
+- Provide shared acquisition, update and observational probe APIs.
+- Keep ready and failed preparation usable without execution provenance.
+
+## Mechanisms
+
+- `script/sandbox.py` supplies existing creation and shared root resolution.
+- `.<NAME>.ataraxia-sandbox.json` is the existing root-private record extended
+  with durable generation, destination and preparation identity.
+- `.<NAME>.ataraxia-sandbox.lock` is the stable private object for exclusive
+  OS-held coordination and observational probes.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Serialize lifecycle operations and preserve preparation
+
+Shared acquisition serializes same-name create/create, create/execution,
+create/removal and execution/removal operations without manual lock commands.
+It accepts root/name and the generation captured before waiting, or explicit
+absence for creation. After acquisition it rereads the marker and revalidates
+native destination identity, refusing changes before returning an exclusive
+validated scope. Consumers use this API rather than duplicate identity checks;
+exact Python signatures remain an implementation choice.
+
+Creation atomically initializes an absent regular private lock only when neither
+marker nor destination exists, reserves only a still-absent name and holds
+exclusion through preparation and durable ready/failed state. It records a
+supported schema version, opaque unique generation, native directory identity,
+canonical Git common directory, project, immutable base, preparation state and
+failure diagnostics. Execution provenance is initially absent: creation remains
+usable before later execution and disposition delivery. Failed preparation
+retains partial workspace, diagnostics and reserved generation without
+overwrite.
+
+Host updates accept the exclusive scope, validate supported fields, persist
+durably and preserve unrelated fields and diagnostics, including later
+execution/disposition extensions. The marker remains uncommitted and
+inaccessible to child commands. Interrupted writes never make partial metadata
 valid ownership or approval.
 
-Creation records a supported schema version, opaque unique sandbox generation,
-native destination identity and preparation state; execution provenance is
-initially absent. Failed preparation retains its partial workspace/diagnostics
-and reserved generation. Shared updates validate supported fields and preserve
-unrelated fields, including later execution and disposition extensions.
+### **AC-2 TODO** Refuse unsafe authority and keep probes observational
 
-There are currently no sandboxes requiring compatibility: reject old,
-unsupported or malformed records safely without rewriting, migrating or deleting
-them. Listing may report them as unsupported.
+Existing-sandbox operations refuse old, unsupported or malformed records and
+missing, unsafe or symlinked locks without rewriting, migrating or deleting
+them; AC-1 owns absent-name creation. The open lock
+is revalidated against its path after acquisition to detect replacement.
+Neither file existence nor PIDs establish liveness. Interrupted updates allow
+only safe reacquisition; private coordination state is inaccessible to children.
 
-## Stable lock and exclusion
+The shared probe opens only an existing safe lock and immediately attempts
+nonblocking acquisition. Busy means active operation; successful acquisition
+means momentary observed inactivity and is released immediately. Unsafe or
+unavailable observations, including a generation change across the probe, mean
+unknown. Probe results include validated identity but remain separate from
+recorded outcome/disposition and confer no cleanup authority.
 
-Use one regular private `.<NAME>.ataraxia-sandbox.lock` with an exclusive lock
-held by the operating system. File existence and PIDs never establish liveness.
-Creation initializes it atomically if absent only when no destination/marker
-exists. Never unlink or replace it, including after successful deletion and
-same-name reuse. Other operations fail closed on a missing, unsafe or symlinked
-lock. Revalidate the open file against its path after acquisition to detect
-replacement; child commands cannot access it.
+Probes preserve all persistent filesystem state: they never write, create,
+replace, repair or migrate a lock or marker. Unsupported records may be reported
+as unsupported. No existing sandbox requires compatibility migration.
 
-Capture generation (or explicit absence for create) before waiting; after
-acquisition reread it and revalidate destination identity. Abort if it changed.
-Create reserves only a still-absent name, holds the lock through preparation and
-durable ready/failed state, and retains failures without overwrite. Removal
-holds the same lock from final safety/disposition checks through deletion, so
-an inactivity check cannot race a new launch. Refusal releases without deletion.
+### **AC-3 TODO** Distinguish same-name generations
 
-Listing opens existing safe locks only and performs an immediate nonblocking
-probe, releasing on acquisition without writing, creating, replacing or
-repairing anything. A busy lock reports active operation; a free lock reports
-observed inactivity, separately from recorded outcome/disposition. Unsafe or
-unavailable observations and generation changes report unknown. These are
-momentary observations, never cleanup authority.
+The lock is never unlinked or replaced, including after successful removal and
+same-name recreation. Its inode identity remains stable while each new sandbox
+has a fresh generation. An operation that captured generation A refuses if A is
+removed and B is created before it acquires the lock.
 
-The acquisition API takes root/name and a captured generation (or explicit
-absence for create), and returns an exclusive scope with reread validated
-marker/destination identity or refuses. The update API accepts that scope and a
-validated record update, durably preserving existing fields. The probe API
-returns active, observed inactive or unknown plus validated identity without
-persistent mutation. Exact Python signatures are an implementation choice;
-consumer commands use these APIs rather than duplicate path or identity checks.
+Retained failed-preparation and interrupted-removal markers reserve their names,
+even when partial directories are absent. Creation cannot overwrite them.
+[Removal](../../removal/README.md) holds this same exclusion from final safety
+and disposition checks through deletion, releases refusals without deleting,
+and owns marker-last cleanup and guarded retry; it cannot race a new launch
+between inactivity checks and deletion. This Work supplies shared APIs and
+creation integration, while each consumer owns its command integration.
 
-Shared fixtures may model deletion/recreation under the lock; actual deletion,
-marker-last cleanup and guarded retry remain owned by
-[removal](../../removal/README.md). Retained markers reserve names even when a
-partial directory is missing, so interrupted removal cannot enable reuse.
+## Dependencies
 
-## Acceptance
+- **DONE** [Managed sandbox creation](../../../../../evaluation-sandboxes.md):
+  supplies the existing private record, root resolver and preparation path.
 
-- **AC-1 TODO** Shared exclusion and creation integration serialize same-name
-  create/execution/removal, safely reserve missing names and retain ready/failed
-  preparation markers without requiring execution provenance. Consumers need no
-  manual lock commands; listing probes leave persistent state unchanged.
+## Links
 
-  Validation: criterion-marked subprocess tests cover create/create and shared
-  create/execution, create/removal and execution/removal contention, readiness
-  failure and reservation failure. Inspect creation metadata and private modes;
-  each consumer Work verifies its command integration. Execution/removal
-  fixtures acquire the real shared API, without delivering those commands.
-- **AC-2 TODO** Interrupted marker updates, unsupported metadata, unsafe lock
-  paths and stale identity cannot become authority. Held/free/unobservable
-  listing probes preserve all persistent filesystem state and report generation
-  changes as unknown.
-
-  Validation: criterion-marked fixtures cover interrupted writes, safe
-  reacquisition, unsupported/malformed records, missing/symlinked/unsafe locks,
-  lock replacement after open and before validation, and unchanged persistent
-  state through each probe. Independently review durable update semantics and
-  the child/private boundary.
-- **AC-3 TODO** Stable lock identity and fresh generation prevent old waiters
-  from acting on same-name recreation. Failed preparation remains reserved;
-  interrupted removal retains its marker and prevents unsafe name reuse.
-
-  Validation: barrier-controlled fixtures capture generation A, model removal of
-  A and create B before a waiting operation enters, then assert it aborts.
-  Verify lock inode stability, fresh generation, retained failure identity and
-  refusal of create with an interrupted-deletion marker, including absent
-  partial directories; actual interrupted deletion integration belongs to
-  removal.
+- [Shared root and ownership](../../../README.md#shared-root-and-ownership):
+  owns root selection and repository ownership consumed here.
