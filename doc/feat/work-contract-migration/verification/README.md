@@ -38,8 +38,8 @@ unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
 
 ## Dependencies
 
-- **TODO** [Active contract migration](../contracts/README.md): supplies all
-  five reviewed rewrite groups.
+- **DONE** [Active contract migration](../README.md#children): supplies all five
+  completed rewrite groups.
 - [Work contract template](../../../work-contract-template.md),
   [Work acceptance](../../../acceptance-tracing.md), and
   [WDRs 23–27](../../../wdr/README.md): supply the delivered authoring/evidence

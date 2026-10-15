@@ -93,8 +93,8 @@ to its child contract; checks do not infer semantic quality or completion.
 - **DONE** Acceptance tooling simplification retired marker selection,
   declaration-only ac-check, and orphan helpers while preserving ordinary
   regression coverage.
-- **TODO** [Active contract migration](contracts/README.md): rewrite existing
-  Works in separately reviewable groups.
+- **DONE** Active contract migration rewrote all five groups of existing Work
+  contracts, preserving their scope, ownership, and dependencies.
 - **TODO** [Structural Work checking](work-check/README.md): select a Markdown
   parser and introduce work-check after the contracts are migrated.
 - **TODO** [Integrated migration verification](verification/README.md): assess
