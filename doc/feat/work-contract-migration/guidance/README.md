@@ -21,7 +21,7 @@ contracts without conflicting acceptance bookkeeping instructions.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** One owner for authoring instructions
+### **AC-1 DONE** One owner for authoring instructions
 
 Work definition, definer guidance, and task routing lead to the template rather
 than repeat its section instructions or prohibit its required headings. Work
@@ -57,7 +57,7 @@ WDRs remain intact apart from required amendment/supersession metadata and links
 under the existing decision-record lifecycle. The records do not substitute
 for current guidance or claim implementation is complete.
 
-### **AC-5 TODO** Prototyping is an Investigation method
+### **AC-5 DONE** Prototyping is an Investigation method
 
 Investigation owns bounded feasibility questions that need exploratory
 implementation. Work definition, workflow reading routes, and the shared
