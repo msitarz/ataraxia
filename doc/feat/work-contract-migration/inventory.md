@@ -6,8 +6,11 @@ committed migration plan. This is a bounded migration input, not a permanent
 inventory or completion record. The completed inventory Work established this
 scope assessment; its accepted contract is retained in Git history.
 
-Subsequent scope decision: [tooling](tooling/README.md) now requires complete
-ac-check retirement, including its orphan work-path helper and dedicated tests.
+Subsequent scope decision: the archived
+[tooling contract](https://github.com/msitarz/ataraxia/blob/63ed16e99f5238a4aebdf8e180882683d425d165/doc/feat/work-contract-migration/tooling/README.md)
+required complete ac-check retirement, including its orphan work-path helper and
+dedicated tests. Its completed outcome is recorded in the migration
+[delivery map](README.md#children).
 The separate [work-check Work](work-check/README.md) owns parser selection and
 new structural checking after contract migration. Conditional retention options
 and contract counts below describe the reviewed inventory baseline, not the

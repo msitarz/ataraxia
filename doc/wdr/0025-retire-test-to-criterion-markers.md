@@ -32,5 +32,6 @@ Remove marker infrastructure without deleting useful behavioral regressions.
 Focused commands and example-test scope remain available. Current evidence and
 test-selection rules live in [Work acceptance](../acceptance-tracing.md) and
 [testing guidance](../testing.md). The
-[tooling Work](../feat/work-contract-migration/tooling/README.md) owns actual
-removal and its tests; this decision does not claim those changes are delivered.
+[tooling Work](https://github.com/msitarz/ataraxia/blob/63ed16e99f5238a4aebdf8e180882683d425d165/doc/feat/work-contract-migration/tooling/README.md)
+owns actual removal and its tests; this decision does not claim those changes
+are delivered.

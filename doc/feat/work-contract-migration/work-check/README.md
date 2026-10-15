@@ -123,8 +123,9 @@ commands, and existing documentation checks retain their behavior.
 
 ## Dependencies
 
-- **TODO** [Acceptance tooling simplification](../tooling/README.md): retires
-  ac-check and its obsolete scripts/helpers; this Work owns the new interface.
+- **DONE** The completed [tooling simplification outcome](../README.md#children)
+  retired ac-check and its obsolete scripts/helpers; this Work owns the new
+  interface.
 - **TODO** [Active contract migration](../contracts/README.md): supplies the
   migrated tree before automatic doc-check enforcement is enabled. Parser
   selection and focused implementation may proceed earlier.
