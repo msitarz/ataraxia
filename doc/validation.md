@@ -15,9 +15,6 @@ preparation. Independent review assesses judgments CI cannot establish.
 
 Assess local behavior, type, and manual evidence against the Work's stated
 outcomes under [acceptance tracing](acceptance-tracing.md#evidence).
-Independent review may establish acceptance before PR CI runs; it does not
-establish or replace CI outcomes. A criterion that explicitly requires a CI
-result remains unverified until that result is observed.
 
 Before merge, require the full CI workflow to pass on the latest reviewed PR
 head. Evidence from an earlier revision does not cover later changes. The

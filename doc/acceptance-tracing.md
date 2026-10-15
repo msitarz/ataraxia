@@ -6,7 +6,7 @@ verification and cleanup commits.
 ## Criterion status
 
 Give each criterion a stable ID such as `AC-1`, unique within its owning Work
-README or spec. The repository-relative path scopes the ID. Use the criterion
+`README.md`. The repository-relative path scopes the ID. Use the criterion
 headings in the [Work contract template](work-contract-template.md).
 
 - `TODO` means the outcome is not yet verified from inspectable evidence.
@@ -17,25 +17,21 @@ headings in the [Work contract template](work-contract-template.md).
 
 ## Evidence
 
-Assess each criterion against its stated outcome using relevant test execution
-results, measurements, or independent review of the changed artifact. Inspect
-results where they are produced: existing check/CI records, reports, artifacts,
-and review findings. A plan, a declaration check, or an implemented test alone
-is not evidence that the outcome occurred. Manual judgments require independent
-artifact review; automated checks establish only the behavior they exercise.
+The maintainer accepts Work outcomes based on evidence. Agent review
+prepares that decision and does not replace maintainer review. Evidence depends
+on the outcome:
 
-Per-criterion Validation clauses and test-to-AC markers are not required, nor
-are replacement mapping tables or routine evidence reports. Follow
-[testing guidance](testing.md#pick-the-test-type) for test selection and the
-[check and evidence policy](validation.md) for applicable checks and evidence
-limits.
+- Implementation: code, appropriate tests, and their execution results.
+- Guidance: the changed guidance that fulfills the criteria.
+- Investigation: recorded findings and, where execution is used, shell/code
+  execution results retained as artifacts.
+- Evaluation: recorded results required by its declared protocol.
 
-Local evidence can establish acceptance before PR CI runs. A criterion that
-explicitly requires a CI result remains `TODO` until that result is observed;
-do not waive that requirement to fit publication or cleanup. If it cannot be
-satisfied before cleanup, obtain maintainer steering through the
-[whole requested-tree pause](workflow.md#decisions-and-new-splits). Full CI on
-the latest reviewed PR head remains a separate merge gate.
+Inspect evidence in its existing source records. A plan, a declaration check,
+or an implemented test alone does not establish the outcome; automated checks
+establish only the behavior they exercise.
+
+Local evidence can establish acceptance before PR CI runs.
 
 ## Work delivery commits
 

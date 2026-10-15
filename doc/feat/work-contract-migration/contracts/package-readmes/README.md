@@ -33,7 +33,7 @@ README ownership remain intact.
 
 ### **AC-2 TODO** Consistent dependencies and ownership
 
-Parent maps, linked live specifications, and active criterion/anchor references
+Parent maps, linked supporting artifacts, and active criterion/anchor references
 agree with the rewritten contracts. Dependencies explain what is consumed and
 when, separately from immediate children. References to retired acceptance tools
 are removed from current instructions without rewriting historical records.
