@@ -21,15 +21,19 @@ The maintainer accepts Work outcomes based on evidence. Agent review
 prepares that decision and does not replace maintainer review. Evidence depends
 on the outcome:
 
-- Implementation: code, appropriate tests, and their execution results.
+- Implementation: code, appropriate tests, and their results in CI. Local test
+  runs support preparation and debugging.
 - Guidance: the changed guidance that fulfills the criteria.
 - Investigation: recorded findings and, where execution is used, shell/code
   execution results retained as artifacts.
 - Evaluation: recorded results required by its declared protocol.
 
-Inspect evidence in its existing source records. A plan, a declaration check,
-or an implemented test alone does not establish the outcome; automated checks
-establish only the behavior they exercise.
+Keep execution results in their source records; do not copy test output or
+check inventories into contracts, commit messages, or maintainer handoffs.
+Report material failures or limitations concisely.
+
+A plan, a declaration check, or an implemented test alone does not establish
+the outcome; automated checks establish only the behavior they exercise.
 
 Local evidence can establish acceptance before PR CI runs.
 
