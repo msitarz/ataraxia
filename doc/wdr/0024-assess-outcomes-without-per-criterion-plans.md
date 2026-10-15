@@ -39,5 +39,6 @@ Contracts describe delivered results rather than routine execution instructions.
 Local evidence can establish acceptance before PR CI runs; the full latest-head
 CI merge gate remains in [check policy](../validation.md). This changes neither
 the current verification/cleanup commit sequence nor maintainer merge authority.
-The [guidance Work](../feat/work-contract-migration/guidance/README.md) carries
-the authoring and evidence changes.
+The
+[guidance Work](https://github.com/msitarz/ataraxia/blob/a9062b7884d09671eb7acebaa04e2a365f7fd410/doc/feat/work-contract-migration/guidance/README.md)
+carries the authoring and evidence changes.

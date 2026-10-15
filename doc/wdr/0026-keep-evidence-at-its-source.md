@@ -37,5 +37,6 @@ Reviewers inspect source records instead of relying on agent-written summaries
 as proof. They may need to consult CI or supporting artifacts rather than one
 consolidated report. Investigation findings and protocol-defined results remain
 useful artifacts; the rule removes duplicate test reporting, not the evidence.
-The [guidance Work](../feat/work-contract-migration/guidance/README.md) carries
-this change without altering the current cleanup sequence.
+The
+[guidance Work](https://github.com/msitarz/ataraxia/blob/a9062b7884d09671eb7acebaa04e2a365f7fd410/doc/feat/work-contract-migration/guidance/README.md)
+carries this change without altering the current cleanup sequence.

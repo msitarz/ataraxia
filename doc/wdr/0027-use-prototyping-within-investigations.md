@@ -34,5 +34,6 @@ adoption requires a separate reviewed contract addressing missing production and
 integration requirements.
 [Work definition](../work-definition.md#investigations) and the
 [glossary](../ubiquitous-language.md) own the current meanings. The
-[guidance Work](../feat/work-contract-migration/guidance/README.md) carries the
-change; historical Prototype references retain their original meaning.
+[guidance Work](https://github.com/msitarz/ataraxia/blob/a9062b7884d09671eb7acebaa04e2a365f7fd410/doc/feat/work-contract-migration/guidance/README.md)
+carries the change; historical Prototype references retain their original
+meaning.

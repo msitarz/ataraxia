@@ -38,8 +38,8 @@ not silently converted into current instructions or completed outcomes.
 
 ## Dependencies
 
-- **TODO** [Guidance alignment](../guidance/README.md): supplies authoring
-  rules.
+- [Work contract template](../../../work-contract-template.md):
+  supplies the delivered authoring rules.
 - **TODO** [Tooling simplification](../tooling/README.md): establishes the
   retained declaration-check surface and retires test-marker coupling.
 
@@ -63,7 +63,8 @@ not silently converted into current instructions or completed outcomes.
 ## Additional context
 
 Each group reads its parent overview before rewriting its leaves. Shared-owner
-changes route to the guidance child. Cross-group dependency wording is
+changes are coordinated by the migration owner at their authoritative guidance
+owners. Cross-group dependency wording is
 coordinated serially, especially validated-core and complexity adoption. This
 migration does not relax review sizing or authorize the rewritten Works'
 implementation.

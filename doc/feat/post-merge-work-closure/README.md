@@ -80,11 +80,11 @@ merge.
 
 ## Dependencies
 
-- **TODO**
-  [Readable Work contract guidance](../work-contract-migration/guidance/README.md):
-  establishes README contracts, canonical outcome headings, and evidence duties
-  consumed by the closure command. The remaining migration is independent of
-  this lifecycle change and retains existing gates until adoption.
+- [Work contract template](../../work-contract-template.md) and
+  [Work acceptance](../../acceptance-tracing.md): supply the delivered README
+  format, outcome headings, and evidence duties consumed by the closure command.
+  The remaining contract migration is independent of this lifecycle change and
+  retains existing gates until adoption.
 
 ## Children
 
@@ -108,5 +108,5 @@ merge.
 This Work defines a future lifecycle/tool delivery; it does not change the
 currently required cleanup sequence or execute closure. The migration's policy
 thinning and this Work's lifecycle change have separate owners. Shared guidance
-edits proceed after the migration guidance dependency to avoid conflicting
-rules.
+edits use the delivered authoring/evidence rules and are coordinated with the
+migration owner to avoid conflicting rules.

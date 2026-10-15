@@ -77,8 +77,9 @@ remain usable, and removal of marker infrastructure preserves unrelated tests.
 
 - **DONE** [Migration inventory](inventory.md): established the contract,
   guidance, tooling, and reference scope.
-- **TODO** [Guidance alignment](guidance/README.md): make the template the
-  authoring owner and remove conflicting or duplicated instructions.
+- **DONE** [Guidance alignment](../../work-contract-template.md): established
+  README-only outcome contracts, source-based evidence, and Investigation
+  prototyping, with decisions in [WDRs 23–27](../../wdr/README.md).
 - **TODO** [Acceptance tooling simplification](tooling/README.md): retire marker
   selection and reduce acceptance tooling to useful declaration checks.
 - **TODO** [Active contract migration](contracts/README.md): rewrite existing
@@ -100,5 +101,6 @@ This is contract preparation only. Existing Works remain owned at their current
 paths; migration children own their rewrites, not their implementation. The
 migration Work tree itself already uses the new format and is included in final
 consistency review. Inventory, guidance, tooling, contract groups, and final
-verification proceed in dependency order. Shared guidance edits belong to the
-guidance child; other children report conflicts there rather than create copies.
+verification proceed in dependency order. Shared guidance edits remain at their
+authoritative owners; children report conflicts to the migration owner rather
+than create copies.
