@@ -39,22 +39,14 @@ Example:
 
 ### **AC-1 TODO** Criterion name
 
+Describe outcome of the criterion. List and describe created, removed and changed machinery. Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include API with types if outcome is code.
+
+Example:
+Introduce `script/sandbox.py` module with a `create(path: Path)` API to be run via `make sandbox-create PATH=path`.
+
 #### What exists
 
 What exists right now and which requirements it already fulfills. Print it only if it helps explain that criterion.
-
-#### What remains
-
-What needs to be done. Explain why existing machinery is insufficient.
-
-#### Outcome
-
-Created, removed, changed machinery like API, modules. Focus on consumer facing outcomes from the perspective of a changed code or guidance.
-
-#### Validation:
-
-- One sentence per validation mechanism to be used.
-- Do not duplicate guidance instructions like running `make lint-check` or relevant tests.
 -->
 
 ## Dependencies
