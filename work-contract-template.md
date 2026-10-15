@@ -41,7 +41,8 @@ Example:
 
 ### **AC-1 TODO** Criterion name
 
-Describe outcome of the criterion. List and describe created, removed and changed machinery in accordance to the purpose of this criterion. Describe affected consumer interfaces and behavior. Leave implementation details owned by child Works in those contracts. Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include affected consumer interfaces and useful types.
+
+Describe the criterion’s outcome, focusing on consumer-facing behavior. Include affected interfaces and useful types, and explain relevant additions, changes, or removals. Leave implementation details owned by child Works in those contracts.
 
 Example:
 `make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
