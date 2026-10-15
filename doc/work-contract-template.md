@@ -25,7 +25,7 @@ Example:
 
 ## Mechanisms
 
-<!-- Name the tools, packages, modules, or data structures central to the solution and describe each one’s role in one sentence. Be specific—for example, `codex sandbox` rather than `codex`.
+<!-- Use an unordered list with one sentence per mechanism, naming the tool, package, module, or data structure central to the solution and explaining its role. Be specific—for example, `codex sandbox` rather than `codex`. Put acceptance requirements in the relevant AC. Keep necessary shared contracts in clearly named subsections, using single-sentence bullets for parallel rules.
 
 Example:
 
@@ -47,12 +47,13 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 <!-- List of acceptance criteria. REQUIRED.
 
 - Each criterion defines one observable outcome. Together, the criteria fulfill the Work’s purpose and goals.
-- Name the outcome in the heading and state what becomes possible or changes when it is delivered.
+- Name the outcome in the heading and start each criterion with a short sentence stating what becomes possible or changes when it is delivered.
+- Use short prose for connected explanations and unordered, single-sentence bullets for parallel conditions, guarantees, or refusal cases.
 - Include preconditions, expected results, relevant failure/preservation boundaries, and affected interfaces with useful signatures and types needed to determine completion. Describe inputs, outputs, behavior, and compatibility changes where relevant.
 - State measurement thresholds and the conditions needed to interpret them in the outcome when they define success.
 - Split independently assessable outcomes into separate criteria.
 - Describe the delivered result rather than listing implementation tasks or instructions to the executor.
-- Leave implementation details owned by child Works in those contracts.
+- Keep each requirement at one owner and link to it elsewhere; leave implementation details owned by child Works in those contracts.
 
 Omit empty criterion subheadings.
 -->
