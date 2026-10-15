@@ -26,7 +26,7 @@ ordinary regression coverage.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Marker-based selection retired
+### **AC-1 DONE** Marker-based selection retired
 
 Make no longer exposes ac-collect or ac-test, pytest no longer registers covers,
 and test decorators no longer refer to Work/AC identifiers. Obsolete selector
