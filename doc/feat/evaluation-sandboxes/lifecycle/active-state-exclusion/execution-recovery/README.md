@@ -42,54 +42,56 @@ does not advance recovery.
 
 ### **AC-1 TODO** Retain bound attempt identity and invalidate old disposition
 
+Each attempt retains its validated owner, provenance and results while
+invalidating old cleanup authority.
+
 #### Binding and attempts
 
-Before initial execution, the shared protocol binds a contained Evaluation Work
-path and host-controlled owning orchestrator under the exclusive lock. The path
-has a Work README in the owning source repository/Work branch; it need not exist
-in the sandbox's frozen clone. Missing, escaped or invalid bindings refuse
-launch. Exact-session resume must match recorded Work, owner and UUID without
-reassigning ownership. Creation requires no Evaluation binding; failed
-preparation can receive a validated host binding under the lock before cleanup.
+- Initial binding requires a contained Evaluation Work with a README in the
+  owning source repository/Work branch and a host-controlled orchestrator,
+  validated under the lock even when absent from the frozen clone.
+- Missing, escaped or invalid bindings refuse launch, and exact UUID resume must
+  match recorded Work/owner/session without reassignment.
+- Creation needs no Evaluation binding, while failed preparation may receive
+  validated host binding under the lock before cleanup.
+- Before launch, each attempt persists a unique run identity, available Codex
+  UUID, preparation/execution outcome including incomplete/unknown state, and
+  private output/artifact paths without overwriting earlier attempts.
+- UUIDs are never invented or confused with delegated agent IDs, which are
+  retained only when needed for provenance.
+- The attempt API accepts locked sandbox, validated source Work/owner, initial
+  or exact-session resume identity and invocation, returning retained
+  completed/incomplete/unknown state.
+- Identified initial/resumed attempts invalidate disposition before launch,
+  including failed/rejected requests, while unsafe identity refuses without
+  record updates.
 
-Each attempted invocation persists a unique run identity before launch, the
-Codex session UUID when available, preparation/execution outcome including
-incomplete or unknown state, and private output/artifact paths. A session UUID
-is distinct from a delegated agent identifier; an agent identifier is included
-only when needed for provenance. Missing UUIDs are never invented. Earlier
-attempts and artifacts survive failure and resume without overwritten
-provenance.
-
-The attempt API accepts a locked sandbox, validated source Work/owner, initial
-or exact-session resume identity and process invocation; it returns retained
-completed, incomplete or unknown state. It invalidates disposition before an
-identified initial/resumed launch attempt, including failed or rejected
-requests. Unsafe identity refuses without updating the record. Execution writes
-binding and attempt fields, never disposal approval: the
-[disposition owner](../cleanup-disposition/README.md) supplies review and
-preservation authority using this invalidation and current attempt identity.
+Execution writes binding and attempt fields, never disposal approval; the
+[disposition owner](../cleanup-disposition/README.md) binds review/preservation
+to this invalidation and current attempt identity.
 
 ### **AC-2 TODO** Protect execution through safe recovery
 
-Automatic exclusion starts before launch and lasts until execution and every
-descendant capable of accessing workspace/private output have stopped and
-results are retained. A wrapper crash cannot leave operating descendants after
-exclusion ends; descendants cannot escape the protected lifetime. Normal
-completion, interruption, interrupted updates and crashes preserve prior
-outcomes/artifacts and permit only safe reacquisition.
+Exclusion protects execution through descendant stoppage and retained results,
+including after crashes.
 
-If stoppage or observation of all descendants cannot be established, the marker
-retains unknown execution and refuses later launch/removal. OS release after
-process death alone establishes neither completion nor disposability; no stale
-active bit requires manual clearing. The orchestrator owns review/disposal,
-not manual liveness unlocking.
+- Automatic acquisition precedes launch and lasts until execution and all
+  descendants with workspace/private-output access stop and results are
+  retained, without escape after wrapper failure.
+- Completion, interruption, interrupted updates and crashes preserve earlier
+  outcomes/artifacts and permit only safe reacquisition.
+- Unestablished descendant stoppage/observation retains unknown execution and
+  refuses later launch/removal, regardless of OS lock release after process
+  death.
+- Host recovery uses the same locked identity and stoppage/preservation
+  evidence, refusing unresolved safety and preserving earlier results before
+  permitting action.
+- Successful recovery establishes stoppage and retention under the lock, with
+  explicit supported OS mechanisms/limits and no fixed Python signatures or new
+  controller.
 
-Host recovery accepts the same locked identity plus stoppage/preservation
-evidence. It refuses while safety is unresolved and retains earlier results
-before permitting later action. Successful recovery establishes stoppage and
-preservation under the lock. These are semantic interfaces with explicit
-supported OS mechanisms and limits, not fixed Python signatures or a new
-controller.
+The orchestrator owns review/disposal rather than manual liveness unlocking;
+no stale active bit needs clearing.
 
 ## Dependencies
 

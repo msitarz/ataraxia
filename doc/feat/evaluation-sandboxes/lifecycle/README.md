@@ -39,15 +39,18 @@ flowchart LR
 
 ### **AC-1 TODO** Compose observational discovery and safe disposal
 
-Creation, execution and removal share exclusion; listing stays observational.
-Persistent ownership and execution results survive inactivity, and removal
-requires current orchestrator disposition after preservation and maintainer
-review. Unknown execution, unsupported records, foreign ownership and unsafe
-paths preserve the child. Same-name reuse cannot redirect waiters.
+Lifecycle children compose shared exclusion, read-only discovery and reviewed
+disposal.
 
-Child outcomes compose across crash/descendant handling, failed preparation
-cleanup, disposition invalidation, read-only probes and check/delete exclusion.
-Successful removal retains the stable lock and permits a fresh generation.
+- The [active-state protocol](active-state-exclusion/README.md) preserves
+  ownership/results through inactivity, failures, descendant stoppage and
+  same-name reuse.
+- Listing stays observational, and removal requires current orchestrator
+  disposition after preservation and maintainer review.
+- Unknown execution, unsupported records, foreign ownership and unsafe paths
+  preserve the child.
+- Removal closes the check/delete race, retains the stable lock and permits a
+  fresh generation only after successful cleanup.
 
 ## Children
 

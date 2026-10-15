@@ -22,31 +22,39 @@ Work branch without expanding executor access.
 
 ### **AC-1 TODO** Import the exact accepted ref into a guarded receiver
 
-Orchestrator-controlled import requires the exact accepted executor tip/base and
-expected Work HEAD after independent acceptance and final correction. It fetches
-only the explicit assigned ref into a nonshallow receiver with full history and
-rejects stale acceptance, missing ancestry, unrelated/unexpected refs and failed
-compare-and-swap guards without publication.
+Orchestrator-controlled import accepts only the independently accepted final
+executor tip/base.
+
+- Final correction and expected Work HEAD precede fetching the explicit assigned
+  ref into a nonshallow full-history receiver.
+- Stale acceptance, missing ancestry, unrelated/unexpected refs and failed
+  expected-HEAD compare-and-swap guards reject import without publication.
 
 ### **AC-2 TODO** Preserve work through unchanged or advanced bases
 
-Unchanged-base import preserves commit identity. Advanced-base rebase preserves
-authors/author metadata, commit subjects/order, exact binary bytes, modes,
-rename/delete changes and implementation/evidence-before-cleanup boundaries,
-including the upstream content of a clean advanced base. Conflict halts
-publication until reviewer-owned resolution and refreshed evidence accepted for
-the rewritten latest head. Executor state/auth, permissions and source input
-remain untouched; host production operations retain signing settings and normal
-hooks.
+Import preserves accepted work and delivery boundaries at unchanged or advanced
+bases.
+
+- Unchanged-base import preserves commit identity.
+- Advanced-base rebase preserves authors/author metadata, subjects/order, binary
+  bytes, modes, rename/delete changes, upstream content and
+  implementation/evidence-before-cleanup boundaries.
+- Conflicts halt publication until reviewer-owned resolution and acceptance of
+  refreshed latest-head evidence.
+- Executor state/auth, permissions and source input remain untouched, while host
+  production operations retain signing settings and normal hooks.
 
 ### **AC-3 TODO** Hand off only reviewed latest-head output
 
-Only reviewed latest Work-branch output reaches orchestrator-controlled
-[publication](../../../pull-requests.md#publishing), subject to
-[latest-head CI](../../../validation.md) and maintainer review. Master is never
-a delivery target or rewritten; source is unchanged and executor permissions
-gain no publication access. Live GitHub PR/CI experiments, alternate patch
-transport and default-policy adoption remain outside scope.
+Only reviewed latest Work-branch output reaches
+[orchestrator-controlled publication](../../../pull-requests.md#publishing).
+
+- [Latest-head CI](../../../validation.md) and maintainer review remain
+  required.
+- Master is never a delivery target or rewritten, source stays unchanged and
+  executor permissions gain no publication access.
+- Live GitHub PR/CI experiments, alternate patch transport and default-policy
+  adoption remain outside scope.
 
 ## Dependencies
 

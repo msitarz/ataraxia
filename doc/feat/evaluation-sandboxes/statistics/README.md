@@ -28,32 +28,36 @@ accurately without widening access to host data.
 
 ### **AC-1 TODO** Compare session, token and cost-estimate fit
 
-A compact comparison records each serious candidate's checked fit, pros/cons and
-uncertainty for exact session filtering, headless JSON/Python access, temporary
-custom-state discovery, input, cached input, output and reasoning tokens,
-deduplication across resumes and version limits. Native CLI limitations and the
-possibility that no candidate fits stay explicit; prior third-party
-documentation reading established no tokenuse fit or adoption.
+The comparison records each serious candidate's checked fit, tradeoffs and
+uncertainty.
 
-Cost-estimate fit distinguishes requested from observed model/tier, pricing
-source/version/date, fallback-model pricing, cache/reasoning category overlap
-and unavailable categories. Bounded manually traced declared event/session
-records and primary references ground available values and provenance.
-Absent/unsupported data, unresolved category overlap and unsupported pricing
-remain unknown; subscription billing is never inferred.
+- Available values/provenance follow primary references and bounded manual
+  traces of declared event/session records.
+- Session criteria cover exact filtering, headless JSON/Python access, temporary
+  custom-state discovery, resume deduplication and version limits.
+- Token criteria cover input, cached input, output and reasoning categories,
+  including unresolved overlap and unavailable data.
+- Cost-estimate fit records requested/observed model and tier, pricing
+  source/version/date, fallback pricing and category semantics.
+- Absent/unsupported data, unresolved overlap and unsupported pricing stay
+  unknown without inferred subscription billing, and native CLI limits or no
+  fitting candidate stay explicit.
+
+Prior third-party documentation reading establishes no tokenuse fit or adoption.
 
 ### **AC-2 TODO** Recommend reporting from tool-outcome evidence
 
-The recommendation establishes successful/failed tool coverage or its precise
-gaps and feasible report inputs from representative available tool outcomes and
-initial/resumed identities. It distinguishes tool failure from command exit,
-expected denial probes from agent mistakes, and model calls from tool calls and
-tool process sessions. Token coverage alone cannot select a method.
+The recommendation chooses a fitting existing method, bounded manual/native
+reporting or no integration with reasons.
 
-The result recommends a fitting existing option, bounded manual/native reporting
-or no integration with reasons; it does not install or integrate a report tool.
-Missing custom collection machinery requires a new reviewed contract before
-adoption.
+- Representative available tool outcomes and initial/resumed identities
+  establish successful/failed coverage, precise gaps and feasible inputs.
+- Tool failure differs from command exit, expected denial from agent mistakes,
+  and model calls from tool calls and tool process sessions.
+- Token coverage alone cannot select a method, and the result installs or
+  integrates no tool.
+- Missing custom collection machinery requires a new reviewed contract before
+  adoption.
 
 ## Data and scope limits
 

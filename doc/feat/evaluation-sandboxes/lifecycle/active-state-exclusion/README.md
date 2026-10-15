@@ -43,19 +43,21 @@ flowchart LR
 
 ### **AC-1 TODO** Compose the shared lifecycle safety protocol
 
-Reviewed child outcomes provide automatic same-name exclusion, stable lock/fresh
-generation, durable ready/failed preparation, retained execution through
-descendant stoppage and results, and current explicit orchestrator disposition
-after preservation and maintainer review. Unsupported/unsafe/stale identity and
-unknown execution fail closed; listing observations grant no cleanup authority.
-Creation works without execution binding and retains its own owner/resolver.
+Reviewed children compose safe identity, protected execution and current cleanup
+authority.
 
-[Named ownership and generation safety](lock-and-marker/README.md#acceptance-criteria),
-[attempt binding and protected recovery](execution-recovery/README.md#acceptance-criteria),
-and
-[current cleanup authority](cleanup-disposition/README.md#acceptance-criteria)
-remain with their child outcomes. Consumer command integration remains with
-native execution, listing and removal.
+- [Lock and marker outcomes](lock-and-marker/README.md#acceptance-criteria)
+  preserve same-name exclusion, durable ready/failed preparation and fresh
+  generations without replacing the creation owner/resolver.
+- [Attempt and recovery outcomes](execution-recovery/README.md#acceptance-criteria)
+  retain results through descendant stoppage and refuse unknown execution.
+- [Disposition outcomes](cleanup-disposition/README.md#acceptance-criteria)
+  require preservation and maintainer-reviewed orchestrator authority for the
+  current state.
+- Unsafe, unsupported or stale identity fails closed, and listing observations
+  grant no cleanup authority.
+- Creation requires no execution binding, while native execution, listing and
+  removal own their command integration.
 
 ## Children
 

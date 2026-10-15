@@ -25,44 +25,46 @@ maintainer-reviewed host disposition.
 
 ### **AC-1 TODO** Record only reviewed host cleanup authority
 
-The host recording interface accepts the owning orchestrator, current
-identity/inventory bindings, retained destinations, review reference and
-explicit retain/discard decisions. Only that owner can record disposition after
-artifact preservation and maintainer review. It returns validated persisted
-authority or refuses without approval under the same exclusive lock as
-launch/deletion. Implementation may use a small helper and existing Make
-routing.
+Only the owning orchestrator can record current cleanup authority after
+preservation and maintainer review.
 
-Disposition identifies owner/review, sandbox generation, current run/attempt and
-session when known, exact workspace tip/changes and preparation state, and exact
-private output/artifact inventory or revisions. Retained destinations and
-accepted import evidence or explicit reviewed discard decisions cover the
-material where applicable. Missing review, wrong owner, missing/invalid source
-Work binding, missing preservation or review/import evidence refuses approval.
-Source Work validation uses the execution protocol; executor claims never supply
-host authority.
+- Recording accepts current identity/inventory, retained destinations, review
+  reference and explicit retain/discard decisions, returning validated persisted
+  authority under the same exclusive lock as launch/deletion.
+- Persisted disposition identifies owner/review, generation, current run/attempt
+  and known session, exact workspace tip/changes, preparation state and private
+  output/artifact inventory or revisions.
+- Retained destinations and accepted import evidence or reviewed discard
+  decisions cover the applicable material.
+- Missing review, wrong owner, invalid/missing source Work binding or missing
+  preservation/review/import evidence returns refusal without approval.
+- Source Work validation uses the execution protocol, and private host authority
+  never derives from executor claims, inactivity, clean status or a session
+  ending.
 
-Inactivity, clean status and a session ending do not grant approval. Disposition
-stays private and is never delegated to the executor.
-[Removal](../../removal/README.md) consumes current-binding validation and
-verifies retained destinations/evidence immediately before deletion; this Work
-does not delete material.
+[Removal](../../removal/README.md) consumes this current-binding validation and
+verifies retained destinations/evidence before deletion; a small shared helper
+and existing Make routing suffice without a new review system.
 
 ### **AC-2 TODO** Reject stale or incomplete disposition
 
-The [attempt protocol](../execution-recovery/README.md#binding-and-attempts)
-invalidates disposition before identified initial, resumed, failed or rejected
-launch attempts. Missing, inconsistent or changed generation, attempt/session,
-workspace, preparation or output/inventory bindings make approval unusable even
-if no writer cleared it. Changed artifact bytes/revisions cannot reuse approval.
-Refusal preserves protected bytes and supplies no approval.
+Stale or incomplete disposition refuses cleanup without changing protected
+bytes.
 
-Failed preparation has no exemption: it can receive a validated source
-Work/owner binding under the lock, but a partial or absent workspace and
-explicitly absent run/session provenance still require disposition covering
-partial material and diagnostics. Creation remains independent of Evaluation
-binding. Unknown execution cannot be approved for removal; only safe recovery by
-the execution owner can establish stoppage and preserve results first.
+- The [attempt protocol](../execution-recovery/README.md#binding-and-attempts)
+  invalidates approval before identified initial/resumed/failed/rejected launch
+  attempts.
+- Missing, inconsistent or changed generation, attempt/session, workspace,
+  preparation or output/inventory bindings invalidate approval even without an
+  explicit clear, including changed artifact bytes/revisions.
+- Failed preparation may receive validated source Work/owner binding under the
+  lock, but still requires reviewed disposition for partial material and
+  diagnostics despite absent workspace or run/session provenance.
+- Unknown execution cannot receive removal approval before the execution owner's
+  safe recovery establishes stoppage and preservation.
+
+Creation remains independent of Evaluation binding, and refusal grants no
+approval.
 
 ## Dependencies
 
