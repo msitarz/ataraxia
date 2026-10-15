@@ -31,7 +31,7 @@ its relevant README and linked contracts.
 | Test cleanup | [Test ownership](doc/test-ownership.md), including documentation tool probes |
 | Documentation | [Documentation ownership](doc/README.md); use `make doc-check` and `make doc-format` for Markdown formatting and local links |
 | Empirical evaluation | [Empirical evaluations](doc/evaluation.md) and the specific Work README and protocol |
-| Defining or reviewing a Work contract | [Work definition](doc/work-definition.md) and the relevant Work README |
+| Defining or reviewing a Work contract | [Work contract template](doc/work-contract-template.md), [Work definition](doc/work-definition.md), and the relevant Work README |
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Post-merge branch cleanup | [Branch cleanup](doc/branch-cleanup.md) after the maintainer confirms a Work PR merged |
 | Work acceptance coverage | [Acceptance tracing](doc/acceptance-tracing.md) |

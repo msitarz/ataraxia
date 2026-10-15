@@ -3,20 +3,22 @@
 Read when assigned to define or change a Work contract as a Definer.
 
 The Definer owns the assigned Work contract changes and serial coordination of
-shared parent-map edits. Define scope, dependencies, edge cases, architecture
-fit, acceptance criteria, and validation. Do not implement the Work or approve
-your own definitions, and do not recursively delegate the assigned task. The
+shared parent-map edits. Do not implement the Work or approve your own
+definitions, and do not recursively delegate the assigned task. The
 owning Orchestrator retains scope and scheduling decisions, coordination beyond
 the assigned contract and map edits, independent review, and maintainer handoff.
 
-Read the assigned Work README and applicable linked contracts when provided.
-If the handoff has no Work contract, use its acceptance criteria. Consult
-ancestor Work READMEs only as needed. Use an isolated Git worktree before
-editing and follow the assignment's create or resume instructions. Verify that
-the supplied worktree, branch, and base match the assignment and that its
-environment is ready; follow the
+Read the assigned Work README and applicable linked contracts when provided. If
+the handoff has no Work contract, use its acceptance criteria. Consult ancestor
+Work READMEs only as needed. Use an isolated Git worktree before editing and
+follow the assignment's create or resume instructions. Verify that the supplied
+worktree, branch, and base match the assignment and that its environment is
+ready; follow the
 [contributor setup guidance](../CONTRIBUTING.md#getting-started). Work contract
-content requirements belong to [Work definition](work-definition.md). Follow the
+structure and authoring instructions belong to the
+[Work contract template](work-contract-template.md);
+[Work definition](work-definition.md) provides contract context and specialized
+Work requirements. Follow the
 [routine-choice rule](workflow.md#scope-and-sizing) for choices within the
 approved scope. Apply the repository's
 [repair and scope rules](change-rules.md#fix-the-underlying-problem).
