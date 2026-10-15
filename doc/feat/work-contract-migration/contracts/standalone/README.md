@@ -40,8 +40,8 @@ are removed from current instructions without rewriting historical records.
 
 ## Dependencies
 
-- **TODO** [Guidance alignment](../../guidance/README.md): supplies authoring
-  rules.
+- [Work contract template](../../../../work-contract-template.md):
+  supplies the delivered authoring rules.
 - **TODO** [Tooling simplification](../../tooling/README.md): removes marker
   coupling and establishes the retained declaration-check surface.
 

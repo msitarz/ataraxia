@@ -50,9 +50,9 @@ decisions.
 
 ## Dependencies
 
-- **TODO**
-  [Migration guidance](../../work-contract-migration/guidance/README.md):
-  supplies the README contract and evidence model before lifecycle owner edits.
+- [Work contract template](../../../work-contract-template.md) and
+  [Work acceptance](../../../acceptance-tracing.md): supply the delivered README
+  contract and evidence model for lifecycle owner edits.
 
 ## Links
 

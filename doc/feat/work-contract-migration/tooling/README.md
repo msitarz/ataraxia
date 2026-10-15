@@ -56,8 +56,10 @@ commands collect and execute the relevant surviving tests without markers.
 
 ## Dependencies
 
-- **TODO** [Guidance alignment](../guidance/README.md): establishes the intended
-  evidence and authoring rules and owns coordinated guidance/reminder edits.
+- [Work acceptance](../../../acceptance-tracing.md) and the
+  [contract template](../../../work-contract-template.md): supply the delivered
+  evidence and authoring rules. Coordinate further guidance/reminder edits with
+  the migration owner.
 
 ## Links
 

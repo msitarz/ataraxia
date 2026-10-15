@@ -39,8 +39,10 @@ unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
 
 - **TODO** [Active contract migration](../contracts/README.md): supplies all
   five reviewed rewrite groups.
-- **TODO** [Guidance alignment](../guidance/README.md): supplies updated owners
-  and the lasting decision record.
+- [Work contract template](../../../work-contract-template.md),
+  [Work acceptance](../../../acceptance-tracing.md), and
+  [WDRs 23–27](../../../wdr/README.md): supply the delivered authoring/evidence
+  rules and lasting decisions.
 - **TODO** [Tooling simplification](../tooling/README.md): supplies retained
   command behavior and focused execution evidence.
 
