@@ -1,17 +1,35 @@
 # Lasting package documentation guidance
 
-Own the convention at [documentation ownership](../../../README.md), with
-engineering/testing linking there only as needed. Adopt the parent convention
-without duplicating architecture, API or test rules at other owners. Preserve
-existing documentation ownership, navigation and operational requirements.
-This is one future guidance revision; no package inventories in this leaf.
+## Purpose
 
-Follow [parent scope, convention and delivery validation](../README.md).
+Give the approved package README convention a lasting, discoverable owner.
 
-- **AC-1 TODO** Documentation ownership states a coherent package README
-  convention and same-change maintenance obligation, discoverable from
-  engineering/testing routes without contradictory or duplicated requirements.
+## Goals
 
-  Validation: Review owning/adjacent guidance, links and representative
-  product/test examples against the approved convention; run
-  doc-format/doc-check/ac and latest CI. No package README or tooling changes.
+- Establish the convention and same-change maintenance obligation at
+  documentation ownership.
+- Make the convention discoverable from engineering and testing guidance without
+  duplicating their rules.
+
+## Non-Goals
+
+- Change package READMEs or tooling.
+- Add package inventories to this guidance revision.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Coherent and discoverable package guidance
+
+[Documentation ownership](../../../README.md) states the
+[parent convention](../README.md#acceptance-criteria) and same-change
+maintenance obligation, with engineering and testing linking there as needed.
+
+The owning and adjacent guidance retains existing documentation ownership,
+navigation and operational requirements without contradictory or duplicated
+architecture, API or test rules. Representative product and test examples
+agree with the convention.
+
+## Links
+
+- [Package README coverage](../README.md): owns shared scope, convention,
+  execution order and delivery conditions.
