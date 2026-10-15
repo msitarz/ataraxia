@@ -35,7 +35,7 @@ only for surviving callers. Behavioral tests keep their assertions and execution
 scope unless they solely exercise the retired infrastructure. Normal product,
 script, Make, and example test routes continue to work.
 
-### **AC-2 TODO** Obsolete declaration checker retired
+### **AC-2 DONE** Obsolete declaration checker retired
 
 Make no longer exposes ac-check. `script/acceptance_coverage.py`, its dedicated
 tests and fixtures, and obsolete declaration/Validation parsing are removed.
