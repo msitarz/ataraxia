@@ -6,6 +6,9 @@ Date: 2026-09-30
 
 Accepted
 
+Amended by
+[23. Use readable README contracts](0023-use-readable-readme-contracts.md).
+
 ## Context
 
 A Work needs an observable outcome and acceptance criteria so its reviewer can
