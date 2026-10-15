@@ -1,11 +1,19 @@
 # <Work name>
 
 <!-- Replace the heading with the Work name and remove all instruction comments
-before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. -->
+before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Keep uniform vocabulary without mixing semantic meanings for a single word. Reuse the same word for the same meaning avoiding synonyms. -->
+
+## Glossary
+
+<!-- List of name definitions of a single purpose used within this contract that have multiple meanings otherwise.
+
+Example:
+- model: data structure for validation purposes, not an AI or a trading model.
+-->
 
 ## Purpose
 
- <!-- Write one sentence stating **why** this change is needed. REQUIRED. -->
+<!-- Write one sentence stating **why** this change is needed. REQUIRED. -->
 
 ## Goals
 
