@@ -17,7 +17,13 @@ before publishing. Keep only the relevant headings unless instruction comment sa
 
 ## Mechanisms
 
-<!-- List underlying mechanisms that will be used to solve this Work in one sentence, or None if none will be used. Underlying mechanism can be 3rd party applications, CLI tools, or internal application packages, modules or data structures. Be specific when mechanism has many features, if e.g. desiging sandboxes, list `codex sandbox` instead of only `codex`. -->
+<!-- List underlying mechanisms that will be used to solve this Work and describe their role in one sentence. Underlying mechanism can be 3rd party applications, CLI tools, or internal application packages, modules or data structures. Be specific when mechanism has many features, if e.g. designing sandboxes, list `codex sandbox` instead of only `codex`.
+
+Example:
+
+- `codex sandbox`: runs child commands with restricted filesystem access.
+- `git worktree`: provide separate checkout directory to prevent concurrent edits issues.
+-->
 
 ## Visuals
 
@@ -27,17 +33,23 @@ before publishing. Keep only the relevant headings unless instruction comment sa
 
 <!-- List of acceptance criteria. REQUIRED.
 
+In the example, if a subheading of criterion would remain empty, then do not print it.
+
 Example:
 
 ### **AC-1 TODO** Criterion name
 
 #### What exists
 
-What exists right now and which requirements it already fulfills.
+What exists right now and which requirements it already fulfills. Print it only if it helps explain that criterion.
 
 #### What remains
 
 What needs to be done. Explain why existing machinery is insufficient.
+
+#### Outcome
+
+Created, removed, changed machinery like API, modules. Focus on consumer facing outcomes from the perspective of a changed code or guidance.
 
 #### Validation:
 

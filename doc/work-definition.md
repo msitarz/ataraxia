@@ -25,9 +25,7 @@ expected outcomes; cover boundaries, failures, or behavior to preserve when
 they matter. State scope, non-goals, dependencies, assumptions, and open risks
 as useful, separating required contracts from provisional design. Use an
 [Investigation](#investigations) or [Prototype](#prototypes) when
-feasibility needs checking. For performance claims, give a representative
-workload, baseline, measurement method, and success threshold. Scale detail to
-the Work; these are prompts, not mandatory fields or headings.
+feasibility needs checking.
 
 Use standard relative Markdown links. Follow the proportionate descriptions
 below for meaningful changes; small changes may need only prose.
