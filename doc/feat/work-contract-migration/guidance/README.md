@@ -56,8 +56,8 @@ for current guidance or claim implementation is complete.
 
 ## Dependencies
 
-- **TODO** [Migration inventory](../inventory/README.md): supplies affected
-  owners, references, and preservation boundaries.
+- [Completed migration inventory](../inventory.md): supplies affected owners,
+  references, and preservation boundaries.
 
 ## Links
 
