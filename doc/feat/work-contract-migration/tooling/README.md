@@ -44,7 +44,7 @@ last callers. Current guidance, reminders, and callers no longer advertise or
 invoke any retired acceptance command. This Work introduces no replacement
 checker; the sibling [work-check Work](../work-check/README.md) owns that tool.
 
-### **AC-3 TODO** Tests cover the surviving tooling behavior
+### **AC-3 DONE** Tests cover the surviving tooling behavior
 
 Surviving Make guidance and test-routing behavior remains covered without
 obsolete marker, selector, declaration-parser, or orphan-path-helper
