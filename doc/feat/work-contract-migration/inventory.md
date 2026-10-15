@@ -128,24 +128,26 @@ checks, experimental protocol, planned verification, or actual evidence.
 - [Makefile](../../../Makefile): ac-collect/ac-test invoke
   [acceptance_tests.py](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/script/acceptance_tests.py);
   ac-check invokes
-  [acceptance_coverage.py](../../../script/acceptance_coverage.py).
-- [acceptance_coverage.py](../../../script/acceptance_coverage.py): list-based
-  parser, Validation annotation parser, AST marker scanner, and marker reports.
-- [work_paths.py](../../../script/work_paths.py) is imported by the checker,
-  selector, and its dedicated unit tests. Retain it for a surviving checker or
-  remove it with that surface if ac-check is retired.
+  [acceptance_coverage.py](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/script/acceptance_coverage.py).
+- [acceptance_coverage.py](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/script/acceptance_coverage.py):
+  list-based parser, Validation annotation parser, AST marker scanner, and
+  marker reports.
+- [work_paths.py](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/script/work_paths.py)
+  is imported by the checker, selector, and its dedicated unit tests. Retain it
+  for a surviving checker or remove it with that surface if ac-check is retired.
 - [test_roots.py](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/script/test_roots.py)
   is imported only by the checker marker scanner and selector. It has no
   unrelated production caller and can leave with those features. Test fixture
   copying also names both helpers.
 - [pyproject.toml](../../../pyproject.toml): strict pytest covers registration.
-- [Script acceptance helpers](../../../test/script/acceptance_support.py),
-  [Make acceptance helpers](../../../test/make/acceptance_support.py), dedicated
-  `test_acceptance_*.py` modules under script unit and Make integration suites,
-  and acceptance/selection/declaration fixtures: adapt declaration-only cases
-  if retained; remove cases solely proving retired marker/selector behavior.
-- [Work path tests](../../../test/script/unit/test_work_paths.py): retain
-  relevant path safety for surviving callers.
+- [Script acceptance helpers](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/script/acceptance_support.py),
+  [Make acceptance helpers](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/make/acceptance_support.py),
+  dedicated `test_acceptance_*.py` modules under script unit and Make
+  integration suites, and acceptance/selection/declaration fixtures: adapt
+  declaration-only cases if retained; remove cases solely proving retired
+  marker/selector behavior.
+- [Work path tests](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/script/unit/test_work_paths.py):
+  retain relevant path safety for surviving callers.
 - AST inspection found **256 covers calls across 63 Python files**
   in `test/` and `example/`, including fixture calls. These are syntax counts,
   not test collection or coverage measurements. Decorators are removed while
@@ -169,10 +171,10 @@ checks, experimental protocol, planned verification, or actual evidence.
 
 | Surface | Migration disposition |
 | --- | --- |
-| [Declaration parsing](../../../test/script/unit/test_acceptance_declaration_parsing.py), [declaration reports](../../../test/script/unit/test_acceptance_declaration_reports.py), [Make declarations](../../../test/make/integration/test_acceptance_declarations.py) | Keep meaningful declaration/path cases only if ac-check survives, rewrite them for heading syntax, and retire Validation/marker expectations. |
+| [Declaration parsing](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/script/unit/test_acceptance_declaration_parsing.py), [declaration reports](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/script/unit/test_acceptance_declaration_reports.py), [Make declarations](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/make/integration/test_acceptance_declarations.py) | Keep meaningful declaration/path cases only if ac-check survives, rewrite them for heading syntax, and retire Validation/marker expectations. |
 | [Marker discovery](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_marker_discovery.py) | Retire AST marker-scanning tests with that feature. |
 | [Command construction](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_command_construction.py), [command summaries](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/script/unit/test_acceptance_command_summaries.py), [Make selection](https://github.com/msitarz/ataraxia/blob/f6d76dfe1034f39f33059bcb5c79a0210ca214e0/test/make/integration/test_acceptance_selection.py) | Retire tests solely exercising ac-collect/ac-test, marker filtering, or empty selections. |
-| [Work paths](../../../test/script/unit/test_work_paths.py) | Preserve supported path safety if the checker/helper remains. |
+| [Work paths](https://github.com/msitarz/ataraxia/blob/ea1b3dbd26f1eca33eb25a8812bf913333b7e5bf/test/script/unit/test_work_paths.py) | Preserve supported path safety if the checker/helper remains. |
 | [Make guidance reminders](../../../test/make/integration/test_guidance_reminders.py) | Update hard-coded ac-check/ac-test command expectations alongside target/reminder changes; retain unrelated reminder and test-routing coverage. |
 | `test/script/fixtures/acceptance_markers_*.py`, `acceptance_report_marker_source.py` | Five marker scanner/report fixture files; remove with their retired consumers or replace only data needed by a surviving declaration checker. |
 | `test/make/fixtures/declaration_{test,example}_root.py`, `selection_{test,example}_root.py` | Four executable fixture files used by declaration/selection tests; selection-only and marker-execution witnesses become obsolete. |

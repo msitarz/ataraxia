@@ -47,13 +47,6 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             "whole affected section",
         ),
         (
-            "ac-check",
-            ("run", "python", "script/acceptance_coverage.py", "check"),
-            "doc/orchestrator.md#review-and-return",
-            "Independent orchestrator review",
-            "For meaningful changes",
-        ),
-        (
             "commit",
             ("run", "python", "script/commit_command.py"),
             "doc/change-rules.md#fix-the-underlying-problem",
@@ -61,7 +54,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             "For meaningful changes",
         ),
     ],
-    ids=["doc-format", "doc-check", "doc-check-mermaid", "ac-check", "commit"],
+    ids=["doc-format", "doc-check", "doc-check-mermaid", "commit"],
 )
 def test_selected_top_level_targets_remind_after_success(
     sandbox: MakeSandbox,
@@ -191,15 +184,14 @@ def test_help_discloses_the_prepublication_work_review_checkpoint(
     assert result.stdout.index("Work review") < result.stdout.index("make work-review")
 
 
-def test_work_review_prompts_concise_delivery_and_keeps_ac_check_focused(
+def test_work_review_prompts_concise_delivery(
     sandbox: MakeSandbox,
 ) -> None:
-    """Prompts concise review and delivery while ac-check keeps its own role."""
-    # Given: both targets run in the existing disposable Make sandbox.
+    """Prompts concise review and delivery through the work-review target."""
+    # Given: work-review runs in the existing disposable Make sandbox.
 
     # When
     review = sandbox.run("work-review")
-    acceptance = sandbox.run("ac-check", "WORK=unused/README.md")
 
     # Then
     assert review.exit_code == 0, review.output
@@ -221,8 +213,3 @@ def test_work_review_prompts_concise_delivery_and_keeps_ac_check_focused(
             "unresolved criteria",
         )
     )
-    assert acceptance.exit_code == 0, acceptance.output
-    assert "Independent orchestrator review:" in acceptance.stdout
-    assert "artifact and revision" not in acceptance.stdout
-    assert "acceptance evidence" not in acceptance.stdout
-    assert "unrun checks" not in acceptance.stdout

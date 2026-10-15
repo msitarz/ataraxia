@@ -67,8 +67,8 @@ PR.
   abandonment records against the map above before closing this parent Work.
 - **AC-2 TODO** The live trial has a usable acceptance contract and explicitly
   depends on this preparation; it has not started before preparation completes.
-  Validation: inspect the live-trial contract, run its declaration check,
-  and verify the dependency against integrated parent status.
+  Review the live-trial contract against the Work contract template and verify
+  the dependency against integrated parent status.
 - **AC-3 TODO** The preparation addresses all review findings: trial acceptance,
   completion evidence, recovery, decision status, contract authority, CI
   scheduling and setup, example-test tracing, delegation cost, total maintainer

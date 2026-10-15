@@ -125,11 +125,6 @@ commit: ## commit staged changes; requires SUBJECT=... [BODY=...]
 deps-lock: ## update uv.lock after dependency changes
 	uv lock
 
-.PHONY: ac-check
-ac-check: ## validate AC declarations (WORK=path/to/README.md)
-	@uv run python script/acceptance_coverage.py check && \
-	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Independent orchestrator review: underlying problem solved? Existing concepts reused? Outcome supported by observed evidence? doc/orchestrator.md#review-and-return'; fi
-
 .PHONY: clean
 clean: ## remove the virtual environment and test/lint caches
 	rm -rf .venv .ruff_cache .pytest_cache .coverage

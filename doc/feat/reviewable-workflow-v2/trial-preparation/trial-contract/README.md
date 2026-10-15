@@ -3,11 +3,11 @@
 Give the [Live trial](../../live-trial/README.md) observable acceptance criteria
 and a bounded decision about whether the workflow is useful in practice.
 
-Its current README describes activities, retains wording about replacing
-guidance, and fails `ac-check` because it has no acceptance declarations. It
-names parallel shard execution without specifying its behavioral contract or
-performance comparison. Five-minute individual reviews alone cannot establish
-that total maintainer effort is acceptable.
+Its current README describes activities, lacks acceptance declarations, and
+retains wording about replacing guidance. It names parallel shard execution
+without specifying its behavioral contract or performance comparison.
+Five-minute individual reviews alone cannot establish that total maintainer
+effort is acceptable.
 
 Deliver [completion evidence and handoff recovery](../README.md#works) first.
 Revise the live-trial contract to exercise those outcomes, fresh-agent context
@@ -18,10 +18,10 @@ so each delivery has a reviewable outcome.
 ## Acceptance
 
 - **AC-1 TODO** The live-trial contract defines observable acceptance criteria,
-  evidence methods, scope, and a final adoption or adjustment decision; its
-  acceptance declarations pass `ac-check` before trial execution.
-  Validation: inspect the revised contract and run its declaration check,
-  distinguishing declared methods from trial evidence not yet observed.
+  evidence methods, scope, and a final adoption or adjustment decision. Review
+  these declarations against the Work contract template before trial
+  execution, distinguishing planned evidence methods from trial evidence not
+  yet observed.
 - **AC-2 TODO** The trial defines a bounded observation set and success or
   reconsideration thresholds before execution for review duration, total
   maintainer time, interventions, correction rounds, and delegation cost where
