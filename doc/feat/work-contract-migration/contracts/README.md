@@ -46,8 +46,9 @@ not silently converted into current instructions or completed outcomes.
 
 ## Children
 
-- **TODO** [Workflow contracts](workflow/README.md): migrate reviewable-workflow
-  planning and trial contracts.
+- **DONE** Workflow planning and trial contracts rewritten with preserved
+  outcomes and ownership
+  ([reviewable workflow](../../reviewable-workflow-v2/README.md)).
 - **TODO** [Sandbox contracts](sandboxes/README.md): migrate managed sandbox
   planning and delivery contracts while preserving historical evidence.
 - **TODO** [Package documentation contracts](package-readmes/README.md): migrate
