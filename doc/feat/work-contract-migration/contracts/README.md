@@ -19,7 +19,7 @@ approved behavior, scope, dependencies, and unresolved decisions.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Every inventoried contract converted without scope drift
+### **AC-1 DONE** Every inventoried contract converted without scope drift
 
 The five child groups cover every pre-migration Work README and its linked
 supporting artifacts. Criteria state one coherent outcome each, collectively
@@ -28,7 +28,7 @@ prerequisites survive; routine checks and duplicated instructions are removed.
 Already converted examples receive a consistency review rather than gratuitous
 rewriting. Active ID/anchor references remain meaningful after splitting ACs.
 
-### **AC-2 TODO** Parent and child contracts compose consistently
+### **AC-2 DONE** Parent and child contracts compose consistently
 
 Parent maps preserve immediate-child ownership and lifecycle state. Dependencies
 explain prerequisites separately from children; shared context is linked rather
@@ -54,10 +54,15 @@ not silently converted into current instructions or completed outcomes.
   ([managed evaluation sandboxes](../../evaluation-sandboxes/README.md)).
 - **DONE** Package documentation contracts rewritten with preserved outcomes and
   ownership ([package README documentation](../../package-readmes/README.md)).
-- **TODO** [Conditional complexity contracts](conditional-complexity/README.md):
-  migrate investigation, adoption, and shared-owner dependencies.
-- **TODO** [Standalone guidance and investigation](standalone/README.md): review
-  validated-core and migrate the algebraic-data-type Investigation.
+- **DONE** Conditional complexity investigation and adoption contracts migrated
+  with their separation, prevention outcome, boundaries, and dependencies
+  preserved
+  ([conditional complexity](../../conditional-complexity/README.md)).
+- **DONE** Validated-core reviewed for fit and the algebraic-data-type
+  Investigation migrated with its recommendation, representation candidates,
+  safety boundaries, and unresolved checker observations preserved
+  ([algebraic data types](../../algebraic-data-types/README.md),
+  [validated core](../../validated-core/README.md)).
 
 ## Links
 
