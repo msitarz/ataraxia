@@ -35,20 +35,20 @@ Example:
 
 Acceptance criteria define completion of this Work, which must cover Goals. A single acceptance criterion might cover multiple goals. Multiple acceptance criteria might cover a single goal.
 
-In the example, if a subheading of criterion would remain empty, then do not print it the heading as well.
+Omit empty criterion subheadings.
 
 Example:
 
 ### **AC-1 TODO** Criterion name
 
-Describe outcome of the criterion. List and describe created, removed and changed machinery in accordance to the purpose of this Work and criterion. Do not describe internal machinery that might be covered by children Works. Keep the Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include consumer interface with types if the outcome is code.
+Describe outcome of the criterion. List and describe created, removed and changed machinery in accordance to the purpose of this criterion. Describe affected consumer interfaces and behavior. Leave implementation details owned by child Works in those contracts. Focus on consumer facing outcomes from the perspective of a changed code or guidance. Include affected consumer interfaces and useful types.
 
 Example:
-Introduce `make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
+`make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
 
 #### What exists
 
-What machinery exists right now but should be modified or expanded. Print it only if it helps explain that criterion.
+Describe existing behavior or machinery that helps explain this criterion, including what can be reused. Omit when unnecessary.
 -->
 
 ## Dependencies
@@ -76,4 +76,4 @@ Example:
 
 ## Additional context
 
-<!-- Prose that will be useful to include in this Work. Do not duplicate information from previous sections. Can remain empty if there are no such things. -->
+<!-- Prose that will be useful to include in this Work. Do not duplicate information from previous headings. -->
