@@ -9,6 +9,7 @@ instructions and acceptance bookkeeping needed to define and deliver them.
 
 - Use the new Work template for every active contract.
 - Give contract-writing instructions one authoritative home.
+- Treat prototyping as an Investigation method rather than a separate Work kind.
 - Remove pytest acceptance markers and their test-selection commands.
 - Preserve Work scope, useful regression tests, observed evidence, and review
   gates.
@@ -61,8 +62,10 @@ clearly distinguished from live requirements.
 ### **AC-2 TODO** One discoverable authoring route
 
 Agents reach the template from current guidance without conflicting format,
-mandatory Validation-clause, or pytest-marker instructions. Necessary evidence
-and independent review requirements remain, without replacement mapping reports.
+mandatory Validation-clause, or pytest-marker instructions. Feasibility work
+routes to Investigation rather than a separate Prototype kind. Necessary
+evidence and independent review requirements remain, without replacement mapping
+reports.
 
 ### **AC-3 TODO** Acceptance bookkeeping removed without losing regression coverage
 

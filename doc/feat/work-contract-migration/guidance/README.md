@@ -10,6 +10,8 @@ contracts without conflicting acceptance bookkeeping instructions.
 - Make the template authoritative for contract structure and outcome writing.
 - Remove repeated authoring instructions and obsolete marker/Validation rules.
 - Preserve evidence, lifecycle, specialized Work, and review responsibilities.
+- Fold exploratory implementation into Investigation rather than a separate
+  Prototype Work kind.
 
 ## Non-Goals
 
@@ -23,8 +25,8 @@ contracts without conflicting acceptance bookkeeping instructions.
 
 Work definition, definer guidance, and task routing lead to the template rather
 than repeat its section instructions or prohibit its required headings. Work
-definition retains only useful context and specialized Investigation,
-Evaluation, and Prototype requirements that the template does not supply.
+definition retains only useful context and specialized Work requirements that
+the template does not supply.
 General repair rules remain at their existing owner. Redundant historical
 examples and repeated explanations are removed without losing requirements or
 reading routes.
@@ -48,11 +50,23 @@ routing, without making unrelated guidance mandatory reading.
 
 ### **AC-4 TODO** Lasting workflow decision recorded
 
-A WDR records adopting readable outcome contracts and retiring test-to-AC
-bookkeeping, with meaningful tradeoffs and links to current owners. Historical
+WDRs record adopting readable outcome contracts, retiring test-to-AC
+bookkeeping, and folding Prototype into Investigation, with meaningful
+tradeoffs and links to current owners. Historical
 WDRs remain intact apart from required amendment/supersession metadata and links
-under the existing decision-record lifecycle. The record does not substitute
+under the existing decision-record lifecycle. The records do not substitute
 for current guidance or claim implementation is complete.
+
+### **AC-5 TODO** Prototyping is an Investigation method
+
+Investigation owns bounded feasibility questions that need exploratory
+implementation. Work definition, workflow reading routes, and the shared
+glossary no longer define or route to a separate Prototype Work kind. The
+Investigation contract states implementation limits and required observable
+evidence; its results include unsuccessful attempts and distinguish observations
+from assumptions. Production adoption requires a separate reviewed contract
+covering missing production and integration requirements. Existing historical
+references retain their original meaning.
 
 ## Dependencies
 
