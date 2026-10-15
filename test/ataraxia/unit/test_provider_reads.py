@@ -20,9 +20,6 @@ def file_contents() -> str:
     return textwrap.dedent(txt)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/reads/README.md", ac="AC-1"
-)
 def test_bar_provider_single_bar(tmp_path: Path, file_contents: str) -> None:
     """Covers AC-1: decimal CSV prices normalize into a complete literal Bar."""
     # Given
@@ -41,9 +38,6 @@ def test_bar_provider_single_bar(tmp_path: Path, file_contents: str) -> None:
     assert provider.fd.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/reads/README.md", ac="AC-1"
-)
 def test_bar_provider_stop_iteration(tmp_path: Path, file_contents: str) -> None:
     """Covers AC-1: the single retained row is followed by exact exhaustion."""
     # Given
@@ -68,9 +62,6 @@ def test_bar_provider_stop_iteration(tmp_path: Path, file_contents: str) -> None
     assert provider.fd.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/reads/README.md", ac="AC-1"
-)
 def test_bar_provider_header_only_exhausts_and_closes(tmp_path: Path) -> None:
     """Covers AC-1: a header-only CSV yields no rows and closes after exit."""
     # Given
@@ -88,9 +79,6 @@ def test_bar_provider_header_only_exhausts_and_closes(tmp_path: Path) -> None:
     assert provider.fd.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/reads/README.md", ac="AC-1"
-)
 def test_bar_provider_skips_blank_rows(tmp_path: Path) -> None:
     """Covers AC-1: blank lines are skipped while integer CSV prices stay intact."""
     # Given
@@ -116,9 +104,6 @@ def test_bar_provider_skips_blank_rows(tmp_path: Path) -> None:
     assert provider.fd.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/reads/README.md", ac="AC-1"
-)
 def test_bar_provider_hashable_by_filepath() -> None:
     """Covers AC-1: providers with equal filepaths have equal hashes."""
     # Given

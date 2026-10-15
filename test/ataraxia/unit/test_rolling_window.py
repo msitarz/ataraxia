@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 from hypothesis import example, given
 from hypothesis import strategies as st
-import pytest
 
 from ataraxia.compute import Computable, Runner
 from ataraxia.feature import RollingWindow, RollingWindowRunner
@@ -30,9 +29,6 @@ class _IntNode:
         return _IntRunner(self.value)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/rolling/README.md", ac="AC-1"
-)
 def test_rolling_window_runner() -> None:
     """Keep the newest two inputs in newest-first order."""
     # Given
@@ -45,9 +41,6 @@ def test_rolling_window_runner() -> None:
     assert results == ((3,), (4, 3), (5, 4))
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/rolling/README.md", ac="AC-1"
-)
 def test_rolling_window() -> None:
     """Preserve dependency identity and create independent initialized runners."""
     # Given
@@ -66,9 +59,6 @@ def test_rolling_window() -> None:
     assert fresh_result == (5,)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/hypothesis/window/README.md", ac="AC-1"
-)
 @given(
     capacity=st.integers(min_value=0, max_value=8),
     values=st.lists(st.integers(min_value=-100, max_value=100), max_size=24),

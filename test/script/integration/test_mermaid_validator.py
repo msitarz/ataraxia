@@ -13,9 +13,6 @@ ROOT = Path(__file__).resolve().parents[3]
 VALIDATOR = ROOT / "script" / "validate_mermaid.py"
 
 
-@pytest.mark.covers(
-    work="doc/feat/mermaid-adoption/checker/validator/README.md", ac="AC-1"
-)
 @pytest.mark.parametrize(
     ("source", "expected_exit", "expected_stderr"),
     [

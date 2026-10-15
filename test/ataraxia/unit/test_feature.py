@@ -7,9 +7,6 @@ from ataraxia.errors import FeatureError
 from ataraxia.feature import SmaRunner, sma
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma() -> None:
     """Calculate the complete two-value arithmetic mean."""
     # Given
@@ -22,9 +19,6 @@ def test_sma() -> None:
     assert result == 5
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_error_on_wrong_value() -> None:
     """Reject more observations than the requested period with its reason."""
     # Given
@@ -38,9 +32,6 @@ def test_sma_error_on_wrong_value() -> None:
     assert str(error.value) == "Cannot have more values than period"
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_none_on_incomplete_data() -> None:
     """Return None until the requested number of observations is available."""
     # Given
@@ -58,9 +49,6 @@ def test_sma_none_on_incomplete_data() -> None:
     [(None, 2, 3), (2, None, 3), (2, 3, None), (None, None, None)],
     ids=["missing-first", "missing-middle", "missing-last", "all-missing"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_none_on_values_with_none(
     values: tuple[float | None, ...],
 ) -> None:
@@ -75,9 +63,6 @@ def test_sma_none_on_values_with_none(
     assert result is None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_none_on_excess_values_with_none() -> None:
     """Let missing values take precedence over the excess-value error."""
     # Given
@@ -117,9 +102,6 @@ def test_sma_none_on_excess_values_with_none() -> None:
     ],
     ids=["one-bar-warmup", "zero-close", "complete-close-mean"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_runner(bars: tuple[Bar, ...], period: int, expected: float | None) -> None:
     """Calculate warm-up and complete means through real close-value Bars."""
     # Given
@@ -132,9 +114,6 @@ def test_sma_runner(bars: tuple[Bar, ...], period: int, expected: float | None) 
     assert result == expected
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/sma/README.md", ac="AC-1"
-)
 def test_sma_with_zero() -> None:
     """Include zero as a valid scalar observation in the mean."""
     # Given

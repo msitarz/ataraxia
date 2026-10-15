@@ -29,10 +29,6 @@ def expected_size_advisory(*paths: str) -> list[str]:
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("target", "args", "expected"),
     [
@@ -138,10 +134,6 @@ def test_make_tool_targets_preserve_defaults_and_route_selectors(
     assert [list(call.argv) for call in result.calls] == expected
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_lint_target_does_not_suppress_advisory_tool_failures(
     sandbox: MakeSandbox,
 ) -> None:
@@ -164,10 +156,6 @@ def test_lint_target_does_not_suppress_advisory_tool_failures(
     assert "--exit-zero" in result.calls[1].argv
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
     sandbox: MakeSandbox,
 ) -> None:
@@ -207,10 +195,6 @@ def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_markdown_format_target_passes_selected_paths(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -238,10 +222,6 @@ def test_markdown_format_target_passes_selected_paths(sandbox: MakeSandbox) -> N
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_make_selectors_quote_shell_metacharacters(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -266,10 +246,6 @@ def test_make_selectors_quote_shell_metacharacters(sandbox: MakeSandbox) -> None
     assert not marker.exists()
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_make_selectors_quote_single_quotes(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -289,10 +265,6 @@ def test_make_selectors_quote_single_quotes(sandbox: MakeSandbox) -> None:
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_path_selectors_reject_tool_options(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -311,10 +283,6 @@ def test_path_selectors_reject_tool_options(sandbox: MakeSandbox) -> None:
     assert [list(call.argv) for call in result.calls] == []
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_run_target_routes_project_cli_arguments(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -347,10 +315,6 @@ def test_run_target_routes_project_cli_arguments(sandbox: MakeSandbox) -> None:
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_run_target_requires_cli_arguments(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -369,10 +333,6 @@ def test_run_target_requires_cli_arguments(sandbox: MakeSandbox) -> None:
     assert [list(call.argv) for call in result.calls] == []
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_cli_arguments_quote_shell_metacharacters(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell
@@ -396,10 +356,6 @@ def test_cli_arguments_quote_shell_metacharacters(sandbox: MakeSandbox) -> None:
     assert not marker.exists()
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/routing/README.md",
-    ac="AC-1",
-)
 def test_dependency_lock_target_uses_uv_lock(sandbox: MakeSandbox) -> None:
     """AC-1: Given ordinary targets and hostile arguments, recorded commands
     match promised routing, invalid inputs fail before tool invocation, and shell

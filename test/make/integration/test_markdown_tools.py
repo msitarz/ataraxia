@@ -74,10 +74,6 @@ def markdown_sandbox(tmp_path: Path) -> MarkdownSandbox:
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-2")
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_doc_check_rejects_formatting_without_modifying_files(
     markdown_sandbox: MarkdownSandbox,
 ) -> None:
@@ -99,10 +95,6 @@ def test_make_doc_check_rejects_formatting_without_modifying_files(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-2")
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts(
     markdown_sandbox: MarkdownSandbox,
 ) -> None:
@@ -144,9 +136,6 @@ def test_make_doc_format_selects_files_and_directories_and_excludes_artifacts(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_doc_format_reflows_external_file_with_repository_config(
     markdown_sandbox: MarkdownSandbox, tmp_path: Path
 ) -> None:
@@ -176,10 +165,6 @@ def test_make_doc_format_reflows_external_file_with_repository_config(
     "changed", ["# Guide\n\n## Summary\n", "# Guide\n"], ids=["rename", "delete"]
 )
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-1")
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_doc_check_finds_inbound_links_to_changed_heading(
     markdown_sandbox: MarkdownSandbox, changed: str
 ) -> None:
@@ -204,9 +189,6 @@ def test_make_doc_check_finds_inbound_links_to_changed_heading(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_doc_check_fails_visibly_when_rumdl_is_missing(
     markdown_sandbox: MarkdownSandbox, tmp_path: Path
 ) -> None:
@@ -238,7 +220,6 @@ def test_make_doc_check_fails_visibly_when_rumdl_is_missing(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-1")
 def test_doc_check_validates_only_selected_nested_mermaid_files(
     markdown_sandbox: MarkdownSandbox,
 ) -> None:
@@ -265,7 +246,6 @@ def test_doc_check_validates_only_selected_nested_mermaid_files(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-1")
 def test_doc_check_reports_actual_mermaid_backend_failure(
     markdown_sandbox: MarkdownSandbox,
 ) -> None:
@@ -289,7 +269,6 @@ def test_doc_check_reports_actual_mermaid_backend_failure(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-1")
 def test_doc_check_fails_when_validator_binary_is_missing(
     markdown_sandbox: MarkdownSandbox,
 ) -> None:
@@ -315,7 +294,6 @@ def test_doc_check_fails_when_validator_binary_is_missing(
 
 
 @pytest.mark.real_tool
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/checker/make/README.md", ac="AC-2")
 @pytest.mark.parametrize(
     ("source", "expected_exit", "has_backend_error"),
     [
@@ -352,9 +330,6 @@ def test_doc_check_defaults_to_all_files_and_respects_exclusions(
     assert list(directory.rglob("*.svg")) == []
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/documentation-boundary/README.md", ac="AC-1"
-)
 def test_make_help_lists_markdown_targets(markdown_sandbox: MarkdownSandbox) -> None:
     """List existing Markdown targets and the scoped Mermaid target."""
     # Given: the fixture supplies the actual Makefile in a disposable directory.

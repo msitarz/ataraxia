@@ -10,10 +10,6 @@ from ataraxia.errors import ModuleError
 from ataraxia.util import import_file
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/loading/README.md",
-    ac="AC-1",
-)
 def test_import_file_raise(tmp_path: Path) -> None:
     """Retain the missing-basename refusal and its exact module error."""
     # Given

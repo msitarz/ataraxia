@@ -42,10 +42,6 @@ class FailingSink(Sink[[int], int]):
         return None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/lifecycle/README.md",
-    ac="AC-1",
-)
 def test_compute_closes_source_on_exhaustion() -> None:
     """Exhaust compute and verify both complete steps and source closure."""
     # Given
@@ -64,10 +60,6 @@ def test_compute_closes_source_on_exhaustion() -> None:
     assert source.context.exit_args == (None, None, None)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/lifecycle/README.md",
-    ac="AC-1",
-)
 def test_compute_closes_source_when_runner_raises() -> None:
     """Propagate the exact sink error and close the source with its traceback."""
     # Given
@@ -93,10 +85,6 @@ def test_compute_closes_source_when_runner_raises() -> None:
     assert isinstance(traceback, TracebackType)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/lifecycle/README.md",
-    ac="AC-1",
-)
 def test_compute_closes_source_when_generator_is_closed() -> None:
     """Close compute after one result and verify GeneratorExit reaches source."""
     # Given

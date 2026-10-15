@@ -82,9 +82,6 @@ def _construct_invalid_work_path(
             )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/hypothesis/workpaths/README.md", ac="AC-1"
-)
 @given(
     segments=st.lists(_SEGMENT, min_size=1, max_size=3),
     filename=_CONTRACT_NAME,
@@ -110,9 +107,6 @@ def test_resolve_work_file_accepts_generated_canonical_paths(
         assert resolved == contract.resolve()
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/hypothesis/workpaths/README.md", ac="AC-1"
-)
 @given(
     segments=st.lists(_SEGMENT, min_size=1, max_size=3),
     filename=_CONTRACT_NAME,
@@ -145,9 +139,6 @@ def test_resolve_work_file_rejects_generated_named_paths(
         assert raised.value.__cause__ is None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/hypothesis/workpaths/README.md", ac="AC-1"
-)
 @given(link_segments=_DIRECTORY_SEGMENTS, target_segments=_DIRECTORY_SEGMENTS)
 @example(link_segments=["L"], target_segments=["T"])
 @example(link_segments=["a_b", "9-x"], target_segments=["C", "d"])
@@ -177,9 +168,6 @@ def test_resolve_work_file_accepts_generated_inside_relative_symlinks(
         assert resolved == target.resolve()
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/hypothesis/workpaths/README.md", ac="AC-1"
-)
 @given(link_segments=_DIRECTORY_SEGMENTS, target_segments=_DIRECTORY_SEGMENTS)
 @example(link_segments=["L"], target_segments=["T"])
 @example(link_segments=["a_b", "9-x"], target_segments=["C", "d"])

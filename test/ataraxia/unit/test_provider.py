@@ -31,9 +31,6 @@ def wrong_header() -> str:
     return textwrap.dedent(txt)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/failures/README.md", ac="AC-1"
-)
 def test_bar_provider_no_header(tmp_path: Path, no_header: str) -> None:
     """Covers AC-1: a numeric first row is rejected as a missing header."""
     # Given
@@ -55,9 +52,6 @@ def test_bar_provider_no_header(tmp_path: Path, no_header: str) -> None:
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/failures/README.md", ac="AC-1"
-)
 def test_bar_provider_wrong_header(tmp_path: Path, wrong_header: str) -> None:
     """Covers AC-1: a noncanonical header is rejected with its filepath."""
     # Given
@@ -79,9 +73,6 @@ def test_bar_provider_wrong_header(tmp_path: Path, wrong_header: str) -> None:
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/failures/README.md", ac="AC-1"
-)
 def test_bar_provider_no_context_manager() -> None:
     """Covers AC-1: iteration outside a context raises without opening a file."""
     # Given
@@ -106,9 +97,6 @@ def test_bar_provider_no_context_manager() -> None:
         ("1,,200,50,150,1", "''"),
     ],
     ids=["missing-columns", "extra-columns", "non-numeric", "empty-value"],
-)
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/failures/README.md", ac="AC-1"
 )
 def test_bar_provider_rejects_malformed_rows_and_closes(
     tmp_path: Path, row: str, distinctive_reason: str
@@ -135,9 +123,6 @@ def test_bar_provider_rejects_malformed_rows_and_closes(
     assert opened_file.closed
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/input/failures/README.md", ac="AC-1"
-)
 def test_bar_provider_rejects_unterminated_quote(tmp_path: Path) -> None:
     """Covers AC-1: unterminated quoting preserves the parser cause and closure."""
     # Given

@@ -3,15 +3,9 @@
 
 from pathlib import Path
 
-import pytest
-
 from test.make.support import make_sandbox
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/helper/README.md",
-    ac="AC-1",
-)
 def test_make_records_literal_arguments_in_an_isolated_environment(
     tmp_path: Path,
 ) -> None:
@@ -44,10 +38,6 @@ def test_make_records_literal_arguments_in_an_isolated_environment(
     }
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/stub-environment/helper/README.md",
-    ac="AC-1",
-)
 def test_make_exposes_configured_failure_and_stops_later_commands(
     tmp_path: Path,
 ) -> None:

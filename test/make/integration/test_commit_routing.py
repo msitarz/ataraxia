@@ -14,7 +14,6 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     return make_sandbox(tmp_path)
 
 
-@pytest.mark.covers(work="doc/feat/commit-command/README.md", ac="AC-2")
 def test_commit_target_transports_literal_inputs(sandbox: MakeSandbox) -> None:
     """Preserve shell and Make-looking content as environment data."""
     # Given

@@ -4,11 +4,7 @@
 from pathlib import Path
 import subprocess
 
-import pytest
 
-
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/setup/README.md", ac="AC-1")
-@pytest.mark.covers(work="doc/feat/mermaid-adoption/setup/README.md", ac="AC-2")
 def test_prepared_quickjs_backend_renders_svg(tmp_path: Path) -> None:
     """Check forced QuickJS SVG rendering after setup or offline preparation."""
     # Given

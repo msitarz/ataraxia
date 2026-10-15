@@ -7,8 +7,6 @@ import shutil
 import stat
 import sys
 
-import pytest
-
 from test.make.support import ROOT, MakeResult, MakeSandbox
 from test.make.worktree_support import CreationRepository, creation_repository
 
@@ -116,7 +114,6 @@ def checkout_conflict_attempt(
     return make_create(repository, "conflict", managed, cwd=other)
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-1")
 def test_make_creates_owned_shallow_clone_and_refuses_unsafe_names(
     tmp_path: Path,
 ) -> None:
@@ -156,7 +153,6 @@ def test_make_creates_owned_shallow_clone_and_refuses_unsafe_names(
     assert not (managed / f"bad; touch {marker}").exists()
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_setup_failure_retains_owned_clone_and_diagnostics(tmp_path: Path) -> None:
     """AC-2: Given a setup double failure, creation retains the owned partial clone."""
     # Given
@@ -186,7 +182,6 @@ def test_setup_failure_retains_owned_clone_and_diagnostics(tmp_path: Path) -> No
     assert "already exists" in retry.stderr
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_clone_failure_retains_status_and_diagnostics(tmp_path: Path) -> None:
     """AC-2: Retain clone failure state and reject a retry of its partial name."""
     # Given
@@ -214,7 +209,6 @@ def test_clone_failure_retains_status_and_diagnostics(tmp_path: Path) -> None:
     assert retry.exit_code == 2
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_readiness_failure_retains_status_and_setup_artifacts(tmp_path: Path) -> None:
     """AC-2: Retain verify-setup failure state without marking the child ready."""
     # Given
@@ -242,7 +236,6 @@ def test_readiness_failure_retains_status_and_setup_artifacts(tmp_path: Path) ->
     assert "ready_at" not in metadata
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-1")
 def test_native_temp_root_uses_project_name_and_linked_worktrees_share_owner(
     tmp_path: Path,
 ) -> None:
@@ -271,7 +264,6 @@ def test_native_temp_root_uses_project_name_and_linked_worktrees_share_owner(
     assert identity["common_dir"] == str((source_path / ".git").resolve())
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-1")
 def test_unsafe_roots_and_dangling_destinations_are_refused(tmp_path: Path) -> None:
     """AC-1: Refuse unsafe roots and dangling destination links."""
     # Given
@@ -312,7 +304,6 @@ def test_unsafe_roots_and_dangling_destinations_are_refused(tmp_path: Path) -> N
     assert not (source_path / "fallback").exists()
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-1")
 def test_independent_checkout_cannot_claim_managed_root(tmp_path: Path) -> None:
     """AC-1: Refuse a managed root already owned by another checkout."""
     # Given
@@ -331,7 +322,6 @@ def test_independent_checkout_cannot_claim_managed_root(tmp_path: Path) -> None:
     assert not (managed / ".conflict.ataraxia-sandbox.json").exists()
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-1")
 def test_common_directory_and_unsafe_writable_ancestor_are_refused(
     tmp_path: Path,
 ) -> None:
@@ -363,7 +353,6 @@ def test_common_directory_and_unsafe_writable_ancestor_are_refused(
     assert not (unsafe_ancestor / "managed").exists()
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_preexisting_cache_symlink_fails_without_writing_external_target(
     tmp_path: Path,
 ) -> None:
@@ -390,7 +379,6 @@ def test_preexisting_cache_symlink_fails_without_writing_external_target(
     assert not any((destination / path).exists() for path in (".venv", ".tmp", ".home"))
 
 
-@pytest.mark.covers(work="doc/feat/evaluation-sandboxes/creation/README.md", ac="AC-2")
 def test_changed_master_after_selection_fails_and_retains_clone(
     tmp_path: Path,
 ) -> None:

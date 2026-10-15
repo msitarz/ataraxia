@@ -3,17 +3,11 @@
 
 from pathlib import Path
 
-import pytest
-
 from ataraxia.bar import Bar
 from ataraxia.util import import_file
 from test.ataraxia.backtest_support import copy_import_bar
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/loading/README.md",
-    ac="AC-1",
-)
 def test_import_file(tmp_path: Path) -> None:
     """Load and invoke the copied fixture's complete six-field Bar factory."""
     # Given

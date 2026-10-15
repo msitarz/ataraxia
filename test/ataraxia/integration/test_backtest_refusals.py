@@ -13,10 +13,6 @@ from test.ataraxia.backtest_support import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/refusals/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     "strategy_fixture",
     ["result_number.py", "result_non_position.py"],
@@ -53,10 +49,6 @@ def test_backtest_shard_requires_broker_result(
     assert paths.shard_path.read_bytes() == shard_before
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/backtest/refusals/README.md",
-    ac="AC-1",
-)
 def test_backtest_header_only_shard(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

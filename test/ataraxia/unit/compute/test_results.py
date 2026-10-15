@@ -2,8 +2,6 @@
 # Copyright (C) 2026 by Michal Sitarz
 """Tests for compute catalogs, dependency selection, and complete results."""
 
-import pytest
-
 from ataraxia.compute.loop import (
     ComputableMapping,
     compute,
@@ -20,10 +18,6 @@ from test.ataraxia.compute_dependency_inputs import (
 from test.ataraxia.compute_source_inputs import integer_source_sink
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_prime_catalog() -> None:
     """Create one matching runner for each node in dependency order."""
     # Given
@@ -37,10 +31,6 @@ def test_prime_catalog() -> None:
     assert actual == {b: BRunner(), a: ARunner()}
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_computed_node_deps() -> None:
     """Select B's value and exclude A's sentinel result."""
     # Given
@@ -57,10 +47,6 @@ def test_computed_node_deps() -> None:
     assert actual == {"b": 1}
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_compute_step() -> None:
     """Compute the complete B and A values for one prepared step."""
     # Given
@@ -75,10 +61,6 @@ def test_compute_step() -> None:
     assert actual == {b: 1, a: 4}
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/results/README.md",
-    ac="AC-1",
-)
 def test_compute() -> None:
     """Exhaust the real integer source and compare both complete steps."""
     # Given

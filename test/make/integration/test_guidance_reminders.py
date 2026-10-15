@@ -14,10 +14,6 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     return make_sandbox(tmp_path)
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("target", "command", "anchor", "question", "other_question"),
     [
@@ -90,10 +86,6 @@ def test_selected_top_level_targets_remind_after_success(
     assert other_question not in result.stdout
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
-    ac="AC-2",
-)
 def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) -> None:
     """AC-2: Nested static checks retain all three documentation commands."""
     # Given: the fixture supplies a successful recorder for every command.
@@ -115,14 +107,6 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
     assert "For meaningful changes:" not in result.stdout
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/work-context/guidance-reminders/README.md",
-    ac="AC-2",
-)
 @pytest.mark.parametrize(
     ("arguments", "expected_calls"),
     [
@@ -131,7 +115,6 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
             ("test", "ARGS=test/make/integration/test_guidance_reminders.py"),
             (("run", "pytest", "test/make/integration/test_guidance_reminders.py"),),
         ),
-        (("ac-test",), (("run", "python", "script/acceptance_tests.py", "test"),)),
         (("verify-test",), (("run", "pytest", "--cov"),)),
         (("verify-examples",), (("run", "pytest", "example/"),)),
         (
@@ -150,7 +133,6 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
     ids=[
         "test-full",
         "test-args",
-        "ac-test",
         "verify-test",
         "verify-examples",
         "ci-test",
@@ -192,10 +174,6 @@ def test_selected_test_targets_remind_once_after_success(
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/make-work-reminders/README.md",
-    ac="AC-2",
-)
 def test_help_discloses_the_prepublication_work_review_checkpoint(
     sandbox: MakeSandbox,
 ) -> None:
@@ -213,10 +191,6 @@ def test_help_discloses_the_prepublication_work_review_checkpoint(
     assert result.stdout.index("Work review") < result.stdout.index("make work-review")
 
 
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/make-work-reminders/README.md",
-    ac="AC-2",
-)
 def test_work_review_prompts_concise_delivery_and_keeps_ac_check_focused(
     sandbox: MakeSandbox,
 ) -> None:

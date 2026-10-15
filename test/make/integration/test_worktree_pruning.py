@@ -12,14 +12,6 @@ from test.make.worktree_support import GitState, creation_repository, files_unde
 @pytest.mark.parametrize(
     "target", ["worktree-prune-preview", "worktree-prune"], ids=["preview", "apply"]
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/pruning/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-2",
-)
 def test_missing_expiry_refuses_without_mutation(tmp_path: Path, target: str) -> None:
     """AC-1: Given missing expiry, preview and apply refuse with defined
     failure codes before changing files, refs, or registrations.
@@ -42,14 +34,6 @@ def test_missing_expiry_refuses_without_mutation(tmp_path: Path, target: str) ->
     assert files_under(repository.sandbox.directory) == files
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/pruning/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/worktree-cleanup/README.md",
-    ac="AC-3",
-)
 def test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs(
     tmp_path: Path,
 ) -> None:
@@ -119,10 +103,6 @@ def test_cutoff_preview_and_apply_preserve_live_locked_and_all_refs(
     assert files_under(repository.sandbox.directory) == source_files
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-cleanup/pruning/README.md",
-    ac="AC-2",
-)
 def test_hostile_expiry_is_literal_and_preserves_repository(tmp_path: Path) -> None:
     """AC-2: Given stale, live, and locked worktrees, a historical cutoff
     retains ineligible registrations; now-preview is read-only and now-apply

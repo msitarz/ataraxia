@@ -16,10 +16,6 @@ from test.script.commit_message_support import (
 LONG_TOKEN = "https://example.com/" + "a" * 80
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/checker/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("message",),
     [
@@ -75,10 +71,6 @@ def test_accept_formatted_or_absent_body(tmp_path: Path, message: str) -> None:
     assert path.read_bytes() == message_bytes
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/scripts/commit-message/checker/README.md",
-    ac="AC-1",
-)
 @pytest.mark.parametrize(
     ("message", "expected_stderr"),
     [

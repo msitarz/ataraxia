@@ -3,26 +3,11 @@
 
 from pathlib import Path
 
-import pytest
-
 from test.script.acceptance_support import (
     acceptance_coverage as acceptance_coverage,
 )
 
 
-@pytest.mark.covers(
-    work=(
-        "doc/feat/reviewable-workflow-v2/trial-preparation/"
-        "workflow-efficiency/verification-plan/README.md"
-    ),
-    ac="AC-4",
-)
-@pytest.mark.covers(
-    work=(
-        "doc/feat/testing-conformance/scripts/acceptance/declaration-parsing/README.md"
-    ),
-    ac="AC-1",
-)
 def test_parser_reports_duplicate_malformed_and_empty_criteria() -> None:
     """Reject duplicate, malformed, and textless criteria with exact diagnostics."""
     # Given
@@ -66,19 +51,6 @@ def test_parser_reports_duplicate_malformed_and_empty_criteria() -> None:
     ]
 
 
-@pytest.mark.covers(
-    work=(
-        "doc/feat/reviewable-workflow-v2/trial-preparation/"
-        "workflow-efficiency/verification-plan/README.md"
-    ),
-    ac="AC-4",
-)
-@pytest.mark.covers(
-    work=(
-        "doc/feat/testing-conformance/scripts/acceptance/declaration-parsing/README.md"
-    ),
-    ac="AC-1",
-)
 def test_parser_rejects_empty_and_duplicate_validation_methods() -> None:
     """Reject empty and repeated Validation methods with exact diagnostics."""
     # Given
@@ -106,19 +78,6 @@ def test_parser_rejects_empty_and_duplicate_validation_methods() -> None:
     ]
 
 
-@pytest.mark.covers(
-    work=(
-        "doc/feat/reviewable-workflow-v2/trial-preparation/"
-        "workflow-efficiency/verification-plan/README.md"
-    ),
-    ac="AC-4",
-)
-@pytest.mark.covers(
-    work=(
-        "doc/feat/testing-conformance/scripts/acceptance/declaration-parsing/README.md"
-    ),
-    ac="AC-1",
-)
 def test_check_work_ignores_outdented_validation_text(tmp_path: Path) -> None:
     """Ignore an outdented Validation line when reporting a temporary Work."""
     # Given
@@ -137,15 +96,9 @@ def test_check_work_ignores_outdented_validation_text(tmp_path: Path) -> None:
 
     # Then
     assert errors == []
-    assert reports == ["AC-1 DONE: no test marker or Validation method declared"]
+    assert reports == ["AC-1 DONE: no Validation method declared"]
 
 
-@pytest.mark.covers(
-    work=(
-        "doc/feat/testing-conformance/scripts/acceptance/declaration-parsing/README.md"
-    ),
-    ac="AC-1",
-)
 def test_parser_does_not_treat_legacy_verification_as_validation() -> None:
     """Ignore legacy Verification text when detecting a declared method."""
     # Given

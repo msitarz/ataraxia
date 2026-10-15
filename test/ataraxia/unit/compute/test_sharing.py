@@ -5,8 +5,6 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-import pytest
-
 from ataraxia.compute.loop import compute
 from test.ataraxia.compute_source_inputs import IntegerSource
 
@@ -95,10 +93,6 @@ class Diamond:
         return None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/sharing/README.md",
-    ac="AC-1",
-)
 def test_equivalent_dependencies_share_state_once_per_bar() -> None:
     """Share totals per bar, then create fresh runner state on the next run."""
     # Given

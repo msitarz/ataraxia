@@ -172,10 +172,6 @@ VALID_SIGNATURE_NODES: tuple[
         "<lambda>-names3",
     ],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
-    ac="AC-1",
-)
 def test_invalid_dependency_names_fail_preparation(
     node: SignatureNode[RequiredItemRunner] | SignatureNode[PositionalOnlyItemRunner],
     cause_reason: str,
@@ -205,10 +201,6 @@ def test_invalid_dependency_names_fail_preparation(
         "<lambda>-names3",
     ],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
-    ac="AC-1",
-)
 def test_valid_dependency_signatures(
     node: (
         SignatureNode[KeywordOnlyItemRunner]
@@ -228,10 +220,6 @@ def test_valid_dependency_signatures(
     assert catalog[node] is expected_runner
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
-    ac="AC-1",
-)
 def test_wiring_failure_precedes_source_entry() -> None:
     """Reject bad wiring before entering the faithful integer source."""
     from ataraxia.errors import DependencyError
@@ -252,10 +240,6 @@ def test_wiring_failure_precedes_source_entry() -> None:
     assert source.context.exit_args is None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
-    ac="AC-1",
-)
 def test_uninspectable_runner_fails_preparation() -> None:
     """Report the exact signature-inspection failure for builtin int."""
     from ataraxia.errors import DependencyError
@@ -274,10 +258,6 @@ def test_uninspectable_runner_fails_preparation() -> None:
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/compute/binding/README.md",
-    ac="AC-1",
-)
 def test_preparation_does_not_evaluate_type_only_annotations() -> None:
     """Prepare a runner whose optional Bar annotation is type-only."""
     # Given

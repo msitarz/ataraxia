@@ -5,7 +5,6 @@ from copy import deepcopy
 import json
 from pathlib import Path
 
-import pytest
 from pytest import CaptureFixture
 
 from ataraxia.cli import display_results, save_results
@@ -17,10 +16,6 @@ from test.ataraxia.cli_result_inputs import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/reporting/README.md",
-    ac="AC-1",
-)
 def test_display_results(
     capsys: CaptureFixture[str],
 ) -> None:
@@ -41,10 +36,6 @@ def test_display_results(
     assert results == original
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/reporting/README.md",
-    ac="AC-1",
-)
 def test_save_results(tmp_path: Path) -> None:
     """Writes all retained position fields to the named output file."""
     # Given

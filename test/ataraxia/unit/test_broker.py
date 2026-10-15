@@ -123,9 +123,6 @@ def accounts() -> tuple[Account, Account]:
     return (Account(pnl=2000, unrealized_pnl=150), Account(pnl=999, unrealized_pnl=444))
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_sum_accounts(accounts: tuple[Account, Account]) -> None:
     """Sum realized and unrealized account totals independently."""
     # Given
@@ -140,9 +137,6 @@ def test_sum_accounts(accounts: tuple[Account, Account]) -> None:
     assert snapshot == AccountSnapshot(pnl=2999, unrealized_pnl=594)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_broker_runner_no_signal() -> None:
     """Return an empty broker snapshot when no signal is supplied."""
     # Given
@@ -160,9 +154,6 @@ def test_broker_runner_no_signal() -> None:
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_broker_runner_signal_add_position(entry_bar: Bar, long_signal: Signal) -> None:
     """Admit a position after its signal bar even when that bar touches target."""
     # Given
@@ -187,9 +178,6 @@ def test_broker_runner_signal_add_position(entry_bar: Bar, long_signal: Signal) 
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_broker_runner_signal_close_position(
     entry_bar: Bar, long_signal: Signal
 ) -> None:
@@ -234,9 +222,6 @@ def test_broker_runner_signal_close_position(
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_broker_runner_unrealized_pnl(entry_bar: Bar, long_signal: Signal) -> None:
     """Keep a position open and snapshot its complete unrealized state."""
     # Given
@@ -276,9 +261,6 @@ def test_broker_runner_unrealized_pnl(entry_bar: Bar, long_signal: Signal) -> No
     )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/broker/README.md", ac="AC-1"
-)
 def test_broker_runner_position_update_on_signal(
     entry_bar: Bar, long_signal: Signal, short_signal: Signal
 ) -> None:

@@ -4,8 +4,6 @@
 import json
 from pathlib import Path
 
-import pytest
-
 from test.ataraxia.cli_process import run_cli
 from test.ataraxia.cli_sample_expected import (
     load_sample_expected,
@@ -13,10 +11,6 @@ from test.ataraxia.cli_sample_expected import (
 )
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/cli/success/README.md",
-    ac="AC-1",
-)
 def test_crossover_sample_cli_run(tmp_path: Path) -> None:
     """Checks the exact sample report, full artifact, output and unchanged inputs."""
     # Given

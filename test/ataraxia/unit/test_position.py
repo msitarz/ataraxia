@@ -54,9 +54,6 @@ def _assert_open_state(position: Position) -> None:
     assert position.closing_pnl is None
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_init(long_position: Position) -> None:
     """Use the entry bar close as the long position's entry level."""
     # Given
@@ -74,9 +71,6 @@ def test_position_init(long_position: Position) -> None:
     assert position_values == ("buy", 10, 30, 25)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_no_order_hit(long_position: Position) -> None:
     """Keep a long position open and report its close-price unrealized PnL."""
     # Given
@@ -90,9 +84,6 @@ def test_position_on_bar_no_order_hit(long_position: Position) -> None:
     _assert_open_state(long_position)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 @pytest.mark.parametrize(
     "bar",
     [
@@ -114,9 +105,6 @@ def test_position_on_bar_stop_loss_hit(long_position: Position, bar: Bar) -> Non
     _assert_closing_state(long_position, bar, level=10, pnl=-15)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_stop_loss_hit_with_gap(long_position: Position) -> None:
     """Close a gapped long position at the bar open below its stop."""
     # Given
@@ -130,9 +118,6 @@ def test_position_on_bar_stop_loss_hit_with_gap(long_position: Position) -> None
     _assert_closing_state(long_position, bar, level=5, pnl=-20)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_take_profit_hit(long_position: Position) -> None:
     """Close a long position at its target when the bar touches that level."""
     # Given
@@ -146,9 +131,6 @@ def test_position_on_bar_take_profit_hit(long_position: Position) -> None:
     _assert_closing_state(long_position, bar, level=30, pnl=5)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_take_profit_hit_with_gap(long_position: Position) -> None:
     """Close a gapped long position at the bar open above its target."""
     # Given
@@ -162,9 +144,6 @@ def test_position_on_bar_take_profit_hit_with_gap(long_position: Position) -> No
     _assert_closing_state(long_position, bar, level=35, pnl=10)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_both_orders_hit(long_position: Position) -> None:
     """Give a touched long stop priority when the same bar reaches both orders."""
     # Given
@@ -178,9 +157,6 @@ def test_position_on_bar_both_orders_hit(long_position: Position) -> None:
     _assert_closing_state(long_position, bar, level=10, pnl=-15)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_on_bar_when_already_finished(long_position: Position) -> None:
     """Return the first close outcome and preserve its closing bar and fields."""
     # Given
@@ -196,9 +172,6 @@ def test_position_on_bar_when_already_finished(long_position: Position) -> None:
     _assert_closing_state(long_position, first_bar, level=10, pnl=-15)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_short_on_bar_take_profit_hit(short_position: Position) -> None:
     """Close a short position at its target when the bar touches that level."""
     # Given
@@ -212,9 +185,6 @@ def test_position_short_on_bar_take_profit_hit(short_position: Position) -> None
     _assert_closing_state(short_position, bar, level=11, pnl=14)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_short_on_bar_take_profit_hit_with_gap(
     short_position: Position,
 ) -> None:
@@ -230,9 +200,6 @@ def test_position_short_on_bar_take_profit_hit_with_gap(
     _assert_closing_state(short_position, bar, level=5, pnl=20)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_short_on_bar_stop_loss_hit(short_position: Position) -> None:
     """Close a short position at its stop when the bar touches the stop level."""
     # Given
@@ -246,9 +213,6 @@ def test_position_short_on_bar_stop_loss_hit(short_position: Position) -> None:
     _assert_closing_state(short_position, bar, level=29, pnl=-4)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_short_on_bar_stop_loss_hit_with_gap(
     short_position: Position,
 ) -> None:
@@ -264,9 +228,6 @@ def test_position_short_on_bar_stop_loss_hit_with_gap(
     _assert_closing_state(short_position, bar, level=35, pnl=-10)
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
-)
 def test_position_short_on_bar_closing_pnl(short_position: Position) -> None:
     """Retain the short stop's realized closing PnL and complete outcome."""
     # Given
@@ -309,9 +270,6 @@ def test_position_short_on_bar_closing_pnl(short_position: Position) -> None:
         ),
     ],
     ids=["long-inside-neighbor-prices", "short-inside-neighbor-prices"],
-)
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/ataraxia/values/positions/README.md", ac="AC-1"
 )
 def test_position_stays_open_between_neighboring_order_prices(
     position: Position, bar: Bar, expected_pnl: int

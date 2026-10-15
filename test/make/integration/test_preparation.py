@@ -33,18 +33,6 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     ],
     ids=["dependencies-only", "prepare-before-tests", "prepare-before-examples"],
 )
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/preparation/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_ci_targets_prepare_dependencies_before_their_consumer(
     sandbox: MakeSandbox,
     target: str,
@@ -78,18 +66,6 @@ def test_ci_targets_prepare_dependencies_before_their_consumer(
     assert [call.argv for call in result.calls] == expected
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/preparation/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_setup_prepares_hooks_and_wheel_after_dependencies(
     sandbox: MakeSandbox,
 ) -> None:
@@ -135,22 +111,6 @@ def test_setup_prepares_hooks_and_wheel_after_dependencies(
     ]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/preparation/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
-@pytest.mark.covers(
-    work="doc/feat/package-ci-build-preparation/fix/README.md",
-    ac="AC-1",
-)
 def test_package_prepares_python_then_requests_offline_smoke(
     sandbox: MakeSandbox,
 ) -> None:
@@ -173,9 +133,6 @@ def test_package_prepares_python_then_requests_offline_smoke(
     ] == [(None, "true"), (None, "true"), ("true", "true")]
 
 
-@pytest.mark.covers(
-    work="doc/feat/package-ci-build-preparation/fix/README.md", ac="AC-1"
-)
 def test_package_stops_after_python_preparation_refusal(sandbox: MakeSandbox) -> None:
     """Covers AC-1: Python preparation refusal stops build and offline smoke."""
     # Given
@@ -200,9 +157,6 @@ def test_package_stops_after_python_preparation_refusal(sandbox: MakeSandbox) ->
     ] == [(None, "true")]
 
 
-@pytest.mark.covers(
-    work="doc/feat/package-ci-build-preparation/fix/README.md", ac="AC-1"
-)
 def test_package_stops_after_backend_preparation_refusal(sandbox: MakeSandbox) -> None:
     """Covers AC-1: backend refusal prevents offline smoke and preserves Make error."""
     # Given
@@ -231,18 +185,6 @@ def test_package_stops_after_backend_preparation_refusal(sandbox: MakeSandbox) -
     ] == [(None, "true"), (None, "true")]
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/check-orchestration/preparation/README.md",
-    ac="AC-1",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-2",
-)
-@pytest.mark.covers(
-    work="doc/feat/reviewable-workflow-v2/trial-preparation/ci-preparation/README.md",
-    ac="AC-3",
-)
 def test_ci_check_prepares_dependencies_and_hooks_before_checks_and_audit(
     sandbox: MakeSandbox,
 ) -> None:

@@ -3,15 +3,9 @@
 
 from pathlib import Path
 
-import pytest
-
 from test.make.worktree_support import creation_repository
 
 
-@pytest.mark.covers(
-    work="doc/feat/testing-conformance/make/worktree-creation/helper/README.md",
-    ac="AC-1",
-)
 def test_real_make_creates_a_worktree_with_destination_local_setup(
     tmp_path: Path,
 ) -> None:
