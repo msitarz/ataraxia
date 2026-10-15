@@ -14,6 +14,18 @@ with live resource safety.
 - Demonstrate these boundaries with compact examples in the existing
   [engineering conventions](../../engineering.md).
 
+## Glossary
+
+- **Consumed record:** the fields and relationships an operation relies on,
+  including ownership, persistence, and security requirements.
+- **Domain value:** a typed value whose construction establishes the invariants
+  required by its consumers.
+- **Core:** the domain values and pure rules, separate from input acquisition
+  and effects.
+- **Port and adapter:** a consumer-defined collaborator contract and its
+  concrete implementation; see the
+  [shared glossary](../../ubiquitous-language.md).
+
 ## Non-Goals
 
 - Migrate production code, redesign the computation graph, or change resource
@@ -27,7 +39,7 @@ with live resource safety.
 ## Mechanisms
 
 - Frozen dataclasses and focused constructors establish runtime invariants for
-  domain values; freezing alone does not validate fields or nested containers.
+  domain values.
 - Pure functions compute typed results from valid explicit inputs.
 - Consumer-defined `typing.Protocol` ports describe collaborator contracts;
   injected concrete adapters implement effects and resource management.
@@ -48,95 +60,98 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Validated immutable values for pure rules
+### **AC-1 TODO** Complete record validation
 
-[Engineering conventions](../../engineering.md) explains how complete runtime
-validation establishes every consumed field and cross-field invariant before
-core logic receives a domain value. Parsing converts representations; validation
-establishes invariants, even when a parser calls a validating constructor.
-Frozen dataclasses use `__post_init__` checks or focused constructors;
-annotations and freezing alone do not establish validity. Fail-fast rejection is
-permitted: success guarantees complete validation, without requiring collection
-of all errors. Simple guards remain appropriate; clever compound short-circuit
-validation is discouraged.
+[Engineering conventions](../../engineering.md) requires successful domain
+value construction to establish every consumed-field and cross-field invariant
+before core logic runs. Parsing converts external representations and returns
+validated values through `__post_init__` checks or focused constructors;
+annotations and freezing alone do not validate data. Rejection may stop at the
+first error, using simple guards rather than clever compound short-circuit
+validation.
 
-Consumed fields include those required for ownership, persistence, or security,
-not just fields read by a pure decision. Unrelated extension data is preserved
-opaquely when transport/persistence requires it, without speculative validation
-of unused external schema.
-
-Core inputs/results use frozen dataclasses or immutable value variants, with
-immutable or explicitly owned containers. The guidance explains shallow
-freezing and requires valid construction of new results and state transitions,
-without mutating core values or bypassing construction with
-`object.__setattr__`. Pure functions return the same outputs for the same
-explicit inputs, without I/O, environment/time/random/global-state dependence,
-or argument mutation. They may validate newly constructed outputs; they do not
-reparse or defensively revalidate already valid inputs. Typed path values and
-pure transformations of them are allowed.
-
-A compact proposed constructor/pure-decision example shows typed signatures,
-valid construction, consumed-field and cross-field rejection, and construction
-of a valid new result/state. It distinguishes model validity from live resource
-safety and explains opaque extension preservation. Links to
-[testing guidance](../../testing.md) establish where coverage belongs: pure
-public-function units use valid typed inputs; constructor/boundary tests cover
-whole records and invalid fields/cross-field combinations; parsing tests cover
-roundtrip compatibility.
+Consumed fields include ownership, persistence, and security requirements.
+Unrelated extension data remains opaque and is preserved when required by the
+transport/persistence contract. A compact constructor example shows valid
+construction and rejection of invalid fields and field combinations.
 
 #### What exists
 
-At planning baseline `cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`, engineering
-already prefers frozen values and external-boundary adaptation.
-[SmaRunner and sma](../../../src/ataraxia/feature.py) separate runner parameters
-from calculation. [BrokerRunner and Position](../../../src/ataraxia/broker.py)
-show why frozen declarations are insufficient: the runner holds mutable
-containers and Position mutates frozen fields with `object.__setattr__`.
-These are existing examples, not evidence of repository-wide compliance.
+Engineering already requires external-boundary adaptation. The historical
+sandbox validator linked below checks lifecycle, identity, and extension data;
+this Work makes complete record invariants explicit in general guidance.
 
-### **AC-2 TODO** Explicit effect ownership and consumer-defined ports
+### **AC-2 TODO** Immutable core values and valid state transitions
 
-Engineering conventions assigns clear typed input/output, error, and effect
-contracts to acquisition, parsing, validation, pure decisions, and
-output/effects. Cohesive functions may share a module. Pure decisions consume
-valid domain values; adapters coordinate them and own filesystem/persistence,
-locks, processes, and cleanup on success or failure. Stateful runners and
-mutable resource holders retain explicit ownership; blanket freezing is not
-required. Calling an effectful port remains effectful even when the port is
-injected.
+Engineering guidance requires core inputs/results to use frozen dataclasses or
+immutable value variants, with immutable or explicitly owned containers. It
+explains that freezing is shallow and that annotations do not establish
+invariants. New results and state transitions pass through validated
+construction without mutating existing values or bypassing construction with
+`object.__setattr__`. The constructor example extends to a valid new result or
+state, showing how fields required together form a record. Stateful runners and
+resource holders retain their explicit mutable ownership where needed.
 
-Reusable collaborator ports use `typing.Protocol` contracts defined by consumer
-needs, including inputs, outputs, errors, and lifecycle ownership. The host or
-composition root supplies concrete adapters; dependencies point toward the
-consumer contract, and core does not import concrete adapters.
-`runtime_checkable` is used only for an actual runtime conformance need.
+#### What exists
 
-Record validation occurs once per boundary crossing. Adapters separately recheck
-live preconditions at the operation's required points. The sandbox example
-preserves generation/inode identity, held-lock freshness, fail-closed behavior,
-TOCTOU protection, and required effect ordering. Schema, owner, and identity
-fields remain relevant even when a pure decision does not read them; a frozen
-persisted value cannot establish current resource safety. Accepted and rejected
-inputs, documented errors/causes, and state invariants remain contracts, while
-validation order and branch organization may change when those outcomes do not.
+Engineering already prefers frozen values. At planning baseline
+`cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`,
+[BrokerRunner and Position](../../../src/ataraxia/broker.py) show why
+declarations alone are insufficient: the runner holds mutable containers and
+Position mutates frozen fields with `object.__setattr__`.
 
-A compact proposed port/adapter wiring example describes typed signatures and
-input/output/error/effect responsibilities. Across the two ACs' examples, at
-least one uses ordinary application logic outside sandbox lifecycle, drawing on
-SmaRunner/sma or Provider/Source where useful. Sandbox locking and native
-identity safeguards stay contextual. Examples illustrate guidance rather than
-introduce production APIs. Adapter/wiring/integration coverage follows existing
-testing guidance for our effects and resource management, without upstream OS
-or Ruff algorithm assertions.
+### **AC-3 TODO** Pure decisions over valid inputs
+
+Engineering guidance requires pure core rules to return the same results for the
+same valid explicit inputs, without I/O, environment/time/random/global-state
+dependence, or argument mutation. Rules consume validated domain values without
+reparsing, repeated defensive input checks, or filesystem/process probes. They
+may construct and validate new outputs and transform typed path values. Calling
+an effectful collaborator remains effectful even through an injected Protocol.
+The constructor example includes a pure decision with typed inputs/results and
+clear error behavior.
+
+#### What exists
+
+[SmaRunner and sma](../../../src/ataraxia/feature.py) already separate runner
+parameters from calculation; this is a starting point rather than evidence of
+repository-wide purity or immutable inputs.
+
+### **AC-4 TODO** Collaborator contracts owned by consumers
+
+Engineering guidance defines reusable collaborator ports through
+`typing.Protocol` from consumer needs, with precise inputs, outputs, errors, and
+lifecycle ownership. Concrete adapters implement these contracts and are
+injected by the host or composition root. Dependencies point toward the
+consumer contract; core does not import concrete adapters. Protocols are not
+required for every value or helper, and `runtime_checkable` is used only for an
+actual runtime conformance need. A compact wiring example shows the typed port,
+its adapter, and how the consumer receives it.
 
 #### What exists
 
 Engineering already uses structural Protocols and injected dependencies.
 [Provider](../../../src/ataraxia/provider.py) and
-[SourceNode](../../../src/ataraxia/source.py) demonstrate collaborator and
-delegated resource-lifecycle contracts. These patterns provide a starting point;
-this Work makes consumer ownership, pure/effect separation, and complete
-collaborator contracts explicit.
+[SourceNode](../../../src/ataraxia/source.py) demonstrate collaborator contracts
+and delegated resource ownership that this guidance can build on.
+
+### **AC-5 TODO** Effects and live resource safety owned by adapters
+
+Engineering guidance assigns acquisition, parsing, validation, pure decisions,
+and output/effects clear typed input/output, error, and effect responsibilities.
+Adapters coordinate pure decisions and own processes, filesystem/persistence,
+locks, and cleanup on success or failure; cohesive functions may share a module.
+
+Record validation happens once per boundary crossing; adapters separately
+recheck live preconditions where an operation requires them. The wiring example
+makes this distinction concrete: a valid persisted sandbox record does not prove
+current generation, device/inode identity, or held-lock freshness. Adapter
+checks under lock preserve fail-closed behavior, protection against changes
+between checking and use, and required effect ordering. Schema and ownership
+fields remain part of record validity even when a pure decision does not read
+them. Accepted/rejected inputs, documented errors/causes, and state invariants
+remain contracts; validation order and branch organization may change when those
+outcomes do not.
 
 ## Dependencies
 
@@ -166,9 +181,15 @@ ADT Investigation may proceed independently.
 
 ## Additional context
 
-Deliver compact edits and examples at the engineering owner, integrating its
-existing composition, dataclass, Protocol, and type-precision rules. Inspect
-then-integrated source before drafting examples and distinguish existing,
-historical, and proposed behavior. The historical ProcessSupervisor is absent
-at the planning baseline. This Work adopts guidance; production adoption is
-separate future work.
+The delivery is compact guidance and two supporting examples at the
+engineering owner: a constructor/pure-decision example and a port/adapter wiring
+example. At least one uses ordinary application logic outside sandbox lifecycle;
+sandbox locks and native identity checks stay contextual. Examples describe
+proposed behavior with typed signatures and input/output/error/effect contracts,
+without introducing production APIs. Existing, historical, and proposed behavior
+are distinguished against then-integrated source; the historical
+ProcessSupervisor is absent at the planning baseline.
+
+The guidance integrates existing composition, dataclass, Protocol, and
+type-precision rules and links to [testing guidance](../../testing.md) for test
+ownership. Upstream OS and Ruff algorithm assertions are outside this Work.
