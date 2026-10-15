@@ -1,19 +1,49 @@
 # Trial preparation
 
-Make the current workflow ready for an observable live trial. The review found
-gaps in acceptance evidence, handoff recovery, guidance consistency, acceptance
-tool scope, and CI feedback. Address them before starting the
-[Live trial](../live-trial/README.md).
+## Purpose
 
-At review time, the acceptance checker validated declarations rather than
-completed outcomes, and completion deleted the contract its tools required.
-Handoffs had no defined return or recovery procedure. Decision statuses and
-entry-point instructions disagreed. Acceptance tools omitted example tests, and
-CI delayed the main tests behind the network audit and repeated preparation
-across jobs. The live trial lacked acceptance declarations and measurable
-success criteria.
+Make the delivered workflow ready for an observable live trial by resolving the
+review's preparation gaps.
 
-## Works
+## Goals
+
+- Integrate the preparation outcomes or record explicit maintainer abandonment.
+- Give the live trial a reviewed contract and protocol before execution.
+- Account for every review finding through delivered outcomes or explicit trial
+  measurements and decisions.
+
+## Non-Goals
+
+- Implement parallel shard execution or demonstrate workflow efficiency.
+- Start the live trial before preparation is complete and integrated.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Preparation children have an integrated disposition
+
+Every child is integrated into `master` or explicitly abandoned at maintainer
+request, with delivered acceptance evidence in its PR and lasting contracts in
+their owners. Abandonment records identify unfinished outcomes and do not
+establish their completion.
+
+### **AC-2 TODO** The live trial has a usable contract before execution
+
+The [Live trial](../live-trial/README.md) has a reviewed acceptance contract and
+protocol supplied by Trial contract, with an explicit dependency on this
+preparation's completion and integration into `master`. The trial has not
+started before that gate is met.
+
+### **AC-3 TODO** All review findings have an explicit disposition
+
+Delivered child outcomes or explicit trial measurements and decisions address
+trial acceptance, completion evidence, handoff recovery, decision status,
+contract authority, CI scheduling and setup, example-test tracing, delegation
+cost, total maintainer effort, misleading contributor instructions, and the
+scope-sizing and handoff reminder gap found during delivery. The disposition
+distinguishes delivered repairs, retired tooling, abandoned outcomes, and
+questions left for the trial; missing measurements are not claimed as results.
+
+## Children
 
 - **DONE** Completion evidence: verified per-criterion outcomes are recorded
   with the retained Work commit; removal and parent update are separate.
@@ -24,7 +54,8 @@ success criteria.
 - **DONE** Guidance consistency: aligned WDR status and index, clarified
   accepted-contract authority, and corrected Make and contributor guidance.
 - **DONE** Acceptance tool scope: added support for
-  Work tests under both `test/` and `example/` consistently.
+  Work tests under both `test/` and `example/` consistently in the subsequently
+  retired acceptance tooling.
 - **DONE** CI scheduling: made the main test job independent of static checks
   and the network audit while preserving the full CI gate.
 - **DONE** CI preparation: measured and reduced unused CI setup work, prepared
@@ -46,40 +77,20 @@ success criteria.
   The maintainer abandoned the remaining comparative outcomes and the entire
   residual tree; this is not completion of the unfinished comparison.
 
-Each child owns a separate review outcome. Complete the trial contract after
-completion evidence, handoff recovery, and Make Work reminders so it exercises
-the delivered rules. Complete executor guidance and handoffs and definer
-guidance before the live trial begins. CI scheduling and CI preparation share
-files; deliver scheduling first to keep their changes independently reviewable.
+## Additional context
 
-## Acceptance
+At review time, the acceptance checker validated declarations rather than
+completed outcomes, and completion deleted the contract its tools required.
+Handoffs lacked return and recovery procedures; decision statuses and entry
+points disagreed. Acceptance tools omitted example tests, and CI delayed main
+tests behind the network audit and repeated preparation. These are historical
+findings, not assertions that those mechanisms remain current. The live trial's
+measurement definition remains pending under Trial contract.
 
-Acceptance criteria remain `TODO` until their outcomes are verified. The
-Validation annotations below describe planned checks; passing a declaration
-check does not establish completion. Record observed evidence in the delivery
-PR.
-
-- **AC-1 TODO** Every child is integrated into `master` or explicitly abandoned
-  at maintainer request, with delivered acceptance evidence in its PR and
-  lasting contracts in their owners. Abandonment does not establish the
-  unfinished outcome.
-  Validation: review integrated outcomes, their delivery PRs and explicit
-  abandonment records against the map above before closing this parent Work.
-- **AC-2 TODO** The live trial has a usable acceptance contract and explicitly
-  depends on this preparation; it has not started before preparation completes.
-  Review the live-trial contract against the Work contract template and verify
-  the dependency against integrated parent status.
-- **AC-3 TODO** The preparation addresses all review findings: trial acceptance,
-  completion evidence, recovery, decision status, contract authority, CI
-  scheduling and setup, example-test tracing, delegation cost, total maintainer
-  effort, and misleading contributor instructions.
-  Validation: map each finding to the delivered child outcome or to an
-  explicit measurement and decision in the live-trial contract, including the
-  scope-sizing and handoff reminder gap identified during delivery.
-
-This Work prepares the trial; it does not implement parallel shard execution or
-claim that the workflow's efficiency has already been demonstrated. Preserve
-independent agent review, maintainer approval and merge control, full CI gates,
-and the existing approval requirement for delegation changes. Consequential
-policy changes belong in [WDRs](../../../wdr-workflow.md), following the shared
+The trial preserves the review and delegation approval boundaries in
+[orchestrator guidance](../../../orchestrator.md), maintainer merge control in
+[contributor guidance](../../../../CONTRIBUTING.md#work-branches-review-and-merge),
+and CI gates in the [check and evidence policy](../../../validation.md).
+Consequential policy changes belong in [WDRs](../../../wdr-workflow.md),
+following the shared
 [decision-record lifecycle](../../../decision-records.md#record-format).
