@@ -1,17 +1,42 @@
 # Repository script documentation
 
-Plan ordered bounded leaves: Python scripts; shell scripts. Cover actual
-command entry points, reusable functions/types and relationships to Make and
-owning workflow contracts. Preserve commands and
-operational constraints; describe shell interfaces by their actual arguments,
-environment and effects without copying implementation or inventing APIs.
+## Purpose
 
-Follow [parent scope, convention and delivery validation](../README.md).
+Make repository scripts and their operational interfaces discoverable.
 
-- **AC-1 TODO** Script readers can locate every direct script and understand
-  implemented entry-point/reusable interfaces, shell responsibilities and
-  authoritative operational contracts.
+## Goals
 
-  Validation: Merge bounded leaf contracts first; compare Python exports/callers
-  and shell invocation sites with module/API summaries, review Make/workflow
-  links and preserved commands, then apply parent delivery checks.
+- Explain direct scripts, implemented command entry points and reusable
+  functions and types.
+- Connect script responsibilities to Make and authoritative workflow contracts.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Complete script navigation and interface descriptions
+
+Script readers can locate every direct script and understand its implemented
+entry-point and reusable interfaces.
+
+Python descriptions agree with exports and callers. Shell interfaces describe
+actual arguments, environment and effects as used by invocation sites without
+copying implementation or inventing APIs.
+
+### **AC-2 TODO** Preserved operational contracts and commands
+
+Readers can understand shell responsibilities and script relationships to Make
+and owning workflow contracts while retaining existing commands and operational
+constraints.
+
+Module summaries, API descriptions and owner links follow the
+[parent convention](../README.md#acceptance-criteria).
+
+## Links
+
+- [Package README coverage](../README.md): owns shared scope, convention,
+  execution order and delivery conditions.
+
+## Additional context
+
+The proposed ordered leaves are Python scripts, then shell scripts. These
+remain planning slices, subject to the
+[planning-before-package-edit gate](../README.md#additional-context).

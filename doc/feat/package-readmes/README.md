@@ -1,50 +1,102 @@
 # Package README coverage
 
-Give each owned code/test namespace a discoverable README describing implemented
-purpose, architecture, direct contents and reusable public API. Current package
-coverage is uneven; existing test operational notes must survive the revision.
-Scope includes src/ataraxia and compute, script, example and test namespace
-packages. Data-only directories need no separate README; describe their data
-and executable fixtures at the nearest owning README.
+## Purpose
 
-- **TODO** [Lasting package documentation guidance](guidance/README.md).
-- **TODO** [Recent script test packages](script-tests/README.md).
-- **TODO** [Make test packages](make-tests/README.md).
-- **TODO** [Product packages](product/README.md).
-- **TODO** [Repository scripts](scripts/README.md).
-- **TODO** [Product test packages](product-tests/README.md).
-- **TODO** [Examples and final navigation](examples-navigation/README.md).
+Make owned code and test namespaces discoverable through consistent READMEs
+while preserving existing test operational notes.
 
-Execute in listed order; serialize edits to shared READMEs. Guidance is a leaf.
-The other children are planning subtrees: their proposed delivery slices must
-become concrete, independently reviewed and merged leaf contracts before any
-package edits. Assess each complete delivery against the five-minute boundary
-and split further when needed. This initial map changes no package README,
-guidance, runtime behavior, tooling policy or inventory checker/generator.
+## Goals
 
-The approved convention is a compact purpose/architecture explanation with
-Mermaid, links to every direct owned module/subpackage with one or two
-sentences, and one sentence per reusable public function/class/protocol/type
-alias/data structure; describe classes' main operations. Determine actual public
-API from exports, callers and fixtures, not imported third-party names or
-signature copies. Link reexports to their owning module; subpackage detail
-belongs in its own README. Test case modules get summaries, while reusable
-helpers, fixtures and types get API descriptions without per-test-function
-inventories. Preserve commands/operational notes, link authoritative contracts,
-describe implemented behavior only and maintain affected documentation in the
-same change as code.
+- Explain each scoped package's implemented purpose, architecture and direct
+  contents.
+- Describe reusable public APIs at their owners and provide reliable navigation.
+- Establish lasting documentation guidance and same-change maintenance.
 
-Future delivery validation combines manual architecture/module/API/navigation
-review, Mermaid rendering where available, doc-format/doc-check/ac through Make
-and latest-head full CI. Rendering limitations must be stated, not counted as
-observed rendering. Reuse authoritative guidance rather than copying policies.
+## Non-Goals
 
-- **AC-1 TODO** Readers can navigate all scoped packages and their direct owned
-  contents, understand implemented relationships and reusable APIs, and find
-  authoritative contracts and preserved operational instructions consistently.
+- Change runtime behavior or tooling policy.
+- Add an inventory checker or generator.
+- Create separate READMEs for data-only directories or empty README shells.
 
-  Validation: Independently compare final READMEs with current exports/callers,
-  fixtures and filesystem contents; review architecture/API accuracy,
-  cross-links and same-change upkeep guidance. Reuse child review, render
-  Mermaid where available and run existing doc/ac checks and latest full CI; no
-  new checker.
+## Acceptance criteria
+
+### **AC-1 TODO** Complete package navigation and architecture
+
+Readers can navigate every scoped package and understand its implemented
+relationships.
+
+- Coverage includes `src/ataraxia` and compute, script, example and test
+  namespace packages.
+- Each README has a compact purpose and architecture explanation with Mermaid.
+- Every direct owned module and subpackage has a link and one or two descriptive
+  sentences.
+- Subpackage detail belongs in its own README, while data and executable
+  fixtures in data-only directories are described at the nearest owning README.
+- Architecture descriptions agree with current code and authoritative contracts
+  rather than presenting planned behavior as implemented.
+
+### **AC-2 TODO** Discoverable reusable public APIs
+
+Readers can find the reusable public API and its owning module without a
+per-test-function inventory.
+
+- Each reusable public function, class, protocol, type alias and data structure
+  has a one-sentence description, with classes' main operations described.
+- API ownership reflects exports, callers and fixtures rather than imported
+  third-party names or copied signatures.
+- Reexports link to their owning module.
+- Test case modules have summaries, while reusable helpers, fixtures and types
+  have API descriptions.
+
+### **AC-3 TODO** Preserved operational instructions and upkeep
+
+Readers retain existing commands and operational notes and can find the
+authoritative contracts behind the documentation.
+
+The lasting convention requires affected documentation to change alongside
+code.
+
+## Children
+
+- **TODO** [Lasting package documentation guidance](guidance/README.md):
+  establish the convention at its lasting owner.
+- **TODO** [Recent script test packages](script-tests/README.md): document
+  script-test namespaces and reusable support.
+- **TODO** [Make test packages](make-tests/README.md): document Make-test
+  boundaries, helpers and fixtures.
+- **TODO** [Product packages](product/README.md): document product namespaces,
+  APIs and implemented relationships.
+- **TODO** [Repository scripts](scripts/README.md): document script entry points
+  and operational interfaces.
+- **TODO** [Product test packages](product-tests/README.md): document
+  product-test namespaces and checking routes.
+- **TODO** [Examples and final navigation](examples-navigation/README.md):
+  document examples and test-root navigation and review final completeness.
+
+## Links
+
+- [Documentation ownership](../../README.md): owns lasting documentation
+  placement and maintenance rules.
+- [Check and evidence policy](../../validation.md): owns check selection and the
+  latest-head full CI merge gate.
+
+## Additional context
+
+- Execute the children in listed order.
+- Serialize edits to shared READMEs.
+- Guidance is a leaf, while the other children require concrete, independently
+  reviewed and merged leaf contracts before any package edits.
+- Assess each complete delivery against the
+  [review-effort boundary](../../workflow.md#scope-and-sizing) and split further
+  when needed.
+
+Independent delivery review compares architecture, module, API and navigation
+descriptions with current filesystem contents, exports, callers and fixtures
+and can reuse child review. Final completeness review belongs to
+[Examples and final navigation](examples-navigation/README.md#ac-2-todo-independently-reviewed-final-completeness).
+
+Delivery review includes Mermaid rendering where available; unavailable
+rendering remains an explicit limitation and is not reported as observed
+rendering. Use the current documentation and check owners above for Make-based
+formatting, link checks and delivery evidence rather than duplicating their
+policies here.

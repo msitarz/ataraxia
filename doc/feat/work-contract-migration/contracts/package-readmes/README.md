@@ -17,7 +17,7 @@ without changing what their Works are authorized to deliver.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Readable contracts with preserved outcomes
+### **AC-1 DONE** Readable contracts with preserved outcomes
 
 Every scoped contract uses the template with focused outcomes and only useful
 optional sections. Comparison with its pre-migration version accounts for all
@@ -31,7 +31,7 @@ per-test descriptions, existing operational notes, and the
 planning-before-package-edit gates. The existing child map and serial shared
 README ownership remain intact.
 
-### **AC-2 TODO** Consistent dependencies and ownership
+### **AC-2 DONE** Consistent dependencies and ownership
 
 Parent maps, linked supporting artifacts, and active criterion/anchor references
 agree with the rewritten contracts. Dependencies explain what is consumed and

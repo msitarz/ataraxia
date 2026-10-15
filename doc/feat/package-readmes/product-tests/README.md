@@ -1,18 +1,46 @@
 # Product test package documentation
 
-Plan ordered bounded leaves: overview; unit; unit/compute; integration;
-acceptance; typecheck. Cover `test/ataraxia` and these namespaces, preserving
-existing test-type/command guidance. Inventory reusable fixtures/helpers/types
-where present; summarize case modules instead of listing individual tests.
-Explain intentional-negative expectations and their separate checking route;
-link source and testing owners without claiming all legacy tests are strict.
+## Purpose
 
-Follow [parent scope, convention and delivery validation](../README.md).
+Make product-test coverage, reusable arrangements and checking routes
+discoverable.
 
-- **AC-1 TODO** Product test readers can navigate each namespace/direct case
-  module and understand reusable arrangements, behavior coverage and separate
-  runtime/type expectations routes without duplicated testing policy.
+## Goals
 
-  Validation: Merge bounded contracts first; compare filesystem contents and
-  owned fixtures/types, review case/source links and preserved
-  commands/typecheck limits under parent delivery checks.
+- Explain `test/ataraxia` and its unit, unit/compute, integration, acceptance
+  and typecheck namespaces.
+- Preserve test-type and command guidance while distinguishing runtime and type
+  expectations.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Complete product-test navigation and reusable API descriptions
+
+Product-test readers can navigate every namespace and direct case module and
+understand reusable arrangements and behavior coverage.
+
+Reusable fixtures, helpers and types have API descriptions where present;
+case modules have summaries rather than individual-test inventories.
+Descriptions agree with filesystem contents and owned fixtures and types, and
+case and source links follow the
+[parent convention](../README.md#acceptance-criteria).
+
+### **AC-2 TODO** Accurate checking routes and preserved operations
+
+Readers can distinguish runtime tests from intentional-negative type
+expectations and find their separate checking routes.
+
+The documentation preserves existing test-type and command guidance, states
+typecheck limits without claiming all legacy tests are strict, and links source
+and testing owners without duplicating testing policy.
+
+## Links
+
+- [Package README coverage](../README.md): owns shared scope, convention,
+  execution order and delivery conditions.
+
+## Additional context
+
+The proposed ordered leaves are overview, unit, unit/compute, integration,
+acceptance, then typecheck. These remain planning slices, subject to the
+[planning-before-package-edit gate](../README.md#additional-context).

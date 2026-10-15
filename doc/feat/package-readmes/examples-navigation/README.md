@@ -1,19 +1,48 @@
 # Examples and final package navigation
 
-Plan ordered bounded leaves: example; test root; final completeness review.
-Document crossover strategy/public interfaces and its case module, then test
-root namespace links. Final review checks all scoped package READMEs, direct
-contents, API ownership, architecture and preserved operational navigation.
-Data-only directories remain described by nearest owners; avoid creating empty
-README shells or an automated inventory framework.
+## Purpose
 
-Follow [parent scope, convention and delivery validation](../README.md).
+Complete example and test-root documentation and establish completeness across
+the delivered package READMEs.
 
-- **AC-1 TODO** Examples and test-root navigation are complete, and an
-  independent final review finds no missing scoped package/direct-content/API
-  ownership or broken operational/architecture link across the delivered
-  documentation.
+## Goals
 
-  Validation: After preceding subtrees, merge bounded example/navigation/review
-  contracts; inspect full scoped filesystem/export/caller coverage, render
-  Mermaid where available and apply parent checks/latest CI with limits stated.
+- Explain the crossover strategy, its public interfaces and case module.
+- Complete test-root namespace navigation and independently review overall
+  coverage.
+
+## Non-Goals
+
+- Create empty README shells or an automated inventory framework.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Complete example and test-root navigation
+
+Readers can discover the crossover strategy and its public interfaces and case
+module, then navigate test-root namespaces under the
+[parent convention](../README.md#acceptance-criteria).
+
+Data-only directories remain described by their nearest owners.
+
+### **AC-2 TODO** Independently reviewed final completeness
+
+An independent final review finds no missing scoped package, direct content or
+API ownership and no broken operational or architecture link across the
+delivered documentation.
+
+The review covers the full scoped filesystem, exports and callers, including
+architecture and preserved operational navigation after preceding subtrees
+have delivered.
+
+## Links
+
+- [Package README coverage](../README.md): owns shared scope, convention,
+  execution order and delivery conditions.
+
+## Additional context
+
+The proposed ordered leaves are example, test root, then final completeness
+review. These remain planning slices, subject to the
+[planning-before-package-edit gate](../README.md#additional-context), after
+the preceding subtrees.
