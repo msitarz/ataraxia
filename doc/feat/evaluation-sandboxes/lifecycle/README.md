@@ -1,17 +1,28 @@
 # Sandbox lifecycle
 
-Own local discovery and safe disposal of children created by
-[managed sandbox creation](../../../evaluation-sandboxes.md). Reuse the existing
-private ownership record as the persistent, uncommitted lifecycle marker; the
-[active-state Work](active-state-exclusion/README.md) owns its fields, exclusive
-OS-held lock, creation integration, and cleanup disposition. Listing and removal
-consume that delivered protocol rather than define another registry or proof
-owner. The maintainer selected explicit orchestrator disposition after artifact
-preservation and maintainer review; no disposability Investigation is required.
+## Purpose
 
-At planning baseline `1b31bba`, creation writes preparation ownership/state;
+Let orchestrators discover managed sandboxes and dispose of them only when
+shared lifecycle safety and reviewed preservation permit it.
+
+## Goals
+
+- Share creation, execution and removal exclusion through one lifecycle owner.
+- Report local children without mutation or inferred cleanup authority.
+- Remove only the current owned generation with reviewed disposition.
+
+## Mechanisms
+
+- Existing [managed creation](../../../evaluation-sandboxes.md) supplies
+  prepared children and their private ownership records.
+- The active-state children extend that record into the shared marker, exclusion
+  and disposition protocol consumed by listing and removal.
+
+## Visuals
+
+At verified revision `44f40de`, creation writes preparation ownership/state;
 there is no execution or removal command and no lifecycle lock. No sandboxes
-currently need migration. Proposed behavior follows:
+currently need migration. The proposed lifecycle adds the following:
 
 ```mermaid
 flowchart LR
@@ -24,7 +35,21 @@ flowchart LR
     D --> R
 ```
 
-## Child outcomes
+## Acceptance criteria
+
+### **AC-1 TODO** Compose observational discovery and safe disposal
+
+Creation, execution and removal share exclusion; listing stays observational.
+Persistent ownership and execution results survive inactivity, and removal
+requires current orchestrator disposition after preservation and maintainer
+review. Unknown execution, unsupported records, foreign ownership and unsafe
+paths preserve the child. Same-name reuse cannot redirect waiters.
+
+Child outcomes compose across crash/descendant handling, failed preparation
+cleanup, disposition invalidation, read-only probes and check/delete exclusion.
+Successful removal retains the stable lock and permits a fresh generation.
+
+## Children
 
 - **TODO** [Active-state exclusion](active-state-exclusion/README.md): deliver
   the shared safety outcome through serial lock/marker, execution recovery and
@@ -37,23 +62,17 @@ flowchart LR
   only an exclusively locked, owned child with a current explicit disposition;
   after active-state delivery.
 
-[Native execution](../execution/README.md) also depends on active-state
-delivery. Active-state maps its own bounded short-review children; listing and
-removal remain observation and guarded-deletion leaves. Reassess complete
-expected and actual review effort before implementation or publication under
-[Work sizing](../../../workflow.md#scope-and-sizing). This plan does not deliver
-commands, run probes or models, or complete criteria.
+## Links
 
-## Parent acceptance
+- [Native execution](../execution/README.md): consumes completed active-state
+  safety and owns native command integration.
+- [Work sizing](../../../workflow.md#scope-and-sizing): governs expected and
+  actual review effort before implementation or publication.
 
-- **AC-1 TODO** Creation, execution and removal share exclusion; listing stays
-  observational. Persistent ownership and execution results survive inactivity,
-  and removal requires current orchestrator disposition after preservation and
-  maintainer review. Unknown execution, unsupported records, foreign ownership
-  and unsafe paths preserve the child. Same-name reuse cannot redirect waiters.
+## Additional context
 
-  Validation: independently review child evidence and shared owner links,
-  including crash/descendant handling, failed preparation cleanup, disposition
-  invalidation, read-only probes and check/delete exclusion. Verify successful
-  removal retains the stable lock and permits a fresh generation; reuse leaf
-  evidence without repeating probes or model runs.
+The maintainer selected explicit orchestrator disposition after artifact
+preservation and maintainer review, so no disposability Investigation is
+required. Listing and removal consume the shared protocol rather than define
+another registry or proof owner. This contract authorizes no probes or model
+runs.

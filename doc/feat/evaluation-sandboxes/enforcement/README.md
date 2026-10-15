@@ -1,45 +1,62 @@
 # Enforced runtime readiness
 
-Under the [reconciled ownership](../README.md#children-and-gates), after
-[managed sandbox creation](../../../evaluation-sandboxes.md) supplies a prepared
-workspace, reuse existing native Codex boundary controls. Own effective
-enforcement and readiness shared by initial start and exact UUID resume; the
-execution leaf consumes this gate. No new sandbox system or general platform
-framework is planned.
+## Purpose
 
-Use the
-[preserved boundary/handoff input](../preparation-input.md#boundary-and-handoff-input)
-and [bounded isolation findings](../isolation-input.md) without treating
-historical controls as current readiness.
+Make prepared sandboxes usable for native execution only when their effective
+boundary and readiness are established.
 
-## Acceptance
+## Goals
 
-- **AC-1 TODO** A supported pinned runtime admits only the declared child
-  workspace, necessary tools/runtime reads, clone-local scratch and Git writes.
-  Auth, private Codex state, raw sessions, reviewer outputs, source/sibling
-  repositories/history and undeclared host locations remain inaccessible to
-  child commands. Command network is denied independently of host model
-  transport. Unsupported runtime, configuration or tool grants fail closed.
+- Restrict child access using supported pinned native Codex controls.
+- Apply the same effective readiness gate to initial execution and exact-session
+  resume.
 
-  Validation: criterion-marked effective-profile/configuration tests use the
-  native controls and smallest non-secret matched allowed/denied cases at our
-  boundary. Independent review verifies effective context, private separation
-  even beneath the managed root, permitted interpreter/hook reads and platform
-  limits; absent origin/offline flags do not establish denial.
-- **AC-2 TODO** Initial start binds the workspace and immutable original base;
-  resume rechecks that base plus accepted checkpoint HEAD, exact UUID and the
-  same boundary, permitting reviewed executor commits after preparation.
-  Both recheck prepared tools/hooks and privacy inspection before execution.
-  Launcher TMPDIR remains unchanged for the Codex `:tmpdir` host boundary;
-  child TMPDIR/TMPPREFIX and scratch stay workspace-local. Managed-root
-  resolution does not replace the launcher's temporary-directory setting.
-  Exposure, stale readiness, missing tools/hooks, install attempts,
-  invalid controls or changed configuration stop with retained diagnostics and
-  no extra grants.
+## Mechanisms
 
-  Validation: criterion-marked readiness tests cover stale bindings and failure
-  preservation, accepted committed checkpoint resume, rejection of unreviewed
-  HEAD/UUID changes, and useful tool/hook/scratch controls under the effective
-  profile. Freeze any newly needed probe condition and obtain applicable
-  approval before execution; historical deterministic checks establish only
-  their tested condition, and model start/resume belongs to the execution leaf.
+- Native Codex boundary controls provide the effective restricted execution
+  profile without a new sandbox system or general platform framework.
+- Prepared tool/hook configuration supplies readiness inputs shared by initial
+  invocation and exact-session resume.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Enforce the declared child boundary
+
+A supported pinned runtime admits only the declared child workspace, necessary
+tool/runtime reads, clone-local scratch and Git writes. Auth, private Codex
+state, raw sessions, reviewer outputs, source/sibling repositories and history,
+and undeclared host locations remain inaccessible to child commands, including
+when private control is physically beneath the managed root. Command network is
+denied independently of host model-service transport. Unsupported runtime,
+configuration or tool grants fail closed.
+
+The effective profile/configuration establishes useful interpreter and hook
+reads and matched non-secret allowed/denied controls at the native boundary.
+Supported platform limits stay explicit; absent origin and offline flags do not
+establish denial. Historical
+[boundary input](../preparation-input.md#boundary-and-handoff-input) and
+[isolation findings](../isolation-input.md) establish no current readiness.
+
+### **AC-2 TODO** Bind start and resume to current readiness
+
+Initial start binds workspace and immutable original base. Resume rechecks that
+base, accepted checkpoint HEAD, exact UUID and the same boundary, permitting
+reviewed committed executor checkpoints while rejecting unreviewed HEAD/UUID
+changes. Both recheck prepared tools/hooks and privacy inspection before
+execution.
+
+Launcher TMPDIR stays unchanged for the Codex `:tmpdir` host boundary; child
+TMPDIR/TMPPREFIX and scratch remain workspace-local. Managed-root selection does
+not replace the launcher's temporary-directory setting. Exposure, stale
+readiness, missing tools/hooks, install attempts, invalid controls and changed
+configuration stop with retained diagnostics and no extra grants.
+
+Any newly needed probe condition is frozen and receives applicable approval
+before execution. Historical deterministic checks support only their tested
+condition; model start/resume belongs to
+[native execution](../execution/README.md).
+
+## Dependencies
+
+- **DONE** [Managed sandbox creation](../../../evaluation-sandboxes.md):
+  supplies the prepared workspace and existing root/ownership machinery.

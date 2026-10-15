@@ -1,48 +1,65 @@
 # Session statistics Investigation
 
-Which existing method can accurately report only declared managed Codex sessions
-through headless JSON or a suitable Python API, including custom temporary
-state, token accounting, API-equivalent cost estimates and successful/failed
-tools? With [ownership reconciled](../README.md#children-and-gates), compare
-[tokenuse source](https://github.com/russmckendrick/tokenuse), its
-[Codex documentation](https://tokenuse.app/docs/development/tools/codex/),
-suitable Python alternatives and the
-[native CLI JSON baseline](https://learn.chatgpt.com/docs/non-interactive-mode).
-Prior third-party documentation reading established no tokenuse fit or adoption.
+## Purpose
 
-Use primary documentation/source and controlled existing owned privacy-safe
-session data only. Before checking data, declare exact files/session UUIDs,
-provenance, permitted fields, candidate versions and bounded manual methods in
-the comparison file. No model runs, unrelated host-session/auth reads, global
-usage ingestion, mandatory dataset schema or new telemetry framework. If
-suitable data is absent, report uncertainty rather than widening access. The
-result is a recommendation, not installation or report integration.
+Determine which existing method can report declared managed Codex sessions
+accurately without widening access to host data.
 
-## Acceptance
+## Goals
 
-- **AC-1 TODO** A compact comparison records each serious candidate's checked
-  fit, pros/cons and remaining uncertainty for exact session filtering, headless
-  JSON/Python access, temporary custom-state discovery, input/cached/
-  output/reasoning tokens, deduplication across resumes and version limits.
-  Native CLI limitations and the possibility that no candidate fits are
-  explicit. Assess cost-estimate fit: requested versus observed model and tier,
-  pricing source/version/date, fallback-model pricing, cache/reasoning category
-  overlap and unavailable categories. Unsupported pricing remains unknown;
-  subscription billing is not inferred.
+- Compare tokenuse, suitable Python alternatives and native CLI JSON against
+  session-scoped needs.
+- Identify token, cost-estimate and tool-outcome support with explicit
+  uncertainty.
+- Recommend a fitting method or a bounded no-integration outcome without
+  adoption.
 
-  Validation: independent review of primary references and declared-data checks;
-  compare reported values with bounded manually traced events/session records
-  without collecting unrelated sessions. Record absent/unsupported data as
-  unknown, including any overlap between reasoning and output token totals.
-  Trace available model/tier and pricing provenance, including fallback cases,
-  against primary references; distinguish checked estimate support from gaps.
-- **AC-2 TODO** The recommendation establishes successful/failed tool coverage
-  or its precise gaps, distinguishes tool failure from command exit and expected
-  denial probes from agent mistakes, and defines feasible report inputs without
-  selecting a tool on token coverage alone.
+## Mechanisms
 
-  Validation: independently trace representative available tool outcomes and
-  initial/resumed session identities in the declared data; distinguish model
-  calls, tool calls and tool process sessions. Recommend a fitting option,
-  bounded manual/native reporting, or no integration with reasons. Require a
-  new reviewed contract before adopting any missing custom collection machinery.
+- [tokenuse source](https://github.com/russmckendrick/tokenuse) and its
+  [Codex documentation](https://tokenuse.app/docs/development/tools/codex/)
+  supply one existing reporting candidate.
+- Suitable Python alternatives supply other existing headless reporting
+  candidates.
+- [Native CLI JSON](https://learn.chatgpt.com/docs/non-interactive-mode)
+  supplies the baseline for comparison with session records.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Compare session, token and cost-estimate fit
+
+A compact comparison records each serious candidate's checked fit, pros/cons and
+uncertainty for exact session filtering, headless JSON/Python access, temporary
+custom-state discovery, input, cached input, output and reasoning tokens,
+deduplication across resumes and version limits. Native CLI limitations and the
+possibility that no candidate fits stay explicit; prior third-party
+documentation reading established no tokenuse fit or adoption.
+
+Cost-estimate fit distinguishes requested from observed model/tier, pricing
+source/version/date, fallback-model pricing, cache/reasoning category overlap
+and unavailable categories. Bounded manually traced declared event/session
+records and primary references ground available values and provenance.
+Absent/unsupported data, unresolved category overlap and unsupported pricing
+remain unknown; subscription billing is never inferred.
+
+### **AC-2 TODO** Recommend reporting from tool-outcome evidence
+
+The recommendation establishes successful/failed tool coverage or its precise
+gaps and feasible report inputs from representative available tool outcomes and
+initial/resumed identities. It distinguishes tool failure from command exit,
+expected denial probes from agent mistakes, and model calls from tool calls and
+tool process sessions. Token coverage alone cannot select a method.
+
+The result recommends a fitting existing option, bounded manual/native reporting
+or no integration with reasons; it does not install or integrate a report tool.
+Missing custom collection machinery requires a new reviewed contract before
+adoption.
+
+## Data and scope limits
+
+Before checking data, the comparison file declares exact existing owned
+privacy-safe files/session UUIDs, provenance, permitted fields, candidate
+versions and bounded manual methods. Only primary documentation/source and those
+controlled records are consumed. Missing suitable data yields uncertainty, not
+wider access. No model runs, unrelated host-session/auth reads, global usage
+ingestion, mandatory dataset schema or new telemetry framework is included.

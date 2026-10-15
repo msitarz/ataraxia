@@ -1,60 +1,70 @@
 # Preservation-aware sandbox removal
 
-After [active-state delivery](../active-state-exclusion/README.md), deliver
-`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` using shared
-[root and ownership resolution](../../README.md#shared-root-and-ownership).
-Acquire the stable exclusive OS lock before final checks and hold it through
-deletion. Revalidate captured generation and destination identity before acting.
-The shared active-state owner defines marker, disposition and recovery; this
-Work consumes them without another proof record or Investigation.
+## Purpose
 
-Delete only the named direct child and its explicitly owned private artifacts.
-Require a current disposition recorded by its owning orchestrator after artifact
-preservation and maintainer review, bound to the current workspace, run and
-output. Verify retained destinations/evidence before destructive action; reject
-missing or inconsistent preservation. Meaningful commits, dirty/staged/untracked
-content and private output must all be covered by preserved exact artifacts or
-explicit reviewed discard decisions. Clean Git status and inactivity alone are
-insufficient. No force option bypasses these guards.
+Remove a managed sandbox only after its exact retained work and output have a
+current reviewed cleanup disposition.
 
-Failed preparation requires the same disposition, including partial workspace
-and failure diagnostics; a missing partial directory does not authorize deleting
-its remaining marker/output. Unknown execution or potentially live descendants
-refuse cleanup. Refusal preserves workspace, private output and diagnostics.
-After successful deletion remove the generation marker last and keep the stable
-lock file. Partial failure/interruption retains the marker and remaining
-material, records incomplete cleanup when safe, and blocks name reuse; retry
-revalidates identity, disposition and retained evidence under the lock. Never
-follow symlinks or recursively traverse another owned sandbox/private tree by
-artifact path.
+## Goals
 
-## Acceptance
+- Expose guarded named sandbox removal under shared exclusion.
+- Preserve all protected material on refusal or incomplete cleanup.
+- Allow safe retry and fresh same-name creation after successful cleanup.
 
-- **AC-1 TODO** Only a named, direct, owned child with supported metadata,
-  verified inactive execution and current reviewed disposition can be removed
-  under exclusion. Unsafe root/source, foreign ownership, symlinks, escapes,
-  malformed metadata, stale generation, busy lock and unknown descendants
-  refuse.
+## Mechanisms
 
-  Validation: criterion-marked Make-boundary fixtures cover success and every
-  refusal, plus a launch racing final checks/deletion. Independently review
-  claim lifetime and exact root/owner agreement; reuse shared concurrency
-  evidence.
-- **AC-2 TODO** Exact workspace work, commits, private artifacts and failed
-  preparation diagnostics are preserved or covered by an explicit reviewed
-  discard decision before removal. Changed or absent bindings invalidate
-  approval and all refusals leave protected data unchanged.
+- `make sandbox-remove` exposes named deletion through existing Make routing.
+- Shared lifecycle APIs supply root/owner resolution, exclusive scope, current
+  disposition validation and execution-recovery guards.
 
-  Validation: criterion-marked fixtures cover dirty/staged/untracked content,
-  meaningful commits, private output, failed preparation, missing retention,
-  valid disposition, wrong owner and changed run/output/workspace after
-  approval. Assert refusal preserves bytes; independently inspect
-  review/preservation evidence without treating clean status as delivery.
-- **AC-3 TODO** Successful cleanup removes the marker last, retains stable lock
-  identity and permits a new generation. Failed/interrupted cleanup preserves
-  remaining evidence and blocks unsafe reuse; safely validated retry can finish.
+## Acceptance criteria
 
-  Validation: criterion-marked staged-failure fixtures interrupt child/private
-  deletion and marker removal, inspect remaining material and refusal of create,
-  then exercise guarded retry and same-name recreation. Verify retained
-  artifacts outside the cleanup set remain intact.
+### **AC-1 TODO** Remove only an owned safely stopped sandbox
+
+`make sandbox-remove NAME=... [SANDBOX_ROOT=/absolute/path]` removes only the
+named direct owned child and its explicitly owned private artifacts using the
+shared
+[root and ownership contract](../../README.md#shared-root-and-ownership).
+It captures generation before waiting, acquires the stable exclusive OS lock,
+and revalidates generation and native destination identity before final checks.
+It holds exclusion through deletion so launch cannot race a check/delete gap.
+
+Only supported metadata, verified stopped execution and current reviewed
+orchestrator disposition admit deletion. Unsafe root/source, foreign ownership,
+symlinks, escapes, malformed metadata, stale generation, busy lock and unknown
+or potentially live descendants refuse cleanup. No force option bypasses these
+guards. Deletion never follows symlinks or recursively traverses another owned
+sandbox/private tree by artifact path.
+
+### **AC-2 TODO** Cover exact protected material before deletion
+
+Current disposition follows artifact preservation and maintainer review and
+covers exact workspace state, meaningful commits, dirty/staged/untracked content
+and private output through preserved exact artifacts or explicit reviewed
+discard decisions. Retained destinations and evidence are verified before
+destructive action. Clean status and inactivity alone are insufficient.
+
+Wrong owner, missing retention and changed/absent run, workspace, output or
+other bindings refuse deletion and invalidate approval. Failed preparation
+requires the same review covering partial workspace and diagnostics; an absent
+partial directory does not authorize deleting its marker or output. Every
+refusal leaves workspace, private output and diagnostics unchanged.
+
+### **AC-3 TODO** Retain recovery authority through incomplete cleanup
+
+Successful deletion removes the generation marker last, retains stable lock
+identity and permits a fresh same-name generation. Artifacts outside the
+explicit cleanup set remain intact.
+
+Partial failure or interruption during workspace/private deletion or marker
+removal retains the marker and remaining material, records incomplete cleanup
+when safe and blocks name reuse. Retry revalidates identity, current disposition
+and retained evidence under the same lock before finishing; retained
+reservations cannot be bypassed when partial directories are absent.
+
+## Dependencies
+
+- **TODO**
+  [Per-sandbox active-state exclusion](../active-state-exclusion/README.md):
+  supplies the shared identity, exclusion, disposition and recovery protocol
+  completed before this Work integrates guarded deletion.

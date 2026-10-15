@@ -1,87 +1,104 @@
 # Execution attempts and recovery
 
-After [lock and marker](../lock-and-marker/README.md), deliver the shared
-execution-attempt and recovery protocol consumed by
-[native execution](../../../execution/README.md). This child owns Work/session
-binding, retained attempt state and process lifetime protection; native CLI
-inputs, readiness/model gates, exec/resume routing and actual model runs remain
-with that consumer. Use real shared APIs and small process fixtures here.
+## Purpose
 
-## Binding and attempts
+Keep execution ownership, attempt provenance and process lifetime safe across
+initial launches, resumes and crashes.
 
-Before initial execution, bind the owning Evaluation Work
-repository path and owning orchestrator identity under the exclusive lock.
-For each execution attempt record a unique run identity,
-Codex session UUID when available, preparation/execution outcome (including
-incomplete or unknown), and private output/artifact paths. A Codex session UUID
-is distinct from a delegated agent identifier; add an agent identifier only if
-needed for provenance. Never invent a missing UUID. Keep prior attempts and
-artifacts when resuming or failing rather than overwrite their provenance.
+## Goals
 
-Initial `sandbox-exec` requires `EVALUATION_WORK=repository/relative/path` and
-host-controlled owning-orchestrator provenance. Validate a contained path with a
-Work README in the owning source repository/Work branch; the Work need not exist
-in the sandbox frozen clone. Missing, escaped or invalid bindings refuse launch.
-Resume requires agreement with the recorded Work/orchestrator identity and exact
-session UUID; it cannot reassign ownership. Creation keeps its delivered inputs
-and does not require an Evaluation binding. Failed preparation may receive a
-validated host-side Work/orchestrator binding under the lock before disposition
-and cleanup. Execution records binding and run/outcome/artifact fields and
-invalidation, never disposal approval. The later
-[disposition child](../cleanup-disposition/README.md) owns host
-review/preservation bindings. This child clears any disposition before an
-identified attempted initial/resumed launch, including failed/rejected attempts;
-trusted identity is required before updating, so unsafe requests preserve the
-record and cannot confer approval. Later disposition recording consumes this
-invalidation and current attempt identity rather than moving launch ownership.
+- Bind attempts to a source Evaluation Work, host owner and exact known session.
+- Retain prior artifacts and protect access through descendant stoppage.
+- Require safe host recovery when execution state is unknown.
 
-## Protected process lifetime
+## Mechanisms
 
-`sandbox-exec` acquires automatically before launch and holds exclusion until
-execution and all descendants capable of accessing the workspace/private output
-are stopped and results retained. The orchestrator owns review and disposal,
-not manual liveness unlocking. Implement OS lock lifetime and process handling
-so a crashed wrapper cannot release exclusion while descendants still operate.
-Do not let descendants escape the protected lifetime. If stopping or observing
-all descendants cannot be established, retain an unknown execution marker and
-refuse launch/removal until host-side recovery establishes stoppage and retains
-results under the lock. OS release after process death alone does not establish
-completed execution or disposability. No stale active bit needs manual clearing.
+- The existing private lifecycle marker retains source Work/owner binding and
+  successive execution attempts without a second record.
+- Shared lock/update APIs protect process invocation, durable attempt updates
+  and host-side recovery.
 
-The shared attempt API accepts a locked sandbox, validated source Work/owner,
-initial or exact-session resume identity and a process invocation; it persists
-unique attempt/provenance before launch, retains outcomes/artifacts, and returns
-completed/incomplete/unknown state. The recovery API accepts the same locked
-identity and host-side stoppage/preservation evidence; it refuses while safety
-cannot be established and retains prior results before permitting later action.
-These are semantic interfaces, not fixed Python signatures. Keep mechanism and
-supported OS limits explicit; do not add a controller or permit an escaped
-child to operate after exclusion ends.
+## Visuals
 
-## Acceptance
+At verified revision `44f40de`, creation retains preparation state but has no
+execution-attempt or recovery protocol. Proposed shared lifetime:
 
-- **AC-1 TODO** Initial execution accepts only a contained existing source Work
-  README and host-controlled owning orchestrator binding; exact UUID resume
-  agrees with recorded Work/owner/session and cannot reassign it. Each attempt
-  has unique run identity, honest available UUID, outcome and private artifact
-  paths; earlier attempts survive failure/resume. Identified failed/rejected
-  attempts invalidate disposition, while unsafe identity refuses without update.
+```mermaid
+flowchart LR
+    B[Validated locked binding] --> A[Persist unique attempt before launch]
+    A --> P[Protected process and descendants]
+    P --> S[Establish stoppage and retain results]
+    S --> R[Recorded completed or incomplete outcome]
+    P --> U[Crash or uncertain lifetime: unknown]
+    U --> H[Host recovery under lock]
+    H -->|Stoppage and preservation established| R
+    H -->|Unresolved| U
+```
 
-  Validation: criterion-marked shared-API host/process fixtures cover a Work
-  absent from the frozen clone but present in the source Work branch,
-  missing/escaped/invalid Work, resume ownership or UUID mismatch, no available
-  UUID, successive attempts, failed/rejected launch and retained artifacts.
-  Inspect private modes, provenance and unchanged unsafe records; native
-  execution verifies command integration and authorization separately.
-- **AC-2 TODO** Normal completion, interruption and crashes retain outcomes
-  and artifacts; exclusion lasts through descendants and result retention.
-  Unknown execution fails closed until safe recovery. OS release after death
-  alone grants no completed outcome or disposability.
+Unknown execution refuses later launch and removal; OS lock availability alone
+does not advance recovery.
 
-  Validation: criterion-marked process fixtures terminate wrappers with live
-  descendants and verify exclusion or unknown-state refusal until stoppage and
-  preservation; cover interrupted attempt updates and safe reacquisition.
-  Review supported OS semantics, descendant lifetime and recovery, including
-  rejected recovery and successful host recovery preserving earlier results.
-  Test acquisition refusal for later execution/removal via the shared API;
-  consumers verify their real command paths.
+## Acceptance criteria
+
+### **AC-1 TODO** Retain bound attempt identity and invalidate old disposition
+
+#### Binding and attempts
+
+Before initial execution, the shared protocol binds a contained Evaluation Work
+path and host-controlled owning orchestrator under the exclusive lock. The path
+has a Work README in the owning source repository/Work branch; it need not exist
+in the sandbox's frozen clone. Missing, escaped or invalid bindings refuse
+launch. Exact-session resume must match recorded Work, owner and UUID without
+reassigning ownership. Creation requires no Evaluation binding; failed
+preparation can receive a validated host binding under the lock before cleanup.
+
+Each attempted invocation persists a unique run identity before launch, the
+Codex session UUID when available, preparation/execution outcome including
+incomplete or unknown state, and private output/artifact paths. A session UUID
+is distinct from a delegated agent identifier; an agent identifier is included
+only when needed for provenance. Missing UUIDs are never invented. Earlier
+attempts and artifacts survive failure and resume without overwritten
+provenance.
+
+The attempt API accepts a locked sandbox, validated source Work/owner, initial
+or exact-session resume identity and process invocation; it returns retained
+completed, incomplete or unknown state. It invalidates disposition before an
+identified initial/resumed launch attempt, including failed or rejected
+requests. Unsafe identity refuses without updating the record. Execution writes
+binding and attempt fields, never disposal approval: the
+[disposition owner](../cleanup-disposition/README.md) supplies review and
+preservation authority using this invalidation and current attempt identity.
+
+### **AC-2 TODO** Protect execution through safe recovery
+
+Automatic exclusion starts before launch and lasts until execution and every
+descendant capable of accessing workspace/private output have stopped and
+results are retained. A wrapper crash cannot leave operating descendants after
+exclusion ends; descendants cannot escape the protected lifetime. Normal
+completion, interruption, interrupted updates and crashes preserve prior
+outcomes/artifacts and permit only safe reacquisition.
+
+If stoppage or observation of all descendants cannot be established, the marker
+retains unknown execution and refuses later launch/removal. OS release after
+process death alone establishes neither completion nor disposability; no stale
+active bit requires manual clearing. The orchestrator owns review/disposal,
+not manual liveness unlocking.
+
+Host recovery accepts the same locked identity plus stoppage/preservation
+evidence. It refuses while safety is unresolved and retains earlier results
+before permitting later action. Successful recovery establishes stoppage and
+preservation under the lock. These are semantic interfaces with explicit
+supported OS mechanisms and limits, not fixed Python signatures or a new
+controller.
+
+## Dependencies
+
+- **TODO** [Stable lock and durable marker](../lock-and-marker/README.md):
+  supplies exclusive validated scope and durable record updates before this
+  protocol extends the marker.
+
+## Links
+
+- [Native execution](../../../execution/README.md): owns CLI inputs, native
+  routing, readiness/model authorization and actual model runs; this Work owns
+  the shared attempt/recovery APIs and authorizes no model run or sandbox probe.

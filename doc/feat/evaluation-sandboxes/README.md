@@ -1,54 +1,34 @@
 # Managed evaluation sandboxes
 
-Preserve the approved direction for project-scoped temporary sandboxes: trusted
-online workspace preparation, enforced native Codex execution, retained output
-and session-scoped measurements. This is a new planning parent with direct
-leaves, established independently of the historical shallow-clone tree.
-It changes no executable behavior or current linked-worktree policy.
+## Purpose
 
-Historical planning baseline: `master` at
-`21d22e7847842d41aa34800593b6b193129c55f8` (#314) has manual clone-preparation,
-runtime and import contracts, existing `worktree-create` and native Make setup,
-but no managed sandbox targets. Frozen
-[#315](https://github.com/msitarz/ataraxia/pull/315) at
-`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input.
-Historical integration base was merged #316 at
-`a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`. The maintainer approved reconciling
-PR #315 onto it, retaining useful manual inputs at the
-[Work-owned inputs](preparation-input.md). Those inputs preserve immutable
-provenance. The additional [isolation findings](isolation-input.md) retain the
-bounded standalone model result and separate project setup evidence from the
-retired shallow-clone tree. Preparation evidence supports only the tested Darwin
-Intel deterministic condition; it establishes neither filtered-answer exclusion
-nor model-session isolation, and did not capture the full effective environment.
+Provide project-scoped temporary workspaces whose preparation, restricted
+execution, retained output and accepted import have one coherent ownership
+contract.
 
-Before this ownership correction at `0a83600a6be11daa369ddbfd2ca3d421fae75e1c`,
-managed preparation/runtime planning already existed while import and
-communication remained in the shallow-clone tree. The correction moves their
-owners without delivering commands.
+## Goals
 
-```mermaid
-flowchart LR
-    B[Before: managed preparation/runtime, shallow-tree import/communication]
-    B --> G[Delivered reconciliation: owners and Work-owned inputs]
-    subgraph Proposed[Proposed: project managed root]
-        W[Child-readable workspace: clone, tools, scratch]
-        P[Private control: auth, Codex state, raw sessions, reviewer outputs]
-        C[Create and list/remove] --> W
-        E[Enforcement and readiness] --> X[Native sandbox-exec]
-        X --> W
-        X --> P
-        X --> A[Accepted artifact import]
-        Q[Executor communication Investigation] --> X
-        P --> R[Conditional session report]
-    end
-    G --> C
-    G --> E
-    G --> I[Statistics-tool Investigation]
-    I --> R
-```
+- Compose delivered creation with native runtime readiness and execution.
+- Share safe root, ownership and lifecycle rules across sandbox commands.
+- Retain attributable output for accepted Work-branch delivery.
+- Provide supported session reports or an explicit reviewed no-fit disposition.
+- Promote lasting command usage and supported-condition limits to their owner.
 
-## Shared root and ownership
+## Non-Goals
+
+- Authorize sandbox probes, model runs, host-auth reads or statistics adoption.
+- Change ordinary linked-worktree or Work delivery policy.
+- Adopt a default sandbox or statistics policy from a recommendation.
+- Run duplicate implementations of the retired runtime contracts.
+
+## Mechanisms
+
+`script/sandbox.py` and the Make interface deliver managed creation;
+[usage guidance](../../evaluation-sandboxes.md) owns its current interface and
+limits. The remaining children extend that machinery using native Codex
+controls rather than a new sandbox framework or controller service.
+
+### Shared root and ownership
 
 The default child location is `<system temp>/<project name>/sandboxes/<NAME>`.
 Resolve system temp with `tempfile.gettempdir()` using its native
@@ -83,7 +63,56 @@ to child commands even if physically beneath that root. A prepared workspace
 does not itself enforce isolation. Source/history and command-network denial
 remain distinct from the host transport needed to call the model service.
 
-## Children and gates
+## Visuals
+
+At verified revision `44f40de`, creation prepares an independent shallow clone,
+performs native setup/readiness and retains failed preparation state. Runtime,
+lifecycle locks, discovery, removal, import and reporting below are proposed:
+
+```mermaid
+flowchart LR
+    C[Delivered: sandbox-create] --> W[Child workspace: clone, tools, scratch]
+    C --> P[Private preparation record]
+    P --> L[Proposed: lifecycle marker and stable lock]
+    L --> D[Proposed: read-only discovery and guarded removal]
+    L --> X[Proposed: native execution and retained artifacts]
+    E[Proposed: enforced readiness] --> X
+    Q[Communication findings] --> X
+    X --> A[Proposed: accepted Work-branch import]
+    X --> R[Conditional private session report]
+    S[Statistics findings] --> R
+```
+
+The private side contains auth, Codex state, raw sessions and reviewer outputs;
+child commands cannot read it. Statistics may conclude that no method fits.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Compose owned sandbox delivery
+
+Reviewed child outcomes compose from owned preparation to enforced execution,
+retained output and accepted Work-branch import, with supported trustworthy
+reports or an explicit independently reviewed unsupported/no-fit reporting
+disposition. Root/owner resolution agrees across commands; failed preparation,
+denied launch, exact resume, retained work and accepted tip/base import retain
+their child-owned boundaries. Ordinary Work delivery and independent review
+remain governed by [their owners](../../orchestrator.md#review-and-return).
+
+A no-fit finding establishes no report implementation or automatic adoption;
+any unsatisfied integration outcome receives a reviewed
+[Work lifecycle disposition](../../workflow.md#lifecycle).
+
+### **AC-2 TODO** Publish discoverable command usage and limits
+
+As real commands deliver, lasting usage and supported-condition limits are
+promoted from Work-owned inputs to one
+[focused owner](../../evaluation-sandboxes.md), discoverable from Make help,
+documentation, orchestrator and evaluation routes before Work cleanup.
+Measurement limits stay explicit. CONTRIBUTING continues to route tool discovery
+without gaining a sandbox procedure section; recommendations and estimates do
+not become policy.
+
+## Children
 
 - **DONE** Preparation and ownership reconciliation: preserved manual input,
   moved import and communication into direct children and superseded the empty
@@ -115,44 +144,40 @@ remain distinct from the host transport needed to call the model service.
   or record an explicit reviewed unsupported/no-fit disposition; no tool
   adoption is predetermined.
 
-The maintainer-authorized #315 correction assigns existing artifact import and
-executor communication directly to this parent. Creation supersedes manual clone
-preparation; enforcement/execution supersede the old runtime. The residual
-shallow-clone tree was abandoned at maintainer request. Its registry selector
-cleanup is recorded as complete in the historical
-[shallow-clone parent map](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/README.md#implementation-follow-up).
-Do not run concurrent duplicate runtime implementations. Each leaf is one
-coherent review outcome;
-reassess its complete expected and actual diff against the
-[five-minute review target](../../workflow.md#scope-and-sizing), splitting
-before execution/publication when required.
+## Additional context
 
-No implementation, sandbox probes, model runs, statistics adoption, host-auth
-reads, trial authorization or default-policy adoption is included here. Runtime
-validation needs separately approved frozen conditions and model/effort/budget;
-existing import, publication, independent review and latest-head CI gates
-remain. Consequential policy changes follow the
-[WDR route](../../wdr-workflow.md).
+Historical planning baseline: `master` at
+`21d22e7847842d41aa34800593b6b193129c55f8` (#314) has manual clone-preparation,
+runtime and import contracts, existing `worktree-create` and native Make setup,
+but no managed sandbox targets. Frozen
+[#315](https://github.com/msitarz/ataraxia/pull/315) at
+`a8fd90ccb62f9593df499082e19a1a8c17eddb13` is frozen comparison input.
+Historical integration base was merged #316 at
+`a1a9c1dbbc5be6ccfad7a2914be4f0feb6255b67`. The maintainer approved reconciling
+PR #315 onto it, retaining useful manual inputs at the
+[Work-owned inputs](preparation-input.md). Those inputs preserve immutable
+provenance. The additional [isolation findings](isolation-input.md) retain the
+bounded standalone model result and separate project setup evidence from the
+retired shallow-clone tree. Preparation evidence supports only the tested Darwin
+Intel deterministic condition; it establishes neither filtered-answer exclusion
+nor model-session isolation, and did not capture the full effective environment.
 
-## Acceptance
+Before ownership reconciliation at `0a83600a6be11daa369ddbfd2ca3d421fae75e1c`,
+managed preparation/runtime planning existed while import and communication
+remained in the shallow-clone tree. The delivered reconciliation moved their
+owners and retained Work-owned inputs; later creation delivery supplied the
+managed command. Claims in the preparation input that no managed commands exist
+refer to its historical baseline.
 
-- **AC-1 TODO** The reviewed child outcomes compose from owned preparation to
-  enforced execution, retained output and accepted Work-branch import, with
-  trustworthy supported reports or an explicit independently reviewed
-  unsupported/no-fit reporting disposition, without duplicate owners or changes
-  to ordinary Work delivery.
+The maintainer-authorized #315 correction assigned artifact import and executor
+communication directly here. Creation supersedes manual clone preparation;
+enforcement/execution supersede the old runtime. The residual shallow-clone
+tree was abandoned at maintainer request, with selector cleanup retained in its
+[historical map](https://github.com/msitarz/ataraxia/blob/ea784d4dbf02a87486842a2012ca9da852b94379/doc/feat/reviewable-workflow-v2/trial-preparation/workflow-efficiency/shallow-executor-clones/README.md#implementation-follow-up).
 
-  Validation: independent integration review of child evidence and owner links,
-  including consistent root/owner resolution, failed preparation, denied launch,
-  exact resume, retained work, accepted tip/base and import boundaries; reuse
-  leaf evidence rather than repeat probes or model runs. A no-fit finding does
-  not fake report implementation or automatic adoption; follow reviewed Work
-  lifecycle disposition for any unsatisfied integration outcome.
-- **AC-2 TODO** On real command delivery, lasting usage and supported-condition
-  limits are promoted from Work-owned inputs to one focused owner, discoverable
-  from Make help, documentation, orchestrator and evaluation routes; measurement
-  limits remain explicit.
-
-  Validation: independently walk those routes and verify promotion before Work
-  cleanup. CONTRIBUTING routes existing tool discovery and gains no sandbox
-  procedure section; recommendations and estimates do not become policy.
+Runtime evidence requires separately approved frozen conditions and
+model/effort/budget. [Empirical evaluation](../../evaluation.md) owns execution
+conditions; [Work sizing](../../workflow.md#scope-and-sizing) owns expected and
+actual review scope, and [publication](../../pull-requests.md#publishing) and
+[latest-head CI](../../validation.md) retain their independent/maintainer gates.
+Consequential policy changes follow the [WDR route](../../wdr-workflow.md).
