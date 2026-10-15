@@ -6,6 +6,14 @@ committed migration plan. This is a bounded migration input, not a permanent
 inventory or completion record. The completed inventory Work established this
 scope assessment; its accepted contract is retained in Git history.
 
+Subsequent scope decision: [tooling](tooling/README.md) now requires complete
+ac-check retirement, including its orphan work-path helper and dedicated tests.
+The separate [work-check Work](work-check/README.md) owns parser selection and
+new structural checking after contract migration. Conditional retention options
+and contract counts below describe the reviewed inventory baseline, not the
+current decision or an automatically maintained inventory. Final verification
+also includes this added child.
+
 ## Active contracts
 
 The pre-migration scope contains **31 Work READMEs**: two new-format references
