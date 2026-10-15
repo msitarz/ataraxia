@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+Do not read root repository README.md. It is for humans only.
+
 ## Roles
 
 The primary agent in the maintainer’s conversation is the orchestrator,
