@@ -1,72 +1,108 @@
 # Adopt condition complexity guidance and checks
 
-Deliver the [parent outcome](../README.md) after independent review of the
-[investigation](../investigate/README.md). Start with a concrete compatible
-candidate, threshold, supported settings, scope and bounded repair inventory;
-unresolved gaps require maintainer steering before adoption.
+## Purpose
 
-Depend also on integrated
-[validated core guidance](../../validated-core/README.md). Serialize edits to
-the shared engineering owner after that Work; link to its boundary rules rather
-than duplicating them. The capability investigation does not depend on it.
+Deliver readable-condition guidance and blocking checks through the normal
+Make/CI boundary using the independently reviewed investigation outcome.
 
-Integrate guidance at
-[engineering conventions](../../../engineering.md#code-style), reviewing the
-surrounding composition/type-precision rules as a whole. Include a compact
-seed-derived before/after example and clear distinctions between simple guards,
-complete consumed-record validation, typed pure decisions, function complexity
-and dense conditions. Cover `if`,
-`elif` and `match` guards and prohibit relocating complexity or extracting
-helpers merely to lower scores. Link to machine configuration rather than
-duplicating settings inventories.
+## Goals
 
-Add the reviewed complexipy development dependency and updated lockfile through
-normal Make setup/locking. Reuse or minimally extend existing Make lint/CI
-routes with focused path support and consistent file discovery. Apply
-complementary Ruff settings only when supported by the reviewed evidence.
-Findings above the adopted limit must fail with useful file/function/location
-diagnostics and a repair direction; advisory output alone is insufficient.
-Preserve agreed exact-threshold behavior. No snapshots or suppressions may
-silently grandfather violations, and no broad exception may replace a bounded
-repair.
+- Integrate lasting guidance that explains readable conditions and truthful tool
+  limits.
+- Enforce the reviewed thresholds and scope with a locked dependency and useful
+  diagnostics.
+- Enable enforcement through bounded repairs that preserve affected behavior.
 
-Repair only violations necessary to enable prevention at the then-integrated
-baseline. Preserve parent boundary/error behavior and existing types. Stop for a
-reviewed split if policy/configuration/repairs exceed a short sitting. Permanent
-tests exercise our integration and affected compatibility; upstream capability
-probes belong to the investigation's historical evidence.
+## Non-Goals
 
-- **AC-1 TODO** Engineering guidance defines the condition-complexity ban,
-  readable counterexamples and a seed-derived repair while accurately explaining
-  tool limits, simple guards and cohesive extraction.
+- Resolve investigation capability gaps by silently broadening exceptions or
+  weakening thresholds.
+- Extend repairs beyond violations necessary for enforcement at the
+  then-integrated baseline.
 
-  Validation: independently review the affected engineering section and examples
-  against the parent, investigation and integrated boundary guidance, including
-  simple type prerequisites and dense match guards. Run documentation and
-  acceptance checks.
+## Mechanisms
 
-- **AC-2 TODO** The locked reviewed complexipy candidate and any approved
-  complementary Ruff configuration enforce agreed thresholds/scope through
-  normal Make and required CI; focused paths and full discovery work
-  consistently and the repository passes after bounded repairs.
+- [Engineering conventions](../../../engineering.md#code-style) own the adopted
+  guidance alongside composition and type-precision rules.
+- A locked complexipy development dependency and evidence-supported
+  complementary Ruff settings provide automatic checks.
+- Existing Make setup, locking, lint, and required CI routes provide dependency
+  management and enforcement.
+- Repository integration regressions cover configuration, routing, and affected
+  compatibility rather than upstream scoring algorithms.
 
-  Validation: add criterion-marked integration regressions for our real Make
-  routing/configuration using passing, exact-threshold and failing fixtures;
-  assert statuses and useful diagnostics, focused scope and transient-directory
-  exclusion. Run selected tests and lint through Make and inspect lock/setup/CI
-  wiring. Full latest-head CI remains the ordinary merge gate.
+## Acceptance criteria
 
-- **AC-3 TODO** Necessary repairs preserve observable accepted/rejected inputs,
-  relevant documented errors/causes, meaningful types, state invariants, safety
-  and necessary side-effect ordering, including affected validator and extension
-  compatibility. Validation order and branch organization may change without
-  changing that contract.
+### **AC-1 TODO** Readable condition guidance
 
-  Validation: inspect affected call paths and run focused existing behavior/type
-  checks through Make. Add criterion-marked regressions only for uncovered
-  affected boundaries: missing/wrong-type/Boolean/negative identity, valid zero,
-  lifecycle diagnostics, malformed persisted state and valid extensions. If no
-  repairs are needed, independently review the inventory under this criterion.
-  Pure-rule tests use valid typed values; constructor/boundary tests cover whole
-  consumed records and cross-field failures. Effects remain covered at their
-  owning adapter/integration boundary under existing testing guidance.
+Engineering guidance defines the
+[parent condition-complexity boundary](../README.md#shared-guidance-boundary)
+with readable counterexamples and a compact seed-derived before/after repair.
+
+- The guidance integrates with the surrounding composition and type-precision
+  rules and links to integrated validated boundary rules instead of duplicating
+  them.
+- Examples distinguish simple guards, complete consumed-record validation, typed
+  pure decisions, function complexity, and dense conditions, including type
+  prerequisites and dense `match` guards.
+- The explanation accurately describes the reviewed tool limits, remaining
+  manual review obligations, and cohesive extraction.
+- Machine configuration is linked rather than copied into a settings inventory.
+
+### **AC-2 TODO** Blocking Make and CI enforcement
+
+The locked reviewed candidate and any approved complementary Ruff settings
+enforce the agreed limits through normal Make and required CI.
+
+- Dependency setup and locking use the existing Make machinery and include the
+  updated lockfile.
+- Focused paths and full discovery apply the agreed scope consistently,
+  excluding transient directories.
+- Findings above the adopted limit fail with useful file, function, and location
+  diagnostics and a repair direction, while exact-threshold behavior matches the
+  reviewed recommendation.
+- Passing, exact-threshold, and failing cases through the real Make route
+  demonstrate statuses, diagnostics, focused scope, and transient-directory
+  exclusion.
+- Retained integration regressions exercise repository routing and configuration
+  under [test ownership](../../../test-ownership.md).
+- Snapshots, suppressions, or broad exceptions do not silently grandfather
+  violations or replace bounded repairs.
+
+### **AC-3 TODO** Compatible bounded repairs
+
+The repository passes the adopted enforcement after only necessary repairs at
+the then-integrated baseline.
+
+- Repairs preserve the
+  [parent preservation boundary](../README.md#shared-preservation-boundary),
+  existing meaningful types, and integrated validated boundary guidance.
+- The repair inventory is independently reviewable even if no repairs are
+  needed.
+- Focused existing behavior and type checks cover affected call paths and the
+  parent seed boundaries, including valid zero, with regressions added only for
+  uncovered affected boundaries.
+- Pure-rule tests use valid typed values.
+- Constructor and boundary tests cover whole consumed records and cross-field
+  failures.
+- Effects remain covered at their owning adapter or integration boundary under
+  existing [testing guidance](../../../testing.md).
+
+## Dependencies
+
+- TODO [Capability and threshold investigation](../investigate/README.md)
+  supplies the independently reviewed compatible candidate, threshold, supported
+  settings, scope, and bounded repair inventory required before adoption begins.
+- TODO [Validated core guidance](../../validated-core/README.md) supplies
+  integrated boundary rules before this Work edits the shared engineering owner.
+
+## Links
+
+- [Parent contract](../README.md) owns shared scope, guidance, preservation
+  boundaries, and the frozen seed.
+
+## Additional context
+
+Unresolved capability gaps require maintainer steering before adoption.
+Policy, configuration, or repairs that exceed a short review sitting require a
+reviewed split under the [Work workflow](../../../workflow.md#scope-and-sizing).
