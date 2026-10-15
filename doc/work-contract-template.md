@@ -41,23 +41,32 @@ Example:
 
 <!-- List of acceptance criteria. REQUIRED.
 
-Acceptance criteria define completion of this Work, which must cover Goals. A single acceptance criterion might cover multiple goals. Multiple acceptance criteria might cover a single goal.
+- Each criterion defines one observable outcome. Together, the criteria fulfill the Work’s purpose and goals.
+- Name the outcome in the heading and state what becomes possible or changes when it is delivered.
+- Include only the conditions, boundaries, and affected interfaces needed to determine completion.
+- Split independently assessable outcomes into separate criteria.
+- Describe the delivered result rather than listing implementation tasks or instructions to the executor.
+- Leave implementation details owned by child Works in those contracts.
 
 Omit empty criterion subheadings.
+-->
 
-Example:
+<!-- AC code outcome example:
 
 ### **AC-1 TODO** Criterion name
 
-
-Describe the criterion’s outcome, focusing on consumer-facing behavior. Include affected interfaces and useful types, and explain relevant additions, changes, or removals. Leave implementation details owned by child Works in those contracts.
-
-Example:
 `make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
 
 #### What exists
 
 Describe existing behavior or machinery that helps explain this criterion, including what can be reused. Omit when unnecessary.
+-->
+
+<!-- AC guidance outcome example:
+
+### **AC-2 TODO** Complete record validation
+
+Engineering guidance requires constructors to validate every consumed field and cross-field invariant before returning a domain value. Rejection may stop at the first error; successful construction guarantees all invariants hold. A compact example shows valid construction and rejection of an invalid field combination.
 -->
 
 ## Dependencies
