@@ -1,45 +1,57 @@
 # Algebraic data type investigation
 
-Investigate whether Python variant models and structural `match` with simple
+## Purpose
+
+Determine whether Python variant models and structural `match` with simple
 guards make validated lifecycle states clearer and exclude invalid combinations.
-This bounded Investigation produces a recommendation and small illustrative
-examples; it does not adopt a dependency, framework, parser or repository-wide
-rewrite. Use the [glossary meaning](../../ubiquitous-language.md) of algebraic
-data types. A later concrete adoption Work is required if justified.
 
-The seed is the maintainer's
-[complexity comment on PR #328](https://github.com/msitarz/ataraxia/pull/328#discussion_r4272687628)
-and frozen
-[`_validate_record` at reviewed head 47779e4](https://github.com/msitarz/ataraxia/blob/47779e4dbf3df31d0c4ebcffd9d074ba493ccff3/script/sandbox.py#L465-L550).
-The
-[flat SandboxRecord and Marker](https://github.com/msitarz/ataraxia/blob/47779e4dbf3df31d0c4ebcffd9d074ba493ccff3/script/sandbox.py#L38-L92)
-use a Literal state and optional diagnostics; runtime validation requires all
-four diagnostic strings for `failed` and forbids diagnostic fields for
-`preparing`/`ready`. Destination device/inode form product data: both values are
-required nonnegative integers excluding Boolean values. The
-[condition complexity Work](../conditional-complexity/README.md) preserves the
-observable input/error/safety contract and owns guidance/enforcement; it permits
-validation order and branch organization to change. This Work owns the separate
-question of variant-specific fields, invariants and typed handling.
+## Goals
 
-Compare a union of frozen dataclass variants, a tagged TypedDict union and the
-existing flat record. Model shared ownership/identity separately from lifecycle
-variants where it clarifies responsibility; avoid duplicating shared fields or
-inventing lifecycle rules. `match` selection alone is not an algebraic type
-model. The delivered [selection guidance](../../engineering.md#code-style) owns
-the separate question of suitable single-value branching; the delivered
-[finite-string-domain guidance](../../engineering.md#preserve-type-precision)
-records the recommendation for Literal and domain ownership. That
-concern is separate from this Work's variant-specific fields and state-specific
-field relationships. The delivered
-[nested-exception guidance](../../engineering.md#code-style) and these Works
-are related, not merge dependencies. PR #328 remains independent; inspect
-then-integrated source when executing this Investigation.
+- Recommend whether and where a variant model improves the sandbox lifecycle
+  seed.
+- Compare representation, complete record construction, typed decisions, and
+  serialization through small illustrative examples.
+- Distinguish observed runtime and checker behavior from remaining uncertainty.
 
-The following reduced illustration shows a proposed sum of lifecycle variants,
-not current or approved code. Shared marker fields and four-string diagnostics
-would have their own product records; serialization must still preserve the
-seed's schema and JSON-compatible extension fields.
+## Glossary
+
+- **Algebraic data type:** uses the
+  [shared meaning](../../ubiquitous-language.md).
+
+## Non-Goals
+
+- Adopt a dependency, framework, parser, or repository-wide rewrite.
+- Replace the guidance and enforcement owned by the
+  [condition complexity Work](../conditional-complexity/README.md).
+- Adopt the general engineering guidance owned by the
+  [validated core guidance Work](../validated-core/README.md).
+- Change lifecycle rules, the seed's observable contract, or live resource
+  safety requirements.
+
+## Mechanisms
+
+- Frozen dataclass unions, tagged TypedDict unions, and the existing flat record
+  are the representation candidates.
+- Structural `match` with simple guards illustrates typed variant handling;
+  selection alone does not establish an algebraic type model.
+- Focused constructors or `__post_init__` establish consumed-field and
+  cross-field invariants at the complete record boundary.
+- Locked Pyrefly and bounded runtime examples provide evidence about the
+  candidates through existing Make targets.
+
+## Visuals
+
+The frozen
+[SandboxRecord and Marker at 47779e4](https://github.com/msitarz/ataraxia/blob/47779e4dbf3df31d0c4ebcffd9d074ba493ccff3/script/sandbox.py#L38-L92)
+use a Literal state and optional diagnostics, with relationships enforced by
+[`_validate_record`](https://github.com/msitarz/ataraxia/blob/47779e4dbf3df31d0c4ebcffd9d074ba493ccff3/script/sandbox.py#L465-L550).
+All four diagnostic strings are required for `failed`, while diagnostic fields
+are forbidden for `preparing` and `ready`; destination device/inode are product
+data requiring two nonnegative integers that exclude Boolean values.
+
+The reduced proposal below expresses lifecycle as a sum, with separate product
+records for shared marker fields and four-string diagnostics; it is illustrative
+rather than current or approved code.
 
 ```python
 @dataclass(frozen=True)
@@ -70,66 +82,111 @@ def failure_details(state: Lifecycle) -> FailureDiagnostics | None:
             assert_never(state)
 ```
 
-Boundary validation is still required. A class pattern `int()` accepts Boolean
-values; annotations and `frozen=True` do not establish nonnegativity or runtime
-field types. Compare candidates at a complete consumed-record boundary,
-constructing truthful validated product inputs/results and lifecycle sum
-variants. Focused constructors or `__post_init__` must enforce consumed fields
-and cross-field invariants, including diagnostics associated with the state.
-Simple sequential guards may be clearer inside that boundary; isolated scalar
-helpers alone do not establish record validity.
+## Acceptance criteria
 
-The [validated core guidance Work](../validated-core/README.md) owns the general
-engineering outcome, including complete validation that permits fail-fast
-errors and validated construction of new results/state transitions without
-mutation or bypass. This Investigation applies that proposed direction when
-comparing representations; it may proceed independently and must reconcile its
-recommendation with the adopted guidance before any later adoption. Illustrate
-external parsing, complete record construction, a typed pure decision such as
+### **AC-1 TODO** Representation recommendation
+
+A short comparison recommends whether and where a variant model improves the
+seed.
+
+- Frozen dataclass unions, tagged TypedDict unions, and retained flat records
+  each have an assessment of fit, pros, cons, and remaining uncertainty.
+- Compact before/after models explain product versus sum data, variant-specific
+  fields, state-specific relationships, and typed exhaustive handling.
+- The comparison assesses candidate compatibility with the frozen seed and
+  existing [engineering/type contracts](../../engineering.md).
+- The comparison considers callers, construction, mutation/update needs,
+  immutable field ownership, and JSON roundtrips rather than treating frozen
+  declarations as proof of immutable values.
+- Shared ownership/identity is modeled separately from lifecycle variants where
+  that clarifies responsibility, without duplicating shared fields or inventing
+  lifecycle rules.
+- Simple guards and boundaries where independent `if` validation remains clearer
+  are identified without moving dense Boolean conditions into match guards.
+- Checked evidence is distinguished from assumptions, and a concrete later
+  adoption scope is recommended only if justified.
+
+### **AC-2 TODO** Complete boundary and compatibility comparison
+
+The examples show each candidate across the complete consumed-record boundary.
+
+External parsing, complete record construction, a pure typed decision such as
 `failure_details(state: Lifecycle) -> FailureDiagnostics | None`, and
-serialization as distinct responsibilities. Pure decisions consume validated
-domain values without raw/unvalidated representations, repeated defensive type
-checks or filesystem/process probes. Typed path/location values and pure
-transformations of them are permitted under the declared input/output contract.
-A decision invoking
-an effectful port is not pure. Compare immutable field ownership as well as
-frozen dataclass declarations; frozen records containing mutable containers do
-not establish immutable values.
+serialization have distinct responsibilities and interfaces under the
+[validated core boundary rules](../validated-core/README.md#acceptance-criteria).
 
-Validate a complete consumed record once per boundary crossing. Fields needed
-for ownership, persistence or security remain consumed even if a pure decision
-does not read them: generation, schema, owner and destination device/inode
-cannot be dropped. Preserve unrelated extensions as opaque data subject to
-required transport/persistence compatibility; avoid speculative validation of
-unused external schema. Compare callers, construction, mutation/update needs and
-JSON roundtrips, retaining missing/wrong-type/Boolean/negative rejection,
-relevant documented errors/causes, diagnostic presence semantics and valid
-extensions. Mutable filesystem generation/inode and held-lock freshness still
-require effectful adapter checks under lock at the lifecycle's required points;
-a frozen record cannot ensure live resource safety or replace fail-closed TOCTOU
-checks. Do not move dense Boolean conditions into match guards. Python `match`
-is not inherently exhaustive: verify narrowing and missing-variant rejection
-using `assert_never` or another supported mechanism under locked Pyrefly (1.3.1
-at planning baseline `cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`). Observed
-checker behavior remains unknown; do not use casts, broad types or suppression
-to claim completeness.
+- Complete consumed-field and cross-field validation precedes pure typed
+  decisions, including truthful validated product inputs/results and lifecycle
+  variants rather than isolated scalar checks alone.
+- Ownership, persistence, and security fields remain consumed, including
+  generation, schema, owner, and destination device/inode even when the pure
+  decision does not read them.
+- Missing, wrong-type, Boolean, and negative values retain their rejection,
+  alongside relevant documented errors/causes and diagnostic presence semantics.
+- Serialization preserves the seed's schema and valid JSON-compatible extension
+  fields as opaque data under required transport/persistence compatibility,
+  without speculative validation of unused external schema.
+- Pure decisions use valid typed values without raw representations, repeated
+  defensive type checks, filesystem/process probes, or effectful ports, while
+  permitting typed path/location values and pure transformations under their
+  declared input/output contract.
+- Bounded runtime examples run through Make show valid roundtrips, whole-record
+  invalid-field and cross-field cases, and extension compatibility.
 
-- **AC-1 TODO** A short reviewable comparison recommends whether and where a
-  variant model improves the seed, comparing dataclass unions, tagged TypedDict
-  unions and retained flat records. It explains product versus sum data, typed
-  exhaustive handling, simple guards and boundaries where independent `if`
-  validation remains clearer. Complete consumed-record validation precedes pure
-  typed decisions and preserves ownership/persistence/security fields and opaque
-  extensions; checked evidence and uncertainty are distinct.
+Model invariants and live resource safety remain distinct in the comparison.
+Mutable filesystem generation/inode and held-lock freshness still require
+effectful adapter checks under lock at the lifecycle's required points; frozen
+records do not replace fail-closed checks against changes between checking and
+use. Resource revalidation evidence stays at its effectful adapter/lifecycle
+boundary, separately from pure-rule examples.
 
-  Validation: independently review compact before/after models, affected
-  deserialization/typed-consumer/serialization interfaces and candidate
-  tradeoffs against the frozen seed and existing engineering/type contracts. Run
-  bounded typing/runtime examples through Make during execution, showing useful
-  narrowing, missing-variant diagnostics, valid roundtrips and whole-record
-  invalid-field/cross-field cases and extension compatibility. Review live
-  resource revalidation separately from model invariants. Pure-rule examples use
-  valid typed values; adapter/lifecycle evidence stays at its owning effectful
-  boundary. Preserve one-time tool probe results under test ownership; recommend
-  a concrete later adoption scope only if justified. Run documentation and
-  acceptance checks; split before the comparison exceeds a short sitting.
+### **AC-3 TODO** Observed typing guarantees and limits
+
+Bounded typing examples establish what the locked checker supports for the
+candidate representations.
+
+- Examples run through Make show useful narrowing and missing-variant
+  diagnostics using `assert_never` or another supported mechanism.
+- Findings explain that Python `match` is not inherently exhaustive and do not
+  use casts, broad types, or suppressions to claim completeness.
+- Findings distinguish static handling from runtime invariants, including that
+  `int()` class patterns accept Boolean values and annotations or `frozen=True`
+  do not establish runtime field types or nonnegativity.
+- One-time probe methods and observed results are retained under
+  [test ownership](../../test-ownership.md) rather than treated as ongoing
+  regression coverage.
+
+#### What exists
+
+Pyrefly is locked at 1.3.1 at planning baseline
+`cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`; narrowing and missing-variant
+behavior have not yet been observed for these examples.
+
+## Dependencies
+
+There is no prerequisite Work for the comparison. The
+[validated core guidance Work](../validated-core/README.md) owns general
+validation, immutable values, pure rules, and adapter boundaries; this
+Investigation applies its proposed direction independently and reconciles its
+recommendation with adopted guidance before any later adoption.
+
+## Links
+
+- [PR #328 complexity comment](https://github.com/msitarz/ataraxia/pull/328#discussion_r4272687628):
+  the seed for this separate representation question; the PR remains independent
+  and execution inspects then-integrated source.
+- [Condition complexity Work](../conditional-complexity/README.md): owns
+  guidance/enforcement and the seed's observable input/error/safety contract,
+  permitting validation order and branch organization to change.
+- [Selection and nested-exception guidance](../../engineering.md#code-style)
+  and
+  [finite-string-domain guidance](../../engineering.md#preserve-type-precision):
+  delivered guidance for single-value branching, nested exceptions, Literal, and
+  domain ownership, related to this Investigation without merge dependencies.
+
+## Additional context
+
+The delivery is a bounded recommendation and small illustrative examples that
+fit a short review sitting. Any production adoption requires a later concrete
+Work; this Investigation does not establish production readiness or resolve the
+representation choice in advance.
