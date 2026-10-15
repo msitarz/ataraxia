@@ -52,8 +52,8 @@ not silently converted into current instructions or completed outcomes.
 - **DONE** Managed sandbox contracts rewritten with preserved outcomes and
   ownership
   ([managed evaluation sandboxes](../../evaluation-sandboxes/README.md)).
-- **TODO** [Package documentation contracts](package-readmes/README.md): migrate
-  package README planning and documentation outcomes.
+- **DONE** Package documentation contracts rewritten with preserved outcomes and
+  ownership ([package README documentation](../../package-readmes/README.md)).
 - **TODO** [Conditional complexity contracts](conditional-complexity/README.md):
   migrate investigation, adoption, and shared-owner dependencies.
 - **TODO** [Standalone guidance and investigation](standalone/README.md): review
