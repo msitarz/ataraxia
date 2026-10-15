@@ -2,9 +2,8 @@
 
 Read when planning, executing, or delivering a Work. For contract authoring and
 review, follow [Work definition](work-definition.md). Read its applicable
-[Investigation](work-definition.md#investigations),
-[Evaluation](work-definition.md#evaluations), or
-[Prototype](work-definition.md#prototypes) section when executing that kind of
+[Investigation](work-definition.md#investigations) or
+[Evaluation](work-definition.md#evaluations) section when executing that kind of
 Work.
 
 ## Scope and sizing
