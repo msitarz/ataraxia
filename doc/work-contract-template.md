@@ -3,14 +3,6 @@
 <!-- Replace the heading with the Work name and remove all instruction comments
 before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Keep uniform vocabulary without mixing semantic meanings for a single word. Reuse the same word for the same meaning avoiding synonyms. -->
 
-## Glossary
-
-<!-- List of name definitions of a single purpose used within this contract that have multiple meanings otherwise.
-
-Example:
-- model: data structure for validation purposes, not an AI or a trading model.
--->
-
 ## Purpose
 
 <!-- Write one sentence stating **why** this change is needed. REQUIRED. -->
@@ -18,6 +10,14 @@ Example:
 ## Goals
 
 <!-- List goals of this Work contract, each in one sentence. This section is meant to summarize intended capabilities. REQUIRED. -->
+
+## Glossary
+
+<!-- Define terms whose meaning could be ambiguous in this Work. Reuse established repository meanings and link to shared definitions where useful. Omit this section when unnecessary.
+
+Example:
+- Model: a data structure whose constructor establishes its field and cross-field invariants.
+-->
 
 ## Non-Goals
 
