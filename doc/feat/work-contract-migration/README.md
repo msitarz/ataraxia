@@ -16,8 +16,8 @@ instructions and acceptance bookkeeping needed to define and deliver them.
 
 ## Glossary
 
-- **Active contract:** a current Work README and any linked specification that
-  defines required outcomes, including planning parents and Investigations.
+- **Active contract:** a current Work README that defines required outcomes,
+  including planning parents and Investigations.
 - **Historical input:** retained past protocols, observations, or decisions
   used as context rather than as current execution instructions.
 

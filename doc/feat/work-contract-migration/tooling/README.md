@@ -41,10 +41,11 @@ If retained, `make ac-check WORK=path/to/README.md` recognizes heading
 declarations such as `### **AC-1 TODO** Outcome`, handles nested explanatory
 headings, rejects malformed/duplicate IDs and missing names, and ignores
 fenced/commented examples. It neither scans tests nor parses Validation clauses
-nor claims completion from DONE labels. Existing supported contract-path safety
-remains intact. A decision to remove ac-check instead is explained in the
-reviewed change and reflected consistently in guidance and callers; no
-replacement checker is introduced.
+nor claims completion from DONE labels. Work inputs identify `README.md`
+contracts only; path safety remains intact. Support for separate specification
+contracts is removed with its obsolete cases. A decision to remove ac-check
+instead is explained in the reviewed change and reflected consistently in
+guidance and callers; no replacement checker is introduced.
 
 ### **AC-3 TODO** Tests cover the surviving tooling behavior
 

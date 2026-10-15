@@ -5,9 +5,10 @@ Investigation or Evaluation, also read its applicable section below.
 
 Use the [Work contract template](work-contract-template.md) for structure,
 outcome writing, and examples. Each Work is identified by its repository
-directory, with its contract in `README.md`; link supporting `spec.md` or
-`design.md` only when useful. Do not require YAML frontmatter, a journal, or
-separate human-facing and agent-facing versions of the same contract.
+directory, with its contract in `README.md`. Supporting artifacts can hold
+Investigation findings or Evaluation protocols/results; they do not define a
+second Work contract. Do not require YAML frontmatter, a journal, or separate
+human-facing and agent-facing versions of the same contract.
 
 Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 when assessing existing machinery and the remaining gap. Use an Investigation

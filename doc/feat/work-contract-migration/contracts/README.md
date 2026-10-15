@@ -21,9 +21,9 @@ approved behavior, scope, dependencies, and unresolved decisions.
 
 ### **AC-1 TODO** Every inventoried contract converted without scope drift
 
-The five child groups cover every pre-migration Work README and any linked live
-specification. Criteria state one coherent outcome each, collectively covering
-purpose and goals. Existing outcomes, safety boundaries, statuses, and
+The five child groups cover every pre-migration Work README and its linked
+supporting artifacts. Criteria state one coherent outcome each, collectively
+covering purpose and goals. Existing outcomes, safety boundaries, statuses, and
 prerequisites survive; routine checks and duplicated instructions are removed.
 Already converted examples receive a consistency review rather than gratuitous
 rewriting. Active ID/anchor references remain meaningful after splitting ACs.
