@@ -3,8 +3,8 @@
 Baseline: `2c92a906c7de1838965ff05a0c4c96c8da4409cd`, before creating this Work.
 Reviewed against `422a2d6a14078a5468723dc00132bc26d637c4b9`, which includes the
 committed migration plan. This is a bounded migration input, not a permanent
-inventory or completion record. The [inventory Work](inventory/README.md) owns
-this scope assessment; its acceptance remains subject to independent review.
+inventory or completion record. The completed inventory Work established this
+scope assessment; its accepted contract is retained in Git history.
 
 ## Active contracts
 

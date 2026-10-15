@@ -72,8 +72,8 @@ remain usable, and removal of marker infrastructure preserves unrelated tests.
 
 ## Children
 
-- **TODO** [Migration inventory](inventory/README.md): establish the complete
-  affected contract, guidance, tooling, and reference scope.
+- **DONE** [Migration inventory](inventory.md): established the contract,
+  guidance, tooling, and reference scope.
 - **TODO** [Guidance alignment](guidance/README.md): make the template the
   authoring owner and remove conflicting or duplicated instructions.
 - **TODO** [Acceptance tooling simplification](tooling/README.md): retire marker
@@ -85,7 +85,7 @@ remain usable, and removal of marker infrastructure preserves unrelated tests.
 
 ## Links
 
-- [Initial inventory](inventory.md): baseline paths, conflicts, and supporting
+- [Migration inventory](inventory.md): baseline paths, conflicts, and supporting
   artifacts for this migration.
 - [Validated core](../validated-core/README.md) and
   [sandbox discovery](../evaluation-sandboxes/lifecycle/listing/README.md):
