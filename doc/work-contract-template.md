@@ -49,6 +49,7 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 - Each criterion defines one observable outcome. Together, the criteria fulfill the Work’s purpose and goals.
 - Name the outcome in the heading and state what becomes possible or changes when it is delivered.
 - Include preconditions, expected results, relevant failure/preservation boundaries, and affected interfaces with useful signatures and types needed to determine completion. Describe inputs, outputs, behavior, and compatibility changes where relevant.
+- State measurement thresholds and the conditions needed to interpret them in the outcome when they define success.
 - Split independently assessable outcomes into separate criteria.
 - Describe the delivered result rather than listing implementation tasks or instructions to the executor.
 - Leave implementation details owned by child Works in those contracts.

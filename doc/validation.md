@@ -13,9 +13,9 @@ must be covered by CI; agent-written summaries, inventories, and review
 comments cannot establish passing checks. Local focused checks remain useful
 preparation. Independent review assesses judgments CI cannot establish.
 
-Local behavior, type and manual evidence is assessed against each Work
-criterion's own `Validation:` method. Completing that method and receiving
-independent review may establish acceptance before PR CI runs; it does not
+Assess local behavior, type, and manual evidence against the Work's stated
+outcomes under [acceptance tracing](acceptance-tracing.md#evidence).
+Independent review may establish acceptance before PR CI runs; it does not
 establish or replace CI outcomes. A criterion that explicitly requires a CI
 result remains unverified until that result is observed.
 

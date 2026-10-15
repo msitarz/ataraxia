@@ -51,8 +51,9 @@ state one action and its outcome without branching on setup flags. Multiple
 invalid inputs producing the same observable outcome normally belong in lower
 levels rather than multiplying acceptance cases.
 
-Use [acceptance tracing](acceptance-tracing.md) when a test covers a Work
-criterion. Acceptance is a test type; it does not itself require a Work marker.
+Acceptance is a test type; [Work acceptance](acceptance-tracing.md) assesses
+outcomes using the appropriate evidence, including other test types or artifact
+review.
 
 ## Pattern in the existing sample test
 
