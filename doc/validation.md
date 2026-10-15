@@ -14,7 +14,7 @@ comments cannot establish passing checks. Local focused checks remain useful
 preparation. Independent review assesses judgments CI cannot establish.
 
 Assess local behavior, type, and manual evidence against the Work's stated
-outcomes under [acceptance tracing](acceptance-tracing.md#evidence).
+outcomes under [Work acceptance](acceptance-tracing.md#evidence).
 
 Before merge, require the full CI workflow to pass on the latest reviewed PR
 head. Evidence from an earlier revision does not cover later changes. The

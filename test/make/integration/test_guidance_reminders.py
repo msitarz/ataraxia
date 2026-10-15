@@ -32,7 +32,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
                 "pyproject.toml",
                 ".",
             ),
-            "doc/work-definition.md#work-definition",
+            "doc/change-rules.md#fix-the-underlying-problem",
             "existing commands/APIs/helpers",
             "For meaningful changes",
         ),

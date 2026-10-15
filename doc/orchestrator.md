@@ -13,7 +13,7 @@ handoff and final-CI assessment. Select delegated roles by responsibility:
 
 | Role | Model and effort | Responsibility |
 | --- | --- | --- |
-| Definer | GPT-6.1 Sol, medium | Define Work scope, dependencies, edge cases, architecture fit, acceptance criteria, and validation. |
+| Definer | GPT-6.1 Sol, medium | Define assigned Work contracts and coordinate shared parent-map edits. |
 | Executor | GPT-6 Luna, medium | Implement bounded code, tests, documentation, or other changes under approved contracts. |
 | Cleaner | GPT-6 Luna, medium | Perform maintainer-confirmed post-merge cleanup under its procedural owner. |
 | Publisher | GPT-6 Luna, medium | Mechanically publish exact independently reviewed inputs under its procedural owner. |
@@ -61,7 +61,7 @@ The immediate parent reviews child-parent interfaces and composition, reusing
 valid leaf evidence. Retain the child's verified parent contract through this
 integration review; afterward the immediate parent owner records reviewed child
 cleanup and its own map update under
-[acceptance tracing](acceptance-tracing.md#work-delivery-commits).
+[Work acceptance](acceptance-tracing.md#work-delivery-commits).
 
 ```mermaid
 flowchart TD
@@ -99,7 +99,7 @@ nested Works through the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
 For an ad hoc handoff, define a parent Work and child Works; for an existing
 Work, nest children and update its parent map. Apply
-[contract review guidance](work-definition.md) and the workflow owner’s depth
+[contract review guidance](work-definition.md) and the workflow owner’s sizing
 and planning gates before expanded work.
 
 Before dispatch, identify dependencies and shared edit surfaces. Coordinate
@@ -110,8 +110,9 @@ ordering to hide a conflict. Start the assigned agent promptly once necessary
 preflight is complete; remaining reviewer reading may overlap execution when
 it does not defer integration preflight.
 
-A Work README and its linked contracts define acceptance criteria. Keep the
-handoff contextual rather than duplicating the Work contract. Supply four
+A Work README defines acceptance criteria; linked guidance and supporting
+artifacts supply context. Keep the handoff contextual rather than duplicating
+the Work contract. Supply four
 groups of information:
 
 - **Task:** Work path, requested action, and only missing steering.
@@ -186,13 +187,13 @@ requested Work.
 After handoff and each correction request, wait for the completed artifact or a
 blocker needing maintainer steering before reviewing. Do not poll for routine
 status, inspect partial diffs, or send fragmented corrections. Review the
-completed diff once against acceptance and owner guidance, using reported
-evidence. Send one consolidated finding list to the same active agent session;
-review corrections as needed. Reuse reported evidence and rerun focused checks
-only when a change, failure, or unresolved concern warrants it. Context reuse
-may help token caching, but caching is not guaranteed. If the same finding
-remains after a correction attempt, or the session cannot continue, stop and
-report attempts, current evidence, and the specific decision or help needed.
+completed diff once against acceptance and owner guidance, inspecting evidence
+in its source records. Send one consolidated finding list to the same active
+agent session; review corrections as needed. Reuse applicable evidence and rerun
+focused checks only when a change, failure, or unresolved concern warrants it.
+Context reuse may help token caching, but caching is not guaranteed. If the same
+finding remains after a correction attempt, or the session cannot continue, stop
+and report attempts, current evidence, and the specific decision or help needed.
 Resume only with orchestrator or maintainer steering. If the assigned agent is
 unavailable, report that and wait; do not silently switch agents or implement
 its changes as a fallback. Keep independent review and maintainer review, merge,
@@ -211,9 +212,8 @@ same role may continue the same approved scope after recovery. Delayed
 corrections after a completed executor run likewise use a fresh session after
 recovery; do not repurpose the retired session.
 
-Follow [acceptance tracing](acceptance-tracing.md) for criterion status,
-coverage semantics, evidence methods, and the retained verification/cleanup
-commits. Follow
+Follow [Work acceptance](acceptance-tracing.md) for criterion status, outcome
+evidence, and the retained verification/cleanup commits. Follow
 [Pull requests](pull-requests.md#descriptions) for executor returns, local
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.

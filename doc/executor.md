@@ -1,8 +1,8 @@
 # Executor guidance
 
 Read when acting as executor for an assigned repository change.
-The Work README and linked contracts define the outcome; this file describes
-how to carry out the assignment and return it for owner review.
+The Work README defines the outcome; linked guidance and supporting artifacts
+supply context. This file describes execution and return for owner review.
 
 ## Execute the assignment
 
@@ -32,13 +32,14 @@ For parent-map updates, follow the executor route in the
 
 ## Return for review
 
-Return the artifact revision and outcome, acceptance evidence, commands run,
-unrun checks, unresolved criteria, and blockers. A completed return identifies
-changes awaiting owner review; a blocked return says what remains and what
-input or decision is needed. If continuing after an interrupted session, report
-the recovered state and which changes and evidence apply to the current
-revision. If that state is uncertain, report the uncertainty and wait for owner
-steering rather than treating the assignment as complete.
+Return the artifact revision and outcome, unresolved criteria, and material
+failures, limitations, or blockers. Point to existing evidence sources needed
+for review under [Work acceptance](acceptance-tracing.md#evidence). A completed
+return identifies changes awaiting owner review; a blocked return says what
+remains and what input or decision is needed. If continuing after an interrupted
+session, report the recovered state and which changes and evidence apply to the
+current revision. If that state is uncertain, report the uncertainty and wait
+for owner steering rather than treating the assignment as complete.
 
 The owning orchestrator independently reviews the artifact and evidence,
 coordinates corrections and delivery, and retains publication and maintainer

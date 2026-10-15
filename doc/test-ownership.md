@@ -13,5 +13,5 @@ observed results in the existing execution records or relevant report/artifact.
 Identify any affected active criterion. Explain the removal rationale in the
 cleanup commit message. Git retains the probe's code; its historical execution
 evidence does not establish ongoing regression coverage or passing checks on
-later revisions. Follow [acceptance tracing](acceptance-tracing.md) for
+later revisions. Follow [Work acceptance](acceptance-tracing.md) for
 criterion status and completion evidence.

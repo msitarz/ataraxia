@@ -39,9 +39,10 @@ and which criteria are unresolved. If the state is uncertain, report that and
 wait for Orchestrator steering. Session selection and recovery decisions remain
 with the owning Orchestrator.
 
-Return the contract revision, outcome, dependencies, risks, unverified criteria,
-acceptance evidence, commands run, unrun checks, unresolved criteria, and
-blockers to the owning Orchestrator. After recovery, include the recovered
-state and identify which evidence applies to the current revision. A blocked
+Return the contract revision, outcome, dependencies, material risks, unresolved
+criteria, and blockers to the owning Orchestrator. Point to existing evidence
+sources needed for review under
+[Work acceptance](acceptance-tracing.md#evidence). After recovery, identify the
+recovered state and evidence that applies to the current revision. A blocked
 return says what remains and what input or decision is needed; a completed
-return identifies the changes awaiting independent Orchestrator review.
+return identifies changes awaiting independent Orchestrator review.

@@ -28,7 +28,7 @@ relevant guidance.
 | Coding and typing conventions | [Engineering](engineering.md) |
 | Common testing rules and test-type guidance | [Testing](testing.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
-| Work acceptance status and delivery evidence | [Acceptance tracing](acceptance-tracing.md) |
+| Work acceptance status and delivery evidence | [Work acceptance](acceptance-tracing.md) |
 | Setup, toolchain, contribution, and commit rules | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | PR publication and description guidance | [Pull requests](pull-requests.md) |
 | Mechanical PR publication and published-branch rewrite leases | [Publisher](publisher.md) |
@@ -78,8 +78,9 @@ update the reminder link in the same change and verify its target.
 
 Keep accepted ADR and WDR history intact, using the [ADR
 workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
-decisions. A new change owns its own evidence. Issue and PR records link to
-detailed scope and evidence rather than copying it.
+decisions. A new change owns its own evidence. Keep detailed scope in Work
+contracts and evidence in its source records; [PR guidance](pull-requests.md)
+owns delivery descriptions.
 
 ## Vocabulary
 

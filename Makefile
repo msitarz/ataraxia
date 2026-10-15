@@ -92,7 +92,7 @@ doc-check-mermaid: ## validate selected Mermaid fences; ARGS selects files or di
 
 doc-format: ## format Markdown; ARGS selects files or directories
 	@uv run rumdl fmt --no-code-block-tools --config pyproject.toml $(_DOC_PATHS) && \
-	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If defining a Work: does its contract solve the underlying problem using inspected existing commands/APIs/helpers? doc/work-definition.md#work-definition'; fi
+	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If defining a Work: does its contract solve the underlying problem using inspected existing commands/APIs/helpers? doc/change-rules.md#fix-the-underlying-problem'; fi
 
 _TEST_QUALITY_QUESTIONS = Are tests in the right layer/layout? At Work closure, are retained tests project regressions rather than temporary adoption probes? doc/testing.md\#layout-ownership-and-adoption doc/test-ownership.md\#test-ownership\nAre reviewed static fixtures treated as data without redundant validation? doc/testing.md\#treat-test-data-as-data\nDo assertions catch the named defect with independent expectations at the real boundary? doc/testing.md\#what-a-test-proves doc/testing.md\#make-expectations-independent
 
