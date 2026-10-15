@@ -35,7 +35,7 @@ delegating; an evaluation itself does not require agents or nesting.
 Keep initial and final artifacts, severity findings, executor checks, parent
 checks, and the provenance of reused evidence. Identify artifact revisions and
 which checks apply to each. Apply [checks and evidence](validation.md) and
-[acceptance tracing](acceptance-tracing.md#evidence);
+[Work acceptance](acceptance-tracing.md#evidence);
 planned checks and reported assertions do not establish observed outcomes.
 
 Record timestamps and timing boundaries, including preparation, dispatch,
@@ -63,9 +63,9 @@ empirical observations from an Investigation's recommendation and from policy
 adoption through the applicable maintainer decision process. Neither a plan
 merge nor Evaluation completion adopts policy or authorizes another trial.
 
-Preserve artifacts and protocol through the existing
-[Work delivery commits](acceptance-tracing.md#work-delivery-commits) and
-[PR evidence procedure](pull-requests.md), promoting lasting guidance to its
-owner before cleanup. Git retains removed contracts and artifacts; PR and
-linked execution records retain evidence. Do not add routine per-revision
-bookkeeping, mandatory templates, or a second lifecycle.
+Preserve the protocol and observed results as supporting artifacts under the
+[Work delivery procedure](acceptance-tracing.md#work-delivery-commits),
+promoting lasting guidance to its owner before cleanup. Git retains removed
+contracts and artifacts. The [Work contract template](work-contract-template.md)
+applies to the contract; the declared protocol determines its supporting
+artifacts. Do not add routine per-revision bookkeeping or a second lifecycle.

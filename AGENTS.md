@@ -34,7 +34,7 @@ its relevant README and linked contracts.
 | Defining or reviewing a Work contract | [Work contract template](doc/work-contract-template.md), [Work definition](doc/work-definition.md), and the relevant Work README |
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Post-merge branch cleanup | [Branch cleanup](doc/branch-cleanup.md) after the maintainer confirms a Work PR merged |
-| Work acceptance coverage | [Acceptance tracing](doc/acceptance-tracing.md) |
+| Work acceptance and delivery evidence | [Work acceptance](doc/acceptance-tracing.md) |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
 | Running project tools | [Make targets and discovery](CONTRIBUTING.md#make-targets) |

@@ -43,7 +43,7 @@ new test. Measurements and conditions that define success belong in outcomes.
 Existing CI, maintainer review, and verification/cleanup commit gates remain
 explicit.
 
-### **AC-3 TODO** Consistent routes and vocabulary
+### **AC-3 DONE** Consistent routes and vocabulary
 
 The guidance owners identified by the inventory, including glossary, evaluation,
 executor, orchestrator, test ownership, and Make reminders, agree on the new

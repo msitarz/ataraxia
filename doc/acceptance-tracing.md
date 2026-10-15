@@ -1,4 +1,4 @@
-# Acceptance tracing
+# Work acceptance
 
 Read when assigning criterion IDs, assessing Work acceptance, or preparing
 verification and cleanup commits.
