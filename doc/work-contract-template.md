@@ -1,7 +1,7 @@
 # <Work name>
 
 <!-- Replace the heading with the Work name and remove all instruction comments
-before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Keep uniform vocabulary without mixing semantic meanings for a single word. Reuse the same word for the same meaning avoiding synonyms. -->
+before publishing. Keep only the relevant headings unless instruction comment says REQUIRED. Use each term consistently; avoid synonyms for the same concept. -->
 
 ## Purpose
 
@@ -25,7 +25,7 @@ Example:
 
 ## Mechanisms
 
-<!-- List underlying mechanisms that will be used to solve this Work and describe their role in one sentence. Underlying mechanism can be 3rd party applications, CLI tools, or internal application packages, modules or data structures. Be specific when mechanism has many features, if e.g. designing sandboxes, list `codex sandbox` instead of only `codex`.
+<!-- Name the tools, packages, modules, or data structures central to the solution and describe each one’s role in one sentence. Be specific—for example, `codex sandbox` rather than `codex`.
 
 Example:
 
@@ -53,7 +53,7 @@ Omit empty criterion subheadings.
 
 <!-- AC code outcome example:
 
-### **AC-1 TODO** Criterion name
+### **AC-1 TODO** Create a sandbox at an unused path
 
 `make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
 
@@ -94,4 +94,4 @@ Example:
 
 ## Additional context
 
-<!-- Prose that will be useful to include in this Work. Do not duplicate information from previous headings. -->
+<!-- Prose that will be useful to include in this Work. Do not duplicate information from previous sections. -->
