@@ -43,8 +43,9 @@ are removed from current instructions without rewriting historical records.
 
 - [Work contract template](../../../../work-contract-template.md):
   supplies the delivered authoring rules.
-- **TODO** [Tooling simplification](../../tooling/README.md): removes marker
-  coupling and establishes the retained declaration-check surface.
+- **DONE** The completed
+  [tooling simplification outcome](../../README.md#children) removed marker
+  coupling and the declaration checker.
 
 ## Links
 

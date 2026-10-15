@@ -90,8 +90,9 @@ to its child contract; checks do not infer semantic quality or completion.
 - **DONE** [Guidance alignment](../../work-contract-template.md): established
   README-only outcome contracts, source-based evidence, and Investigation
   prototyping, with decisions in [WDRs 23–27](../../wdr/README.md).
-- **TODO** [Acceptance tooling simplification](tooling/README.md): retire marker
-  selection and the obsolete acceptance checker.
+- **DONE** Acceptance tooling simplification retired marker selection,
+  declaration-only ac-check, and orphan helpers while preserving ordinary
+  regression coverage.
 - **TODO** [Active contract migration](contracts/README.md): rewrite existing
   Works in separately reviewable groups.
 - **TODO** [Structural Work checking](work-check/README.md): select a Markdown

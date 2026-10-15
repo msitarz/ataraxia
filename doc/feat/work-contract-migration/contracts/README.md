@@ -40,9 +40,9 @@ not silently converted into current instructions or completed outcomes.
 
 - [Work contract template](../../../work-contract-template.md):
   supplies the delivered authoring rules.
-- **TODO** [Tooling simplification](../tooling/README.md): establishes the
-  removal of obsolete acceptance commands and test-marker coupling, so rewrites
-  are usable before work-check is integrated.
+- **DONE** The completed [tooling simplification outcome](../README.md#children)
+  retired obsolete acceptance commands and test-marker coupling, so these
+  rewrites are usable before work-check is integrated.
 
 ## Children
 

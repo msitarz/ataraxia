@@ -44,8 +44,8 @@ unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
   [Work acceptance](../../../acceptance-tracing.md), and
   [WDRs 23–27](../../../wdr/README.md): supply the delivered authoring/evidence
   rules and lasting decisions.
-- **TODO** [Tooling simplification](../tooling/README.md): supplies retained
-  command behavior and focused execution evidence.
+- **DONE** The completed [tooling simplification outcome](../README.md#children)
+  supplies the retained command behavior and focused execution evidence.
 - **TODO** [Structural Work checking](../work-check/README.md): supplies the
   parser selection, explicit discovery convention, and integrated work-check
   behavior after contract migration.
