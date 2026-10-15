@@ -49,8 +49,9 @@ not silently converted into current instructions or completed outcomes.
 - **DONE** Workflow planning and trial contracts rewritten with preserved
   outcomes and ownership
   ([reviewable workflow](../../reviewable-workflow-v2/README.md)).
-- **TODO** [Sandbox contracts](sandboxes/README.md): migrate managed sandbox
-  planning and delivery contracts while preserving historical evidence.
+- **DONE** Managed sandbox contracts rewritten with preserved outcomes and
+  ownership
+  ([managed evaluation sandboxes](../../evaluation-sandboxes/README.md)).
 - **TODO** [Package documentation contracts](package-readmes/README.md): migrate
   package README planning and documentation outcomes.
 - **TODO** [Conditional complexity contracts](conditional-complexity/README.md):
