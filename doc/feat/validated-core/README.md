@@ -138,6 +138,10 @@ without revalidating child domain values. Calling an effectful collaborator
 remains effectful even through an injected Protocol. The constructor example
 includes a pure decision with typed inputs/results and clear error behavior.
 
+Guidance prefers Python's standard protocols when their semantics naturally
+match a domain operation, such as range containment through `__contains__` and
+`in`; named methods remain appropriate otherwise.
+
 #### What exists
 
 [SmaRunner and sma](../../../src/ataraxia/feature.py) already separate runner

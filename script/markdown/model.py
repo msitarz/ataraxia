@@ -17,7 +17,7 @@ class SourceLocation:
     line_start: int
     line_end: int
 
-    def contains(self, other: SourceLocation) -> bool:
+    def __contains__(self, other: SourceLocation) -> bool:
         """Return whether this inclusive range contains another location."""
         return self.line_start <= other.line_start and other.line_end <= self.line_end
 
@@ -127,7 +127,7 @@ class ContainerBlock(_LocatedBlock):
         if not isinstance(self.children, tuple):
             raise TypeError("Markdown container children must be a tuple")
         for child in self.children:
-            if not self.location.contains(child.location):
+            if child.location not in self.location:
                 raise ValueError("Markdown child lies outside its container")
         if self.kind == "list" and any(
             child.kind != "list_item" for child in self.children
