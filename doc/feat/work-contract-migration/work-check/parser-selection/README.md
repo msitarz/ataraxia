@@ -24,7 +24,7 @@ Work checking with the least repository-owned parsing.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Candidate fit is established from comparable evidence
+### **AC-1 DONE** Candidate fit is established from comparable evidence
 
 The comparison answers whether each candidate can supply the structure needed by
 the
@@ -50,7 +50,7 @@ Temporary probes stay outside production integration, and upstream-only probes
 follow [test ownership](../../../../test-ownership.md) while retaining their
 method and results, including unsuccessful results.
 
-### **AC-2 TODO** A bounded recommendation is ready for maintainer review
+### **AC-2 DONE** A bounded recommendation is ready for maintainer review
 
 Concise findings record each candidate's fit, pros, and cons and recommend a
 specific parser version with its required adaptation and tradeoffs, or

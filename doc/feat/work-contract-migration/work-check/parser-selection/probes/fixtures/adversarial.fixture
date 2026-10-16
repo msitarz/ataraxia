@@ -1,0 +1,39 @@
+# Real Work contract
+
+## Acceptance criteria
+
+### **AC-7 TODO** Positive declaration
+
+This heading and declaration are top-level and real.
+
+Unicode offset probe: café 🧭 and 東京.
+
+## Quoted example
+
+> ## Quoted fake section
+>
+> ### **AC-99 TODO** Quoted fake declaration
+>
+> The parser must retain the quote context.
+
+## List example
+
+- ## List fake section
+
+  - ### **AC-98 TODO** Listed fake declaration
+
+    This heading is inside a list item.
+
+## Comment example
+
+<!--
+## Comment fake section
+### **AC-97 TODO** Comment fake declaration
+-->
+
+## Fence example
+
+```markdown
+## Fenced fake section
+### **AC-96 TODO** Fenced fake declaration
+```

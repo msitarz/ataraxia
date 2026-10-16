@@ -1,0 +1,615 @@
+{
+  "candidate": "markdown-it-py",
+  "version": "4.2.0",
+  "python": "3.14.8",
+  "platform": "Darwin x86_64",
+  "dependencies": [
+    "mdurl~=0.1",
+    "psutil ; extra == \"benchmarking\"",
+    "pytest ; extra == \"benchmarking\"",
+    "pytest-benchmark ; extra == \"benchmarking\"",
+    "commonmark~=0.9 ; extra == \"compare\"",
+    "markdown~=3.4 ; extra == \"compare\"",
+    "mistletoe~=1.0 ; extra == \"compare\"",
+    "mistune~=3.0 ; extra == \"compare\"",
+    "panflute~=2.3 ; extra == \"compare\"",
+    "markdown-it-pyrs ; extra == \"compare\"",
+    "linkify-it-py>=1,<3 ; extra == \"linkify\"",
+    "mdit-py-plugins>=0.5.0 ; extra == \"plugins\"",
+    "gprof2dot ; extra == \"profiling\"",
+    "mdit-py-plugins>=0.5.0 ; extra == \"rtd\"",
+    "myst-parser ; extra == \"rtd\"",
+    "pyyaml ; extra == \"rtd\"",
+    "sphinx ; extra == \"rtd\"",
+    "sphinx-copybutton ; extra == \"rtd\"",
+    "sphinx-design ; extra == \"rtd\"",
+    "sphinx-book-theme~=1.0 ; extra == \"rtd\"",
+    "jupyter_sphinx ; extra == \"rtd\"",
+    "ipykernel ; extra == \"rtd\"",
+    "coverage ; extra == \"testing\"",
+    "pytest ; extra == \"testing\"",
+    "pytest-cov ; extra == \"testing\"",
+    "pytest-regressions ; extra == \"testing\"",
+    "pytest-timeout ; extra == \"testing\"",
+    "requests ; extra == \"testing\""
+  ],
+  "installed_packages": [
+    "markdown-it-py==4.2.0",
+    "mdurl==0.1.2"
+  ],
+  "fixtures": [
+    {
+      "fixture": "adversarial.fixture",
+      "headings": [
+        {
+          "level": 1,
+          "depth": 0,
+          "containers": [],
+          "line": 1,
+          "text": "Real Work contract",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 3,
+          "text": "Acceptance criteria",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 5,
+          "text": "**AC-7 TODO** Positive declaration",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-7 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Positive declaration"
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 11,
+          "text": "Quoted example",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 1,
+          "containers": [
+            "blockquote"
+          ],
+          "line": 13,
+          "text": "Quoted fake section",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 1,
+          "containers": [
+            "blockquote"
+          ],
+          "line": 15,
+          "text": "**AC-99 TODO** Quoted fake declaration",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-99 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Quoted fake declaration"
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 19,
+          "text": "List example",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 2,
+          "containers": [
+            "bullet_list",
+            "list_item"
+          ],
+          "line": 21,
+          "text": "List fake section",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 4,
+          "containers": [
+            "bullet_list",
+            "list_item",
+            "bullet_list",
+            "list_item"
+          ],
+          "line": 23,
+          "text": "**AC-98 TODO** Listed fake declaration",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-98 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Listed fake declaration"
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 27,
+          "text": "Comment example",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 34,
+          "text": "Fence example",
+          "inline_tokens": []
+        }
+      ],
+      "excluded_blocks": [
+        {
+          "kind": "html_block",
+          "line": 29,
+          "content": "<!--\n## Comment fake section\n### **AC-97 TODO** Comment fake declaration\n-->\n"
+        },
+        {
+          "kind": "fence",
+          "line": 36,
+          "content": "## Fenced fake section\n### **AC-96 TODO** Fenced fake declaration\n"
+        }
+      ]
+    },
+    {
+      "fixture": "real-evaluation.fixture",
+      "headings": [
+        {
+          "level": 1,
+          "depth": 0,
+          "containers": [],
+          "line": 1,
+          "text": "Per-sandbox active-state exclusion",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 3,
+          "text": "Purpose",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 8,
+          "text": "Goals",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 14,
+          "text": "Mechanisms",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 22,
+          "text": "Visuals",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 42,
+          "text": "Acceptance criteria",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 44,
+          "text": "**AC-1 TODO** Compose the shared lifecycle safety protocol",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-1 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Compose the shared lifecycle safety protocol"
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 62,
+          "text": "Children",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 75,
+          "text": "Additional context",
+          "inline_tokens": []
+        }
+      ],
+      "excluded_blocks": [
+        {
+          "kind": "fence",
+          "line": 33,
+          "content": "flowchart LR\n    B[Before: create and private preparation record]\n    B --> L[Lock and marker: durable identity and create exclusion]\n    L --> E[Execution recovery: attempts and descendant lifetime]\n    E --> D[Cleanup disposition: current preserved state and review]\n    D --> C[Consumers: exec, listing and removal integrate shared APIs]\n"
+        }
+      ]
+    },
+    {
+      "fixture": "real-work-check.fixture",
+      "headings": [
+        {
+          "level": 1,
+          "depth": 0,
+          "containers": [],
+          "line": 1,
+          "text": "Check active Work contracts structurally",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 3,
+          "text": "Purpose",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 8,
+          "text": "Goals",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 15,
+          "text": "Non-Goals",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 22,
+          "text": "Mechanisms",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 31,
+          "text": "Visuals",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 46,
+          "text": "Acceptance criteria",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 48,
+          "text": "**AC-1 TODO** Adopt the reviewed parser choice",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-1 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Adopt the reviewed parser choice"
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 56,
+          "text": "**AC-2 TODO** Markdown parsing exposes a reusable typed boundary",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-2 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Markdown parsing exposes a reusable typed boundary"
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 70,
+          "text": "**AC-3 TODO** Discovery finds malformed contracts without content heuristics",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-3 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Discovery finds malformed contracts without content heuristics"
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 87,
+          "text": "**AC-4 TODO** Structural errors have precise diagnostics",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-4 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Structural errors have precise diagnostics"
+            }
+          ]
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 109,
+          "text": "**AC-5 TODO** Documentation checks enforce the migrated format automatically",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-5 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Documentation checks enforce the migrated format automatically"
+            }
+          ]
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 120,
+          "text": "Dependencies",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 132,
+          "text": "Children",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 137,
+          "text": "Links",
+          "inline_tokens": []
+        },
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 150,
+          "text": "Additional context",
+          "inline_tokens": []
+        }
+      ],
+      "excluded_blocks": [
+        {
+          "kind": "fence",
+          "line": 36,
+          "content": "flowchart LR\n    F[Contract discovery and file reading] --> P[Markdown parser adapter]\n    P --> B[Typed Markdown blocks and locations]\n    B --> W[Pure Work structure rules]\n    W --> D[Located diagnostics]\n    D --> C[Command output and exit status]\n    B -. reusable boundary .-> T[Future script consumers]\n"
+        }
+      ]
+    },
+    {
+      "fixture": "unicode-offset.fixture",
+      "headings": [
+        {
+          "level": 2,
+          "depth": 0,
+          "containers": [],
+          "line": 19,
+          "text": "Byte offsets",
+          "inline_tokens": []
+        },
+        {
+          "level": 3,
+          "depth": 0,
+          "containers": [],
+          "line": 21,
+          "text": "**AC-1 TODO** Unicode boundary",
+          "inline_tokens": [
+            {
+              "type": "text",
+              "content": ""
+            },
+            {
+              "type": "strong_open",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": "AC-1 TODO"
+            },
+            {
+              "type": "strong_close",
+              "content": ""
+            },
+            {
+              "type": "text",
+              "content": " Unicode boundary"
+            }
+          ]
+        }
+      ],
+      "excluded_blocks": []
+    }
+  ]
+}
