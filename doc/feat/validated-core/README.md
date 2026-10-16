@@ -115,7 +115,9 @@ this Work makes complete record invariants explicit in general guidance.
 Engineering guidance requires core inputs/results to use frozen dataclasses or
 immutable value variants, with immutable or explicitly owned containers. It
 explains that freezing is shallow and that annotations do not establish
-invariants. New results and state transitions pass through validated
+invariants. Engineering guidance prohibits `from __future__ import annotations`,
+relying on Python 3.14's native deferred annotation evaluation. New results and
+state transitions pass through validated
 construction without mutating existing values or bypassing construction with
 `object.__setattr__`. The constructor example extends to a valid new result or
 state, showing how fields required together form a record. Stateful runners and

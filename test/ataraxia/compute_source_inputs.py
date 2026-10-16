@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Typed integer and CSV-backed source arrangements for compute tests."""
 
-from __future__ import annotations
-
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path

@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Create and validate project-owned evaluation sandbox locations."""
 
-from __future__ import annotations
-
 from collections.abc import Callable
 import json
 import os

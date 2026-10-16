@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Typed dependency nodes and runners for the small A/B graph."""
 
-from __future__ import annotations
-
 from collections.abc import Mapping
 from dataclasses import dataclass
 
