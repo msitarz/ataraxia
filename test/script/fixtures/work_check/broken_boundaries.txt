@@ -1,0 +1,18 @@
+# Contract
+
+## Purpose
+Reason.
+
+## Goals
+Goal.
+
+## Acceptance criteria
+### **AC-1 TODO** Result
+<!-- A comment is not an outcome body. -->
+
+# Second document context
+### **AC-9 TODO** Outside
+Body.
+
+#### **AC-10 TODO** Wrong level
+Body.

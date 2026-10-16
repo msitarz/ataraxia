@@ -1,0 +1,28 @@
+# Structural checker fixture
+
+## Purpose
+Provide realistic Markdown syntax for the command boundary.
+
+## Goals
+- Keep nested content inside its owning section.
+
+## Acceptance criteria
+### **AC-1 TODO** Treat syntax as Markdown
+Code and comments do not declare additional sections or criteria.
+
+#### Explanation
+This nested explanatory heading stays in the outcome body.
+
+```markdown
+# Not a Work title
+## Purpose
+### **AC-9 TODO** Not a criterion
+```
+
+<!--
+## Goals
+### **AC-8 DONE** Not a criterion
+-->
+
+> ## Purpose
+> Quoted headings are nested content.
