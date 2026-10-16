@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Discover and read contract files under the active Work root."""
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from dataclasses import dataclass
 import os

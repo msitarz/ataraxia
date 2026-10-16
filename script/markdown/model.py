@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Repository-owned values and parser port for Markdown consumers."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import Literal, Protocol, get_args
 
