@@ -181,14 +181,11 @@ Engineering guidance assigns acquisition, parsing, validation, pure decisions,
 and output/effects clear typed input/output, error, and effect responsibilities.
 Adapters coordinate pure decisions and own processes, filesystem/persistence,
 locks, and cleanup on success or failure; cohesive functions may share a module.
-They attempt intended filesystem/effect operations and handle expected failures
-at the owning adapter/reporting boundary, following
-[AC-1](#ac-1-todo-complete-record-validation)'s error distinction. Guidance
-avoids preflight existence/readability probes and repeated observations while
-preserving explicit domain and selection policies, such as Work-root
-containment, and required ownership, security, lifecycle, and live precondition
-checks; repository paths are not categorically distrusted and
-symlinks are not categorically prohibited.
+Guidance prefers attempting operations and handling expected failures at the
+owning boundary over preflight probes, following
+[AC-1](#ac-1-todo-complete-record-validation)'s error distinction. Explicit
+domain policies and required ownership, security, lifecycle, and live
+precondition checks remain intact.
 
 Record validation follows the input categories in
 [AC-1](#ac-1-todo-complete-record-validation) at the actual ingress; adapters
