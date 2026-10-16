@@ -49,7 +49,7 @@ def test_explicit_overlapping_files_and_subtrees_are_deduplicated_and_sorted(
     # When
     contracts = discover_contracts(
         tmp_path,
-        ("doc/feat/z/README.md", "doc/feat", "doc/feat/a"),
+        (str(later), "doc/feat", "doc/feat/a"),
     )
 
     # Then
@@ -65,7 +65,11 @@ def test_explicit_overlapping_files_and_subtrees_are_deduplicated_and_sorted(
             "outside the Work root",
             id="traversal-outside-root",
         ),
-        pytest.param("doc/feat/notes.md", "not a Work contract", id="non-contract"),
+        pytest.param(
+            "doc/feat/notes.md",
+            "Select a Work README.md or subtree",
+            id="non-contract",
+        ),
     ],
 )
 def test_invalid_explicit_selections_fail_with_actionable_context(
@@ -224,7 +228,7 @@ def test_explicit_non_readme_link_to_a_contract_is_rejected(tmp_path: Path) -> N
         discover_contracts(tmp_path, ("doc/feat/alias.md",))
 
     # Then
-    assert "not a Work contract README.md" in str(error.value)
+    assert "Select a Work README.md or subtree" in str(error.value)
 
 
 def test_explicit_contract_path_through_escaping_symlink_fails(

@@ -84,25 +84,23 @@ def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Pat
         ContractDiscoveryError: The selection is outside the Work root or has
             an unsupported shape.
     """
-    selected = Path(selection)
-    if not selected.is_absolute():
-        selected = root / selected
+    selected = root / Path(selection)
     lexical = Path(os.path.abspath(selected))
-    if not lexical.is_relative_to(root / "doc" / "feat"):
-        raise ContractDiscoveryError(f"Selection is outside the Work root: {selection}")
     resolved = selected.resolve(strict=True)
-    if not resolved.is_relative_to(work_root):
+    if not lexical.is_relative_to(root / "doc" / "feat") or not resolved.is_relative_to(
+        work_root
+    ):
         raise ContractDiscoveryError(f"Selection is outside the Work root: {selection}")
-    mode = resolved.stat().st_mode
-    if stat.S_ISDIR(mode):
-        return _contracts_below(work_root, resolved)
-    if stat.S_ISREG(mode) and lexical.name == "README.md":
-        return {resolved}
-    if stat.S_ISREG(mode):
-        raise ContractDiscoveryError(
-            f"Selection is not a Work contract README.md: {selection}"
-        )
-    raise ContractDiscoveryError(f"Selection is not a file or directory: {selection}")
+    mode = stat.S_IFMT(resolved.stat().st_mode)
+    match mode:
+        case stat.S_IFDIR:
+            return _contracts_below(work_root, resolved)
+        case stat.S_IFREG if lexical.name == "README.md":
+            return {resolved}
+        case _:
+            raise ContractDiscoveryError(
+                f"Select a Work README.md or subtree: {selection}"
+            )
 
 
 def _read_contracts(root: Path, candidates: set[Path]) -> tuple[ContractSource, ...]:
