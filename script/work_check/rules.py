@@ -197,81 +197,47 @@ def _criterion_result(
     inside_acceptance: bool,
     known_identifiers: frozenset[str],
 ) -> _DeclarationResult:
-    findings: list[WorkDiagnostic] = []
-    if not inside_acceptance:
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
-                "criterion must be inside Acceptance criteria",
-                heading.text,
-            )
-        )
-    if heading.heading_level != 3:
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
-                "criterion declaration must use a level-three heading",
-                heading.text,
-            )
-        )
+    line = heading.location.line_start
+    context = heading.text
+    constraints: list[tuple[bool, str]] = [
+        (inside_acceptance, "criterion must be inside Acceptance criteria"),
+        (
+            heading.heading_level == 3,
+            "criterion declaration must use a level-three heading",
+        ),
+    ]
 
-    match = _CRITERION.fullmatch(text)
-    if match is None:
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
-                "criterion heading format '### **AC-N STATUS** Outcome name'",
-                heading.text,
-            )
-        )
-        return _DeclarationResult(
-            None,
-            tuple(findings),
-        )
-
-    identifier, status, name = match.groups()
-    normalized_id = identifier.lstrip("0") or "0"
-    if normalized_id == "0":
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
-                "positive decimal criterion ID",
-                heading.text,
-            )
-        )
-    if normalized_id in known_identifiers:
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
+    shape_match = _CRITERION.fullmatch(text)
+    if shape_match is None:
+        constraints.append((
+            False,
+            "criterion heading format '### **AC-N STATUS** Outcome name'",
+        ))
+        normalized_id = None
+    else:
+        identifier, status, name = shape_match.groups()
+        normalized_id = identifier.lstrip("0") or "0"
+        constraints.extend((
+            (normalized_id != "0", "positive decimal criterion ID"),
+            (
+                normalized_id not in known_identifiers,
                 f"unique criterion ID AC-{normalized_id}",
-                heading.text,
-            )
-        )
-    if status not in get_args(CriterionStatus.__value__):
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
+            ),
+            (
+                status in get_args(CriterionStatus.__value__),
                 "supported status TODO or DONE",
-                heading.text,
-            )
-        )
-    if not (name or "").strip():
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
-                "nonempty criterion name",
-                heading.text,
-            )
-        )
-    if not any(_has_content(block) for block in body):
-        findings.append(
-            WorkDiagnostic(
-                heading.location.line_start,
+            ),
+            (bool((name or "").strip()), "nonempty criterion name"),
+            (
+                any(_has_content(block) for block in body),
                 "nonempty criterion outcome body",
-                heading.text,
-            )
-        )
-    return _DeclarationResult(normalized_id, tuple(findings))
+            ),
+        ))
+
+    findings = tuple(
+        WorkDiagnostic(line, rule, context) for valid, rule in constraints if not valid
+    )
+    return _DeclarationResult(normalized_id, findings)
 
 
 def _has_content(block: MarkdownBlock) -> bool:
