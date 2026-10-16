@@ -53,7 +53,7 @@ The maintainer accepted `markdown-it-py` from the
 `markdown-it-py>=4.2.0`, and `uv.lock` records the resolved version satisfying
 that requirement.
 
-### **AC-2 TODO** Markdown parsing exposes a reusable typed boundary
+### **AC-2 DONE** Markdown parsing exposes a reusable typed boundary
 
 The parser adapter returns immutable repository-owned Markdown values with
 explicit block kinds, heading levels, relevant text, and source locations.

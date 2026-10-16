@@ -213,8 +213,8 @@ precise supported types under
 strict check covers the configured project folders; keep changed modules,
 helpers, and executable fixtures within those roots so normal type checking
 covers them automatically. Do not add redundant per-file include entries. Keep
-intentional-negative `test/ataraxia/typecheck` cases excluded from the normal
-check and on the existing `--expectations` route.
+intentional-negative `test/*/typecheck` cases excluded from the normal check and
+on the existing `--expectations` route.
 
 Existing tests may predate these rules. The type-specific references illustrate
 named strengths, not blanket compliance. Apply this guidance to new or changed

@@ -111,10 +111,11 @@ def make_sandbox(directory: Path) -> MakeSandbox:
     """Copy only Make and expectation filenames required for stub routing."""
     directory.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(ROOT / "Makefile", directory / "Makefile")
-    expectations = directory / "test/ataraxia/typecheck"
-    expectations.mkdir(parents=True)
-    for source in (ROOT / "test/ataraxia/typecheck").glob("*.py"):
-        (expectations / source.name).touch()
+    for suite in ("ataraxia", "script"):
+        expectations = directory / "test" / suite / "typecheck"
+        expectations.mkdir(parents=True)
+        for source in (ROOT / "test" / suite / "typecheck").glob("*.py"):
+            (expectations / source.name).touch()
     binary = directory / "bin"
     binary.mkdir()
     recorder = binary / "uv"
