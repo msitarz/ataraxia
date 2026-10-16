@@ -73,7 +73,10 @@ validation.
 Consumed fields include ownership, persistence, and security requirements.
 Unrelated extension data remains opaque and is preserved when required by the
 transport/persistence contract. A compact constructor example shows valid
-construction and rejection of invalid fields and field combinations.
+construction and rejection of invalid fields and field combinations, including
+finite string-domain validation with one authoritative `Literal` member
+inventory under the existing
+[type-precision guidance](../../engineering.md#preserve-type-precision).
 
 #### What exists
 
