@@ -13,6 +13,10 @@ Work, but use filenames other than `README.md`; they do not define another
 contract. Do not require YAML frontmatter, a journal, or separate
 human-facing and agent-facing versions of the same contract.
 
+Run `make work-check` to check every active contract, or pass one or more
+repository-local Work README paths or subtrees through `ARGS` for focused
+feedback.
+
 Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 when assessing existing machinery and the remaining gap. Use an Investigation
 when feasibility needs checking. [Work workflow](workflow.md) owns

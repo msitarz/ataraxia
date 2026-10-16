@@ -330,8 +330,10 @@ def test_doc_check_defaults_to_all_files_and_respects_exclusions(
     assert list(directory.rglob("*.svg")) == []
 
 
-def test_make_help_lists_markdown_targets(markdown_sandbox: MarkdownSandbox) -> None:
-    """List existing Markdown targets and the scoped Mermaid target."""
+def test_make_help_lists_documentation_targets(
+    markdown_sandbox: MarkdownSandbox,
+) -> None:
+    """List documentation targets and the standalone Work checker."""
     # Given: the fixture supplies the actual Makefile in a disposable directory.
 
     # When
@@ -342,3 +344,62 @@ def test_make_help_lists_markdown_targets(markdown_sandbox: MarkdownSandbox) -> 
     assert "make doc-check" in result.stdout
     assert "make doc-check-mermaid" in result.stdout
     assert "make doc-format" in result.stdout
+    assert "make work-check" in result.stdout
+
+
+@pytest.mark.real_tool
+def test_make_work_check_routes_selected_paths_and_input_failures(
+    markdown_sandbox: MarkdownSandbox,
+) -> None:
+    """Route selected paths and report success, content, and input outcomes."""
+    # Given
+    directory = markdown_sandbox.directory / "doc/feat/selected"
+    directory.mkdir(parents=True)
+    valid = directory / "README.md"
+    broken = directory / "broken/README.md"
+    broken.parent.mkdir()
+    shutil.copyfile(ROOT / "test/script/fixtures/work_check/valid.txt", valid)
+    shutil.copyfile(
+        ROOT / "test/script/fixtures/work_check/broken_sections.txt", broken
+    )
+    before = {path: path.read_bytes() for path in (valid, broken)}
+
+    # When
+    success = markdown_sandbox.run(
+        "work-check",
+        "ARGS=doc/feat/selected/README.md",
+        environment={"PYTHONPATH": str(ROOT)},
+    )
+    content_failure = markdown_sandbox.run(
+        "work-check",
+        "ARGS=doc/feat/selected/broken/README.md",
+        environment={"PYTHONPATH": str(ROOT)},
+    )
+    missing = markdown_sandbox.run(
+        "work-check",
+        "ARGS=doc/feat/missing",
+        environment={"PYTHONPATH": str(ROOT)},
+    )
+
+    # Then
+    assert success.exit_code == 0, success.output
+    assert success.stdout == success.stderr == ""
+    assert content_failure.exit_code == 2
+    assert content_failure.stdout.splitlines() == [
+        (
+            "doc/feat/selected/broken/README.md:1: required top-level section "
+            "'Acceptance criteria': file start"
+        ),
+        (
+            "doc/feat/selected/broken/README.md:1: required top-level section "
+            "'Goals': file start"
+        ),
+        (
+            "doc/feat/selected/broken/README.md:1: required top-level section "
+            "'Purpose': file start"
+        ),
+    ]
+    assert "Error 1" in content_failure.stderr
+    assert missing.exit_code == 2
+    assert "doc/feat/missing" in missing.output
+    assert {path: path.read_bytes() for path in before} == before

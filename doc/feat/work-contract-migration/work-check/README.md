@@ -67,7 +67,7 @@ valid explicit values without filesystem access or repeated boundary checks.
 A separate package under `script/` may become useful for later consumers; this
 Work requires a cohesive reusable boundary rather than speculative packaging.
 
-### **AC-3 TODO** Discovery finds malformed contracts without content heuristics
+### **AC-3 DONE** Discovery finds malformed contracts without content heuristics
 
 With no paths, `make work-check` checks every `README.md` recursively under
 `doc/feat/`. This directory convention identifies active Work contracts
@@ -84,7 +84,7 @@ produce actionable failures rather than silently passing. Overlapping selections
 check each contract once. Discovery and path handling do not escape the Work
 root through symlinks or path traversal.
 
-### **AC-4 TODO** Structural errors have precise diagnostics
+### **AC-4 DONE** Structural errors have precise diagnostics
 
 A contract has a nonempty level-one Work name and exactly one top-level section
 at heading level two for each required template heading: Purpose, Goals, and
