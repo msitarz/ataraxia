@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Protocol
+from typing import Literal, Protocol, get_args
 
 type ContainerKind = Literal["blockquote", "list", "list_item"]
 type TextKind = Literal["fenced_code", "code_block", "html_block", "paragraph"]
@@ -91,7 +91,7 @@ class TextBlock(_LocatedBlock):
         super().__post_init__()
         if not isinstance(self.kind, str):
             raise TypeError("Markdown text block kind must be a string")
-        if self.kind not in {"fenced_code", "code_block", "html_block", "paragraph"}:
+        if self.kind not in get_args(TextKind.__value__):
             raise ValueError(f"unsupported Markdown text block kind: {self.kind!r}")
         if not isinstance(self.text, str):
             raise TypeError("Markdown block text must be a string")
@@ -114,7 +114,7 @@ class ContainerBlock(_LocatedBlock):
         super().__post_init__()
         if not isinstance(self.kind, str):
             raise TypeError("Markdown container kind must be a string")
-        if self.kind not in {"blockquote", "list", "list_item"}:
+        if self.kind not in get_args(ContainerKind.__value__):
             raise ValueError(f"unsupported Markdown container kind: {self.kind!r}")
         if not isinstance(self.children, tuple):
             raise TypeError("Markdown container children must be a tuple")
