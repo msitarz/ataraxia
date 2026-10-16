@@ -90,7 +90,7 @@ def test_markdown_values_reject_invalid_locations_and_shapes(
         pytest.param((4, 8), (7, 9), False, id="after-end"),
     ],
 )
-def test_source_location_contains_inclusive_ranges(
+def test_source_location_membership_uses_inclusive_ranges(
     container_lines: tuple[int, int],
     child_lines: tuple[int, int],
     contains: bool,
@@ -100,7 +100,7 @@ def test_source_location_contains_inclusive_ranges(
     child = SourceLocation(*child_lines)
 
     # When
-    result = container.contains(child)
+    result = child in container
 
     # Then
     assert result is contains
