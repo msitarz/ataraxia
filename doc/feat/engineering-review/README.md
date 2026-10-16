@@ -62,6 +62,10 @@ than redefining them:
 - Does it use standard Python or library semantics and protocols where they fit,
   normalize inputs and derive shared facts once, and reuse observations rather
   than repeat scans or interpretation?
+- When iteration mixes traversal or context tracking with substantial per-item
+  decisions, would a cohesive pure function with explicit inputs and results
+  clarify those decisions while keeping cross-item state visible in the loop
+  and using comprehensions only for independent items?
 - Does the dynamic boundary produce a precise typed consumed contract, relying
   on documented SDK guarantees while distinguishing raw external ingress from
   trusted typed construction?
@@ -120,8 +124,9 @@ opportunities:
   operation-first handling, supported file-type cases, and shared rejection,
   while preserving required containment and domain policies.
 - Heading boundaries contrast repeated following-heading scans with shared
-  derived facts, explaining the readability and reuse benefit without mandating
-  a backward pass or another specific algorithm.
+  derived facts, while criterion checking shows directly testable per-heading
+  decisions with section membership and seen identifiers kept visible in the
+  loop, without mandating a backward pass or another specific algorithm.
 - Typed CLI and test examples contrast uncertainty propagated from a dynamic
   boundary and duplicate full oracles with a precise consumed contract and
   focused unit checks plus integration obligations, without prescribing an
@@ -130,7 +135,9 @@ opportunities:
 Examples distinguish historical approved changes from proposed improvements
 and are checked against then-integrated source; identified opportunities are
 not described as already implemented. They show meaningful alternatives, not
-syntax-only rewrites or dense conditions relocated into guards. Contextual
+syntax-only rewrites or dense conditions relocated into guards; cohesive
+extraction does not require a helper for every loop or extraction merely to
+reduce statement counts. Contextual
 stderr diagnostics illustrate useful external errors without establishing a
 global command-output policy. Small examples may later help assess reviewer
 usefulness without becoming a mandatory benchmark.

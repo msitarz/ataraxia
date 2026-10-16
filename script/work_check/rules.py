@@ -166,23 +166,14 @@ def _criterion_findings(
             continue
         if is_declaration:
             declarations += 1
-        if not inside_acceptance:
-            findings.append(
-                WorkDiagnostic(
-                    heading.block.location.line_start,
-                    "criterion must be inside Acceptance criteria",
-                    heading.block.text,
-                )
-            )
-        if level != 3:
-            findings.append(
-                WorkDiagnostic(
-                    heading.block.location.line_start,
-                    "criterion declaration must use a level-three heading",
-                    heading.block.text,
-                )
-            )
-        result = _declaration_result(blocks, heading, frozenset(identifiers))
+        body = blocks[heading.index + 1 : heading.outcome_end]
+        result = _criterion_result(
+            heading.block,
+            heading.text,
+            body,
+            inside_acceptance,
+            frozenset(identifiers),
+        )
         findings.extend(result.findings)
         if result.identifier is not None:
             identifiers.add(result.identifier)
@@ -199,67 +190,85 @@ def _criterion_findings(
     return tuple(findings)
 
 
-def _declaration_result(
-    blocks: tuple[MarkdownBlock, ...],
-    heading: _LocatedHeading,
+def _criterion_result(
+    heading: HeadingBlock,
+    text: str,
+    body: tuple[MarkdownBlock, ...],
+    inside_acceptance: bool,
     known_identifiers: frozenset[str],
 ) -> _DeclarationResult:
-    match = _CRITERION.fullmatch(heading.text)
+    findings: list[WorkDiagnostic] = []
+    if not inside_acceptance:
+        findings.append(
+            WorkDiagnostic(
+                heading.location.line_start,
+                "criterion must be inside Acceptance criteria",
+                heading.text,
+            )
+        )
+    if heading.heading_level != 3:
+        findings.append(
+            WorkDiagnostic(
+                heading.location.line_start,
+                "criterion declaration must use a level-three heading",
+                heading.text,
+            )
+        )
+
+    match = _CRITERION.fullmatch(text)
     if match is None:
+        findings.append(
+            WorkDiagnostic(
+                heading.location.line_start,
+                "criterion heading format '### **AC-N STATUS** Outcome name'",
+                heading.text,
+            )
+        )
         return _DeclarationResult(
             None,
-            (
-                WorkDiagnostic(
-                    heading.block.location.line_start,
-                    "criterion heading format '### **AC-N STATUS** Outcome name'",
-                    heading.block.text,
-                ),
-            ),
+            tuple(findings),
         )
 
     identifier, status, name = match.groups()
     normalized_id = identifier.lstrip("0") or "0"
-    findings: list[WorkDiagnostic] = []
     if normalized_id == "0":
         findings.append(
             WorkDiagnostic(
-                heading.block.location.line_start,
+                heading.location.line_start,
                 "positive decimal criterion ID",
-                heading.block.text,
+                heading.text,
             )
         )
     if normalized_id in known_identifiers:
         findings.append(
             WorkDiagnostic(
-                heading.block.location.line_start,
+                heading.location.line_start,
                 f"unique criterion ID AC-{normalized_id}",
-                heading.block.text,
+                heading.text,
             )
         )
     if status not in get_args(CriterionStatus.__value__):
         findings.append(
             WorkDiagnostic(
-                heading.block.location.line_start,
+                heading.location.line_start,
                 "supported status TODO or DONE",
-                heading.block.text,
+                heading.text,
             )
         )
     if not (name or "").strip():
         findings.append(
             WorkDiagnostic(
-                heading.block.location.line_start,
+                heading.location.line_start,
                 "nonempty criterion name",
-                heading.block.text,
+                heading.text,
             )
         )
-    if not any(
-        _has_content(block) for block in blocks[heading.index + 1 : heading.outcome_end]
-    ):
+    if not any(_has_content(block) for block in body):
         findings.append(
             WorkDiagnostic(
-                heading.block.location.line_start,
+                heading.location.line_start,
                 "nonempty criterion outcome body",
-                heading.block.text,
+                heading.text,
             )
         )
     return _DeclarationResult(normalized_id, tuple(findings))
