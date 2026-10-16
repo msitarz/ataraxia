@@ -59,7 +59,6 @@ def test_explicit_overlapping_files_and_subtrees_are_deduplicated_and_sorted(
 @pytest.mark.parametrize(
     ("selection", "message"),
     [
-        pytest.param("doc/feat/missing", "Cannot resolve selection", id="missing"),
         pytest.param("README.md", "outside the Work root", id="outside-root"),
         pytest.param(
             "doc/feat/../../outside/README.md",
@@ -84,6 +83,20 @@ def test_invalid_explicit_selections_fail_with_actionable_context(
     # Then
     assert message in str(error.value)
     assert selection in str(error.value)
+
+
+def test_missing_selection_preserves_filesystem_cause(tmp_path: Path) -> None:
+    # Given
+    _write_contract(tmp_path, "doc/feat/existing/README.md")
+    selection = "doc/feat/missing"
+
+    # When
+    with pytest.raises(ContractDiscoveryError) as error:
+        discover_contracts(tmp_path, (selection,))
+
+    # Then
+    assert selection in str(error.value)
+    assert isinstance(error.value.__cause__, FileNotFoundError)
 
 
 @pytest.mark.parametrize(
@@ -111,22 +124,107 @@ def test_explicit_subtree_without_contracts_fails_even_with_other_contracts(
     assert "doc/feat/empty" in str(error.value)
 
 
-def test_symlinked_subtree_cannot_escape_work_root(tmp_path: Path) -> None:
+def test_recursive_discovery_skips_linked_directories(tmp_path: Path) -> None:
     # Given
     outside = tmp_path / "outside"
     outside.mkdir()
     _write_contract(tmp_path, "outside/README.md")
     work_root = tmp_path / "doc/feat"
     work_root.mkdir(parents=True)
+    local = _write_contract(tmp_path, "doc/feat/local/README.md")
     (work_root / "escape").symlink_to(outside, target_is_directory=True)
+
+    # When
+    contracts = discover_contracts(tmp_path)
+
+    # Then
+    assert tuple(item.path for item in contracts) == (local,)
+
+
+@pytest.mark.parametrize(
+    "selections",
+    [
+        pytest.param((), id="default-root"),
+        pytest.param(("doc/feat/alias",), id="selected-subtree"),
+    ],
+)
+def test_recursive_discovery_accepts_an_in_root_contract_file_link(
+    tmp_path: Path, selections: tuple[str, ...]
+) -> None:
+    # Given
+    target = _write_contract(tmp_path, "doc/feat/target/README.md", "# In root\n")
+    alias = tmp_path / "doc/feat/alias/README.md"
+    alias.parent.mkdir(parents=True)
+    alias.symlink_to(target)
+
+    # When
+    contracts = discover_contracts(tmp_path, selections)
+
+    # Then
+    assert tuple((item.path, item.text) for item in contracts) == (
+        (target, "# In root\n"),
+    )
+
+
+def test_recursive_discovery_rejects_a_contract_link_outside_work_root(
+    tmp_path: Path,
+) -> None:
+    # Given
+    outside = _write_contract(tmp_path, "outside/README.md")
+    alias = tmp_path / "doc/feat/alias/README.md"
+    alias.parent.mkdir(parents=True)
+    alias.symlink_to(outside)
 
     # When
     with pytest.raises(ContractDiscoveryError) as error:
         discover_contracts(tmp_path)
 
     # Then
-    assert "symlink directory" in str(error.value)
-    assert str(work_root / "escape") in str(error.value)
+    assert "escapes the Work root" in str(error.value)
+    assert str(alias) in str(error.value)
+
+
+def test_explicit_in_root_contract_link_is_accepted(tmp_path: Path) -> None:
+    # Given
+    target = _write_contract(tmp_path, "doc/feat/target/README.md")
+    alias = tmp_path / "doc/feat/alias/README.md"
+    alias.parent.mkdir(parents=True)
+    alias.symlink_to(target)
+
+    # When
+    contracts = discover_contracts(tmp_path, ("doc/feat/alias/README.md",))
+
+    # Then
+    assert tuple(item.path for item in contracts) == (target,)
+
+
+def test_explicit_link_alias_outside_work_root_is_rejected(tmp_path: Path) -> None:
+    # Given
+    target = _write_contract(tmp_path, "doc/feat/target/README.md")
+    alias = tmp_path / "outside/README.md"
+    alias.parent.mkdir()
+    alias.symlink_to(target)
+
+    # When
+    with pytest.raises(ContractDiscoveryError) as error:
+        discover_contracts(tmp_path, ("outside/README.md",))
+
+    # Then
+    assert "outside the Work root" in str(error.value)
+
+
+def test_explicit_non_readme_link_to_a_contract_is_rejected(tmp_path: Path) -> None:
+    # Given
+    target = _write_contract(tmp_path, "doc/feat/target/README.md")
+    alias = tmp_path / "doc/feat/alias.md"
+    alias.symlink_to(target)
+
+    # When
+    with pytest.raises(ContractDiscoveryError) as error:
+        discover_contracts(tmp_path, ("doc/feat/alias.md",))
+
+    # Then
+    assert "not a Work contract README.md" in str(error.value)
 
 
 def test_explicit_contract_path_through_escaping_symlink_fails(
@@ -170,5 +268,20 @@ def test_unreadable_contract_fails_with_its_path(
         discover_contracts(tmp_path, ("doc/feat/private/README.md",))
 
     # Then
-    assert "Cannot read Work contract" in str(error.value)
     assert str(contract) in str(error.value)
+    assert isinstance(error.value.__cause__, PermissionError)
+
+
+def test_non_utf8_contract_fails_with_its_path_and_cause(tmp_path: Path) -> None:
+    # Given
+    contract = tmp_path / "doc/feat/invalid/README.md"
+    contract.parent.mkdir(parents=True)
+    contract.write_bytes(b"\xff")
+
+    # When
+    with pytest.raises(ContractDiscoveryError) as error:
+        discover_contracts(tmp_path, ("doc/feat/invalid/README.md",))
+
+    # Then
+    assert str(contract) in str(error.value)
+    assert isinstance(error.value.__cause__, UnicodeDecodeError)
