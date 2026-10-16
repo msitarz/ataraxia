@@ -17,6 +17,10 @@ class SourceLocation:
     line_start: int
     line_end: int
 
+    def contains(self, other: SourceLocation) -> bool:
+        """Return whether this inclusive range contains another location."""
+        return self.line_start <= other.line_start and other.line_end <= self.line_end
+
     def __post_init__(self) -> None:
         """Reject invalid source line ranges.
 
@@ -98,7 +102,11 @@ class TextBlock(_LocatedBlock):
 
 @dataclass(frozen=True)
 class ContainerBlock(_LocatedBlock):
-    """A quote or list container owning immutable nested blocks."""
+    """A quote or list container owning immutable nested blocks.
+
+    Typed child values are assumed to be valid Markdown blocks. Construction
+    enforces the relationships owned by this container.
+    """
 
     kind: ContainerKind
     children: tuple[MarkdownBlock, ...]
@@ -107,8 +115,9 @@ class ContainerBlock(_LocatedBlock):
         """Validate container kind, children, and their source ranges.
 
         Raises:
-            TypeError: Children are not an immutable tuple of Markdown blocks.
-            ValueError: The kind or a child's range violates the container.
+            TypeError: Children are not an immutable tuple.
+            ValueError: The kind, a child's range, or a list's child kind is
+                invalid for this container.
         """
         super().__post_init__()
         if not isinstance(self.kind, str):
@@ -118,19 +127,12 @@ class ContainerBlock(_LocatedBlock):
         if not isinstance(self.children, tuple):
             raise TypeError("Markdown container children must be a tuple")
         for child in self.children:
-            if not isinstance(
-                child, (HeadingBlock, TextBlock, ContainerBlock, ThematicBreak)
-            ):
-                raise TypeError("Markdown container children must be Markdown blocks")
-            if child.location.line_start < self.location.line_start:
-                raise ValueError("Markdown child starts before its container")
-            if child.location.line_end > self.location.line_end:
-                raise ValueError("Markdown child ends after its container")
-            if self.kind == "list":
-                if not isinstance(child, ContainerBlock):
-                    raise ValueError("Markdown lists must contain list items")
-                if child.kind != "list_item":
-                    raise ValueError("Markdown lists must contain list items")
+            if not self.location.contains(child.location):
+                raise ValueError("Markdown child lies outside its container")
+        if self.kind == "list" and any(
+            child.kind != "list_item" for child in self.children
+        ):
+            raise ValueError("Markdown lists must contain list items")
 
 
 @dataclass(frozen=True)

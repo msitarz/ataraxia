@@ -50,7 +50,7 @@ from script.markdown.model import (
                 (TextBlock(SourceLocation(2, 2), "paragraph", "outside"),),
             ),
             ValueError,
-            "ends after its container",
+            "lies outside its container",
             id="child-outside-container",
         ),
         pytest.param(
@@ -79,6 +79,31 @@ def test_markdown_values_reject_invalid_locations_and_shapes(
 
     # Then
     assert message in str(error_info.value)
+
+
+@pytest.mark.parametrize(
+    ("container_lines", "child_lines", "contains"),
+    [
+        pytest.param((4, 8), (4, 8), True, id="equal-ranges"),
+        pytest.param((4, 8), (5, 7), True, id="interior-range"),
+        pytest.param((4, 8), (3, 5), False, id="before-start"),
+        pytest.param((4, 8), (7, 9), False, id="after-end"),
+    ],
+)
+def test_source_location_contains_inclusive_ranges(
+    container_lines: tuple[int, int],
+    child_lines: tuple[int, int],
+    contains: bool,
+) -> None:
+    # Given
+    container = SourceLocation(*container_lines)
+    child = SourceLocation(*child_lines)
+
+    # When
+    result = container.contains(child)
+
+    # Then
+    assert result is contains
 
 
 def test_heading_keeps_empty_text_and_frozen_owned_values() -> None:

@@ -18,8 +18,8 @@ with live resource safety.
 
 - **Consumed record:** the fields and relationships an operation relies on,
   including ownership, persistence, and security requirements.
-- **Domain value:** a typed value whose construction establishes the invariants
-  required by its consumers.
+- **Domain value:** a typed value whose construction from inputs satisfying its
+  declared type contract establishes the invariants required by its consumers.
 - **Core:** the domain values and pure rules, separate from input acquisition
   and effects.
 - **Port and adapter:** a consumer-defined collaborator contract and its
@@ -62,10 +62,11 @@ flowchart LR
 
 ### **AC-1 TODO** Complete record validation
 
-[Engineering conventions](../../engineering.md) requires successful domain
-value construction to establish every consumed-field and cross-field invariant
-it owns through `__post_init__` checks or focused constructors before core logic
-runs. Defensive validation follows the input contract:
+[Engineering conventions](../../engineering.md) requires domain value
+construction from inputs satisfying its declared type contract to establish
+every consumed-field and cross-field invariant it owns through `__post_init__`
+checks or focused constructors before core logic runs. Validation follows the
+input contract:
 
 - Raw external representations and untyped input, including persisted records,
   JSON, CLI/network input, and untyped plugin data, require consumed structure,
@@ -75,10 +76,18 @@ runs. Defensive validation follows the input contract:
   data upstream makes optional, unsupported variants, representation conversion,
   and domain invariants, without revalidating guarantees merely because the
   library is third party.
+- Typed internal constructors may rely on declared argument types and already
+  validated child domain values; they enforce owned semantic, value,
+  cross-field, and immutability invariants without promising schema validation
+  of arbitrary untyped arguments or repeatedly inspecting validated children.
 
-Popularity, annotations, and freezing alone do not validate raw input. Validated
-domain values follow [AC-3](#ac-3-todo-pure-decisions-over-valid-inputs); live
-resource checks follow
+Type and ownership checks remain appropriate where they establish an owned
+invariant, such as requiring tuple storage or excluding `bool` from an integer
+value domain. Popularity, annotations, and freezing alone do not establish
+validity; typed API guarantees do not extend to raw or untyped inputs, which
+must be validated at their actual ingress before construction. Validated domain
+values follow [AC-3](#ac-3-todo-pure-decisions-over-valid-inputs); live resource
+checks follow
 [AC-5](#ac-5-todo-effects-and-live-resource-safety-owned-by-adapters).
 Rejection may stop at the first error using simple guards. Expected boundary
 failures get contextual errors; programming errors surface rather than being
@@ -86,10 +95,10 @@ blanket-wrapped as input errors.
 
 Consumed fields include ownership, persistence, and security requirements.
 Unrelated extension data remains opaque and is preserved when required by the
-transport/persistence contract. A compact constructor example shows valid
-construction and rejection of invalid fields and field combinations, including
-finite string-domain validation with one authoritative `Literal` member
-inventory under the existing
+transport/persistence contract. A compact constructor example shows valid typed
+construction and rejection of invalid values and field combinations, with raw
+input validation at ingress, including finite string-domain validation with one
+authoritative `Literal` member inventory under the existing
 [type-precision guidance](../../engineering.md#preserve-type-precision).
 
 #### What exists
@@ -123,10 +132,11 @@ Engineering guidance requires pure core rules to return the same results for the
 same valid explicit inputs, without I/O, environment/time/random/global-state
 dependence, or argument mutation. Rules consume validated domain values without
 reparsing, repeated defensive input checks, or filesystem/process probes. They
-may construct and validate new outputs and transform typed path values. Calling
-an effectful collaborator remains effectful even through an injected Protocol.
-The constructor example includes a pure decision with typed inputs/results and
-clear error behavior.
+may construct new outputs under [AC-1](#ac-1-todo-complete-record-validation)
+and transform typed path values; output construction enforces its own invariants
+without revalidating child domain values. Calling an effectful collaborator
+remains effectful even through an injected Protocol. The constructor example
+includes a pure decision with typed inputs/results and clear error behavior.
 
 #### What exists
 
@@ -159,9 +169,11 @@ and output/effects clear typed input/output, error, and effect responsibilities.
 Adapters coordinate pure decisions and own processes, filesystem/persistence,
 locks, and cleanup on success or failure; cohesive functions may share a module.
 
-Record validation happens once per boundary crossing; adapters separately
-recheck live preconditions where an operation requires them. The wiring example
-makes this distinction concrete: a valid persisted sandbox record does not prove
+Record validation follows the input categories in
+[AC-1](#ac-1-todo-complete-record-validation) at the actual ingress; adapters
+separately recheck live preconditions where an operation requires them. The
+wiring example makes this distinction concrete: raw persisted data is validated
+before domain construction, and a valid persisted sandbox record does not prove
 current generation, device/inode identity, or held-lock freshness. Adapter
 checks under lock preserve fail-closed behavior, protection against changes
 between checking and use, and required effect ordering. Schema and ownership
