@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Adapt markdown-it-py tokens to the repository-owned Markdown boundary."""
 
-from typing import Literal
-
 from markdown_it import MarkdownIt
 from markdown_it.tree import SyntaxTreeNode
 
@@ -14,17 +12,8 @@ from script.markdown.model import (
     MarkdownParseError,
     SourceLocation,
     TextBlock,
-    TextKind,
     ThematicBreak,
 )
-
-type LeafKind = TextKind | Literal["thematic_break"]
-_LEAF_KINDS: dict[str, LeafKind] = {
-    "fence": "fenced_code",
-    "code_block": "code_block",
-    "html_block": "html_block",
-    "hr": "thematic_break",
-}
 
 
 class MarkdownItParser:
@@ -52,26 +41,29 @@ class MarkdownItParser:
 
 
 def _block(node: SyntaxTreeNode) -> MarkdownBlock:
-    kind = node.type
-    match kind:
+    match node.type:
         case "blockquote":
             return _container(node, "blockquote")
         case "bullet_list" | "ordered_list":
             return _container(node, "list")
         case "list_item":
             return _container(node, "list_item")
-    if kind == "heading":
-        return HeadingBlock(
-            _location(node), node.children[0].content, int(node.tag[1:])
-        )
-    if kind == "paragraph":
-        return TextBlock(_location(node), "paragraph", node.children[0].content)
-    if kind in _LEAF_KINDS:
-        leaf_kind = _LEAF_KINDS[kind]
-        if leaf_kind == "thematic_break":
+        case "heading":
+            return HeadingBlock(
+                _location(node), node.children[0].content, int(node.tag[1:])
+            )
+        case "paragraph":
+            return TextBlock(_location(node), "paragraph", node.children[0].content)
+        case "fence":
+            return TextBlock(_location(node), "fenced_code", node.content)
+        case "code_block":
+            return TextBlock(_location(node), "code_block", node.content)
+        case "html_block":
+            return TextBlock(_location(node), "html_block", node.content)
+        case "hr":
             return ThematicBreak(_location(node))
-        return TextBlock(_location(node), leaf_kind, node.content)
-    raise MarkdownParseError(f"unsupported Markdown block: {kind!r}")
+        case _:
+            raise MarkdownParseError(f"unsupported Markdown block: {node.type!r}")
 
 
 def _container(node: SyntaxTreeNode, kind: ContainerKind) -> ContainerBlock:
