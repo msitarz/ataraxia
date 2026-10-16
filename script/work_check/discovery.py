@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 import os
 from pathlib import Path
+import stat
 
 
 @dataclass(frozen=True)
@@ -34,12 +35,31 @@ def discover_contracts(
 
     Raises:
         ContractDiscoveryError: A selection is invalid, escapes the Work root,
-            contains no contracts, encounters a symlink, or cannot be read.
+            contains no contracts, or cannot be read.
     """
-    root = repo_root.resolve()
-    work_root = root / "doc" / "feat"
-    _validate_work_root(root, work_root)
-    candidates = _contracts_below(work_root) if not selections else set()
+    try:
+        return _discover_contracts(repo_root, selections)
+    except OSError as exc:
+        raise ContractDiscoveryError(f"Cannot inspect Work contracts: {exc}") from exc
+
+
+def _discover_contracts(
+    repo_root: Path, selections: Sequence[str]
+) -> tuple[ContractSource, ...]:
+    """Resolve inputs, discover selections, and read their contract files.
+
+    Returns:
+        Discovered contract sources.
+
+    Raises:
+        ContractDiscoveryError: A selection is invalid, escapes the Work root,
+            or contains no contracts.
+    """
+    root = repo_root.resolve(strict=True)
+    work_root = (root / "doc" / "feat").resolve(strict=True)
+    if not work_root.is_relative_to(root) or not stat.S_ISDIR(work_root.stat().st_mode):
+        raise ContractDiscoveryError(f"Work root is missing or invalid: {work_root}")
+    candidates = _contracts_below(work_root, work_root) if not selections else set()
     for selection in selections:
         selected_contracts = _selection_contracts(root, work_root, selection)
         if not selected_contracts:
@@ -54,42 +74,31 @@ def discover_contracts(
     return _read_contracts(root, candidates)
 
 
-def _validate_work_root(root: Path, work_root: Path) -> None:
-    """Ensure the active Work root is a real repository directory.
-
-    Raises:
-        ContractDiscoveryError: The Work root is missing, invalid, or outside
-            the repository.
-    """
-    if work_root.is_symlink() or not work_root.is_dir():
-        raise ContractDiscoveryError(f"Work root is missing or invalid: {work_root}")
-    if not work_root.resolve().is_relative_to(root):
-        raise ContractDiscoveryError(f"Work root escapes the repository: {work_root}")
-
-
 def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Path]:
     """Resolve and validate one selected contract file or subtree.
 
     Returns:
-        Contract paths contained by the selection.
+        Contract README paths selected by this path.
 
     Raises:
-        ContractDiscoveryError: The selection is invalid or outside the Work
-            root.
+        ContractDiscoveryError: The selection is outside the Work root or has
+            an unsupported shape.
     """
     selected = Path(selection)
     if not selected.is_absolute():
         selected = root / selected
-    if selected.is_symlink():
-        raise ContractDiscoveryError(f"Selection is a symlink: {selection}")
-    resolved = _resolve_selection(selected, selection)
-    if not resolved.is_relative_to(work_root.resolve()):
+    lexical = Path(os.path.abspath(selected))
+    if not lexical.is_relative_to(root / "doc" / "feat"):
         raise ContractDiscoveryError(f"Selection is outside the Work root: {selection}")
-    if resolved.is_dir():
-        return _contracts_below(resolved)
-    if resolved.is_file() and resolved.name == "README.md":
+    resolved = selected.resolve(strict=True)
+    if not resolved.is_relative_to(work_root):
+        raise ContractDiscoveryError(f"Selection is outside the Work root: {selection}")
+    mode = resolved.stat().st_mode
+    if stat.S_ISDIR(mode):
+        return _contracts_below(work_root, resolved)
+    if stat.S_ISREG(mode) and lexical.name == "README.md":
         return {resolved}
-    if resolved.is_file():
+    if stat.S_ISREG(mode):
         raise ContractDiscoveryError(
             f"Selection is not a Work contract README.md: {selection}"
         )
@@ -97,13 +106,13 @@ def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Pat
 
 
 def _read_contracts(root: Path, candidates: set[Path]) -> tuple[ContractSource, ...]:
-    """Read and sort selected contract files.
+    """Read selected contract files in repository-relative path order.
 
     Returns:
-        Contract source values in repository-relative path order.
+        Contract sources paired with their UTF-8 Markdown text.
 
     Raises:
-        ContractDiscoveryError: A contract cannot be read as UTF-8 text.
+        ContractDiscoveryError: A contract cannot be read as UTF-8 Markdown.
     """
     contracts = []
     for path in sorted(candidates, key=lambda item: item.relative_to(root).as_posix()):
@@ -117,49 +126,36 @@ def _read_contracts(root: Path, candidates: set[Path]) -> tuple[ContractSource, 
     return tuple(contracts)
 
 
-def _contracts_below(directory: Path) -> set[Path]:
-    """Find contract README files without following symlinks.
+def _contracts_below(work_root: Path, directory: Path) -> set[Path]:
+    """Find contained regular README files without following linked directories.
 
     Returns:
-        Paths to regular contract README files.
+        Resolved contract README paths under the Work root.
 
     Raises:
-        ContractDiscoveryError: A traversal error or symlink is encountered.
+        ContractDiscoveryError: A discovered README is not a regular file or
+            resolves outside the Work root.
     """
     candidates: set[Path] = set()
 
     def raise_walk_error(error: OSError) -> None:
-        raise ContractDiscoveryError(
-            f"Cannot inspect Work selection {error.filename}: {error}"
-        ) from error
+        raise error
 
     for current, directories, files in os.walk(
         directory, topdown=True, followlinks=False, onerror=raise_walk_error
     ):
         current_path = Path(current)
-        for name in directories:
-            child = current_path / name
-            if child.is_symlink():
-                raise ContractDiscoveryError(
-                    f"Work selection contains a symlink directory: {child}"
-                )
         if "README.md" in files:
-            path = current_path / "README.md"
-            if path.is_symlink():
-                raise ContractDiscoveryError(f"Work contract is a symlink: {path}")
-            if not path.is_file():
+            path = (current_path / "README.md").resolve(strict=True)
+            if not path.is_relative_to(work_root):
+                raise ContractDiscoveryError(
+                    "Discovered Work contract escapes the Work root: "
+                    f"{current_path / 'README.md'}"
+                )
+            if not stat.S_ISREG(path.stat().st_mode):
                 raise ContractDiscoveryError(
                     f"Work contract is not a regular file: {path}"
                 )
-            candidates.add(path.resolve())
+            candidates.add(path)
         directories.sort()
     return candidates
-
-
-def _resolve_selection(path: Path, original: str) -> Path:
-    try:
-        return path.resolve(strict=True)
-    except (OSError, RuntimeError) as exc:
-        raise ContractDiscoveryError(
-            f"Cannot resolve selection {original}: {exc}"
-        ) from exc

@@ -17,36 +17,18 @@ from script.markdown.model import (
 
 
 @pytest.mark.parametrize(
-    ("construct", "error", "message"),
+    "construct",
     [
-        pytest.param(
-            lambda: SourceLocation(True, 1),
-            ValueError,
-            "must not be Boolean",
-            id="boolean-start-line",
-        ),
-        pytest.param(
-            lambda: SourceLocation(1, True),
-            ValueError,
-            "must not be Boolean",
-            id="boolean-end-line",
-        ),
-        pytest.param(
-            lambda: SourceLocation(2, 1),
-            ValueError,
-            "must not precede",
-            id="reversed-lines",
-        ),
+        pytest.param(lambda: SourceLocation(True, 1), id="boolean-start-line"),
+        pytest.param(lambda: SourceLocation(1, True), id="boolean-end-line"),
+        pytest.param(lambda: SourceLocation(0, 1), id="nonpositive-start-line"),
+        pytest.param(lambda: SourceLocation(2, 1), id="reversed-lines"),
         pytest.param(
             lambda: HeadingBlock(SourceLocation(1, 1), "", True),
-            ValueError,
-            "must not be Boolean",
             id="boolean-heading-level",
         ),
         pytest.param(
             lambda: HeadingBlock(SourceLocation(1, 1), "", 7),
-            ValueError,
-            "from 1 through 6",
             id="unsupported-heading-level",
         ),
         pytest.param(
@@ -55,8 +37,6 @@ from script.markdown.model import (
                 "blockquote",
                 (TextBlock(SourceLocation(2, 2), "paragraph", "outside"),),
             ),
-            ValueError,
-            "lies outside its container",
             id="child-outside-container",
         ),
         pytest.param(
@@ -65,26 +45,22 @@ from script.markdown.model import (
                 "list",
                 (TextBlock(SourceLocation(1, 1), "paragraph", "item"),),
             ),
-            ValueError,
-            "lists must contain list items",
             id="list-child-kind",
         ),
     ],
 )
 def test_markdown_values_reject_invalid_locations_and_shapes(
     construct: Callable[[], MarkdownBlock | SourceLocation],
-    error: type[Exception],
-    message: str,
 ) -> None:
     # Given
     # The parametrized constructor represents the invalid value.
 
     # When
-    with pytest.raises(error) as error_info:
+    with pytest.raises(ValueError) as error:
         construct()
 
     # Then
-    assert message in str(error_info.value)
+    assert str(error.value).strip()
 
 
 @pytest.mark.parametrize(

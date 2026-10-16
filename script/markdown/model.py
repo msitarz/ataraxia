@@ -26,14 +26,12 @@ class SourceLocation:
             ValueError: A line value is Boolean, the start is nonpositive, or
                 the end precedes the start.
         """
-        if isinstance(self.line_start, bool):
-            raise ValueError("source start line must not be Boolean")
-        if self.line_start < 1:
-            raise ValueError("source start line must be positive")
-        if isinstance(self.line_end, bool):
-            raise ValueError("source end line must not be Boolean")
-        if self.line_end < self.line_start:
-            raise ValueError("source end line must not precede its start")
+        if (
+            isinstance(self.line_start, bool)
+            or isinstance(self.line_end, bool)
+            or not 1 <= self.line_start <= self.line_end
+        ):
+            raise ValueError("source lines must form a positive ordered range")
 
 
 @dataclass(frozen=True)
@@ -55,9 +53,7 @@ class HeadingBlock(_LocatedBlock):
         Raises:
             ValueError: The level is Boolean or outside the supported range.
         """
-        if isinstance(self.heading_level, bool):
-            raise ValueError("Markdown heading level must not be Boolean")
-        if not 1 <= self.heading_level <= 6:
+        if isinstance(self.heading_level, bool) or not 1 <= self.heading_level <= 6:
             raise ValueError("Markdown heading level must be from 1 through 6")
 
 

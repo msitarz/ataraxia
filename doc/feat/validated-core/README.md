@@ -89,8 +89,12 @@ must be validated at their actual ingress before construction. Validated domain
 values follow [AC-3](#ac-3-todo-pure-decisions-over-valid-inputs); live resource
 checks follow
 [AC-5](#ac-5-todo-effects-and-live-resource-safety-owned-by-adapters).
-Rejection may stop at the first error using simple guards. Expected boundary
-failures get contextual errors; programming errors surface rather than being
+Rejection may stop at the first error. Internal typed constructor invariant
+failures usually need concise errors, without a separate branch or message for
+every invalid possibility. Guidance favors expressing valid constraints
+directly where readable, with simple guards rather than large compound
+predicates and without requiring `match`. External/client-facing input errors
+need actionable context; programming errors surface rather than being
 blanket-wrapped as input errors.
 
 Consumed fields include ownership, persistence, and security requirements.
@@ -177,12 +181,21 @@ Engineering guidance assigns acquisition, parsing, validation, pure decisions,
 and output/effects clear typed input/output, error, and effect responsibilities.
 Adapters coordinate pure decisions and own processes, filesystem/persistence,
 locks, and cleanup on success or failure; cohesive functions may share a module.
+They attempt intended filesystem/effect operations and handle expected failures
+at the owning adapter/reporting boundary, following
+[AC-1](#ac-1-todo-complete-record-validation)'s error distinction. Guidance
+avoids preflight existence/readability probes and repeated observations while
+preserving explicit domain and selection policies, such as Work-root
+containment, and required ownership, security, lifecycle, and live precondition
+checks; repository paths are not categorically distrusted and
+symlinks are not categorically prohibited.
 
 Record validation follows the input categories in
 [AC-1](#ac-1-todo-complete-record-validation) at the actual ingress; adapters
 separately recheck live preconditions where an operation requires them. The
-wiring example makes this distinction concrete: raw persisted data is validated
-before domain construction, and a valid persisted sandbox record does not prove
+wiring example demonstrates operation/failure handling and makes this
+distinction concrete: raw persisted data is validated before domain
+construction, and a valid persisted sandbox record does not prove
 current generation, device/inode identity, or held-lock freshness. Adapter
 checks under lock preserve fail-closed behavior, protection against changes
 between checking and use, and required effect ordering. Schema and ownership
