@@ -20,6 +20,7 @@ dev = [
     "commitizen>=4.19.0",
     "debugpy>=1.8.22",
     "hypothesis>=6.168.5",
+    "markdown-it-py>=4.2.0",
     "mermaidx==0.9.5",
     "quickjs-ng==0.17.0.1",
     "prek>=0.5.3",
