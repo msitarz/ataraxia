@@ -5,9 +5,12 @@ Investigation or Evaluation, also read its applicable section below.
 
 Use the [Work contract template](work-contract-template.md) for structure,
 outcome writing, and examples. Each Work is identified by its repository
-directory, with its contract in `README.md`. Supporting artifacts can hold
-Investigation findings or Evaluation protocols/results; they do not define a
-second Work contract. Do not require YAML frontmatter, a journal, or separate
+directory, with its contract in `README.md`. Every `README.md` recursively under
+`doc/feat/` is an active Work contract, independent of its contents; this
+includes planning parents and Investigations. Keep guidance, templates, and
+retained history outside that root. Supporting artifacts may live with their
+Work, but use filenames other than `README.md`; they do not define another
+contract. Do not require YAML frontmatter, a journal, or separate
 human-facing and agent-facing versions of the same contract.
 
 Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
