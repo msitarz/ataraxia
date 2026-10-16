@@ -95,10 +95,13 @@ blanket-wrapped as input errors.
 
 Consumed fields include ownership, persistence, and security requirements.
 Unrelated extension data remains opaque and is preserved when required by the
-transport/persistence contract. A compact constructor example shows valid typed
-construction and rejection of invalid values and field combinations, with raw
-input validation at ingress, including finite string-domain validation with one
-authoritative `Literal` member inventory under the existing
+transport/persistence contract. The compact constructor example relies on
+declared argument types and validated child values while checking domain
+restrictions and ownership: it rejects `bool` line numbers, enforces valid line
+ranges, and requires immutable tuple storage. It shows valid construction and
+rejection of invalid values and field combinations, with raw input validation at
+ingress, including finite string-domain validation with one authoritative
+`Literal` member inventory under the existing
 [type-precision guidance](../../engineering.md#preserve-type-precision).
 
 #### What exists

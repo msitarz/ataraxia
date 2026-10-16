@@ -23,7 +23,13 @@ from script.markdown.model import (
             lambda: SourceLocation(True, 1),
             ValueError,
             "must not be Boolean",
-            id="boolean-line",
+            id="boolean-start-line",
+        ),
+        pytest.param(
+            lambda: SourceLocation(1, True),
+            ValueError,
+            "must not be Boolean",
+            id="boolean-end-line",
         ),
         pytest.param(
             lambda: SourceLocation(2, 1),
