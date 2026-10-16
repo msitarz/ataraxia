@@ -8,7 +8,6 @@ from typing import Literal, Protocol, get_args
 
 type ContainerKind = Literal["blockquote", "list", "list_item"]
 type TextKind = Literal["fenced_code", "code_block", "html_block", "paragraph"]
-type BlockKind = ContainerKind | TextKind | Literal["heading", "thematic_break"]
 
 
 @dataclass(frozen=True)

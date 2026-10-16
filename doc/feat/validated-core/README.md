@@ -64,11 +64,25 @@ flowchart LR
 
 [Engineering conventions](../../engineering.md) requires successful domain
 value construction to establish every consumed-field and cross-field invariant
-before core logic runs. Parsing converts external representations and returns
-validated values through `__post_init__` checks or focused constructors;
-annotations and freezing alone do not validate data. Rejection may stop at the
-first error, using simple guards rather than clever compound short-circuit
-validation.
+it owns through `__post_init__` checks or focused constructors before core logic
+runs. Defensive validation follows the input contract:
+
+- Raw external representations and untyped input, including persisted records,
+  JSON, CLI/network input, and untyped plugin data, require consumed structure,
+  types, and owned relationships to be validated once at the owning boundary.
+- Supported, documented typed library APIs supply their documented type, shape,
+  and structural guarantees; adapters check our contract gaps, such as required
+  data upstream makes optional, unsupported variants, representation conversion,
+  and domain invariants, without revalidating guarantees merely because the
+  library is third party.
+
+Popularity, annotations, and freezing alone do not validate raw input. Validated
+domain values follow [AC-3](#ac-3-todo-pure-decisions-over-valid-inputs); live
+resource checks follow
+[AC-5](#ac-5-todo-effects-and-live-resource-safety-owned-by-adapters).
+Rejection may stop at the first error using simple guards. Expected boundary
+failures get contextual errors; programming errors surface rather than being
+blanket-wrapped as input errors.
 
 Consumed fields include ownership, persistence, and security requirements.
 Unrelated extension data remains opaque and is preserved when required by the
@@ -184,14 +198,15 @@ ADT Investigation may proceed independently.
 
 ## Additional context
 
-The delivery is compact guidance and two supporting examples at the
-engineering owner: a constructor/pure-decision example and a port/adapter wiring
-example. At least one uses ordinary application logic outside sandbox lifecycle;
-sandbox locks and native identity checks stay contextual. Examples describe
-proposed behavior with typed signatures and input/output/error/effect contracts,
-without introducing production APIs. Existing, historical, and proposed behavior
-are distinguished against then-integrated source; the historical
-ProcessSupervisor is absent at the planning baseline.
+The delivery is compact guidance and two supporting examples at the engineering
+owner: a constructor/pure-decision example and a port/adapter wiring example.
+Together they contrast raw input validation with documented typed library API
+adaptation. At least one uses ordinary application logic outside sandbox
+lifecycle; sandbox locks and native identity checks stay contextual. Examples
+describe proposed behavior with typed signatures and input/output/error/effect
+contracts, without introducing production APIs. Existing, historical, and
+proposed behavior are distinguished against then-integrated source; the
+historical ProcessSupervisor is absent at the planning baseline.
 
 The guidance integrates existing composition, dataclass, Protocol, and
 type-precision rules and links to [testing guidance](../../testing.md) for test
