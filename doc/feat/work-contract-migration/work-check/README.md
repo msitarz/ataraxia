@@ -22,7 +22,7 @@ Markdown parsing boundary and the ordinary documentation check.
 ## Mechanisms
 
 - `make work-check` exposes structural checking with optional `ARGS` paths.
-- A selected Markdown parser supplies structured blocks and source locations.
+- `markdown-it-py` supplies structured blocks and source locations.
 - A repository-owned parsing boundary separates Markdown representation from
   Work rules and can serve future script tools.
 - `make doc-check` invokes work-check after migration, preserving existing
@@ -47,11 +47,10 @@ flowchart LR
 
 ### **AC-1 TODO** Adopt the reviewed parser choice
 
-The parser and version recommended by the
-[parser-selection findings](parser-selection-evidence/findings.md) are adopted
-only after maintainer review of its findings and recommendation. The production
-dependency and lockfile agree with the reviewed choice; a no-fit finding leaves
-adoption blocked pending maintainer direction.
+The maintainer accepted `markdown-it-py` from the
+[parser-selection findings](parser-selection-evidence/findings.md).
+`pyproject.toml` declares the production dependency as `markdown-it-py>=4.2.0`,
+and `uv.lock` records the resolved version satisfying that requirement.
 
 ### **AC-2 TODO** Markdown parsing exposes a reusable typed boundary
 
@@ -132,8 +131,8 @@ commands, and existing documentation checks retain their behavior.
 ## Children
 
 - **DONE** Bounded parser-selection comparison and versioned recommendation
-  ([findings](parser-selection-evidence/findings.md)); production adoption
-  awaits maintainer review of the recommendation.
+  ([findings](parser-selection-evidence/findings.md)); the maintainer accepted
+  the `markdown-it-py` recommendation.
 
 ## Links
 
@@ -153,7 +152,7 @@ commands, and existing documentation checks retain their behavior.
 The completed parser-selection Investigation records the bounded comparison and
 recommendation in its [findings report](parser-selection-evidence/findings.md);
 production adoption, dependency and lockfile changes, and integration remain in
-this Work and depend on maintainer review of that recommendation. Current
-[engineering conventions](../../../engineering.md) remain applicable. The
-explicit boundary outcomes above exercise the relevant proposed direction
-without waiting for unrelated guidance Works or copying their full contracts.
+this Work. Current [engineering conventions](../../../engineering.md) remain
+applicable. The explicit boundary outcomes above exercise the relevant proposed
+direction without waiting for unrelated guidance Works or copying their full
+contracts.
