@@ -6,7 +6,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from script.markdown_model import (
+from script.markdown.model import (
     ContainerBlock,
     ContainerKind,
     HeadingBlock,

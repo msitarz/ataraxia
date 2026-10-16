@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from script.markdown_it_adapter import MarkdownItParser
-from script.markdown_model import (
+from script.markdown.markdown_it_adapter import MarkdownItParser
+from script.markdown.model import (
     ContainerBlock,
     HeadingBlock,
     MarkdownBlock,
@@ -16,7 +16,7 @@ from script.markdown_model import (
     ThematicBreak,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 
 
 def test_parser_returns_complete_typed_tree_with_source_locations() -> None:

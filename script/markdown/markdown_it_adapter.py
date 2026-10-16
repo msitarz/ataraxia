@@ -8,7 +8,7 @@ from typing import Literal, assert_never
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
-from script.markdown_model import (
+from script.markdown.model import (
     BlockKind,
     ContainerBlock,
     HeadingBlock,
