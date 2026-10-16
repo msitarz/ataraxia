@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from typing import assert_type
 
-from script.markdown_it_adapter import MarkdownItParser
-from script.markdown_model import (
+from script.markdown.markdown_it_adapter import MarkdownItParser
+from script.markdown.model import (
     HeadingBlock,
     MarkdownBlock,
     MarkdownParser,
