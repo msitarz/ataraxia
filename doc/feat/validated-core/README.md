@@ -89,13 +89,15 @@ must be validated at their actual ingress before construction. Validated domain
 values follow [AC-3](#ac-3-todo-pure-decisions-over-valid-inputs); live resource
 checks follow
 [AC-5](#ac-5-todo-effects-and-live-resource-safety-owned-by-adapters).
-Rejection may stop at the first error. Internal typed constructor invariant
-failures usually need concise errors, without a separate branch or message for
-every invalid possibility. Guidance favors expressing valid constraints
-directly where readable, with simple guards rather than large compound
-predicates and without requiring `match`. External/client-facing input errors
-need actionable context; programming errors surface rather than being
-blanket-wrapped as input errors.
+Rejection may stop at the first error. Guidance describes supported cases
+directly: when one value determines the outcome, it prefers `match` with
+explicit supported cases and a shared rejection case for failures requiring the
+same caller response. Independent constraints remain short guards rather than
+large compound predicates. Internal typed constructor invariant failures
+usually need concise errors; external/client-facing input errors need actionable
+context. Separate failure paths are retained only for useful caller
+distinctions; programming errors surface rather than being blanket-wrapped as
+input errors.
 
 Consumed fields include ownership, persistence, and security requirements.
 Unrelated extension data remains opaque and is preserved when required by the
@@ -181,7 +183,9 @@ Engineering guidance assigns acquisition, parsing, validation, pure decisions,
 and output/effects clear typed input/output, error, and effect responsibilities.
 Adapters coordinate pure decisions and own processes, filesystem/persistence,
 locks, and cleanup on success or failure; cohesive functions may share a module.
-Guidance prefers attempting operations and handling expected failures at the
+Guidance calls for normalizing inputs once, reusing observations, and relying on
+documented API behavior to avoid unnecessary branches. It prefers attempting
+operations and handling expected failures at the
 owning boundary over preflight probes, following
 [AC-1](#ac-1-todo-complete-record-validation)'s error distinction. Explicit
 domain policies and required ownership, security, lifecycle, and live
