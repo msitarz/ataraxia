@@ -45,17 +45,13 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Parser choice has checked fit and bounded rationale
+### **AC-1 TODO** Adopt the reviewed parser choice
 
-A concise retained comparison of pyromark, markdown-it-py, and cmarkgfm records
-each candidate's structured access, source-location fidelity, HTML comment and
-fence handling, typing precision, and support for the repository's Python
-version. Focused probes establish the relevant behaviors and distinguish checked
-results from assumptions or unsupported capabilities. The recommendation names
-the selected version, its tradeoffs, and any required adaptation; the adopted
-dependency and lockfile agree with that selection. Upstream-only probe results
-remain inspectable under [test ownership](../../../test-ownership.md), while
-permanent coverage belongs to the repository's own boundary and behavior.
+The parser and version recommended by the
+[parser-selection Investigation](parser-selection/README.md) are adopted only
+after maintainer review of its findings and recommendation. The production
+dependency and lockfile agree with the reviewed choice; a no-fit finding leaves
+adoption blocked pending maintainer direction.
 
 ### **AC-2 TODO** Markdown parsing exposes a reusable typed boundary
 
@@ -133,6 +129,11 @@ commands, and existing documentation checks retain their behavior.
   [Work acceptance](../../../acceptance-tracing.md): own required structure and
   supported criterion statuses.
 
+## Children
+
+- **TODO** [Parser-selection Investigation](parser-selection/README.md): answers
+  the parser-fit question before this Work adopts a production dependency.
+
 ## Links
 
 - [Validated core guidance Work](../../validated-core/README.md): pending
@@ -148,8 +149,9 @@ commands, and existing documentation checks retain their behavior.
 
 ## Additional context
 
-The parser comparison is a bounded adoption decision within this Work, not a
-separate implementation or empirical-evaluation programme. Current
+The child Investigation owns the bounded comparison and recommendation;
+production adoption, dependency and lockfile changes, and integration remain
+in this Work and depend on maintainer review of that recommendation. Current
 [engineering conventions](../../../engineering.md) remain applicable. The
 explicit boundary outcomes above exercise the relevant proposed direction
 without waiting for unrelated guidance Works or copying their full contracts.
