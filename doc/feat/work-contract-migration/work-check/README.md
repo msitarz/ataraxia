@@ -45,12 +45,13 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Adopt the reviewed parser choice
+### **AC-1 DONE** Adopt the reviewed parser choice
 
 The maintainer accepted `markdown-it-py` from the
-[parser-selection findings](parser-selection-evidence/findings.md).
-`pyproject.toml` declares the production dependency as `markdown-it-py>=4.2.0`,
-and `uv.lock` records the resolved version satisfying that requirement.
+[parser-selection findings](https://github.com/msitarz/ataraxia/blob/ca44e406dc2e3b375dfe8f52dd54819a31e2ec86/doc/feat/work-contract-migration/work-check/parser-selection-evidence/findings.md).
+`pyproject.toml` declares the dev tooling dependency as
+`markdown-it-py>=4.2.0`, and `uv.lock` records the resolved version satisfying
+that requirement.
 
 ### **AC-2 TODO** Markdown parsing exposes a reusable typed boundary
 
@@ -131,8 +132,8 @@ commands, and existing documentation checks retain their behavior.
 ## Children
 
 - **DONE** Bounded parser-selection comparison and versioned recommendation
-  ([findings](parser-selection-evidence/findings.md)); the maintainer accepted
-  the `markdown-it-py` recommendation.
+  ([findings](https://github.com/msitarz/ataraxia/blob/ca44e406dc2e3b375dfe8f52dd54819a31e2ec86/doc/feat/work-contract-migration/work-check/parser-selection-evidence/findings.md));
+  the maintainer accepted the `markdown-it-py` recommendation.
 
 ## Links
 
@@ -150,9 +151,9 @@ commands, and existing documentation checks retain their behavior.
 ## Additional context
 
 The completed parser-selection Investigation records the bounded comparison and
-recommendation in its [findings report](parser-selection-evidence/findings.md);
-production adoption, dependency and lockfile changes, and integration remain in
-this Work. Current [engineering conventions](../../../engineering.md) remain
-applicable. The explicit boundary outcomes above exercise the relevant proposed
-direction without waiting for unrelated guidance Works or copying their full
-contracts.
+recommendation in its
+[findings report](https://github.com/msitarz/ataraxia/blob/ca44e406dc2e3b375dfe8f52dd54819a31e2ec86/doc/feat/work-contract-migration/work-check/parser-selection-evidence/findings.md);
+parser integration remains in this Work. Current
+[engineering conventions](../../../engineering.md) remain applicable. The
+explicit boundary outcomes above exercise the relevant proposed direction
+without waiting for unrelated guidance Works or copying their full contracts.
