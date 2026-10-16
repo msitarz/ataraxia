@@ -48,8 +48,8 @@ flowchart LR
 ### **AC-1 TODO** Adopt the reviewed parser choice
 
 The parser and version recommended by the
-[parser-selection Investigation](parser-selection/README.md) are adopted only
-after maintainer review of its findings and recommendation. The production
+[parser-selection findings](parser-selection-evidence/findings.md) are adopted
+only after maintainer review of its findings and recommendation. The production
 dependency and lockfile agree with the reviewed choice; a no-fit finding leaves
 adoption blocked pending maintainer direction.
 
@@ -131,8 +131,9 @@ commands, and existing documentation checks retain their behavior.
 
 ## Children
 
-- **TODO** [Parser-selection Investigation](parser-selection/README.md): answers
-  the parser-fit question before this Work adopts a production dependency.
+- **DONE** Bounded parser-selection comparison and versioned recommendation
+  ([findings](parser-selection-evidence/findings.md)); production adoption
+  awaits maintainer review of the recommendation.
 
 ## Links
 
@@ -149,9 +150,10 @@ commands, and existing documentation checks retain their behavior.
 
 ## Additional context
 
-The child Investigation owns the bounded comparison and recommendation;
-production adoption, dependency and lockfile changes, and integration remain
-in this Work and depend on maintainer review of that recommendation. Current
+The completed parser-selection Investigation records the bounded comparison and
+recommendation in its [findings report](parser-selection-evidence/findings.md);
+production adoption, dependency and lockfile changes, and integration remain in
+this Work and depend on maintainer review of that recommendation. Current
 [engineering conventions](../../../engineering.md) remain applicable. The
 explicit boundary outcomes above exercise the relevant proposed direction
 without waiting for unrelated guidance Works or copying their full contracts.

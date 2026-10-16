@@ -27,7 +27,7 @@ guarantee for their units.
 The probes ran on CPython 3.14.8 (Darwin x86_64), satisfying the repository's
 `requires-python = ">=3.14"`. Each package was installed at the pinned version
 in its own temporary environment under `/private/tmp`; the repository's
-dependencies and lockfile were not changed. The child-owned probe Makefile
+dependencies and lockfile were not changed. The archived probe Makefile
 contains the exact `uv venv` and `uv pip install` commands in `setup`, and
 `probe-all` executes each isolated interpreter. The initial cmarkgfm install
 built the sdist on this Intel Mac. The JSON records interpreter, platform,
@@ -40,24 +40,32 @@ attribute; the probe records the installed version through
 `importlib.metadata.distribution()` instead.
 
 The same four Markdown inputs (two real contracts plus adversarial and Unicode
-fixtures) were parsed by each public API:
-
-| Input | Provenance / coverage |
-| --- | --- |
-| `../parser-selection/probes/fixtures/real-work-check.fixture` | Exact copy of `doc/feat/work-contract-migration/work-check/README.md` at base `99df4b0e3b9632e952b0246e17e95df135204fab`; SHA-256 `7c4fd6a2a545548708390d947e0f879acd875e3cf198c433cffa2d730cf170f8`. |
-| `../parser-selection/probes/fixtures/real-evaluation.fixture` | Exact copy of `doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md` at the same base; SHA-256 `2d2115aca57acdf8c2a4b7e9843b96949421cfc2ef94ad98ce79e4b3640a2f06`. |
-| `../parser-selection/probes/fixtures/adversarial.fixture` | Positive top-level H1/H2/H3 and bold AC declaration; fake required section and AC headings inside a block quote and nested list; fake headings inside an HTML comment and fenced Markdown; Unicode before later content. |
-| `../parser-selection/probes/fixtures/unicode-offset.fixture` | Eighteen lines of `é` before a located H2, followed by enough lines that interpreting a byte offset as a character offset reports a different line. |
-
-The probe records decision-relevant heading levels, source locations, container
-context, AC inline structure and fence/comment evidence in `pyromark.json`,
-`markdown-it-py.json`, and `cmarkgfm.json`. It omits ordinary prose tokens and
-the full rendered HTML. Reproduce setup and probes from the repository root:
+fixtures) were parsed by each public API. The one-time probe source, fixtures,
+and Make recipes are archived in
+[commit a61f2f1](https://github.com/msitarz/ataraxia/tree/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes).
+These were upstream-only probes, not ongoing regression tests. To reproduce
+them, create a disposable checkout of that commit with
+`git worktree add --detach /private/tmp/parser-selection-replay a61f2f1b662ba8a9021e77abca8adac366c46d90`,
+then run these archived Make targets from that checkout's repository root:
 
 ```sh
 make -C doc/feat/work-contract-migration/work-check/parser-selection/probes setup
 make -C doc/feat/work-contract-migration/work-check/parser-selection/probes probe-all
 ```
+
+| Input | Provenance / coverage |
+| --- | --- |
+| [real-work-check.fixture](https://github.com/msitarz/ataraxia/blob/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes/fixtures/real-work-check.fixture) | Exact copy of `doc/feat/work-contract-migration/work-check/README.md` at base `99df4b0e3b9632e952b0246e17e95df135204fab`; SHA-256 `7c4fd6a2a545548708390d947e0f879acd875e3cf198c433cffa2d730cf170f8`. |
+| [real-evaluation.fixture](https://github.com/msitarz/ataraxia/blob/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes/fixtures/real-evaluation.fixture) | Exact copy of `doc/feat/evaluation-sandboxes/lifecycle/active-state-exclusion/README.md` at the same base; SHA-256 `2d2115aca57acdf8c2a4b7e9843b96949421cfc2ef94ad98ce79e4b3640a2f06`. |
+| [adversarial.fixture](https://github.com/msitarz/ataraxia/blob/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes/fixtures/adversarial.fixture) | Positive top-level H1/H2/H3 and bold AC declaration; fake required section and AC headings inside a block quote and nested list; fake headings inside an HTML comment and fenced Markdown; Unicode before later content. |
+| [unicode-offset.fixture](https://github.com/msitarz/ataraxia/blob/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes/fixtures/unicode-offset.fixture) | Eighteen lines of `é` before a located H2, followed by enough lines that interpreting a byte offset as a character offset reports a different line. |
+
+The archived
+[probe source](https://github.com/msitarz/ataraxia/blob/a61f2f1b662ba8a9021e77abca8adac366c46d90/doc/feat/work-contract-migration/work-check/parser-selection/probes/probe.py)
+records decision-relevant heading levels, source locations, container context,
+AC inline structure and fence/comment evidence in `pyromark.json`,
+`markdown-it-py.json`, and `cmarkgfm.json`. It omits ordinary prose tokens and
+the full rendered HTML.
 
 For markdown-it-py, source maps are zero-based half-open line intervals, so the
 adapter can report `map[0] + 1`. The retained JSON records the corresponding
