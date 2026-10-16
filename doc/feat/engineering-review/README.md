@@ -57,8 +57,10 @@ responsibilities. Questions link to the rules at their existing owners rather
 than redefining them:
 
 - Does the code state supported cases and domain intent directly, using
-  meaningful `match` cases and shared rejection when the caller response is the
-  same, while retaining short independent guards where clearer?
+  structural `match` or typed variants for mutually exclusive shapes and
+  shared rejection when the caller response is the same, while distinguishing
+  independent constraints that may read better as short guards or a small local
+  collection of valid-condition/diagnostic pairs?
 - Does it use standard Python or library semantics and protocols where they fit,
   normalize inputs and derive shared facts once, and reuse observations rather
   than repeat scans or interpretation?
@@ -78,6 +80,12 @@ than redefining them:
 - Do focused tests observe meaningful behavior at the narrowest boundary, with
   higher-level tests proving integration obligations instead of duplicating
   complete lower-level oracles?
+
+These choices depend on readability, not a requirement to use a table or variant
+model for every validation. Independent checks preserve multi-error accumulation
+where the contract requires it; constructors may still reject the first failure.
+Eagerly evaluated conditions must not hide type prerequisites or lose type
+precision, and local checks do not justify a general validation framework.
 
 [AGENTS.md](../../../AGENTS.md), the
 [documentation ownership table](../../README.md#owners), and applicable
@@ -126,7 +134,9 @@ opportunities:
 - Heading boundaries contrast repeated following-heading scans with shared
   derived facts, while criterion checking shows directly testable per-heading
   decisions with section membership and seen identifiers kept visible in the
-  loop, without mandating a backward pass or another specific algorithm.
+  loop, distinguishing malformed declarations from parsed declarations with
+  independent semantic findings that a small local collection can accumulate,
+  without mandating a backward pass, table, or variant model.
 - Typed CLI and test examples contrast uncertainty propagated from a dynamic
   boundary and duplicate full oracles with a precise consumed contract and
   focused unit checks plus integration obligations, without prescribing an
