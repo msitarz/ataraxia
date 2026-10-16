@@ -25,17 +25,13 @@ class SourceLocation:
         """Reject invalid source line ranges.
 
         Raises:
-            TypeError: A line value is not an integer.
-            ValueError: A line value is Boolean, nonpositive, or reversed.
+            ValueError: A line value is Boolean, the start is nonpositive, or
+                the end precedes the start.
         """
-        if not isinstance(self.line_start, int):
-            raise TypeError("source start line must be an integer")
         if isinstance(self.line_start, bool):
             raise ValueError("source start line must not be Boolean")
         if self.line_start < 1:
             raise ValueError("source start line must be positive")
-        if not isinstance(self.line_end, int):
-            raise TypeError("source end line must be an integer")
         if isinstance(self.line_end, bool):
             raise ValueError("source end line must not be Boolean")
         if self.line_end < self.line_start:
@@ -45,10 +41,6 @@ class SourceLocation:
 @dataclass(frozen=True)
 class _LocatedBlock:
     location: SourceLocation
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.location, SourceLocation):
-            raise TypeError("Markdown blocks require a SourceLocation")
 
 
 @dataclass(frozen=True)
@@ -60,20 +52,14 @@ class HeadingBlock(_LocatedBlock):
     kind: Literal["heading"] = field(default="heading", init=False)
 
     def __post_init__(self) -> None:
-        """Validate heading text and level.
+        """Validate the heading level.
 
         Raises:
-            TypeError: Text or level has the wrong type.
             ValueError: The level is Boolean or outside the supported range.
         """
-        super().__post_init__()
-        if not isinstance(self.text, str):
-            raise TypeError("Markdown heading text must be a string")
-        if not isinstance(self.heading_level, int):
-            raise TypeError("Markdown heading level must be an integer")
         if isinstance(self.heading_level, bool):
             raise ValueError("Markdown heading level must not be Boolean")
-        if self.heading_level < 1 or self.heading_level > 6:
+        if not 1 <= self.heading_level <= 6:
             raise ValueError("Markdown heading level must be from 1 through 6")
 
 
@@ -85,19 +71,13 @@ class TextBlock(_LocatedBlock):
     text: str
 
     def __post_init__(self) -> None:
-        """Validate the text leaf's kind and content.
+        """Validate the text leaf's supported kind.
 
         Raises:
-            TypeError: The kind or text has the wrong type.
             ValueError: The kind is not supported by this value shape.
         """
-        super().__post_init__()
-        if not isinstance(self.kind, str):
-            raise TypeError("Markdown text block kind must be a string")
         if self.kind not in get_args(TextKind.__value__):
             raise ValueError(f"unsupported Markdown text block kind: {self.kind!r}")
-        if not isinstance(self.text, str):
-            raise TypeError("Markdown block text must be a string")
 
 
 @dataclass(frozen=True)
@@ -119,9 +99,6 @@ class ContainerBlock(_LocatedBlock):
             ValueError: The kind, a child's range, or a list's child kind is
                 invalid for this container.
         """
-        super().__post_init__()
-        if not isinstance(self.kind, str):
-            raise TypeError("Markdown container kind must be a string")
         if self.kind not in get_args(ContainerKind.__value__):
             raise ValueError(f"unsupported Markdown container kind: {self.kind!r}")
         if not isinstance(self.children, tuple):
