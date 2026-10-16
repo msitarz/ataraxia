@@ -189,7 +189,7 @@ project_includes = [
   "test",
   "example",
 ]
-project_excludes = ["test/ataraxia/typecheck/**"]
+project_excludes = ["test/*/typecheck/**"]
 search_path = ["src", ".", "test/ataraxia/fixtures/backtest", "script"]
 python_version = "3.14"
 preset = "strict"
