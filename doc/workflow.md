@@ -77,7 +77,7 @@ guidance links in Dependencies have no Work status.
 - `ABORT` records lifecycle status and does not authorize closure of an
   incomplete Work by itself. Follow the
   [authorized closure guidance](acceptance-tracing.md#authorized-closure) for
-  incomplete outcomes and current tool limits.
+  incomplete outcomes.
 
 For example, either active or completed-but-retained entries become the same
 closed entry:
@@ -111,8 +111,9 @@ preserves merged contracts and exact changes.
 
 If a Work stops with unsatisfied outcomes, follow
 [authorized closure guidance](acceptance-tracing.md#authorized-closure) for
-recording `ABORT`; until the checker supports that status, preserve the contract
-and pause the incomplete closure request.
+recording `ABORT`. Until the checker supports that status, preserve the contract
+and pause the incomplete closure request under the
+[command Work's current tool constraints](feat/post-merge-work-closure/command/README.md).
 
 After a Work PR merges, follow the
 [post-merge branch cleanup](branch-cleanup.md) procedure.

@@ -37,9 +37,9 @@ worktree, reviewed head, and merge commit IDs. Review the cleaner's concise
 report instead of repeating its operations, and serialize cleanup with worktree
 creation and other shared Git mutations.
 
-For closure authorization and current incomplete-Work limits, follow
-[Work acceptance](acceptance-tracing.md#authorized-closure); the command Work
-owns implementing its planned Make interfaces.
+For closure authorization, follow
+[Work acceptance](acceptance-tracing.md#authorized-closure). The command Work
+owns its planned Make interfaces and current incomplete-Work behavior.
 
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
