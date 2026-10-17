@@ -59,7 +59,7 @@ evidence-backed capability gap.
   blocking semantics.
 - Precise scope, exceptions, diagnostics, and remaining manual review
   obligations reflect observed capabilities and the
-  [proposed readable-condition policy](../../../engineering.md#code-style).
+  [integrated readable-condition policy](../../../engineering.md#code-style).
 - Discovery excludes transient environments, caches, and build output
   consistently with lint discovery, without blanket exemptions for scripts or
   tests.
@@ -92,5 +92,5 @@ adoption blocked and the parent incomplete.
   boundaries.
 - [Adoption Work](../adopt/README.md) consumes the independently reviewed
   findings.
-- [Validated core guidance](../../validated-core/README.md) owns proposed
-  policy; this Investigation may proceed independently of its integration.
+- [Integrated engineering guidance](../../../engineering.md) owns the policy;
+  this Investigation may proceed independently of adoption.
