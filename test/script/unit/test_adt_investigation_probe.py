@@ -2,7 +2,7 @@
 """One-time complete-boundary probe for three sandbox record models."""
 
 from collections.abc import Callable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 import json
 import math
 from pathlib import Path
@@ -163,6 +163,75 @@ class DataclassRecord:
     lifecycle: Lifecycle
     extensions: dict[str, JsonValue]
 
+    def __post_init__(self) -> None:
+        validate_product(
+            self.schema_version,
+            self.generation,
+            self.owner,
+            self.destination,
+            self.lifecycle,
+            self.extensions,
+        )
+
+
+@dataclass(frozen=True)
+class ValidatedRecord:
+    """Narrow, complete product produced only after external validation."""
+
+    schema_version: int
+    generation: str
+    owner: Owner
+    destination: DestinationIdentity
+    lifecycle: Lifecycle
+    extensions: dict[str, JsonValue]
+
+    def __post_init__(self) -> None:
+        validate_product(
+            self.schema_version,
+            self.generation,
+            self.owner,
+            self.destination,
+            self.lifecycle,
+            self.extensions,
+        )
+
+
+def validate_product(
+    schema_version: int,
+    generation: str,
+    owner: Owner,
+    destination: DestinationIdentity,
+    lifecycle: Lifecycle,
+    extensions: dict[str, JsonValue],
+) -> None:
+    """Enforce the complete domain contract at typed construction boundaries."""
+    if isinstance(schema_version, bool) or schema_version != 1:
+        raise ValueError("unsupported sandbox metadata")
+    if not re.fullmatch(r"[0-9a-f]{32}", generation):
+        raise ValueError("malformed sandbox generation")
+    if not all(
+        isinstance(value, str)
+        for value in (owner.common_dir, owner.project, owner.base)
+    ):
+        raise ValueError("malformed sandbox ownership")
+    if any(
+        isinstance(value, bool) or not isinstance(value, int) or value < 0
+        for value in (destination.device, destination.inode)
+    ):
+        raise ValueError("malformed sandbox destination identity")
+    if isinstance(lifecycle, Failed):
+        details = lifecycle.diagnostics
+        if not all(
+            isinstance(value, str)
+            for value in (details.stage, details.status, details.stdout, details.stderr)
+        ):
+            raise ValueError("incomplete sandbox failure diagnostics")
+    if not all(
+        isinstance(key, str) and is_json_value(value)
+        for key, value in extensions.items()
+    ):
+        raise ValueError("malformed sandbox metadata")
+
 
 @dataclass(frozen=True)
 class FlatMarker:
@@ -171,6 +240,9 @@ class FlatMarker:
     owned: FlatRecord
     extensions: dict[str, JsonValue]
 
+    def __post_init__(self) -> None:
+        parse_and_validate(serialize_marker(self), "marker.json")
+
 
 @dataclass(frozen=True)
 class TaggedMarker:
@@ -178,6 +250,9 @@ class TaggedMarker:
 
     owned: TaggedRecord
     extensions: dict[str, JsonValue]
+
+    def __post_init__(self) -> None:
+        parse_and_validate(serialize_marker(self), "marker.json")
 
 
 type Marker = FlatMarker | TaggedMarker | DataclassRecord
@@ -210,13 +285,11 @@ def sample_record(state: State = "failed") -> dict[str, JsonValue]:
     return record
 
 
-def parse_and_validate(
-    data: bytes, path: str
-) -> tuple[dict[str, JsonValue], dict[str, JsonValue]]:
+def parse_and_validate(data: bytes, path: str) -> ValidatedRecord:
     """Decode and validate the complete record before candidate construction.
 
     Returns:
-        The owned fields and separately retained extensions.
+        A complete typed product and separately owned extensions.
 
     Raises:
         ValueError: If decoding or complete record validation fails.
@@ -231,9 +304,54 @@ def parse_and_validate(
         raise ValueError(f"malformed sandbox metadata: {path}")
     _validate_consumed_fields(raw, path)
     owned_keys = set(COMMON_KEYS) | set(DIAGNOSTICS)
-    owned = {key: value for key, value in raw.items() if key in owned_keys}
     extensions = {key: value for key, value in raw.items() if key not in owned_keys}
-    return owned, extensions
+    schema_value = raw.get("schema_version")
+    if not isinstance(schema_value, int) or isinstance(schema_value, bool):
+        raise ValueError(f"unsupported sandbox metadata: {path}")
+    generation = _required_string(
+        raw, "generation", path, "malformed sandbox generation"
+    )
+    common_dir = _required_string(
+        raw, "common_dir", path, "malformed sandbox ownership"
+    )
+    project = _required_string(raw, "project", path, "malformed sandbox ownership")
+    base = _required_string(raw, "base", path, "malformed sandbox ownership")
+    device = _required_nonnegative_int(raw, "destination_device", path)
+    inode = _required_nonnegative_int(raw, "destination_inode", path)
+    raw_state = raw.get("state")
+    if raw_state == "preparing":
+        state: State = "preparing"
+    elif raw_state == "ready":
+        state = "ready"
+    elif raw_state == "failed":
+        state = "failed"
+    else:
+        raise ValueError(f"malformed sandbox state: {path}")
+    lifecycle = make_lifecycle(raw, state, path)
+    return ValidatedRecord(
+        schema_value,
+        generation,
+        Owner(common_dir, project, base),
+        DestinationIdentity(device, inode),
+        lifecycle,
+        extensions,
+    )
+
+
+def _required_string(
+    raw: dict[str, JsonValue], key: str, path: str, message: str
+) -> str:
+    value = raw.get(key)
+    if not isinstance(value, str):
+        raise ValueError(f"{message}: {path}")
+    return value
+
+
+def _required_nonnegative_int(raw: dict[str, JsonValue], key: str, path: str) -> int:
+    value = raw.get(key)
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        raise ValueError(f"malformed sandbox destination identity: {path}")
+    return value
 
 
 def read_metadata_file(path: Path) -> bytes:
@@ -306,47 +424,121 @@ def construct_marker(candidate: Candidate, data: bytes) -> Marker:
     Returns:
         The selected complete marker representation.
     """
-    owned, extensions = parse_and_validate(data, "marker.json")
+    parsed = parse_and_validate(data, "marker.json")
     if candidate == "flat":
-        return FlatMarker(FlatRecord(**owned), extensions)
+        return FlatMarker(flat_record(parsed), parsed.extensions)
     if candidate == "tagged":
-        state = owned["state"]
-        if state == "failed":
-            return TaggedMarker(FailedRecord(**owned), extensions)
-        if state == "ready":
-            return TaggedMarker(ReadyRecord(**owned), extensions)
-        return TaggedMarker(PreparingRecord(**owned), extensions)
+        return TaggedMarker(tagged_record(parsed), parsed.extensions)
     return DataclassRecord(
-        schema_version=owned["schema_version"],
-        generation=owned["generation"],
-        owner=Owner(owned["common_dir"], owned["project"], owned["base"]),
-        destination=DestinationIdentity(
-            owned["destination_device"], owned["destination_inode"]
-        ),
-        lifecycle=make_lifecycle(owned),
-        extensions=extensions,
+        parsed.schema_version,
+        parsed.generation,
+        parsed.owner,
+        parsed.destination,
+        parsed.lifecycle,
+        parsed.extensions,
     )
 
 
-def make_lifecycle(owned: dict[str, JsonValue]) -> Lifecycle:
+def flat_record(parsed: ValidatedRecord) -> FlatRecord:
+    result: FlatRecord = {
+        "schema_version": parsed.schema_version,
+        "generation": parsed.generation,
+        "common_dir": parsed.owner.common_dir,
+        "project": parsed.owner.project,
+        "base": parsed.owner.base,
+        "destination_device": parsed.destination.device,
+        "destination_inode": parsed.destination.inode,
+        "state": lifecycle_state(parsed.lifecycle),
+    }
+    if isinstance(parsed.lifecycle, Failed):
+        details = parsed.lifecycle.diagnostics
+        result.update({
+            "failure_stage": details.stage,
+            "failure_status": details.status,
+            "failure_stdout": details.stdout,
+            "failure_stderr": details.stderr,
+        })
+    return result
+
+
+def tagged_record(parsed: ValidatedRecord) -> TaggedRecord:
+    match parsed.lifecycle:
+        case Preparing():
+            return PreparingRecord(
+                schema_version=parsed.schema_version,
+                generation=parsed.generation,
+                common_dir=parsed.owner.common_dir,
+                project=parsed.owner.project,
+                base=parsed.owner.base,
+                destination_device=parsed.destination.device,
+                destination_inode=parsed.destination.inode,
+                state="preparing",
+            )
+        case Ready():
+            return ReadyRecord(
+                schema_version=parsed.schema_version,
+                generation=parsed.generation,
+                common_dir=parsed.owner.common_dir,
+                project=parsed.owner.project,
+                base=parsed.owner.base,
+                destination_device=parsed.destination.device,
+                destination_inode=parsed.destination.inode,
+                state="ready",
+            )
+        case Failed(diagnostics=details):
+            return FailedRecord(
+                schema_version=parsed.schema_version,
+                generation=parsed.generation,
+                common_dir=parsed.owner.common_dir,
+                project=parsed.owner.project,
+                base=parsed.owner.base,
+                destination_device=parsed.destination.device,
+                destination_inode=parsed.destination.inode,
+                state="failed",
+                failure_stage=details.stage,
+                failure_status=details.status,
+                failure_stdout=details.stdout,
+                failure_stderr=details.stderr,
+            )
+
+
+def lifecycle_state(lifecycle: Lifecycle) -> State:
+    match lifecycle:
+        case Preparing():
+            return "preparing"
+        case Ready():
+            return "ready"
+        case Failed():
+            return "failed"
+
+
+def make_lifecycle(owned: dict[str, JsonValue], state: State, path: str) -> Lifecycle:
     """Adapt validated flat fields to the dataclass lifecycle sum.
 
     Returns:
         The lifecycle alternative represented by the flat fields.
     """
-    state = owned["state"]
     if state == "failed":
         return Failed(
             FailureDiagnostics(
-                owned["failure_stage"],
-                owned["failure_status"],
-                owned["failure_stdout"],
-                owned["failure_stderr"],
+                _diagnostic_string(owned, "failure_stage", path),
+                _diagnostic_string(owned, "failure_status", path),
+                _diagnostic_string(owned, "failure_stdout", path),
+                _diagnostic_string(owned, "failure_stderr", path),
             )
         )
     if state == "ready":
         return Ready()
     return Preparing()
+
+
+def _diagnostic_string(
+    record: dict[str, JsonValue], key: DiagnosticKey, path: str
+) -> str:
+    value = record.get(key)
+    if not isinstance(value, str):
+        raise ValueError(f"incomplete sandbox failure diagnostics: {path}")
+    return value
 
 
 def serialize_marker(marker: Marker) -> bytes:
@@ -419,28 +611,29 @@ def transition_ready(marker: Marker) -> Marker:
     Raises:
         ValueError: If the source marker is not in the preparing state.
     """
+    parsed = parse_and_validate(serialize_marker(marker), "marker.json")
+    if not isinstance(parsed.lifecycle, Preparing):
+        raise ValueError("sandbox preparation state cannot be reassigned")
+    updated = ValidatedRecord(
+        parsed.schema_version,
+        parsed.generation,
+        parsed.owner,
+        parsed.destination,
+        Ready(),
+        parsed.extensions.copy(),
+    )
     if isinstance(marker, FlatMarker):
-        if marker.owned["state"] != "preparing":
-            raise ValueError("sandbox preparation state cannot be reassigned")
-        updated = {
-            key: value for key, value in marker.owned.items() if key not in DIAGNOSTICS
-        }
-        updated["state"] = "ready"
-        result: Marker = FlatMarker(FlatRecord(**updated), marker.extensions.copy())
-    elif isinstance(marker, TaggedMarker):
-        if marker.owned["state"] != "preparing":
-            raise ValueError("sandbox preparation state cannot be reassigned")
-        updated = {
-            key: value for key, value in marker.owned.items() if key not in DIAGNOSTICS
-        }
-        updated["state"] = "ready"
-        result = TaggedMarker(ReadyRecord(**updated), marker.extensions.copy())
-    else:
-        if not isinstance(marker.lifecycle, Preparing):
-            raise ValueError("sandbox preparation state cannot be reassigned")
-        result = replace(marker, lifecycle=Ready(), extensions=marker.extensions.copy())
-    parse_and_validate(serialize_marker(result), "marker.json")
-    return result
+        return FlatMarker(flat_record(updated), updated.extensions)
+    if isinstance(marker, TaggedMarker):
+        return TaggedMarker(tagged_record(updated), updated.extensions)
+    return DataclassRecord(
+        updated.schema_version,
+        updated.generation,
+        updated.owner,
+        updated.destination,
+        updated.lifecycle,
+        updated.extensions,
+    )
 
 
 def _remove_inode(record: dict[str, JsonValue]) -> None:
@@ -600,11 +793,10 @@ def test_file_read_failure_preserves_external_cause(tmp_path: Path) -> None:
 def test_python_patterns_and_freezing_do_not_validate_or_deep_freeze_values() -> None:
     """Typed declarations and frozen outer records do not validate child values."""
     # Given
-    invalid_typed_dict = FlatRecord(schema_version=True)
     mutable_extensions: dict[str, JsonValue] = {"key": [1]}
     record = DataclassRecord(
         1,
-        "x",
+        "0123456789abcdef0123456789abcdef",
         Owner("", "", ""),
         DestinationIdentity(0, 0),
         Preparing(),
@@ -616,6 +808,30 @@ def test_python_patterns_and_freezing_do_not_validate_or_deep_freeze_values() ->
     is_int = matches_int_pattern(True)
 
     # Then
-    assert invalid_typed_dict["schema_version"] is True
     assert record.extensions["key"] == [2]
     assert is_int
+
+
+def test_complete_candidate_constructors_reject_invalid_direct_values() -> None:
+    """Typed annotations do not enforce a complete runtime record boundary."""
+    with pytest.raises(ValueError, match="malformed sandbox destination identity"):
+        DataclassRecord(
+            1,
+            "0123456789abcdef0123456789abcdef",
+            Owner("", "", ""),
+            DestinationIdentity(0, -1),
+            Preparing(),
+            {},
+        )
+    invalid_flat = FlatRecord(
+        schema_version=1,
+        generation="0123456789abcdef0123456789abcdef",
+        common_dir="",
+        project="",
+        base="",
+        destination_device=0,
+        destination_inode=-1,
+        state="preparing",
+    )
+    with pytest.raises(ValueError, match="malformed sandbox destination identity"):
+        FlatMarker(invalid_flat, {})

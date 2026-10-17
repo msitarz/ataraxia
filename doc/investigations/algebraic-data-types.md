@@ -139,7 +139,7 @@ The product and sum distinction is visible in the dataclass form: owner,
 schema, generation, and destination identity are shared product data; lifecycle
 is one of three alternatives; diagnostics belong only to the failed
 alternative. The full executable model and checker signatures are retained in
-the two probe files referenced below.
+the executable probe and its checker expectation file referenced below.
 
 ## Exact boundary carried by the examples
 
@@ -173,22 +173,27 @@ dense compound guard.
 
 ## Probe code and observed results
 
-The runtime example in
-[`test_adt_investigation_probe.py`](test_adt_investigation_probe.py)
-uses one seed-faithful external validator and constructs all three candidates
-from its complete result. It performs valid JSON roundtrips, checks extension
-preservation, and sends invalid whole records through each candidate boundary.
-Its cases cover missing and wrongly typed consumed values, Boolean and negative
-destination identity, failed diagnostic gaps, diagnostic-key presence with
-`null`, unexpected diagnostics on a non-failed state, invalid extension data,
-decode causes, direct `TypedDict` construction, shallow frozen contents, and
-`int()` class patterns accepting `bool`.
+The executable probe in
+[`test_adt_investigation_probe.py`](../../test/script/unit/test_adt_investigation_probe.py)
+decodes and validates at the external boundary, then narrows every consumed
+field into a `ValidatedRecord` product before candidate construction. Flat and
+tagged adapters and the dataclass all consume that same product. Typed
+dataclass construction validates schema, generation, ownership, destination,
+lifecycle, and extensions in `__post_init__`; the flat and tagged `TypedDict`
+forms rely on the validated adapter because `TypedDict` has no runtime
+constructor enforcement. The probe performs full JSON roundtrips, checks
+extension preservation and state updates, and sends invalid whole records
+through each candidate boundary. Its cases cover missing and wrongly typed
+consumed values, Boolean and negative destination identity, failed diagnostic
+gaps, diagnostic-key presence with `null`, unexpected diagnostics on a
+non-failed state, invalid extension data, decode causes, shallow frozen
+contents, and `int()` class patterns accepting `bool`.
 
 The type probe in
 [`algebraic_data_types_probe.py`](../../test/script/typecheck/algebraic_data_types_probe.py)
-models complete shared fields on the flat record and all tagged variants, plus
-the shared product and lifecycle union on the dataclass. It asserts the inferred
-decision result types. Pyrefly 1.3.1 narrows a dataclass union and tagged
+imports the executable candidate types and exercises its construction,
+decision, and transition functions in positive `assert_type` checks. Pyrefly
+1.3.1 narrows a dataclass union and tagged
 `TypedDict` union when the discriminant is matched; omitting `Failed` causes an
 observed `assert_never` diagnostic in each. For the flat model, the same
 diagnostic catches an omitted state literal, but diagnostics remain optional
@@ -196,19 +201,22 @@ after state narrowing. A mapping-pattern match on the entire tagged
 `TypedDict` union did not narrow its fields usefully; the probe retains that
 unsupported attempt as an expected diagnostic rather than claiming coverage.
 
-Observed through Make on the investigation revision:
+Observed through Make on the corrected investigation revision:
 
-- `make test ARGS=doc/investigations/test_adt_investigation_probe.py` — 35
+- `make test ARGS=test/script/unit/test_adt_investigation_probe.py` — 36
   passed: valid full-record roundtrip, pure decision, and state update for each
   candidate; eight invalid whole-record cases and two parse-cause cases per
-  candidate; a read-error cause case; and one runtime typing/freeze/pattern
-  case.
+  candidate; a read-error cause case; direct invalid complete-constructor cases;
+  and one runtime freeze/pattern case.
+- `make typecheck ARGS=test/script/unit/test_adt_investigation_probe.py` —
+  passed with zero diagnostics, checking the executable construction path
+  itself.
 - `make typecheck-expectations ARGS=test/script/typecheck/algebraic_data_types_probe.py`
   — three expected omitted-case diagnostics (flat state, tagged union, dataclass
-  union) plus the expected mapping-pattern type error were reported; positive
-  result assertions passed, with no unexpected checker errors.
+  union) plus the expected mapping-pattern type error; positive assertions
+  against the implementation passed with no unexpected checker errors.
 - `make doc-check ARGS=doc/investigations/algebraic-data-types.md` — passed.
 
 These are one-time representation probes, not ongoing regression tests. Their
-source remains inspectable beside this report until the Investigation's
-reviewed cleanup; the report retains their method and result afterward.
+source remains inspectable in the test tree until the Investigation's reviewed
+cleanup; the report retains their method and result afterward.
