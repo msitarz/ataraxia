@@ -84,7 +84,7 @@ def failure_details(state: Lifecycle) -> FailureDiagnostics | None:
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Representation recommendation
+### **AC-1 DONE** Representation recommendation
 
 A short comparison recommends whether and where a variant model improves the
 seed.
@@ -106,7 +106,7 @@ seed.
 - Checked evidence is distinguished from assumptions, and a concrete later
   adoption scope is recommended only if justified.
 
-### **AC-2 TODO** Complete boundary and compatibility comparison
+### **AC-2 DONE** Complete boundary and compatibility comparison
 
 The examples show each candidate across the complete consumed-record boundary.
 
@@ -140,7 +140,7 @@ records do not replace fail-closed checks against changes between checking and
 use. Resource revalidation evidence stays at its effectful adapter/lifecycle
 boundary, separately from pure-rule examples.
 
-### **AC-3 TODO** Observed typing guarantees and limits
+### **AC-3 DONE** Observed typing guarantees and limits
 
 Bounded typing examples establish what the locked checker supports for the
 candidate representations.
