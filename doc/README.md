@@ -119,15 +119,6 @@ affected reading routes. Check that moved requirements remain discoverable and
 examples agree with their owning contracts. Run `make doc-check` to check
 Markdown formatting and local links and validate Mermaid fences with the
 embedded renderer; run `make doc-format` to apply the configured formatting.
-Native rumdl extraction can retain `>` prefixes from blockquoted Mermaid, which
-may cause checks to fail
-([rumdl issue #949](https://github.com/rvben/rumdl/issues/949)). Embedded
-rendering does not establish GitHub or browser rendering parity. Check that
-prose, headings, and examples use the same glossary terms. Follow
+Check that prose, headings, and examples use the same glossary terms. Follow
 [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
 cohesive changes.
-
-Background:
-[Thoughtworks](https://www.thoughtworks.com/insights/blog/evolutionary-architecture/domain-driven-design-in-10-minutes-part-one),
-[Fowler and Joshi](https://martinfowler.com/articles/convo-llm-abstractions.html),
-[Schleicher](https://www.danielschleicher.com/software/engineering,/ai,/spec-driven/development/2026/01/04/removing-ambiguity-with-spec-driven-development.html).
