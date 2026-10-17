@@ -11,14 +11,13 @@ uses its usual Work PR; a requested parent publishes one final PR for its whole
 tree. Delegated child parents and leaves do not publish independently. Nested
 local delivery follows
 [orchestrator guidance](orchestrator.md#roles-and-delegation).
-For Work deliveries with acceptance criteria, follow the
-[commit-preservation procedure](acceptance-tracing.md#work-delivery-commits)
-to complete and independently review every required leaf and parent pair before
-publication. Publish the reviewed sequence once; require full CI on the final
-reviewed PR head before merge. A later material correction remains permitted and
-requires refreshed acceptance evidence, independent review, and full CI on the
-corrected head. The owning orchestrator's publication and description
-responsibilities are defined [below](#descriptions).
+For Work deliveries with acceptance criteria, publish the reviewed
+implementation with requested and descendant contracts retained through
+corrections and maintainer merge. Require full CI on the latest reviewed PR head
+before merge. A material correction remains permitted and requires refreshed
+acceptance evidence, independent review, and full CI on the corrected head. The
+owning orchestrator's publication and description responsibilities are defined
+[below](#descriptions).
 
 Before preparing a rewrite of a published branch, follow the
 [expected-remote capture and lease procedure](publisher.md#published-branch-rewrites).

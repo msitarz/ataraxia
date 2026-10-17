@@ -18,7 +18,7 @@ requiring agents to restore and delete it for each review round.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** One lifecycle retains contracts through merge
+### **AC-1 DONE** One lifecycle retains contracts through merge
 
 Acceptance, workflow, orchestrator, contribution, and PR guidance keep contracts
 in the implementation PR through corrections and maintainer merge. Requested

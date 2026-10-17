@@ -18,6 +18,9 @@ Amended by
 Amended by
 [26. Keep evidence at its source](0026-keep-evidence-at-its-source.md).
 
+Amended by
+[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+
 ## Context
 
 Agent-written prose about checks can be inaccurate and later mistaken for

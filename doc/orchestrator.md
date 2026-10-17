@@ -55,13 +55,13 @@ isolated branch/worktree at the base ref assigned by its immediate parent owner;
 its direct leaves use the sequential execution route below. Independent child
 parents may run in parallel when dependencies, capacity, and shared edits
 permit. Serialize shared owner/map edits and integrate subtree commits as linear
-history without dropping their verification/cleanup pairs.
+history while retaining their contracts through requested-tree merge.
 
 The immediate parent reviews child-parent interfaces and composition, reusing
 valid leaf evidence. Retain the child's verified parent contract through this
-integration review; afterward the immediate parent owner records reviewed child
-cleanup and its own map update under
-[Work acceptance](acceptance-tracing.md#work-delivery-commits).
+integration review; the immediate parent retains the reviewed child contract
+through requested-tree merge under
+[Work acceptance](acceptance-tracing.md#work-delivery).
 
 ```mermaid
 flowchart TD
@@ -71,8 +71,8 @@ flowchart TD
     B --> EB[Same executor: B1 then review then B2]
     A --> I[Immediate parent integration review: retain child contracts]
     B --> I
-    I --> C[Parent-owned child cleanup and map updates]
-    C --> P[Requested Work verification and cleanup: one final PR]
+    I --> C[Parent-owned integration review and map updates]
+    C --> P[Requested Work review and one final PR with contracts retained]
 ```
 
 After exact-artifact and description review and acceptance assessment, hand
@@ -119,7 +119,7 @@ groups of information:
 - **Workspace:** destination path, branch, assigned base, create or resume
   instruction, and the existing creation or setup route when applicable.
 - **Authority and stopping point:** approved scope, where to report a gap, and
-  owner review before criteria become `DONE` or the contract is removed.
+  owner review before criteria become `DONE`.
 - **Return:** use the assigned role's requirements: [Definer
   guidance](definer.md) or [Executor guidance](executor.md). Identify changes
   awaiting review or needed steering.
@@ -183,12 +183,13 @@ before publication.
 
 For a requested parent's direct leaves, complete the local artifact/evidence
 review and any consolidated corrections before assigning the next leaf. Follow
-the [local delivery sequence](acceptance-tracing.md#work-delivery-commits) for
-each accepted leaf. Within that accumulating branch, local acceptance of a
+the [local delivery sequence](acceptance-tracing.md#work-delivery) for each
+accepted leaf, retaining its contract through requested-tree merge. Within that
+accumulating branch, local acceptance of a
 dependency permits its next dependent leaf without a `master` merge. The parent
 owner owns map changes; child leaf PRs are not published from this
 requested-parent run. After the leaves, review
-the parent's own acceptance and verification/cleanup sequence under its
+the parent's own acceptance under its
 immediate parent's integration review, or before publication if it is the
 requested Work.
 
@@ -207,10 +208,6 @@ unavailable, report that and wait; do not silently switch agents or implement
 its changes as a fallback. Keep independent review and maintainer review, merge,
 and CI gates.
 
-Before removing a completing Work's contract, independently review its
-criterion statuses and evidence using the
-[Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).
-
 If a definer or executor session is cancelled or lost, recover from the Work
 contract, parent map, branch or PR, and available evidence. Establish which
 changes remain, which evidence applies to the current revision, and which
@@ -221,7 +218,7 @@ corrections after a completed executor run likewise use a fresh session after
 recovery; do not repurpose the retired session.
 
 Follow [Work acceptance](acceptance-tracing.md) for criterion status, outcome
-evidence, and the retained verification/cleanup commits. Follow
+evidence, and contract retention through merge. Follow
 [Pull requests](pull-requests.md#descriptions) for executor returns, local
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
@@ -231,8 +228,8 @@ supporting changes, and concepts, under
 [Work scope and sizing](workflow.md#scope-and-sizing). If simplification and
 reuse cannot meet the target, stop publication and apply the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
-preserving valid implementation and evidence. Run `make work-review` after
-cleanup as a reminder at this checkpoint. Integrated parent review assesses
+preserving valid implementation and evidence. Run `make work-review` as a
+reminder at this checkpoint. Integrated parent review assesses
 interfaces and composition rather than requiring the entire parent batch to fit
 one leaf's review target. Preserve substantive scope requirements and identify
 remaining merge resolution. Only the requested Work owner hands off its final

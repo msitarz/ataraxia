@@ -98,9 +98,11 @@ reviewable deliveries. Material changes to an approved direction or contract
 require explicit approval; smaller Works within that direction proceed to their
 own review.
 
-For Work PRs with acceptance criteria, follow the
-[commit-preservation rule](doc/acceptance-tracing.md#work-delivery-commits);
-do not squash.
+For Work PRs with acceptance criteria, keep requested and descendant contracts
+through review, corrections, and maintainer merge. Follow
+[Work acceptance](doc/acceptance-tracing.md#work-delivery) for observed
+evidence and correction updates. Do not remove contracts in a pre-publication
+cleanup commit.
 
 Before preparing a published-branch rewrite, follow
 [publisher rewrite guidance](doc/publisher.md#published-branch-rewrites).

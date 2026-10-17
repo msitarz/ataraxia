@@ -232,7 +232,7 @@ def test_work_review_prompts_concise_delivery(
 
     # Then
     assert review.exit_code == 0, review.output
-    assert "After Work cleanup" in review.stdout
+    assert "Before publication" in review.stdout
     assert "complete leaf diff" in review.stdout
     assert "about five minutes" in review.stdout
     assert "pause and ask the maintainer" in review.stdout

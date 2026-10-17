@@ -40,6 +40,7 @@ authoritative owners.
 - [25. Retire test-to-criterion markers](0025-retire-test-to-criterion-markers.md)
 - [26. Keep evidence at its source](0026-keep-evidence-at-its-source.md)
 - [27. Use prototyping within Investigations](0027-use-prototyping-within-investigations.md)
+- [28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md)
 
 ## Proposal
 

@@ -62,15 +62,17 @@ the owning orchestrator coordinates local delivery maps within that tree under
 reviewed map updates from their handoff; they need not read orchestrator
 scheduling guidance for that operation.
 
-Delivery or abandonment updates the parent's entry and removes the finished
-child directory in the same delivery sequence, following the nested integration
-gate in [Work delivery commits](acceptance-tracing.md#work-delivery-commits).
-Before removing a finished Work, promote lasting contracts and decisions to
-their authoritative owners. PRs hold review discussion; Git preserves removed
-contracts and exact changes.
+Retain requested and descendant contracts through implementation PR review,
+corrections, and maintainer merge. Keep parent entries linked to their active
+contracts through that review. After merge, keep finished contracts available
+until the supported post-merge closure procedure exists; do not manually delete
+contracts or repeat parent-map updates. Promote lasting contracts and decisions
+to their authoritative owners before supported closure. PRs hold review
+discussion; Git preserves merged contracts and exact changes.
 
-Before removing a completed Work, follow the
-[Work delivery commit procedure](acceptance-tracing.md#work-delivery-commits).
+If a Work is abandoned with unsatisfied outcomes, record `ABORT` with the reason
+and do not describe the Work as completed. Retain its contract until supported
+closure is available.
 
 After a Work PR merges, follow the
 [post-merge branch cleanup](branch-cleanup.md) procedure.

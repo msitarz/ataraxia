@@ -6,6 +6,9 @@ Date: 2026-09-30
 
 Accepted
 
+Amended by
+[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+
 ## Context
 
 Nested Works need visible status in their owning parent. Retained child
