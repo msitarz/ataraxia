@@ -106,7 +106,7 @@ in a deterministic order. Content failures exit 1, invocation or input-access
 failures exit 2, and a successful check exits 0. The command changes no files;
 DONE labels never establish acceptance or affect structural pass/fail.
 
-### **AC-5 TODO** Documentation checks enforce the migrated format automatically
+### **AC-5 DONE** Documentation checks enforce the migrated format automatically
 
 After active contract migration, doc-check runs work-check for all active
 contracts and fails when structural checking fails, including when doc-check's

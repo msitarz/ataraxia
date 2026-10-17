@@ -15,7 +15,8 @@ human-facing and agent-facing versions of the same contract.
 
 Run `make work-check` to check every active contract, or pass one or more
 repository-local Work README paths or subtrees through `ARGS` for focused
-feedback.
+feedback. `make doc-check` also checks every active contract; its `ARGS` only
+focuses its documentation checks.
 
 Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 when assessing existing machinery and the remaining gap. Use an Investigation

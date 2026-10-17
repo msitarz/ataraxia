@@ -34,7 +34,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         ),
         (
             "doc-check",
-            ("run", "rumdl", "check", "--only-code-block-tools", "--no-cache", "."),
+            ("run", "python", "-m", "script.work_check"),
             "doc/README.md#review",
             "whole affected section",
             "For meaningful changes",
@@ -98,6 +98,28 @@ def test_recursive_doc_check_suppresses_only_the_reminder(sandbox: MakeSandbox) 
     assert "nested output" in result.stdout
     assert "Was the whole affected section" not in result.stdout
     assert "For meaningful changes:" not in result.stdout
+
+
+def test_doc_check_propagates_work_failure_without_reminder(
+    sandbox: MakeSandbox,
+) -> None:
+    """A failed Work check fails doc-check before its success reminder."""
+    # Given
+    failed_check = ("run", "python", "-m", "script.work_check")
+
+    # When
+    result = sandbox.run(
+        "doc-check",
+        fail_args=failed_check,
+        exit_code=1,
+        stdout="work-check rejected a contract\n",
+    )
+
+    # Then
+    assert result.exit_code == 2
+    assert tuple(call.argv for call in result.calls)[-1] == failed_check
+    assert "work-check rejected a contract" in result.stdout
+    assert "whole affected section" not in result.stdout
 
 
 @pytest.mark.parametrize(

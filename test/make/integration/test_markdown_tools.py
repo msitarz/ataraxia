@@ -55,6 +55,11 @@ def markdown_sandbox(tmp_path: Path) -> MarkdownSandbox:
         ROOT / "script" / "validate_mermaid.py",
         scripts / "validate_mermaid.py",
     )
+    shutil.copytree(ROOT / "script" / "markdown", scripts / "markdown")
+    shutil.copytree(ROOT / "script" / "work_check", scripts / "work_check")
+    default_work = directory / "doc/feat/default-work/README.md"
+    default_work.parent.mkdir(parents=True)
+    shutil.copyfile(ROOT / "test/make/fixtures/valid_work.md", default_work)
     home, scratch = tmp_path / "home", tmp_path / "tmp"
     home.mkdir()
     scratch.mkdir()
@@ -69,6 +74,7 @@ def markdown_sandbox(tmp_path: Path) -> MarkdownSandbox:
             "UV_PYTHON": sys.executable,
             "UV_OFFLINE": "true",
             "UV_NO_SYNC": "true",
+            "PYTHONPATH": str(directory),
         },
     )
 
@@ -188,6 +194,38 @@ def test_make_doc_check_finds_inbound_links_to_changed_heading(
     assert {path: path.read_bytes() for path in before} == before
 
 
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        pytest.param((), id="default-doc-scope"),
+        pytest.param(("ARGS=guide.md",), id="focused-doc-scope"),
+    ],
+)
+@pytest.mark.real_tool
+def test_doc_check_checks_all_work_contracts_for_each_doc_scope(
+    markdown_sandbox: MarkdownSandbox,
+    arguments: tuple[str, ...],
+) -> None:
+    """Check active Works outside ARGS without changing selected doc scope."""
+    # Given
+    directory = markdown_sandbox.directory
+    selected = directory / "guide.md"
+    selected.write_text("# Guide\n")
+    malformed = directory / "doc/feat/unselected/README.md"
+    malformed.parent.mkdir(parents=True)
+    malformed.write_text("# Incomplete Work\n")
+    before = {path: path.read_bytes() for path in (selected, malformed)}
+
+    # When
+    result = markdown_sandbox.run("doc-check", *arguments)
+
+    # Then
+    assert result.exit_code == 2, result.output
+    assert "doc/feat/unselected/README.md:1" in result.stdout
+    assert "required top-level section 'Acceptance criteria'" in result.stdout
+    assert {path: path.read_bytes() for path in before} == before
+
+
 @pytest.mark.real_tool
 def test_make_doc_check_fails_visibly_when_rumdl_is_missing(
     markdown_sandbox: MarkdownSandbox, tmp_path: Path
@@ -202,9 +240,15 @@ def test_make_doc_check_fails_visibly_when_rumdl_is_missing(
     path = markdown_sandbox.directory / "guide.md"
     path.write_text("# Guide\n")
     before = path.read_bytes()
+    tools = tmp_path / "tools"
+    tools.mkdir()
+    uv = shutil.which("uv")
+    assert uv is not None
+    (tools / "uv").symlink_to(uv)
     environment = {
         "UV_PROJECT_ENVIRONMENT": str(tmp_path / "empty-venv"),
         "UV_CACHE_DIR": str(tmp_path / "uv-cache"),
+        "PATH": os.pathsep.join((str(tools), "/usr/bin", "/bin")),
     }
 
     # When
@@ -345,6 +389,7 @@ def test_make_help_lists_documentation_targets(
     assert "make doc-check-mermaid" in result.stdout
     assert "make doc-format" in result.stdout
     assert "make work-check" in result.stdout
+    assert "doc-check always checks every active Work" in result.stdout
 
 
 @pytest.mark.real_tool
