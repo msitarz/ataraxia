@@ -108,11 +108,107 @@ does not justify losing information about values or their relationships.
   action cases must cover every supported member. Keep str and meaningful
   defaults for open domains—match arms and test values alone do not establish
   closure.
+- Use a discriminated union when a validated internal lifecycle value has
+  genuinely different variant fields and consumers make typed decisions from
+  one variant at a time. Keep shared ownership and identity in a product record,
+  and keep raw JSON parsing, complete consumed-field and cross-field validation,
+  and JSON serialization at the boundary. A flat `TypedDict` can remain the
+  better transport and incremental-update shape; a tagged `TypedDict` union is
+  another transport option when variant-specific required keys help callers.
+  Neither `TypedDict` nor frozen dataclasses enforce runtime values, and frozen
+  records are shallow when they contain mutable dictionaries. A sandbox-marker
+  comparison found the clearest split to be a flat validated record at the
+  persistence/update boundary and a dataclass lifecycle union only for internal
+  decisions. Pyrefly 1.3.1 narrows both dataclass and tagged `TypedDict` unions
+  when matching the discriminant and reports an omitted variant through
+  `assert_never`; matching the entire `TypedDict` with a mapping pattern did not
+  produce useful narrowing. `match` still needs an explicit exhaustive check;
+  an `int()` class pattern also accepts `bool`, so runtime validation must
+  exclude it where the domain requires a true integer.
 - Verify both behavior and static guarantees. Run strict Pyrefly and inspect the
   affected signatures and inferred types; for generic or variant contracts, add
   focused type-checking cases that demonstrate precise results and rejection of
   invalid uses. Runtime tests and a green checker alone do not prove that useful
   type information was preserved.
+
+### Lifecycle representation fit
+
+The sandbox-marker comparison used the complete persisted record in the
+[pinned seed at 47779e4](https://github.com/msitarz/ataraxia/blob/47779e4dbf3df31d0c4ebcffd9d074ba493ccff3/script/sandbox.py#L38-L92)
+as its boundary: schema, generation, owner, state, all four optional failure
+strings, destination device and inode, and JSON-compatible extension fields.
+Validate that whole record before passing lifecycle data to a pure decision. The
+decision does not need to inspect schema or ownership, but they still identify
+the persisted value. Keep current filesystem identity and held-lock freshness
+checks at their effectful adapter boundaries.
+
+| Representation | Fit | Tradeoffs |
+| --- | --- | --- |
+| Frozen dataclass union | Best for validated internal decisions with variant-only fields. Shared owner and destination identity stay in a product record; `Failed` owns one four-string diagnostic value. | Makes variant handling and immutable replacement clear, but needs boundary parsing and flattening for JSON. Annotations do not validate construction; `frozen=True` is shallow, so extension data needs explicit ownership or copying. Updating state replaces the lifecycle value. |
+| Tagged `TypedDict` union | Useful when the serialized mapping itself is the application value and each variant's required keys help typed callers. | Fits JSON and mutable updates naturally, but construction does no runtime validation and mutable ownership remains explicit. A discriminant match narrows reliably; a mapping-pattern match on the whole union did not in the checked example. |
+| Flat record with `Literal` state and optional diagnostics | Best for the pinned seed marker's persistence and incremental update boundary. It serializes directly and matches that seed's `SandboxChanges` patch shape. | Does not encode the relationship between state and diagnostics in its type, so the complete boundary validator must reject missing failed diagnostics and diagnostics on other states. Consumers see optional diagnostic fields. |
+
+For example, a validated core decision can accept a sum while transport stays a
+product record:
+
+```python
+@dataclass(frozen=True)
+class FailureDiagnostics:
+    stage: str
+    status: str
+    stdout: str
+    stderr: str
+
+
+@dataclass(frozen=True)
+class Preparing:
+    pass
+
+
+@dataclass(frozen=True)
+class Ready:
+    pass
+
+
+@dataclass(frozen=True)
+class Failed:
+    diagnostics: FailureDiagnostics
+
+
+type Lifecycle = Preparing | Ready | Failed
+
+
+def failure_details(state: Lifecycle) -> FailureDiagnostics | None:
+    match state:
+        case Failed(diagnostics=details):
+            return details
+        case Preparing() | Ready():
+            return None
+        case _:
+            assert_never(state)
+```
+
+This is a product of shared marker fields and a sum of lifecycle alternatives;
+it adds no lifecycle rules. Boundary validation still checks required field
+types, excludes Boolean and negative destination integers, enforces diagnostic
+presence, and preserves extensions. Independent constraints are clearer as
+separate guards than as a dense `match` guard. On the pinned seed, a one-time
+runtime probe through
+`make test ARGS=test/script/unit/test_adt_investigation_probe.py` covered valid
+serialization roundtrips, invalid consumed fields and cross-field combinations,
+extension preservation, `TypedDict` construction, shallow frozen contents, and
+the `int()` pattern accepting `bool` (7 passed).
+`make typecheck-expectations ARGS=test/script/typecheck/algebraic_data_types_probe.py`
+showed precise decision result types and expected missing-variant errors for
+both dataclass and tagged `TypedDict` unions under locked Pyrefly 1.3.1. The
+temporary probe files are removed after recording these methods and outcomes;
+they are adoption evidence, not ongoing regression coverage.
+
+The seed comparison recommends keeping the flat record for persistence and
+incremental updates, with a dataclass lifecycle union only if internal pure
+consumers need variant-specific decisions. It does not justify changing the
+current sandbox implementation or adopting a general representation rule for
+unrelated data.
 
 ## Structural review
 
