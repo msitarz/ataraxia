@@ -6,6 +6,11 @@ Date: 2026-10-10
 
 Accepted
 
+Amended by
+[29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
+for future command ownership after that Work is delivered; current cleanup
+continues to use this role.
+
 ## Context
 
 Post-merge worktree and branch removal is a state-changing operation governed

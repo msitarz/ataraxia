@@ -50,13 +50,59 @@ Local evidence can establish acceptance before PR CI runs.
    records; do not duplicate manual outcomes beside criteria. Keep unsupported
    criteria `TODO`.
 3. Retain requested and descendant contracts through PR review and corrections
-   until an explicit maintainer instruction in the session authorizes closure
-   of selected completed Works at the reviewed open PR head. `DONE`, passing
-   checks, ready-for-review status, and implementation or PR-revision requests
-   do not authorize closure. The instruction covers the resulting mechanical
-   closure changes on the same PR branch. Maintainer acceptance, independent
-   review, full CI on the final closure head, and maintainer merge retain their
-   distinct responsibilities.
+   until closure is authorized as described below. Maintainer acceptance,
+   independent review, full CI on the final closure head, and maintainer merge
+   retain their distinct responsibilities.
+
+## Authorized closure
+
+Only the maintainer's spoken or written instruction in the session authorizes
+closure of selected Works for the reviewed open PR head and covers the
+resulting mechanical changes on that same PR branch. No token, approval file,
+extra ceremony, or tool proof of chat authorization is required. Session
+context may explicitly establish that a response such as “its ok” authorizes
+the closure in question; generic implementation acceptance does not. `DONE`,
+passing checks, ready-for-review status, and implementation or PR-revision
+requests do not authorize closure.
+
+The planned thin Make interface is `make work-close ARGS='path/to/README.md'`.
+`ARGS` contains only Work README paths, following the existing `work-check`
+convention. It reports any `TODO` criteria and pauses without repository changes
+so the agent can relay the abort question to the maintainer. Only after the
+maintainer explicitly confirms aborting those outcomes may the agent rerun with
+`ABORT_REMAINING=true`; this flag expresses the confirmed operation, not
+authorization. Cancellation, no answer, or any other response leaves repository
+state unchanged. The current criterion checker accepts only `TODO` and `DONE`;
+until its `ABORT` support is delivered, incomplete closure pauses and
+completed-Work closure remains available through the existing Executor,
+Orchestrator, and Publisher roles under this guidance.
+
+After confirmation and checker support, closure records each remaining
+criterion as `ABORT` with its reason and closes the Work and applicable
+parent/dependency entries as `ABORT`; completed Works close as `DONE`. Criterion
+identities and abort dispositions must remain inspectable in committed Git
+history after contract deletion. The command Work chooses how to preserve that
+history; it must not rely on a same-commit edit and deletion that leaves no
+record.
+
+Closure publication requires a clean state, exact reviewed and remote tips,
+authorized selection, and unambiguous reference updates. Use the same reviewed
+open PR branch, ordinary push, and existing hooks and signing. Refusal or
+failure preserves recoverable work; do not force push, bypass protections,
+publish directly to master, or open a separate closure PR. Full CI must pass
+on the final closure head before maintainer merge. Git branch and worktree
+cleanup is separate, post-merge work requiring verified merged closure
+provenance; the planned thin interface is
+`make work-cleanup PR=<number>`. Until its command Work is delivered, use
+[current branch cleanup guidance](branch-cleanup.md).
+
+The pending
+[mechanical closure command Work](feat/post-merge-work-closure/command/README.md)
+owns implementation. See
+[orchestrator guidance](orchestrator.md#roles-and-delegation) for current
+operational role ownership and
+[WDR 29](wdr/0029-publish-authorized-work-closure-on-the-reviewed-pr.md) for
+the decision.
 
 For a requested parent with direct leaves, apply this procedure locally to each
 leaf in execution order on the accumulating branch. Retain each leaf contract
@@ -92,6 +138,6 @@ authorization for affected Works. If their contracts were already closed,
 restore the affected contracts and evidence, refresh statuses and independent
 review, and obtain renewed closure instruction. Corrections before closure
 update retained contracts and evidence directly. Do not add routine
-verification/removal pairs or manual closure procedures. If a Work stops
-unsatisfied, follow the
-[abandonment lifecycle](workflow.md#lifecycle).
+verification/removal pairs or manual closure procedures. For incomplete
+closure, including the current checker limitation, follow
+[authorized closure](#authorized-closure).

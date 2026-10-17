@@ -41,6 +41,7 @@ authoritative owners.
 - [26. Keep evidence at its source](0026-keep-evidence-at-its-source.md)
 - [27. Use prototyping within Investigations](0027-use-prototyping-within-investigations.md)
 - [28. Retain Work contracts until authorized closure](0028-retain-work-contracts-until-authorized-closure.md)
+- [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
 
 ## Proposal
 

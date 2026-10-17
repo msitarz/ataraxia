@@ -8,6 +8,8 @@ Accepted
 
 Amended by
 [28. Retain Work contracts until authorized closure](0028-retain-work-contracts-until-authorized-closure.md).
+Amended by
+[29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md).
 
 ## Context
 

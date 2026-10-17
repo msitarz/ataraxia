@@ -6,6 +6,10 @@ Date: 2026-10-17
 
 Accepted
 
+Amended by
+[29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
+for incomplete closure and publication boundaries.
+
 Amends
 [2. Let parent maps track Work lifecycle](0002-let-parent-maps-track-work-lifecycle.md)
 for contract-removal timing,

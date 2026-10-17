@@ -8,15 +8,17 @@ and replace repeated agent-driven mechanics with deterministic tooling.
 ## Goals
 
 - Retain requested and descendant contracts until explicitly authorized closure.
-- Close selected completed contracts and update references through Make.
+- Close selected contracts and update references through Make, with explicit
+  confirmation before aborting incomplete outcomes.
 - Commit and push mechanical closure changes on the reviewed open PR's branch.
 - Keep Git branch/worktree cleanup strictly after maintainer merge.
 - Replace cleaner-agent operations with deterministic tooling where applicable.
 
 ## Glossary
 
-- **Closure:** explicitly authorized removal of selected completed contracts and
-  mechanical updates to their parent maps and dependent links.
+- **Closure:** explicitly authorized removal of selected contracts and
+  mechanical updates to their parent maps and dependent links, preserving
+  completed outcomes as `DONE` and explicitly aborted outcomes as `ABORT`.
 - **Git cleanup:** removal of verified merged branches and clean linked
   worktrees.
 
@@ -54,7 +56,7 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Contracts remain available through PR review
+### **AC-1 DONE** Contracts remain available through PR review
 
 Current lifecycle and publication guidance retain requested and descendant
 contracts until the explicit closure authorization defined by
@@ -65,7 +67,9 @@ acceptance, independent review, and full final-head CI remain merge gates.
 ### **AC-2 TODO** One command publishes deterministic closure
 
 On an explicitly authorized reviewed open PR, a Make command removes the
-selected completed contracts, updates references, commits only mechanical
+selected contracts under the
+[authorized closure guidance](../../acceptance-tracing.md#authorized-closure),
+updates references, commits only mechanical
 closure changes, and pushes normally to the same PR branch. The final closure
 head must pass full CI before maintainer merge. Closure cannot publish
 unreviewed implementation changes, target master directly, or open a separate
@@ -74,11 +78,11 @@ closure PR; failures preserve recoverable work without declaring success.
 ### **AC-3 TODO** Mechanical cleanup no longer requires a cleaner agent
 
 The command owns the verified branch/worktree cleanup operations defined by its
-contract in a separate post-merge phase or reinvocation, and current guidance no
-longer requires a cleaner agent for those operations. Cleanup requires
-verified merged closure provenance and cannot follow merely from pushing closure
-to an open PR. It preserves unpublished work; the maintainer owns acceptance and
-merge.
+contract in a separate post-merge phase or reinvocation after its delivery.
+Until adoption, current cleanup continues through the cleaner role. Cleanup
+requires verified merged closure provenance and cannot follow merely from
+pushing closure to an open PR. It preserves unpublished work; the maintainer
+owns acceptance and merge.
 
 ## Dependencies
 
@@ -90,7 +94,7 @@ merge.
 
 ## Children
 
-- **TODO** [Authorized closure lifecycle guidance](lifecycle/README.md): define
+- **DONE** [Authorized closure lifecycle guidance](lifecycle/README.md): define
   retained contracts, mechanical reference updates, publication authority, and
   the decision.
 - **TODO** [Mechanical closure command](command/README.md): deliver the Make
@@ -107,9 +111,11 @@ merge.
 
 ## Additional context
 
-Revising this contract does not authorize closing any Work. The command
-interface, canonical reference rules, and detailed publication authority remain
-pending in lifecycle AC-2/AC-3. Existing directory paths are retained. The
+Revising this contract does not authorize closing any Work. The authorization
+and publication rules are delivered in
+[Work acceptance](../../acceptance-tracing.md#authorized-closure), and lifecycle
+integration is complete. The planned Make interfaces and command implementation
+remain pending in the command Work. Existing directory paths are retained. The
 migration's policy thinning and this Work's lifecycle change have separate
 owners. Shared guidance edits use the delivered authoring/evidence rules and are
 coordinated with the migration owner to avoid conflicting rules.

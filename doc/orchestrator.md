@@ -29,12 +29,17 @@ The [Definer](definer.md) owns assigned Work contract changes and serial
 coordination of shared parent-map edits. Cleaner and publisher gain no
 artifact-review or merge authority.
 
-For post-merge Work cleanup, hand off to the separate operational `cleaner`
-subagent after the maintainer confirms the PR merged. Route it through
-[branch-cleanup guidance](branch-cleanup.md) with the PR, branch, worktree,
-reviewed head, and merge commit IDs.
-Review the cleaner's concise report instead of repeating its operations, and
-serialize cleanup with worktree creation and other shared Git mutations.
+For post-merge Work cleanup, use the existing separate operational `cleaner`
+role after the maintainer confirms the PR merged. The planned closure command
+may replace that handoff only after its Work is delivered. Route current cleanup
+through [branch-cleanup guidance](branch-cleanup.md) with the PR, branch,
+worktree, reviewed head, and merge commit IDs. Review the cleaner's concise
+report instead of repeating its operations, and serialize cleanup with worktree
+creation and other shared Git mutations.
+
+For closure authorization and current incomplete-Work limits, follow
+[Work acceptance](acceptance-tracing.md#authorized-closure); the command Work
+owns implementing its planned Make interfaces.
 
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
