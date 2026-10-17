@@ -220,3 +220,72 @@ as evidence that the function threshold is infeasible. The root-scope probe
 also found that current Ruff discovery includes `build`; AC-3 must align
 generated-output exclusions before adoption. No production code, dependency,
 policy, or CI setting changed.
+
+## AC-3 integration feasibility
+
+The existing Make boundary is sufficient. Both `lint` and `lint-check` resolve
+path-only `ARGS` through `_TARGET_PATHS`; its default is `.`. `verify-check`
+calls `lint-check ARGS=` as part of required CI checks. Adoption can add
+`PLR0916` to Ruff's existing selected rules and invoke the native `complexipy`
+CLI from both lint routes with the same `_TARGET_PATHS`, inclusive limit 15,
+and `--failed`. Each route keeps one Ruff invocation. This needs no generic
+wrapper or custom scanner. Default `.` covers the four current roots (`src`,
+`script`, `test`, and `example`) without hardcoding them. Do not enable
+`--check-script`, which would add module-level script bodies beyond the
+assessed function scope. The CLI and Ruff should exclude generated `build/**`
+and `dist/**`; the current cache and virtual-environment exclusions continue
+to follow `.gitignore`.
+
+For adoption, configure Ruff's generated-output exclusions at its existing
+configuration owner and pass the corresponding fixed `--exclude` globs to
+complexipy. Caller `ARGS` remains paths only. Add `complexipy>=8.0.1` to the
+existing development dependency group and let the existing `uv lock` route
+record the exact reviewed release in `uv.lock`; no new lock owner or setup
+target is needed. A single Ruff invocation preserves its current one-pass
+behavior while selecting `PLR0916` at the observed default maximum of five.
+
+The native console names the file and function, gives the score and failure
+status, and returns a failing process status. It omits source lines. The native
+SARIF output supplies relative file URI, function logical location, and
+start/end lines without a wrapper; the unchanged observed SARIF result is in
+[diagnostic output](complexipy-ac3-sarif.sarif). A Make command can write this
+to an ignored `.cache` artifact. Engineering guidance should give a short
+repair direction; the CLI's suggestion feature need not be enabled or relied
+on.
+
+The AC-3 route probe used a temporary Make extension outside the repository
+which included the checked-in `Makefile` and defined one target with the
+following recipe:
+
+```make
+complexipy-check:
+	uv tool run --python 3.14 --from 'complexipy==8.0.1' complexipy $(_TARGET_PATHS) --max-complexity-allowed 15 --failed --output-format sarif --output /private/tmp/complexipy-ac3-make.sarif --cache-dir /private/tmp/complexipy-ac3-make-cache --color no
+```
+
+The three runs passed `ARGS=example/crossover.py`,
+`ARGS=/private/tmp/complexipy-ac3-exact.py`, and
+`ARGS=script/work_check/rules.py`. Their scores were respectively below the
+limit, exactly 15, and 19. The first two returned status 0; the last returned
+status 2 from Make (the CLI status 1) and named `script/work_check/rules.py`,
+`check_work`, and 19. The generated SARIF identifies lines 51–98. The exact
+case reused the 15 sequential-guard form described under AC-2. The first route
+command showed Make expanding the caller's path to one shell-quoted CLI path;
+no options were smuggled through `ARGS`. Separate AC-2 scope observations
+established that explicit build exclusion and ignored caches work, and that
+Ruff must add the matching build exclusion.
+
+| Necessary repair | Boundary and bounded regression scope |
+| --- | --- |
+| `read_calls` | The change stays in Make-test support and separates one record's adaptation from file traversal. Existing tests call it through the real Make support helper. Focused JSONL cases can cover valid and absent logs, malformed records, rejected argument/environment values, and the caller-visible errors and returned call sequence. Do not freeze incidental JSON-field validation order. Keep the change out of production runtime code. |
+| `check_work` | Existing `test/script/unit/work_check/test_rules.py` already asserts complete ordered diagnostics for required sections, malformed criteria, duplicates, and section boundaries. Extract only required-section findings and retain these behavior tests; add a new test only if the move leaves one of those observable outputs uncovered. Run the work-check unit tests and typecheck. |
+| `check_root_owner` | No direct regression tests currently cover this safety boundary. Add compact temporary-directory cases for matching and mismatched ownership, top-level and nested metadata symlink refusal, and ignored non-metadata entries. Preserve safety decisions and relevant exceptions/causes; retain essential metadata-read ordering without creating incidental ordering guarantees. Run focused sandbox tests and typecheck. |
+
+The integration regression scope should assert repository tool configuration,
+one Ruff call per `lint` or `lint-check` route, the Complexipy invocation,
+path-only quoting, default `.` discovery, failure propagation, and transient
+exclusions. Recorder and configuration assertions are sufficient for routing;
+retain no permanent 14/15/16 upstream threshold fixture matrix. The candidate
+score observations do not substitute for behavioral tests for the three
+repairs. AC-3 has not made production changes or implemented adoption; full
+verification, dependency locking, and the regressions above belong to the
+adoption Work.
