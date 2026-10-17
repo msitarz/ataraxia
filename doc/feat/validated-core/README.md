@@ -57,7 +57,7 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Complete record validation
+### **AC-1 DONE** Complete record validation
 
 Engineering guidance makes construction establish every owned consumed-field,
 semantic, cross-field, and ownership invariant before core logic runs.
