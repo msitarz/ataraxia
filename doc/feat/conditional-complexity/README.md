@@ -54,7 +54,7 @@ outcomes provide useful automatic prevention with truthful limits.
   integration guidance explaining supported capabilities and remaining judgment.
 - [Adoption AC-2](adopt/README.md#ac-2-done-blocking-make-and-ci-enforcement)
   supplies the locked reviewed tool through normal Make and required CI.
-- [Adoption AC-3](adopt/README.md#ac-3-todo-compatible-bounded-repairs) supplies
+- [Adoption AC-3](adopt/README.md#ac-3-done-compatible-bounded-repairs) supplies
   compatible repairs where necessary.
 - A recommendation or capability-gap finding alone does not complete prevention.
 

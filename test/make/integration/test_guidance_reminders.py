@@ -48,7 +48,15 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         ),
         (
             "lint-check",
-            ("run", "ruff", "check", "."),
+            (
+                "run",
+                "complexipy",
+                ".",
+                "--output-format",
+                "sarif",
+                "--output",
+                ".cache/complexipy.sarif",
+            ),
             "doc/engineering-review.md",
             "apply the design questions to changed code and tests",
             "For meaningful changes",
