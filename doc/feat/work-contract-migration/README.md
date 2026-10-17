@@ -56,14 +56,14 @@ flowchart LR
 
 ## Acceptance criteria
 
-### **AC-1 TODO** One contract format across active Works
+### **AC-1 DONE** One contract format across active Works
 
 Every active contract identified by the inventory follows the new template,
 with one coherent outcome per criterion. Scope, dependencies, safety boundaries,
 status, and unresolved decisions survive the rewrite. Historical inputs remain
 clearly distinguished from live requirements.
 
-### **AC-2 TODO** One discoverable authoring route
+### **AC-2 DONE** One discoverable authoring route
 
 Agents reach the template from current guidance without conflicting format,
 mandatory Validation-clause, or pytest-marker instructions. Feasibility work
@@ -71,13 +71,13 @@ routes to Investigation rather than a separate Prototype kind. Necessary
 evidence and independent review requirements remain, without replacement mapping
 reports.
 
-### **AC-3 TODO** Acceptance bookkeeping removed without losing regression coverage
+### **AC-3 DONE** Acceptance bookkeeping removed without losing regression coverage
 
 The covers marker, its registration, and ac-collect/ac-test/ac-check are
 retired. Ordinary focused test commands remain usable, and removal of marker
 infrastructure preserves unrelated tests.
 
-### **AC-4 TODO** Structural Work checking follows migration
+### **AC-4 DONE** Structural Work checking follows migration
 
 The delivered `work-check` tooling discovers active contracts independently of
 their contents and reports actionable structural errors through `doc-check`
@@ -119,9 +119,8 @@ This migration changes contracts, aligns shared guidance, and updates
 supporting tooling; it does not implement outcomes of rewritten Works or
 authorize their trials. Existing Works remain owned at their current paths, and
 migration children own migration changes rather than implementation of those
-Works. The migration's own contracts use the new format and remain in scope for
-final consistency review. Inventory, guidance, tooling, contract groups,
-work-check integration, and integrated verification are delivered; the
-migration's own acceptance criteria remain pending owner review.
+Works. The migration's own contracts use the new format. Inventory, guidance,
+tooling, contract groups, work-check integration, and integrated verification
+are delivered.
 Shared guidance edits remain at their authoritative owners; children report
 conflicts to the migration owner rather than create copies.
