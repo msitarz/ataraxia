@@ -10,9 +10,10 @@ Amends
 [12. Orchestrate Work trees by responsibility](0012-orchestrate-work-trees-by-responsibility.md)
 for execution and integration, and
 [21. Publish after local Work acceptance](0021-publish-after-local-work-acceptance.md)
-for the requested-tree publication boundary. Independent review, role-policy
-ownership, observed acceptance, final-head full CI and maintainer control remain
-in force.
+for the requested-tree publication boundary. Amended by
+[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+Independent review, role-policy ownership, observed acceptance, final-head full
+CI and maintainer control remain in force.
 
 ## Context
 

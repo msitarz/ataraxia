@@ -17,6 +17,9 @@ and
 Amended by
 [24. Assess outcomes without per-criterion plans](0024-assess-outcomes-without-per-criterion-plans.md).
 
+Amended by
+[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+
 ## Context
 
 Recent deliveries routinely published implementation and ran CI first, then
