@@ -7,7 +7,8 @@ the normal Make/CI boundary.
 
 ## Goals
 
-- Establish a supported complexipy candidate and evidence-based limits.
+- Assess the latest stable complexipy release and establish evidence-based
+  limits.
 - Assess complementary Ruff coverage and truthful enforcement limits.
 - Preserve affected supported contracts through bounded enforcement repairs.
 
@@ -21,8 +22,9 @@ the normal Make/CI boundary.
 
 ## Mechanisms
 
-- complexipy is the candidate function-level cognitive-complexity tool whose
-  version, compatibility, and coverage require investigation.
+- The latest stable complexipy release is the function-level
+  cognitive-complexity tool whose compatibility and coverage require
+  documentation-first investigation.
 - Ruff PLR0916 is a candidate complementary Boolean-expression check whose
   actual coverage must be observed.
 - Existing Make lint, setup, locking, and required CI provide the integration
@@ -66,7 +68,7 @@ outcomes provide useful automatic prevention with truthful limits.
 ## Children
 
 - TODO [Capability and threshold investigation](investigate/README.md):
-  establish candidate capability, justified limits, repair scope, and
+  establish latest-release capability, justified limits, repair scope, and
   integration feasibility.
 - TODO [Tooling adoption](adopt/README.md): integrate the reviewed selection and
   truthful limits, with bounded repairs after both prerequisites.
@@ -77,7 +79,8 @@ The historical prompt was a
 [PR #328 comment](https://github.com/msitarz/ataraxia/pull/328#discussion_r4272687628)
 asking for lower complexity, including complexipy. That sandbox example is
 context rather than a frozen acceptance or error contract for future repairs.
-The investigation examines then-integrated source; no tool version, threshold,
-or complementary coverage has yet been established. A capability gap or repair
+The investigation examines then-integrated source using the latest stable
+complexipy release at execution start; no threshold or complementary coverage
+has yet been established. A capability gap or repair
 inventory beyond a short review sitting requires steering or a reviewed bounded
 split under [Work workflow](../../workflow.md#decisions-and-new-splits).
