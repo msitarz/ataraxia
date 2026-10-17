@@ -16,6 +16,15 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
 
 REQUIRED_CONSUMERS = {
     ("run", "ruff", "check", "."),
+    (
+        "run",
+        "complexipy",
+        ".",
+        "--output-format",
+        "sarif",
+        "--output",
+        ".cache/complexipy.sarif",
+    ),
     ("run", "tach", "check"),
     ("run", "pytest", "--cov"),
     ("run", "pytest", "example/"),

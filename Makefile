@@ -38,9 +38,11 @@ setup: ci-setup ## prepare development dependencies, hooks, and build tooling
 .PHONY: lint lint-check
 lint: ## lint and apply fixes; ARGS=paths narrows the files
 	uv run ruff check $(_TARGET_PATHS) --fix
+	uv run complexipy $(_TARGET_PATHS) --output-format sarif --output .cache/complexipy.sarif
 
 lint-check: ## check lint without fixes; ARGS=paths narrows the files
 	uv run ruff check $(_TARGET_PATHS)
+	uv run complexipy $(_TARGET_PATHS) --output-format sarif --output .cache/complexipy.sarif
 	@printf '%s\n' 'During implementation and before handoff, apply the design questions to changed code and tests. doc/engineering-review.md'
 
 .PHONY: format format-check
