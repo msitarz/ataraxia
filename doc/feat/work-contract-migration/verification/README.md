@@ -18,7 +18,7 @@ requirements or retaining obsolete acceptance bookkeeping.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Complete and consistent migration coverage
+### **AC-1 DONE** Complete and consistent migration coverage
 
 Every inventory entry has a reviewed disposition: converted active contract,
 updated owner, retired infrastructure, or preserved historical input. This

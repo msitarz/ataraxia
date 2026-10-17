@@ -41,8 +41,9 @@ instructions and acceptance bookkeeping needed to define and deliver them.
 
 ## Visuals
 
-Before this migration, the new template coexists with list-based contracts,
-mandatory validation plans, and marker-based acceptance tooling. Proposed:
+Before this migration, the new template coexisted with list-based contracts,
+mandatory validation plans, and marker-based acceptance tooling. Migration
+sequence:
 
 ```mermaid
 flowchart LR
@@ -78,10 +79,11 @@ infrastructure preserves unrelated tests.
 
 ### **AC-4 TODO** Structural Work checking follows migration
 
-The sibling work-check tool discovers active contracts independently of their
-contents and reports actionable structural errors through doc-check after the
-contract migration. Parser selection and the reusable Markdown boundary belong
-to its child contract; checks do not infer semantic quality or completion.
+The delivered `work-check` tooling discovers active contracts independently of
+their contents and reports actionable structural errors through `doc-check`
+after the contract migration. The delivered checker includes the selected
+parser and reusable Markdown boundary; checks do not infer semantic quality or
+completion.
 
 ## Children
 
@@ -112,11 +114,12 @@ to its child contract; checks do not infer semantic quality or completion.
 
 ## Additional context
 
-This is contract preparation only. Existing Works remain owned at their current
-paths; migration children own their rewrites, not their implementation. The
-migration Work tree itself already uses the new format and is included in final
-consistency review. Inventory, guidance, tooling, contract groups,
-work-check integration, and final verification proceed in dependency order;
-bounded parser selection may proceed before contract migration completes.
+This migration changes contracts, aligns shared guidance, and updates
+supporting tooling; it does not implement outcomes of rewritten Works or
+authorize their trials. Existing Works remain owned at their current paths, and
+migration children own migration changes rather than implementation of those
+Works. The migration's own contracts use the new format and remain in scope for
+final consistency review. Inventory, guidance, tooling, contract groups, and
+work-check integration are delivered; integrated verification remains pending.
 Shared guidance edits remain at their authoritative owners; children report
 conflicts to the migration owner rather than create copies.
