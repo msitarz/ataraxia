@@ -101,8 +101,9 @@ completion.
   content-independent Work discovery, and structural enforcement through
   doc-check
   ([current interface and discovery convention](../../work-definition.md)).
-- **TODO** [Integrated migration verification](verification/README.md): assess
-  complete coverage, preserved scope, and consistency across the final tree.
+- **DONE** Integrated migration verification confirmed documentation checks,
+  focused surviving command behavior, automatic structural checking through
+  `doc-check`, and the absence of retired acceptance interfaces.
 
 ## Links
 
@@ -119,7 +120,8 @@ supporting tooling; it does not implement outcomes of rewritten Works or
 authorize their trials. Existing Works remain owned at their current paths, and
 migration children own migration changes rather than implementation of those
 Works. The migration's own contracts use the new format and remain in scope for
-final consistency review. Inventory, guidance, tooling, contract groups, and
-work-check integration are delivered; integrated verification remains pending.
+final consistency review. Inventory, guidance, tooling, contract groups,
+work-check integration, and integrated verification are delivered; the
+migration's own acceptance criteria remain pending owner review.
 Shared guidance edits remain at their authoritative owners; children report
 conflicts to the migration owner rather than create copies.
