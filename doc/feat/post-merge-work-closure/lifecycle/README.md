@@ -24,9 +24,10 @@ Acceptance, workflow, orchestrator, contribution, and PR guidance retain
 requested and descendant contracts during implementation and review until
 explicitly authorized closure.
 
-- Only an explicit maintainer request in the session authorizes closing selected
-  completed Works for a reviewed open PR head and covers the resulting
-  mechanical closure changes.
+- Only an explicit maintainer instruction in the session authorizes closing
+  selected Works for a reviewed open PR head and covers the resulting mechanical
+  closure changes; incomplete outcomes require the explicit abort confirmation
+  defined by AC-3.
 - `DONE`, passing tests, ready-for-review status, and implementation or
   PR-revision requests do not imply closure authorization.
 - Substantive implementation corrections after approval invalidate affected
@@ -47,35 +48,34 @@ authorized closure.
 - Children and dependencies use `TODO`, `DONE`, or `ABORT` entries that state
   their purpose.
 - A change to a child's purpose updates its parent entry's purpose text.
-- Closure marks entries for selected completed Works `DONE` and removes links
-  to their deleted contracts while retaining purpose text, without requiring
+- Closure marks entries for selected Works `DONE` when completed or `ABORT` with
+  the reason when remaining outcomes are explicitly aborted, and removes links
+  to deleted contracts while retaining purpose text, without requiring
   delivered-outcome summaries or PR references.
 - Other live links to deleted contracts are removed deterministically or point
   to lasting owners, with ambiguity stopping closure for maintainer steering.
 - Supporting artifacts remain in the current tree only where live documents or
   Works still need them, with Git history preserving deleted committed artifacts
   without mandatory promotion.
-- `ABORT` records lifecycle status and does not authorize closing incomplete
-  Works under the completed-only closure authority.
+- `ABORT` records stopped outcomes rather than completion and does not itself
+  authorize closure; AC-3 defines the required confirmation.
 - Guidance distinguishes local verified criteria, maintainer acceptance,
   closure authorization, mechanical closure, and merged delivery.
 
-### **AC-3 TODO** Closure publication authority is explicit
+### **AC-3 DONE** Closure publication guidance defines future interfaces
 
-Guidance defines the narrowly scoped authority consumed by the future command
-and its Make interface, with these boundaries:
-
-- Authorized mechanical closure commits use the same reviewed open PR branch,
-  ordinary push semantics, and existing signing/hooks; direct-master publication
-  and separate closure PRs are excluded.
-- Clean state, exact reviewed and remote tips, completed selected Works, and
-  unambiguous reference updates are required; unexpected changes stop
-  publication with recoverable state and no force push or protection bypass.
-- Full CI must pass on the final closure head before maintainer merge.
-- Git branch/worktree cleanup remains a separate post-merge phase or
-  reinvocation requiring verified merged closure provenance.
-- A WDR records explicit closure authority and deterministic mechanics, amending
-  earlier delivery/cleanup decisions without erasing their history.
+The lasting rules in
+[Work acceptance](../../../acceptance-tracing.md#authorized-closure) define
+session authorization, abort handling, publication safeguards, interim tool
+limits, and the planned thin Make interfaces. This Work integrates those rules
+with Work lifecycle guidance and the
+[command contract](../command/README.md); it does not own lasting procedure.
+The planned interfaces are `make work-close ARGS='path/to/README.md ...'`
+with `ABORT_REMAINING=true` only after the maintainer explicitly confirms
+abort, and,
+after merge, `make work-cleanup PR=<number>`. The command Work must support
+criterion `ABORT` and preserve criterion identities and abort dispositions in
+committed Git history after contract deletion. WDR 29 records the decision.
 
 ## Dependencies
 

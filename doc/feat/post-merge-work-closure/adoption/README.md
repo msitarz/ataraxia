@@ -43,7 +43,7 @@ command checks pass; latest-head CI remains the merge gate.
 
 ## Dependencies
 
-- **TODO** [Lifecycle guidance](../lifecycle/README.md): supplies the adopted
+- **DONE** [Lifecycle guidance](../lifecycle/README.md): supplies the adopted
   contract and decision.
 - **TODO** [Mechanical closure command](../command/README.md): supplies observed
   command behavior and supported cleanup operations.

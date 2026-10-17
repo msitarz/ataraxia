@@ -75,7 +75,9 @@ guidance links in Dependencies have no Work status.
   them, with Git history preserving deleted committed artifacts and no required
   promotion of every supporting file.
 - `ABORT` records lifecycle status and does not authorize closure of an
-  incomplete Work under completed-only closure authority.
+  incomplete Work by itself. Follow the
+  [authorized closure guidance](acceptance-tracing.md#authorized-closure) for
+  incomplete outcomes and current tool limits.
 
 For example, either active or completed-but-retained entries become the same
 closed entry:
@@ -107,9 +109,10 @@ authorization, and correction recovery. Keep lasting contracts and decisions at
 their authoritative owners when still needed. PRs hold review discussion; Git
 preserves merged contracts and exact changes.
 
-If a Work is abandoned with unsatisfied outcomes, record `ABORT` with the reason
-and do not describe the Work as completed. Retain its contract until supported
-closure is available.
+If a Work stops with unsatisfied outcomes, follow
+[authorized closure guidance](acceptance-tracing.md#authorized-closure) for
+recording `ABORT`; until the checker supports that status, preserve the contract
+and pause the incomplete closure request.
 
 After a Work PR merges, follow the
 [post-merge branch cleanup](branch-cleanup.md) procedure.
