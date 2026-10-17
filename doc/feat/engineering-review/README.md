@@ -44,8 +44,8 @@ the Work, repeated state and interpretation, unnecessary checks and
 abstractions, and placement of responsibilities. It links to
 [integrated engineering guidance](../../engineering.md) for boundary, modeling,
 pure-decision, port, effect, and readable-condition rules rather than defining
-them again. The validated-core Work is a delivery dependency, not the lasting
-rules owner. [Testing](../../testing.md) and
+them again. Integrated engineering guidance is the lasting rules owner.
+[Testing](../../testing.md) and
 [test ownership](../../test-ownership.md) retain test policy, meaningful
 observation boundaries, and cleanup authority.
 
@@ -97,8 +97,9 @@ existing owners rather than introducing duplicate oracles or a new test policy.
 
 ## Dependencies
 
-- TODO [Validated core guidance](../validated-core/README.md) supplies
-  integrated policy for the review owner to link to before delivery.
+- DONE [Integrated engineering guidance](../../engineering.md) supplies
+  boundary, modeling, pure-decision, port, effect, and readable-condition rules
+  for the review owner to link to.
 
 ## Links
 

@@ -19,8 +19,8 @@ truthful limits and compatible bounded repairs.
 
 ## Mechanisms
 
-- [Engineering conventions](../../../engineering.md) link tooling guidance to
-  integrated validated-core policy.
+- Engineering conventions own adopted tool guidance alongside readable-condition
+  policy.
 - A locked reviewed complexipy candidate and evidence-supported complementary
   Ruff settings supply enforcement.
 - Existing Make setup, locking, lint, and required CI own integration routes.
@@ -34,9 +34,7 @@ truthful limits and compatible bounded repairs.
 Engineering guidance explains adopted capabilities, limits, and remaining manual
 review obligations, linking to
 [integrated readable-condition policy](../../../engineering.md)
-without duplicating it. The validated-core Work is a delivery dependency;
-delivered guidance links to the lasting engineering owner rather than the
-pending Work contract.
+without duplicating it. Engineering guidance is the lasting policy owner.
 
 The explanation distinguishes function complexity from Boolean counting and
 describes only coverage observed for the reviewed versions. Passing a metric
@@ -70,7 +68,7 @@ needed.
 
 Repairs preserve the
 [parent supported-contract boundary](../README.md#shared-preservation-boundary),
-meaningful types, and integrated validated-core guidance. Focused behavior and
+meaningful types, and integrated engineering guidance. Focused behavior and
 type checks exercise actual affected supported contracts, with regressions only
 for uncovered boundaries. Existing [testing guidance](../../../testing.md) owns
 test placement: pure decisions use valid typed values, construction/ingress
@@ -82,8 +80,8 @@ or integration owner.
 - TODO [Capability and threshold investigation](../investigate/README.md)
   supplies the independently reviewed candidate, limits, scope, integration
   feasibility, and bounded repair inventory before adoption begins.
-- TODO [Validated core guidance](../../validated-core/README.md) supplies
-  integrated policy before adoption edits the shared engineering owner.
+- DONE [Integrated engineering guidance](../../../engineering.md) supplies
+  policy consumed by adoption.
 
 ## Links
 

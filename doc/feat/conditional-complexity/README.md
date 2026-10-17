@@ -14,7 +14,7 @@ the normal Make/CI boundary.
 ## Non-Goals
 
 - Own readable-condition or domain-modeling policy, which belongs to
-  [validated core guidance](../validated-core/README.md).
+  [integrated engineering guidance](../../engineering.md).
 - Introduce a generic lint framework, custom scanner, blanket exemptions, or
   suppressions.
 - Authorize unrelated refactoring, production migration, or changes to PR #328.
@@ -46,7 +46,7 @@ organization need not remain when these contracts are preserved.
 Integrated readable-condition policy and the independently reviewed tooling
 outcomes provide useful automatic prevention with truthful limits.
 
-- [Validated core AC-6](../../engineering.md#code-style)
+- [Readable-decision guidance](../../engineering.md#code-style)
   supplies readable-condition policy without duplicating it in this Work.
 - [Adoption AC-1](adopt/README.md#ac-1-todo-truthful-tool-guidance) supplies
   integration guidance explaining supported capabilities and remaining judgment.
@@ -58,10 +58,10 @@ outcomes provide useful automatic prevention with truthful limits.
 
 ## Dependencies
 
-- TODO [Validated core guidance](../validated-core/README.md) owns validation,
+- DONE [Integrated engineering guidance](../../engineering.md) owns validation,
   modeling, pure decisions, ports, effects, and readable-condition policy;
-  adoption waits for its integration, while investigation may proceed
-  separately.
+  adoption consumes these delivered rules, while investigation may proceed
+  independently.
 
 ## Children
 
