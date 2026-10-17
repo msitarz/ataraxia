@@ -176,26 +176,29 @@ dense compound guard.
 The executable probe in
 [`test_adt_investigation_probe.py`](../../test/script/unit/test_adt_investigation_probe.py)
 decodes and validates at the external boundary, then narrows every consumed
-field into a `ValidatedRecord` product before candidate construction. Flat and
-tagged adapters and the dataclass all consume that same product. Typed
-dataclass construction validates schema, generation, ownership, destination,
-lifecycle, and extensions in `__post_init__`; the flat and tagged `TypedDict`
-forms rely on the validated adapter because `TypedDict` has no runtime
-constructor enforcement. The probe performs full JSON roundtrips, checks
-extension preservation and state updates, and sends invalid whole records
-through each candidate boundary. Its cases cover missing and wrongly typed
-consumed values, Boolean and negative destination identity, failed diagnostic
-gaps, diagnostic-key presence with `null`, unexpected diagnostics on a
-non-failed state, invalid extension data, decode causes, shallow frozen
-contents, and `int()` class patterns accepting `bool`.
+field into one `DataclassRecord` product. That record is also the dataclass
+candidate, avoiding a duplicate validated model. Flat and tagged adapters
+consume it; their complete wrappers validate direct construction through typed
+adapters, without serializing and reparsing. The shared product checks typed
+dataclass construction, and all three candidates reject extension keys that
+shadow owned fields. Serialization places owned fields last, matching the
+seed's precedence. The probe performs full JSON roundtrips, checks extension
+preservation and state updates, and sends invalid whole records through each
+candidate boundary. Its cases cover missing and wrongly typed consumed values,
+Boolean and negative destination identity, failed diagnostic gaps,
+diagnostic-key presence with `null`, unexpected diagnostics on a non-failed
+state, invalid extension data, decode causes, shallow frozen contents, and
+`int()` class patterns accepting `bool`.
 
 The type probe in
 [`algebraic_data_types_probe.py`](../../test/script/typecheck/algebraic_data_types_probe.py)
 imports the executable candidate types and exercises its construction,
 decision, and transition functions in positive `assert_type` checks. Pyrefly
-1.3.1 narrows a dataclass union and tagged
-`TypedDict` union when the discriminant is matched; omitting `Failed` causes an
-observed `assert_never` diagnostic in each. For the flat model, the same
+1.3.1 narrows a dataclass union and tagged `TypedDict` union when the
+discriminant is matched; omitting only `Failed` causes an observed
+`assert_never` diagnostic in each. The probe also checks that tagged narrowing
+exposes the required diagnostics and that dataclass decisions return
+`FailureDiagnostics | None`. For the flat model, the same
 diagnostic catches an omitted state literal, but diagnostics remain optional
 after state narrowing. A mapping-pattern match on the entire tagged
 `TypedDict` union did not narrow its fields usefully; the probe retains that
@@ -203,11 +206,12 @@ unsupported attempt as an expected diagnostic rather than claiming coverage.
 
 Observed through Make on the corrected investigation revision:
 
-- `make test ARGS=test/script/unit/test_adt_investigation_probe.py` — 36
+- `make test ARGS=test/script/unit/test_adt_investigation_probe.py` — 41
   passed: valid full-record roundtrip, pure decision, and state update for each
   candidate; eight invalid whole-record cases and two parse-cause cases per
-  candidate; a read-error cause case; direct invalid complete-constructor cases;
-  and one runtime freeze/pattern case.
+  candidate; a read-error cause case; negative-identity and extension-collision
+  direct-constructor cases for each candidate; and one runtime freeze/pattern
+  case.
 - `make typecheck ARGS=test/script/unit/test_adt_investigation_probe.py` —
   passed with zero diagnostics, checking the executable construction path
   itself.

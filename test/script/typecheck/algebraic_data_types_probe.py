@@ -6,14 +6,17 @@ from typing import assert_never, assert_type
 from test.script.unit.test_adt_investigation_probe import (
     DataclassRecord,
     Failed,
+    FailedRecord,
     FailureDiagnostics,
     FlatMarker,
     Lifecycle,
     Marker,
     Preparing,
+    Ready,
     TaggedMarker,
     TaggedRecord,
     construct_marker,
+    dataclass_failure_details,
     failure_status,
     transition_ready,
 )
@@ -37,10 +40,17 @@ def tagged_missing_variant(marker: TaggedMarker) -> None:
 
 def dataclass_missing_variant(state: Lifecycle) -> None:
     match state:
-        case Preparing():
+        case Preparing() | Ready():
             return None
         case _:
             assert_never(state)  # E: is not assignable
+
+
+def tagged_narrowed_diagnostics(marker: TaggedMarker) -> str:
+    if marker.owned["state"] == "failed":
+        assert_type(marker.owned, FailedRecord)
+        return marker.owned["failure_status"]
+    return ""
 
 
 def mapping_pattern_does_not_narrow(record: TaggedRecord) -> str | None:
@@ -57,5 +67,6 @@ def checker_contracts(marker: Marker, record: DataclassRecord) -> None:
     assert_type(construct_marker("flat", b"{}"), Marker)
     assert_type(failure_status(marker), str | None)
     assert_type(transition_ready(marker), Marker)
+    assert_type(dataclass_failure_details(record.lifecycle), FailureDiagnostics | None)
     assert_type(Failed(FailureDiagnostics("stage", "status", "out", "err")), Failed)
     assert_type(record.lifecycle, Lifecycle)
