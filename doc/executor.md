@@ -11,6 +11,9 @@ use the acceptance criteria supplied in the handoff. Consult ancestor Work
 READMEs only when needed. Follow shared setup, branch, engineering, testing,
 acceptance, and publication rules at their existing owners; this guidance does
 not replace them.
+When changing code or tests, apply
+[engineering judgment in review](engineering-review.md) alongside the
+applicable engineering and testing guidance.
 Follow the [routine-choice guidance](workflow.md#scope-and-sizing) for
 decisions within the agreed contract.
 

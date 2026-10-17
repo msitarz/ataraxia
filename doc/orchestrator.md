@@ -173,6 +173,10 @@ requires the maintainer's explicit approval.
 
 ## Review and return
 
+When independently reviewing changed code or tests, apply
+[engineering judgment in review](engineering-review.md) alongside the
+applicable engineering and testing guidance.
+
 For a requested parent's direct leaves, complete the local artifact/evidence
 review and any consolidated corrections before assigning the next leaf. Follow
 the [local delivery sequence](acceptance-tracing.md#work-delivery-commits) for

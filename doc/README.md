@@ -26,6 +26,7 @@ relevant guidance.
 | Shared ADR/WDR record format and lifecycle | [Decision record format](decision-records.md) |
 | Workflow decision eligibility, routing, and index | [WDR workflow](wdr-workflow.md) |
 | Coding and typing conventions | [Engineering](engineering.md) |
+| Design judgment when changing or reviewing code or tests | [Engineering judgment in review](engineering-review.md) |
 | Common testing rules and test-type guidance | [Testing](testing.md) |
 | Test ownership and cleanup | [Test ownership](test-ownership.md) |
 | Work acceptance status and delivery evidence | [Work acceptance](acceptance-tracing.md) |

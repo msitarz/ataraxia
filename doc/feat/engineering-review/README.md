@@ -34,7 +34,7 @@ completed artifact use it through existing routes.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Focused and discoverable judgment guidance
+### **AC-1 DONE** Focused and discoverable judgment guidance
 
 Agents changing or reviewing code or tests can reach the judgment owner directly
 from applicable task and role guidance.
