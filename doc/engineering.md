@@ -37,12 +37,6 @@ files.
 - For dictionary records, use `TypedDict` (`BrokerReturn`,
   `BacktestShardReturn`); reserve typed `Mapping[K, V]`/`MutableMapping[K, V]`
   for dynamic keys such as nodes or dependency names.
-- At library boundaries, translate expected low-level failures into contextual
-  exceptions in `src/ataraxia/errors.py`. Derive from `AtaraxiaError`, retain an
-  appropriate built-in base, and preserve causes:
-  `raise DomainError("Useful context") from exc` (see `sort_graph`). Don't
-  blanket-wrap programming errors or normal iteration termination. Document
-  caller-handled domain errors in Google-style `Raises` sections.
 - Node pattern: `deps()` names inputs, `factory()` supplies a runner, and runner
   `__call__` computes. Match dependency keys to runner parameters. Extract
   reusable calculations, as `SmaRunner` does with `sma`.
@@ -68,6 +62,59 @@ files.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
   domain errors.
 
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created. Define the
+consumed record as every field and relationship an operation relies on,
+including ownership, persistence, and security requirements.
+
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type. Check contract gaps and domain invariants around a documented typed
+  library API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values. Enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value. Annotations alone
+  never validate raw runtime data.
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them. Leave unused extension
+  data opaque and preserve it when transport or persistence compatibility
+  requires it.
+- Keep internal invariant failures concise. At external boundaries, give
+  actionable context and distinguish failures when callers need different
+  responses; rejecting at the first error is fine. At Ataraxia library API
+  boundaries, translate expected low-level library failures into contextual
+  exceptions in `src/ataraxia/errors.py`. Derive from `AtaraxiaError`, retain
+  an appropriate built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`. Document caller-handled
+  domain errors in Google-style `Raises` sections.
+  Don't blanket-wrap programming errors or normal iteration termination.
+
+For example, a proposed transfer record can own its positive-amount and
+different-account invariants. A raw request adapter checks incoming field
+types and required fields before constructing it; an internal caller with typed
+arguments uses the constructor's own semantic checks. This is an illustration
+of guidance, not an Ataraxia API:
+
+```py
+@dataclass(frozen=True)
+class Transfer:
+    owner_id: str
+    recipient_id: str
+    cents: int
+
+    def __post_init__(self) -> None:
+        if not self.owner_id or not self.recipient_id:
+            raise ValueError("account IDs must not be empty")
+        if self.owner_id == self.recipient_id:
+            raise ValueError("transfer accounts must differ")
+        if isinstance(self.cents, bool) or self.cents <= 0:
+            raise ValueError("cents must be a positive integer")
+```
+
 ### Preserve type precision
 
 Type precision is part of correctness. Passing strict Pyrefly is necessary, but
@@ -91,9 +138,9 @@ does not justify losing information about values or their relationships.
   annotation, silently drop supported behavior, or substitute a broad return
   type followed by caller-side runtime checks. Creating an appropriate type or
   separating distinct operations is preferable to erasing the distinction.
-- Keep unavoidable untyped input at the external boundary. Validate or adapt it
-  there into an explicit project contract before it enters application code. Do
-  not expose that uncertainty through public result types. Casts,
+- Keep unavoidable untyped input at the external boundary, following
+  [boundary and construction guidance](#validate-at-boundaries-and-construction).
+  Do not expose that uncertainty through public result types. Casts,
   `TypeGuard`/`TypeIs`, ignores, and disabled diagnostics must not conceal a
   mismatch or replace a missing type model; narrowing predicates must actually
   establish their claimed contract.
