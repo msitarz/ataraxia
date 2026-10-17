@@ -48,17 +48,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         ),
         (
             "lint-check",
-            (
-                "run",
-                "ruff",
-                "check",
-                "--select",
-                "too-many-statements",
-                "--config",
-                "lint.pylint.max-statements=25",
-                "--exit-zero",
-                ".",
-            ),
+            ("run", "ruff", "check", "."),
             "doc/engineering-review.md",
             "apply the design questions to changed code and tests",
             "For meaningful changes",

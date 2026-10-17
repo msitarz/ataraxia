@@ -156,8 +156,8 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Intentional boundary fixture; tests copy it outside this exact exemption.
-"test/make/fixtures/size_51.py" = ["too-many-statements"]
+# Intentional negative boundary fixture; tests copy it outside this exemption.
+"test/make/fixtures/size_26.py" = ["too-many-statements"]
 "src/ataraxia/cli.py" = ["T20"]    # print allowed in CLI code
 
 "test/**" = [
@@ -172,8 +172,8 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.pylint]
-# Lint blocks above 50; Make adds an advisory-only pass above 25.
-max-statements = 50
+# Ruff blocks functions with more than 25 statements in every lint path.
+max-statements = 25
 
 [tool.ruff.lint.isort]
 known-first-party = ["ataraxia"]

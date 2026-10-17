@@ -14,47 +14,23 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     return make_sandbox(tmp_path)
 
 
-def expected_size_advisory(*paths: str) -> list[str]:
-    """Return the Make lint target's advisory Ruff invocation."""
-    return [
-        "run",
-        "ruff",
-        "check",
-        "--select",
-        "too-many-statements",
-        "--config",
-        "lint.pylint.max-statements=25",
-        "--exit-zero",
-        *paths,
-    ]
-
-
 @pytest.mark.parametrize(
     ("target", "args", "expected"),
     [
         (
             "lint",
             (),
-            [
-                ["run", "ruff", "check", ".", "--fix"],
-                expected_size_advisory("."),
-            ],
+            [["run", "ruff", "check", ".", "--fix"]],
         ),
         (
             "lint",
             ("ARGS=src/feature.py",),
-            [
-                ["run", "ruff", "check", "src/feature.py", "--fix"],
-                expected_size_advisory("src/feature.py"),
-            ],
+            [["run", "ruff", "check", "src/feature.py", "--fix"]],
         ),
         (
             "lint-check",
             ("ARGS=src/feature.py src/provider.py",),
-            [
-                ["run", "ruff", "check", "src/feature.py", "src/provider.py"],
-                expected_size_advisory("src/feature.py", "src/provider.py"),
-            ],
+            [["run", "ruff", "check", "src/feature.py", "src/provider.py"]],
         ),
         ("format", (), [["run", "ruff", "format", "."]]),
         (
@@ -135,26 +111,19 @@ def test_make_tool_targets_preserve_defaults_and_route_selectors(
     assert [list(call.argv) for call in result.calls] == expected
 
 
-def test_lint_target_does_not_suppress_advisory_tool_failures(
-    sandbox: MakeSandbox,
-) -> None:
-    """AC-1: Given ordinary targets and hostile arguments, recorded commands
-    match promised routing, invalid inputs fail before tool invocation, and shell
-    expressions never create marker files.
-
-    This case covers advisory-command failure propagation.
-    """
+def test_lint_check_propagates_ruff_failure(sandbox: MakeSandbox) -> None:
+    """The single Ruff check failure propagates from Make."""
     # Given: the sandbox fixture supplies an isolated real-Make arrangement.
 
     # When
     result = sandbox.run(
-        "lint-check", fail_args=tuple(expected_size_advisory(".")), exit_code=2
+        "lint-check", fail_args=("run", "ruff", "check", "."), exit_code=2
     )
 
     # Then
     assert result.exit_code == 2
-    assert len(result.calls) == 2
-    assert "--exit-zero" in result.calls[1].argv
+    assert len(result.calls) == 1
+    assert result.calls[0].argv == ("run", "ruff", "check", ".")
 
 
 def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
@@ -242,8 +211,7 @@ def test_make_selectors_quote_shell_metacharacters(sandbox: MakeSandbox) -> None
     # Then
     assert result.exit_code == 0, result.output
     assert [list(call.argv) for call in result.calls] == [
-        ["run", "ruff", "check", "src/example.py;", "touch", str(marker)],
-        expected_size_advisory("src/example.py;", "touch", str(marker)),
+        ["run", "ruff", "check", "src/example.py;", "touch", str(marker)]
     ]
     assert not marker.exists()
 

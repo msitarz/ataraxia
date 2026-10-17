@@ -24,9 +24,8 @@ The project requires Python 3.14 or newer and uses native deferred annotation
 evaluation; do not add `from __future__ import annotations`.
 
 - Prefer function composition, focused functions, guard clauses, and early
-  returns. Ruff's PLR0915 counts statements in source, scripts, and tests:
-  26–50 statements are advisory and more than 50 blocks lint. Treat about 25
-  statements as a review signal; these counts guide readability review, not
+  returns. Ruff's PLR0915 counts statements in source, scripts, and tests and
+  blocks lint above 25. Treat the limit as a readability signal, not a target
   function shape. Don't split code only to lower a count. Extract cohesive
   helpers that improve readability.
 - Inject dependencies through arguments or constructor/dataclass fields.
