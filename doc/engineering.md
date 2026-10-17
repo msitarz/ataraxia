@@ -153,9 +153,7 @@ def scheduled_time(plan: TransferPlan) -> datetime | None:
             assert_never(unexpected)
 
 
-def schedule(
-    plan: ImmediateTransfer, execute_at: datetime
-) -> ScheduledTransfer:
+def schedule(plan: ImmediateTransfer, execute_at: datetime) -> ScheduledTransfer:
     return ScheduledTransfer(details=plan.details, execute_at=execute_at)
 ```
 
