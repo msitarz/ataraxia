@@ -29,7 +29,7 @@ with truthful limits and compatible bounded repairs.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Truthful tool guidance
+### **AC-1 DONE** Truthful tool guidance
 
 Engineering guidance explains adopted capabilities, limits, and remaining manual
 review obligations, linking to
