@@ -127,7 +127,7 @@ core does not import concrete adapters. Guidance does not require a Protocol or
 module for every helper; `runtime_checkable` serves an actual runtime
 conformance need.
 
-### **AC-5 TODO** Effects and live resource safety owned by adapters
+### **AC-5 DONE** Effects and live resource safety owned by adapters
 
 Engineering guidance assigns acquisition, adaptation, decisions, and effects
 clear input/output, error, and resource responsibilities.
