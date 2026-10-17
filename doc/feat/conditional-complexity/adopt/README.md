@@ -80,9 +80,10 @@ or integration owner.
 
 ## Dependencies
 
-- TODO [Capability and threshold investigation](../investigate/README.md)
-  supplies the independently reviewed release, limits, scope, integration
-  feasibility, and bounded repair inventory before adoption begins.
+- DONE
+  [Reviewed Complexipy 8.0.1 investigation](https://github.com/msitarz/ataraxia/blob/2416d974065d9086f8123baeae76a3c95057598d/doc/feat/conditional-complexity/investigate/findings.md)
+  supplies the release, inclusive 15 limit, Ruff PLR0916/max-five complement,
+  scope, integration feasibility, and bounded repair inventory.
 - DONE [Integrated engineering guidance](../../../engineering.md) supplies
   policy consumed by adoption.
 
@@ -92,6 +93,19 @@ or integration owner.
   boundaries.
 
 ## Additional context
+
+- Use `complexipy>=8.0.1` in the dev dependency group and lock the assessed
+  release; enforce inclusive 15 with Ruff PLR0916 at its default maximum of
+  five.
+- Reuse path-only `ARGS` with default `.`, one Ruff call per lint route, native
+  Complexipy, SARIF line locations, and matching `build`/`dist` exclusions;
+  score functions without enabling module-level script bodies.
+- Bound repairs to `read_calls`, `check_work`, and `check_root_owner`, with
+  tests for returned records, caller-visible errors, diagnostics, and ownership
+  safety.
+- Keep manual review for uncovered Boolean forms including `match` guards;
+  the release source resolves current documentation's scoring discrepancies,
+  while runtime behavior outside macOS remains unobserved.
 
 Unresolved capability gaps require steering before adoption. Integration or
 repairs exceeding a short review sitting require a reviewed split under
