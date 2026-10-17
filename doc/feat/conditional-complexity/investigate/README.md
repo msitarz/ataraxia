@@ -59,7 +59,7 @@ evidence-backed capability gap.
   blocking semantics.
 - Precise scope, exceptions, diagnostics, and remaining manual review
   obligations reflect observed capabilities and the
-  [proposed readable-condition policy](../../validated-core/README.md#ac-6-todo-readable-decision-logic).
+  [proposed readable-condition policy](../../../engineering.md#code-style).
 - Discovery excludes transient environments, caches, and build output
   consistently with lint discovery, without blanket exemptions for scripts or
   tests.

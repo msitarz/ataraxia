@@ -46,7 +46,7 @@ organization need not remain when these contracts are preserved.
 Integrated readable-condition policy and the independently reviewed tooling
 outcomes provide useful automatic prevention with truthful limits.
 
-- [Validated core AC-6](../validated-core/README.md#ac-6-todo-readable-decision-logic)
+- [Validated core AC-6](../../engineering.md#code-style)
   supplies readable-condition policy without duplicating it in this Work.
 - [Adoption AC-1](adopt/README.md#ac-1-todo-truthful-tool-guidance) supplies
   integration guidance explaining supported capabilities and remaining judgment.

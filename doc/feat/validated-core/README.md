@@ -142,7 +142,7 @@ current resource safety. Supported inputs, documented errors and causes, state
 invariants, persistence compatibility, and necessary effect ordering remain
 contracts, while incidental validation order and branch organization may change.
 
-### **AC-6 TODO** Readable decision logic
+### **AC-6 DONE** Readable decision logic
 
 Engineering guidance makes case selection and independent constraints readable
 without a framework or numeric refactoring quota.
