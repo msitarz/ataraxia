@@ -34,7 +34,7 @@ and a complementary check can provide useful diagnostics and bounded adoption.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Latest release capability is established
+### **AC-1 DONE** Latest release capability is established
 
 A documentation-first assessment establishes the latest release's capabilities
 and limits, followed by bounded practical observations for the remaining ACs.
