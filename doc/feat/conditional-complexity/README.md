@@ -29,8 +29,9 @@ the normal Make/CI boundary.
   actual coverage must be observed.
 - Existing Make lint, setup, locking, and required CI provide the integration
   boundary.
-- Separate investigation and adoption children distinguish uncertain feasibility
-  from production integration.
+- The completed investigation establishes the reviewed tool capabilities;
+  engineering guidance and normal Make/CI routes own the lasting policy and
+  enforcement.
 
 ### Shared preservation boundary
 
@@ -43,19 +44,20 @@ organization need not remain when these contracts are preserved.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Guidance and prevention are integrated
+### **AC-1 DONE** Guidance and prevention are integrated
 
 Integrated readable-condition policy and the independently reviewed tooling
 outcomes provide useful automatic prevention with truthful limits.
 
 - [Readable-decision guidance](../../engineering.md#code-style)
   supplies readable-condition policy without duplicating it in this Work.
-- [Adoption AC-1](adopt/README.md#ac-1-done-truthful-tool-guidance) supplies
-  integration guidance explaining supported capabilities and remaining judgment.
-- [Adoption AC-2](adopt/README.md#ac-2-done-blocking-make-and-ci-enforcement)
-  supplies the locked reviewed tool through normal Make and required CI.
-- [Adoption AC-3](adopt/README.md#ac-3-done-compatible-bounded-repairs) supplies
-  compatible repairs where necessary.
+- [Adoption AC-1](https://github.com/msitarz/ataraxia/blob/0fc008156c196d66c56c28c27233a35aec89ba42/doc/feat/conditional-complexity/adopt/README.md#ac-1-done-truthful-tool-guidance)
+  supplied integration guidance explaining supported capabilities and remaining
+  judgment.
+- [Adoption AC-2](https://github.com/msitarz/ataraxia/blob/0fc008156c196d66c56c28c27233a35aec89ba42/doc/feat/conditional-complexity/adopt/README.md#ac-2-done-blocking-make-and-ci-enforcement)
+  supplied the locked reviewed tool through normal Make and required CI.
+- [Adoption AC-3](https://github.com/msitarz/ataraxia/blob/0fc008156c196d66c56c28c27233a35aec89ba42/doc/feat/conditional-complexity/adopt/README.md#ac-3-done-compatible-bounded-repairs)
+  supplied compatible repairs where necessary.
 - A recommendation or capability-gap finding alone does not complete prevention.
 
 ## Dependencies
@@ -71,8 +73,10 @@ outcomes provide useful automatic prevention with truthful limits.
   [Capability and threshold investigation](https://github.com/msitarz/ataraxia/blob/2416d974065d9086f8123baeae76a3c95057598d/doc/feat/conditional-complexity/investigate/findings.md):
   documentation-first assessment of Complexipy 8.0.1 recommends inclusive limit
   15 with Ruff PLR0916 at maximum five.
-- TODO [Tooling adoption](adopt/README.md): integrate the reviewed selection and
-  truthful limits, with bounded repairs after both prerequisites.
+- DONE
+  [Tooling adoption](https://github.com/msitarz/ataraxia/blob/0fc008156c196d66c56c28c27233a35aec89ba42/doc/feat/conditional-complexity/adopt/README.md):
+  integrate the reviewed selection and truthful limits, with bounded repairs
+  after both prerequisites.
 
 ## Additional context
 
