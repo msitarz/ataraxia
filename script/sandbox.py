@@ -337,24 +337,33 @@ def check_root_owner(root: Path, common_dir: str) -> None:
 
     Raises:
         ValueError: If ownership metadata is unsafe or conflicts.
-    """
+    """  # ruff: ignore[docstring-extraneous-exception]
     for entry in root.iterdir():
-        if entry.is_symlink():
-            if entry.name.endswith(METADATA):
-                raise ValueError(f"managed ownership metadata is a symlink: {entry}")
-            continue
+        _check_root_entry_owner(root, entry, common_dir)
+
+
+def _check_root_entry_owner(root: Path, entry: Path, common_dir: str) -> None:
+    """Check one root entry's ownership record and reject observed metadata links.
+
+    Raises:
+        ValueError: If metadata is a symlink or belongs to another checkout.
+    """
+    if entry.is_symlink():
         if entry.name.endswith(METADATA):
-            metadata = entry
-        elif entry.is_dir():
-            metadata = entry / METADATA
-        else:
-            continue
-        if metadata.is_symlink():
-            raise ValueError(f"managed ownership metadata is a symlink: {metadata}")
-        if metadata.is_file():
-            record = json.loads(metadata.read_text())
-            if record.get("common_dir") != common_dir:
-                raise ValueError(f"managed root belongs to another checkout: {root}")
+            raise ValueError(f"managed ownership metadata is a symlink: {entry}")
+        return
+    if entry.name.endswith(METADATA):
+        metadata = entry
+    elif entry.is_dir():
+        metadata = entry / METADATA
+    else:
+        return
+    if metadata.is_symlink():
+        raise ValueError(f"managed ownership metadata is a symlink: {metadata}")
+    if metadata.is_file():
+        record = json.loads(metadata.read_text())
+        if record.get("common_dir") != common_dir:
+            raise ValueError(f"managed root belongs to another checkout: {root}")
 
 
 def clone_and_prepare(

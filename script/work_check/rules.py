@@ -72,6 +72,29 @@ def check_work(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkDiagnostic, ...]:
     for heading in headings:
         if heading.block.heading_level == 2 and heading.text in sections:
             sections[heading.text].append(heading)
+    findings.extend(_required_section_findings(blocks, sections))
+    findings.extend(
+        _criterion_findings(
+            blocks,
+            headings,
+            sections["Acceptance criteria"],
+        )
+    )
+    return tuple(
+        sorted(findings, key=lambda item: (item.line, item.rule, item.context))
+    )
+
+
+def _required_section_findings(
+    blocks: tuple[MarkdownBlock, ...],
+    sections: dict[str, list[_LocatedHeading]],
+) -> tuple[WorkDiagnostic, ...]:
+    """Collect missing, duplicate, and empty required-section findings.
+
+    Returns:
+        Findings for all required sections.
+    """
+    findings: list[WorkDiagnostic] = []
     for name in _REQUIRED_SECTIONS:
         matches = sections[name]
         if not matches:
@@ -89,13 +112,7 @@ def check_work(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkDiagnostic, ...]:
             )
             for heading in matches:
                 findings.extend(_nonempty_section(blocks, heading))
-
-    findings.extend(
-        _criterion_findings(blocks, headings, sections["Acceptance criteria"])
-    )
-    return tuple(
-        sorted(findings, key=lambda item: (item.line, item.rule, item.context))
-    )
+    return tuple(findings)
 
 
 def _located_headings(blocks: tuple[MarkdownBlock, ...]) -> tuple[_LocatedHeading, ...]:

@@ -25,27 +25,29 @@ def read_calls(log: Path) -> tuple[UvCall, ...]:
     """Validate external log records before exposing typed observations."""
     calls: list[UvCall] = []
     for line in log.read_text().splitlines() if log.exists() else ():
-        record: object = json.loads(line)
-        if not isinstance(record, dict):
-            raise ValueError("uv record must be a mapping")
-        arguments: object = record.get("argv")
-        environment: object = record.get("environment")
-        if not isinstance(arguments, list) or not isinstance(environment, dict):
-            raise ValueError("uv record must contain arguments and environment")
-        argv: list[str] = []
-        observed: dict[str, str | None] = {}
-        for argument in arguments:
-            if not isinstance(argument, str):
-                raise ValueError("uv argument must be a string")
-            argv.append(argument)
-        for name, value in environment.items():
-            if not isinstance(name, str) or not (
-                value is None or isinstance(value, str)
-            ):
-                raise ValueError("uv environment must contain string names and values")
-            observed[name] = value
-        calls.append(UvCall(tuple(argv), observed))
+        calls.append(_uv_call_from_record(json.loads(line)))
     return tuple(calls)
+
+
+def _uv_call_from_record(record: object) -> UvCall:
+    """Validate one untrusted recorder row and adapt it to a typed call."""
+    if not isinstance(record, dict):
+        raise ValueError("uv record must be a mapping")
+    arguments: object = record.get("argv")
+    environment: object = record.get("environment")
+    if not isinstance(arguments, list) or not isinstance(environment, dict):
+        raise ValueError("uv record must contain arguments and environment")
+    argv: list[str] = []
+    observed: dict[str, str | None] = {}
+    for argument in arguments:
+        if not isinstance(argument, str):
+            raise ValueError("uv argument must be a string")
+        argv.append(argument)
+    for name, value in environment.items():
+        if not isinstance(name, str) or not (value is None or isinstance(value, str)):
+            raise ValueError("uv environment must contain string names and values")
+        observed[name] = value
+    return UvCall(tuple(argv), observed)
 
 
 @dataclass(frozen=True)

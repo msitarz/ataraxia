@@ -66,7 +66,7 @@ agreed limits through normal Make and required CI.
 One-time real-route results are recorded in
 [AC-2 observations](observations.md).
 
-### **AC-3 TODO** Compatible bounded repairs
+### **AC-3 DONE** Compatible bounded repairs
 
 The repository passes adopted enforcement after only necessary, independently
 reviewable repairs at the then-integrated baseline, including when none are
