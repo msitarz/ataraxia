@@ -95,8 +95,10 @@ to its child contract; checks do not infer semantic quality or completion.
   regression coverage.
 - **DONE** Active contract migration rewrote all five groups of existing Work
   contracts, preserving their scope, ownership, and dependencies.
-- **TODO** [Structural Work checking](work-check/README.md): select a Markdown
-  parser and introduce work-check after the contracts are migrated.
+- **DONE** Structural Work checking: implemented typed Markdown parsing,
+  content-independent Work discovery, and structural enforcement through
+  doc-check
+  ([current interface and discovery convention](../../work-definition.md)).
 - **TODO** [Integrated migration verification](verification/README.md): assess
   complete coverage, preserved scope, and consistency across the final tree.
 

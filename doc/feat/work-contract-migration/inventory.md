@@ -11,11 +11,12 @@ Subsequent scope decision: the archived
 required complete ac-check retirement, including its orphan work-path helper and
 dedicated tests. Its completed outcome is recorded in the migration
 [delivery map](README.md#children).
-The separate [work-check Work](work-check/README.md) owns parser selection and
-new structural checking after contract migration. Conditional retention options
-and contract counts below describe the reviewed inventory baseline, not the
-current decision or an automatically maintained inventory. Final verification
-also includes this added child.
+The completed
+[work-check contract at its verification commit](https://github.com/msitarz/ataraxia/blob/396d7b7a283a2940c8764ff4b42955345e17c608/doc/feat/work-contract-migration/work-check/README.md)
+selected the parser and supplied structural checking after contract migration.
+Conditional retention options and contract counts below describe the reviewed
+inventory baseline, not the current decision or an automatically maintained
+inventory. Final verification also includes this added child.
 
 ## Active contracts
 

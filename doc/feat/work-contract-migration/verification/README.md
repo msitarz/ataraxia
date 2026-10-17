@@ -46,9 +46,9 @@ unrun checks honestly. Full latest-reviewed-head CI remains the merge gate.
   rules and lasting decisions.
 - **DONE** The completed [tooling simplification outcome](../README.md#children)
   supplies the retained command behavior and focused execution evidence.
-- **TODO** [Structural Work checking](../work-check/README.md): supplies the
-  parser selection, explicit discovery convention, and integrated work-check
-  behavior after contract migration.
+- **DONE** Structural Work checking ([current interface and discovery
+  convention](../../../work-definition.md)): supplies the typed parser,
+  content-independent discovery convention, and integrated doc-check behavior.
 
 ## Links
 
