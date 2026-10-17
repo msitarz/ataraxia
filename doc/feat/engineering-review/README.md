@@ -73,7 +73,7 @@ not certify judgment and require no new agent, harness, report, or gate.
 Existing scope and stop rules, consolidated corrections, evidence reuse,
 publication ownership, and maintainer review and merge authority remain intact.
 
-### **AC-3 TODO** Examples teach choices and their limits
+### **AC-3 DONE** Examples teach choices and their limits
 
 Three compact before/after contrasts explain why a simpler design helps and when
 the original form remains appropriate.
