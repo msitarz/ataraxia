@@ -59,8 +59,8 @@ def created_state(case: CreationCase, branch: str) -> GitState:
     )
 
 
-def setup_calls(destination: Path) -> tuple[UvCall, ...]:
-    """Independent literal expectations for the two setup phases."""
+def setup_calls(destination: Path, git_dir: str) -> tuple[UvCall, ...]:
+    """Independent literal expectations for dependency, hook, and check setup."""
     environment = {
         "UV_CACHE_DIR": str(destination / ".cache/uv"),
         "PREK_HOME": str(destination / ".cache/prek"),
@@ -74,10 +74,43 @@ def setup_calls(destination: Path) -> tuple[UvCall, ...]:
             environment | {"UV_NO_SYNC": "false"},
         ),
         UvCall(
+            (
+                "run",
+                "--no-sync",
+                "prek",
+                "install",
+                "--prepare-hooks",
+                "--hook-type",
+                "pre-commit",
+                "--hook-type",
+                "commit-msg",
+                "--git-dir",
+                git_dir,
+            ),
+            environment | {"UV_NO_SYNC": "true"},
+        ),
+        UvCall(
             ("sync", "--locked", "--group", "dev", "--check", "--offline"),
             environment | {"UV_NO_SYNC": "true"},
         ),
     )
+
+
+def assert_hook_setup_preserved_shared_state(
+    case: CreationCase,
+    source_hooks: Path,
+    before_source_hooks: dict[str, bytes],
+) -> str:
+    """Check private hook selection and preserved main-worktree hooks."""
+    git_dir = case.repository.git(
+        "-C", str(case.destination), "rev-parse", "--absolute-git-dir"
+    ).stdout.strip()
+    hook_path = case.repository.git(
+        "-C", str(case.destination), "config", "--worktree", "--get", "core.hooksPath"
+    ).stdout.strip()
+    assert hook_path == f"{git_dir}/hooks"
+    assert cache_files(source_hooks) == before_source_hooks
+    return git_dir
 
 
 def test_creation_reminds_about_expected_review_size_before_dispatch(
@@ -122,6 +155,8 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
     case = arrange_case(tmp_path, "agent's worktree;touch PWNED")
     source = case.repository.sandbox.directory
     write_cache(case.repository, (("uv/ready", "cached"), ("prek/example", "cached")))
+    source_hooks = source / ".git/hooks"
+    before_source_hooks = cache_files(source_hooks)
     (source / ".venv").mkdir()
     (source / ".venv/parent-only").write_text("do not copy")
     before_cache = cache_files(source / ".cache")
@@ -150,7 +185,10 @@ def test_creation_copies_cache_and_overrides_parent_environment(tmp_path: Path) 
     assert not (case.destination / ".venv/parent-only").exists()
     assert (source / ".venv/parent-only").read_text() == "do not copy"
     assert (case.destination / ".venv").is_dir()
-    assert result.calls == setup_calls(case.destination)
+    git_dir = assert_hook_setup_preserved_shared_state(
+        case, source_hooks, before_source_hooks
+    )
+    assert result.calls == setup_calls(case.destination, git_dir)
     assert case.repository.state() == created_state(case, "work/example")
 
 
@@ -190,17 +228,34 @@ def test_unusable_cache_retains_a_recoverable_worktree(
     assert not (case.destination / ".venv").exists()
     assert cache_files(case.destination / ".cache") == expected_cache
     assert cache_files(case.repository.sandbox.directory / ".cache") == expected_cache
-    assert result.calls == setup_calls(case.destination)[:1]
+    git_dir = case.repository.git(
+        "-C", str(case.destination), "rev-parse", "--absolute-git-dir"
+    ).stdout.strip()
+    assert result.calls == setup_calls(case.destination, git_dir)[:1]
     assert case.repository.state() == created_state(case, "work/failed")
 
 
-def test_failed_verification_retains_the_prepared_worktree(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("failure_environment", "failure_message", "failure_code", "setup_calls_count"),
+    [
+        ({"STUB_SETUP_FAIL_HOOKS": "true"}, "Hook setup failed", 25, 2),
+        ({"STUB_SETUP_FAIL_VERIFY": "true"}, "Environment check failed", 24, 3),
+    ],
+    ids=["hook-setup", "environment-check"],
+)
+def test_failed_preparation_retains_the_worktree(
+    tmp_path: Path,
+    failure_environment: dict[str, str],
+    failure_message: str,
+    failure_code: int,
+    setup_calls_count: int,
+) -> None:
     """AC-1: Given usable, missing, partial, or verification-failing setup,
     creation succeeds with independent destination caches/environment or fails
     with the recoverable worktree retained; hostile input never executes commands.
 
     Workspace AC-1: A new worktree gets its own cache and verified environment.
-    This case covers verification-failure retained state.
+    This case covers hook-installation and environment-check failure state.
     Fake setup does not prove real dependency installation or environment validity.
     """
     # Given
@@ -212,21 +267,25 @@ def test_failed_verification_retains_the_prepared_worktree(tmp_path: Path) -> No
         "worktree-create",
         f"WORKTREE={case.destination}",
         "BRANCH=work/verify",
-        environment={"STUB_SETUP_FAIL_VERIFY": "true"},
+        environment=failure_environment,
     )
 
     # Then
     assert result.exit_code == 2, result.output
     assert case.destination.is_dir()
     assert (case.destination / ".venv").is_dir()
-    assert "Environment check failed" in result.stderr
+    assert "Worktree ready" not in result.stdout
+    assert failure_message in result.stderr
     assert "worktree retained" in result.stderr
-    assert "Error 24" in result.stderr
+    assert f"Error {failure_code}" in result.stderr
     assert cache_files(case.destination / ".cache") == {"uv/ready": b"cached"}
     assert cache_files(case.repository.sandbox.directory / ".cache") == {
         "uv/ready": b"cached"
     }
-    assert result.calls == setup_calls(case.destination)
+    git_dir = case.repository.git(
+        "-C", str(case.destination), "rev-parse", "--absolute-git-dir"
+    ).stdout.strip()
+    assert result.calls == setup_calls(case.destination, git_dir)[:setup_calls_count]
     assert case.repository.state() == created_state(case, "work/verify")
 
 

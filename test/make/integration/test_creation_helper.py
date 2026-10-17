@@ -31,8 +31,24 @@ def test_real_make_creates_a_worktree_with_destination_local_setup(
     assert result.exit_code == 0, result.output
     assert (destination / ".venv").is_dir()
     assert (destination / ".cache/uv/ready").read_text() == "usable cache"
+    git_dir = repository.git(
+        "-C", str(destination), "rev-parse", "--absolute-git-dir"
+    ).stdout.strip()
     assert tuple(call.argv for call in result.calls) == (
         ("sync", "--locked", "--group", "dev"),
+        (
+            "run",
+            "--no-sync",
+            "prek",
+            "install",
+            "--prepare-hooks",
+            "--hook-type",
+            "pre-commit",
+            "--hook-type",
+            "commit-msg",
+            "--git-dir",
+            git_dir,
+        ),
         ("sync", "--locked", "--group", "dev", "--check", "--offline"),
     )
     assert tuple(call.environment for call in result.calls) == (
@@ -43,6 +59,14 @@ def test_real_make_creates_a_worktree_with_destination_local_setup(
             "VIRTUAL_ENV": None,
             "UV_OFFLINE": "true",
             "UV_NO_SYNC": "false",
+        },
+        {
+            "UV_CACHE_DIR": str(destination / ".cache/uv"),
+            "PREK_HOME": str(destination / ".cache/prek"),
+            "UV_PROJECT_ENVIRONMENT": str(destination / ".venv"),
+            "VIRTUAL_ENV": None,
+            "UV_OFFLINE": "true",
+            "UV_NO_SYNC": "true",
         },
         {
             "UV_CACHE_DIR": str(destination / ".cache/uv"),

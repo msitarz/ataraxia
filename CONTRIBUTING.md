@@ -29,17 +29,26 @@ make setup
 
 `make setup` creates the `uv`-managed virtualenv, installs dependencies
 (including the dev group), prepares all pinned hook environments and the wheel
-build backend, and installs the `prek` pre-commit and commit-message hooks.
-Re-run it whenever `pyproject.toml`, `uv.lock`, or `.pre-commit-config.yaml`
-changes. Setup needs network access; caches live in `.cache/uv` and
-`.cache/prek` by default (override `UV_CACHE_DIR` or `PREK_HOME` if needed).
+build backend, and installs this worktree's `prek` pre-commit and commit-message
+hooks. Re-run it whenever `pyproject.toml`, `uv.lock`, or
+`.pre-commit-config.yaml` changes.
+Setup needs network access; caches live in `.cache/uv` and `.cache/prek` by
+default (override `UV_CACHE_DIR` or `PREK_HOME` if needed). Hook setup enables
+Git's worktree configuration and installs shims under each worktree's private
+Git directory, so preparing a linked worktree leaves the main and sibling
+worktree hooks alone. Make uses worktree-local UV and prek caches by default;
+direct Git hook runs use the caller's environment and uv/prek's normal cache
+defaults unless the caller sets `UV_CACHE_DIR` or `PREK_HOME`.
 
 To create an agent [worktree](doc/ubiquitous-language.md) from local `master`,
 run `make worktree-create WORKTREE=/path/to/worktree BRANCH=work/example`. The
 target copies `.cache` when present, creates a fresh `.venv` with offline
-`ci-setup`, and runs `verify-setup` before reporting readiness. If setup fails,
-the worktree remains available for recovery; follow the printed instructions
-from inside that worktree.
+`ci-setup`, prepares and installs both hook stages, and runs `verify-setup`
+before reporting readiness. If dependency setup fails, repair the worktree's
+cache or environment as printed, then run `make ci-setup UV_OFFLINE=true`,
+`make hooks-setup`, and `make verify-setup` from that worktree. If hook setup
+fails, repair the environment and run `make hooks-setup` followed by
+`make verify-setup`. The worktree remains available for recovery.
 
 Commitizen checks Conventional Commit syntax. The body-formatting hook allows
 messages without bodies; when a body is present, separate it from the subject

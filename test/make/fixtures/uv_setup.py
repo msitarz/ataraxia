@@ -22,6 +22,8 @@ def main() -> int:
     environment = {name: os.environ.get(name) for name in names}
     with Path(os.environ["STUB_UV_LOG"]).open("a", encoding="utf-8") as log:
         log.write(json.dumps({"argv": arguments, "environment": environment}) + "\n")
+    if os.environ.get("STUB_SETUP_FAIL_HOOKS") == "true" and "prek" in arguments:
+        return 25
     project = Path(os.environ["UV_PROJECT_ENVIRONMENT"])
     if "--check" in arguments:
         if os.environ.get("STUB_SETUP_FAIL_VERIFY") == "true":
