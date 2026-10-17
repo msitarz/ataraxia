@@ -1,108 +1,97 @@
-# Adopt condition complexity guidance and checks
+# Adopt condition complexity checks
 
 ## Purpose
 
-Deliver readable-condition guidance and blocking checks through the normal
-Make/CI boundary using the independently reviewed investigation outcome.
+Integrate the independently reviewed tool selection through normal Make/CI with
+truthful limits and compatible bounded repairs.
 
 ## Goals
 
-- Integrate lasting guidance that explains readable conditions and truthful tool
-  limits.
-- Enforce the reviewed thresholds and scope with a locked dependency and useful
-  diagnostics.
-- Enable enforcement through bounded repairs that preserve affected behavior.
+- Explain adopted tool coverage and its limits alongside existing policy.
+- Enforce reviewed limits with locked dependencies and useful diagnostics.
+- Enable enforcement through only necessary repairs.
 
 ## Non-Goals
 
-- Resolve investigation capability gaps by silently broadening exceptions or
-  weakening thresholds.
-- Extend repairs beyond violations necessary for enforcement at the
-  then-integrated baseline.
+- Redefine readable-condition or modeling policy.
+- Resolve capability gaps by silently broadening exceptions or weakening limits.
+- Extend repairs beyond violations needed at the then-integrated baseline.
 
 ## Mechanisms
 
-- [Engineering conventions](../../../engineering.md#code-style) own the adopted
-  guidance alongside composition and type-precision rules.
-- A locked complexipy development dependency and evidence-supported
-  complementary Ruff settings provide automatic checks.
-- Existing Make setup, locking, lint, and required CI routes provide dependency
-  management and enforcement.
-- Repository integration regressions cover configuration, routing, and affected
-  compatibility rather than upstream scoring algorithms.
+- [Engineering conventions](../../../engineering.md) link tooling guidance to
+  integrated validated-core policy.
+- A locked reviewed complexipy candidate and evidence-supported complementary
+  Ruff settings supply enforcement.
+- Existing Make setup, locking, lint, and required CI own integration routes.
+- Repository regressions cover configuration, routing, and affected
+  compatibility.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Readable condition guidance
+### **AC-1 TODO** Truthful tool guidance
 
-Engineering guidance defines the
-[parent condition-complexity boundary](../README.md#shared-guidance-boundary)
-with readable counterexamples and a compact seed-derived before/after repair.
+Engineering guidance explains adopted capabilities, limits, and remaining manual
+review obligations, linking to
+[integrated readable-condition policy](../../../engineering.md)
+without duplicating it. The validated-core Work is a delivery dependency;
+delivered guidance links to the lasting engineering owner rather than the
+pending Work contract.
 
-- The guidance integrates with the surrounding composition and type-precision
-  rules and links to integrated validated boundary rules instead of duplicating
-  them.
-- Examples distinguish simple guards, complete consumed-record validation, typed
-  pure decisions, function complexity, and dense conditions, including type
-  prerequisites and dense `match` guards.
-- The explanation accurately describes the reviewed tool limits, remaining
-  manual review obligations, and cohesive extraction.
-- Machine configuration is linked rather than copied into a settings inventory.
+The explanation distinguishes function complexity from Boolean counting and
+describes only coverage observed for the reviewed versions. Passing a metric
+does not guarantee readability. Configuration is linked at its machine owner
+rather than copied into a settings inventory; examples explain tool limitations
+without requiring a historical sandbox repair.
 
 ### **AC-2 TODO** Blocking Make and CI enforcement
 
-The locked reviewed candidate and any approved complementary Ruff settings
-enforce the agreed limits through normal Make and required CI.
+The locked reviewed candidate and any approved complementary settings enforce
+agreed limits through normal Make and required CI.
 
-- Dependency setup and locking use the existing Make machinery and include the
-  updated lockfile.
-- Focused paths and full discovery apply the agreed scope consistently,
-  excluding transient directories.
-- Findings above the adopted limit fail with useful file, function, and location
-  diagnostics and a repair direction, while exact-threshold behavior matches the
-  reviewed recommendation.
+- Setup and locking use existing Make machinery and include the updated
+  lockfile.
+- Focused paths and full discovery apply reviewed scope consistently, excluding
+  transient directories.
+- Above-limit findings fail with useful file, function, and location diagnostics
+  and a repair direction; exact-threshold behavior matches the recommendation.
 - Passing, exact-threshold, and failing cases through the real Make route
-  demonstrate statuses, diagnostics, focused scope, and transient-directory
-  exclusion.
-- Retained integration regressions exercise repository routing and configuration
+  demonstrate statuses, diagnostics, focused scope, and transient exclusion.
+- Retained integration regressions cover repository configuration and routing
   under [test ownership](../../../test-ownership.md).
 - Snapshots, suppressions, or broad exceptions do not silently grandfather
   violations or replace bounded repairs.
 
 ### **AC-3 TODO** Compatible bounded repairs
 
-The repository passes the adopted enforcement after only necessary repairs at
-the then-integrated baseline.
+The repository passes adopted enforcement after only necessary, independently
+reviewable repairs at the then-integrated baseline, including when none are
+needed.
 
-- Repairs preserve the
-  [parent preservation boundary](../README.md#shared-preservation-boundary),
-  existing meaningful types, and integrated validated boundary guidance.
-- The repair inventory is independently reviewable even if no repairs are
-  needed.
-- Focused existing behavior and type checks cover affected call paths and the
-  parent seed boundaries, including valid zero, with regressions added only for
-  uncovered affected boundaries.
-- Pure-rule tests use valid typed values.
-- Constructor and boundary tests cover whole consumed records and cross-field
-  failures.
-- Effects remain covered at their owning adapter or integration boundary under
-  existing [testing guidance](../../../testing.md).
+Repairs preserve the
+[parent supported-contract boundary](../README.md#shared-preservation-boundary),
+meaningful types, and integrated validated-core guidance. Focused behavior and
+type checks exercise actual affected supported contracts, with regressions only
+for uncovered boundaries. Existing [testing guidance](../../../testing.md) owns
+test placement: pure decisions use valid typed values, construction/ingress
+tests exercise owned record invariants, and effects are covered at their adapter
+or integration owner.
 
 ## Dependencies
 
 - TODO [Capability and threshold investigation](../investigate/README.md)
-  supplies the independently reviewed compatible candidate, threshold, supported
-  settings, scope, and bounded repair inventory required before adoption begins.
+  supplies the independently reviewed candidate, limits, scope, integration
+  feasibility, and bounded repair inventory before adoption begins.
 - TODO [Validated core guidance](../../validated-core/README.md) supplies
-  integrated boundary rules before this Work edits the shared engineering owner.
+  integrated policy before adoption edits the shared engineering owner.
 
 ## Links
 
-- [Parent contract](../README.md) owns shared scope, guidance, preservation
-  boundaries, and the frozen seed.
+- [Parent contract](../README.md) owns tooling scope and preservation
+  boundaries.
 
 ## Additional context
 
-Unresolved capability gaps require maintainer steering before adoption.
-Policy, configuration, or repairs that exceed a short review sitting require a
-reviewed split under the [Work workflow](../../../workflow.md#scope-and-sizing).
+Unresolved capability gaps require steering before adoption. Integration or
+repairs exceeding a short review sitting require a reviewed split under
+[Work workflow](../../../workflow.md#scope-and-sizing).
