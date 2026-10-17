@@ -41,9 +41,9 @@ before creating closure changes.
 
 ### **AC-2 TODO** Repository closure publishes only mechanical changes
 
-The command removes the selected contracts, updates parent/dependent links using
-the lifecycle's canonical rules, and preserves supporting artifacts unless
-reviewed removal/promotion is explicit. It creates a closure commit containing
+The command removes the selected contracts, updates parent/dependent links, and
+handles supporting artifacts using the lifecycle's canonical rules.
+It creates a closure commit containing
 only those changes, runs applicable checks and ordinary hooks/signing, and
 pushes normally to the same PR branch. It verifies remote publication before
 reporting closure publication, without claiming merge or cleanup completion.
