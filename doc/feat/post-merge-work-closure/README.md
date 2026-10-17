@@ -58,11 +58,11 @@ flowchart LR
 
 ### **AC-1 DONE** Contracts remain available through PR review
 
-Current lifecycle and publication guidance retain requested and descendant
-contracts until the explicit closure authorization defined by
-[lifecycle AC-1](lifecycle/README.md#ac-1-done-one-lifecycle-retains-contracts-until-authorized-closure).
-Corrections preserve or restore affected contracts and evidence, and maintainer
-acceptance, independent review, and full final-head CI remain merge gates.
+Work acceptance retains requested and descendant contracts until explicitly
+authorized closure, as defined in
+[Work delivery](../../acceptance-tracing.md#work-delivery). Corrections preserve
+or restore affected contracts and evidence, and maintainer acceptance,
+independent review, and full final-head CI remain merge gates.
 
 ### **AC-2 TODO** One command publishes deterministic closure
 
@@ -94,7 +94,7 @@ owns acceptance and merge.
 
 ## Children
 
-- **DONE** [Authorized closure lifecycle guidance](lifecycle/README.md): define
+- **DONE** Authorized closure lifecycle guidance: define
   retained contracts, mechanical reference updates, publication authority, and
   the decision.
 - **TODO** [Mechanical closure command](command/README.md): deliver the Make
