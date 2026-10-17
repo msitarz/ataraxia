@@ -1,0 +1,65 @@
+[
+  {
+    "complexity": 0,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "alternate_extraction",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "_eligible",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "match_guard",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "boolean_chain",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "helper_extraction",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "elif_chain",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "non_if_boolean_forms",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "quantified",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 9,
+    "file_name": "complexipy-fixtures.py",
+    "function_name": "nested_and_flat",
+    "path": "/private/tmp/complexipy-fixtures.py",
+    "refactor_plans": []
+  }
+]

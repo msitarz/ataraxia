@@ -1,0 +1,3614 @@
+[
+  {
+    "complexity": 1,
+    "file_name": "backtest.py",
+    "function_name": "backtest_dir",
+    "path": "src/ataraxia/backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "backtest.py",
+    "function_name": "is_position_sequence",
+    "path": "src/ataraxia/backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "backtest.py",
+    "function_name": "is_broker_return",
+    "path": "src/ataraxia/backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 5,
+    "file_name": "backtest.py",
+    "function_name": "backtest_shard",
+    "path": "src/ataraxia/backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "bar.py",
+    "function_name": "Bar::from_map",
+    "path": "src/ataraxia/bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "bar.py",
+    "function_name": "Bar::within",
+    "path": "src/ataraxia/bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "bar.py",
+    "function_name": "Bar::_normalize",
+    "path": "src/ataraxia/bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "broker.py",
+    "function_name": "Broker::deps",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "broker.py",
+    "function_name": "Broker::factory",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "broker.py",
+    "function_name": "Position::__post_init__",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "broker.py",
+    "function_name": "Position::close",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "broker.py",
+    "function_name": "Account::__add__",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "broker.py",
+    "function_name": "Account::__radd__",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "broker.py",
+    "function_name": "BrokerRunner::__call__",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "broker.py",
+    "function_name": "Position::pnl",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "broker.py",
+    "function_name": "BrokerRunner::_process",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 13,
+    "file_name": "broker.py",
+    "function_name": "Position::on_bar",
+    "path": "src/ataraxia/broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "cli.py",
+    "function_name": "save_results",
+    "path": "src/ataraxia/cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "cli.py",
+    "function_name": "main",
+    "path": "src/ataraxia/cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "cli.py",
+    "function_name": "display_results",
+    "path": "src/ataraxia/cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "graph.py",
+    "function_name": "sort_graph",
+    "path": "src/ataraxia/compute/graph.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "graph.py",
+    "function_name": "dependency_graph",
+    "path": "src/ataraxia/compute/graph.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "loop.py",
+    "function_name": "ComputedMapping::__getitem__",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "loop.py",
+    "function_name": "ComputedMapping::__init__",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "loop.py",
+    "function_name": "ComputedMapping::__iter__",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "loop.py",
+    "function_name": "ComputedMapping::__len__",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "loop.py",
+    "function_name": "ComputedMapping::_compute",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "loop.py",
+    "function_name": "compute_step",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "loop.py",
+    "function_name": "computed_node_deps",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "loop.py",
+    "function_name": "compute",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "loop.py",
+    "function_name": "prime_catalog",
+    "path": "src/ataraxia/compute/loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Computable::deps",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Computable::factory",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Runner::__call__",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Sink::consumer",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Sink::sources",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Source::__enter__",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Source::__exit__",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "protocol.py",
+    "function_name": "Source::send",
+    "path": "src/ataraxia/compute/protocol.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "RollingWindow::deps",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "RollingWindow::factory",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "RollingWindowRunner::__call__",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "RollingWindowRunner::__init__",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "Sma::deps",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "feature.py",
+    "function_name": "Sma::factory",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "feature.py",
+    "function_name": "SmaRunner::__call__",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 5,
+    "file_name": "feature.py",
+    "function_name": "sma",
+    "path": "src/ataraxia/feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::__enter__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::__hash__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::__iter__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "provider.py",
+    "function_name": "Provider::__enter__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "provider.py",
+    "function_name": "Provider::__exit__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::__exit__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::__next__",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "provider.py",
+    "function_name": "BarProvider::_reader",
+    "path": "src/ataraxia/provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::__enter__",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::__exit__",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::__iter__",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::deps",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::factory",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceNode::send",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "source.py",
+    "function_name": "SourceRunner::__call__",
+    "path": "src/ataraxia/source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "util.py",
+    "function_name": "is_sink",
+    "path": "src/ataraxia/util.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "util.py",
+    "function_name": "is_type",
+    "path": "src/ataraxia/util.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "util.py",
+    "function_name": "import_file",
+    "path": "src/ataraxia/util.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "check_commit_message.py",
+    "function_name": "is_wrapped",
+    "path": "script/check_commit_message.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "check_commit_message.py",
+    "function_name": "main",
+    "path": "script/check_commit_message.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "check_commit_message.py",
+    "function_name": "strip_message",
+    "path": "script/check_commit_message.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 5,
+    "file_name": "check_commit_message.py",
+    "function_name": "check_message",
+    "path": "script/check_commit_message.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "commit_command.py",
+    "function_name": "format_body",
+    "path": "script/commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "commit_command.py",
+    "function_name": "main",
+    "path": "script/commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "markdown_it_adapter.py",
+    "function_name": "MarkdownItParser::__init__",
+    "path": "script/markdown/markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "markdown_it_adapter.py",
+    "function_name": "MarkdownItParser::parse",
+    "path": "script/markdown/markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "markdown_it_adapter.py",
+    "function_name": "_block",
+    "path": "script/markdown/markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "markdown_it_adapter.py",
+    "function_name": "_container",
+    "path": "script/markdown/markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "markdown_it_adapter.py",
+    "function_name": "_location",
+    "path": "script/markdown/markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "model.py",
+    "function_name": "MarkdownParser::parse",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "model.py",
+    "function_name": "SourceLocation::__contains__",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "model.py",
+    "function_name": "TextBlock::__post_init__",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "model.py",
+    "function_name": "HeadingBlock::__post_init__",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "model.py",
+    "function_name": "SourceLocation::__post_init__",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "model.py",
+    "function_name": "ContainerBlock::__post_init__",
+    "path": "script/markdown/model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sandbox.py",
+    "function_name": "CommandFailure::__init__",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sandbox.py",
+    "function_name": "clone_and_prepare",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sandbox.py",
+    "function_name": "ownership",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sandbox.py",
+    "function_name": "update_state",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sandbox.py",
+    "function_name": "write_owner_file",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "sandbox.py",
+    "function_name": "run_make_stage",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "sandbox.py",
+    "function_name": "run_recorded_stage",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "sandbox.py",
+    "function_name": "failed_record",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "sandbox.py",
+    "function_name": "project_name",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "sandbox.py",
+    "function_name": "create",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "sandbox.py",
+    "function_name": "reserve_destination",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "sandbox.py",
+    "function_name": "run",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 5,
+    "file_name": "sandbox.py",
+    "function_name": "validate_ancestors",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 6,
+    "file_name": "sandbox.py",
+    "function_name": "main",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 6,
+    "file_name": "sandbox.py",
+    "function_name": "prepare_clone",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "sandbox.py",
+    "function_name": "safe_root",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "sandbox.py",
+    "function_name": "verify_clone",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 9,
+    "file_name": "sandbox.py",
+    "function_name": "resolve_root_path",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 17,
+    "file_name": "sandbox.py",
+    "function_name": "check_root_owner",
+    "path": "script/sandbox.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "smoke_installed_package.py",
+    "function_name": "main",
+    "path": "script/smoke_installed_package.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "validate_mermaid.py",
+    "function_name": "main",
+    "path": "script/validate_mermaid.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 8,
+    "file_name": "cli.py",
+    "function_name": "main",
+    "path": "script/work_check/cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "discovery.py",
+    "function_name": "discover_contracts",
+    "path": "script/work_check/discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "discovery.py",
+    "function_name": "_read_contracts",
+    "path": "script/work_check/discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "discovery.py",
+    "function_name": "_selection_contracts",
+    "path": "script/work_check/discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "discovery.py",
+    "function_name": "_discover_contracts",
+    "path": "script/work_check/discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 9,
+    "file_name": "discovery.py",
+    "function_name": "_contracts_below",
+    "path": "script/work_check/discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "rules.py",
+    "function_name": "_nonempty_section",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "rules.py",
+    "function_name": "_has_content",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "rules.py",
+    "function_name": "_criterion_result",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 9,
+    "file_name": "rules.py",
+    "function_name": "_located_headings",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 15,
+    "file_name": "rules.py",
+    "function_name": "_criterion_findings",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 19,
+    "file_name": "rules.py",
+    "function_name": "check_work",
+    "path": "script/work_check/rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_cli_success.py",
+    "function_name": "test_crossover_sample_cli_run",
+    "path": "test/ataraxia/acceptance/test_cli_success.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover_sample.py",
+    "function_name": "test_cli_shard_failure_preserves_output",
+    "path": "test/ataraxia/acceptance/test_crossover_sample.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover_sample.py",
+    "function_name": "test_main_print_error_and_exit",
+    "path": "test/ataraxia/acceptance/test_crossover_sample.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "test_crossover_sample.py",
+    "function_name": "arrange_failure_case",
+    "path": "test/ataraxia/acceptance/test_crossover_sample.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 5,
+    "file_name": "test_crossover_sample.py",
+    "function_name": "assert_failure_state",
+    "path": "test/ataraxia/acceptance/test_crossover_sample.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "backtest_support.py",
+    "function_name": "copy_import_bar",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "backtest_support.py",
+    "function_name": "expected_broker_strategy_result",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "backtest_support.py",
+    "function_name": "expected_sink_result_strategy_result",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "backtest_support.py",
+    "function_name": "observe_backtest_result",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "backtest_support.py",
+    "function_name": "observe_position",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "backtest_support.py",
+    "function_name": "arrange_backtest",
+    "path": "test/ataraxia/backtest_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "cli_process.py",
+    "function_name": "run_cli",
+    "path": "test/ataraxia/cli_process.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "cli_process.py",
+    "function_name": "cli_environment",
+    "path": "test/ataraxia/cli_process.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "cli_result_inputs.py",
+    "function_name": "broker_returns",
+    "path": "test/ataraxia/cli_result_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "cli_result_inputs.py",
+    "function_name": "load_reporting_expected",
+    "path": "test/ataraxia/cli_result_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "cli_sample_expected.py",
+    "function_name": "load_sample_expected",
+    "path": "test/ataraxia/cli_sample_expected.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "cli_sample_expected.py",
+    "function_name": "_relative_project_path",
+    "path": "test/ataraxia/cli_sample_expected.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 13,
+    "file_name": "cli_sample_expected.py",
+    "function_name": "normalize_sample_paths_and_order",
+    "path": "test/ataraxia/cli_sample_expected.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "A::deps",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "A::factory",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "ARunner::__call__",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "B::deps",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "B::factory",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "BRunner::__call__",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_dependency_inputs.py",
+    "function_name": "single_dependency",
+    "path": "test/ataraxia/compute_dependency_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSink::consumer",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSink::deps",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSink::factory",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSink::sources",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSinkRunner::__call__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::__enter__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::__exit__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::__iter__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::deps",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::factory",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSource::send",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSourceRunner::__call__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "IntegerSourceRunner::__init__",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "integer_source_sink",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_source_inputs.py",
+    "function_name": "two_bar_csv_source",
+    "path": "test/ataraxia/compute_source_inputs.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "broker_strategy.py",
+    "function_name": "BrokerStrategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/broker_strategy.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "construction_error.py",
+    "function_name": "ConstructionErrorStrategy::__init__",
+    "path": "test/ataraxia/fixtures/backtest/construction_error.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "construction_error.py",
+    "function_name": "ConstructionErrorStrategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/construction_error.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "export_instance.py",
+    "function_name": "Strategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/export_instance.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "export_instance.py",
+    "function_name": "Strategy::deps",
+    "path": "test/ataraxia/fixtures/backtest/export_instance.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "export_instance.py",
+    "function_name": "Strategy::factory",
+    "path": "test/ataraxia/fixtures/backtest/export_instance.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "export_instance.py",
+    "function_name": "Strategy::sources",
+    "path": "test/ataraxia/fixtures/backtest/export_instance.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "export_instance.py",
+    "function_name": "UnreachableRunner::__call__",
+    "path": "test/ataraxia/fixtures/backtest/export_instance.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "import_bar.py",
+    "function_name": "new_bar",
+    "path": "test/ataraxia/fixtures/backtest/import_bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_non_position.py",
+    "function_name": "NonPositionResultRunner::__call__",
+    "path": "test/ataraxia/fixtures/backtest/result_non_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_non_position.py",
+    "function_name": "NonPositionResultStrategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/result_non_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_non_position.py",
+    "function_name": "NonPositionResultStrategy::factory",
+    "path": "test/ataraxia/fixtures/backtest/result_non_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_number.py",
+    "function_name": "NumberResultRunner::__call__",
+    "path": "test/ataraxia/fixtures/backtest/result_number.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_number.py",
+    "function_name": "NumberResultStrategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/result_number.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "result_number.py",
+    "function_name": "NumberResultStrategy::factory",
+    "path": "test/ataraxia/fixtures/backtest/result_number.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sink_result_strategy.py",
+    "function_name": "SinkResultRunner::__call__",
+    "path": "test/ataraxia/fixtures/backtest/sink_result_strategy.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sink_result_strategy.py",
+    "function_name": "SinkResultStrategy::consumer",
+    "path": "test/ataraxia/fixtures/backtest/sink_result_strategy.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "sink_result_strategy.py",
+    "function_name": "SinkResultStrategy::factory",
+    "path": "test/ataraxia/fixtures/backtest/sink_result_strategy.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "strategy_base.py",
+    "function_name": "SignalRunner::__call__",
+    "path": "test/ataraxia/fixtures/backtest/strategy_base.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "strategy_base.py",
+    "function_name": "Strategy::factory",
+    "path": "test/ataraxia/fixtures/backtest/strategy_base.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "strategy_base.py",
+    "function_name": "StrategyBase::deps",
+    "path": "test/ataraxia/fixtures/backtest/strategy_base.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "strategy_base.py",
+    "function_name": "StrategyBase::sources",
+    "path": "test/ataraxia/fixtures/backtest/strategy_base.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkAdapter::__getitem__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkAdapter::__init__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkAdapter::__len__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkCompute::__init__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "test_backtest_shard_uses_broker_result_from_compute_step",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkCompute::__call__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "test_backtest.py",
+    "function_name": "ConsumerBeforeSinkAdapter::__iter__",
+    "path": "test/ataraxia/integration/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_exports.py",
+    "function_name": "test_backtest_shard_preserves_strategy_errors",
+    "path": "test/ataraxia/integration/test_backtest_exports.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_exports.py",
+    "function_name": "test_backtest_shard_requires_sink_class",
+    "path": "test/ataraxia/integration/test_backtest_exports.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_exports.py",
+    "function_name": "test_backtest_shard_requires_sink_export",
+    "path": "test/ataraxia/integration/test_backtest_exports.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_refusals.py",
+    "function_name": "test_backtest_header_only_shard",
+    "path": "test/ataraxia/integration/test_backtest_refusals.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_refusals.py",
+    "function_name": "test_backtest_shard_requires_broker_result",
+    "path": "test/ataraxia/integration/test_backtest_refusals.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_results.py",
+    "function_name": "test_backtest_shard",
+    "path": "test/ataraxia/integration/test_backtest_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest_results.py",
+    "function_name": "test_backtest_shard_include_shard_path_strategy_path",
+    "path": "test/ataraxia/integration/test_backtest_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_backtest_results.py",
+    "function_name": "test_backtest_dir",
+    "path": "test/ataraxia/integration/test_backtest_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "CloseRunner::__call__",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "CloseSink::consumer",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "CloseSink::deps",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "CloseSink::factory",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "CloseSink::sources",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "FailingSink::consumer",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "FailingSink::deps",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "FailingSink::factory",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "FailingSink::sources",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "test_compute_close_closes_csv_provider_with_row_unread",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "test_compute_closes_csv_provider_after_exhaustion",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_compute_resources.py",
+    "function_name": "test_compute_closes_csv_provider_after_runner_error",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_compute_resources.py",
+    "function_name": "FailingRunner::__call__",
+    "path": "test/ataraxia/integration/test_compute_resources.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source_csv.py",
+    "function_name": "test_source_csv_context_closes_after_body_error",
+    "path": "test/ataraxia/integration/test_source_csv.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source_csv.py",
+    "function_name": "test_source_csv_context_closes_on_early_exit",
+    "path": "test/ataraxia/integration/test_source_csv.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source_csv.py",
+    "function_name": "two_bar_shard",
+    "path": "test/ataraxia/integration/test_source_csv.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_source_csv.py",
+    "function_name": "test_source_csv_context_closes_after_exhaustion",
+    "path": "test/ataraxia/integration/test_source_csv.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_util.py",
+    "function_name": "test_import_file",
+    "path": "test/ataraxia/integration/test_util.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "compute_contracts.py",
+    "function_name": "contracts",
+    "path": "test/ataraxia/typecheck/compute_contracts.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_graph.py",
+    "function_name": "test_dependency_graph_good_path",
+    "path": "test/ataraxia/unit/compute/test_graph.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_graph.py",
+    "function_name": "test_sort_graph",
+    "path": "test/ataraxia/unit/compute/test_graph.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_graph.py",
+    "function_name": "test_sort_graph_cycle_error",
+    "path": "test/ataraxia/unit/compute/test_graph.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "FailingRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "FailingSink::consumer",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "FailingSink::deps",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "FailingSink::factory",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "FailingSink::sources",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "test_compute_closes_source_on_exhaustion",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "test_compute_closes_source_when_generator_is_closed",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_lifecycle.py",
+    "function_name": "test_compute_closes_source_when_runner_raises",
+    "path": "test/ataraxia/unit/compute/test_lifecycle.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "ArbitraryKeywordRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "DefaultItemRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "KeywordOnlyItemRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "MisspelledWiringSink::deps",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "PositionalArgsRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "PositionalOnlyItemRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "RequiredItemRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "SignatureNode::deps",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "SignatureNode::factory",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "TypeOnlyAnnotationNode::deps",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "TypeOnlyAnnotationNode::factory",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "TypeOnlyAnnotationRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "UninspectableRunnerNode::deps",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "UninspectableRunnerNode::factory",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "test_invalid_dependency_names_fail_preparation",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "test_preparation_does_not_evaluate_type_only_annotations",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "test_uninspectable_runner_fails_preparation",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "test_valid_dependency_signatures",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_loop.py",
+    "function_name": "test_wiring_failure_precedes_source_entry",
+    "path": "test/ataraxia/unit/compute/test_loop.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_results.py",
+    "function_name": "test_compute",
+    "path": "test/ataraxia/unit/compute/test_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_results.py",
+    "function_name": "test_compute_step",
+    "path": "test/ataraxia/unit/compute/test_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_results.py",
+    "function_name": "test_computed_node_deps",
+    "path": "test/ataraxia/unit/compute/test_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_results.py",
+    "function_name": "test_prime_catalog",
+    "path": "test/ataraxia/unit/compute/test_results.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Branch::deps",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Branch::factory",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "BranchRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Diamond::consumer",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Diamond::deps",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Diamond::factory",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Diamond::sources",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "DiamondRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Total::deps",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "Total::factory",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sharing.py",
+    "function_name": "TotalRunner::__call__",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "test_sharing.py",
+    "function_name": "test_equivalent_dependencies_share_state_once_per_bar",
+    "path": "test/ataraxia/unit/compute/test_sharing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_backtest.py",
+    "function_name": "test_backtest_dir_raise_on_wrong_param",
+    "path": "test/ataraxia/unit/test_backtest.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_bar.py",
+    "function_name": "data",
+    "path": "test/ataraxia/unit/test_bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_bar.py",
+    "function_name": "test_bar_from_map",
+    "path": "test/ataraxia/unit/test_bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_bar.py",
+    "function_name": "test_bar_from_map_rounds_fractional_tick_value",
+    "path": "test/ataraxia/unit/test_bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_bar.py",
+    "function_name": "test_bar_within_includes_both_range_boundaries",
+    "path": "test/ataraxia/unit/test_bar.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "_broker_snapshot",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "_expected_closed_position",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "_expected_open_position",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "_position_snapshot",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "accounts",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "entry_bar",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "long_signal",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "short_signal",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_broker_runner_no_signal",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_broker_runner_position_update_on_signal",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_broker_runner_signal_add_position",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_broker_runner_signal_close_position",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_broker_runner_unrealized_pnl",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_broker.py",
+    "function_name": "test_sum_accounts",
+    "path": "test/ataraxia/unit/test_broker.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_arguments.py",
+    "function_name": "_run_main",
+    "path": "test/ataraxia/unit/test_cli_arguments.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_arguments.py",
+    "function_name": "test_main_help_lists_supported_options",
+    "path": "test/ataraxia/unit/test_cli_arguments.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_arguments.py",
+    "function_name": "test_main_rejects_unknown_option_before_backtest",
+    "path": "test/ataraxia/unit/test_cli_arguments.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_arguments.py",
+    "function_name": "test_main_requires_shards_directory_before_backtest",
+    "path": "test/ataraxia/unit/test_cli_arguments.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_arguments.py",
+    "function_name": "test_main_requires_sink_before_backtest",
+    "path": "test/ataraxia/unit/test_cli_arguments.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_reporting.py",
+    "function_name": "test_display_results",
+    "path": "test/ataraxia/unit/test_cli_reporting.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli_reporting.py",
+    "function_name": "test_save_results",
+    "path": "test/ataraxia/unit/test_cli_reporting.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_error_on_wrong_value",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_none_on_excess_values_with_none",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_none_on_incomplete_data",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_none_on_values_with_none",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_runner",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_feature.py",
+    "function_name": "test_sma_with_zero",
+    "path": "test/ataraxia/unit/test_feature.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "_assert_closing_state",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "_assert_open_state",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "entry_bar",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "long_position",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "long_signal",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "short_position",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "short_signal",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_init",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_both_orders_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_no_order_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_stop_loss_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_stop_loss_hit_with_gap",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_take_profit_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_take_profit_hit_with_gap",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_on_bar_when_already_finished",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_short_on_bar_closing_pnl",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_short_on_bar_stop_loss_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_short_on_bar_stop_loss_hit_with_gap",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_short_on_bar_take_profit_hit",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_short_on_bar_take_profit_hit_with_gap",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_position.py",
+    "function_name": "test_position_stays_open_between_neighboring_order_prices",
+    "path": "test/ataraxia/unit/test_position.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "no_header",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "test_bar_provider_no_context_manager",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "test_bar_provider_no_header",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "test_bar_provider_rejects_malformed_rows_and_closes",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "test_bar_provider_rejects_unterminated_quote",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "test_bar_provider_wrong_header",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider.py",
+    "function_name": "wrong_header",
+    "path": "test/ataraxia/unit/test_provider.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "file_contents",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "test_bar_provider_hashable_by_filepath",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "test_bar_provider_header_only_exhausts_and_closes",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "test_bar_provider_single_bar",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "test_bar_provider_skips_blank_rows",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_provider_reads.py",
+    "function_name": "test_bar_provider_stop_iteration",
+    "path": "test/ataraxia/unit/test_provider_reads.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rolling_window.py",
+    "function_name": "_IntNode::deps",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rolling_window.py",
+    "function_name": "_IntNode::factory",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rolling_window.py",
+    "function_name": "_IntRunner::__call__",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rolling_window.py",
+    "function_name": "test_rolling_window",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rolling_window.py",
+    "function_name": "test_rolling_window_runner",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "test_rolling_window.py",
+    "function_name": "test_rolling_window_matches_every_generated_prefix",
+    "path": "test/ataraxia/unit/test_rolling_window.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__enter__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__exit__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__hash__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__init__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__iter__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "IntegerProvider::__next__",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "test_source_node",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_source.py",
+    "function_name": "test_source_runner",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_source.py",
+    "function_name": "test_source_node_delegates_provider_lifecycle",
+    "path": "test/ataraxia/unit/test_source.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_util.py",
+    "function_name": "test_import_file_raise",
+    "path": "test/ataraxia/unit/test_util.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 9,
+    "file_name": "uv_recorder.py",
+    "function_name": "main",
+    "path": "test/make/fixtures/uv_recorder.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "uv_scratch.py",
+    "function_name": "main",
+    "path": "test/make/fixtures/uv_scratch.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 7,
+    "file_name": "uv_setup.py",
+    "function_name": "main",
+    "path": "test/make/fixtures/uv_setup.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_routing.py",
+    "function_name": "sandbox",
+    "path": "test/make/integration/test_commit_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_commit_routing.py",
+    "function_name": "test_commit_target_transports_literal_inputs",
+    "path": "test/make/integration/test_commit_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_creation_helper.py",
+    "function_name": "test_real_make_creates_a_worktree_with_destination_local_setup",
+    "path": "test/make/integration/test_creation_helper.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_execution.py",
+    "function_name": "sandbox",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_execution.py",
+    "function_name": "test_full_static_checks_ignore_caller_paths",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_execution.py",
+    "function_name": "test_full_test_targets_ignore_caller_selectors",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_execution.py",
+    "function_name": "test_verify_stops_after_the_prepared_environment_check_fails",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_execution.py",
+    "function_name": "test_verify_runs_required_consumers_offline_without_preparation_or_audit",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "test_execution.py",
+    "function_name": "test_ci_runs_local_checks_before_propagating_audit_failure",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "test_execution.py",
+    "function_name": "test_static_checks_request_equivalent_read_only_documentation_commands",
+    "path": "test/make/integration/test_execution.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "sandbox",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_doc_check_propagates_work_failure_without_reminder",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_help_discloses_the_prepublication_work_review_checkpoint",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_selected_top_level_targets_remind_after_success",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_work_review_prompts_concise_delivery",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_recursive_doc_check_suppresses_only_the_reminder",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_guidance_reminders.py",
+    "function_name": "test_selected_test_targets_remind_once_after_success",
+    "path": "test/make/integration/test_guidance_reminders.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "MarkdownSandbox::run",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_doc_check_fails_when_validator_binary_is_missing",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_doc_check_reports_actual_mermaid_backend_failure",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_doc_check_fails_visibly_when_rumdl_is_missing",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_doc_check_rejects_formatting_without_modifying_files",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_doc_format_reflows_external_file_with_repository_config",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_help_lists_documentation_targets",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "markdown_sandbox",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_doc_check_checks_all_work_contracts_for_each_doc_scope",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_doc_check_defaults_to_all_files_and_respects_exclusions",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_doc_check_validates_only_selected_nested_mermaid_files",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_work_check_routes_selected_paths_and_input_failures",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_doc_check_finds_inbound_links_to_changed_heading",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 6,
+    "file_name": "test_markdown_tools.py",
+    "function_name": "test_make_doc_format_selects_files_and_directories_and_excludes_artifacts",
+    "path": "test/make/integration/test_markdown_tools.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_preparation.py",
+    "function_name": "sandbox",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_preparation.py",
+    "function_name": "test_ci_targets_prepare_dependencies_before_their_consumer",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_preparation.py",
+    "function_name": "test_setup_prepares_hooks_and_wheel_after_dependencies",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_preparation.py",
+    "function_name": "test_ci_check_prepares_dependencies_and_hooks_before_checks_and_audit",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_preparation.py",
+    "function_name": "test_package_prepares_python_then_requests_offline_smoke",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_preparation.py",
+    "function_name": "test_package_stops_after_backend_preparation_refusal",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_preparation.py",
+    "function_name": "test_package_stops_after_python_preparation_refusal",
+    "path": "test/make/integration/test_preparation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_routing.py",
+    "function_name": "sandbox",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_routing.py",
+    "function_name": "test_lint_check_propagates_ruff_failure",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_cli_arguments_quote_shell_metacharacters",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_dependency_lock_target_uses_uv_lock",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_make_selectors_quote_shell_metacharacters",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_make_selectors_quote_single_quotes",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_make_tool_targets_preserve_defaults_and_route_selectors",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_markdown_format_target_passes_selected_paths",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_markdown_targets_preserve_graph_and_selected_mermaid_scope",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_path_selectors_reject_tool_options",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_run_target_requires_cli_arguments",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_routing.py",
+    "function_name": "test_run_target_routes_project_cli_arguments",
+    "path": "test/make/integration/test_routing.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "checkout_conflict_attempt",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_changed_master_after_selection_fails_and_retains_clone",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_clone_failure_retains_status_and_diagnostics",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_independent_checkout_cannot_claim_managed_root",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_make_creates_owned_shallow_clone_and_refuses_unsafe_names",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_native_temp_root_uses_project_name_and_linked_worktrees_share_owner",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_unsafe_roots_and_dangling_destinations_are_refused",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "make_create",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "sandbox_source",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_common_directory_and_unsafe_writable_ancestor_are_refused",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_preexisting_cache_symlink_fails_without_writing_external_target",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_readiness_failure_retains_status_and_setup_artifacts",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "test_setup_failure_retains_owned_clone_and_diagnostics",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "test_sandbox_creation.py",
+    "function_name": "assert_prepared_clone",
+    "path": "test/make/integration/test_sandbox_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_scratch_isolation.py",
+    "function_name": "test_make_process_caches_preserve_repository_snapshot",
+    "path": "test/make/integration/test_scratch_isolation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_stub_environment.py",
+    "function_name": "test_make_exposes_configured_failure_and_stops_later_commands",
+    "path": "test/make/integration/test_stub_environment.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_stub_environment.py",
+    "function_name": "test_make_records_literal_arguments_in_an_isolated_environment",
+    "path": "test/make/integration/test_stub_environment.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "arrange_case",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "created_state",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "setup_calls",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_creation_copies_cache_and_overrides_parent_environment",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_creation_reminds_about_expected_review_size_before_dispatch",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_existing_branch_is_preserved_without_creating_a_worktree",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_existing_destination_is_preserved_before_setup",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_failed_verification_retains_the_prepared_worktree",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "test_unusable_cache_retains_a_recoverable_worktree",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "write_cache",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_worktree_creation.py",
+    "function_name": "cache_files",
+    "path": "test/make/integration/test_worktree_creation.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "assert_unmodified",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "test_historical_cutoff_keeps_newly_stale_registration",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "test_hostile_expiry_is_literal_and_preserves_repository",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "test_missing_expiry_refuses_without_mutation",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "test_preview_and_apply_preserve_live_locked_and_all_refs",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_worktree_pruning.py",
+    "function_name": "pruning_scenario",
+    "path": "test/make/integration/test_worktree_pruning.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_clean_literal_removal_retains_refs_and_unrelated_worktree",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_missing_removal_input_preserves_repository_state",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_populated_submodule_refusal_preserves_complete_worktree_state",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_unknown_worktree_refusal_preserves_files_and_repository",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_unsafe_removal_preserves_complete_relevant_state",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "test_help_lists_all_worktree_cleanup_targets",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 4,
+    "file_name": "test_worktree_removal.py",
+    "function_name": "unsafe_case",
+    "path": "test/make/integration/test_worktree_removal.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "support.py",
+    "function_name": "MakeResult::output",
+    "path": "test/make/support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "support.py",
+    "function_name": "MakeSandbox::run",
+    "path": "test/make/support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "support.py",
+    "function_name": "make_sandbox",
+    "path": "test/make/support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 20,
+    "file_name": "support.py",
+    "function_name": "read_calls",
+    "path": "test/make/support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "worktree_support.py",
+    "function_name": "CreationRepository::git",
+    "path": "test/make/worktree_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "worktree_support.py",
+    "function_name": "CreationRepository::state",
+    "path": "test/make/worktree_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "worktree_support.py",
+    "function_name": "creation_repository",
+    "path": "test/make/worktree_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "worktree_support.py",
+    "function_name": "files_under",
+    "path": "test/make/worktree_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "commit_message_prek.py",
+    "function_name": "run_commit_message_hook",
+    "path": "test/script/commit_message_prek.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "commit_message_prek.py",
+    "function_name": "project_input_snapshot",
+    "path": "test/script/commit_message_prek.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 10,
+    "file_name": "commit_message_prek.py",
+    "function_name": "prepare_project",
+    "path": "test/script/commit_message_prek.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "commit_message_support.py",
+    "function_name": "ProcessResult::combined",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "commit_message_support.py",
+    "function_name": "create_message_file",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "commit_message_support.py",
+    "function_name": "git",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "commit_message_support.py",
+    "function_name": "run_process",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "commit_message_support.py",
+    "function_name": "observe_git_state",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "commit_message_support.py",
+    "function_name": "create_repository",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "commit_message_support.py",
+    "function_name": "isolated_environment",
+    "path": "test/script/commit_message_support.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "commit_message_hook.py",
+    "function_name": "main",
+    "path": "test/script/fixtures/commit_message_hook.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_it_adapter.py",
+    "function_name": "test_parser_handles_empty_and_multiline_source_boundaries",
+    "path": "test/script/integration/markdown/test_markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_markdown_it_adapter.py",
+    "function_name": "test_parser_returns_complete_typed_tree_with_source_locations",
+    "path": "test/script/integration/markdown/test_markdown_it_adapter.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "adapter_process",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_body_formatting_preserves_expected_prose_list_and_token",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_commit_stores_message_through_hooks_and_preserves_unstaged_file",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_commitizen_rejects_nonconventional_subject_without_moving_head",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_formatter_failure_refuses_before_advancing_head",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_invalid_inputs_refuse_without_advancing_head",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_command.py",
+    "function_name": "test_marked_command_uses_existing_checker",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_commit_command.py",
+    "function_name": "prepare_commit_project",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_commit_command.py",
+    "function_name": "prepare_staged_repository",
+    "path": "test/script/integration/test_commit_command.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_cli.py",
+    "function_name": "test_accept_formatted_or_absent_body",
+    "path": "test/script/integration/test_commit_message_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_cli.py",
+    "function_name": "test_reject_unformatted_body",
+    "path": "test/script/integration/test_commit_message_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_git.py",
+    "function_name": "test_commit_hook_preserves_refs_on_refusal_and_stores_stripped_message",
+    "path": "test/script/integration/test_commit_message_git.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_git.py",
+    "function_name": "test_verbose_diff_below_scissors",
+    "path": "test/script/integration/test_commit_message_git.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_prek.py",
+    "function_name": "test_prek_forwards_valid_message_filename",
+    "path": "test/script/integration/test_commit_message_prek.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_commit_message_prek.py",
+    "function_name": "test_prek_refuses_unformatted_message_filename",
+    "path": "test/script/integration/test_commit_message_prek.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_mermaid_validator.py",
+    "function_name": "test_validator_renders_stdin_without_creating_files",
+    "path": "test/script/integration/test_mermaid_validator.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli.py",
+    "function_name": "_run",
+    "path": "test/script/integration/work_check/test_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli.py",
+    "function_name": "test_module_accepts_real_markdown_fixture_with_nested_syntax",
+    "path": "test/script/integration/work_check/test_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli.py",
+    "function_name": "test_module_reports_malformed_invocation_with_status_two",
+    "path": "test/script/integration/work_check/test_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_cli.py",
+    "function_name": "test_module_reports_missing_selection_as_input_failure",
+    "path": "test/script/integration/work_check/test_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_cli.py",
+    "function_name": "test_module_reports_complete_sorted_diagnostics_without_writing",
+    "path": "test/script/integration/work_check/test_cli.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "_write_contract",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_contract_path_through_escaping_symlink_fails",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_link_alias_outside_work_root_is_rejected",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_non_readme_link_to_a_contract_is_rejected",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_subtree_without_contracts_fails_even_with_other_contracts",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_invalid_explicit_selections_fail_with_actionable_context",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_missing_selection_preserves_filesystem_cause",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_non_utf8_contract_fails_with_its_path_and_cause",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_discovery.py",
+    "function_name": "test_recursive_discovery_rejects_a_contract_link_outside_work_root",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_discovery.py",
+    "function_name": "test_default_discovers_every_work_readme_without_content_heuristics",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_in_root_contract_link_is_accepted",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_discovery.py",
+    "function_name": "test_explicit_overlapping_files_and_subtrees_are_deduplicated_and_sorted",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_discovery.py",
+    "function_name": "test_recursive_discovery_accepts_an_in_root_contract_file_link",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 1,
+    "file_name": "test_discovery.py",
+    "function_name": "test_recursive_discovery_skips_linked_directories",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 2,
+    "file_name": "test_discovery.py",
+    "function_name": "test_unreadable_contract_fails_with_its_path",
+    "path": "test/script/integration/work_check/test_discovery.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 3,
+    "file_name": "markdown_contracts.py",
+    "function_name": "contracts",
+    "path": "test/script/typecheck/markdown_contracts.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_model.py",
+    "function_name": "test_container_keeps_nested_values_in_an_immutable_tuple",
+    "path": "test/script/unit/markdown/test_model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_model.py",
+    "function_name": "test_container_values_allow_empty_commonmark_shapes",
+    "path": "test/script/unit/markdown/test_model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_model.py",
+    "function_name": "test_heading_keeps_empty_text_and_frozen_owned_values",
+    "path": "test/script/unit/markdown/test_model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_model.py",
+    "function_name": "test_markdown_values_reject_invalid_locations_and_shapes",
+    "path": "test/script/unit/markdown/test_model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_model.py",
+    "function_name": "test_source_location_membership_uses_inclusive_ranges",
+    "path": "test/script/unit/markdown/test_model.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "_contract",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "_heading",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "_text",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_criterion_fields_and_empty_body_report_exact_locations_and_order",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_criterion_like_headings_outside_acceptance_and_at_wrong_levels_fail",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_duplicate_sections_and_empty_acceptance_body_are_located",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_level_one_heading_ends_section_and_outcome_context",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_missing_sections_report_complete_file_start_diagnostics",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_non_ascii_or_nonpositive_ids_never_pass",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_rules.py",
+    "function_name": "test_valid_typed_blocks_keep_nested_explanations_inside_the_outcome",
+    "path": "test/script/unit/work_check/test_rules.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "crossover.py",
+    "function_name": "CrossoverStrategy::consumer",
+    "path": "example/crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "crossover.py",
+    "function_name": "CrossoverStrategy::deps",
+    "path": "example/crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "crossover.py",
+    "function_name": "CrossoverStrategy::factory",
+    "path": "example/crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "crossover.py",
+    "function_name": "CrossoverStrategy::sources",
+    "path": "example/crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 8,
+    "file_name": "crossover.py",
+    "function_name": "CrossoverRunner::__call__",
+    "path": "example/crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover.py",
+    "function_name": "bar",
+    "path": "example/test_crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover.py",
+    "function_name": "test_crossover_on_cold_sma",
+    "path": "example/test_crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover.py",
+    "function_name": "test_crossover_on_warm_sma_no_cross",
+    "path": "example/test_crossover.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 0,
+    "file_name": "test_crossover.py",
+    "function_name": "test_crossover_signal_on_sma_cross",
+    "path": "example/test_crossover.py",
+    "refactor_plans": []
+  }
+]
