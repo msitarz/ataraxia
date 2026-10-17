@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exercise advisory and blocking function-size checks through real Make/Ruff."""
+"""Exercise the blocking function-size boundary through real Make/Ruff."""
 
 import os
 from pathlib import Path
@@ -51,34 +51,28 @@ def lint_check_fixture(tmp_path: Path, name: str) -> MakeResult:
 
 
 @pytest.mark.parametrize(
-    ("fixture_name", "diagnostics"),
+    ("fixture_name", "exit_code", "diagnostics"),
     [
-        ("size_25.py", ()),
-        ("size_26.py", ("too-many-statements: Too many statements (26 > 25)",)),
-        ("size_50.py", ("too-many-statements: Too many statements (50 > 25)",)),
+        ("size_25.py", 0, ()),
+        ("size_26.py", 2, ("too-many-statements: Too many statements (26 > 25)",)),
     ],
-    ids=["25-clean", "26-advisory", "50-advisory-ceiling"],
+    ids=["25-passes", "26-blocks"],
 )
 @pytest.mark.real_tool
-def test_lint_check_reports_size_advice_without_failing(
+def test_lint_check_enforces_the_25_statement_limit(
     tmp_path: Path,
     fixture_name: str,
+    exit_code: int,
     diagnostics: tuple[str, ...],
 ) -> None:
-    """AC-1: Given the four statement-count fixtures, 25 is clean, 26 and 50
-    are advisory successes, and 51 blocks lint through real Make/Ruff.
-
-    This case covers the clean/advisory boundaries through unchanged named input.
-    """
-    # Given: the named fixture contains the independent literal statement count.
+    """The real Make lint path accepts 25 statements and blocks at 26."""
+    # Given: the named fixture contains an independent literal statement count.
 
     # When
     result = lint_check_fixture(tmp_path, fixture_name)
 
     # Then
-    assert result.exit_code == 0, result.output
-    assert "All checks passed!" in result.stdout
-    assert "Advisory: review functions with more than 25 statements" in result.stdout
+    assert result.exit_code == exit_code, result.output
     assert (
         tuple(
             line
@@ -87,25 +81,3 @@ def test_lint_check_reports_size_advice_without_failing(
         )
         == diagnostics
     )
-
-
-@pytest.mark.real_tool
-def test_lint_check_blocks_after_50(tmp_path: Path) -> None:
-    """AC-1: Given the four statement-count fixtures, 25 is clean, 26 and 50
-    are advisory successes, and 51 blocks lint through real Make/Ruff.
-
-    This case covers the first blocking count and stops before advisory checking.
-    """
-    # Given: the literal 51-statement fixture is copied outside its root exemption.
-
-    # When
-    result = lint_check_fixture(tmp_path, "size_51.py")
-
-    # Then
-    assert result.exit_code == 2, result.output
-    assert tuple(
-        line
-        for line in result.output.splitlines()
-        if line.startswith("too-many-statements:")
-    ) == ("too-many-statements: Too many statements (51 > 50)",)
-    assert "Advisory: review functions" not in result.stdout

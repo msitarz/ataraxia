@@ -36,19 +36,11 @@ setup: ci-setup ## prepare development dependencies, hooks, and build tooling
 	@echo "✓ Dev environment ready. Run 'make verify' to verify offline."
 
 .PHONY: lint lint-check
-# --exit-zero is limited to this advisory-only rule; the normal lint command
-# retains its failure behavior and the blocking threshold is 50.
-_SIZE_ADVISORY = uv run ruff check --select too-many-statements \
-	--config 'lint.pylint.max-statements=25' --exit-zero $(_TARGET_PATHS)
-lint: ## lint and apply fixes; reports function-size advice; ARGS=paths narrows the files
+lint: ## lint and apply fixes; ARGS=paths narrows the files
 	uv run ruff check $(_TARGET_PATHS) --fix
-	@echo "Advisory: review functions with more than 25 statements"
-	$(_SIZE_ADVISORY)
 
-lint-check: ## check lint without fixes; reports function-size advice; ARGS=paths narrows the files
+lint-check: ## check lint without fixes; ARGS=paths narrows the files
 	uv run ruff check $(_TARGET_PATHS)
-	@echo "Advisory: review functions with more than 25 statements"
-	$(_SIZE_ADVISORY)
 	@printf '%s\n' 'During implementation and before handoff, apply the design questions to changed code and tests. doc/engineering-review.md'
 
 .PHONY: format format-check
