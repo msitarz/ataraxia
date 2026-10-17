@@ -13,6 +13,7 @@ relevant guidance.
 | Documentation placement, duplication, and shared terms | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
+| Bounded algebraic data type representation investigation | [Algebraic data type investigation findings](investigations/algebraic-data-types.md) |
 | Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
 | Work contract structure and authoring | [Work contract template](work-contract-template.md) |
 | Work definition context and specialized requirements | [Work definition](work-definition.md) |

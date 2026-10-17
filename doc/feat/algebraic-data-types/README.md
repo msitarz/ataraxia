@@ -158,9 +158,9 @@ candidate representations.
 
 #### What exists
 
-Pyrefly is locked at 1.3.1 at planning baseline
-`cd3cb5e6a7abfbb91533c1b14be37b26ff05927a`; narrowing and missing-variant
-behavior have not yet been observed for these examples.
+The complete-boundary examples, retained probe sources, and observed Make
+results are in the
+[Algebraic data type investigation findings](../../investigations/algebraic-data-types.md).
 
 ## Dependencies
 
