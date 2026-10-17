@@ -39,5 +39,5 @@ Authors have one place for structure and outcome prompts; reviewers can scan
 individual outcomes without rebuilding the contract from guidance. Long
 contracts still need scope review rather than more headings. Existing contracts
 and tooling are migrated under the
-[migration Work](../feat/work-contract-migration/README.md); this decision alone
-does not establish that migration is complete.
+[migration Work](https://github.com/msitarz/ataraxia/blob/a2125a2de7c4d9514d57069845e3b679d6974385/doc/feat/work-contract-migration/README.md);
+this decision alone does not establish that migration is complete.
