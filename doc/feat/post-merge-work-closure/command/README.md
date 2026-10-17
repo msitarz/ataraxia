@@ -47,7 +47,9 @@ no proof of chat authorization, approval file, or token.
   edits that are deleted without a retained history entry.
 - Work checking and criterion status guidance support `ABORT` as stopped,
   unsatisfied outcomes; the existing `TODO`/`DONE`-only criterion parser
-  requires this extension before the command can deliver abort closure.
+  requires this extension before the command can deliver abort closure. Until
+  then, preserve contracts and pause incomplete closure; completed Works may
+  use the current Executor, Orchestrator, and Publisher route.
 - The planned `make work-close` interface takes only Work README paths in
   `ARGS`, with `ABORT_REMAINING=true` as the separate confirmed operation flag.
 - Missing or invalid selection, dirty state, mismatched PR/contracts,
