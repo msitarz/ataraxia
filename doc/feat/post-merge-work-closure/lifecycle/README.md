@@ -39,17 +39,26 @@ explicitly authorized closure.
 - Maintainer acceptance, independent review, full CI on the final closure head,
   and maintainer merge retain their distinct responsibilities.
 
-### **AC-2 TODO** Closure reference updates have a deterministic contract
+### **AC-2 DONE** Closure reference updates have a deterministic contract
 
-The template and lifecycle guidance define supported parent/dependency entries
-and their exact post-closure form. Closure changes a parent's selected child
-entry to its delivered outcome and resolves other current links to the removed
-contract using a lasting outcome owner or PR reference that survives closure and
-merge. Ambiguous prose is identified for maintainer steering rather than
-guessed. Supporting artifacts are preserved or promoted according to the
-reviewed contract; they cannot be silently deleted with a README. The guidance
-distinguishes local verified criteria, maintainer acceptance, closure
-authorization, mechanical closure, and merged delivery.
+The template and lifecycle guidance define deterministic reference updates for
+authorized closure.
+
+- Children and dependencies use `TODO`, `DONE`, or `ABORT` entries that state
+  their purpose.
+- A change to a child's purpose updates its parent entry's purpose text.
+- Closure marks entries for selected completed Works `DONE` and removes links
+  to their deleted contracts while retaining purpose text, without requiring
+  delivered-outcome summaries or PR references.
+- Other live links to deleted contracts are removed deterministically or point
+  to lasting owners, with ambiguity stopping closure for maintainer steering.
+- Supporting artifacts remain in the current tree only where live documents or
+  Works still need them, with Git history preserving deleted committed artifacts
+  without mandatory promotion.
+- `ABORT` records lifecycle status and does not authorize closing incomplete
+  Works under the completed-only closure authority.
+- Guidance distinguishes local verified criteria, maintainer acceptance,
+  closure authorization, mechanical closure, and merged delivery.
 
 ### **AC-3 TODO** Closure publication authority is explicit
 
