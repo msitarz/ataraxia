@@ -19,7 +19,7 @@ Amended by
 [26. Keep evidence at its source](0026-keep-evidence-at-its-source.md).
 
 Amended by
-[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+[28. Retain Work contracts until authorized closure](0028-retain-work-contracts-until-authorized-closure.md).
 
 ## Context
 

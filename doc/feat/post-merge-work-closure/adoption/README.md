@@ -1,4 +1,4 @@
-# Adopt mechanical post-merge cleanup
+# Adopt authorized closure and post-merge cleanup
 
 ## Purpose
 
@@ -7,9 +7,9 @@ replaced cleaner-agent instructions without losing cleanup safeguards.
 
 ## Goals
 
-- Route post-merge closure and Git cleanup to the delivered Make command.
+- Route authorized PR closure and separate post-merge Git cleanup to Make.
 - Remove cleaner-role instructions replaced by the tool.
-- Verify that correction, merge, closure, and recovery guidance agree.
+- Verify that authorization, closure, corrections, merge, and recovery agree.
 
 ## Non-Goals
 
@@ -18,10 +18,11 @@ replaced cleaner-agent instructions without losing cleanup safeguards.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** One post-merge operational route
+### **AC-1 TODO** One operational route preserves the merge boundary
 
 Branch cleanup, orchestrator handoffs, task routing, glossary, Make help, and
-contributor guidance route mechanical closure and Git cleanup to the command.
+contributor guidance route authorized closure to the command and Git cleanup to
+its separate post-merge phase or reinvocation.
 Cleaner-role guidance and required cleaner dispatch are removed for operations
 now owned by the tool. Commands and supported conditions are described at one
 owner, without duplicating the procedure across reading routes.
@@ -29,9 +30,13 @@ owner, without duplicating the procedure across reading routes.
 ### **AC-2 TODO** Lifecycle and tool compose through correction and recovery
 
 Review of the final guidance and disposable command results confirms a retained
-contract can be corrected and merged, then closed with coherent parent/dependent
-references before branch/worktree removal. Required evidence and maintainer
-acceptance survive, and failure/retry behavior preserves unpublished changes.
+contract can be reviewed, explicitly authorized for selected closure, and closed
+on the same PR branch with coherent parent/dependent references. Corrections
+after approval restore affected contracts when needed and require refreshed
+review and renewed authorization. Full CI passes on the final closure head
+before maintainer merge; branch/worktree removal requires verified merged
+closure provenance. Required evidence and maintainer acceptance survive, and
+failure/retry behavior preserves unpublished changes.
 Earlier delivery rules are amended through their decision history rather than
 left as conflicting current guidance. Applicable documentation and focused
 command checks pass; latest-head CI remains the merge gate.

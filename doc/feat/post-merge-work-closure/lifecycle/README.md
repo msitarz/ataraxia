@@ -1,4 +1,4 @@
-# Retain contracts until post-merge closure
+# Retain contracts until authorized closure
 
 ## Purpose
 
@@ -7,9 +7,9 @@ requiring agents to restore and delete it for each review round.
 
 ## Goals
 
-- Define the transition from reviewed outcomes to merged contracts to closure.
+- Define retention, explicit closure authorization, and correction recovery.
 - Make parent/dependency updates mechanically unambiguous.
-- Define the limited authority for closure commits pushed directly to master.
+- Define closure publication on the same reviewed open PR branch.
 
 ## Non-Goals
 
@@ -18,35 +18,55 @@ requiring agents to restore and delete it for each review round.
 
 ## Acceptance criteria
 
-### **AC-1 DONE** One lifecycle retains contracts through merge
+### **AC-1 DONE** One lifecycle retains contracts until authorized closure
 
-Acceptance, workflow, orchestrator, contribution, and PR guidance keep contracts
-in the implementation PR through corrections and maintainer merge. Requested
-parents retain their completed child contracts through the final tree review.
-Affected evidence and criterion statuses are refreshed directly when corrections
-change an outcome. Pre-publication verification/removal pairs and contract
-restoration loops are retired without relaxing acceptance or CI gates.
+Acceptance, workflow, orchestrator, contribution, and PR guidance retain
+requested and descendant contracts during implementation and review until
+explicitly authorized closure.
+
+- Only an explicit maintainer request in the session authorizes closing selected
+  completed Works for a reviewed open PR head and covers the resulting
+  mechanical closure changes.
+- `DONE`, passing tests, ready-for-review status, and implementation or
+  PR-revision requests do not imply closure authorization.
+- Substantive implementation corrections after approval invalidate affected
+  closure authorization; restore already-closed affected contracts and evidence,
+  refresh statuses and independent review, and obtain renewed closure
+  instruction.
+- Corrections before closure update retained contracts and evidence directly;
+  routine verification/removal pairs are retired, with restoration reserved for
+  corrections after closure.
+- Maintainer acceptance, independent review, full CI on the final closure head,
+  and maintainer merge retain their distinct responsibilities.
 
 ### **AC-2 TODO** Closure reference updates have a deterministic contract
 
 The template and lifecycle guidance define supported parent/dependency entries
 and their exact post-closure form. Closure changes a parent's selected child
 entry to its delivered outcome and resolves other current links to the removed
-contract using a lasting outcome owner or merged PR reference. Ambiguous prose
-is identified for maintainer steering rather than guessed. Supporting artifacts
-are preserved or promoted according to the reviewed contract; they cannot be
-silently deleted with a README. The guidance distinguishes local verified
-criteria, maintainer acceptance, merged delivery, and mechanical closure.
+contract using a lasting outcome owner or PR reference that survives closure and
+merge. Ambiguous prose is identified for maintainer steering rather than
+guessed. Supporting artifacts are preserved or promoted according to the
+reviewed contract; they cannot be silently deleted with a README. The guidance
+distinguishes local verified criteria, maintainer acceptance, closure
+authorization, mechanical closure, and merged delivery.
 
 ### **AC-3 TODO** Closure publication authority is explicit
 
-Guidance authorizes narrowly scoped mechanical closure commits directly to
-master after merged revision verification, using normal push semantics and
-existing signing/hooks. It defines stopping and recovery when direct publication
-is unavailable or master advances; no protection bypass or force push is
-allowed. A WDR records moving cleanup after merge and replacing agent-driven
-mechanics, with the required amendment links to earlier delivery/cleanup
-decisions.
+Guidance defines the narrowly scoped authority consumed by the future command
+and its Make interface, with these boundaries:
+
+- Authorized mechanical closure commits use the same reviewed open PR branch,
+  ordinary push semantics, and existing signing/hooks; direct-master publication
+  and separate closure PRs are excluded.
+- Clean state, exact reviewed and remote tips, completed selected Works, and
+  unambiguous reference updates are required; unexpected changes stop
+  publication with recoverable state and no force push or protection bypass.
+- Full CI must pass on the final closure head before maintainer merge.
+- Git branch/worktree cleanup remains a separate post-merge phase or
+  reinvocation requiring verified merged closure provenance.
+- A WDR records explicit closure authority and deterministic mechanics, amending
+  earlier delivery/cleanup decisions without erasing their history.
 
 ## Dependencies
 

@@ -1,22 +1,22 @@
-# Close Work contracts after merge
+# Close Work contracts on explicit maintainer request
 
 ## Purpose
 
-Keep Work contracts available throughout PR review and replace repeated
-agent-driven cleanup with a deterministic post-merge command.
+Keep Work contracts available for review until the maintainer requests closure
+and replace repeated agent-driven mechanics with deterministic tooling.
 
 ## Goals
 
-- Retain requested Work and child contracts through implementation, review, and
-  merge.
-- Close merged contracts and update parent/dependent references through Make.
-- Commit and push mechanical closure changes to master through the same command.
+- Retain requested and descendant contracts until explicitly authorized closure.
+- Close selected completed contracts and update references through Make.
+- Commit and push mechanical closure changes on the reviewed open PR's branch.
+- Keep Git branch/worktree cleanup strictly after maintainer merge.
 - Replace cleaner-agent operations with deterministic tooling where applicable.
 
 ## Glossary
 
-- **Closure:** removal of accepted, merged contracts and mechanical updates to
-  their parent maps and dependent links.
+- **Closure:** explicitly authorized removal of selected completed contracts and
+  mechanical updates to their parent maps and dependent links.
 - **Git cleanup:** removal of verified merged branches and clean linked
   worktrees.
 
@@ -32,50 +32,52 @@ agent-driven cleanup with a deterministic post-merge command.
 
 - A Make target exposes the closure operation through the existing tool
   interface.
-- Git and PR metadata establish the merged revision and current master state.
+- Git and PR metadata establish the reviewed PR head and exact branch tips.
 - Canonical parent/dependency entries identify references the tool can update.
 - Existing worktree tools provide guarded removal of clean linked worktrees.
 
 ## Visuals
 
-Current guidance requires verified contract and cleanup commit pairs before
-publication; corrections after cleanup restore the contract and remove it again.
-The proposed sequence retains contracts until maintainer review and merge:
+The verified baseline at `b14cc86` retains contracts through merge while closure
+tooling is pending; the proposed lifecycle permits explicit closure on the
+reviewed open PR:
 
 ```mermaid
 flowchart LR
     I[Implementation and retained contracts] --> R[Review and corrections]
-    R --> M[Maintainer merges PR]
-    M --> C[Make closes contracts and updates references]
-    C --> P[Commit and normal push to master]
-    P --> G[Verified branch and worktree cleanup]
+    R --> A[Maintainer requests selected closure]
+    A --> C[Make closes contracts on same PR branch]
+    C --> P[Normal push and full final-head CI]
+    P --> M[Maintainer merges PR]
+    M --> G[Separate verified Git cleanup phase]
 ```
 
 ## Acceptance criteria
 
 ### **AC-1 TODO** Contracts remain available through PR review
 
-Current lifecycle and publication guidance retain requested Work and descendant
-contracts through merge. Corrections update the retained contracts and affected
-evidence directly. Completion no longer requires alternating verification and
-contract-removal commits before publication. Maintainer acceptance, agent
-review, and latest-reviewed-head CI retain their existing responsibilities.
+Current lifecycle and publication guidance retain requested and descendant
+contracts until the explicit closure authorization defined by
+[lifecycle AC-1](lifecycle/README.md#ac-1-done-one-lifecycle-retains-contracts-until-authorized-closure).
+Corrections preserve or restore affected contracts and evidence, and maintainer
+acceptance, independent review, and full final-head CI remain merge gates.
 
 ### **AC-2 TODO** One command publishes deterministic closure
 
-After a merged PR is identified, a Make command verifies the accepted contracts,
-removes the selected completed contract tree, updates parent and dependent
-references, commits only the mechanical closure changes, and pushes normally to
-master. It cannot publish unreviewed implementation changes. Missing acceptance,
-ambiguous references, dirty state, unexpected remote changes, or publication
-failure stop closure without declaring success or discarding recoverable work.
+On an explicitly authorized reviewed open PR, a Make command removes the
+selected completed contracts, updates references, commits only mechanical
+closure changes, and pushes normally to the same PR branch. The final closure
+head must pass full CI before maintainer merge. Closure cannot publish
+unreviewed implementation changes, target master directly, or open a separate
+closure PR; failures preserve recoverable work without declaring success.
 
 ### **AC-3 TODO** Mechanical cleanup no longer requires a cleaner agent
 
 The command owns the verified branch/worktree cleanup operations defined by its
-contract, and current guidance no longer requires a cleaner agent for those
-operations. Cleanup cannot delete unpublished changes or run ahead of successful
-closure publication. The maintainer remains responsible for acceptance and
+contract in a separate post-merge phase or reinvocation, and current guidance no
+longer requires a cleaner agent for those operations. Cleanup requires
+verified merged closure provenance and cannot follow merely from pushing closure
+to an open PR. It preserves unpublished work; the maintainer owns acceptance and
 merge.
 
 ## Dependencies
@@ -88,9 +90,9 @@ merge.
 
 ## Children
 
-- **TODO** [Post-merge lifecycle guidance](lifecycle/README.md): define retained
-  contracts, mechanical reference updates, publication authority, and the
-  decision.
+- **TODO** [Authorized closure lifecycle guidance](lifecycle/README.md): define
+  retained contracts, mechanical reference updates, publication authority, and
+  the decision.
 - **TODO** [Mechanical closure command](command/README.md): deliver the Make
   interface and its guarded Git/reference operations.
 - **TODO** [Cleanup adoption](adoption/README.md): retire replaced cleaner
@@ -105,8 +107,9 @@ merge.
 
 ## Additional context
 
-This Work defines a future lifecycle/tool delivery; it does not change the
-currently required cleanup sequence or execute closure. The migration's policy
-thinning and this Work's lifecycle change have separate owners. Shared guidance
-edits use the delivered authoring/evidence rules and are coordinated with the
-migration owner to avoid conflicting rules.
+Revising this contract does not authorize closing any Work. The command
+interface, canonical reference rules, and detailed publication authority remain
+pending in lifecycle AC-2/AC-3. Existing directory paths are retained. The
+migration's policy thinning and this Work's lifecycle change have separate
+owners. Shared guidance edits use the delivered authoring/evidence rules and are
+coordinated with the migration owner to avoid conflicting rules.

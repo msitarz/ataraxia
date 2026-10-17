@@ -49,25 +49,30 @@ Local evidence can establish acceptance before PR CI runs.
    verified their outcomes. Preserve inspectable evidence in its source
    records; do not duplicate manual outcomes beside criteria. Keep unsupported
    criteria `TODO`.
-3. Retain requested and descendant contracts through PR review, corrections,
-   and maintainer merge. Maintainer acceptance, agent review, latest-head CI,
-   and maintainer merge retain their existing responsibilities.
+3. Retain requested and descendant contracts through PR review and corrections
+   until an explicit maintainer instruction in the session authorizes closure
+   of selected completed Works at the reviewed open PR head. `DONE`, passing
+   checks, ready-for-review status, and implementation or PR-revision requests
+   do not authorize closure. The instruction covers the resulting mechanical
+   closure changes on the same PR branch. Maintainer acceptance, independent
+   review, full CI on the final closure head, and maintainer merge retain their
+   distinct responsibilities.
 
 For a requested parent with direct leaves, apply this procedure locally to each
 leaf in execution order on the accumulating branch. Retain each leaf contract
-through the requested tree's final review and merge. The parent owner reviews
-map updates before the executor applies them. Local acceptance permits
-dependent work under
+through requested-tree integration and review under step 3 above. The parent
+owner reviews map updates before the executor applies them. Local acceptance
+permits dependent work under
 [orchestrator guidance](orchestrator.md#review-and-return); it does not
 establish CI outcomes or authorize child publication. After all leaves,
 independently review the parent's own outcomes and retain its contract through
-merge. Any required unsupported criterion remains `TODO` and requires steering
-under the evidence rules above.
+integration and PR review under step 3 above. Any required unsupported criterion
+remains `TODO` and requires steering under the evidence rules above.
 
 For a child parent within the requested tree, retain its independently reviewed
-contract through immediate-parent integration and the requested tree's merge.
-The requested Work publishes its reviewed implementation and retained contracts
-at that [delivery boundary](pull-requests.md#publishing).
+contract through immediate-parent integration and requested-tree review under
+step 3 above. The requested Work publishes its reviewed implementation and
+retained contracts at that [delivery boundary](pull-requests.md#publishing).
 
 Before publication, independently review the resulting artifact and its PR
 description. Publish only after that review.
@@ -82,7 +87,11 @@ Rebase the reviewed implementation onto current `master` as linear history.
 Refresh commit references in existing evidence records when a rebase changes
 the referenced commits.
 
-After merge, keep the finished contract available until the supported
-post-merge closure procedure exists. Do not add manual contract deletion or
-reference-update loops. If a Work stops unsatisfied, follow the
+Substantive implementation corrections after closure approval invalidate
+authorization for affected Works. If their contracts were already closed,
+restore the affected contracts and evidence, refresh statuses and independent
+review, and obtain renewed closure instruction. Corrections before closure
+update retained contracts and evidence directly. Do not add routine
+verification/removal pairs or manual closure procedures. If a Work stops
+unsatisfied, follow the
 [abandonment lifecycle](workflow.md#lifecycle).
