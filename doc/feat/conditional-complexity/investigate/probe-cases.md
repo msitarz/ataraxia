@@ -105,3 +105,28 @@ def match_guard(value, a, b, c, d, e, f):
         case _:
             return False
 ```
+
+## Threshold boundary cases
+
+The temporary threshold probe contained three functions with sequential short
+guards. `below` had 14 `if value_N: pass` statements, `exact` had 15, and
+`above` had 16. The statements ran from `value_0` through `value_13`,
+`value_14`, and `value_15`, respectively. With a maximum of 15, this produced
+scores 14, 15, and 16; the first two passed and the last failed with exit status
+
+`1`. The complete raw JSON is in
+[threshold results](complexipy-threshold-results.json).
+
+## Root path-scope cases
+
+The following six-expression function was placed at
+`src/ataraxia/_complexipy_scope_probe.py` and copied to unique `.cache` and
+`build` probe paths. These temporary files were removed after checking both
+tools' root discovery.
+
+```text
+def probe(a, b, c, d, e, f):
+    if a and b and c and d and e and f:
+        return True
+    return False
+```
