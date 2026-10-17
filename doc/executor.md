@@ -30,6 +30,10 @@ the finding and evidence to the owner. A new split or needed decision pauses
 under the
 [Work workflow](workflow.md#decisions-and-new-splits).
 
+Before handoff, self-review the exact changed code and tests using
+[engineering judgment in review](engineering-review.md). Apply its questions
+while implementing too; passing checks do not establish design judgment.
+
 For parent-map updates, follow the executor route in the
 [Work workflow](workflow.md#lifecycle).
 

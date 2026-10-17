@@ -47,6 +47,23 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             "whole affected section",
         ),
         (
+            "lint-check",
+            (
+                "run",
+                "ruff",
+                "check",
+                "--select",
+                "too-many-statements",
+                "--config",
+                "lint.pylint.max-statements=25",
+                "--exit-zero",
+                ".",
+            ),
+            "doc/engineering-review.md",
+            "apply the design questions to changed code and tests",
+            "For meaningful changes",
+        ),
+        (
             "commit",
             ("run", "python", "script/commit_command.py"),
             "doc/change-rules.md#fix-the-underlying-problem",
@@ -54,7 +71,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
             "For meaningful changes",
         ),
     ],
-    ids=["doc-format", "doc-check", "doc-check-mermaid", "commit"],
+    ids=["doc-format", "doc-check", "doc-check-mermaid", "lint-check", "commit"],
 )
 def test_selected_top_level_targets_remind_after_success(
     sandbox: MakeSandbox,
@@ -226,6 +243,11 @@ def test_work_review_prompts_concise_delivery(
     assert "doc/workflow.md#scope-and-sizing" in review.stdout
     assert "doc/workflow.md#decisions-and-new-splits" in review.stdout
     assert "doc/orchestrator.md#review-and-return" in review.stdout
+    assert "doc/engineering-review.md" in review.stdout
+    assert (
+        "For code or test changes, independently review design judgment"
+        " on the exact final revision before publication." in review.stdout
+    )
     assert all(
         inventory not in review.stdout
         for inventory in (

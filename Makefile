@@ -49,6 +49,7 @@ lint-check: ## check lint without fixes; reports function-size advice; ARGS=path
 	uv run ruff check $(_TARGET_PATHS)
 	@echo "Advisory: review functions with more than 25 statements"
 	$(_SIZE_ADVISORY)
+	@printf '%s\n' 'During implementation and before handoff, apply the design questions to changed code and tests. doc/engineering-review.md'
 
 .PHONY: format format-check
 format: ## format project files; ARGS=paths narrows the files
@@ -274,7 +275,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 ##@ Work review
 .PHONY: work-review
 work-review: ## review Work sizing and remind owner to publish and deliver PR
-	@printf '%s\n' 'After Work cleanup: does the complete leaf diff fit review in about five minutes? If not, pause and ask the maintainer to split it or explicitly approve a larger review. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/orchestrator.md#review-and-return'
+	@printf '%s\n' 'After Work cleanup: does the complete leaf diff fit review in about five minutes? If not, pause and ask the maintainer to split it or explicitly approve a larger review. For code or test changes, independently review design judgment on the exact final revision before publication. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/engineering-review.md doc/orchestrator.md#review-and-return'
 
 .PHONY: sandbox-create
 ##@ Evaluation sandboxes

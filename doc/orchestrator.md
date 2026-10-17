@@ -173,9 +173,13 @@ requires the maintainer's explicit approval.
 
 ## Review and return
 
-When independently reviewing changed code or tests, apply
-[engineering judgment in review](engineering-review.md) alongside the
-applicable engineering and testing guidance.
+Before accepting changed code or tests and before publishing the exact final
+revision, independently apply [engineering judgment in
+review](engineering-review.md) alongside the applicable engineering and
+testing guidance. Passing checks do not settle design judgment. Review may
+accept the design unchanged; when the same unchanged revision's review applies
+at both checkpoints, reuse it. Review corrected changes on the final revision
+before publication.
 
 For a requested parent's direct leaves, complete the local artifact/evidence
 review and any consolidated corrections before assigning the next leaf. Follow

@@ -55,7 +55,7 @@ engineering, testing, and role guidance give direct routes. Existing structural
 review guidance is integrated at its owner without a competing checklist or
 index chain.
 
-### **AC-2 TODO** Judgment is applied before handoff and acceptance
+### **AC-2 DONE** Judgment is applied before handoff and acceptance
 
 Executors apply the judgment guidance in self-review before handoff, and the
 orchestrator applies it independently before accepting completed implementation
