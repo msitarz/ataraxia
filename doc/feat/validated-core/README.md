@@ -101,7 +101,7 @@ variants express valid core inputs, results, and transitions.
   `assert_never`, without claiming Python `match` is inherently exhaustive or
   erasing types through casts, broad types, or suppressions.
 
-### **AC-3 TODO** Pure decisions over valid inputs
+### **AC-3 DONE** Pure decisions over valid inputs
 
 Engineering guidance defines pure decisions as typed functions whose same valid
 explicit inputs produce the same results without I/O, environment, time, random,
