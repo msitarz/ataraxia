@@ -28,12 +28,28 @@ ifneq ($(filter -%,$(ARGS)),)
 $(error ARGS accepts paths, not options)
 endif
 
-.PHONY: setup
+.PHONY: setup hooks-setup
 setup: ci-setup ## prepare development dependencies, hooks, and build tooling
-	uv run --no-sync prek prepare-hooks
-	uv run --no-sync prek install --hook-type pre-commit --hook-type commit-msg
+	$(MAKE) --no-print-directory hooks-setup UV_NO_SYNC=true
 	uv build --wheel --out-dir .cache/build
 	@echo "✓ Dev environment ready. Run 'make verify' to verify offline."
+
+hooks-setup: ## prepare and install this worktree's pre-commit and commit-msg hooks
+	@set -eu; \
+	common_dir=$$(git rev-parse --path-format=absolute --git-common-dir); \
+	common_config="$$common_dir/config"; \
+	git_dir=$$(git rev-parse --absolute-git-dir); \
+	uv run --no-sync prek install --prepare-hooks --hook-type pre-commit --hook-type commit-msg --git-dir "$$git_dir"; \
+	for key in core.bare core.worktree; do \
+		if value=$$(git config --local --get "$$key"); then \
+			if ! git config --file "$$common_dir/config.worktree" --get "$$key" >/dev/null 2>&1; then \
+				git config --file "$$common_dir/config.worktree" "$$key" "$$value"; \
+			fi; \
+			git config --file "$$common_config" --unset-all "$$key"; \
+		fi; \
+	done; \
+	git config --local extensions.worktreeConfig true; \
+	git config --worktree core.hooksPath "$$git_dir/hooks"
 
 .PHONY: lint lint-check
 lint: ## lint and apply fixes; ARGS=paths narrows the files
@@ -245,7 +261,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 	if [ -d "$$source/.cache" ]; then \
 		mkdir -p "$$destination/.cache"; \
 		if ! cp -R "$$source/.cache/." "$$destination/.cache/"; then \
-			echo "Cache copy failed; worktree retained at $$destination. Retry by copying .cache contents there, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit 1; \
+			echo "Cache copy failed; worktree retained at $$destination. Retry by copying .cache contents there, then run make ci-setup UV_OFFLINE=true, make hooks-setup, and make verify-setup." >&2; exit 1; \
 		fi; \
 	fi; \
 	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
@@ -254,7 +270,15 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=false; then \
 		:; \
 	else \
-		status=$$?; echo "Offline setup failed (status $$status); worktree retained at $$destination. Repair its .cache or provide the missing cached artifact, then run make ci-setup UV_OFFLINE=true and make verify-setup." >&2; exit $$status; \
+		status=$$?; echo "Offline setup failed (status $$status); worktree retained at $$destination. Repair its .cache or provide the missing cached artifact, then run make ci-setup UV_OFFLINE=true, make hooks-setup, and make verify-setup." >&2; exit $$status; \
+	fi; \
+	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
+		$(MAKE) --no-print-directory -C "$$destination" hooks-setup \
+			UV_CACHE_DIR="$$destination/.cache/uv" PREK_HOME="$$destination/.cache/prek" \
+			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=true; then \
+		:; \
+	else \
+		status=$$?; echo "Hook setup failed (status $$status); worktree retained at $$destination. Repair its environment, then run make hooks-setup and make verify-setup there." >&2; exit $$status; \
 	fi; \
 	if env -u UV_PROJECT_ENVIRONMENT -u VIRTUAL_ENV -u UV_NO_SYNC -u MAKEFLAGS -u MAKEOVERRIDES -u MFLAGS \
 		$(MAKE) --no-print-directory -C "$$destination" verify-setup \
@@ -262,7 +286,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 			UV_PROJECT_ENVIRONMENT="$$destination/.venv" UV_OFFLINE=true UV_NO_SYNC=true; then \
 		:; \
 	else \
-		status=$$?; echo "Environment check failed (status $$status); worktree retained at $$destination. Repair its environment, then run make verify-setup there." >&2; exit $$status; \
+		status=$$?; echo "Environment check failed (status $$status); worktree retained at $$destination. Repair its environment, then run make hooks-setup and make verify-setup there." >&2; exit $$status; \
 	fi; \
 	echo "✓ Worktree ready: $$destination (branch $$branch)"
 

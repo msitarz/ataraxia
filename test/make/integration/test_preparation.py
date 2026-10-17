@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from test.make.support import MakeSandbox, make_sandbox
+from test.make.worktree_support import creation_repository
 
 
 @pytest.fixture
@@ -66,9 +67,7 @@ def test_ci_targets_prepare_dependencies_before_their_consumer(
     assert [call.argv for call in result.calls] == expected
 
 
-def test_setup_prepares_hooks_and_wheel_after_dependencies(
-    sandbox: MakeSandbox,
-) -> None:
+def test_setup_prepares_hooks_and_wheel_after_dependencies(tmp_path: Path) -> None:
     """AC-1: Given each preparation target, real Make requests only its
     required preparation and subsequent consumers through fake uv; setup requests
     hooks/build, package requests Python preparation then offline smoke routing,
@@ -87,25 +86,36 @@ def test_setup_prepares_hooks_and_wheel_after_dependencies(
     actual installs, network isolation, stale environments, or installed-package
     execution.
     """
-    # Given: the sandbox fixture supplies the disposable environment.
+    # Given
+    repository = creation_repository(tmp_path / "setup")
+    sandbox = repository.sandbox
+    cache_marker = sandbox.directory / ".cache/uv/ready"
+    cache_marker.parent.mkdir(parents=True)
+    cache_marker.write_text("cached")
+    git_dir = repository.git("rev-parse", "--absolute-git-dir").stdout.strip()
 
     # When
-    result = sandbox.run("setup")
+    result = sandbox.run(
+        "setup",
+        environment={"UV_PROJECT_ENVIRONMENT": str(sandbox.directory / ".venv")},
+    )
 
     # Then
     assert result.exit_code == 0, result.output
     assert [call.argv for call in result.calls] == [
         ("sync", "--locked", "--group", "dev"),
-        ("run", "--no-sync", "prek", "prepare-hooks"),
         (
             "run",
             "--no-sync",
             "prek",
             "install",
+            "--prepare-hooks",
             "--hook-type",
             "pre-commit",
             "--hook-type",
             "commit-msg",
+            "--git-dir",
+            git_dir,
         ),
         ("build", "--wheel", "--out-dir", ".cache/build"),
     ]
