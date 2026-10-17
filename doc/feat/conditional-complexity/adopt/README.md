@@ -42,7 +42,7 @@ does not guarantee readability. Configuration is linked at its machine owner
 rather than copied into a settings inventory; examples explain tool limitations
 without requiring a historical sandbox repair.
 
-### **AC-2 TODO** Blocking Make and CI enforcement
+### **AC-2 DONE** Blocking Make and CI enforcement
 
 The locked reviewed release and any approved complementary settings enforce
 agreed limits through normal Make and required CI.
@@ -62,6 +62,9 @@ agreed limits through normal Make and required CI.
   under [test ownership](../../../test-ownership.md).
 - Snapshots, suppressions, or broad exceptions do not silently grandfather
   violations or replace bounded repairs.
+
+One-time real-route results are recorded in
+[AC-2 observations](observations.md).
 
 ### **AC-3 TODO** Compatible bounded repairs
 

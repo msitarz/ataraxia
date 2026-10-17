@@ -17,6 +17,7 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "complexipy>=8.0.1",
     "commitizen>=4.19.0",
     "debugpy>=1.8.22",
     "hypothesis>=6.168.5",
@@ -119,6 +120,7 @@ ataraxia = "ataraxia.cli:main"
 preview = true
 line-length = 88
 target-version = "py314"
+extend-exclude = ["build/**", "dist/**"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -149,7 +151,10 @@ extend-ignore = [
   "undocumented-magic-method",
   "undocumented-public-init",
 ]
-extend-select = ["too-many-statements"] # Ruff PLR0915 statement count
+extend-select = [
+  "too-many-statements",             # Ruff PLR0915
+  "too-many-boolean-expressions",    # Ruff PLR0916
+]
 ignore = [
   "missing-trailing-comma",                    # REQUIRED: conflicts with ruff format
   "single-line-implicit-string-concatenation", # REQUIRED: conflicts with ruff format
@@ -172,6 +177,13 @@ convention = "google"
 [tool.ruff.lint.pylint]
 # Ruff blocks functions with more than 25 statements in every lint path.
 max-statements = 25
+max-bool-expr = 5
+
+[tool.complexipy]
+max-complexity-allowed = 15
+failed = true
+exclude = ["build/**", "dist/**"]
+cache-dir = ".cache/complexipy"
 
 [tool.ruff.lint.isort]
 known-first-party = ["ataraxia"]

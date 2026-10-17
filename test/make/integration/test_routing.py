@@ -2,10 +2,11 @@
 """Check ordinary command forwarding through real Make and recording uv."""
 
 from pathlib import Path
+import tomllib
 
 import pytest
 
-from test.make.support import MakeSandbox, make_sandbox
+from test.make.support import ROOT, MakeSandbox, make_sandbox
 
 
 @pytest.fixture
@@ -20,17 +21,67 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         (
             "lint",
             (),
-            [["run", "ruff", "check", ".", "--fix"]],
+            [
+                ["run", "ruff", "check", ".", "--fix"],
+                [
+                    "run",
+                    "complexipy",
+                    ".",
+                    "--output-format",
+                    "sarif",
+                    "--output",
+                    ".cache/complexipy.sarif",
+                ],
+            ],
         ),
         (
             "lint",
             ("ARGS=src/feature.py",),
-            [["run", "ruff", "check", "src/feature.py", "--fix"]],
+            [
+                ["run", "ruff", "check", "src/feature.py", "--fix"],
+                [
+                    "run",
+                    "complexipy",
+                    "src/feature.py",
+                    "--output-format",
+                    "sarif",
+                    "--output",
+                    ".cache/complexipy.sarif",
+                ],
+            ],
+        ),
+        (
+            "lint-check",
+            (),
+            [
+                ["run", "ruff", "check", "."],
+                [
+                    "run",
+                    "complexipy",
+                    ".",
+                    "--output-format",
+                    "sarif",
+                    "--output",
+                    ".cache/complexipy.sarif",
+                ],
+            ],
         ),
         (
             "lint-check",
             ("ARGS=src/feature.py src/provider.py",),
-            [["run", "ruff", "check", "src/feature.py", "src/provider.py"]],
+            [
+                ["run", "ruff", "check", "src/feature.py", "src/provider.py"],
+                [
+                    "run",
+                    "complexipy",
+                    "src/feature.py",
+                    "src/provider.py",
+                    "--output-format",
+                    "sarif",
+                    "--output",
+                    ".cache/complexipy.sarif",
+                ],
+            ],
         ),
         ("format", (), [["run", "ruff", "format", "."]]),
         (
@@ -86,6 +137,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
     ids=[
         "lint-default",
         "lint-selected",
+        "lint-check-default",
         "lint-check-selected",
         "format-default",
         "format-selected",
@@ -124,6 +176,54 @@ def test_lint_check_propagates_ruff_failure(sandbox: MakeSandbox) -> None:
     assert result.exit_code == 2
     assert len(result.calls) == 1
     assert result.calls[0].argv == ("run", "ruff", "check", ".")
+
+
+@pytest.mark.parametrize("target", ["lint", "lint-check"], ids=["fix", "check"])
+def test_lint_routes_propagate_complexipy_failure_after_ruff(
+    sandbox: MakeSandbox,
+    target: str,
+) -> None:
+    """A native complexity failure stops the lint route and reaches Make."""
+    # Given
+    complexity = (
+        "run",
+        "complexipy",
+        ".",
+        "--output-format",
+        "sarif",
+        "--output",
+        ".cache/complexipy.sarif",
+    )
+
+    # When
+    result = sandbox.run(target, fail_args=complexity, exit_code=1)
+
+    # Then
+    assert result.exit_code == 2, result.output
+    assert tuple(call.argv for call in result.calls) == (
+        ("run", "ruff", "check", ".", *(("--fix",) if target == "lint" else ())),
+        complexity,
+    )
+
+
+def test_complexity_configuration_uses_reviewed_limits_and_scope() -> None:
+    """Keep thresholds and discovery scope at their project configuration owners."""
+    # Given
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())
+
+    # When
+    ruff = project["tool"]["ruff"]
+    pylint = ruff["lint"]["pylint"]
+    complexipy = project["tool"]["complexipy"]
+
+    # Then
+    assert "complexipy>=8.0.1" in project["dependency-groups"]["dev"]
+    assert "too-many-boolean-expressions" in ruff["lint"]["extend-select"]
+    assert pylint["max-bool-expr"] == 5
+    assert set(ruff["extend-exclude"]) == {"build/**", "dist/**"}
+    assert complexipy["max-complexity-allowed"] == 15
+    assert complexipy["failed"] is True
+    assert set(complexipy["exclude"]) == {"build/**", "dist/**"}
 
 
 def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
@@ -211,7 +311,18 @@ def test_make_selectors_quote_shell_metacharacters(sandbox: MakeSandbox) -> None
     # Then
     assert result.exit_code == 0, result.output
     assert [list(call.argv) for call in result.calls] == [
-        ["run", "ruff", "check", "src/example.py;", "touch", str(marker)]
+        ["run", "ruff", "check", "src/example.py;", "touch", str(marker)],
+        [
+            "run",
+            "complexipy",
+            "src/example.py;",
+            "touch",
+            str(marker),
+            "--output-format",
+            "sarif",
+            "--output",
+            ".cache/complexipy.sarif",
+        ],
     ]
     assert not marker.exists()
 

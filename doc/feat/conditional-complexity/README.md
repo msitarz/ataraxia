@@ -50,9 +50,9 @@ outcomes provide useful automatic prevention with truthful limits.
 
 - [Readable-decision guidance](../../engineering.md#code-style)
   supplies readable-condition policy without duplicating it in this Work.
-- [Adoption AC-1](adopt/README.md#ac-1-todo-truthful-tool-guidance) supplies
+- [Adoption AC-1](adopt/README.md#ac-1-done-truthful-tool-guidance) supplies
   integration guidance explaining supported capabilities and remaining judgment.
-- [Adoption AC-2](adopt/README.md#ac-2-todo-blocking-make-and-ci-enforcement)
+- [Adoption AC-2](adopt/README.md#ac-2-done-blocking-make-and-ci-enforcement)
   supplies the locked reviewed tool through normal Make and required CI.
 - [Adoption AC-3](adopt/README.md#ac-3-todo-compatible-bounded-repairs) supplies
   compatible repairs where necessary.
