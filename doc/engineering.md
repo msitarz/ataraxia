@@ -18,6 +18,8 @@ Use four-space indentation, 88-character lines, double quotes, Google-style
 docstrings, `snake_case` functions/modules, and `PascalCase` classes. Satisfy
 strict Pyrefly and add `# SPDX-License-Identifier: Apache-2.0` to new source
 files.
+The project requires Python 3.14 or newer and uses native deferred annotation
+evaluation; do not add `from __future__ import annotations`.
 
 - Prefer function composition, focused functions, guard clauses, and early
   returns. Ruff's PLR0915 counts statements in source, scripts, and tests:
@@ -100,6 +102,11 @@ arguments uses the constructor's own semantic checks. This is an illustration
 of guidance, not an Ataraxia API:
 
 ```py
+from dataclasses import dataclass
+from datetime import datetime
+from typing import assert_never
+
+
 @dataclass(frozen=True)
 class Transfer:
     owner_id: str
@@ -113,7 +120,46 @@ class Transfer:
             raise ValueError("transfer accounts must differ")
         if isinstance(self.cents, bool) or self.cents <= 0:
             raise ValueError("cents must be a positive integer")
+
+
+@dataclass(frozen=True)
+class ImmediateTransfer:
+    details: Transfer
+
+
+@dataclass(frozen=True)
+class ScheduledTransfer:
+    details: Transfer
+    execute_at: datetime
+
+
+type TransferPlan = ImmediateTransfer | ScheduledTransfer
+
+
+def scheduled_time(plan: TransferPlan) -> datetime | None:
+    match plan:
+        case ImmediateTransfer():
+            return None
+        case ScheduledTransfer(execute_at=execute_at):
+            return execute_at
+        case unexpected:
+            assert_never(unexpected)
 ```
+
+Fields needed together form a product record; a variant-specific field such as
+`execute_at` belongs on its alternative when that makes invalid combinations
+harder to express. A flat record remains suitable when its fields fit every
+case. Frozen dataclasses are shallow: use immutable containers or document who
+owns mutable contents. Represent a state transition by constructing a new
+validated result or variant from the prior valid value, rather than mutating a
+frozen value or bypassing construction with `object.__setattr__`. Stateful
+runners and resource holders keep their explicit mutable ownership.
+
+For a closed union, handle each alternative while preserving type narrowing; a
+supported exhaustive helper such as `assert_never` makes a missing case visible
+to the type checker. Python `match` alone does not guarantee exhaustive
+handling. Do not erase useful variant types with casts, broad types, or
+suppressions.
 
 ### Preserve type precision
 

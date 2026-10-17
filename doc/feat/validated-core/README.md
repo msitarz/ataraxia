@@ -83,7 +83,7 @@ even when a particular pure decision does not read them. Unused extension data
 stays opaque and is preserved when required by transport or persistence
 compatibility.
 
-### **AC-2 TODO** Immutable core values and valid state transitions
+### **AC-2 DONE** Immutable core values and valid state transitions
 
 Engineering guidance explains how immutable product records and distinct union
 variants express valid core inputs, results, and transitions.
