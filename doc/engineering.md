@@ -170,6 +170,11 @@ to the type checker. Python `match` alone does not guarantee exhaustive
 handling. Do not erase useful variant types with casts, broad types, or
 suppressions.
 
+`Transfer("acct-a", "acct-b", 125)` is a valid construction; using
+`"acct-a"` for both IDs raises `ValueError`. Calling `schedule` with an
+`ImmediateTransfer` constructs a new `ScheduledTransfer` and leaves the input
+plan unchanged.
+
 ### Pure typed decisions
 
 A pure decision is a pure function over valid typed domain values; its result
@@ -189,19 +194,46 @@ them in a comprehension. Prefer standard Python protocols such as iteration
 and `collections.abc.Sized` when their semantics fit, and retain named methods
 when they express distinct domain meaning.
 
-`Transfer("acct-a", "acct-b", 125)` is a valid construction; using
-`"acct-a"` for both IDs raises `ValueError`. Calling `schedule` with an
-`ImmediateTransfer` constructs a new `ScheduledTransfer` and leaves the input
-plan unchanged.
+### Effects and live resource safety belong to adapters
 
-For example, a transfer consumer can own this precise port. Its composition
-root supplies a concrete adapter that implements the contract structurally and
-owns the adapter lifetime; the consumer borrows the port and does not close it.
-This is a proposed illustration, not an Ataraxia API:
+Adapters own effectful operations, expected failure translation, and the
+lifecycle of resources they acquire. Normalize untyped inputs once at their
+ingress boundary, then reuse the adapted values and observations; rely on a
+documented typed API's guarantees instead of repeating them or routinely
+preflighting an operation. Follow the existing
+[boundary error guidance](#validate-at-boundaries-and-construction) for
+context and causes, and the [resource handling conventions](#code-style) for
+cleanup on success and failure.
+
+Keep essential current ownership, authorization, lifecycle, and safety checks
+at the operation that needs them. Use transactions or synchronization to make
+state-dependent checks and writes atomic where required; a valid persisted
+record alone does not prove that current access or resource state is safe.
+When validation or control flow changes, preserve supported inputs, documented
+errors and causes, state invariants, persistence compatibility, and necessary
+effect ordering. Incidental check order and defensive branch layout remain
+implementation choices.
+
+For example, the consumer-owned transfer port can be backed by a small SQLite
+adapter. Ingress adapts raw request fields once into the validated `Transfer`;
+the adapter uses those values directly. The authenticated actor ID is checked
+at submission time, and the insert is attempted inside a transaction instead
+of being preflighted by a separate availability query. A live permission
+stored in the database would need an atomic operation-level check as well.
+Assume database setup creates the `transfers` table and its constraints. The
+composition root supplies
+`SQLiteTransferSubmitter(database=Path("transfers.sqlite"))` to
+`submit_transfer`; the adapter owns each per-call connection and closes it
+after the transaction on success or failure. This is an illustrative adapter,
+not an Ataraxia API:
 
 ```py
+from contextlib import closing
 from dataclasses import dataclass
+from pathlib import Path
+import sqlite3
 from typing import Protocol
+from uuid import uuid4
 
 
 class SubmissionError(Exception):
@@ -217,16 +249,45 @@ class TransferSubmitter(Protocol):
     """Consumer-owned transfer submission contract.
 
     Raises:
+        PermissionError: The authenticated actor does not own the transfer.
         SubmissionError: The adapter cannot submit the transfer.
     """
 
-    def submit(self, transfer: Transfer, /) -> Receipt: ...
+    def submit(self, actor_id: str, transfer: Transfer, /) -> Receipt: ...
+
+
+@dataclass(frozen=True)
+class SQLiteTransferSubmitter:
+    database: Path
+
+    def submit(self, actor_id: str, transfer: Transfer, /) -> Receipt:
+        if actor_id != transfer.owner_id:
+            raise PermissionError("actor does not own this transfer")
+        reference = uuid4().hex
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO transfers "
+                    "(reference, owner_id, recipient_id, cents) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        reference,
+                        transfer.owner_id,
+                        transfer.recipient_id,
+                        transfer.cents,
+                    ),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise SubmissionError("The ledger rejected the transfer") from exc
+        except sqlite3.OperationalError as exc:
+            raise SubmissionError("The ledger operation failed") from exc
+        return Receipt(reference=reference)
 
 
 def submit_transfer(
-    transfer: Transfer, submitter: TransferSubmitter
+    actor_id: str, transfer: Transfer, submitter: TransferSubmitter
 ) -> Receipt:
-    return submitter.submit(transfer)
+    return submitter.submit(actor_id, transfer)
 ```
 
 ### Preserve type precision
