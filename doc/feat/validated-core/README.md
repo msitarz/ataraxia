@@ -178,9 +178,9 @@ after integration.
 
 ## Additional context
 
-The former algebraic-data-type Investigation is superseded by this proposed
-modeling direction; its comparison, probe, and recommendation deliverables are
-removed rather than completed. Guidance delivery remains outstanding.
+The former algebraic-data-type Investigation is superseded by the delivered
+modeling guidance; its comparison, probe, and recommendation deliverables were
+removed rather than completed.
 
 Delivery is compact guidance with two supporting examples across these outcomes:
 one connects construction, product/variant modeling, and pure decisions; the
@@ -196,5 +196,5 @@ checker-probe deliverable is required.
 
 Python 3.14 native deferred annotation evaluation is an explicit delivery
 constraint: guidance prohibits `from __future__ import annotations`; this is not
-an immutability guarantee. These criteria propose guidance and do not establish
-repository-wide implementation compliance.
+an immutability guarantee. This guidance does not establish repository-wide
+implementation compliance.
