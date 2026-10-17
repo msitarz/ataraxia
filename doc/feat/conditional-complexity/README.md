@@ -67,9 +67,10 @@ outcomes provide useful automatic prevention with truthful limits.
 
 ## Children
 
-- TODO [Capability and threshold investigation](investigate/README.md):
-  establish latest-release capability, justified limits, repair scope, and
-  integration feasibility.
+- DONE
+  [Capability and threshold investigation](https://github.com/msitarz/ataraxia/blob/2416d974065d9086f8123baeae76a3c95057598d/doc/feat/conditional-complexity/investigate/findings.md):
+  documentation-first assessment of Complexipy 8.0.1 recommends inclusive limit
+  15 with Ruff PLR0916 at maximum five.
 - TODO [Tooling adoption](adopt/README.md): integrate the reviewed selection and
   truthful limits, with bounded repairs after both prerequisites.
 
@@ -79,8 +80,8 @@ The historical prompt was a
 [PR #328 comment](https://github.com/msitarz/ataraxia/pull/328#discussion_r4272687628)
 asking for lower complexity, including complexipy. That sandbox example is
 context rather than a frozen acceptance or error contract for future repairs.
-The investigation examines then-integrated source using the latest stable
-complexipy release at execution start; no threshold or complementary coverage
-has yet been established. A capability gap or repair
-inventory beyond a short review sitting requires steering or a reviewed bounded
-split under [Work workflow](../../workflow.md#decisions-and-new-splits).
+The reviewed investigation recommends an inclusive threshold of 15 with Ruff
+PLR0916 at its default maximum of five. Unresolved capability gaps require
+steering; integration or repairs exceeding a short review sitting require a
+reviewed bounded split under
+[Work workflow](../../workflow.md#decisions-and-new-splits).
