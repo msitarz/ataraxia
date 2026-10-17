@@ -62,13 +62,13 @@ the owning orchestrator coordinates local delivery maps within that tree under
 reviewed map updates from their handoff; they need not read orchestrator
 scheduling guidance for that operation.
 
-Retain requested and descendant contracts through implementation PR review,
-corrections, and maintainer merge. Keep parent entries linked to their active
-contracts through that review. After merge, keep finished contracts available
-until the supported post-merge closure procedure exists; do not manually delete
-contracts or repeat parent-map updates. Promote lasting contracts and decisions
-to their authoritative owners before supported closure. PRs hold review
-discussion; Git preserves merged contracts and exact changes.
+Retain requested and descendant contracts through implementation PR review and
+corrections until authorized closure. Keep parent entries linked to their active
+contracts through review. Follow
+[Work acceptance](acceptance-tracing.md#work-delivery) for evidence, closure
+authorization, and correction recovery. Promote lasting contracts and decisions
+to their authoritative owners before closure. PRs hold review discussion; Git
+preserves merged contracts and exact changes.
 
 If a Work is abandoned with unsatisfied outcomes, record `ABORT` with the reason
 and do not describe the Work as completed. Retain its contract until supported

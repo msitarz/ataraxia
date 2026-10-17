@@ -13,7 +13,7 @@ Amended by
 [11. Keep verification plans distinct from results](0011-keep-verification-plans-distinct-from-results.md).
 
 Amended by
-[28. Retain Work contracts through merge](0028-retain-work-contracts-through-merge.md).
+[28. Retain Work contracts until authorized closure](0028-retain-work-contracts-until-authorized-closure.md).
 
 ## Context
 

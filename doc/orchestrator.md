@@ -55,13 +55,14 @@ isolated branch/worktree at the base ref assigned by its immediate parent owner;
 its direct leaves use the sequential execution route below. Independent child
 parents may run in parallel when dependencies, capacity, and shared edits
 permit. Serialize shared owner/map edits and integrate subtree commits as linear
-history while retaining their contracts through requested-tree merge.
+history while retaining their contracts through requested-tree review, subject
+to explicit closure authorization under
+[Work acceptance](acceptance-tracing.md#work-delivery).
 
 The immediate parent reviews child-parent interfaces and composition, reusing
-valid leaf evidence. Retain the child's verified parent contract through this
-integration review; the immediate parent retains the reviewed child contract
-through requested-tree merge under
-[Work acceptance](acceptance-tracing.md#work-delivery).
+valid leaf evidence. Integration review of each child-parent interface remains
+with its immediate parent. Branch/worktree cleanup remains post-merge under the
+existing cleaner role.
 
 ```mermaid
 flowchart TD
@@ -184,14 +185,11 @@ before publication.
 For a requested parent's direct leaves, complete the local artifact/evidence
 review and any consolidated corrections before assigning the next leaf. Follow
 the [local delivery sequence](acceptance-tracing.md#work-delivery) for each
-accepted leaf, retaining its contract through requested-tree merge. Within that
-accumulating branch, local acceptance of a
-dependency permits its next dependent leaf without a `master` merge. The parent
-owner owns map changes; child leaf PRs are not published from this
-requested-parent run. After the leaves, review
-the parent's own acceptance under its
-immediate parent's integration review, or before publication if it is the
-requested Work.
+accepted leaf. Within that accumulating branch, local acceptance of a dependency
+permits its next dependent leaf without a `master` merge. The parent owner owns
+map changes; child leaf PRs are not published from this requested-parent run.
+After the leaves, review the parent's own acceptance under its immediate
+parent's integration review, or before publication if it is the requested Work.
 
 After handoff and each correction request, wait for the completed artifact or a
 blocker needing maintainer steering before reviewing. Do not poll for routine
@@ -218,7 +216,7 @@ corrections after a completed executor run likewise use a fresh session after
 recovery; do not repurpose the retired session.
 
 Follow [Work acceptance](acceptance-tracing.md) for criterion status, outcome
-evidence, and contract retention through merge. Follow
+evidence, contract retention, and authorized closure. Follow
 [Pull requests](pull-requests.md#descriptions) for executor returns, local
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
