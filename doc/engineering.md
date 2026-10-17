@@ -49,11 +49,15 @@ evaluation; do not add `from __future__ import annotations`.
   parameterized protocols/classes, and `Literal` for closed sets (signal sides).
   Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`);
   require mutability only when needed.
-- Use `match` when one stable value selects among distinct cases and only one
-  case should run; preserve required unmatched-input behavior. Keep independent
-  `if` statements when multiple conditions may apply, and use guard clauses or
-  simple `if`/`else` when clearer. A dictionary lookup can suit a pure mapping
-  from keys to fixed values.
+- Use `match` when one stable value selects among mutually exclusive cases;
+  preserve supported cases and required unmatched-input behavior. For
+  independent constraints, use short guards or separate `if` statements. A
+  small local collection of conditions and diagnostics suits cases where
+  callers need accumulated findings; keep type prerequisites explicit and
+  preserve distinctions callers rely on. A dictionary lookup can suit a simple
+  mapping from keys to fixed values, but tables and variants are not mandatory.
+  Do not hide dense predicates in guards, comprehensions, or extracted helpers
+  merely to lower a metric.
 - Do not nest `try` statements within the same execution scope, including
   through branches or loops and inside `except`, `else`, or `finally`; this
   applies equally to `async` functions and `except*`. Sequential `try`
@@ -277,9 +281,7 @@ class SQLiteTransferSubmitter:
                         transfer.cents,
                     ),
                 )
-        except sqlite3.IntegrityError as exc:
-            raise SubmissionError("The ledger rejected the transfer") from exc
-        except sqlite3.OperationalError as exc:
+        except (sqlite3.IntegrityError, sqlite3.OperationalError) as exc:
             raise SubmissionError("The ledger operation failed") from exc
         return Receipt(reference=reference)
 
