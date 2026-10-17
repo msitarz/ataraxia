@@ -161,6 +161,25 @@ to the type checker. Python `match` alone does not guarantee exhaustive
 handling. Do not erase useful variant types with casts, broad types, or
 suppressions.
 
+### Pure typed decisions
+
+A pure decision is a pure function over valid typed domain values; its result
+is determined by those explicit inputs. It performs no I/O, reads no
+environment, clock, random source, or global state, and does not mutate its
+arguments. It does not reparse raw input, repeat defensive checks on validated
+children, or probe files or processes; validation belongs at the
+[owning boundary](#validate-at-boundaries-and-construction). A newly
+constructed domain result enforces its own invariants. Calling an effectful
+collaborator remains an effect even when its contract is a `typing.Protocol`.
+
+The illustrative `scheduled_time` decision uses only its validated plan and
+returns either its explicit schedule or `None`. Separate a substantial
+per-item decision from collection traversal and cross-item state when that
+clarifies the contract; keep accumulators visible in a loop instead of hiding
+them in a comprehension. Prefer standard Python protocols such as iteration
+and `collections.abc.Sized` when their semantics fit, and retain named methods
+when they express distinct domain meaning.
+
 ### Preserve type precision
 
 Type precision is part of correctness. Passing strict Pyrefly is necessary, but
