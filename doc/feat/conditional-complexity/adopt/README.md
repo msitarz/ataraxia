@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Integrate the independently reviewed tool selection through normal Make/CI with
-truthful limits and compatible bounded repairs.
+Integrate the independently reviewed complexipy release through normal Make/CI
+with truthful limits and compatible bounded repairs.
 
 ## Goals
 
@@ -21,7 +21,7 @@ truthful limits and compatible bounded repairs.
 
 - Engineering conventions own adopted tool guidance alongside readable-condition
   policy.
-- A locked reviewed complexipy candidate and evidence-supported complementary
+- The locked reviewed complexipy release and evidence-supported complementary
   Ruff settings supply enforcement.
 - Existing Make setup, locking, lint, and required CI own integration routes.
 - Repository regressions cover configuration, routing, and affected
@@ -44,11 +44,14 @@ without requiring a historical sandbox repair.
 
 ### **AC-2 TODO** Blocking Make and CI enforcement
 
-The locked reviewed candidate and any approved complementary settings enforce
+The locked reviewed release and any approved complementary settings enforce
 agreed limits through normal Make and required CI.
 
 - Setup and locking use existing Make machinery and include the updated
   lockfile.
+- The `pyproject.toml` dev dependency is
+  `complexipy>=<latest assessed version>`; `uv.lock` records the exact resolved
+  release whose behavior supports adoption evidence.
 - Focused paths and full discovery apply reviewed scope consistently, excluding
   transient directories.
 - Above-limit findings fail with useful file, function, and location diagnostics
@@ -78,7 +81,7 @@ or integration owner.
 ## Dependencies
 
 - TODO [Capability and threshold investigation](../investigate/README.md)
-  supplies the independently reviewed candidate, limits, scope, integration
+  supplies the independently reviewed release, limits, scope, integration
   feasibility, and bounded repair inventory before adoption begins.
 - DONE [Integrated engineering guidance](../../../engineering.md) supplies
   policy consumed by adoption.
