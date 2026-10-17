@@ -116,7 +116,7 @@ in the loop rather than hiding it in a comprehension. Standard Python protocols
 are preferred where their semantics naturally fit, with named methods retained
 for distinct domain meaning.
 
-### **AC-4 TODO** Collaborator contracts owned by consumers
+### **AC-4 DONE** Collaborator contracts owned by consumers
 
 Engineering guidance defines precise reusable ports from consumer needs, with
 typed inputs, outputs, errors, and lifecycle ownership.

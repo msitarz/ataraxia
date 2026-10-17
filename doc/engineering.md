@@ -28,10 +28,13 @@ evaluation; do not add `from __future__ import annotations`.
   function shape. Don't split code only to lower a count. Extract cohesive
   helpers that improve readability.
 - Inject dependencies through arguments or constructor/dataclass fields.
-- Depend on structural `typing.Protocol` contracts for collaborators; value
-  objects/internal helpers need not have protocols. Use `@runtime_checkable` for
-  runtime checks; see `compute/protocol.py` and `provider.py` under
-  `src/ataraxia/`.
+- Define reusable `typing.Protocol` ports from consumer needs, with precise
+  inputs, outputs, documented errors, and lifecycle ownership. Concrete
+  adapters satisfy them structurally and are supplied by composition;
+  dependencies point toward the consumer's contract, and core imports no
+  concrete adapters. Use `@runtime_checkable` only when runtime conformance is
+  actually checked. Value objects and internal helpers need no protocol; see
+  `compute/protocol.py` and `provider.py` under `src/ataraxia/`.
 - Model records with dataclasses; prefer `frozen=True` for values and node
   specifications, and `field(default_factory=...)` for per-instance
   containers/collaborators. Keep specifications hashable and execution state in
@@ -144,6 +147,12 @@ def scheduled_time(plan: TransferPlan) -> datetime | None:
             return execute_at
         case unexpected:
             assert_never(unexpected)
+
+
+def schedule(
+    plan: ImmediateTransfer, execute_at: datetime
+) -> ScheduledTransfer:
+    return ScheduledTransfer(details=plan.details, execute_at=execute_at)
 ```
 
 Fields needed together form a product record; a variant-specific field such as
@@ -179,6 +188,46 @@ clarifies the contract; keep accumulators visible in a loop instead of hiding
 them in a comprehension. Prefer standard Python protocols such as iteration
 and `collections.abc.Sized` when their semantics fit, and retain named methods
 when they express distinct domain meaning.
+
+`Transfer("acct-a", "acct-b", 125)` is a valid construction; using
+`"acct-a"` for both IDs raises `ValueError`. Calling `schedule` with an
+`ImmediateTransfer` constructs a new `ScheduledTransfer` and leaves the input
+plan unchanged.
+
+For example, a transfer consumer can own this precise port. Its composition
+root supplies a concrete adapter that implements the contract structurally and
+owns the adapter lifetime; the consumer borrows the port and does not close it.
+This is a proposed illustration, not an Ataraxia API:
+
+```py
+from dataclasses import dataclass
+from typing import Protocol
+
+
+class SubmissionError(Exception):
+    """Expected failure reported when a transfer cannot be submitted."""
+
+
+@dataclass(frozen=True)
+class Receipt:
+    reference: str
+
+
+class TransferSubmitter(Protocol):
+    """Consumer-owned transfer submission contract.
+
+    Raises:
+        SubmissionError: The adapter cannot submit the transfer.
+    """
+
+    def submit(self, transfer: Transfer, /) -> Receipt: ...
+
+
+def submit_transfer(
+    transfer: Transfer, submitter: TransferSubmitter
+) -> Receipt:
+    return submitter.submit(transfer)
+```
 
 ### Preserve type precision
 
