@@ -1,0 +1,23 @@
+[
+  {
+    "complexity": 14,
+    "file_name": "complexipy-threshold-cases.py",
+    "function_name": "below",
+    "path": "/private/tmp/complexipy-threshold-cases.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 15,
+    "file_name": "complexipy-threshold-cases.py",
+    "function_name": "exact",
+    "path": "/private/tmp/complexipy-threshold-cases.py",
+    "refactor_plans": []
+  },
+  {
+    "complexity": 16,
+    "file_name": "complexipy-threshold-cases.py",
+    "function_name": "above",
+    "path": "/private/tmp/complexipy-threshold-cases.py",
+    "refactor_plans": []
+  }
+]

@@ -58,7 +58,7 @@ and limits, followed by bounded practical observations for the remaining ACs.
   their causes; inability to obtain or run the latest release is a blocker or
   capability gap, not a reason to assess an older release.
 
-### **AC-2 TODO** Threshold and scope have a justified recommendation
+### **AC-2 DONE** Threshold and scope have a justified recommendation
 
 A short recommendation identifies a supported adoption direction or a concrete
 evidence-backed capability gap.
