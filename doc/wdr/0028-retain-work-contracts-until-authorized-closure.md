@@ -59,7 +59,7 @@ Current rules belong in [Work acceptance](../acceptance-tracing.md),
 [Work workflow](../workflow.md), [orchestrator guidance](../orchestrator.md),
 [contributor guidance](../../CONTRIBUTING.md), and
 [pull-request guidance](../pull-requests.md). The
-[authorized closure lifecycle Work](../feat/post-merge-work-closure/lifecycle/README.md)
+[authorized closure lifecycle Work](https://github.com/msitarz/ataraxia/blob/4bd724c30bcbaf190a5ab756d7ff4d503046c85f/doc/feat/post-merge-work-closure/lifecycle/README.md)
 carries the contract and remaining implementation criteria.
 
 ## Consequences

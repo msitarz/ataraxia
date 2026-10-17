@@ -102,7 +102,7 @@ operations through Make with a controlled PR metadata boundary.
 
 ## Dependencies
 
-- **DONE** [Lifecycle guidance](../lifecycle/README.md): supplies supported
+- **DONE** Lifecycle guidance: supplies supported
   reference forms; lasting authorization and publication rules are owned by
   [Work acceptance](../../../acceptance-tracing.md#authorized-closure).
 
