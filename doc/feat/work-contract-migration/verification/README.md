@@ -27,7 +27,7 @@ routes, glossary meanings, parent maps, and dependencies agree; active Work
 requirements remain accounted for against the baseline. Obsolete instructions
 are absent from current guidance, allowing clearly identified history.
 
-### **AC-2 TODO** Integrated command behavior verified
+### **AC-2 DONE** Integrated command behavior verified
 
 Documentation links, formatting, and Mermaid checks pass for affected artifacts.
 Focused surviving tooling tests establish the final work-check/test-command
