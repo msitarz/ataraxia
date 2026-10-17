@@ -33,8 +33,8 @@ with live resource safety.
 - Introduce a framework, tool dependency, executable enforcement, or a second
   testing policy.
 - Require a separate file, class, wrapper, or Protocol for every responsibility.
-- Resolve the representation question owned by the
-  [algebraic data type Investigation](../algebraic-data-types/README.md).
+- Resolve the representation question assessed in the completed
+  [algebraic data type investigation findings](../../investigations/algebraic-data-types.md).
 
 ## Mechanisms
 

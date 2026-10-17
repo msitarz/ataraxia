@@ -102,9 +102,9 @@ independently reviewed child outcomes.
 
 - [Nested-exception guidance](../../engineering.md#code-style) is a delivered
   related manual guardrail rather than a dependency.
-- [Algebraic data type Investigation](../algebraic-data-types/README.md)
-  independently considers whether modeling improves the seed's broader lifecycle
-  contract.
+- [Algebraic data type investigation findings](../../investigations/algebraic-data-types.md)
+  records the completed comparison of whether modeling improves the seed's
+  broader lifecycle contract.
 
 ## Additional context
 

@@ -1,8 +1,8 @@
 # Algebraic data type investigation findings
 
-This report records the bounded comparison requested by
-[the Algebraic data type Investigation](../feat/algebraic-data-types/README.md).
-It does not change production code or adopt a repository-wide representation
+This report records the completed bounded comparison defined by the
+[Algebraic data type Investigation contract](https://github.com/msitarz/ataraxia/blob/48ddb9e/doc/feat/algebraic-data-types/README.md).
+It did not change production code or adopt a repository-wide representation
 rule.
 
 ## Scope and recommendation
@@ -173,9 +173,9 @@ dense compound guard.
 
 ## Probe code and observed results
 
-The executable probe in
-[`test_adt_investigation_probe.py`](../../test/script/unit/test_adt_investigation_probe.py)
-decodes and validates at the external boundary, then narrows every consumed
+The one-time executable probe, removed after review, is archived at the
+[accepted runtime probe source](https://github.com/msitarz/ataraxia/blob/d39fd1ef3e36ce533b4edfbcc0dc41e1d202c074/test/script/unit/test_adt_investigation_probe.py).
+It decodes and validates at the external boundary, then narrows every consumed
 field into one `DataclassRecord` product. That record is also the dataclass
 candidate, avoiding a duplicate validated model. Flat and tagged adapters
 consume it; their complete wrappers validate direct construction through typed
@@ -190,9 +190,9 @@ diagnostic-key presence with `null`, unexpected diagnostics on a non-failed
 state, invalid extension data, decode causes, shallow frozen contents, and
 `int()` class patterns accepting `bool`.
 
-The type probe in
-[`algebraic_data_types_probe.py`](../../test/script/typecheck/algebraic_data_types_probe.py)
-imports the executable candidate types and exercises its construction,
+The one-time type probe, also removed after review, is archived at its
+[accepted checker expectation source](https://github.com/msitarz/ataraxia/blob/d39fd1ef3e36ce533b4edfbcc0dc41e1d202c074/test/script/typecheck/algebraic_data_types_probe.py).
+It imports the executable candidate types and exercises their construction,
 decision, and transition functions in positive `assert_type` checks. Pyrefly
 1.3.1 narrows a dataclass union and tagged `TypedDict` union when the
 discriminant is matched; omitting only `Failed` causes an observed
@@ -221,6 +221,7 @@ Observed through Make on the corrected investigation revision:
   against the implementation passed with no unexpected checker errors.
 - `make doc-check ARGS=doc/investigations/algebraic-data-types.md` — passed.
 
-These are one-time representation probes, not ongoing regression tests. Their
-source remains inspectable in the test tree until the Investigation's reviewed
-cleanup; the report retains their method and result afterward.
+These were one-time representation probes, not ongoing regression tests. They
+were removed in the separate reviewed cleanup because no production integration
+regression tests were added. The report retains their methods and observed
+results; the immutable links above preserve the exact reviewed source revision.

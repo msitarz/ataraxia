@@ -163,8 +163,8 @@ usefulness without becoming a mandatory benchmark.
 - [Conditional complexity](../conditional-complexity/README.md) owns readable
   condition rules and measurable prevention, requiring coordination of shared
   engineering edits rather than dependency on its enforcement delivery.
-- [Algebraic data type Investigation](../algebraic-data-types/README.md) owns
-  the representation comparison and remains independent of this review lens.
+- [Algebraic data type investigation findings](../../investigations/algebraic-data-types.md)
+  records the representation comparison, independently of this review lens.
 - [Testing](../../testing.md) and [test ownership](../../test-ownership.md)
   retain test-boundary, expectation, and cleanup rules.
 - [Change rules](../../change-rules.md), [architecture](../../architecture.md),
