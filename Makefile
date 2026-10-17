@@ -10,7 +10,8 @@ help: ## display this command index
 	@awk 'BEGIN { FS = ":.*##" } \
 		/^##@/ { if (section++) printf "\n"; printf "%s\n", substr($$0, 5); next } \
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
-	@echo "Run project tools through Make targets; use ARGS=repo/path for focused checks."
+	@echo "Run project tools through Make targets; ARGS narrows target-specific checks."
+	@echo "doc-check always checks every active Work, regardless of ARGS."
 	@echo "Managed sandbox usage and supported limits: doc/evaluation-sandboxes.md"
 
 singlequote := $(shell echo "'")
@@ -80,10 +81,11 @@ doc-check doc-check-mermaid doc-format: export UV_NO_SYNC := true
 _DOC_PATHS = $(_TARGET_PATHS)
 _DOC_GRAPH_PATHS = $(if $(strip $(ARGS)),$(_ARGS) . ,.)
 
-doc-check: ## check Markdown links, formatting and Mermaid fences (read only)
+doc-check: ## check docs and all Work contracts (read only)
 	@uv run rumdl check --no-code-block-tools $(_DOC_GRAPH_PATHS) && \
 	  uv run rumdl fmt --check --no-code-block-tools $(_DOC_PATHS) && \
 	  $(MAKE) --no-print-directory doc-check-mermaid ARGS=$(call _SHELL_VALUE,$(ARGS)) && \
+	  $(MAKE) --no-print-directory work-check ARGS= && \
 	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'Was the whole affected section reviewed at its owner for duplication and accuracy? doc/README.md#review'; fi
 
 doc-check-mermaid: ## validate selected Mermaid fences; ARGS selects files or directories
