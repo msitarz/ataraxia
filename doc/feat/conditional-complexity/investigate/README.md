@@ -80,7 +80,7 @@ A capability-gap recommendation records the experiments establishing the gap,
 missing observations, and unresolved consequences rather than inventing feasible
 thresholds, scope, or repairs.
 
-### **AC-3 TODO** Adoption feasibility is bounded
+### **AC-3 DONE** Adoption feasibility is bounded
 
 The recommendation bounds necessary repairs and the smallest Make/CI
 integration, or identifies which questions a capability gap leaves unresolved.
