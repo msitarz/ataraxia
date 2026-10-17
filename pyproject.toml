@@ -156,8 +156,6 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Intentional negative boundary fixture; tests copy it outside this exemption.
-"test/make/fixtures/size_26.py" = ["too-many-statements"]
 "src/ataraxia/cli.py" = ["T20"]    # print allowed in CLI code
 
 "test/**" = [
