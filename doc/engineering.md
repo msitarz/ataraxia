@@ -59,6 +59,18 @@ evaluation; do not add `from __future__ import annotations`.
   mapping from keys to fixed values, but tables and variants are not mandatory.
   Do not hide dense predicates in guards, comprehensions, or extracted helpers
   merely to lower a metric.
+- Proposed adoption pairs Complexipy 8.0.1's inclusive function-complexity
+  maximum of 15 with Ruff `PLR0916`'s maximum of five Boolean expressions in
+  `if` and `elif` conditions; until integration lands, these are guidance, not
+  enforced checks. They cover different signals: Complexipy does not count
+  Boolean operations inside `match` guards, and `PLR0916` does not cover
+  `match` guards or Boolean expressions in `while`, `assert`, conditional
+  expressions, and comprehensions. Keep those forms readable for manual review.
+  Treat either metric as a prompt to inspect the function, not proof of
+  readability: simplify a dense condition or split a function at a cohesive
+  responsibility boundary, preserving validation, diagnostics, and safety
+  behavior. [Machine configuration](../pyproject.toml) owns the eventual
+  enforced settings.
 - Do not nest `try` statements within the same execution scope, including
   through branches or loops and inside `except`, `else`, or `finally`; this
   applies equally to `async` functions and `except*`. Sequential `try`
