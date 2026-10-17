@@ -2,7 +2,9 @@
 
 Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 for any repository change. Read the rest when changing or reviewing code or
-tests. Use [check and evidence policy](validation.md) when choosing checks or
+tests. Apply [engineering judgment in review](engineering-review.md) when
+changing or reviewing code or tests. Use
+[check and evidence policy](validation.md) when choosing checks or
 reporting evidence and [architecture](architecture.md) for current system
 contracts.
 
@@ -338,13 +340,7 @@ does not justify losing information about values or their relationships.
 
 ## Structural review
 
-After each small change, inspect new types, repeated fields and behavior, and
-module placement. Fold structures with the same meaning into one type. When
-variants need distinct types but repeat fields or behavior, consider a shared
-base class or helper; this applies to diagnostic records as well as success and
-failure records. Move code to the module that owns its responsibility. Extract
-only when the resulting contract is clearer, and explain in the PR when
-intentional overlap should remain.
+See [engineering judgment in review](engineering-review.md).
 
 ## Testing guidelines
 

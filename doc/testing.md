@@ -1,7 +1,9 @@
 # Testing
 
 Read this file when writing, changing, or reviewing tests. It owns common
-rules and routes to each test type. [Engineering conventions](engineering.md)
+rules and routes to each test type. Apply
+[engineering judgment in review](engineering-review.md) when changing or
+reviewing tests. [Engineering conventions](engineering.md)
 own code style and typing; [check and evidence policy](validation.md) owns
 check selection and reporting. Read [test ownership](test-ownership.md) when
 reviewing tests for cleanup.
