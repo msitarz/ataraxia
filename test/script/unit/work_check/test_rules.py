@@ -141,11 +141,29 @@ def test_criterion_fields_and_empty_body_report_exact_locations_and_order() -> N
 
     # Then
     assert findings == (
-        WorkDiagnostic(10, "supported status TODO or DONE", "**AC-01 WRONG** First"),
+        WorkDiagnostic(
+            10,
+            "supported status TODO, DONE, or ABORT",
+            "**AC-01 WRONG** First",
+        ),
         WorkDiagnostic(12, "nonempty criterion name", "**AC-1 TODO**"),
         WorkDiagnostic(12, "nonempty criterion outcome body", "**AC-1 TODO**"),
         WorkDiagnostic(12, "unique criterion ID AC-1", "**AC-1 TODO**"),
     )
+
+
+def test_explicitly_aborted_criterion_is_a_supported_stopped_outcome() -> None:
+    # Given
+    blocks = _contract(
+        _heading(10, "**AC-1 ABORT** Stopped", 3),
+        _text(11, "Stopped after maintainer confirmation."),
+    )
+
+    # When
+    findings = check_work(blocks)
+
+    # Then
+    assert findings == ()
 
 
 @pytest.mark.parametrize(

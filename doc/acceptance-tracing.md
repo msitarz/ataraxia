@@ -14,6 +14,8 @@ headings in the [Work contract template](work-contract-template.md).
   checks do not establish the required outcome.
 - `DONE` means an independent reviewer verified the outcome from observed
   evidence. It does not itself mean maintainer approval or merge.
+- `ABORT` means the outcome was explicitly stopped while unsatisfied, with its
+  reason recorded in the criterion body. It does not establish Work completion.
 
 Any required `TODO` criterion prevents Work completion.
 

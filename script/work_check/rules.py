@@ -13,7 +13,7 @@ from script.markdown.model import (
     ThematicBreak,
 )
 
-type CriterionStatus = Literal["TODO", "DONE"]
+type CriterionStatus = Literal["TODO", "DONE", "ABORT"]
 
 _CRITERION = re.compile(r"^\*\*AC-([0-9]+) (\S+)\*\*(?:\s+(.*))?$")
 _AC_LIKE = re.compile(r"^\*{0,2}AC-")
@@ -27,6 +27,14 @@ class WorkDiagnostic:
     line: int
     rule: str
     context: str
+
+
+@dataclass(frozen=True)
+class WorkCriterion:
+    """A checked criterion identity and status."""
+
+    identifier: str
+    status: CriterionStatus
 
 
 @dataclass(frozen=True)
@@ -83,6 +91,42 @@ def check_work(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkDiagnostic, ...]:
     return tuple(
         sorted(findings, key=lambda item: (item.line, item.rule, item.context))
     )
+
+
+def checked_criteria(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkCriterion, ...]:
+    """Return criterion identities and statuses from an already checked contract."""
+    criteria = []
+    for block in blocks:
+        if not isinstance(block, HeadingBlock) or block.heading_level != 3:
+            continue
+        match = _CRITERION.fullmatch(block.text.strip())
+        if match is None:
+            continue
+        identifier, status, _ = match.groups()
+        criteria.append(
+            WorkCriterion(f"AC-{int(identifier)}", parse_criterion_status(status))
+        )
+    return tuple(criteria)
+
+
+def parse_criterion_status(value: str) -> CriterionStatus:
+    """Parse one canonical Work criterion status marker.
+
+    Returns:
+        The parsed status.
+
+    Raises:
+        ValueError: The marker is not supported.
+    """
+    match value:
+        case "TODO":
+            return "TODO"
+        case "DONE":
+            return "DONE"
+        case "ABORT":
+            return "ABORT"
+        case _:
+            raise ValueError(f"unsupported criterion status: {value}")
 
 
 def _required_section_findings(
@@ -242,7 +286,7 @@ def _criterion_result(
             ),
             (
                 status in get_args(CriterionStatus.__value__),
-                "supported status TODO or DONE",
+                "supported status TODO, DONE, or ABORT",
             ),
             (bool((name or "").strip()), "nonempty criterion name"),
             (

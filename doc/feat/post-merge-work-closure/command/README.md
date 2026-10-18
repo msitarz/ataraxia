@@ -26,7 +26,7 @@ executing the cleanup procedure each time.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Closure preparation produces a read-only plan
+### **AC-1 DONE** Closure preparation produces a read-only plan
 
 The planning boundary for `make work-close ARGS='path/to/README.md ...'`
 validates selected contracts, repository, reviewed open PR head, branch tips,
