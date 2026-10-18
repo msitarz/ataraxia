@@ -114,6 +114,11 @@ def render_plan(plan: ClosePlan) -> str:
 
 
 def _repository_root() -> Path:
+    """Return the current repository root when invoked from that directory.
+
+    Raises:
+        ClosePlanningError: The current directory is not the repository root.
+    """
     result = _run_git(["rev-parse", "--show-toplevel"])
     root = Path(result).resolve(strict=True)
     if Path.cwd().resolve() != root:
@@ -124,6 +129,18 @@ def _repository_root() -> Path:
 def _selected_contracts(
     root: Path, selections: Sequence[str]
 ) -> tuple[WorkSource, ...]:
+    """Resolve explicit selections and require every included Work README.
+
+    Args:
+        root: Repository root used to resolve selected paths.
+        selections: Explicit Work README paths, relative or absolute within root.
+
+    Returns:
+        The discovered selected Work contracts.
+
+    Raises:
+        ClosePlanningError: A selection is missing, invalid, or unsafe.
+    """
     if not selections or any(
         PurePosixPath(selection).name != "README.md" for selection in selections
     ):
@@ -141,6 +158,21 @@ def _selected_contracts(
 def _work_plan(
     root: Path, path: Path, source: str, markdown: MarkdownParser, abort_remaining: bool
 ) -> WorkPlan:
+    """Inspect one Work contract and derive its proposed closure result.
+
+    Args:
+        root: Repository root used to record a relative contract path.
+        path: Resolved path of the selected contract.
+        source: Contract Markdown text.
+        markdown: Parser used to inspect the contract.
+        abort_remaining: Whether TODO criteria are proposed as ABORT.
+
+    Returns:
+        The selected Work's proposed plan.
+
+    Raises:
+        ClosePlanningError: The contract contains a validation diagnostic.
+    """
     blocks = markdown.parse(source)
     inspection = inspect_work(blocks)
     if inspection.diagnostics:
@@ -159,6 +191,15 @@ def _work_plan(
 def _criteria_plan(
     checked: tuple[WorkCriterion, ...], abort_remaining: bool
 ) -> list[CriterionPlan]:
+    """Map checked criteria to their proposed statuses.
+
+    Args:
+        checked: Validated current criteria from the Work contract.
+        abort_remaining: Whether TODO criteria are proposed as ABORT.
+
+    Returns:
+        Criterion plans preserving each current status and proposed result.
+    """
     criteria: list[CriterionPlan] = []
     for criterion in checked:
         status = criterion.status
@@ -170,6 +211,17 @@ def _criteria_plan(
 
 
 def _work_result(criteria: list[CriterionPlan]) -> WorkResult:
+    """Summarize proposed criterion results as one Work result.
+
+    Args:
+        criteria: Proposed results for the Work's criteria.
+
+    Returns:
+        ABORT if any criterion aborts, otherwise PENDING for TODO, else DONE.
+
+        ABORT may coexist with unresolved TODO criteria; plan readiness is
+        decided separately.
+    """
     if any(item.result == "ABORT" for item in criteria):
         return "ABORT"
     if any(item.result == "TODO" for item in criteria):
@@ -178,6 +230,15 @@ def _work_result(criteria: list[CriterionPlan]) -> WorkResult:
 
 
 def _work_reason(criteria: list[CriterionPlan], result: WorkResult) -> str | None:
+    """Explain an aborted Work result, if one was proposed.
+
+    Args:
+        criteria: Proposed results and current statuses for the Work.
+        result: Summary result produced for the Work.
+
+    Returns:
+        The abort rationale, or None when the Work is not aborted.
+    """
     if result != "ABORT":
         return None
     if any(item.status == "TODO" and item.result == "ABORT" for item in criteria):
@@ -191,6 +252,16 @@ def _references(
     selected: tuple[WorkSource, ...],
     works: tuple[WorkPlan, ...],
 ) -> tuple[ReferencePlan, ...]:
+    """Plan canonical parent and dependency map updates for selected Works.
+
+    Args:
+        root: Repository root containing tracked Markdown documents.
+        selected: Selected Work contract sources.
+        works: Proposed Work plans carrying repository-relative contract paths.
+
+    Returns:
+        Sorted exact source-span updates for references to selected Works.
+    """
     selected_paths = {contract.path for contract in selected}
     works_by_path: dict[Path, WorkPlan] = {
         (root / work.path).resolve(): work for work in works
@@ -210,6 +281,17 @@ def _references(
 
 
 def _markdown_documents(root: Path) -> tuple[WorkSource, ...]:
+    """Read tracked Markdown documents after checking their resolved paths.
+
+    Args:
+        root: Repository root used to enumerate and contain tracked files.
+
+    Returns:
+        Tracked Markdown sources with resolved paths and UTF-8 text.
+
+    Raises:
+        ClosePlanningError: A file is unsafe or cannot be read as UTF-8.
+    """
     documents = []
     for relative in _run_git(["ls-files", "-z", "--", "*.md"]).split("\0"):
         if not relative:
@@ -234,6 +316,7 @@ def _markdown_documents(root: Path) -> tuple[WorkSource, ...]:
 
 
 def _is_work_contract(root: Path, path: Path) -> bool:
+    """Return whether a README is beneath root's Work contract tree in doc/feat."""
     return path.name == "README.md" and path.is_relative_to(root / "doc" / "feat")
 
 
@@ -244,6 +327,21 @@ def _contract_references(
     works_by_path: dict[Path, WorkPlan],
     is_work_contract: bool,
 ) -> list[ReferencePlan]:
+    """Collect rewritable references to selected Works from one document.
+
+    Args:
+        root: Repository root for resolving links.
+        contract: Markdown document to inspect.
+        selected_paths: Resolved paths of selected Work contracts.
+        works_by_path: Proposed plans indexed by resolved contract path.
+        is_work_contract: Whether the document uses the Work map contract.
+
+    Returns:
+        Proposed updates for canonical Children or Dependencies map entries.
+
+    Raises:
+        ClosePlanningError: A selected reference is ambiguous or overlaps.
+    """
     tokens = MarkdownIt("commonmark").parse(contract.text)
     list_items = _list_items(tokens)
     lines = contract.text.splitlines()
@@ -282,6 +380,15 @@ def _contract_references(
 def _ensure_nonoverlapping_references(
     contract: WorkSource, references: list[ReferencePlan]
 ) -> None:
+    """Reject reference source spans that overlap within a Markdown document.
+
+    Args:
+        contract: Source document containing the candidate spans.
+        references: Proposed updates with one-based, inclusive line bounds.
+
+    Raises:
+        ClosePlanningError: Two candidate source spans overlap.
+    """
     ordered = sorted(references, key=lambda item: item.line_start)
     furthest_end = 0
     for reference in ordered:
@@ -296,8 +403,12 @@ def _ensure_nonoverlapping_references(
 def _list_items(tokens: list[Token]) -> list[tuple[int, int, str, list[Token]]]:
     """Collect source spans and inline tokens for list items.
 
+    Args:
+        tokens: Parsed Markdown tokens for one source document.
+
     Returns:
-        List item spans, current level-two headings, and inline tokens.
+        Zero-based, end-exclusive line spans paired with the active H2 section
+        and the item's inline tokens.
     """
     section = ""
     result: list[tuple[int, int, str, list[Token]]] = []
@@ -319,6 +430,11 @@ def _list_items(tokens: list[Token]) -> list[tuple[int, int, str, list[Token]]]:
 def _heading_section(
     tokens: list[Token], index: int, content: str, current: str
 ) -> str:
+    """Update the active section for an H2 heading token, if applicable.
+
+    Returns:
+        The heading content for an H2, or the unchanged current section.
+    """
     if (
         index
         and tokens[index - 1].type == "heading_open"
@@ -331,6 +447,17 @@ def _heading_section(
 def _selected_link_targets(
     tokens: list[Token], root: Path, parent: Path, selected: set[Path]
 ) -> list[tuple[Path, bool]]:
+    """Find links resolving to selected README paths and note fragments.
+
+    Args:
+        tokens: Markdown tokens to inspect, including inline HTML.
+        root: Repository root for root-relative links.
+        parent: Containing document directory for relative links.
+        selected: Resolved selected Work README paths.
+
+    Returns:
+        Matched target paths paired with whether the link has a fragment.
+    """
     targets = []
     for token in tokens:
         raw_links = []
@@ -348,6 +475,17 @@ def _selected_link_targets(
 
 
 def _local_link_target(raw: str, root: Path, parent: Path) -> tuple[Path | None, bool]:
+    """Resolve a local README link, returning its target and fragment flag.
+
+    Args:
+        raw: Link destination as written in Markdown.
+        root: Repository root for root-relative links.
+        parent: Containing document directory for relative links.
+
+    Returns:
+        A local README target paired with its fragment flag, or (None, False)
+        for ignored non-README and external destinations.
+    """
     parts = urlsplit(raw.strip("<>"))
     decoded = unquote(parts.path)
     if parts.scheme or parts.netloc or not decoded.endswith("README.md"):
@@ -358,6 +496,12 @@ def _local_link_target(raw: str, root: Path, parent: Path) -> tuple[Path | None,
 
 
 def _html_hrefs(source: str) -> list[str]:
+    """Extract href values from HTML tags in a Markdown token's source.
+
+    Returns:
+        Values of nonempty href attributes found in the source.
+    """
+
     class LinkParser(HTMLParser):
         def __init__(self) -> None:
             super().__init__()
@@ -383,6 +527,18 @@ def _reject_unlisted_references(
     selected: set[Path],
     list_items: list[tuple[int, int, str, list[Token]]],
 ) -> None:
+    """Refuse selected Work links outside supported map-entry source spans.
+
+    Args:
+        tokens: Parsed tokens from the containing Markdown document.
+        root: Repository root for resolving links.
+        contract: Source document being checked.
+        selected: Resolved selected Work README paths.
+        list_items: Source spans recognized as Markdown list items.
+
+    Raises:
+        ClosePlanningError: A selected Work is referenced outside a map row.
+    """
     for token in tokens:
         if token.type == "html_block" and _selected_link_targets(
             [token], root, contract.path.parent, selected
@@ -423,6 +579,25 @@ def _reference_plan(
     has_fragment: bool,
     selected_targets: list[tuple[Path, bool]],
 ) -> ReferencePlan:
+    """Validate one canonical Work map row and render its proposed update.
+
+    Args:
+        root: Repository root used to store a relative source path.
+        contract: Parent or dependency contract containing the row.
+        text: Exact text covering the row's source span.
+        start: Zero-based inclusive start line from the Markdown parser.
+        end: Zero-based exclusive end line from the Markdown parser.
+        target: Resolved selected Work path linked by the row.
+        works_by_path: Proposed Work plans keyed by resolved path.
+        has_fragment: Whether the selected link being planned has a fragment.
+        selected_targets: All selected targets found in the row.
+
+    Returns:
+        A one-based, inclusive source span and its replacement text.
+
+    Raises:
+        ClosePlanningError: The row is noncanonical or has an unsafe link.
+    """
     if has_fragment:
         raise ClosePlanningError(
             f"ambiguous reference to selected Work in {contract.path}: {text.strip()}"
@@ -478,6 +653,19 @@ def _reference_plan(
 def _pr_head(
     root: Path, paths: tuple[str, ...]
 ) -> tuple[str, int, str, str, str, str, str]:
+    """Verify the clean branch and open PR metadata for selected contracts.
+
+    Args:
+        root: Repository root established for the selected Work paths.
+        paths: Repository-relative selected contract paths.
+
+    Returns:
+        Origin repository, PR number, branch, local and remote tips, PR head
+        repository, and PR head commit.
+
+    Raises:
+        ClosePlanningError: The branch, remote tip, or PR does not match.
+    """
     branch = _run_git(["branch", "--show-current"])
     if not branch or branch == "master":
         raise ClosePlanningError("run work-close from the selected Work PR branch")
@@ -504,6 +692,17 @@ def _pr_head(
 
 
 def _github_repository(value: str) -> str:
+    """Extract owner/repository from a supported GitHub remote URL.
+
+    Args:
+        value: HTTPS or SSH GitHub remote URL.
+
+    Returns:
+        The repository's owner/name identifier.
+
+    Raises:
+        ClosePlanningError: The remote URL is not a supported GitHub URL.
+    """
     match = re.fullmatch(
         r"(?:https://github\.com/|git@github\.com:)([^/]+/[^/]+?)(?:\.git)?", value
     )
@@ -515,6 +714,19 @@ def _github_repository(value: str) -> str:
 def _pr_metadata(
     branch: str, head: str, repository: str
 ) -> tuple[int, set[str], str, str]:
+    """Verify the current open PR and return its changed paths and head.
+
+    Args:
+        branch: Current local branch name.
+        head: Current local commit identifier.
+        repository: Expected GitHub owner/repository identifier.
+
+    Returns:
+        PR number, changed paths, head repository, and PR head commit.
+
+    Raises:
+        ClosePlanningError: PR metadata is invalid or does not match inputs.
+    """
     data = _json_command(
         ["gh", "pr", "view", "--json", "number,state,headRefName,headRefOid"],
         "cannot inspect the current open PR",
@@ -537,6 +749,20 @@ def _pr_metadata(
 def _pr_repository_details(
     repository: str, number: int, local_head: str
 ) -> tuple[set[str], str, str]:
+    """Read PR files and verify its base/head repository and commit identity.
+
+    Args:
+        repository: Expected GitHub owner/repository identifier.
+        number: Open pull request number.
+        local_head: Commit expected at the PR head.
+
+    Returns:
+        Paths from the first page of at most 100 changed files, head repository
+        name, and PR head commit.
+
+    Raises:
+        ClosePlanningError: Repository, file, or PR head metadata is invalid.
+    """
     repo_data = _json_command(
         ["gh", "repo", "view", "--json", "nameWithOwner"],
         "cannot inspect PR repository identity",
@@ -559,6 +785,19 @@ def _pr_repository_details(
 def _validate_pr_head(
     pull: object, repository: str, local_head: str
 ) -> tuple[str, str]:
+    """Validate PR head/base repositories and require the expected head commit.
+
+    Args:
+        pull: Decoded GitHub pull request metadata.
+        repository: Expected owner/repository identifier.
+        local_head: Commit expected at the PR head.
+
+    Returns:
+        The PR head repository name and commit identifier.
+
+    Raises:
+        ClosePlanningError: Metadata is malformed or the identity does not match.
+    """
     if not isinstance(pull, dict):
         raise ClosePlanningError("current PR metadata has an invalid shape")
     head_obj, base_obj = pull.get("head"), pull.get("base")
@@ -585,6 +824,17 @@ def _validate_pr_head(
 
 
 def _changed_paths(files: object) -> set[str]:
+    """Validate a GitHub pull-request files response and collect filenames.
+
+    Args:
+        files: Decoded response expected to be a list of filename records.
+
+    Returns:
+        The filenames listed as changed in the pull request.
+
+    Raises:
+        ClosePlanningError: The response is not a list of filename records.
+    """
     if not isinstance(files, list) or any(
         not isinstance(item, dict) or not isinstance(item.get("filename"), str)
         for item in files
@@ -594,6 +844,20 @@ def _changed_paths(files: object) -> set[str]:
 
 
 def _json_command(arguments: list[str], context: str) -> object:
+    """Run a command and decode its standard output as JSON.
+
+    Subprocess timeouts propagate unchanged.
+
+    Args:
+        arguments: Executable and arguments passed to the process adapter.
+        context: Context prefixed to command or JSON decoding errors.
+
+    Returns:
+        The decoded JSON value.
+
+    Raises:
+        ClosePlanningError: The command fails or emits invalid JSON.
+    """
     try:
         return json.loads(_run_process(arguments))
     except ValueError as exc:
@@ -601,10 +865,28 @@ def _json_command(arguments: list[str], context: str) -> object:
 
 
 def _run_git(arguments: list[str]) -> str:
+    """Run Git with the supplied arguments.
+
+    Returns:
+        The command's stripped standard output.
+    """
     return _run_process(["git", *arguments])
 
 
 def _run_process(arguments: list[str]) -> str:
+    """Run a planning subprocess with optional Git locks disabled.
+
+    Subprocess timeouts propagate unchanged.
+
+    Args:
+        arguments: Executable and arguments to run.
+
+    Returns:
+        The command's stripped standard output.
+
+    Raises:
+        ClosePlanningError: The process cannot run or exits unsuccessfully.
+    """
     environment = dict(os.environ)
     environment["GIT_OPTIONAL_LOCKS"] = "0"
     try:
