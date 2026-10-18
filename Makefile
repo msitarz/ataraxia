@@ -111,7 +111,7 @@ doc-format: ## format Markdown; ARGS selects files or directories
 work-check: export UV_OFFLINE := true
 work-check: export UV_NO_SYNC := true
 work-check: ## check active Work contract structure; ARGS=repo paths selects README files or subtrees
-	@uv run python -m script.work_check $(_ARGS)
+	@uv run python -m script.work.work_check $(_ARGS)
 
 .PHONY: work-close
 work-close: export UV_OFFLINE := true
@@ -123,7 +123,7 @@ work-close: ## plan read-only Work closure; ARGS=explicit Work README paths; ABO
 	  true) abort=--abort-remaining ;; \
 	  *) printf '%s\n' 'ABORT_REMAINING must be true or false' >&2; exit 2 ;; \
 	esac; \
-	uv run python -m script.work_close $$abort $(_ARGS)
+	uv run python -m script.work.work_close $$abort $(_ARGS)
 
 _TEST_QUALITY_QUESTIONS = Are tests in the right layer/layout? At Work closure, are retained tests project regressions rather than temporary adoption probes? doc/testing.md\#layout-ownership-and-adoption doc/test-ownership.md\#test-ownership\nAre reviewed static fixtures treated as data without redundant validation? doc/testing.md\#treat-test-data-as-data\nDo assertions catch the named defect with independent expectations at the real boundary? doc/testing.md\#what-a-test-proves doc/testing.md\#make-expectations-independent
 

@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 import re
-from typing import Literal, get_args
+from typing import Literal
 
 from script.markdown.model import (
     ContainerBlock,
@@ -38,6 +38,15 @@ class WorkCriterion:
 
 
 @dataclass(frozen=True)
+class WorkInspection:
+    """One parsed Work interpretation with findings and closure fields."""
+
+    title: str | None
+    criteria: tuple[WorkCriterion, ...]
+    diagnostics: tuple[WorkDiagnostic, ...]
+
+
+@dataclass(frozen=True)
 class _LocatedHeading:
     """A normalized top-level heading with its structural end positions."""
 
@@ -53,60 +62,81 @@ class _DeclarationResult:
     """The fields and findings derived from one criterion-like heading."""
 
     identifier: str | None
+    criterion: WorkCriterion | None
     findings: tuple[WorkDiagnostic, ...]
 
 
-def check_work(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkDiagnostic, ...]:
-    """Return deterministic structural findings for one parsed Work contract."""
+@dataclass(frozen=True)
+class _CriterionInspection:
+    """Criterion values and findings from the declaration scan."""
+
+    criteria: tuple[WorkCriterion, ...]
+    findings: tuple[WorkDiagnostic, ...]
+    declarations: int
+
+
+def inspect_work(blocks: tuple[MarkdownBlock, ...]) -> WorkInspection:
+    """Interpret Work structure once for diagnostics and closure decisions.
+
+    Returns:
+        The title, checked criteria, and structural findings from one pass.
+    """
     headings = _located_headings(blocks)
-    findings: list[WorkDiagnostic] = []
-    title = next(
+    title = _work_title(headings)
+    criteria, findings = _structural_findings(blocks, headings, title)
+    ordered_findings = tuple(
+        sorted(findings, key=lambda item: (item.line, item.rule, item.context))
+    )
+    return WorkInspection(
+        title.text if title is not None and title.text else None,
+        criteria,
+        ordered_findings,
+    )
+
+
+def _work_title(headings: tuple[_LocatedHeading, ...]) -> _LocatedHeading | None:
+    return next(
         (heading for heading in headings if heading.block.heading_level == 1), None
     )
+
+
+def _structural_findings(
+    blocks: tuple[MarkdownBlock, ...],
+    headings: tuple[_LocatedHeading, ...],
+    title: _LocatedHeading | None,
+) -> tuple[tuple[WorkCriterion, ...], list[WorkDiagnostic]]:
+    findings = _work_name_findings(title)
+    sections = _required_sections(headings)
+    findings.extend(_required_section_findings(blocks, sections))
+    criteria = _criterion_findings(blocks, headings, sections["Acceptance criteria"])
+    findings.extend(criteria.findings)
+    return criteria.criteria, findings
+
+
+def _work_name_findings(title: _LocatedHeading | None) -> list[WorkDiagnostic]:
     if title is None:
-        findings.append(WorkDiagnostic(1, "required level-one Work name", "file start"))
-    elif not title.text:
-        findings.append(
+        return [WorkDiagnostic(1, "required level-one Work name", "file start")]
+    if not title.text:
+        return [
             WorkDiagnostic(
                 title.block.location.line_start,
                 "nonempty Work name",
                 "level-one heading",
             )
-        )
+        ]
+    return []
 
+
+def _required_sections(
+    headings: tuple[_LocatedHeading, ...],
+) -> dict[str, list[_LocatedHeading]]:
     sections: dict[str, list[_LocatedHeading]] = {
         name: [] for name in _REQUIRED_SECTIONS
     }
     for heading in headings:
         if heading.block.heading_level == 2 and heading.text in sections:
             sections[heading.text].append(heading)
-    findings.extend(_required_section_findings(blocks, sections))
-    findings.extend(
-        _criterion_findings(
-            blocks,
-            headings,
-            sections["Acceptance criteria"],
-        )
-    )
-    return tuple(
-        sorted(findings, key=lambda item: (item.line, item.rule, item.context))
-    )
-
-
-def checked_criteria(blocks: tuple[MarkdownBlock, ...]) -> tuple[WorkCriterion, ...]:
-    """Return criterion identities and statuses from an already checked contract."""
-    criteria = []
-    for block in blocks:
-        if not isinstance(block, HeadingBlock) or block.heading_level != 3:
-            continue
-        match = _CRITERION.fullmatch(block.text.strip())
-        if match is None:
-            continue
-        identifier, status, _ = match.groups()
-        criteria.append(
-            WorkCriterion(f"AC-{int(identifier)}", parse_criterion_status(status))
-        )
-    return tuple(criteria)
+    return sections
 
 
 def parse_criterion_status(value: str) -> CriterionStatus:
@@ -208,8 +238,27 @@ def _criterion_findings(
     blocks: tuple[MarkdownBlock, ...],
     headings: tuple[_LocatedHeading, ...],
     acceptance: list[_LocatedHeading],
-) -> tuple[WorkDiagnostic, ...]:
+) -> _CriterionInspection:
+    scan = _criterion_declarations(blocks, headings)
     findings: list[WorkDiagnostic] = []
+    findings.extend(scan.findings)
+    if len(acceptance) == 1 and scan.declarations == 0:
+        section = acceptance[0]
+        findings.append(
+            WorkDiagnostic(
+                section.block.location.line_start,
+                "at least one criterion declaration",
+                "Acceptance criteria",
+            )
+        )
+    return _CriterionInspection(scan.criteria, tuple(findings), scan.declarations)
+
+
+def _criterion_declarations(
+    blocks: tuple[MarkdownBlock, ...], headings: tuple[_LocatedHeading, ...]
+) -> _CriterionInspection:
+    findings: list[WorkDiagnostic] = []
+    criteria: list[WorkCriterion] = []
     identifiers: set[str] = set()
     declarations = 0
     in_acceptance = False
@@ -238,17 +287,10 @@ def _criterion_findings(
         findings.extend(result.findings)
         if result.identifier is not None:
             identifiers.add(result.identifier)
+        if result.criterion is not None:
+            criteria.append(result.criterion)
 
-    if len(acceptance) == 1 and declarations == 0:
-        section = acceptance[0]
-        findings.append(
-            WorkDiagnostic(
-                section.block.location.line_start,
-                "at least one criterion declaration",
-                "Acceptance criteria",
-            )
-        )
-    return tuple(findings)
+    return _CriterionInspection(tuple(criteria), tuple(findings), declarations)
 
 
 def _criterion_result(
@@ -275,9 +317,14 @@ def _criterion_result(
             "criterion heading format '### **AC-N STATUS** Outcome name'",
         ))
         normalized_id = None
+        criterion_status = None
     else:
         identifier, status, name = shape_match.groups()
         normalized_id = identifier.lstrip("0") or "0"
+        try:
+            criterion_status = parse_criterion_status(status)
+        except ValueError:
+            criterion_status = None
         constraints.extend((
             (normalized_id != "0", "positive decimal criterion ID"),
             (
@@ -285,7 +332,7 @@ def _criterion_result(
                 f"unique criterion ID AC-{normalized_id}",
             ),
             (
-                status in get_args(CriterionStatus.__value__),
+                criterion_status is not None,
                 "supported status TODO, DONE, or ABORT",
             ),
             (bool((name or "").strip()), "nonempty criterion name"),
@@ -298,7 +345,10 @@ def _criterion_result(
     findings = tuple(
         WorkDiagnostic(line, rule, context) for valid, rule in constraints if not valid
     )
-    return _DeclarationResult(normalized_id, findings)
+    criterion = None
+    if not findings and normalized_id is not None and criterion_status is not None:
+        criterion = WorkCriterion(f"AC-{normalized_id}", criterion_status)
+    return _DeclarationResult(normalized_id, criterion, findings)
 
 
 def _has_content(block: MarkdownBlock) -> bool:

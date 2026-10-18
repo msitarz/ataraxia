@@ -10,9 +10,66 @@ from script.markdown.model import (
     SourceLocation,
     TextBlock,
 )
-from script.work_check.rules import WorkDiagnostic, check_work
+from script.work.contract import (
+    WorkCriterion,
+    WorkDiagnostic,
+    WorkInspection,
+    inspect_work,
+)
 
 UNICODE_ZERO_ID = "AC-" + chr(0x660)
+
+
+def test_valid_work_inspection_retains_title_and_all_criterion_statuses() -> None:
+    # Given
+    blocks = _contract(
+        _heading(10, "**AC-01 TODO** First outcome", 3),
+        _text(11, "First body."),
+        _heading(12, "**AC-2 DONE** Second outcome", 3),
+        _text(13, "Second body."),
+        _heading(14, "**AC-3 ABORT** Stopped outcome", 3),
+        _text(15, "Stopped with authorization."),
+    )
+
+    # When
+    inspection = inspect_work(blocks)
+
+    # Then
+    assert inspection == WorkInspection(
+        "Contract",
+        (
+            WorkCriterion("AC-1", "TODO"),
+            WorkCriterion("AC-2", "DONE"),
+            WorkCriterion("AC-3", "ABORT"),
+        ),
+        (),
+    )
+
+
+def test_malformed_work_inspection_keeps_valid_criteria_and_exact_findings() -> None:
+    # Given
+    blocks = _contract(
+        _heading(10, "**AC-1 TODO** Valid outcome", 3),
+        _text(11, "Valid body."),
+        _heading(12, "**AC-2 WRONG** Invalid outcome", 3),
+        _text(13, "Invalid body."),
+    )
+
+    # When
+    inspection = inspect_work(blocks)
+
+    # Then
+    assert inspection == WorkInspection(
+        "Contract",
+        (WorkCriterion("AC-1", "TODO"),),
+        (
+            WorkDiagnostic(
+                12,
+                "supported status TODO, DONE, or ABORT",
+                "**AC-2 WRONG** Invalid outcome",
+            ),
+        ),
+    )
 
 
 def test_valid_typed_blocks_keep_nested_explanations_inside_the_outcome() -> None:
@@ -39,7 +96,7 @@ def test_valid_typed_blocks_keep_nested_explanations_inside_the_outcome() -> Non
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == ()
@@ -50,7 +107,7 @@ def test_missing_sections_report_complete_file_start_diagnostics() -> None:
     blocks = (_heading(1, "Contract", 1),)
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == (
@@ -71,7 +128,7 @@ def test_level_one_heading_ends_section_and_outcome_context() -> None:
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == (
@@ -97,7 +154,7 @@ def test_criterion_like_headings_outside_acceptance_and_at_wrong_levels_fail() -
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == (
@@ -137,7 +194,7 @@ def test_criterion_fields_and_empty_body_report_exact_locations_and_order() -> N
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == (
@@ -160,7 +217,7 @@ def test_explicitly_aborted_criterion_is_a_supported_stopped_outcome() -> None:
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == ()
@@ -203,7 +260,7 @@ def test_non_ascii_or_nonpositive_ids_never_pass(
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == expected
@@ -225,7 +282,7 @@ def test_duplicate_sections_and_empty_acceptance_body_are_located() -> None:
     )
 
     # When
-    findings = check_work(blocks)
+    findings = inspect_work(blocks).diagnostics
 
     # Then
     assert findings == (

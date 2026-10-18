@@ -34,7 +34,7 @@ def sandbox(tmp_path: Path) -> MakeSandbox:
         ),
         (
             "doc-check",
-            ("run", "python", "-m", "script.work_check"),
+            ("run", "python", "-m", "script.work.work_check"),
             "doc/README.md#review",
             "whole affected section",
             "For meaningful changes",
@@ -120,7 +120,7 @@ def test_doc_check_propagates_work_failure_without_reminder(
 ) -> None:
     """A failed Work check fails doc-check before its success reminder."""
     # Given
-    failed_check = ("run", "python", "-m", "script.work_check")
+    failed_check = ("run", "python", "-m", "script.work.work_check")
 
     # When
     result = sandbox.run(

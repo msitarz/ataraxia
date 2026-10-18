@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
-from script.work_check.rules import CriterionStatus
+from script.work.contract import CriterionStatus
 
 type WorkResult = Literal["PENDING", "DONE", "ABORT"]
 

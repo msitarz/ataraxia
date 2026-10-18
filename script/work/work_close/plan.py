@@ -14,19 +14,10 @@ from urllib.parse import unquote, urlsplit
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 
-from script.markdown.model import HeadingBlock, MarkdownParser
-from script.work_check.discovery import (
-    ContractDiscoveryError,
-    ContractSource,
-    discover_contracts,
-)
-from script.work_check.rules import (
-    WorkCriterion,
-    check_work,
-    checked_criteria,
-    parse_criterion_status,
-)
-from script.work_close.model import (
+from script.markdown.model import MarkdownParser
+from script.work.contract import WorkCriterion, inspect_work, parse_criterion_status
+from script.work.source import WorkSource, WorkSourceError, discover_work_sources
+from script.work.work_close.model import (
     ClosePlan,
     CriterionPlan,
     ReferencePlan,
@@ -132,14 +123,14 @@ def _repository_root() -> Path:
 
 def _selected_contracts(
     root: Path, selections: Sequence[str]
-) -> tuple[ContractSource, ...]:
+) -> tuple[WorkSource, ...]:
     if not selections or any(
         PurePosixPath(selection).name != "README.md" for selection in selections
     ):
         raise ClosePlanningError("select each Work README.md explicitly")
     try:
-        contracts = discover_contracts(root, selections)
-    except ContractDiscoveryError as exc:
+        contracts = discover_work_sources(root, selections)
+    except WorkSourceError as exc:
         raise ClosePlanningError(str(exc)) from exc
     selected = {Path(selection).resolve(strict=True) for selection in selections}
     if selected != {contract.path for contract in contracts}:
@@ -151,16 +142,13 @@ def _work_plan(
     root: Path, path: Path, source: str, markdown: MarkdownParser, abort_remaining: bool
 ) -> WorkPlan:
     blocks = markdown.parse(source)
-    findings = check_work(blocks)
-    if findings:
-        first = findings[0]
+    inspection = inspect_work(blocks)
+    if inspection.diagnostics:
+        first = inspection.diagnostics[0]
         raise ClosePlanningError(f"{path}:{first.line}: {first.rule}: {first.context}")
-    title = next(
-        block.text
-        for block in blocks
-        if isinstance(block, HeadingBlock) and block.heading_level == 1
-    )
-    criteria = _criteria_plan(checked_criteria(blocks), abort_remaining)
+    title = inspection.title
+    assert title is not None
+    criteria = _criteria_plan(inspection.criteria, abort_remaining)
     result = _work_result(criteria)
     reason = _work_reason(criteria, result)
     return WorkPlan(
@@ -200,7 +188,7 @@ def _work_reason(criteria: list[CriterionPlan], result: WorkResult) -> str | Non
 
 def _references(
     root: Path,
-    selected: tuple[ContractSource, ...],
+    selected: tuple[WorkSource, ...],
     works: tuple[WorkPlan, ...],
 ) -> tuple[ReferencePlan, ...]:
     selected_paths = {contract.path for contract in selected}
@@ -221,7 +209,7 @@ def _references(
     return tuple(sorted(result, key=lambda item: (item.path, item.before)))
 
 
-def _markdown_documents(root: Path) -> tuple[ContractSource, ...]:
+def _markdown_documents(root: Path) -> tuple[WorkSource, ...]:
     documents = []
     for relative in _run_git(["ls-files", "-z", "--", "*.md"]).split("\0"):
         if not relative:
@@ -241,7 +229,7 @@ def _markdown_documents(root: Path) -> tuple[ContractSource, ...]:
             raise ClosePlanningError(
                 f"cannot inspect Markdown reference file {relative}: {exc}"
             ) from exc
-        documents.append(ContractSource(resolved, text))
+        documents.append(WorkSource(resolved, text))
     return tuple(documents)
 
 
@@ -251,7 +239,7 @@ def _is_work_contract(root: Path, path: Path) -> bool:
 
 def _contract_references(
     root: Path,
-    contract: ContractSource,
+    contract: WorkSource,
     selected_paths: set[Path],
     works_by_path: dict[Path, WorkPlan],
     is_work_contract: bool,
@@ -292,7 +280,7 @@ def _contract_references(
 
 
 def _ensure_nonoverlapping_references(
-    contract: ContractSource, references: list[ReferencePlan]
+    contract: WorkSource, references: list[ReferencePlan]
 ) -> None:
     ordered = sorted(references, key=lambda item: item.line_start)
     furthest_end = 0
@@ -391,7 +379,7 @@ def _html_hrefs(source: str) -> list[str]:
 def _reject_unlisted_references(
     tokens: list[Token],
     root: Path,
-    contract: ContractSource,
+    contract: WorkSource,
     selected: set[Path],
     list_items: list[tuple[int, int, str, list[Token]]],
 ) -> None:
@@ -426,7 +414,7 @@ def _reject_unlisted_references(
 
 def _reference_plan(
     root: Path,
-    contract: ContractSource,
+    contract: WorkSource,
     text: str,
     start: int,
     end: int,

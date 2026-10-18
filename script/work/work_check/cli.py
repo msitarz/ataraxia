@@ -7,8 +7,8 @@ import sys
 
 from script.markdown.markdown_it_adapter import MarkdownItParser
 from script.markdown.model import MarkdownParseError
-from script.work_check.discovery import ContractDiscoveryError, discover_contracts
-from script.work_check.rules import check_work
+from script.work.contract import inspect_work
+from script.work.source import WorkSourceError, discover_work_sources
 
 
 def main(arguments: list[str] | None = None) -> int:
@@ -24,8 +24,8 @@ def main(arguments: list[str] | None = None) -> int:
     options = parser.parse_args(arguments)
     root = Path.cwd().resolve(strict=True)
     try:
-        contracts = discover_contracts(root, options.paths)
-    except ContractDiscoveryError as error:
+        contracts = discover_work_sources(root, options.paths)
+    except WorkSourceError as error:
         sys.stderr.write(f"work-check: {error}\n")
         return 2
 
@@ -34,7 +34,7 @@ def main(arguments: list[str] | None = None) -> int:
     for contract in contracts:
         relative = contract.path.relative_to(root).as_posix()
         try:
-            for finding in check_work(markdown.parse(contract.text)):
+            for finding in inspect_work(markdown.parse(contract.text)).diagnostics:
                 findings.append((relative, finding))
         except MarkdownParseError as error:
             sys.stderr.write(f"work-check: cannot parse {relative}: {error}\n")

@@ -262,7 +262,7 @@ def test_markdown_targets_preserve_graph_and_selected_mermaid_scope(
             "--no-cache",
             "doc/acceptance-tracing.md",
         ],
-        ["run", "python", "-m", "script.work_check"],
+        ["run", "python", "-m", "script.work.work_check"],
     ]
 
 

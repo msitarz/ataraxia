@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from script.work_check.discovery import ContractDiscoveryError, discover_contracts
+from script.work.source import WorkSourceError, discover_work_sources
 
 
 def _write_contract(
@@ -30,7 +30,7 @@ def test_default_discovers_every_work_readme_without_content_heuristics(
     _write_contract(tmp_path, "README.md")
 
     # When
-    contracts = discover_contracts(tmp_path)
+    contracts = discover_work_sources(tmp_path)
 
     # Then
     assert [(item.path, item.text) for item in contracts] == [
@@ -47,7 +47,7 @@ def test_explicit_overlapping_files_and_subtrees_are_deduplicated_and_sorted(
     later = _write_contract(tmp_path, "doc/feat/z/README.md")
 
     # When
-    contracts = discover_contracts(
+    contracts = discover_work_sources(
         tmp_path,
         (str(later), "doc/feat", "doc/feat/a"),
     )
@@ -81,8 +81,8 @@ def test_invalid_explicit_selections_fail_with_actionable_context(
     _write_contract(tmp_path, "outside/README.md")
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, (selection,))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, (selection,))
 
     # Then
     assert message in str(error.value)
@@ -95,8 +95,8 @@ def test_missing_selection_preserves_filesystem_cause(tmp_path: Path) -> None:
     selection = "doc/feat/missing"
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, (selection,))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, (selection,))
 
     # Then
     assert selection in str(error.value)
@@ -120,8 +120,8 @@ def test_explicit_subtree_without_contracts_fails_even_with_other_contracts(
     _write_contract(tmp_path, "doc/feat/valid/README.md")
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, selections)
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, selections)
 
     # Then
     assert "Selection contains no Work contract" in str(error.value)
@@ -139,7 +139,7 @@ def test_recursive_discovery_skips_linked_directories(tmp_path: Path) -> None:
     (work_root / "escape").symlink_to(outside, target_is_directory=True)
 
     # When
-    contracts = discover_contracts(tmp_path)
+    contracts = discover_work_sources(tmp_path)
 
     # Then
     assert tuple(item.path for item in contracts) == (local,)
@@ -162,7 +162,7 @@ def test_recursive_discovery_accepts_an_in_root_contract_file_link(
     alias.symlink_to(target)
 
     # When
-    contracts = discover_contracts(tmp_path, selections)
+    contracts = discover_work_sources(tmp_path, selections)
 
     # Then
     assert tuple((item.path, item.text) for item in contracts) == (
@@ -180,8 +180,8 @@ def test_recursive_discovery_rejects_a_contract_link_outside_work_root(
     alias.symlink_to(outside)
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path)
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path)
 
     # Then
     assert "escapes the Work root" in str(error.value)
@@ -196,7 +196,7 @@ def test_explicit_in_root_contract_link_is_accepted(tmp_path: Path) -> None:
     alias.symlink_to(target)
 
     # When
-    contracts = discover_contracts(tmp_path, ("doc/feat/alias/README.md",))
+    contracts = discover_work_sources(tmp_path, ("doc/feat/alias/README.md",))
 
     # Then
     assert tuple(item.path for item in contracts) == (target,)
@@ -210,8 +210,8 @@ def test_explicit_link_alias_outside_work_root_is_rejected(tmp_path: Path) -> No
     alias.symlink_to(target)
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, ("outside/README.md",))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, ("outside/README.md",))
 
     # Then
     assert "outside the Work root" in str(error.value)
@@ -224,8 +224,8 @@ def test_explicit_non_readme_link_to_a_contract_is_rejected(tmp_path: Path) -> N
     alias.symlink_to(target)
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, ("doc/feat/alias.md",))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, ("doc/feat/alias.md",))
 
     # Then
     assert "Select a Work README.md or subtree" in str(error.value)
@@ -243,8 +243,8 @@ def test_explicit_contract_path_through_escaping_symlink_fails(
     selection = "doc/feat/escape/README.md"
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, (selection,))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, (selection,))
 
     # Then
     assert "outside the Work root" in str(error.value)
@@ -268,8 +268,8 @@ def test_unreadable_contract_fails_with_its_path(
     monkeypatch.setattr(Path, "read_text", deny_contract)
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, ("doc/feat/private/README.md",))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, ("doc/feat/private/README.md",))
 
     # Then
     assert str(contract) in str(error.value)
@@ -283,8 +283,8 @@ def test_non_utf8_contract_fails_with_its_path_and_cause(tmp_path: Path) -> None
     contract.write_bytes(b"\xff")
 
     # When
-    with pytest.raises(ContractDiscoveryError) as error:
-        discover_contracts(tmp_path, ("doc/feat/invalid/README.md",))
+    with pytest.raises(WorkSourceError) as error:
+        discover_work_sources(tmp_path, ("doc/feat/invalid/README.md",))
 
     # Then
     assert str(contract) in str(error.value)

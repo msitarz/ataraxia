@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[4]
+ROOT = Path(__file__).resolve().parents[5]
 
 
 def test_make_work_close_reports_pending_then_confirmed_plan_without_writes(
@@ -130,7 +130,7 @@ def test_make_work_close_keeps_selected_work_results_independent(
     other = "doc/feat/other/README.md"
     other_path = root / other
     other_path.parent.mkdir(parents=True)
-    fixture = Path(__file__).resolve().parents[2] / "fixtures/work_close/child_work.md"
+    fixture = Path(__file__).resolve().parents[3] / "fixtures/work_close/child_work.md"
     other_path.write_text(
         fixture.read_text(encoding="utf-8").replace("AC-1 TODO", "AC-1 ABORT"),
         encoding="utf-8",
@@ -331,7 +331,7 @@ def test_make_work_close_inspects_root_readme_and_reference_style_links(
     # Given: the fixture provides a tracked root reference-style link.
     root, environment, selected, _ = _repository(tmp_path)
     shutil.copyfile(
-        Path(__file__).resolve().parents[2] / "fixtures/work_close/root_readme.md",
+        Path(__file__).resolve().parents[3] / "fixtures/work_close/root_readme.md",
         root / "README.md",
     )
     readme = root / "README.md"
@@ -510,7 +510,7 @@ def test_make_work_close_ignores_fenced_markdown_examples(tmp_path: Path) -> Non
     root, environment, selected, _ = _repository(tmp_path)
     guide = root / "doc/guide.md"
     shutil.copyfile(
-        Path(__file__).resolve().parents[2] / "fixtures/work_close/fenced_reference.md",
+        Path(__file__).resolve().parents[3] / "fixtures/work_close/fenced_reference.md",
         guide,
     )
     _git(root, "add", guide.relative_to(root).as_posix())
@@ -675,7 +675,7 @@ def _write_contracts(
     child = root / "doc/feat/parent/child/README.md"
     parent.parent.mkdir(parents=True)
     child.parent.mkdir(parents=True)
-    fixture = Path(__file__).resolve().parents[2] / "fixtures/work_close"
+    fixture = Path(__file__).resolve().parents[3] / "fixtures/work_close"
     parent_text = (fixture / "parent.md").read_text(encoding="utf-8")
     if not bold_map:
         parent_text = parent_text.replace("**TODO**", "TODO")
@@ -699,7 +699,7 @@ def _fake_gh(tmp_path: Path) -> Path:
     fake_bin.mkdir()
     fake_gh = fake_bin / "gh"
     shutil.copyfile(
-        Path(__file__).resolve().parents[2] / "fixtures/work_close/fake_gh.py", fake_gh
+        Path(__file__).resolve().parents[3] / "fixtures/work_close/fake_gh.py", fake_gh
     )
     fake_gh.chmod(0o755)
     return fake_bin

@@ -7,7 +7,7 @@ import shutil
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parents[4]
+ROOT = Path(__file__).resolve().parents[5]
 FIXTURES = ROOT / "test/script/fixtures/work_check"
 
 
@@ -108,7 +108,7 @@ def _run(root: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
     """Run the shipped module against an isolated repository root."""
     environment = os.environ | {"PYTHONPATH": str(ROOT)}
     return subprocess.run(
-        [sys.executable, "-m", "script.work_check", *arguments],
+        [sys.executable, "-m", "script.work.work_check", *arguments],
         cwd=root,
         env=environment,
         capture_output=True,

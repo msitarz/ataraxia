@@ -48,8 +48,8 @@ operation when its domain meaning differs from ordinary membership.
 
 **Historical changes** (`1417db3`, `561816e`): before, Work selection used
 separate file-kind checks; the current
-[discovery code](../script/work_check/discovery.py) uses `match` because a path
-has one mode. The current [Work rules](../script/work_check/rules.py) instead
+[discovery code](../script/work/source.py) uses `match` because a path
+has one mode. The current [Work rules](../script/work/contract.py) instead
 collect independent criterion failures so one malformed declaration can report
 more than one finding. Checks that need parsed fields remain behind a successful
 format match. Use exclusive dispatch for one-of-many cases; use clear guards or

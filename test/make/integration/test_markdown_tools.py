@@ -56,7 +56,7 @@ def markdown_sandbox(tmp_path: Path) -> MarkdownSandbox:
         scripts / "validate_mermaid.py",
     )
     shutil.copytree(ROOT / "script" / "markdown", scripts / "markdown")
-    shutil.copytree(ROOT / "script" / "work_check", scripts / "work_check")
+    shutil.copytree(ROOT / "script" / "work", scripts / "work")
     default_work = directory / "doc/feat/default-work/README.md"
     default_work.parent.mkdir(parents=True)
     shutil.copyfile(ROOT / "test/make/fixtures/valid_work.md", default_work)

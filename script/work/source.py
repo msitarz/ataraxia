@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Discover and read contract files under the active Work root."""
+"""Discover and read Work contract source files."""
 
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -9,20 +9,20 @@ import stat
 
 
 @dataclass(frozen=True)
-class ContractSource:
+class WorkSource:
     """A discovered contract path and its UTF-8 Markdown source."""
 
     path: Path
     text: str
 
 
-class ContractDiscoveryError(ValueError):
+class WorkSourceError(ValueError):
     """Raised when contract selections cannot be discovered or read."""
 
 
-def discover_contracts(
+def discover_work_sources(
     repo_root: Path, selections: Sequence[str] = ()
-) -> tuple[ContractSource, ...]:
+) -> tuple[WorkSource, ...]:
     """Read active Work contracts selected by repository-relative paths.
 
     With no selections, every ``README.md`` below ``doc/feat`` is included.
@@ -34,43 +34,41 @@ def discover_contracts(
         Discovered contract paths paired with their UTF-8 source text.
 
     Raises:
-        ContractDiscoveryError: A selection is invalid, escapes the Work root,
+        WorkSourceError: A selection is invalid, escapes the Work root,
             contains no contracts, or cannot be read.
     """
     try:
-        return _discover_contracts(repo_root, selections)
+        return _discover_work_sources(repo_root, selections)
     except OSError as exc:
-        raise ContractDiscoveryError(f"Cannot inspect Work contracts: {exc}") from exc
+        raise WorkSourceError(f"Cannot inspect Work contracts: {exc}") from exc
 
 
-def _discover_contracts(
+def _discover_work_sources(
     repo_root: Path, selections: Sequence[str]
-) -> tuple[ContractSource, ...]:
+) -> tuple[WorkSource, ...]:
     """Resolve inputs, discover selections, and read their contract files.
 
     Returns:
         Discovered contract sources.
 
     Raises:
-        ContractDiscoveryError: A selection is invalid, escapes the Work root,
+        WorkSourceError: A selection is invalid, escapes the Work root,
             or contains no contracts.
     """
     root = repo_root.resolve(strict=True)
     work_root = (root / "doc" / "feat").resolve(strict=True)
     if not work_root.is_relative_to(root) or not stat.S_ISDIR(work_root.stat().st_mode):
-        raise ContractDiscoveryError(f"Work root is missing or invalid: {work_root}")
+        raise WorkSourceError(f"Work root is missing or invalid: {work_root}")
     candidates = _contracts_below(work_root, work_root) if not selections else set()
     for selection in selections:
         selected_contracts = _selection_contracts(root, work_root, selection)
         if not selected_contracts:
-            raise ContractDiscoveryError(
+            raise WorkSourceError(
                 f"Selection contains no Work contract README.md files: {selection}"
             )
         candidates.update(selected_contracts)
     if not candidates:
-        raise ContractDiscoveryError(
-            f"No Work contract README.md files found in {work_root}"
-        )
+        raise WorkSourceError(f"No Work contract README.md files found in {work_root}")
     return _read_contracts(root, candidates)
 
 
@@ -81,7 +79,7 @@ def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Pat
         Contract README paths selected by this path.
 
     Raises:
-        ContractDiscoveryError: The selection is outside the Work root or has
+        WorkSourceError: The selection is outside the Work root or has
             an unsupported shape.
     """
     selected = root / Path(selection)
@@ -90,7 +88,7 @@ def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Pat
     if not lexical.is_relative_to(root / "doc" / "feat") or not resolved.is_relative_to(
         work_root
     ):
-        raise ContractDiscoveryError(f"Selection is outside the Work root: {selection}")
+        raise WorkSourceError(f"Selection is outside the Work root: {selection}")
     mode = stat.S_IFMT(resolved.stat().st_mode)
     match mode:
         case stat.S_IFDIR:
@@ -98,29 +96,25 @@ def _selection_contracts(root: Path, work_root: Path, selection: str) -> set[Pat
         case stat.S_IFREG if lexical.name == "README.md":
             return {resolved}
         case _:
-            raise ContractDiscoveryError(
-                f"Select a Work README.md or subtree: {selection}"
-            )
+            raise WorkSourceError(f"Select a Work README.md or subtree: {selection}")
 
 
-def _read_contracts(root: Path, candidates: set[Path]) -> tuple[ContractSource, ...]:
+def _read_contracts(root: Path, candidates: set[Path]) -> tuple[WorkSource, ...]:
     """Read selected contract files in repository-relative path order.
 
     Returns:
         Contract sources paired with their UTF-8 Markdown text.
 
     Raises:
-        ContractDiscoveryError: A contract cannot be read as UTF-8 Markdown.
+        WorkSourceError: A contract cannot be read as UTF-8 Markdown.
     """
-    contracts = []
+    contracts: list[WorkSource] = []
     for path in sorted(candidates, key=lambda item: item.relative_to(root).as_posix()):
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
-            raise ContractDiscoveryError(
-                f"Cannot read Work contract {path}: {exc}"
-            ) from exc
-        contracts.append(ContractSource(path, text))
+            raise WorkSourceError(f"Cannot read Work contract {path}: {exc}") from exc
+        contracts.append(WorkSource(path, text))
     return tuple(contracts)
 
 
@@ -131,7 +125,7 @@ def _contracts_below(work_root: Path, directory: Path) -> set[Path]:
         Resolved contract README paths under the Work root.
 
     Raises:
-        ContractDiscoveryError: A discovered README is not a regular file or
+        WorkSourceError: A discovered README is not a regular file or
             resolves outside the Work root.
     """
     candidates: set[Path] = set()
@@ -146,14 +140,12 @@ def _contracts_below(work_root: Path, directory: Path) -> set[Path]:
         if "README.md" in files:
             path = (current_path / "README.md").resolve(strict=True)
             if not path.is_relative_to(work_root):
-                raise ContractDiscoveryError(
+                raise WorkSourceError(
                     "Discovered Work contract escapes the Work root: "
                     f"{current_path / 'README.md'}"
                 )
             if not stat.S_ISREG(path.stat().st_mode):
-                raise ContractDiscoveryError(
-                    f"Work contract is not a regular file: {path}"
-                )
+                raise WorkSourceError(f"Work contract is not a regular file: {path}")
             candidates.add(path)
         directories.sort()
     return candidates

@@ -5,7 +5,7 @@ import argparse
 import sys
 
 from script.markdown.markdown_it_adapter import MarkdownItParser
-from script.work_close.plan import ClosePlanningError, make_plan, render_plan
+from script.work.work_close.plan import ClosePlanningError, make_plan, render_plan
 
 
 def main(arguments: list[str] | None = None) -> int:
