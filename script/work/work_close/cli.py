@@ -1,5 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Command-line boundary for read-only Work closure planning."""
+"""Parse command arguments and present read-only closure planning results.
+
+API:
+``main`` accepts an optional argument list and prints the stable rendering of
+a plan. It returns zero when a plan is produced and two when a
+``ClosePlanningError`` rejects the input, writing that error to standard
+error. The ``--abort-remaining`` option controls whether TODO criteria are
+proposed as ABORT; the command reports the proposal.
+
+Implementation:
+This module owns argument parsing and the standard output/error boundary. Plan
+construction and repository observations belong to ``plan``; the CLI supplies
+the Markdown parser when it requests a plan.
+"""
 
 import argparse
 import sys

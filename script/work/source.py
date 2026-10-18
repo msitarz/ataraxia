@@ -1,5 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Discover and read Work contract source files."""
+"""Discover selected Work contract README files and read their source.
+
+API:
+``discover_work_sources`` returns sorted, deduplicated ``WorkSource`` records
+pairing resolved paths with UTF-8 Markdown text. Callers may use default Work
+tree discovery or select contained contract paths and subtrees with relative
+or absolute paths. ``WorkSourceError`` reports invalid selections, unsafe
+paths, missing contracts, and read failures.
+
+Implementation:
+Discovery resolves selections beneath ``doc/feat``, collects regular contract
+README files and reads them in repository-relative order. Recursive traversal
+skips linked subdirectories. This module owns source selection and reading;
+contract structure is interpreted by ``script.work.contract``.
+"""
 
 from collections.abc import Sequence
 from dataclasses import dataclass

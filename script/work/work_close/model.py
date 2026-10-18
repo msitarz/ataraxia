@@ -1,5 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Typed values shared by read-only Work closure planning."""
+"""Immutable records for proposed Work closure and observed metadata.
+
+API:
+Consumers receive a ``ClosePlan`` containing the selected Works, proposed
+reference updates, repository and pull request observations, and overall
+readiness. Each ``WorkPlan`` groups a Work's ``CriterionPlan`` values with its
+``WorkResult`` and optional reason. A ``CriterionPlan`` pairs a criterion's
+current status with its proposed result; ``WorkResult`` distinguishes pending,
+completed, and aborted outcomes. Each ``ReferencePlan`` records a source span
+and its proposed replacement.
+
+Representation:
+Frozen dataclasses and tuples carry planning results between construction and
+rendering. The records describe values; they do not validate fields, compute
+readiness, inspect the repository, or update files.
+"""
 
 from dataclasses import dataclass
 from typing import Literal

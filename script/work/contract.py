@@ -1,5 +1,25 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pure structural rules for active Work contracts."""
+"""Interpret parsed Markdown blocks as checked Work contract structure.
+
+API:
+``inspect_work`` returns a ``WorkInspection`` containing the document title,
+checked criteria, and located ``WorkDiagnostic`` findings. Each
+``WorkCriterion`` pairs a normalized criterion identity with its declared
+``CriterionStatus``. ``WorkDiagnostic`` records a structural finding and
+source line, while ``WorkInspection`` aggregates the title, valid criteria,
+and findings for consumers. ``parse_criterion_status`` interprets one
+canonical marker as ``CriterionStatus`` and raises ``ValueError`` for an
+unsupported value. Together these values let validation, reporting, and
+closure decisions share one interpretation.
+
+Implementation:
+The interpretation derives normalized top-level sections and criterion
+declarations from the supplied Markdown blocks. It checks required sections,
+criterion placement and heading shape, IDs, statuses, names, and outcome body
+content, retaining valid criteria even when other declarations produce
+findings. This module defines structure over already parsed blocks; it does
+not parse Markdown source or read contract files.
+"""
 
 from dataclasses import dataclass
 import re

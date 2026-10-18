@@ -1,5 +1,23 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Read-only closure planning over Work contracts and repository metadata."""
+"""Construct and render a read-only plan for selected Work contracts.
+
+API:
+``make_plan`` validates explicit selections and returns a ``ClosePlan`` with
+each Work's proposed criterion and outcome values, canonical parent or
+dependency reference updates, and observed repository and pull request
+metadata. ``render_plan`` turns that record into stable, newline-terminated
+review text. ``ClosePlanningError`` reports when selections, contract
+structure, references, or metadata do not support a safe plan.
+
+Implementation:
+Planning reads selected contracts through the shared Work source and structure
+modules, then derives criterion outcomes and readiness. Readiness depends on
+whether any proposed criterion remains TODO; a Work outcome of ABORT may
+coexist with unresolved TODO criteria. Reference planning scans tracked
+Markdown and permits updates only for supported canonical map rows. Git and
+pull request queries provide the repository and head observations included in
+the plan. This module prepares and presents a plan without applying it.
+"""
 
 from collections.abc import Sequence
 from html.parser import HTMLParser
