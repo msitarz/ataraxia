@@ -38,10 +38,15 @@ no proof of chat authorization, approval file, or token.
 - Selection may include a requested parent and its authorized descendants;
   unrelated or unauthorized Works remain untouched.
 - With `TODO` criteria, the command reports them and asks whether to abort the
-  remaining outcomes, making no repository changes until explicit confirmation;
+  remaining outcomes, then exits without repository changes or waiting for
+  interactive input.
+- The agent relays the question and reruns the same selection with
+  `ABORT_REMAINING=true` only after explicit maintainer confirmation;
   cancellation or no answer leaves the repository unchanged.
-- Confirmation records those criteria `ABORT` with the reason and closes the
-  Work and parent/dependency entries as `ABORT`; completed Works close `DONE`.
+- Confirmation records the remaining criteria `ABORT` with the reason.
+- Each selected Work and its parent/dependency entries close as `DONE` only
+  when all its criteria are `DONE`, or as `ABORT` when any criterion is `ABORT`,
+  preserving each Work's own result when several are closed together.
 - Criterion identities and abort dispositions remain inspectable in committed
   Git history after contract deletion; the command must not rely on same-commit
   edits that are deleted without a retained history entry.
@@ -59,7 +64,9 @@ no proof of chat authorization, approval file, or token.
 ### **AC-2 TODO** Repository closure publishes only mechanical changes
 
 The command removes the selected contracts, updates parent/dependent links, and
-handles supporting artifacts using the lifecycle's canonical rules.
+handles supporting artifacts using the
+[Work lifecycle rules](../../../workflow.md#lifecycle), preserving entry titles
+and purpose text while removing contract links.
 It creates a closure commit containing
 only those changes, runs applicable checks and ordinary hooks/signing, and
 pushes normally to the same PR branch. It verifies remote publication before
