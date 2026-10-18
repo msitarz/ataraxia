@@ -15,14 +15,14 @@ source text.
 - Can repeated state and interpretation be derived from one representation
   that retains the information consumers need, including for diagnostics?
 - Do types with the same meaning belong together? Does shared code have a
-  named responsibility without importing sibling tool internals, while
-  tool-specific selection, orchestration, diagnostic presentation, effects,
-  and intentional contract differences stay at their owners?
+  named responsibility without depending on sibling consumer internals, while
+  consumer-specific selection, orchestration, diagnostic presentation,
+  effects, and intentional contract differences stay at their owners?
 - For distinct variants with shared fields or behavior, would a shared base or
   helper clarify their common contract, including for diagnostics?
 - Do checks and abstractions earn their complexity?
-- Are shared rules tested at their owner and distinct command behavior tested
-  in the command packages? Do types, behavior, tests, and effects live with
+- Are shared rules tested at their owner and distinct behavior tested at
+  consumer entry points? Do types, behavior, tests, and effects live with
   their owning responsibility?
 
 Keep intentional overlap when it is clearer and explain it in the PR. Move code

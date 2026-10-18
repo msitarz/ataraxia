@@ -12,23 +12,23 @@ contracts.
 
 See [Repair and scope rules](change-rules.md#fix-the-underlying-problem).
 
-## Shared domain behavior across tools
+## Shared domain behavior across consumers
 
 Before adding a parser, validator, type, or filesystem behavior for a domain
 concept, inspect adjacent consumers of that concept. Put shared meaning and
 rules in the module that owns the domain concept, then migrate existing callers
 together so they use the same implementation. Give shared modules a named
 domain responsibility; avoid generic utility modules and dependencies from
-shared modules back into command packages.
+shared modules back into consumer packages.
 
-Keep tool-specific selection, orchestration, diagnostic presentation, and
-effects in each tool. Preserve intentional differences in their contracts.
+Keep consumer-specific selection, orchestration, diagnostic presentation, and
+effects in their owning packages. Preserve intentional differences in their
+contracts.
 Prefer one parsed representation that retains everything consumers need, then
 derive decisions and diagnostics from it instead of maintaining parallel
-parsers or inventories. When extracting shared Work behavior, use
-`script/work` for common modules and `script/work/work_check` plus
-`script/work/work_close` for the command packages; common modules must not
-depend on command packages.
+parsers or inventories. For example, tools that share Work concepts could
+place common modules in `script/work` and their command packages in
+`script/work/work_check` and `script/work/work_close`.
 
 ## Code style
 
