@@ -1,16 +1,29 @@
 # Engineering judgment in review
 
 Read this when changing or reviewing code or tests. Apply these questions as
-you make small changes and when you review the completed result:
+you make small changes and when you review the completed result. Review the
+affected responsibility across its consumers, including relevant unchanged
+code; assess duplication in meaning, ownership, and interpretation as well as
+source text.
 
 - Does the change implement the Work's smallest coherent design?
-- Can repeated state or interpretation be derived once?
-- Do new types with the same meaning belong together?
+- Before adding a parser, validator, type, or filesystem behavior, were
+  adjacent consumers of the same domain concepts inspected? Does shared
+  meaning have a common domain owner, with existing callers migrated together?
+  Would a rule change otherwise require multiple parsers, validators, or status
+  inventories?
+- Can repeated state and interpretation be derived from one representation
+  that retains the information consumers need, including for diagnostics?
+- Do types with the same meaning belong together? Does shared code have a
+  named responsibility without importing sibling tool internals, while
+  tool-specific selection, orchestration, diagnostic presentation, effects,
+  and intentional contract differences stay at their owners?
 - For distinct variants with shared fields or behavior, would a shared base or
   helper clarify their common contract, including for diagnostics?
 - Do checks and abstractions earn their complexity?
-- Do types, behavior, tests, and effects live with the responsibility that
-  owns them?
+- Are shared rules tested at their owner and distinct command behavior tested
+  in the command packages? Do types, behavior, tests, and effects live with
+  their owning responsibility?
 
 Keep intentional overlap when it is clearer and explain it in the PR. Move code
 or extract a helper only when that clarifies its responsibility and resulting
