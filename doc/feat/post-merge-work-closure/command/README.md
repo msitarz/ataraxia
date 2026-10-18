@@ -26,12 +26,14 @@ executing the cleanup procedure each time.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Closure preserves completion and explicit abort decisions
+### **AC-1 TODO** Closure preparation produces a read-only plan
 
-The planned `make work-close ARGS='path/to/README.md ...'` command validates
-selected contracts, repository, reviewed open PR head, branch tips, and
-reference updates under
+The planning boundary for `make work-close ARGS='path/to/README.md ...'`
+validates selected contracts, repository, reviewed open PR head, branch tips,
+and reference updates under
 [authorized closure guidance](../../../acceptance-tracing.md#authorized-closure).
+It returns a ready closure plan or reports pending decisions without changing
+files, the index, commits, or remote refs.
 Session authorization belongs to the maintainer and agent; the command requires
 no proof of chat authorization, approval file, or token.
 
@@ -43,13 +45,12 @@ no proof of chat authorization, approval file, or token.
 - The agent relays the question and reruns the same selection with
   `ABORT_REMAINING=true` only after explicit maintainer confirmation;
   cancellation or no answer leaves the repository unchanged.
-- Confirmation records the remaining criteria `ABORT` with the reason.
-- Each selected Work and its parent/dependency entries close as `DONE` only
-  when all its criteria are `DONE`, or as `ABORT` when any criterion is `ABORT`,
-  preserving each Work's own result when several are closed together.
-- Criterion identities and abort dispositions remain inspectable in committed
-  Git history after contract deletion; the command must not rely on same-commit
-  edits that are deleted without a retained history entry.
+- Confirmation includes the remaining criteria's proposed `ABORT` status and
+  reason in the plan, without recording repository changes.
+- The plan captures the selected contracts, reviewed PR head, branch tips, and
+  each Work's proposed result independently: `DONE` only when all its criteria
+  are `DONE`, or `ABORT` when any criterion is already or explicitly planned
+  to be `ABORT`.
 - Work checking and criterion status guidance support `ABORT` as stopped,
   unsatisfied outcomes; the existing `TODO`/`DONE`-only criterion parser
   requires this extension before the command can deliver abort closure. Until
@@ -59,22 +60,29 @@ no proof of chat authorization, approval file, or token.
   `ARGS`, with `ABORT_REMAINING=true` as the separate confirmed operation flag.
 - Missing or invalid selection, dirty state, mismatched PR/contracts,
   unexpected tips, unsafe paths, and unresolved or ambiguous reference updates
-  refuse publication without inferring approval from completion signals.
+  refuse a ready plan without inferring approval from completion signals.
 
 ### **AC-2 TODO** Repository closure publishes only mechanical changes
 
-The command removes the selected contracts, updates parent/dependent links, and
-handles supporting artifacts using the
-[Work lifecycle rules](../../../workflow.md#lifecycle), preserving entry titles
-and purpose text while removing contract links.
-It creates a closure commit containing
-only those changes, runs applicable checks and ordinary hooks/signing, and
-pushes normally to the same PR branch. It verifies remote publication before
-reporting closure publication, without claiming merge or cleanup completion.
-Concurrent branch or PR changes cause a bounded refusal with recoverable state
-rather than a force push or silent semantic merge. Already-closed input reports
-its disposition without duplicate commits or unrelated edits. The resulting
-closure head remains subject to full CI and maintainer merge.
+The command applies a ready closure plan and publishes only its mechanical
+changes on the same PR branch.
+
+- It rechecks the plan's captured PR head and branch tips before applying it;
+  concurrent changes refuse publication with recoverable state rather than a
+  force push or silent semantic merge.
+- It records confirmed criterion aborts and applies each Work's planned status
+  to parent/dependency entries, preserving criterion identities and abort
+  dispositions in committed Git history after contract deletion.
+- It removes selected contracts and updates references and supporting artifacts
+  using the [Work lifecycle rules](../../../workflow.md#lifecycle), preserving
+  entry titles and purpose text while removing contract links.
+- It commits only the planned changes, runs applicable checks and ordinary
+  hooks/signing, and pushes normally to the same PR branch.
+- It verifies remote publication before reporting closure publication, without
+  claiming merge or cleanup completion.
+- Already-closed input reports its disposition without duplicate commits or
+  unrelated edits.
+- The resulting closure head remains subject to full CI and maintainer merge.
 
 ### **AC-3 TODO** Git cleanup preserves undelivered work
 
@@ -96,8 +104,10 @@ operations through Make with a controlled PR metadata boundary.
   including corrections requiring restoration and renewed session instruction,
   without pretending tools can prove maintainer chat authorization.
 - Incomplete-Work cases cover reporting `TODO` criteria before any changes,
-  cancellation/no answer preserving all state, and explicit confirmation
-  recording criteria and closure entries `ABORT` rather than `DONE`.
+  cancellation/no answer preserving all state, and confirmation producing a
+  read-only plan with independent per-Work results.
+- Application cases record planned criterion aborts and closure entries as
+  `ABORT` rather than `DONE`, preserving abort history after contract removal.
 - Closure cases cover parent/dependent rewrites, same-branch publication,
   exact-tip races, refusals, publication failures, and retry without duplicate
   closure.
