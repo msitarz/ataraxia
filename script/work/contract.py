@@ -2,23 +2,33 @@
 """Interpret parsed Markdown blocks as checked Work contract structure.
 
 API:
-``inspect_work`` returns a ``WorkInspection`` containing the document title,
-checked criteria, and located ``WorkDiagnostic`` findings. Each
-``WorkCriterion`` pairs a normalized criterion identity with its declared
-``CriterionStatus``. ``WorkDiagnostic`` records a structural finding and
-source line, while ``WorkInspection`` aggregates the title, valid criteria,
-and findings for consumers. ``parse_criterion_status`` interprets one
-canonical marker as ``CriterionStatus`` and raises ``ValueError`` for an
-unsupported value. Together these values let validation, reporting, and
-closure decisions share one interpretation.
+* ``inspect_work`` interprets parsed blocks and returns a title, checked
+  criteria, and located findings in a ``WorkInspection``.
+* ``WorkInspection`` groups the optional title, valid criteria, and structural
+  diagnostics from one interpretation.
+* ``WorkCriterion`` pairs a normalized criterion identity with its declared
+  ``CriterionStatus``.
+* ``WorkDiagnostic`` records one structural finding and its source line.
+* ``CriterionStatus`` names the supported criterion status markers.
+* ``parse_criterion_status`` converts one canonical marker to
+  ``CriterionStatus`` and raises ``ValueError`` for unsupported values.
 
 Implementation:
-The interpretation derives normalized top-level sections and criterion
-declarations from the supplied Markdown blocks. It checks required sections,
-criterion placement and heading shape, IDs, statuses, names, and outcome body
-content, retaining valid criteria even when other declarations produce
-findings. This module defines structure over already parsed blocks; it does
-not parse Markdown source or read contract files.
+Heading and section analysis identifies the Work title and the required
+top-level sections within the supplied Markdown blocks.
+
+Criterion declaration checks cover placement, heading shape, IDs, statuses,
+names, and outcome body content.
+
+Result collection retains valid criteria alongside diagnostics from other
+declarations. The module operates on parsed blocks and does not read source
+files.
+
+Connections:
+* Consumers parse Markdown source into blocks and pass those blocks to
+  ``inspect_work``.
+* The returned ``WorkInspection`` gives validators, reporters, and closure
+  planning the same criteria and findings.
 """
 
 from dataclasses import dataclass

@@ -2,18 +2,24 @@
 """Immutable records for proposed Work closure and observed metadata.
 
 API:
-Consumers receive a ``ClosePlan`` containing the selected Works, proposed
-reference updates, repository and pull request observations, and overall
-readiness. Each ``WorkPlan`` groups a Work's ``CriterionPlan`` values with its
-``WorkResult`` and optional reason. A ``CriterionPlan`` pairs a criterion's
-current status with its proposed result; ``WorkResult`` distinguishes pending,
-completed, and aborted outcomes. Each ``ReferencePlan`` records a source span
-and its proposed replacement.
+* ``ClosePlan`` groups Work and reference plans with repository and pull
+  request observations and overall readiness.
+* ``WorkPlan`` groups one Work's criterion plans with its result and optional
+  reason.
+* ``CriterionPlan`` pairs a criterion's current status with its proposed
+  result.
+* ``WorkResult`` distinguishes pending, completed, and aborted Work outcomes.
+* ``ReferencePlan`` records a source span and its proposed replacement.
 
 Representation:
-Frozen dataclasses and tuples carry planning results between construction and
-rendering. The records describe values; they do not validate fields, compute
-readiness, inspect the repository, or update files.
+Frozen dataclasses and tuples represent plans and observations as values.
+Constructing these records does not validate fields or compute readiness.
+
+Connections:
+* ``plan.make_plan`` constructs ``CriterionPlan``, ``WorkPlan``,
+  ``ReferencePlan``, and ``ClosePlan`` values from its decisions and
+  observations.
+* ``plan.render_plan`` consumes the resulting ``ClosePlan`` for presentation.
 """
 
 from dataclasses import dataclass

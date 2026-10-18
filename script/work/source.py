@@ -2,17 +2,25 @@
 """Discover selected Work contract README files and read their source.
 
 API:
-``discover_work_sources`` returns sorted, deduplicated ``WorkSource`` records
-pairing resolved paths with UTF-8 Markdown text. Callers may use default Work
-tree discovery or select contained contract paths and subtrees with relative
-or absolute paths. ``WorkSourceError`` reports invalid selections, unsafe
-paths, missing contracts, and read failures.
+* ``discover_work_sources`` returns sorted, deduplicated ``WorkSource`` records
+  for default discovery or selected contained paths and subtrees.
+* ``WorkSource`` pairs a resolved contract path with its UTF-8 Markdown text.
+* ``WorkSourceError`` reports invalid selections, unsafe paths, missing
+  contracts, and read failures.
 
 Implementation:
-Discovery resolves selections beneath ``doc/feat``, collects regular contract
-README files and reads them in repository-relative order. Recursive traversal
-skips linked subdirectories. This module owns source selection and reading;
-contract structure is interpreted by ``script.work.contract``.
+Selection resolution accepts repository-relative or absolute paths contained
+in the Work tree beneath ``doc/feat``.
+
+Recursive traversal finds regular contract README files and skips linked
+subdirectories.
+
+Source reading loads selected files as UTF-8 text in repository-relative order.
+
+Connections:
+* Consumers pass selected paths to ``discover_work_sources`` and receive
+  ``WorkSource`` records for downstream parsing.
+* Parsed source blocks can then be interpreted by ``script.work.contract``.
 """
 
 from collections.abc import Sequence

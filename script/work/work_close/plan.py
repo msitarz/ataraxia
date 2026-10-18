@@ -2,21 +2,42 @@
 """Construct and render a read-only plan for selected Work contracts.
 
 API:
-``make_plan`` validates explicit selections and returns a ``ClosePlan`` with
-each Work's proposed criterion and outcome values, canonical parent or
-dependency reference updates, and observed repository and pull request
-metadata. ``render_plan`` turns that record into stable, newline-terminated
-review text. ``ClosePlanningError`` reports when selections, contract
-structure, references, or metadata do not support a safe plan.
+* ``make_plan`` validates explicit selections and returns a ``ClosePlan``.
+* ``render_plan`` formats a plan as stable, newline-terminated review text.
+* ``ClosePlanningError`` reports selections, contract structure, references,
+  or metadata that prevent plan construction.
 
 Implementation:
-Planning reads selected contracts through the shared Work source and structure
-modules, then derives criterion outcomes and readiness. Readiness depends on
-whether any proposed criterion remains TODO; a Work outcome of ABORT may
-coexist with unresolved TODO criteria. Reference planning scans tracked
-Markdown and permits updates only for supported canonical map rows. Git and
-pull request queries provide the repository and head observations included in
-the plan. This module prepares and presents a plan without applying it.
+Selection validation requires explicit README paths and obtains their source
+records from the shared Work source module.
+
+Contract inspection parses each source with the supplied Markdown parser and
+uses the shared Work interpreter to obtain checked criteria and diagnostics.
+
+Outcome derivation maps the checked criterion statuses to proposed criterion
+and Work results.
+
+Readiness indicates whether any proposed criterion remains TODO; a Work
+outcome of ABORT may coexist with unresolved TODO criteria.
+
+Reference planning scans tracked Markdown and proposes updates only for
+supported canonical parent or dependency map rows.
+
+Repository and pull request queries contribute branch and head observations
+to the plan.
+
+Pull request file membership checks use the first page of at most 100
+changed-file records.
+
+Connections:
+* ``make_plan`` passes each source text through the supplied parser, then sends
+  the parsed blocks to the shared Work interpreter.
+* Checked criteria feed outcome derivation, while proposed Work paths feed
+  reference planning and pull request file membership checks.
+* Work outcomes, reference updates, and repository observations combine in the
+  returned ``ClosePlan``.
+* ``render_plan`` presents Work outcomes, criterion proposals, reference
+  updates, and metadata from the resulting ``ClosePlan``.
 """
 
 from collections.abc import Sequence

@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Support command invocation with ``python -m script.work.work_close``.
+"""Run the command with ``python -m script.work.work_close``.
 
-The module delegates to ``cli.main`` and exits with its return code, so module
-invocation uses the same argument, output, and error handling as direct
-command invocation.
+API:
+* ``python -m script.work.work_close`` invokes the closure planning command.
+
+Connections:
+* The entry point delegates to ``cli.main`` and exits with its return code.
 """
 
 from script.work.work_close.cli import main
