@@ -125,5 +125,7 @@ operations through Make with a controlled PR metadata boundary.
 
 ## Links
 
+- [Typed architecture skeleton](typed-architecture.md): proposed AC-1
+  boundaries, signatures, and data flow before implementation.
 - [Branch cleanup](../../../branch-cleanup.md): existing merged-tip, dependent
   branch, and clean worktree safeguards to preserve.
