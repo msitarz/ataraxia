@@ -47,7 +47,7 @@ establishes them at their lasting owner.
 - API ownership reflects exports, callers and fixtures rather than imported
   third-party names or copied signatures.
 - Reexports link to their owning module.
-- Test case modules have summaries.
+- Test case modules have summaries rather than per-test-function inventories.
 - Reusable helpers, fixtures and types have API descriptions.
 - Existing commands and operational notes remain available.
 - Documentation links to the authoritative contracts behind its descriptions.
