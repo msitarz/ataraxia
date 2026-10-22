@@ -32,31 +32,37 @@ establishes them at their lasting owner.
 
 - Coverage includes `src/ataraxia` and compute, script, example and test
   namespace packages.
-- Each README has a compact purpose and architecture explanation with Mermaid.
-- Every direct owned module and subpackage has a link and one or two
-  descriptive sentences.
-- Subpackage detail belongs in its own README, while data and executable
-  fixtures in data-only directories are described at the nearest owning README.
+- Each README has a compact purpose explanation.
+- Each README has a compact architecture explanation with Mermaid.
+- Every direct owned module and subpackage has a link.
+- Every direct owned module and subpackage has one or two descriptive sentences.
+- Subpackage detail belongs in its own README.
+- Data and executable fixtures in data-only directories are described at the
+  nearest owning README.
 - Architecture descriptions agree with current code and authoritative contracts
   rather than presenting planned behavior as implemented.
 - Each reusable public function, class, protocol, type alias and data structure
-  has a one-sentence description, with classes' main operations described.
+  has a one-sentence description.
+- Classes' main operations are described.
 - API ownership reflects exports, callers and fixtures rather than imported
   third-party names or copied signatures.
 - Reexports link to their owning module.
-- Test case modules have summaries, while reusable helpers, fixtures and types
-  have API descriptions.
+- Test case modules have summaries.
+- Reusable helpers, fixtures and types have API descriptions.
 - Existing commands and operational notes remain available.
 - Documentation links to the authoritative contracts behind its descriptions.
 - The lasting convention requires affected documentation to change alongside
   code.
 
-Independent child review verifies this convention within each child's scope
-against filesystem contents, exports, callers and fixtures. The parent owner
-verifies the combined result using child review and the
-[final completeness review](examples-navigation/README.md#ac-2-todo-independently-reviewed-final-completeness).
-Review includes Mermaid rendering where available; unavailable rendering is an
-explicit limitation and is not reported as observed rendering.
+#### Verification responsibilities
+
+- Independent child review verifies this convention within each child's scope
+  against filesystem contents, exports, callers and fixtures.
+- The parent owner verifies the combined result using child review and the
+  [final completeness review](examples-navigation/README.md#ac-2-todo-independently-reviewed-final-completeness).
+- Review includes Mermaid rendering where available.
+- Unavailable rendering is an explicit limitation.
+- Unavailable rendering is not reported as observed rendering.
 
 ## Acceptance criteria
 
@@ -65,28 +71,31 @@ explicit limitation and is not reported as observed rendering.
 Readers can navigate all scoped packages and understand their implemented
 relationships across child boundaries.
 
-Across the combined documentation, the
-[shared convention](#shared-package-readme-convention) covers the scoped
-filesystem without missing packages or direct owned contents. Purpose,
-architecture and ownership descriptions agree at both ends of cross-package
-links and distinguish current code from planned behavior.
+- Across the combined documentation, the
+  [shared convention](#shared-package-readme-convention) covers the scoped
+  filesystem without missing packages or direct owned contents.
+- Purpose, architecture and ownership descriptions agree at both ends of
+  cross-package links.
+- Descriptions distinguish current code from planned behavior.
 
 ### **AC-2 TODO** Discoverable reusable public APIs
 
 Readers can follow each reusable public API to its owning module across the
 combined documentation.
 
-API coverage satisfies the
-[shared convention](#shared-package-readme-convention), including reexports and
-reusable test support. Descriptions identify ownership consistently across
-packages.
+- API coverage satisfies the
+  [shared convention](#shared-package-readme-convention), including reexports
+  and reusable test support.
+- Descriptions identify ownership consistently across packages.
 
 ### **AC-3 TODO** Preserved operational instructions
 
 Readers retain operational guidance across the delivered packages.
 
-Existing commands and operational notes remain reachable through the combined
-navigation, and owner links lead to the authoritative contracts behind them.
+- Existing commands and operational notes remain reachable through the combined
+  navigation.
+- Owner links lead to the authoritative contracts behind those commands and
+  notes.
 
 ### **AC-4 TODO** Discoverable lasting documentation upkeep
 
@@ -131,13 +140,14 @@ from the relevant engineering and testing guidance under the
 
 - Execute the children in listed order.
 - Serialize edits to shared READMEs.
-- Guidance is a leaf, while the other children require concrete, independently
-  reviewed and merged leaf contracts before any package edits.
+- Guidance is a leaf.
+- The other children require concrete, independently reviewed and merged leaf
+  contracts before any package edits.
 - Assess each complete delivery against the
   [review-effort boundary](../../workflow.md#scope-and-sizing) and split further
   when needed.
-
-Final completeness review belongs to
-[Examples and final package navigation](examples-navigation/README.md#ac-2-todo-independently-reviewed-final-completeness)
-after preceding subtrees have delivered. Use the current documentation and
-check owners above for Make-based formatting, link checks and delivery evidence.
+- Final completeness review belongs to
+  [Examples and final package navigation](examples-navigation/README.md#ac-2-todo-independently-reviewed-final-completeness)
+  after preceding subtrees have delivered.
+- Use the current documentation and check owners above for Make-based
+  formatting, link checks and delivery evidence.

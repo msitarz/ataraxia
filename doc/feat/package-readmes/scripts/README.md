@@ -16,8 +16,10 @@ This Work inherits the parent's
 [shared package README convention](../README.md#shared-package-readme-convention)
 and
 [scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
-Independent review verifies the delivered script documentation against these
-constraints; the parent verifies coverage across the combined result.
+
+- Independent review verifies the delivered script documentation against these
+  constraints.
+- The parent verifies coverage across the combined result.
 
 ## Acceptance criteria
 
@@ -32,20 +34,23 @@ description.
 ### **AC-2 TODO** Preserved operational contracts and commands
 
 Readers can understand shell responsibilities and script relationships to Make
-and owning workflow contracts while retaining existing commands and operational
-constraints.
+and owning workflow contracts.
 
-Links connect the scripts to the Make invocations and workflow contracts that
-own those operational requirements.
+- Existing commands remain available.
+- Existing operational constraints remain available.
+- Links connect the scripts to the Make invocations and workflow contracts that
+  own those operational requirements.
 
 ### **AC-3 TODO** Accurate Python and shell interface descriptions
 
 Readers can determine how repository scripts are used from descriptions of
 their implemented interfaces.
 
-Python API descriptions agree with exports and callers. Shell interface
-descriptions state actual arguments, environment and effects as used by
-invocation sites, without copying implementation or inventing APIs.
+- Python API descriptions agree with exports and callers.
+- Shell interface descriptions state actual arguments, environment and effects
+  as used by invocation sites.
+- Shell interface descriptions do not copy implementation.
+- Shell interface descriptions do not invent APIs.
 
 ## Links
 

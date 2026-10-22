@@ -21,9 +21,10 @@ This Work inherits the parent's
 [shared package README convention](../README.md#shared-package-readme-convention)
 and
 [scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
-Independent review verifies the local example and test-root documentation. This
-Work also owns final completeness review across the delivered packages; the
-parent owner uses that review to assess the combined result.
+
+- Independent review verifies the local example and test-root documentation.
+- This Work owns final completeness review across the delivered packages.
+- The parent owner uses that review to assess the combined result.
 
 ## Acceptance criteria
 
@@ -38,9 +39,11 @@ implemented example.
 
 ### **AC-2 TODO** Independently reviewed final completeness
 
-An independent final review finds no missing scoped package, direct content or
-API ownership and no broken operational or architecture link across the
-delivered documentation.
+An independent final review establishes completeness across the delivered
+documentation.
+
+- The review finds no missing scoped package, direct content or API ownership.
+- The review finds no broken operational or architecture link.
 
 The review compares the delivered documentation with the full scoped
 filesystem, exports and callers after preceding subtrees have delivered. Its
@@ -52,8 +55,9 @@ criterion.
 
 Readers can navigate from the test root to every owned test namespace.
 
-Test-root navigation reaches the namespace READMEs, with data-only directories
-described at their nearest owners under the inherited convention.
+- Test-root navigation reaches the namespace READMEs.
+- Data-only directories are described at their nearest owners under the
+  inherited convention.
 
 ## Links
 

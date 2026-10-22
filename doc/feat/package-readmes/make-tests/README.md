@@ -17,8 +17,10 @@ This Work inherits the parent's
 [shared package README convention](../README.md#shared-package-readme-convention)
 and
 [scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
-Independent review verifies the delivered Make-test documentation against these
-constraints; the parent verifies coverage across the combined result.
+
+- Independent review verifies the delivered Make-test documentation against
+  these constraints.
+- The parent verifies coverage across the combined result.
 
 ## Acceptance criteria
 
@@ -27,26 +29,28 @@ constraints; the parent verifies coverage across the combined result.
 Make-test readers can locate the owned contents of `test/make` and its
 integration namespace and find their documented interfaces.
 
-Navigation reaches every direct owned module and subpackage, including
-executable fixtures. Summaries distinguish case-module contracts from reusable
-sandbox, recorder and worktree interfaces.
+- Navigation reaches every direct owned module and subpackage, including
+  executable fixtures.
+- Summaries distinguish case-module contracts from reusable sandbox, recorder
+  and worktree interfaces.
 
 ### **AC-2 TODO** Accurate tool boundaries and preserved operations
 
-Readers can understand real Make, Git and tool boundaries and process isolation
-while retaining `real_tool` selection commands and prepared-environment notes.
+Readers can understand real Make, Git and tool boundaries and process isolation.
 
-Architecture descriptions identify the actual process boundaries, and links
-lead to the scripts that own the described operations.
+- Existing `real_tool` selection commands remain available.
+- Existing prepared-environment notes remain available.
+- Architecture descriptions identify the actual process boundaries.
+- Links lead to the scripts that own the described operations.
 
 ### **AC-3 TODO** Understandable reusable helpers and fixtures
 
 Readers can determine the responsibilities and use of Make-test helpers,
 recorders and fixtures from their owning documentation.
 
-Helper and recorder API descriptions agree with real callers. Fixture
-responsibilities are described at their nearest owner, including the role of
-executable fixtures.
+- Helper and recorder API descriptions agree with real callers.
+- Fixture responsibilities are described at their nearest owner, including the
+  role of executable fixtures.
 
 ## Links
 

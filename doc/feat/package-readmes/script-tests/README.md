@@ -16,8 +16,10 @@ This Work inherits the parent's
 [shared package README convention](../README.md#shared-package-readme-convention)
 and
 [scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
-Independent review verifies the delivered script-test documentation against
-these constraints; the parent verifies coverage across the combined result.
+
+- Independent review verifies the delivered script-test documentation against
+  these constraints.
+- The parent verifies coverage across the combined result.
 
 ## Acceptance criteria
 
@@ -26,31 +28,33 @@ these constraints; the parent verifies coverage across the combined result.
 Script-test readers can find each owned module, namespace and reusable API from
 the `test/script` documentation.
 
-Navigation covers the direct contents of `test/script` and its namespaces that
-contain owned code at delivery. Case-module summaries identify the behaviors
-they own and distinguish unit and integration behavior where present. Reusable
-API links lead to the helpers and fixtures that own those contracts.
-
-Coverage follows current owned contents at delivery and does not require an
-empty namespace README or new test cases.
+- Navigation covers the direct contents of `test/script` and its namespaces
+  that contain owned code at delivery.
+- Case-module summaries identify the behaviors they own.
+- Case-module summaries distinguish unit and integration behavior where present.
+- Reusable API links lead to the helpers and fixtures that own those contracts.
+- Coverage follows current owned contents at delivery.
+- Coverage does not require an empty namespace README.
+- Coverage does not require new test cases.
 
 ### **AC-2 TODO** Accurate process and operational relationships
 
 Readers can determine how script tests import support, cross process boundaries
-and reuse Make support while retaining existing operational notes.
+and reuse Make support.
 
-The documented imports are canonical, process descriptions match the processes
-actually used by the tests, and Make relationships identify the shared support
-they reuse.
+- Existing operational notes remain available.
+- The documented imports are canonical.
+- Process descriptions match the processes actually used by the tests.
+- Make relationships identify the shared support they reuse.
 
 ### **AC-3 TODO** Understandable reusable support contracts
 
 Readers can determine how to use the active reusable helpers and fixtures from
 their API descriptions.
 
-Descriptions agree with helper and fixture definitions and their callers.
-Fixtures are described at their nearest owner, and reusable API descriptions
-remain distinct from case-module behavior summaries.
+- Descriptions agree with helper and fixture definitions and their callers.
+- Fixtures are described at their nearest owner.
+- Reusable API descriptions remain distinct from case-module behavior summaries.
 
 ## Links
 

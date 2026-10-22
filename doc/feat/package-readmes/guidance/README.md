@@ -27,8 +27,9 @@ This Work inherits the parent's
 [shared package README convention](../README.md#shared-package-readme-convention)
 and
 [scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
-Independent review verifies the guidance against those constraints; package
-coverage remains subject to the parent's combined review.
+
+- Independent review verifies the guidance against those constraints.
+- Package coverage remains subject to the parent's combined review.
 
 ## Acceptance criteria
 
@@ -37,11 +38,15 @@ coverage remains subject to the parent's combined review.
 Readers can find the package README convention at documentation ownership from
 the relevant engineering and testing guidance.
 
-The lasting owner states the inherited convention, and adjacent guidance links
-there as needed. The owning and adjacent guidance retains existing
-documentation ownership, navigation and operational requirements without
-contradictory or duplicated architecture, API or test rules. Representative
-product and test examples demonstrate the same convention.
+- The lasting owner states the inherited convention.
+- Adjacent guidance links there as needed.
+- The owning and adjacent guidance retains existing documentation ownership,
+  navigation and operational requirements.
+- The owning and adjacent guidance contains no contradictory architecture, API
+  or test rules.
+- The owning and adjacent guidance contains no duplicated architecture, API or
+  test rules.
+- Representative product and test examples demonstrate the same convention.
 
 ### **AC-2 TODO** Discoverable same-change maintenance obligation
 
