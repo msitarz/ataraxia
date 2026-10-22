@@ -4,6 +4,10 @@
 
 Use two or three Works to assess the guidance and decide the next adjustment.
 
+**Status: ABORT.** The maintainer stopped this Work before the trial. The
+required cases, observations, reading-route walkthrough, and next-decision
+record were not completed; the acceptance criteria remain `TODO`.
+
 ## Goals
 
 - Check that the combined route is usable before adding more process.

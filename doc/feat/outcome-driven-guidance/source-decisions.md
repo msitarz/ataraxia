@@ -153,6 +153,18 @@ remains historical context.
 
 ## Decision history and implementation boundary
 
+### Maintainer decision to stop the representative trial
+
+The maintainer directed closure by aborting the remaining representative trial.
+Accordingly, the representative-trial child is `ABORT`: no representative cases
+were run, no trial observations or reading-route walkthrough were recorded, and
+no next adjustment decision was established. Its acceptance criteria remain
+`TODO`. The parent is also `ABORT`; its AC-1, AC-2, and AC-3 remain `TODO`
+because end-to-end route assessment, composition verification, and trial
+outcomes are not established. The five delivered child Works remain `DONE`. This
+records the stop decision and unmet outcomes; it does not claim the guidance was
+validated or accepted by completing the parent's contract.
+
 [WDR workflow](../../wdr-workflow.md) governs consequential changes when the
 implementation Works change current guidance. Existing records, particularly
 [review sizing](../../wdr/0003-size-works-for-maintainer-review.md),

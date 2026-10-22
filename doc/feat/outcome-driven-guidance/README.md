@@ -5,6 +5,10 @@
 Make delivery guidance support coherent outcomes, evolving architecture, and
 substantive review with less process overhead.
 
+**Status: ABORT.** The maintainer stopped this Work before the representative
+trial. Its five guidance children remain delivered, while the parent outcomes
+below remain unverified and unsatisfied.
+
 ## Goals
 
 - Give a Work one useful outcome, verifiable acceptance conditions, and clear
@@ -133,8 +137,9 @@ trial.
   coherent outcome executable in small steps with honest evidence.
 - DONE [Guide focused engineering review](focused-review/README.md): make
   focused review produce supported findings and bounded repair.
-- TODO [Try representative Works](representative-trial/README.md): use two or
-  three Works to assess the guidance and decide the next adjustment.
+- ABORT [Try representative Works](representative-trial/README.md): stopped by
+  the maintainer before the representative trial; its required observations
+  were not collected.
 
 ## Links
 
@@ -147,9 +152,14 @@ trial.
 
 Cleanup retirement, outcome-contract guidance, architecture exploration,
 progressive delivery, and focused engineering review are delivered by their
-children. The representative trial and the parent's own acceptance criteria
-remain `TODO`. Sequential dependencies keep overlapping owner edits reviewable;
-they do not turn the children into mandatory phases of ordinary product Works.
+children. Parent AC-1 remains `TODO` because the coherent route has not been
+independently assessed end to end; AC-2 remains `TODO` because composition and
+the required shared-guarantee examples have not been verified; AC-3 remains
+`TODO` because no representative cases or resulting maintainer decision were
+recorded. The maintainer stopped the remaining trial, so these outcomes remain
+unsatisfied and this parent is `ABORT`, not `DONE`. Sequential dependencies keep
+overlapping owner edits reviewable; they do not turn the children into mandatory
+phases of ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The
