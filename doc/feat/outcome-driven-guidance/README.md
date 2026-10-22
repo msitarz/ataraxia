@@ -129,7 +129,7 @@ trial.
 - DONE [Guide architecture exploration](architecture-exploration/README.md):
   make uncertain decomposition resolvable through minimal typed architecture
   exploration.
-- TODO [Guide progressive delivery](progressive-delivery/README.md): make a
+- DONE [Guide progressive delivery](progressive-delivery/README.md): make a
   coherent outcome executable in small steps with honest evidence.
 - TODO [Guide focused engineering review](focused-review/README.md): make
   focused review produce supported findings and bounded repair.
@@ -145,11 +145,11 @@ trial.
 
 ## Additional context
 
-Cleanup retirement, outcome-contract guidance, and architecture exploration
-are delivered by their children. The parent's own acceptance criteria and the
-remaining child Work criteria are still `TODO`. Sequential dependencies keep
-overlapping owner edits reviewable; they do not turn the children into
-mandatory phases of ordinary product Works.
+Cleanup retirement, outcome-contract guidance, architecture exploration, and
+progressive delivery are delivered by their children. The parent's own
+acceptance criteria and the remaining child Works remain `TODO`. Sequential
+dependencies keep overlapping owner edits reviewable; they do not turn the
+children into mandatory phases of ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The
