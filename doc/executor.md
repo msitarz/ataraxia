@@ -56,31 +56,33 @@ For parent-map updates, follow the executor route in the
 ## Assignment return
 
 Return when the assigned scope is complete and any reviews assigned beneath it
-are complete, so the owner can review the exact result. Identify the artifact
-and revision, the assigned scope, the reviewer expected to act next, the
-stopping point, unresolved criteria, and material failures, limitations, or
-blockers. A return may deliver a Work contract, reviewed typed architecture,
-typed wiring, or completed behavior. Tests progress alongside the relevant
-increment; the sequence is proportional to the outcome and does not require
-every kind of artifact or a separate test stage.
+are complete, so the named reviewer can review the exact result. Identify the
+artifact and revision, the assigned scope, the reviewer expected to act next,
+the stopping point, unresolved criteria, and material failures, limitations,
+or blockers. An assignment may produce or update a Work artifact such as a
+contract, typed architecture, typed wiring, or implementation. Follow
+[progressive implementation](engineering.md#progressive-implementation) for
+optional increments and tests alongside the relevant increment.
 
-An architecture or wiring review assignment returns its reviewed artifact and
-findings to its owner, then waits for that applicable review before
-implementation continues. Do not proceed past the named stopping point on the
-basis of a sent return alone. A return with unfinished assigned scope or
-unfinished subordinate review is a blocker update, not a completed assignment
-return.
+An assignment to produce typed architecture or typed wiring for selected review
+returns the completed artifact to the named reviewer; the assignment itself
+does not conduct or complete that review. If the review is a stopping point
+before implementation, wait for the named reviewer to complete it before
+continuing. Do not proceed past the named stopping point on the basis of a sent
+return alone. A return with unfinished assigned scope or unfinished subordinate
+review is a blocker update, not a completed assignment return.
 
 ## Return for review
 
-For a completed Work, follow the Work-level acceptance and evidence rules in
-[Work acceptance](acceptance-tracing.md#evidence). Intermediate assignment
-returns do not mark Work criteria `DONE` or imply that the Work is complete.
-Point to existing evidence sources needed for review. If continuing after an
-interrupted session, report the recovered state and which changes and evidence
-apply to the current revision. If that state is uncertain, report the
-uncertainty and wait for owner steering rather than treating the assignment as
-complete.
+Follow the Work-level acceptance and evidence rules in
+[Work acceptance](acceptance-tracing.md#evidence). A return alone does not
+establish that a Work criterion is `DONE` or that the Work is complete. The
+owner marks a criterion `DONE` only after independent review verifies its full
+condition from the artifact and evidence. The owner may do so while the Work
+continues. If continuing after an interrupted session, report the recovered
+state and which changes and evidence apply to the current revision. If that
+state is uncertain, report the uncertainty and wait for owner steering rather
+than treating the assignment as complete.
 
 The owning orchestrator independently reviews the artifact and evidence,
 coordinates corrections and delivery, and retains publication and maintainer

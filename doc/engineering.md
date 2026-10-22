@@ -97,8 +97,9 @@ tests without architecture exploration or a
 When decomposition is unclear, follow the bounded
 [architecture exploration](architecture-exploration.md) route.
 
-- For a broader outcome, typed composition may establish real sequencing and
-  effect ownership before every operation is complete.
+- For a broader outcome, typed wiring is real typed composition that establishes
+  sequencing and effect ownership while some leaf operations may remain
+  stubbed; it does not establish the stubbed behavior.
 - A walking skeleton may exercise a thin path through that composition while
   unfinished leaf operations are stubbed; fake adapters may stand in for
   external effects.

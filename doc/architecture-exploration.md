@@ -28,15 +28,15 @@ implementation. Consequential design is reviewed before implementation.
 
 ## Review a boundary
 
-For an outcome delivered progressively within one Work, an owner may assign a
-bounded architecture or typed-wiring review as an intermediate assignment. The
-handoff names the artifact and scope, the reviewer, and the stopping point. The
-review assignment returns its completed scope and any applicable subordinate
-reviews for the owner's review; implementation waits for that review before
-continuing. This is an assignment boundary within the Work, not a new Work or a
-mandatory phase. The Work's artifact may progress from a contract to reviewed
-typed architecture and typed wiring, then completed behavior, with tests
-alongside the relevant increment. Use only the increments that fit the outcome.
+Within one Work, an owner may assign a bounded scope to produce typed
+architecture or typed wiring for review before further implementation. The
+handoff names the artifact and scope, the applicable reviewer, and the stopping
+point. The assignee returns the completed artifact and any applicable
+subordinate reviews for that review; implementation waits for the named
+reviewer to complete the review before continuing. This is an assignment
+boundary within the Work, not a new Work or a mandatory phase. For optional,
+proportional progression and the meaning of typed wiring, see
+[progressive implementation](engineering.md#progressive-implementation).
 
 Review architecture for the outcome it supports. Preserve inherited Work
 constraints and make clear:

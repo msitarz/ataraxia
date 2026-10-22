@@ -48,6 +48,7 @@ authoritative owners.
 - [33. Deliver one outcome progressively](0033-deliver-one-outcome-progressively.md)
 - [34. Bound focused review corrections](0034-bound-focused-review-corrections.md)
 - [35. Distinguish assignment returns from Work completion](0035-distinguish-assignment-returns-from-work-completion.md)
+- [36. Verify qualitative and quantitative constraints appropriately](0036-verify-qualitative-and-quantitative-constraints.md)
 
 ## Proposal
 

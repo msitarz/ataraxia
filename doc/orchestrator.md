@@ -120,9 +120,9 @@ groups of information:
 - **Workspace:** destination path, branch, assigned base, create or resume
   instruction, and the existing creation or setup route when applicable.
 - **Authority and stopping point:** approved scope, where to report a gap, and
-  the named reviewer and stopping point before work resumes. An architecture or
-  wiring review assignment awaits the applicable owner review before
-  implementation continues.
+  the named reviewer and stopping point before work resumes. An assignment to
+  produce typed architecture or typed wiring for selected review awaits the
+  named reviewer's completed review before implementation continues.
 - **Return:** use the assigned role's requirements: [Definer
   guidance](definer.md) or [Executor guidance](executor.md). Identify changes
   awaiting review or needed steering.
@@ -134,14 +134,16 @@ forwarding the full conversation by default. For approved Work scope, follow
 the [routine-choice rule](workflow.md#scope-and-sizing).
 
 A Work is the coherent outcome and acceptance boundary. A delegated assignment
-is a bounded scope within it and may return an intermediate contract,
-architecture, wiring, or behavior artifact. A completed assignment return
-means its assigned scope and any applicable subordinate reviews are finished
-for the named owner's review; it does not mean that the Work is complete or
-that its acceptance criteria are `DONE`. The owner reviews a finished
-intermediate assignment within an unfinished Work and authorizes the next
-increment within the existing scope. The maintainer reviews the requested Work
-at its delivery boundary and retains review, merge, and CI authority.
+is a bounded scope within it and may produce or update a
+[Work artifact](acceptance-tracing.md#evidence). A completed assignment return
+means its assigned scope and any applicable subordinate reviews are finished for
+the named reviewer's review; the return alone does not establish criterion
+status or Work completion. The owner marks a criterion `DONE` only after
+independent review verifies its full condition; the owner may do so even if the
+Work continues. The owner reviews a finished intermediate assignment and
+authorizes the next increment within the existing scope. The maintainer reviews
+the requested Work at its delivery boundary and retains review, merge, and CI
+authority.
 
 The owning orchestrator independently reviews completed definitions before
 implementation begins. Use the same consolidated correction and review gates
@@ -206,15 +208,18 @@ parent's integration review, or before publication if it is the requested Work.
 After handoff and each correction request, wait for the completed assignment
 return or a blocker needing owner or maintainer steering before reviewing. A
 completed return includes the assigned scope and applicable subordinate
-reviews; do not inspect unfinished edits or interrupt a subordinate review.
-Review its finished artifact once against the assigned scope and applicable
-owner guidance, including when the containing Work remains unfinished. Do not
-poll for routine status, inspect partial diffs, or send fragmented corrections.
-Review the completed diff against Work acceptance when the Work itself is
-returned for that review, inspecting evidence in its source records. Send one
-consolidated finding list to the same active agent session; review corrections
-as needed. Reuse applicable evidence and rerun focused checks only when a
-change, failure, or unresolved concern warrants it.
+reviews for the named reviewer's review; do not inspect unfinished edits or
+interrupt a subordinate review. Review its finished artifact once against the
+assigned scope and applicable owner guidance, including when the containing
+Work remains unfinished. When an assignment produces typed architecture or
+typed wiring and names review as its stopping point, wait for that named
+reviewer to finish before implementation resumes. Do not poll for routine
+status, inspect partial diffs, or send fragmented corrections. Review the
+completed diff against Work acceptance when
+the Work itself is returned for that review, inspecting evidence in its source
+records. Send one consolidated finding list to the same active agent session;
+review corrections as needed. Reuse applicable evidence and rerun focused
+checks only when a change, failure, or unresolved concern warrants it.
 Context reuse may help token caching, but caching is not guaranteed. Each
 autonomous repair round follows these rules:
 
