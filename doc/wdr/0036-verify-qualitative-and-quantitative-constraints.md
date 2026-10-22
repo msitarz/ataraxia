@@ -21,16 +21,16 @@ dependency direction need verification but have no useful numeric target.
 
 ## Decision
 
-For every inherited non-functional requirement, state its verification scope
-and responsible verifier. For a quantitative requirement, state its threshold
-and the workload and measurement conditions needed to interpret it. For a
-qualitative constraint, name an appropriate way to verify it and its scope and
-responsible verifier; do not require a numeric target.
-
-Parent acceptance continues to verify system-level guarantees across the
-integrated result, including composition. This clarification does not weaken
-any inherited constraint or make planned verification evidence of a completed
-outcome.
+- For every inherited non-functional requirement, state its verification scope
+  and responsible verifier.
+- For a quantitative requirement, state its threshold and the workload and
+  measurement conditions needed to interpret it.
+- For a qualitative constraint, name an appropriate verification method and
+  scope; do not require a numeric target.
+- Parent acceptance verifies system-level guarantees across the integrated
+  result, including composition.
+- This clarification does not weaken inherited constraints or make planned
+  verification evidence of a completed outcome.
 
 ## Consequences
 

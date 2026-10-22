@@ -28,6 +28,8 @@ the Work's one coherent outcome:
 - `DONE` means an independent reviewer verified the criterion's condition or
   guarantee from observed evidence. It does not itself mean maintainer approval
   or merge.
+- An assignment return alone establishes neither criterion status nor Work
+  completion.
 
 Any required `TODO` criterion prevents Work completion.
 
