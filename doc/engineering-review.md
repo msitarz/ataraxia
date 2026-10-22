@@ -32,6 +32,9 @@ identified, immutable revision and return one judgment for that rule:
 - `NOT_APPLICABLE`: this rule does not apply to the change; state why.
 - `UNCERTAIN`: context is missing or ambiguity remains; do not invent a pass or
   violation.
+
+Use the following context and finding rules:
+
 - Include the old and new function when relevant to the rule.
 - Include the rule-specific caller, type, and module context needed to make the
   judgment.

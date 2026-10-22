@@ -207,7 +207,8 @@ correction rules:
   revisions; five is a fallback cap, not a target.
 - Stop earlier if a finding remains after a correction attempt or recurs on a
   later revision, corrections oscillate, applicable rules conflict, a
-  correction makes no progress, or an architectural decision is needed.
+  correction makes no progress, an architectural decision is needed, or the
+  session cannot continue.
 - After each changed revision, review that revision and rerun applicable checks;
   earlier judgments do not cover changed code.
 - When stopping, report the attempts, current revision, concrete evidence, and

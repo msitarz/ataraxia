@@ -41,6 +41,6 @@ review of the whole change:
 [Engineering review](../engineering-review.md) owns focused judgments and
 finding quality. [Orchestrator guidance](../orchestrator.md) owns correction
 coordination and stopping. [Executor guidance](../executor.md) routes
-corrections to that procedure. WDR 10's recovery requirements remain in force;
-an architectural decision or new split follows the existing whole-tree pause
-and planning gates.
+corrections to that procedure. [WDR 10](0010-recover-delegated-handoffs.md)'s
+recovery requirements remain in force; an architectural decision or new split
+follows the existing whole-tree pause and planning gates.
