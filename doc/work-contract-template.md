@@ -81,12 +81,18 @@ Omit empty criterion subheadings.
 
 <!-- AC code outcome example:
 
-### **AC-1 TODO** Create a sandbox with an unused name
+### **AC-1 TODO** Create a directory without overwriting an existing path
+
+Running `mkdir reports` creates the directory when `reports` does not exist. If the path already exists, the command fails and leaves its contents unchanged. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
 
 
 #### What exists
 
 Describe existing behavior or machinery that helps explain this criterion, including what can be reused. Omit when unnecessary.
+
+#### Evidence
+
+Identify the command, test, or artifact that demonstrates each scenario.
 -->
 
 <!-- AC guidance outcome example:
