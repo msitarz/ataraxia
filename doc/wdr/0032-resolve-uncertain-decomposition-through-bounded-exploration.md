@@ -45,7 +45,7 @@ owns the decomposition assessment, and
 gates. [Architecture exploration](../architecture-exploration.md) owns design
 maturity and retention; the product [Architecture](../architecture.md) remains
 the current product view. The
-[architecture-exploration Work](../feat/outcome-driven-guidance/architecture-exploration/README.md)
+[architecture-exploration Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/architecture-exploration/README.md)
 carries the guidance change, subject to independent review and parent
 composition. Maintainer review and merge authority and final-head CI remain in
 force.

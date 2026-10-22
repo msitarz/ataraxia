@@ -15,7 +15,7 @@ WDR 5 establishes consolidated review of completed handoffs and corrections.
 Focused engineering findings also need enough rule-specific context to support
 the responsible owner's judgment, and the correction loop needs an explicit
 fallback cap and earlier stopping conditions. The
-[focused review Work](../feat/outcome-driven-guidance/focused-review/README.md)
+[focused review Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/focused-review/README.md)
 delivers the current guidance.
 
 ## Decision
