@@ -49,4 +49,4 @@ verification before removal. The merge must retain these commits, so the
 delivery cannot be squashed. This avoids duplicate PR evidence at the cost of
 preserving a separate removal boundary. See [Work lifecycle](../workflow.md),
 [orchestrator handoffs](../orchestrator.md), and the
-[completion-evidence Work](../feat/reviewable-workflow-v2/trial-preparation/README.md).
+[completion-evidence Work](https://github.com/msitarz/ataraxia/blob/2405ded5e1fb993c9411e77a73111b1d95f1bf2c/doc/feat/reviewable-workflow-v2/trial-preparation/README.md).

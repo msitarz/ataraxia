@@ -12,7 +12,6 @@ help: ## display this command index
 		/^[[:alnum:]_.-]+:.*##/ { printf "  make %-18s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo "Run project tools through Make targets; ARGS narrows target-specific checks."
 	@echo "doc-check always checks every active Work, regardless of ARGS."
-	@echo "Managed sandbox usage and supported limits: doc/evaluation-sandboxes.md"
 
 singlequote := $(shell echo "'")
 # Quote caller selectors as literal, whitespace-separated shell words.
@@ -217,7 +216,7 @@ ci-package-setup:
 
 ##@ Worktrees
 # Cleanup selectors are literal values, not recursively expanded Make expressions.
-unexport WORKTREE EXPIRE NAME SANDBOX_ROOT
+unexport WORKTREE EXPIRE NAME
 .PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
 worktree-list: ## list linked worktrees, branches, locks, and stale registrations
 	git worktree list --porcelain
@@ -294,9 +293,3 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 .PHONY: work-review
 work-review: ## review Work sizing and remind owner to publish and deliver PR
 	@printf '%s\n' 'Before publication: does the actual diff preserve a coherent outcome and contract, including consequential details? The five-minute heuristic covers understanding the outcome and constraints; substantive implementation review has no time cap. For code or test changes, independently review design judgment on the exact final revision before publication. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/engineering-review.md doc/orchestrator.md#review-and-return'
-
-.PHONY: sandbox-create
-##@ Evaluation sandboxes
-sandbox-create: ## create an independent prepared evaluation sandbox; requires NAME=name [SANDBOX_ROOT=/path]
-	@uv run --no-sync python script/sandbox.py create $(call _SHELL_VALUE,$(value NAME)) \
-		$(call _SHELL_VALUE,$(CURDIR)) $(call _SHELL_VALUE,$(value SANDBOX_ROOT))

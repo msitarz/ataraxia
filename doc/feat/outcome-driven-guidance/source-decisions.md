@@ -112,12 +112,10 @@ Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
   [engineering review](../../engineering-review.md) already own boundaries, pure
   decisions, meaningful tests, and design judgment; extend those owners rather
   than creating a parallel rule system.
-- [Existing workflow trial](../reviewable-workflow-v2/live-trial/README.md) and
-  its
-  [trial contract](../reviewable-workflow-v2/trial-preparation/trial-contract/README.md)
-  still require a broader protocol and a familiar parallel feature; the
-  representative trial must explicitly reconcile these pending plans rather than
-  inherit them silently.
+- The historical workflow trial and trial contract remain in Git history:
+  [trial](https://github.com/msitarz/ataraxia/blob/2405ded5e1fb993c9411e77a73111b1d95f1bf2c/doc/feat/reviewable-workflow-v2/live-trial/README.md),
+  [contract](https://github.com/msitarz/ataraxia/blob/2405ded5e1fb993c9411e77a73111b1d95f1bf2c/doc/feat/reviewable-workflow-v2/trial-preparation/trial-contract/README.md).
+  Their pending plans are retired.
 
 ### Current architecture guidance
 

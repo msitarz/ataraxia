@@ -2,9 +2,6 @@
 
 Read when acting as orchestrator for repository changes.
 
-When creating or using a managed evaluation sandbox, also read its
-[usage and supported-condition limits](evaluation-sandboxes.md).
-
 ## Roles and delegation
 
 The orchestrator owns scope, planning, read-only investigation, and independent

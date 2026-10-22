@@ -14,7 +14,6 @@ relevant guidance.
 | Shared writing standard for Work contracts, guidance, ADRs, and WDRs | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
-| Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
 | Work contract structure and authoring | [Work contract template](work-contract-template.md) |
 | Work definition context and specialized requirements | [Work definition](work-definition.md) |
 | General Work rules | [Work workflow](workflow.md) |

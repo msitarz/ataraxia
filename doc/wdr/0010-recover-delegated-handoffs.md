@@ -33,4 +33,4 @@ routine polling and evidence journals. Current rules belong in
 [orchestrator handoffs](../orchestrator.md); criterion status and coverage
 semantics remain in [acceptance tracing](../acceptance-tracing.md). See the
 trial-preparation
-[parent Work](../feat/reviewable-workflow-v2/trial-preparation/README.md).
+[parent Work](https://github.com/msitarz/ataraxia/blob/2405ded5e1fb993c9411e77a73111b1d95f1bf2c/doc/feat/reviewable-workflow-v2/trial-preparation/README.md).
