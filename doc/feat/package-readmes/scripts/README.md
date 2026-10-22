@@ -10,16 +10,24 @@ Make repository scripts and their operational interfaces discoverable.
   functions and types.
 - Connect script responsibilities to Make and authoritative workflow contracts.
 
+## Inherited constraints
+
+This Work inherits the parent's
+[shared package README convention](../README.md#shared-package-readme-convention)
+and
+[scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
+Independent review verifies the delivered script documentation against these
+constraints; the parent verifies coverage across the combined result.
+
 ## Acceptance criteria
 
-### **AC-1 TODO** Complete script navigation and interface descriptions
+### **AC-1 TODO** Discoverable scripts and interfaces
 
-Script readers can locate every direct script and understand its implemented
-entry-point and reusable interfaces.
+Readers can locate every direct repository script and find its implemented
+command entry points and reusable functions and types.
 
-Python descriptions agree with exports and callers. Shell interfaces describe
-actual arguments, environment and effects as used by invocation sites without
-copying implementation or inventing APIs.
+Each script summary identifies its responsibility and leads to its interface
+description.
 
 ### **AC-2 TODO** Preserved operational contracts and commands
 
@@ -27,8 +35,17 @@ Readers can understand shell responsibilities and script relationships to Make
 and owning workflow contracts while retaining existing commands and operational
 constraints.
 
-Module summaries, API descriptions and owner links follow the
-[parent convention](../README.md#acceptance-criteria).
+Links connect the scripts to the Make invocations and workflow contracts that
+own those operational requirements.
+
+### **AC-3 TODO** Accurate Python and shell interface descriptions
+
+Readers can determine how repository scripts are used from descriptions of
+their implemented interfaces.
+
+Python API descriptions agree with exports and callers. Shell interface
+descriptions state actual arguments, environment and effects as used by
+invocation sites, without copying implementation or inventing APIs.
 
 ## Links
 
@@ -39,4 +56,4 @@ Module summaries, API descriptions and owner links follow the
 
 The proposed ordered leaves are Python scripts, then shell scripts. These
 remain planning slices, subject to the
-[planning-before-package-edit gate](../README.md#additional-context).
+[planning-before-package-edit gate](../README.md#scheduling-and-planning-before-package-edit-gate).

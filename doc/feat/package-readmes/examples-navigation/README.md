@@ -15,15 +15,26 @@ the delivered package READMEs.
 
 - Create empty README shells or an automated inventory framework.
 
+## Inherited constraints
+
+This Work inherits the parent's
+[shared package README convention](../README.md#shared-package-readme-convention)
+and
+[scheduling and planning gate](../README.md#scheduling-and-planning-before-package-edit-gate).
+Independent review verifies the local example and test-root documentation. This
+Work also owns final completeness review across the delivered packages; the
+parent owner uses that review to assess the combined result.
+
 ## Acceptance criteria
 
-### **AC-1 TODO** Complete example and test-root navigation
+### **AC-1 TODO** Discoverable crossover strategy and interfaces
 
-Readers can discover the crossover strategy and its public interfaces and case
-module, then navigate test-root namespaces under the
-[parent convention](../README.md#acceptance-criteria).
+Readers can find the crossover strategy, its public interfaces and case module
+and understand their responsibilities.
 
-Data-only directories remain described by their nearest owners.
+The example documentation explains the strategy and the responsibilities of
+its interfaces and case module through descriptions that agree with the
+implemented example.
 
 ### **AC-2 TODO** Independently reviewed final completeness
 
@@ -31,9 +42,18 @@ An independent final review finds no missing scoped package, direct content or
 API ownership and no broken operational or architecture link across the
 delivered documentation.
 
-The review covers the full scoped filesystem, exports and callers, including
-architecture and preserved operational navigation after preceding subtrees
-have delivered.
+The review compares the delivered documentation with the full scoped
+filesystem, exports and callers after preceding subtrees have delivered. Its
+coverage includes architecture descriptions and preserved operational
+navigation, so local subtree completeness alone does not establish this
+criterion.
+
+### **AC-3 TODO** Complete test-root navigation
+
+Readers can navigate from the test root to every owned test namespace.
+
+Test-root navigation reaches the namespace READMEs, with data-only directories
+described at their nearest owners under the inherited convention.
 
 ## Links
 
@@ -44,5 +64,5 @@ have delivered.
 
 The proposed ordered leaves are example, test root, then final completeness
 review. These remain planning slices, subject to the
-[planning-before-package-edit gate](../README.md#additional-context), after
-the preceding subtrees.
+[planning-before-package-edit gate](../README.md#scheduling-and-planning-before-package-edit-gate),
+after the preceding subtrees.
