@@ -23,6 +23,15 @@ files.
 The project requires Python 3.14 or newer and uses native deferred annotation
 evaluation; do not add `from __future__ import annotations`.
 
+When converting a reviewed `.pyi` interface into an implementation module,
+preserve the reviewed design and recheck the implementation against it. Do not
+leave a shadowing `.pyi` beside the `.py` in active module resolution; retain a
+superseded design separately with its status or relationship to the current
+architecture. Static type checks establish only the checked static contracts;
+they do not establish runtime validation, purity, or delivered behavior.
+Architecture exploration and maturity are described in
+[Architecture exploration](architecture-exploration.md).
+
 - Prefer function composition, focused functions, guard clauses, and early
   returns. Ruff's PLR0915 counts statements in source, scripts, and tests and
   blocks lint above 25. Treat the limit as a readability signal, not a target

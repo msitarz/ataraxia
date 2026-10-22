@@ -51,6 +51,14 @@ points: stop new dispatch and implementation, preserve in-flight artifacts and
 evidence, and report the concrete decision and affected scope to the maintainer.
 Contract preparation needed for steering may continue under owner review.
 
+When decomposition is unknown, bounded typed architecture exploration may
+continue to resolve that uncertainty under
+[Work definition](work-definition.md#decomposition-and-architectural-exploration).
+It must stay within the existing outcome and cannot authorize expanded feature
+implementation. If it identifies a split or scope change, stop implementation
+and use the whole-tree pause above; expanded implementation waits for the
+concrete planning PR to merge.
+
 Resume only the authorized scope after the maintainer decision and applicable
 planning gates. Expanded implementation waits for the concrete planning PR to
 merge; a decision alone does not bypass that gate. Independent review and merge

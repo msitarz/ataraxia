@@ -10,6 +10,12 @@ unimplemented capability remains pending. Update this document when behavior
 changes consistently with an accepted contract, or when a new decision changes
 that contract.
 
+This document owns product architecture. Architecture of repository workflow
+and development tooling belongs with the relevant workflow or tooling guidance;
+do not route those concerns through product architecture. For the maturity,
+review, and retention of architecture exploration, see
+[Architecture exploration](architecture-exploration.md).
+
 ## System overview
 
 The backtest is running the code against a shard of data (e.g. a single intraday

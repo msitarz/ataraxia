@@ -12,6 +12,11 @@ for the five-minute heuristic, and
 [23. Use readable README contracts](0023-use-readable-readme-contracts.md)
 for acceptance criteria.
 
+Amended by
+[32. Resolve uncertain decomposition through bounded exploration](0032-resolve-uncertain-decomposition-through-bounded-exploration.md)
+for bounded architecture exploration while decomposition is unknown; split,
+scope-change, and expanded-implementation gates remain in force.
+
 ## Context
 
 The prior sizing rule applied the five-minute target to the complete expected

@@ -44,6 +44,7 @@ authoritative owners.
 - [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
 - [30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
 - [31. Define outcome contracts and size for understanding](0031-define-outcome-contracts-and-size-for-understanding.md)
+- [32. Resolve uncertain decomposition through bounded exploration](0032-resolve-uncertain-decomposition-through-bounded-exploration.md)
 
 ## Proposal
 
