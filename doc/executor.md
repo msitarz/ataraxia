@@ -55,17 +55,20 @@ For parent-map updates, follow the executor route in the
 
 ## Assignment return
 
-Return only after the assigned scope and applicable subordinate reviews are
-complete. Identify the artifact and revision, assigned scope, next reviewer,
-stopping point, unresolved criteria, and material failures, limitations, or
-blockers. Handoffs define the artifact, scope, reviewer, and stopping point;
-see [orchestrator handoffs](orchestrator.md#roles-and-delegation).
+Use [Orchestrator handoffs](orchestrator.md#roles-and-delegation) for the
+assignment's scope, reviewer, and stopping point. Return according to these
+rules:
 
-For a selected architecture or wiring review, return the completed artifact to
-the named reviewer and wait for that review before continuing when it is the
-stopping point. Sending a return does not authorize continuation. If scope or
-subordinate review remains unfinished, report a blocker update rather than a
-completed return.
+- Return after the assigned scope and applicable subordinate reviews are
+  complete.
+- Identify the artifact and revision, assigned scope, next reviewer, stopping
+  point, unresolved criteria, and material failures, limitations, or blockers.
+- For a selected architecture or wiring review, return the completed artifact
+  to its named reviewer.
+- If that review is the stopping point, wait for it to finish before continuing.
+- Sending a return does not authorize continuation past the stopping point.
+- If the assigned scope or subordinate review is unfinished, report a blocker
+  update rather than a completed return.
 
 Follow [progressive implementation](engineering.md#progressive-implementation)
 for optional increments and tests alongside the relevant increment.

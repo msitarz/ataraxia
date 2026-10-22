@@ -120,9 +120,7 @@ groups of information:
 - **Workspace:** destination path, branch, assigned base, create or resume
   instruction, and the existing creation or setup route when applicable.
 - **Authority and stopping point:** approved scope, where to report a gap, and
-  the named reviewer and stopping point. For architecture review boundaries,
-  follow
-  [architecture exploration](architecture-exploration.md#review-a-boundary).
+  the named reviewer and stopping point.
 - **Return:** use the assigned role's requirements: [Definer
   guidance](definer.md) or [Executor guidance](executor.md). Identify changes
   awaiting review or needed steering.
@@ -138,9 +136,8 @@ is a bounded scope within it and may produce or update a
 [Work artifact](acceptance-tracing.md#evidence). Follow [Executor
 guidance](executor.md#assignment-return) for return contents and
 [Work acceptance](acceptance-tracing.md#criterion-status) for criterion
-status. The owner independently reviews each returned artifact and authorizes
-the next increment within existing scope. The maintainer reviews the requested
-Work at its delivery boundary and retains review, merge, and CI authority.
+status. The maintainer reviews the requested Work at its delivery boundary and
+retains review, merge, and CI authority.
 
 The owning orchestrator independently reviews completed definitions before
 implementation begins. Use the same consolidated correction and review gates
@@ -202,19 +199,25 @@ map changes; child leaf PRs are not published from this requested-parent run.
 After the leaves, review the parent's own acceptance under its immediate
 parent's integration review, or before publication if it is the requested Work.
 
-After handoff or a correction request, wait for the completed return or a
-blocker requiring owner or maintainer steering. Do not inspect unfinished
-edits or interrupt an applicable subordinate review. Review the finished
-artifact once against its assigned scope and owner guidance, even when the Work
-continues. If review is the named stopping point, wait for the reviewer to
-complete it before authorizing continuation. Do not poll for routine status or
-send fragmented corrections.
+- After handoff or a correction request, wait until the assigned scope and
+  applicable subordinate reviews are complete, or a blocker requires owner or
+  maintainer steering.
+- Do not inspect unfinished edits or interrupt an applicable subordinate
+  review.
+- Independently review a completed intermediate assignment once against its
+  assigned scope and owner guidance, even while the Work continues.
+- When review is the named stopping point, wait for the named reviewer to finish
+  before authorizing continuation.
+- Do not poll for routine status or send fragmented corrections.
+- When the Work itself is returned, review its completed diff against Work
+  acceptance and inspect evidence in its source records.
+- Send one consolidated finding list to the same active agent session.
+- Reuse applicable evidence and rerun focused checks only when a change,
+  failure, or unresolved concern warrants it.
 
-When the Work itself is returned, review the completed diff against Work
-acceptance and inspect evidence in its source records. Send one consolidated
-finding list to the same active agent session. Reuse applicable evidence and
-rerun focused checks only when a change, failure, or unresolved concern
-warrants it.
+After an assignment review, the owner authorizes the next increment within the
+existing scope. Maintainer review, merge, and CI authority remain at the
+requested Work's delivery boundary.
 Context reuse may help token caching, but caching is not guaranteed. Each
 autonomous repair round follows these rules:
 

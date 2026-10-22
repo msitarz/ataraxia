@@ -35,14 +35,14 @@ Any required `TODO` criterion prevents Work completion.
 
 ## Evidence
 
-The maintainer accepts Work outcomes based on evidence. Agent review
-prepares that decision and does not replace maintainer review. Evidence depends
-on the outcome:
-
 A Work artifact is a concrete output produced or updated within the Work, such
 as its contract, typed architecture, typed wiring, or implementation. An
 intermediate artifact can support review or verify an acceptance criterion
 without completing the Work's full outcome.
+
+The maintainer accepts Work outcomes based on evidence. Agent review
+prepares that decision and does not replace maintainer review. Evidence depends
+on the outcome:
 
 - Implementation: code, appropriate tests, and their results in CI. Local test
   runs support preparation and debugging.
