@@ -12,6 +12,9 @@ Amended by
 Amended by
 [17. Review local artifacts before PR publication](0017-review-local-artifacts-before-pr-publication.md).
 
+Amended by
+[34. Bound focused review corrections](0034-bound-focused-review-corrections.md).
+
 ## Context
 
 Continuous polling and partial review can surface issues earlier, but status

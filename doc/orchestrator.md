@@ -200,13 +200,35 @@ completed diff once against acceptance and owner guidance, inspecting evidence
 in its source records. Send one consolidated finding list to the same active
 agent session; review corrections as needed. Reuse applicable evidence and rerun
 focused checks only when a change, failure, or unresolved concern warrants it.
-Context reuse may help token caching, but caching is not guaranteed. If the same
-finding remains after a correction attempt, or the session cannot continue, stop
-and report attempts, current evidence, and the specific decision or help needed.
-Resume only with orchestrator or maintainer steering. If the assigned agent is
-unavailable, report that and wait; do not silently switch agents or implement
-its changes as a fallback. Keep independent review and maintainer review, merge,
-and CI gates.
+Context reuse may help token caching, but caching is not guaranteed. Each
+autonomous repair round follows these rules:
+
+- Allow at most five correction requests in a round; five is a fallback cap,
+  not a target.
+- Preserve the round's request count across revisions, session recovery, and
+  ordinary orchestrator steering. None of these resets the count.
+- Stop earlier if a finding remains after a correction attempt or recurs on a
+  later revision, corrections oscillate, applicable rules conflict, a
+  correction makes no progress, an architectural decision is needed, or the
+  session cannot continue.
+- After each changed revision, review that revision and rerun applicable checks;
+  earlier judgments do not cover changed code.
+- When stopping, report the attempts, current revision, concrete evidence, and
+  the decision or help needed. Follow
+  [engineering review](engineering-review.md#focused-rule-review) for finding
+  evidence and owner reconciliation.
+- Ordinary orchestrator steering may resume an earlier-stopped round within
+  its remaining request budget, subject to the existing scope, review, recovery,
+  and planning gates.
+- Generic direction to continue does not authorize a new round, reset the
+  count, or permit unlimited retries. Explicit maintainer direction may
+  authorize one additional bounded round.
+- If a new split or maintainer decision is needed, apply the whole-tree pause
+  and planning gates in [Work workflow](workflow.md#decisions-and-new-splits).
+- If the assigned agent is unavailable, report that and wait; do not silently
+  switch agents or implement its changes as a fallback.
+
+Keep independent review and maintainer review, merge, and CI gates.
 
 If a definer or executor session is cancelled or lost, recover from the Work
 contract, parent map, branch or PR, and available evidence. Establish which

@@ -22,6 +22,34 @@ runner-parameter mappings, execution order, and effect ownership. Static typing
 may miss incorrect dynamic graph mappings; follow representative inputs through
 the wired path and verify the resulting behavior at its owning boundary.
 
+## Focused rule review
+
+Focused rule review is optional. Assess each named engineering rule against one
+identified, immutable revision and return one judgment for that rule:
+
+- `PASS`: adequate context supports that the change does not violate this rule.
+- `VIOLATION`: evidence shows that this rule is broken.
+- `NOT_APPLICABLE`: this rule does not apply to the change; state why.
+- `UNCERTAIN`: context is missing or ambiguity remains; do not invent a pass or
+  violation.
+
+Use the following context and finding rules:
+
+- Include the old and new function when relevant to the rule.
+- Include the rule-specific caller, type, and module context needed to make the
+  judgment.
+- Support each finding with concrete evidence and explain its consequence.
+- Keep findings separate from suggestions for possible improvement.
+- Have the responsible owner deduplicate overlapping findings and judge
+  conflicts between rules and rule applicability.
+- Use focused findings to support the owner's judgment of the whole change.
+- Keep architecture review responsible for intent, ownership, and dependencies;
+  keep engineering review responsible for implementation quality.
+- Do not treat focused judgments as a replacement for substantive whole-change
+  review.
+- Do not set a finding quota or require refactoring when the reviewed change is
+  sound.
+
 ## Three contrasts
 
 These examples distinguish accepted history from possible future choices.
