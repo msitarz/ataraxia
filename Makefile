@@ -216,7 +216,7 @@ ci-package-setup:
 
 ##@ Worktrees
 # Cleanup selectors are literal values, not recursively expanded Make expressions.
-unexport WORKTREE EXPIRE NAME
+unexport WORKTREE EXPIRE
 .PHONY: worktree-list worktree-remove worktree-prune-preview worktree-prune
 worktree-list: ## list linked worktrees, branches, locks, and stale registrations
 	git worktree list --porcelain
