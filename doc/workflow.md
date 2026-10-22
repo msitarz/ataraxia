@@ -48,8 +48,8 @@ Contract preparation needed for steering may continue under owner review.
 
 Resume only the authorized scope after the maintainer decision and applicable
 planning gates. Expanded implementation waits for the concrete planning PR to
-merge; a decision alone does not bypass that gate. The explicit scope exception
-above still applies, without waiving independent review or merge gates.
+merge; a decision alone does not bypass that gate. Independent review and merge
+gates still apply.
 
 ## Lifecycle
 

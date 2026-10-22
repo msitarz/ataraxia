@@ -17,7 +17,7 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Acceptance criteria
 
-### **AC-1 TODO** One Work has one understandable outcome
+### **AC-1 DONE** One Work has one understandable outcome
 
 The Work template, definition, and sizing guidance let a reader understand a
 coherent outcome, its acceptance conditions, inherited constraints, and
@@ -37,7 +37,7 @@ Independently assessable guarantees have separate criteria; parallel conditions
 of one guarantee may use bullets within that criterion. This distinction does
 not impose a criterion quota or require more child Works.
 
-### **AC-2 TODO** Shared constraints have an accountable verification scope
+### **AC-2 DONE** Shared constraints have an accountable verification scope
 
 Parent contracts own essential shared concepts, invariants, responsibilities,
 dependency direction, and effect limits without predefining every signature.

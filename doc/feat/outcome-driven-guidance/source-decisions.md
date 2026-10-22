@@ -78,12 +78,22 @@ this plan makes no efficacy claim from that experience.
 
 Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
 
-- [Work workflow](../../workflow.md#scope-and-sizing) currently applies the
-  five-minute target to the complete expected change and actual diff;
-  outcome-contract guidance will replace that meaning and its role reminders.
-- [Work template](../../work-contract-template.md) currently gives each
-  acceptance criterion one outcome; the new contracts deliberately use one
-  outcome per Work and acceptance conditions within it.
+- At the verified planning baseline,
+  [Work workflow](../../workflow.md#scope-and-sizing) applied the five-minute
+  target to the complete expected change and actual diff.
+  [WDR 31](../../wdr/0031-define-outcome-contracts-and-size-for-understanding.md)
+  records the delivered policy: the heuristic covers understanding the outcome
+  and contract, while implementation review remains substantive and uncapped.
+- At the verified planning baseline, the
+  [Work template](../../work-contract-template.md) described one outcome per
+  acceptance criterion. The delivered contract policy now gives each Work one
+  coherent outcome and uses criteria for independently assessable conditions or
+  guarantees; see
+  [WDR 31](../../wdr/0031-define-outcome-contracts-and-size-for-understanding.md)
+  and the current
+  [template](../../work-contract-template.md#acceptance-criteria),
+  [definition](../../work-definition.md), and
+  [acceptance guidance](../../acceptance-tracing.md).
 - At the verified planning baseline,
   [Work acceptance](../../acceptance-tracing.md) and
   [Work workflow](../../workflow.md) prescribed selected contract removal, and
