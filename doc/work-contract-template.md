@@ -46,12 +46,16 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 
 <!-- List of acceptance criteria. REQUIRED.
 
-- Each criterion defines one observable outcome. Together, the criteria fulfill the Work’s purpose and goals.
-- Name the outcome in the heading and start each criterion with a short sentence stating what becomes possible or changes when it is delivered.
+- A Work owns one coherent outcome. Acceptance criteria state independently assessable conditions or behaviors that establish it; together, they fulfill the Work’s purpose and goals without a target number of criteria.
+- Name each guarantee in the heading and start its criterion with a short sentence stating what becomes possible or changes when it is delivered.
 - Use short prose for connected explanations and unordered, single-sentence bullets for parallel conditions, guarantees, or refusal cases.
-- Include preconditions, expected results, relevant failure/preservation boundaries, and affected interfaces with useful signatures and types needed to determine completion. Describe inputs, outputs, behavior, and compatibility changes where relevant.
-- State measurement thresholds and the conditions needed to interpret them in the outcome when they define success.
-- Split independently assessable outcomes into separate criteria.
+- Include preconditions, expected results, relevant success, failure, refusal, preservation, and compatibility boundaries, and affected interfaces with useful signatures and types needed to determine completion.
+- Keep multiple scenarios that establish the same guarantee together; use separate criteria for guarantees that can be assessed independently. A condition need not describe runtime behavior when the outcome is guidance, an Investigation, or an Evaluation.
+- Given/When/Then is optional. Use it when it makes a condition easier to assess.
+- State measurement thresholds and the workload and measurement conditions needed to interpret them when they define success.
+- Parent contracts own essential shared concepts, invariants, responsibilities, dependency direction, and effect limits without predefining every signature.
+- Link inherited constraints separately from local acceptance criteria. A child may add local constraints but cannot weaken a parent's shared guarantees.
+- For an inherited non-functional requirement, name its local, architectural, or system verification scope and the responsible verifier. A quantitative threshold includes its workload and measurement conditions.
 - Describe the delivered result rather than listing implementation tasks or instructions to the executor.
 - Keep each requirement at one owner and link to it elsewhere; leave implementation details owned by child Works in those contracts.
 
@@ -60,9 +64,9 @@ Omit empty criterion subheadings.
 
 <!-- AC code outcome example:
 
-### **AC-1 TODO** Create a sandbox at an unused path
+### **AC-1 TODO** Create a sandbox with an unused name
 
-`make sandbox-create PATH=path` creates a ready sandbox at an unused path. If the destination exists, it exits with status 2 without modifying it.
+`make sandbox-create NAME=trial-a` creates a prepared sandbox under the managed root. If that name already exists, the command exits with status 1 without changing the existing sandbox. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
 
 #### What exists
 
@@ -73,7 +77,9 @@ Describe existing behavior or machinery that helps explain this criterion, inclu
 
 ### **AC-2 TODO** Complete record validation
 
-Engineering guidance requires constructors to validate every consumed field and cross-field invariant before returning a domain value. Rejection may stop at the first error; successful construction guarantees all invariants hold. A compact example shows valid construction and rejection of an invalid field combination.
+Engineering guidance requires constructors to validate every consumed field and cross-field invariant before returning a domain value. Rejection may stop at the first error; successful construction guarantees all invariants hold. A compact example shows valid construction and rejection of an invalid field combination. If a child implements a particular constructor, it links to this shared invariant and states its own observable acceptance conditions separately.
+
+For illustration only, a parent could require p95 response time below 200 ms under a named request mix, concurrency, and deployment class. A child verifies its route locally; the parent verifies the integrated system under that workload.
 -->
 
 ## Dependencies

@@ -130,11 +130,10 @@ def test_creation_reminds_about_expected_review_size_before_dispatch(
     )
 
     # Then
-    reminder = "Before dispatch: does the complete expected leaf change fit"
+    reminder = "Before dispatch: can the maintainer quickly understand the outcome"
     assert result.exit_code == 0, result.output
     assert result.stdout.count(reminder) == 1
-    assert "about five minutes" in result.stdout
-    assert "explicit larger-review decision from the maintainer" in result.stdout
+    assert "substantive implementation review has no five-minute cap" in result.stdout
     assert "doc/workflow.md#scope-and-sizing" in result.stdout
     assert "doc/workflow.md#decisions-and-new-splits" in result.stdout
     git_creation = "Preparing worktree (new branch 'work/example')"

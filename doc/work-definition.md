@@ -4,7 +4,11 @@ Read when defining, changing, or reviewing a Work contract. When executing an
 Investigation or Evaluation, also read its applicable section below.
 
 Use the [Work contract template](work-contract-template.md) for structure,
-outcome writing, and examples. Each Work is identified by its repository
+outcome writing, and examples. A Work owns one coherent outcome; its acceptance
+criteria state independently assessable guarantees or conditions that establish
+that outcome. Scenarios that establish the same guarantee may stay together,
+and non-runtime conditions are valid for guidance, Investigations, and
+Evaluations. Each Work is identified by its repository
 directory, with its contract in `README.md`. Every `README.md` recursively under
 `doc/feat/` is an active Work contract, independent of its contents; this
 includes planning parents and Investigations. Keep guidance, templates, and

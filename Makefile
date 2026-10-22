@@ -246,7 +246,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 	if [ -z "$$destination" ] || [ -z "$$branch" ]; then \
 		echo "Usage: make worktree-create WORKTREE=/path BRANCH=work/name" >&2; exit 2; \
 	fi; \
-	printf '%s\n' 'Before dispatch: does the complete expected leaf change fit a maintainer review in about five minutes? If not, pause to split it or get an explicit larger-review decision from the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits'; \
+	printf '%s\n' 'Before dispatch: can the maintainer quickly understand the outcome, acceptance conditions, inherited constraints, scope, and relationship to architecture? Keep the outcome coherent; substantive implementation review has no five-minute cap. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits'; \
 	case "$$destination" in /*) ;; *) destination="$$source/$$destination" ;; esac; \
 	if [ -e "$$destination" ] || [ -L "$$destination" ]; then \
 		echo "Worktree destination already exists: $$destination" >&2; exit 2; \
@@ -293,7 +293,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 ##@ Work review
 .PHONY: work-review
 work-review: ## review Work sizing and remind owner to publish and deliver PR
-	@printf '%s\n' 'Before publication: does the complete leaf diff fit review in about five minutes? If not, pause and ask the maintainer to split it or explicitly approve a larger review. For code or test changes, independently review design judgment on the exact final revision before publication. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/engineering-review.md doc/orchestrator.md#review-and-return'
+	@printf '%s\n' 'Before publication: does the actual diff preserve a coherent outcome and contract, including consequential details? The five-minute heuristic covers understanding the outcome and constraints; substantive implementation review has no time cap. For code or test changes, independently review design judgment on the exact final revision before publication. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/engineering-review.md doc/orchestrator.md#review-and-return'
 
 .PHONY: sandbox-create
 ##@ Evaluation sandboxes
