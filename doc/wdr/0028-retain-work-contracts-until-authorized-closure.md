@@ -8,7 +8,9 @@ Accepted
 
 Amended by
 [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
-for incomplete closure and publication boundaries.
+for historical incomplete-closure and publication boundaries. Superseded by
+[30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
+for current Work contract and artifact retention.
 
 Amends
 [2. Let parent maps track Work lifecycle](0002-let-parent-maps-track-work-lifecycle.md)

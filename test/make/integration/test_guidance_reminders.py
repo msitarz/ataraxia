@@ -190,7 +190,7 @@ def test_selected_test_targets_remind_once_after_success(
         tuple(
             result.stdout.count(fragment)
             for fragment in (
-                "At Work closure",
+                "When reviewing test ownership",
                 "reviewed static fixtures",
                 "independent expectations at the real boundary",
                 "doc/testing.md#layout-ownership-and-adoption",

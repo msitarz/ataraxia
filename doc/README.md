@@ -17,7 +17,7 @@ relevant guidance.
 | Work contract structure and authoring | [Work contract template](work-contract-template.md) |
 | Work definition context and specialized requirements | [Work definition](work-definition.md) |
 | General Work rules | [Work workflow](workflow.md) |
-| Post-merge Work branch cleanup | [Branch cleanup](branch-cleanup.md) |
+| Historical notice for the retired post-merge Work cleanup procedure | [Branch cleanup](branch-cleanup.md) |
 | A Work's local outcome and acceptance contract | The relevant Work README |
 | Orchestration and delegated repository changes | [Orchestrator handoffs](orchestrator.md) |
 | Acting as definer for a Work contract | [Definer guidance](definer.md) |

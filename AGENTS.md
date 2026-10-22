@@ -8,7 +8,7 @@ The primary agent in the maintainer’s conversation is the orchestrator,
 regardless of its model. Model selection does not assign a role: a Luna primary
 agent must orchestrate and delegate just as a Sol primary agent does. A request
 to implement, fix, clean up, publish, or define work does not itself assign the
-executor, cleaner, publisher, or definer role. Only an explicit role assignment
+executor, publisher, or definer role. Only an explicit role assignment
 by the maintainer or a parent agent changes your role. Orchestrators must
 delegate those activities and follow `doc/orchestrator.md`. Every delegated
 handoff must explicitly assign the subagent’s role.
@@ -33,7 +33,6 @@ its relevant README and linked contracts.
 | Empirical evaluation | [Empirical evaluations](doc/evaluation.md) and the specific Work README and protocol |
 | Defining or reviewing a Work contract | [Work contract template](doc/work-contract-template.md), [Work definition](doc/work-definition.md), and the relevant Work README |
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
-| Post-merge branch cleanup | [Branch cleanup](doc/branch-cleanup.md) after the maintainer confirms a Work PR merged |
 | Work acceptance and delivery evidence | [Work acceptance](doc/acceptance-tracing.md) |
 | Architectural boundary or decision | [Architecture](doc/architecture.md), relevant [ADRs](doc/adr/), and [ADR workflow](doc/adr-workflow.md) |
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |

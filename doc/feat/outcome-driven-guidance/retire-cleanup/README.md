@@ -45,23 +45,21 @@ closure-command and cleanup-adoption outcomes are no longer scheduled or
 prerequisites for delivery. Their already delivered historical outcomes remain
 distinguishable from abandoned plans. Current owners and decision history agree
 that replacement design is deferred. No unfinished outcome is marked `DONE`
-merely because its plan was retired; any needed status representation follows
-the supported format and explicit maintainer authorization.
+merely because its plan was retired; the existing `TODO` criterion syntax is
+preserved without parser changes.
 
 ## Links
 
 - [Work acceptance](../../../acceptance-tracing.md) and
-  [Work workflow](../../../workflow.md): current Work/artifact closure rules.
-- [Branch cleanup](../../../branch-cleanup.md): current separate Git cleanup
-  procedure.
+  [Work workflow](../../../workflow.md): current retention rules.
+- [Branch cleanup](../../../branch-cleanup.md): notice that the former
+  post-merge procedure is retired.
 - [Orchestrator guidance](../../../orchestrator.md),
   [contributor guidance](../../../../CONTRIBUTING.md), and
-  [task routes](../../../../AGENTS.md): current cleanup dispatch and reading
-  routes.
+  [task routes](../../../../AGENTS.md): current Work delivery routes.
 
 ## Additional context
 
-This child is first so subsequent guidance changes do not inherit prescribed
-artifact removal or post-merge Git cleanup. This planning change retains the
-existing closure Works unchanged; their disposition is an outcome of this
-child's later implementation.
+This child retires prescribed artifact removal and post-merge Git cleanup.
+It retains the existing closure Works and marks their unfinished plans as
+superseded without changing their historical criterion statuses.

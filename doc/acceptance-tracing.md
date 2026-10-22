@@ -49,10 +49,10 @@ Local evidence can establish acceptance before PR CI runs.
    verified their outcomes. Preserve inspectable evidence in its source
    records; do not duplicate manual outcomes beside criteria. Keep unsupported
    criteria `TODO`.
-3. Retain requested and descendant contracts through PR review and corrections
-   until closure is authorized as described below. Maintainer acceptance,
-   independent review, full CI on the final closure head, and maintainer merge
-   retain their distinct responsibilities.
+3. Retain requested and descendant contracts through PR review, corrections,
+   and completion. Maintainer acceptance, independent review, full CI on the
+   final reviewed head, and maintainer merge retain their distinct
+   responsibilities.
 
 For a requested parent with direct leaves, apply this procedure locally to each
 leaf in execution order on the accumulating branch. Retain each leaf contract
@@ -83,22 +83,15 @@ Rebase the reviewed implementation onto current `master` as linear history.
 Refresh commit references in existing evidence records when a rebase changes
 the referenced commits.
 
-Substantive implementation corrections after closure approval invalidate
-authorization for affected Works. If their contracts were already closed,
-restore the affected contracts and evidence, refresh statuses and independent
-review, and obtain renewed closure instruction. Corrections before closure
-update retained contracts and evidence directly. Do not add routine
-verification/removal pairs or manual closure procedures. The
-[command Work](feat/post-merge-work-closure/command/README.md) owns the planned
-closure interface and current tool limitations.
+Substantive implementation corrections update retained contracts and evidence
+directly, then require refreshed review. Maintainers may remove retained
+contracts or artifacts manually; this is not a Work completion step and has no
+required command or publication route. Maintainer review, merge authority, and
+full CI on the final reviewed head remain distinct requirements.
 
 ## Authorized closure
 
-- Retain requested and descendant contracts until the maintainer requests
-  closure in the session.
-- Report remaining `TODO` criteria and ask whether to abort; make no changes
-  without explicit confirmation.
-- Record completed outcomes as `DONE` and explicitly abandoned outcomes as
-  `ABORT`.
-- Commit closure on the same PR branch, pass full CI on the final head before
-  maintainer merge, and perform branch/worktree cleanup after merge.
+This former process was superseded by
+[WDR 30](wdr/0030-retire-prescribed-work-and-git-cleanup.md). The heading stays
+as a historical link target for retained decision and Work records; it carries
+no current closure procedure or requirement.

@@ -1,5 +1,11 @@
 # Deliver mechanical Work closure
 
+> **Historical plan, superseded by
+> [WDR 30](../../../wdr/0030-retire-prescribed-work-and-git-cleanup.md).** This
+> command was not delivered and is no longer scheduled or a delivery
+> prerequisite. Its criteria remain `TODO` to distinguish the abandoned plan
+> from completed work.
+
 ## Purpose
 
 Close explicitly authorized Works on their reviewed open PR and

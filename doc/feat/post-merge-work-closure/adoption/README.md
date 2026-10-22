@@ -1,5 +1,11 @@
 # Adopt authorized closure and post-merge cleanup
 
+> **Historical plan, superseded by
+> [WDR 30](../../../wdr/0030-retire-prescribed-work-and-git-cleanup.md).** This
+> adoption work was not delivered and is no longer scheduled or a delivery
+> prerequisite. Its criteria remain `TODO` to distinguish the abandoned plan
+> from completed work.
+
 ## Purpose
 
 Make the deterministic command the discoverable cleanup route and remove the
@@ -45,8 +51,9 @@ command checks pass; latest-head CI remains the merge gate.
 
 - **DONE** Lifecycle guidance: supplies the adopted
   contract and decision.
-- **TODO** [Mechanical closure command](../command/README.md): supplies observed
-  command behavior and supported cleanup operations.
+- **ABORT** [Mechanical closure command](../command/README.md): supplies
+  observed command behavior and supported cleanup operations. Superseded by
+  WDR 30; unfinished outcomes were not delivered.
 
 ## Links
 

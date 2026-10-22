@@ -1,5 +1,11 @@
 # Close Work contracts on explicit maintainer request
 
+> **Historical plan, superseded by
+> [WDR 30](../../wdr/0030-retire-prescribed-work-and-git-cleanup.md).**
+> Lifecycle guidance was delivered; unfinished command and adoption outcomes are
+> abandoned and are no longer scheduled or delivery prerequisites. Their
+> criteria remain `TODO` so the record does not claim undelivered behavior.
+
 ## Purpose
 
 Keep Work contracts available for review until the maintainer requests closure
@@ -97,10 +103,12 @@ owns acceptance and merge.
 - **DONE** Authorized closure lifecycle guidance: define
   retained contracts, mechanical reference updates, publication authority, and
   the decision.
-- **TODO** [Mechanical closure command](command/README.md): deliver the Make
-  interface and its guarded Git/reference operations.
-- **TODO** [Cleanup adoption](adoption/README.md): retire replaced cleaner
-  duties and verify the end-to-end lifecycle and reading routes.
+- **ABORT** [Mechanical closure command](command/README.md): deliver the Make
+  interface and its guarded Git/reference operations. Superseded by WDR 30;
+  unfinished outcomes were not delivered.
+- **ABORT** [Cleanup adoption](adoption/README.md): retire replaced cleaner
+  duties and verify the end-to-end lifecycle and reading routes. Superseded by
+  WDR 30; unfinished outcomes were not delivered.
 
 ## Links
 

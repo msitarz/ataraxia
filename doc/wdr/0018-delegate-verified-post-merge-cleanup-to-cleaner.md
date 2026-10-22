@@ -8,8 +8,9 @@ Accepted
 
 Amended by
 [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
-for future command ownership after that Work is delivered; current cleanup
-continues to use this role.
+for the historical cleanup route. Superseded by
+[30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
+for current post-merge cleanup responsibility.
 
 ## Context
 

@@ -6,6 +6,10 @@ Date: 2026-10-17
 
 Accepted
 
+Superseded by
+[30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md).
+Maintainer review, merge authority, and final-head CI remain in force.
+
 Amends
 [2. Let parent maps track Work lifecycle](0002-let-parent-maps-track-work-lifecycle.md)
 for incomplete closure,

@@ -78,7 +78,7 @@ Engineering guidance requires constructors to validate every consumed field and 
 
 ## Dependencies
 
-<!-- List of prerequisite Works, their purpose, and prerequisite explanation. Do **NOT** include direct children. Use `STATUS [Work title](path/to/README.md): purpose.` Ordinary guidance links have no Work status. Keep purpose text aligned with the linked Work. See [Work lifecycle](workflow.md#lifecycle) for status and closure rules.
+<!-- List of prerequisite Works, their purpose, and prerequisite explanation. Do **NOT** include direct children. Use `STATUS [Work title](path/to/README.md): purpose.` Ordinary guidance links have no Work status. Keep purpose text aligned with the linked Work. See [Work lifecycle](workflow.md#lifecycle) for status and retention rules.
 
 Example:
 
@@ -88,7 +88,7 @@ Example:
 
 ## Children
 
-<!-- List of direct child Works and their purpose. Use `STATUS [Work title](path/to/README.md): purpose.` Keep purpose text aligned with the child Work. See [Work lifecycle](workflow.md#lifecycle) for status, retention, and closure rules.
+<!-- List of direct child Works and their purpose. Use `STATUS [Work title](path/to/README.md): purpose.` Keep purpose text aligned with the child Work. See [Work lifecycle](workflow.md#lifecycle) for status and retention rules.
 
 Example:
 

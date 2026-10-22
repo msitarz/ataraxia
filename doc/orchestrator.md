@@ -15,7 +15,6 @@ handoff and final-CI assessment. Select delegated roles by responsibility:
 | --- | --- | --- |
 | Definer | GPT-6.1 Sol, medium | Define assigned Work contracts and coordinate shared parent-map edits. |
 | Executor | GPT-6 Luna, medium | Implement bounded code, tests, documentation, or other changes under approved contracts. |
-| Cleaner | GPT-6 Luna, medium | Perform maintainer-confirmed post-merge cleanup under its procedural owner. |
 | Publisher | GPT-6 Luna, medium | Mechanically publish exact independently reviewed inputs under its procedural owner. |
 
 Explicit maintainer task-specific role, model, or effort overrides take
@@ -26,20 +25,8 @@ execution. Investigation and Evaluation contract definition uses the definer;
 bounded investigation or evaluation execution uses the executor.
 
 The [Definer](definer.md) owns assigned Work contract changes and serial
-coordination of shared parent-map edits. Cleaner and publisher gain no
-artifact-review or merge authority.
-
-For post-merge Work cleanup, use the existing separate operational `cleaner`
-role after the maintainer confirms the PR merged. The planned closure command
-may replace that handoff only after its Work is delivered. Route current cleanup
-through [branch-cleanup guidance](branch-cleanup.md) with the PR, branch,
-worktree, reviewed head, and merge commit IDs. Review the cleaner's concise
-report instead of repeating its operations, and serialize cleanup with worktree
-creation and other shared Git mutations.
-
-For closure authorization, follow
-[Work acceptance](acceptance-tracing.md#authorized-closure). The command Work
-owns its planned Make interfaces and current incomplete-Work behavior.
+coordination of shared parent-map edits. The publisher gains no artifact-review
+or merge authority.
 
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
@@ -60,14 +47,13 @@ isolated branch/worktree at the base ref assigned by its immediate parent owner;
 its direct leaves use the sequential execution route below. Independent child
 parents may run in parallel when dependencies, capacity, and shared edits
 permit. Serialize shared owner/map edits and integrate subtree commits as linear
-history while retaining their contracts through requested-tree review, subject
-to explicit closure authorization under
+history while retaining their contracts through requested-tree review under
 [Work acceptance](acceptance-tracing.md#work-delivery).
 
 The immediate parent reviews child-parent interfaces and composition, reusing
 valid leaf evidence. Integration review of each child-parent interface remains
-with its immediate parent. Branch/worktree cleanup remains post-merge under the
-existing cleaner role.
+with its immediate parent. Work completion does not require post-merge branch
+or worktree cleanup.
 
 ```mermaid
 flowchart TD
@@ -221,7 +207,7 @@ corrections after a completed executor run likewise use a fresh session after
 recovery; do not repurpose the retired session.
 
 Follow [Work acceptance](acceptance-tracing.md) for criterion status, outcome
-evidence, contract retention, and authorized closure. Follow
+evidence, and contract retention. Follow
 [Pull requests](pull-requests.md#descriptions) for executor returns, local
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.

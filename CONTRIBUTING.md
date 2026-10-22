@@ -108,10 +108,10 @@ require explicit approval; smaller Works within that direction proceed to their
 own review.
 
 For Work PRs with acceptance criteria, keep requested and descendant contracts
-through review and corrections until explicitly authorized closure. Follow
-[Work acceptance](doc/acceptance-tracing.md#work-delivery) for closure
-authorization, corrections, and evidence. Branch/worktree cleanup remains
-post-merge.
+through review, corrections, and completion. Follow
+[Work acceptance](doc/acceptance-tracing.md#work-delivery) for corrections and
+evidence. Work completion does not require contract, artifact, branch, or
+worktree removal.
 
 Before preparing a published-branch rewrite, follow
 [publisher rewrite guidance](doc/publisher.md#published-branch-rewrites).
@@ -121,10 +121,8 @@ When publishing or writing a description, follow
 and publication ownership. The maintainer reviews and merges; agents merge
 only with explicit maintainer instruction.
 
-After the maintainer confirms a Work PR merged, follow
-[post-merge branch cleanup](doc/branch-cleanup.md). Retained branches and GitHub
-status queries are not routine Work tracking; use the
-[Work lifecycle](doc/workflow.md#lifecycle) for parent status rules.
+Retained branches and GitHub status queries are not routine Work tracking; use
+the [Work lifecycle](doc/workflow.md#lifecycle) for parent status rules.
 
 ## Commits and pull requests
 
