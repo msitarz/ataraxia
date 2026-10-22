@@ -205,8 +205,8 @@ autonomous repair round follows these rules:
 
 - Allow at most five correction requests in a round; five is a fallback cap,
   not a target.
-- Count requests for the reviewed change across revisions, session recovery,
-  and ordinary orchestrator steering. None of these resets the count.
+- Preserve the round's request count across revisions, session recovery, and
+  ordinary orchestrator steering. None of these resets the count.
 - Stop earlier if a finding remains after a correction attempt or recurs on a
   later revision, corrections oscillate, applicable rules conflict, a
   correction makes no progress, an architectural decision is needed, or the
