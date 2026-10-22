@@ -199,9 +199,9 @@ map changes; child leaf PRs are not published from this requested-parent run.
 After the leaves, review the parent's own acceptance under its immediate
 parent's integration review, or before publication if it is the requested Work.
 
-- After handoff or a correction request, wait until the assigned scope and
-  applicable subordinate reviews are complete, or a blocker requires owner or
-  maintainer steering.
+- After handoff or a correction request, wait for a completed assignment return
+  covering the assigned scope and applicable subordinate reviews, or for a
+  blocker requiring owner or maintainer steering.
 - Do not inspect unfinished edits or interrupt an applicable subordinate
   review.
 - Independently review a completed intermediate assignment once against its
@@ -216,8 +216,7 @@ parent's integration review, or before publication if it is the requested Work.
   failure, or unresolved concern warrants it.
 
 After an assignment review, the owner authorizes the next increment within the
-existing scope. Maintainer review, merge, and CI authority remain at the
-requested Work's delivery boundary.
+existing scope.
 Context reuse may help token caching, but caching is not guaranteed. Each
 autonomous repair round follows these rules:
 
