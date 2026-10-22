@@ -34,20 +34,20 @@ A test arranges a situation, performs an action, and observes the result. It
 must fail when the behavior it names breaks. Coverage shows that code ran,
 not that assertions detected incorrect behavior.
 
-For each new test, identify the defect it would detect and explain how its
-assertions detect it. Check whether any replacement bypasses the behavior
-under test. A test that only verifies its own setup needs redesign.
-
-Early test review may assess intended scenarios before executable tests exist:
-name the behavior, observation boundary, failure cases, inherited constraints,
-and evidence needed. A scenario name and one-sentence expected observation may
-later become the executable test as implementation progresses; a separate suite
-for each step is unnecessary. When tests exist, review their actual assertions
-to confirm they detect the named defect through the appropriate boundary and do
-not replace the behavior under test. Preserve prior behavioral expectations
-when implementation changes; if an expectation needs to change, return it to
-contract and intent review before updating the test. Intent review alone does
-not establish observed behavior.
+- For each test, name the behavior and the defect its assertions would detect.
+- Before executable tests exist, review intended scenarios, their observation
+  boundary, failure cases, inherited constraints, and needed evidence.
+- A scenario name and short expected observation may become an executable test
+  as implementation progresses; a separate suite for each step is unnecessary.
+- Once tests exist, inspect the assertions to confirm they detect the named
+  defect through the appropriate boundary without bypassing the behavior under
+  test.
+- When adding behavior, keep regression checks for previously delivered
+  outcomes; do not weaken their expectations to accommodate faulty code.
+- If an expectation needs a justified change, return it to contract and intent
+  review before updating the test.
+- Intent review, pending placeholders, and unrun tests do not establish
+  observed behavior.
 
 When confidence is uncertain or the behavior is particularly important,
 deliberately demonstrate failure: reproduce the defect or temporarily invert a

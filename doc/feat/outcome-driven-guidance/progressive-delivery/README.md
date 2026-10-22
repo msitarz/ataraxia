@@ -17,37 +17,42 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ### **AC-1 TODO** A coherent outcome can become executable progressively
 
-Executor and engineering guidance support conditional typed architecture
-exploration, typed wiring, an executable thin walking skeleton, progressive
-behavioral tests and implementation, and engineering review within one outcome.
-Typed wiring contains real sequencing and effect ownership while leaf operations
-may be stubbed. The walking skeleton executes a representative thin path, using
-fake adapters when appropriate. Review inspects actual data flow as well as
-ownership and contract meaning, including dynamic graph mappings that static
-checks can miss. These are useful progression choices, not mandatory separate
-Works or agent assignments. Shared architecture evolves under
-[architecture maturity guidance](../architecture-exploration/README.md#ac-2-done-typed-architecture-communicates-its-current-maturity-and-evolution).
+Engineering guidance supports progressing behavior and tests within one outcome.
+
+- For broader outcomes, typed composition can express real sequencing and effect
+  ownership before every leaf operation is complete.
+- A [walking skeleton](../../../engineering.md#progressive-implementation) can
+  execute a thin path through that composition with unfinished leaves stubbed.
+- Engineering review inspects actual data flow and contract ownership,
+  including dynamic graph mappings that static checks can miss.
+- These techniques are optional, not mandatory stages, Works, or agent
+  assignments; small changes can proceed directly to implementation and
+  relevant tests.
+- When decomposition is uncertain, follow the shared
+  [architecture exploration guidance](../../../architecture-exploration.md)
+  and its existing Work gates.
 
 ### **AC-2 TODO** Test intentions and delivered tests receive the right review
 
-Testing guidance lets early review assess intended behaviors, observation
-boundaries, failure cases, inherited constraints, and the kind of evidence
-needed. Scenario names and one-sentence expected observations may progressively
-become the same executable tests without a new suite for each step. Once tests
-exist, review assesses whether their real assertions detect the named defects
-through the appropriate boundary, preserve prior outcomes, and avoid replacing
-the behavior under test. Acceptance continues to require observed results at the
-level claimed; reviewing test intentions alone cannot complete it, and pending
-placeholder tests cannot pass completion. Implementation preserves reviewed
-behavioral expectations rather than weakening them to match faulty code;
-justified changes return to contract and intent review.
+- Before implementation, test review may assess intended scenarios, observation
+  boundaries, failure cases, inherited constraints, and needed evidence.
+- Scenario names and short expected observations may become executable tests as
+  behavior is implemented; a separate suite for each step is unnecessary.
+- When tests exist, review their assertions for defect detection through the
+  appropriate boundary, behavior preservation, and avoidance of bypasses.
+- When adding behavior, preserve prior outcomes with regression checks; do not
+  weaken expectations to match faulty implementation.
+- Return a justified expectation change to contract and intent review.
+- Acceptance requires observed results at the level claimed; intent review and
+  pending placeholders cannot complete it.
 
 ### **AC-3 TODO** Evidence establishes only the confidence it supports
 
-Delivery and acceptance guidance distinguish static contract checks, executable
-wiring evidence, and evidence of completed behavior. Stubs, placeholders, and
-unrun tests cannot establish passing acceptance evidence. Type checking cannot
-establish runtime validation or purity.
+- Distinguish checked static contracts, executable composition, and delivered
+  behavior as separate evidence.
+- Type checking cannot establish runtime validation or purity.
+- Stubs, placeholders, and unrun tests cannot establish passing acceptance
+  evidence.
 
 ### **AC-4 TODO** Invariants and effects retain accountable owners
 

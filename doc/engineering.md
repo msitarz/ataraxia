@@ -47,12 +47,6 @@ evaluation; do not add `from __future__ import annotations`.
 - Node pattern: `deps()` names inputs, `factory()` supplies a runner, and runner
   `__call__` computes. Match dependency keys to runner parameters. Extract
   reusable calculations, as `SmaRunner` does with `sma`.
-- Within one coherent outcome, typed composition may establish real sequencing
-  and effect ownership before every leaf operation is implemented. Stub
-  unfinished leaves and use a thin executable walking skeleton through the
-  actual orchestration when that helps expose integration risks; fake adapters
-  may provide external effects. These are optional progression techniques, not
-  required phases or separate Works.
 - Use modern typing: `T | None`, built-in generics, `type` aliases,
   parameterized protocols/classes, and `Literal` for closed sets (signal sides).
   Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`);
@@ -89,6 +83,27 @@ evaluation; do not add `from __future__ import annotations`.
   delegation and cleanup on success/failure; use `pathlib.Path`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
   domain errors.
+
+### Progressive implementation
+
+Build and verify one coherent outcome in increments when that helps expose
+integration risks. Choose the progression to fit the change: a small change may
+go directly to its implementation and relevant tests without an architecture
+exploration or a
+[walking skeleton](ubiquitous-language.md).
+
+When decomposition is unclear, follow the bounded
+[architecture exploration](architecture-exploration.md) route.
+
+- For a broader outcome, typed composition may establish real sequencing and
+  effect ownership before every operation is complete.
+- A walking skeleton may exercise a thin path through that composition while
+  unfinished leaf operations are stubbed; fake adapters may supply external
+  effects.
+- Continue by implementing behavior and adding or extending its tests within
+  the same outcome, preserving previously delivered behavior.
+- Treat each technique as optional; do not require architecture exploration,
+  a walking skeleton, or a separate test stage for every change.
 
 ### Validate at boundaries and construction
 

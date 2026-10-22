@@ -16,21 +16,23 @@ must not be mistaken for delivered behavior.
 
 ## Decision
 
-Allow an outcome to progress through typed composition, optional stubbed leaves,
-a thin executable path, and behavioral tests as useful within one coherent Work.
-The composition must express real sequencing and effect ownership, and review
-must inspect actual data flow, including dynamic mappings that static checks may
-miss. Early test review may assess intent; acceptance still requires observed
-evidence at the level claimed. Keep existing boundary validation, construction,
-pure-decision, live-effect, review, and delivery-gate rules in force.
+Allow behavior and tests to progress in increments within one coherent Work.
+Use typed composition and an optional
+[walking skeleton](../engineering.md#progressive-implementation) when they help
+expose integration risks; keep sequencing and effect ownership real. Review
+actual data flow, including dynamic mappings that static checks may miss.
+Acceptance still requires observed evidence at the level claimed. Keep existing
+boundary validation, construction, pure-decision, live-effect, review, and
+delivery-gate rules in force.
 
 ## Consequences
 
-[Executor guidance](../executor.md) owns the delivery route,
-[engineering guidance](../engineering.md) and
-[engineering review](../engineering-review.md) own composition and data-flow
-review, [testing guidance](../testing.md) owns test-intent and assertion review,
-and [Work acceptance](../acceptance-tracing.md) owns the meaning of evidence.
+[Executor guidance](../executor.md) routes to the progression rules in
+[engineering guidance](../engineering.md#progressive-implementation), which
+owns optional implementation increments and the walking skeleton technique.
+[Engineering review](../engineering-review.md) owns data-flow review,
+[testing guidance](../testing.md) owns test-intent and assertion review, and
+[Work acceptance](../acceptance-tracing.md) owns the meaning of evidence.
 The
 [progressive-delivery Work](../feat/outcome-driven-guidance/progressive-delivery/README.md)
 delivers these changes. Work splitting, architecture maturity, and any new scope
