@@ -1,0 +1,72 @@
+# Try representative Works
+
+## Purpose
+
+Use two or three Works to assess the guidance and decide the next adjustment.
+
+## Goals
+
+- Check that the combined route is usable before adding more process.
+- Preserve observations and uncertainty that the maintainer can inspect.
+
+## Inherited constraints
+
+Apply the [parent constraints](../README.md#inherited-constraints).
+
+## Non-Goals
+
+- Authorize unrelated product implementation or claim measured efficiency gains.
+- Add benchmarks, review infrastructure, or cleanup replacement design.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Concrete cases reveal guidance fit and remaining friction
+
+A retained record identifies two or three concrete Works and explains why they
+exercise different relevant decisions. Together the cases cover a coherent leaf,
+uncertain decomposition with retained exploration, inherited guarantees and
+composition, progressive evidence, and focused review or a bounded repair
+decision. Existing Works, new guidance-defined contracts, and workflow
+walkthroughs may supply these cases without authorizing unrelated product
+changes.
+
+Observations distinguish a contract review or walkthrough from actual
+implementation and runtime evidence. They record consequential ambiguity,
+missing context, excessive process, and unresolved questions without claiming
+unmeasured speed or quality gains. The five-minute intent target never justifies
+omitting consequential detail or disguising an incoherent or unbounded outcome.
+
+### **AC-2 TODO** One usable route supports a bounded next decision
+
+A reading-route walkthrough verifies that task routes, Make reminders,
+contributor guidance, role guidance, and authoritative owners agree on the
+delivered rules. Conflicting pending workflow trial contracts are explicitly
+reconciled or marked as superseded plans without deleting retained records or
+declaring their unobserved outcomes complete. The record proposes only
+corrections supported by the cases and gives the maintainer a concrete decision
+to retain the guidance, make a bounded correction, or investigate a remaining
+question. Further tuning requires that decision rather than an open-ended trial
+mandate.
+
+## Dependencies
+
+- TODO [Guide focused engineering review](../focused-review/README.md): make
+  focused review produce supported findings and bounded repair.
+
+## Links
+
+- [Existing workflow parent](../../reviewable-workflow-v2/README.md),
+  [trial preparation](../../reviewable-workflow-v2/trial-preparation/README.md),
+  [trial contract](../../reviewable-workflow-v2/trial-preparation/trial-contract/README.md),
+  and [live trial](../../reviewable-workflow-v2/live-trial/README.md): pending
+  plans to reconcile during implementation.
+- [Task routes](../../../../AGENTS.md) and
+  [documentation ownership](../../../README.md): discoverability and consistency
+  owners.
+
+## Additional context
+
+This is a bounded usability trial, not the older pending quantitative
+workflow-efficiency evaluation. Its implementation must make that distinction
+explicit in the affected plans rather than quietly inheriting their
+prerequisites or performance claims.
