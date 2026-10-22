@@ -144,6 +144,15 @@ progressive-delivery decision. Current rules are owned by
 [testing guidance](../../testing.md), and
 [Work acceptance](../../acceptance-tracing.md).
 
+### Current focused review guidance
+
+[WDR 34](../../wdr/0034-bound-focused-review-corrections.md) records the
+focused-review and bounded-correction decision. Current rules are owned by
+[engineering review](../../engineering-review.md),
+[orchestrator guidance](../../orchestrator.md), and
+[executor guidance](../../executor.md). The verified planning baseline above
+remains historical context.
+
 ## Decision history and implementation boundary
 
 [WDR workflow](../../wdr-workflow.md) governs consequential changes when the

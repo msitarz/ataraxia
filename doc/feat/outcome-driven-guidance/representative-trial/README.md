@@ -60,7 +60,7 @@ decision rather than an open-ended trial mandate.
 
 ## Dependencies
 
-- TODO [Guide focused engineering review](../focused-review/README.md): make
+- DONE [Guide focused engineering review](../focused-review/README.md): make
   focused review produce supported findings and bounded repair.
 
 ## Links

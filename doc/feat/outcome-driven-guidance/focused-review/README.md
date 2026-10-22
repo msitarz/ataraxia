@@ -20,7 +20,7 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Acceptance criteria
 
-### **AC-1 TODO** A focused rule judgment has enough context
+### **AC-1 DONE** A focused rule judgment has enough context
 
 Engineering review guidance supports judgments of PASS, VIOLATION,
 NOT_APPLICABLE, or UNCERTAIN for a named rule on the same immutable revision. A
@@ -29,7 +29,7 @@ rule-specific caller, type, and module context to judge the change. Missing
 context results in a stated uncertainty rather than an invented violation or
 unsupported pass.
 
-### **AC-2 TODO** Repair has a clear stopping rule
+### **AC-2 DONE** Repair has a clear stopping rule
 
 Review and handoff guidance bound correction work and reassess findings after
 changes. A five-correction cap is a fallback limit rather than a requirement to
@@ -39,7 +39,7 @@ concrete evidence and the decision needed to the owner. Changed revisions
 receive applicable fresh checks and review; earlier passing judgments do not
 silently cover new code.
 
-### **AC-3 TODO** Supported findings inform whole-change judgment
+### **AC-3 DONE** Supported findings inform whole-change judgment
 
 Engineering review guidance makes findings usable for the responsible owner's
 judgment of the broader outcome and architecture:
