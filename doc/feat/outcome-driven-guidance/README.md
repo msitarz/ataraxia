@@ -53,6 +53,11 @@ Local child acceptance cannot establish this cross-guidance result.
   parent, command, and adoption contracts through the
   [cleanup retirement Work](retire-cleanup/README.md); this exception does not
   authorize deleting other Works or artifacts.
+- After this status record is committed, the maintainer explicitly authorizes
+  deleting this entire `doc/feat/outcome-driven-guidance/` directory. The
+  deletion must preserve this recorded state in Git history and repair links
+  outside the directory to point to the immutable status-record commit. This
+  authorization does not include WDRs or current owner guidance.
 - Keep the current architectural view accurate as children change shared
   architecture.
 - Distinguish superseded exploration and design from the current view.
@@ -152,16 +157,20 @@ trial.
 
 Cleanup retirement, outcome-contract guidance, architecture exploration,
 progressive delivery, and focused engineering review are delivered by their
-children. Parent AC-1 remains `TODO` because the coherent route has not been
-independently assessed end to end; AC-2 remains `TODO` because composition and
-the required shared-guarantee examples have not been verified; AC-3 remains
-`TODO` because no representative cases or resulting maintainer decision were
-recorded. The maintainer stopped the remaining trial, so these outcomes remain
-unsatisfied and this parent is `ABORT`, not `DONE`. Sequential dependencies keep
-overlapping owner edits reviewable; they do not turn the children into mandatory
-phases of ordinary product Works.
+children. The current guidance can be inspected, but no independent end-to-end
+assessment is recorded: AC-1 remains `TODO` because the coherent route has not
+been assessed; AC-2 remains `TODO` because composition and the required
+shared-guarantee examples have not been verified. AC-3 remains `TODO` because
+no representative cases or resulting maintainer decision were recorded. The
+maintainer stopped the remaining trial, so these outcomes remain unsatisfied
+and this parent is `ABORT`, not `DONE`. Sequential dependencies keep overlapping
+owner edits reviewable; they do not turn the children into mandatory phases of
+ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The
 maintainer removes retained architecture artifacts manually later; this plan
-introduces no deletion trigger or replacement cleanup process.
+introduces no deletion trigger or replacement cleanup process. The maintainer
+has now explicitly authorized deleting this whole retained guidance directory
+after this status record is committed, with the record preserved in Git history
+and external links repaired to its immutable commit.
