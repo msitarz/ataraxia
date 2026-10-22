@@ -11,7 +11,7 @@ relevant guidance.
 | Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
-| Shared writing standard for Work contracts and guidance | This file |
+| Shared writing standard for Work contracts, guidance, ADRs, and WDRs | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
 | Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
@@ -87,7 +87,7 @@ owns delivery descriptions.
 
 ## Writing
 
-Apply this shared writing standard to Work contracts and guidance:
+Apply this shared writing standard to Work contracts, guidance, ADRs, and WDRs:
 
 - Write in plain English.
 - Use familiar words.

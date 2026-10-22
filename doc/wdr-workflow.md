@@ -3,7 +3,8 @@
 Read when proposing, recording, or reviewing a consequential decision about
 the repository's delivery workflow. The [shared decision record
 format](decision-records.md) owns syntax, numbering, status, and amendment or
-supersession conventions.
+supersession conventions. Follow the shared [writing
+standard](README.md#writing) when drafting or reviewing a WDR.
 
 ## When to record a decision
 
