@@ -8,6 +8,10 @@ Accepted
 
 Amends [13. Use Sol-low for all leaves](0013-use-sol-low-for-all-leaves.md).
 
+Amended by
+[30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
+for retiring Cleaner routing; the other roles and policy remain in force.
+
 ## Context
 
 The maintainer selects separate contract-definition and implementation roles in

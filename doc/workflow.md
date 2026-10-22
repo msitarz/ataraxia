@@ -59,9 +59,9 @@ guidance links in Dependencies have no Work status.
 - Use `TODO` for an active Work, `DONE` for a Work whose required outcomes are
   independently verified, and `ABORT` for a Work stopped with unsatisfied
   outcomes, including the reason.
-- Keep Work contract links and supporting artifacts in the repository after
-  completion. Completion does not require their removal; maintainers may remove
-  retained records manually when they choose.
+- Keep completed child Work contracts and architecture artifacts available
+  through their parent Work's completion. Parent completion does not trigger
+  deletion; the maintainer may remove retained records manually afterward.
 - Update a parent's purpose text when a child's purpose changes; do not require
   outcome summaries or PR references in parent entries.
 

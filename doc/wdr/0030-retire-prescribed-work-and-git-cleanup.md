@@ -16,6 +16,11 @@ for the planned closure command and its post-merge cleanup route. Maintainer
 review, merge authority, independent review, and full CI on the final reviewed
 head remain in force.
 
+Amends
+[20. Route agents by responsibility](0020-route-agents-by-responsibility.md)
+for retiring Cleaner routing; Definer, Executor, and Publisher routing and the
+remaining role, review, and model-selection policies remain unchanged.
+
 ## Context
 
 Current guidance prescribed removing selected Work contracts through a closure

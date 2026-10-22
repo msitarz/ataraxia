@@ -50,9 +50,10 @@ Local evidence can establish acceptance before PR CI runs.
    records; do not duplicate manual outcomes beside criteria. Keep unsupported
    criteria `TODO`.
 3. Retain requested and descendant contracts through PR review, corrections,
-   and completion. Maintainer acceptance, independent review, full CI on the
-   final reviewed head, and maintainer merge retain their distinct
-   responsibilities.
+   and completion. Follow [Work lifecycle](workflow.md#lifecycle) for keeping
+   completed child Works and architecture artifacts through parent completion.
+   Maintainer acceptance, independent review, full CI on the final reviewed
+   head, and maintainer merge retain their distinct responsibilities.
 
 For a requested parent with direct leaves, apply this procedure locally to each
 leaf in execution order on the accumulating branch. Retain each leaf contract
