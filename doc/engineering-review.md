@@ -17,6 +17,11 @@ or extract a helper only when that clarifies its responsibility and resulting
 contract. Review may accept the design unchanged; no refactor or comment quota
 applies.
 
+Review the actual data flow through composition, including dependency-key to
+runner-parameter mappings, execution order, and effect ownership. Static typing
+may miss incorrect dynamic graph mappings; follow representative inputs through
+the wired path and verify the resulting behavior at its owning boundary.
+
 ## Three contrasts
 
 These examples distinguish accepted history from possible future choices.

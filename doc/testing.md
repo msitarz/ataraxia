@@ -38,6 +38,17 @@ For each new test, identify the defect it would detect and explain how its
 assertions detect it. Check whether any replacement bypasses the behavior
 under test. A test that only verifies its own setup needs redesign.
 
+Early test review may assess intended scenarios before executable tests exist:
+name the behavior, observation boundary, failure cases, inherited constraints,
+and evidence needed. A scenario name and one-sentence expected observation may
+later become the executable test as implementation progresses; a separate suite
+for each step is unnecessary. When tests exist, review their actual assertions
+to confirm they detect the named defect through the appropriate boundary and do
+not replace the behavior under test. Preserve prior behavioral expectations
+when implementation changes; if an expectation needs to change, return it to
+contract and intent review before updating the test. Intent review alone does
+not establish observed behavior.
+
 When confidence is uncertain or the behavior is particularly important,
 deliberately demonstrate failure: reproduce the defect or temporarily invert a
 comparison or omit an operation, then check that the test fails for its intended

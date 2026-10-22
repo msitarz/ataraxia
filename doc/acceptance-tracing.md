@@ -44,6 +44,15 @@ on the outcome:
   execution results retained as artifacts.
 - Evaluation: recorded results required by its declared protocol.
 
+For implementation outcomes, distinguish evidence of checked static contracts,
+executable wiring, and delivered behavior. A type check supports only the static
+contracts it checks; [engineering guidance](engineering.md#reviewed-type-stubs)
+owns its limits for runtime validation and purity. A thin path with stubbed
+leaves can establish that the exercised orchestration and wiring run, but it
+cannot establish the stubbed behavior. Claim only the behavior observed by the
+relevant checks or review; placeholders, unrun tests, and planned acceptance
+checks establish no passing result.
+
 Keep execution results in their source records; do not copy test output or
 check inventories into contracts, commit messages, or maintainer handoffs.
 Report material failures or limitations concisely.

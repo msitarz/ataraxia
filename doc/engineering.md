@@ -47,6 +47,12 @@ evaluation; do not add `from __future__ import annotations`.
 - Node pattern: `deps()` names inputs, `factory()` supplies a runner, and runner
   `__call__` computes. Match dependency keys to runner parameters. Extract
   reusable calculations, as `SmaRunner` does with `sma`.
+- Within one coherent outcome, typed composition may establish real sequencing
+  and effect ownership before every leaf operation is implemented. Stub
+  unfinished leaves and use a thin executable walking skeleton through the
+  actual orchestration when that helps expose integration risks; fake adapters
+  may provide external effects. These are optional progression techniques, not
+  required phases or separate Works.
 - Use modern typing: `T | None`, built-in generics, `type` aliases,
   parameterized protocols/classes, and `Literal` for closed sets (signal sides).
   Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`);
@@ -200,6 +206,8 @@ children, or probe files or processes; validation belongs at the
 [owning boundary](#validate-at-boundaries-and-construction). A newly
 constructed domain result enforces its own invariants. Calling an effectful
 collaborator remains an effect even when its contract is a `typing.Protocol`.
+Stateful runners may orchestrate pure decisions while retaining execution state
+or coordinating effects; orchestration does not make the runner itself pure.
 
 The illustrative `scheduled_time` decision uses only its validated plan and
 returns either its explicit schedule or `None`. Separate a substantial

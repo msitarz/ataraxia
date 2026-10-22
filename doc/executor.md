@@ -17,6 +17,16 @@ applicable engineering and testing guidance.
 Follow the [routine-choice guidance](workflow.md#scope-and-sizing) for
 decisions within the agreed contract.
 
+Keep one coherent outcome moving toward an executable path. When architectural
+decomposition is uncertain, use the bounded
+[architecture exploration](architecture-exploration.md) route; do not turn
+exploration or implementation steps into mandatory Works or agent assignments.
+Where it helps expose the outcome early, establish typed composition with real
+sequencing and effect ownership, then leave unfinished leaf operations stubbed
+and use a thin executable path through the real orchestration. Fake adapters
+may supply external effects. These are progression choices within one Work,
+not required phases; preserve its contract and review gates throughout.
+
 Before editing, verify that the supplied worktree, branch, and base match the
 assignment. Follow the supplied create-or-resume instructions and report a
 missing or inconsistent assignment to the owning orchestrator before editing.
