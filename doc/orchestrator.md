@@ -200,26 +200,28 @@ completed diff once against acceptance and owner guidance, inspecting evidence
 in its source records. Send one consolidated finding list to the same active
 agent session; review corrections as needed. Reuse applicable evidence and rerun
 focused checks only when a change, failure, or unresolved concern warrants it.
-Context reuse may help token caching, but caching is not guaranteed. Bound
-correction work to at most five correction requests for the reviewed change;
-five is a fallback cap, not a target. Stop earlier if a finding recurs,
-corrections oscillate, applicable rules conflict, a correction makes no
-progress, or the change needs an architectural decision. The existing
-requirement to stop when the same finding remains after a correction attempt
-still applies. Reconcile overlapping findings, conflicts, and applicability as
-the responsible owner before issuing corrections. Each correction request
-should identify concrete evidence and its consequence, separately from any
-suggestion.
+Context reuse may help token caching, but caching is not guaranteed. Apply these
+correction rules:
 
-After a changed revision, review that revision and rerun applicable checks;
-earlier passing judgments do not cover changed code. When stopping, report the
-attempts, current revision, concrete evidence, and the decision or help needed.
-Resume only with orchestrator or maintainer steering. If a new split or
-maintainer decision is needed, apply the whole-tree pause and planning gates in
-[Work workflow](workflow.md#decisions-and-new-splits). The architectural-change
-stop does not waive those gates. If the assigned agent is unavailable, report
-that and wait; do not silently switch agents or implement its changes as a
-fallback. Keep independent review and maintainer review, merge, and CI gates.
+- Limit correction work to five requests for the reviewed change across all
+  revisions; five is a fallback cap, not a target.
+- Stop earlier if a finding remains after a correction attempt or recurs on a
+  later revision, corrections oscillate, applicable rules conflict, a
+  correction makes no progress, or an architectural decision is needed.
+- After each changed revision, review that revision and rerun applicable checks;
+  earlier judgments do not cover changed code.
+- When stopping, report the attempts, current revision, concrete evidence, and
+  the decision or help needed. Follow
+  [engineering review](engineering-review.md#focused-rule-review) for finding
+  evidence and owner reconciliation.
+- Resume only under the existing orchestrator or maintainer steering and
+  recovery rules. Steering does not reset the cap or waive review gates.
+- If a new split or maintainer decision is needed, apply the whole-tree pause
+  and planning gates in [Work workflow](workflow.md#decisions-and-new-splits).
+- If the assigned agent is unavailable, report that and wait; do not silently
+  switch agents or implement its changes as a fallback.
+
+Keep independent review and maintainer review, merge, and CI gates.
 
 If a definer or executor session is cancelled or lost, recover from the Work
 contract, parent map, branch or PR, and available evidence. Establish which

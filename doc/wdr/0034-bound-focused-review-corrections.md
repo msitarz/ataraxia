@@ -20,13 +20,17 @@ delivers the current guidance.
 
 ## Decision
 
+Use optional focused judgments to support the responsible owner's substantive
+review of the whole change:
+
 - Judge a named engineering rule against one immutable revision and state
   `PASS`, `VIOLATION`, `NOT_APPLICABLE`, or `UNCERTAIN`.
 - Use concrete evidence and explain each finding's consequence; keep
   suggestions separate from findings.
-- Bound correction work to five requests for a reviewed change, with earlier
-  stops for recurrence, oscillation, conflicting rules, no progress, or a
-  needed architectural decision.
+- Limit correction work to five requests across all revisions of a reviewed
+  change; five is a fallback cap, not a target.
+- Stop earlier for an unresolved or recurring finding, oscillation, conflicting
+  rules, no progress, or a needed architectural decision.
 - Review changed revisions and rerun applicable checks; earlier judgments do
   not cover changed code.
 - Keep responsible-owner review, session recovery, whole-tree pause, planning,
