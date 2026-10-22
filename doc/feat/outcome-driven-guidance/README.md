@@ -126,7 +126,7 @@ trial.
 - DONE [Define outcome contracts](outcome-contracts/README.md): let a Work
   express one outcome with verifiable acceptance conditions and inherited
   constraints.
-- DONE [Guide architecture exploration](architecture-exploration/README.md):
+- TODO [Guide architecture exploration](architecture-exploration/README.md):
   make uncertain decomposition resolvable through minimal typed architecture
   exploration.
 - TODO [Guide progressive delivery](progressive-delivery/README.md): make a

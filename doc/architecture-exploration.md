@@ -54,14 +54,17 @@ preserve the behavior already delivered.
 ## Keep one current view
 
 The relevant current architecture document describes the reviewed current
-design and implemented behavior. When a later outcome changes a shared
-boundary, update that view and explain the implemented or planned status.
-Retain useful exploratory findings and superseded designs with a short status
-or explanation linking them to the current view. Retained history must not
-create a second live definition or an interface shadowing the active one.
-Keep retained Works and architecture artifacts through parent completion; the
-maintainer may remove them manually afterward under the
-[Work lifecycle](workflow.md#lifecycle).
+design and implemented behavior:
+
+- Update the current view when a later outcome changes a shared boundary.
+- Distinguish implemented behavior from planned behavior in the current view.
+- Retain useful exploratory findings and superseded designs with their status
+  and relationship to the current view.
+- Prevent retained history from creating a second live definition or an
+  interface that shadows the active one.
+- Keep retained Works and architecture artifacts through parent completion.
+  The maintainer may remove them manually afterward under the
+  [Work lifecycle](workflow.md#lifecycle).
 
 Product architecture belongs in [Architecture](architecture.md). Architecture
 of repository workflow or development tooling belongs with its workflow or

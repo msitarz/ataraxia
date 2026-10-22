@@ -34,7 +34,7 @@ its relevant README and linked contracts.
 | Defining or reviewing a Work contract | [Work contract template](doc/work-contract-template.md), [Work definition](doc/work-definition.md), and the relevant Work README |
 | Work | [Work workflow](doc/workflow.md) and the relevant Work README |
 | Work acceptance and delivery evidence | [Work acceptance](doc/acceptance-tracing.md) |
-| Architectural boundary or decision | [ADR workflow](doc/adr-workflow.md) and relevant [ADRs](doc/adr/) for qualifying decisions; use [product architecture](doc/architecture.md) for product context and the relevant owner guidance and source for workflow or tooling context |
+| Architectural boundary or decision | [Architecture exploration](doc/architecture-exploration.md) for product and workflow/tooling boundaries; [ADR workflow](doc/adr-workflow.md) and relevant [ADRs](doc/adr/) for qualifying decisions; use [product architecture](doc/architecture.md) for product context and the relevant owner guidance and source for workflow or tooling context |
 | Consequential delivery-workflow decision | [WDR workflow](doc/wdr-workflow.md) and relevant [WDRs](doc/wdr/) |
 | Running project tools | [Make targets and discovery](CONTRIBUTING.md#make-targets) |
 | Setup, branches, or commits | [CONTRIBUTING.md](CONTRIBUTING.md) |
