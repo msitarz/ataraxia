@@ -40,12 +40,13 @@ role, or post-merge branch/worktree procedure. Maintainers handle any cleanup
 manually. This decision creates no replacement cleanup process or automation.
 Safe low-level Git and worktree tools remain available for ordinary use.
 
-The post-merge closure parent and its command and adoption Works remain
-retained historical records. Their delivered lifecycle guidance remains
-identified as delivered; their unfinished command and adoption outcomes are
-explicitly superseded and are no longer prerequisites for delivery. Their
-unfinished criteria remain `TODO` under the existing criterion syntax. This
-disposition does not claim those outcomes were implemented.
+The maintainer later authorized deletion of exactly the post-merge closure
+parent, command, and adoption contracts through the cleanup retirement Work.
+Those three files are removed from the current tree; Git history preserves
+their prior states. The lifecycle guidance was delivered, while the command
+and adoption outcomes were unfinished and were never implemented. This
+deletion does not authorize removing other Works or artifacts and does not
+change Work discovery, checks, or criterion parsing.
 
 ## Consequences
 

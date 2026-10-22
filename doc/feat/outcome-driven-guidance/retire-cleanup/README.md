@@ -16,8 +16,9 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Non-Goals
 
-- Delete existing Work contracts, architecture artifacts, branches, or
-  worktrees.
+- Delete other existing Work contracts, architecture artifacts, branches, or
+  worktrees. The maintainer has explicitly authorized deleting only the three
+  obsolete post-merge closure contracts named in AC-2.
 - Implement the pending closure command or replace cleanup with another process.
 
 ## Acceptance criteria
@@ -35,18 +36,19 @@ removes architecture artifacts manually later. No automatic deletion or new
 cleanup process replaces the retired procedures. Ordinary Git worktree creation
 and safe low-level tools may remain without a required cleanup lifecycle.
 
-### **AC-2 DONE** Pending cleanup plans cannot restore the retired process
+### **AC-2 TODO** Remove the three obsolete closure contracts
 
-The [post-merge closure parent](../../post-merge-work-closure/README.md), its
-[command child](../../post-merge-work-closure/command/README.md), and
-[adoption child](../../post-merge-work-closure/adoption/README.md) remain
-retained records with an explicit superseded disposition: their unfinished
-closure-command and cleanup-adoption outcomes are no longer scheduled or
-prerequisites for delivery. Their already delivered historical outcomes remain
-distinguishable from abandoned plans. Current owners and decision history agree
-that replacement design is deferred. No unfinished outcome is marked `DONE`
-merely because its plan was retired; the existing `TODO` criterion syntax is
-preserved without parser changes.
+Delete exactly the obsolete
+[post-merge closure parent](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/README.md),
+[command child](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/command/README.md),
+and
+[adoption child](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/adoption/README.md)
+contracts. The decision record and this Work distinguish the delivered lifecycle
+guidance from the unfinished command and adoption plans; those plans were never
+implemented. Git history retains their prior states. Remove dangling links and
+align current cleanup rationale with
+[WDR 30](../../../wdr/0030-retire-prescribed-work-and-git-cleanup.md). Do not
+change Work discovery, checks, or criterion parsing.
 
 ## Links
 
@@ -60,6 +62,6 @@ preserved without parser changes.
 
 ## Additional context
 
-This child retires prescribed artifact removal and post-merge Git cleanup.
-It retains the existing closure Works and marks their unfinished plans as
-superseded without changing their historical criterion statuses.
+This child retires prescribed artifact removal and post-merge Git cleanup. Its
+AC-2 applies the maintainer's exact exception to the prior retention decision;
+it does not authorize broader contract or artifact removal.

@@ -70,5 +70,6 @@ closure rules live in
 [Work acceptance](../acceptance-tracing.md#authorized-closure), and current
 cleanup practice remains usable while command ownership is pending. See the
 [lifecycle Work](https://github.com/msitarz/ataraxia/blob/e4627be3eaadb2a62ec85c8cf6cc740db026fe33/doc/feat/post-merge-work-closure/lifecycle/README.md)
-and the [command Work](../feat/post-merge-work-closure/command/README.md) for
-planned tool delivery. This decision does not close any Work.
+and the
+[command Work](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/command/README.md)
+for planned tool delivery. This decision does not close any Work.

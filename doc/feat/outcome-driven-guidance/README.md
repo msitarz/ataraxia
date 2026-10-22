@@ -38,6 +38,10 @@ together; local child acceptance cannot establish that cross-guidance result.
   final-head CI requirements.
 - Retain completed Works, exploration findings, and typed architecture artifacts
   through this parent's completion; completion does not authorize deletion.
+  The maintainer separately authorized deleting exactly the post-merge closure
+  parent, command, and adoption contracts through the
+  [cleanup retirement Work](retire-cleanup/README.md); this exception does not
+  authorize deleting other Works or artifacts.
 - Keep the current architectural view accurate as children change shared
   architecture, and distinguish superseded exploration and design from it;
   retention does not require duplicate interfaces in active module resolution.
@@ -105,7 +109,7 @@ trial.
 
 ## Children
 
-- DONE [Retire the cleanup process](retire-cleanup/README.md): remove prescribed
+- TODO [Retire the cleanup process](retire-cleanup/README.md): remove prescribed
   Work closure and post-merge Git cleanup procedures while preserving artifacts.
 - TODO [Define outcome contracts](outcome-contracts/README.md): let a Work
   express one outcome with verifiable acceptance conditions and inherited
