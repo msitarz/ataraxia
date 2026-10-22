@@ -42,6 +42,12 @@ Before handoff, self-review the exact changed code and tests using
 [engineering judgment in review](engineering-review.md). Apply its questions
 while implementing too; passing checks do not establish design judgment.
 
+When the owning Orchestrator requests corrections, follow its bounded review
+and stopping rules in
+[Orchestrator guidance](orchestrator.md#review-and-return). If a correction
+cannot proceed within the approved outcome, return the current revision,
+concrete evidence, and the decision or help needed instead of expanding scope.
+
 For parent-map updates, follow the executor route in the
 [Work workflow](workflow.md#lifecycle).
 
