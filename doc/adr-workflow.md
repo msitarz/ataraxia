@@ -53,21 +53,27 @@ ADRs; the number of implementation choices does not determine it.
 ## Writing
 
 Follow the shared [writing standard](README.md#writing) and the shared
-[decision record format](decision-records.md#record-format). Match the
-maintainer's direct, practical voice, and use short sentence-case titles that
-name the choice. Keep language concrete and grammar correct. Reread the closest
-ADR before drafting: [0014](adr/0014-sink-module-file-special-attribute.md)
-for concise style, [0012](adr/0012-source-node-computable-instance.md) for a
-tradeoff, or [0016](adr/0016-source-manages-its-own-provider-lifecycle.md) for
-lifecycle changes. Scale detail to the problem; use short connected explanations
-for context and causal reasoning, and lists or code when they clarify distinct
-requirements or examples.
+[decision record format](decision-records.md#record-format).
 
-Context explains current behavior and what breaks, becomes awkward, or creates
-work for the quant. Use useful examples and links to prior decisions. Decision
-states the choice, why, meaningful alternatives, and tradeoffs. Consequences
-states costs, capabilities, drawbacks, and deferred work without repeating the
-decision; one sentence can suffice. Use first person only for the maintainer's
-stated reasoning; do not invent personal history or experiments. Remove padding,
-corporate language, inflated benefits, generic introductions, exhaustive
-templates, and manufactured quirks.
+- Match the maintainer's direct, practical voice, and use short sentence-case
+  titles that name the choice.
+- Use plain, concrete language and correct grammar. Contractions and blunt
+  sentences are natural.
+- Reread the closest ADR before drafting:
+  [0014](adr/0014-sink-module-file-special-attribute.md) for concise style,
+  [0012](adr/0012-source-node-computable-instance.md) for a tradeoff, or
+  [0016](adr/0016-source-manages-its-own-provider-lifecycle.md) for lifecycle
+  changes.
+- Scale detail to the problem.
+- In Context, explain current behavior and what breaks, becomes awkward, or
+  creates work for the quant. Include useful examples and links to prior
+  decisions.
+- In Decision, state the choice, why it is preferred, and meaningful
+  alternatives and tradeoffs.
+- In Consequences, state costs, capabilities, drawbacks, and deferred work
+  without repeating the decision; one sentence can suffice.
+- Use first person only for the maintainer's stated reasoning; do not invent
+  personal history or experiments.
+- Compare the draft with the related ADR and remove padding, corporate language,
+  inflated benefits, generic introductions, exhaustive templates, and
+  manufactured quirks.
