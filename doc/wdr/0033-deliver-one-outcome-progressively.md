@@ -39,7 +39,7 @@ owns optional implementation increments and the walking skeleton technique.
 [testing guidance](../testing.md) owns test-intent and assertion review, and
 [Work acceptance](../acceptance-tracing.md) owns the meaning of evidence.
 The
-[progressive-delivery Work](../feat/outcome-driven-guidance/progressive-delivery/README.md)
+[progressive-delivery Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/progressive-delivery/README.md)
 delivers these changes. Work splitting, architecture maturity, and any new scope
 or maintainer decision retain their existing gates. Maintainer review and merge
 authority, independent review, and final-head CI remain in force.

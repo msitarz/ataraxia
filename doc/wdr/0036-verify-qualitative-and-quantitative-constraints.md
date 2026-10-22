@@ -37,5 +37,5 @@ dependency direction need verification but have no useful numeric target.
 The [Work contract template](../work-contract-template.md) owns current
 authoring instructions, and [Work acceptance](../acceptance-tracing.md) owns
 criterion evidence. The
-[Define outcome contracts Work](../feat/outcome-driven-guidance/outcome-contracts/README.md)
+[Define outcome contracts Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/outcome-contracts/README.md)
 carries the related context.

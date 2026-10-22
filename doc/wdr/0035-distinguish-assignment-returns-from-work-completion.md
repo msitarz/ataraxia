@@ -48,7 +48,7 @@ Current assignment and review rules belong in
 [engineering guidance](../engineering.md#progressive-implementation). Work
 acceptance remains owned by
 [Work acceptance](../acceptance-tracing.md#criterion-status). The
-[Guide progressive delivery Work](../feat/outcome-driven-guidance/progressive-delivery/README.md)
+[Guide progressive delivery Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/progressive-delivery/README.md)
 and
-[Guide architecture exploration Work](../feat/outcome-driven-guidance/architecture-exploration/README.md)
+[Guide architecture exploration Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/architecture-exploration/README.md)
 carry related context.

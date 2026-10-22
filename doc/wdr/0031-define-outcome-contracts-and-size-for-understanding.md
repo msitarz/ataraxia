@@ -74,7 +74,7 @@ The [Work contract template](../work-contract-template.md),
 [Work scope and sizing](../workflow.md#scope-and-sizing),
 [Work acceptance](../acceptance-tracing.md), and
 [orchestrator guidance](../orchestrator.md) own the current rules. The
-[outcome-contract Work](../feat/outcome-driven-guidance/outcome-contracts/README.md)
+[outcome-contract Work](https://github.com/msitarz/ataraxia/blob/b703fa815a28f338fc2e69918a8351a455afb39e/doc/feat/outcome-driven-guidance/outcome-contracts/README.md)
 delivers these changes and remains subject to independent review and parent
 composition. Maintainer review, merge authority, and final-head CI remain in
 force.
