@@ -55,10 +55,10 @@ ADRs; the number of implementation choices does not determine it.
 Follow the shared [writing standard](README.md#writing) and the shared
 [decision record format](decision-records.md#record-format).
 
-- Match the maintainer's direct, practical voice, and use short sentence-case
-  titles that name the choice.
-- Use plain, concrete language and correct grammar. Contractions and blunt
-  sentences are natural.
+- Match the maintainer's direct, practical voice.
+- Use short sentence-case titles that name the choice.
+- Use plain, concrete language and correct grammar.
+- Contractions and blunt sentences are natural.
 - Reread the closest ADR before drafting:
   [0014](adr/0014-sink-module-file-special-attribute.md) for concise style,
   [0012](adr/0012-source-node-computable-instance.md) for a tradeoff, or
