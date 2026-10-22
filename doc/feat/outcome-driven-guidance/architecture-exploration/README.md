@@ -17,7 +17,7 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Decomposition follows what is known about the outcome
+### **AC-1 DONE** Decomposition follows what is known about the outcome
 
 Definition and orchestration guidance assess decomposition as yes, no, or
 unknown, starting from one Work per coherent outcome. When decomposition is
@@ -44,7 +44,7 @@ is an independently useful outcome. Vertical children add behavior without
 restating prior acceptance conditions; regression checks preserve earlier
 behavior. The example does not approve or implement a parallel-shard feature.
 
-### **AC-2 TODO** Typed architecture communicates its current maturity and evolution
+### **AC-2 DONE** Typed architecture communicates its current maturity and evolution
 
 Architecture guidance distinguishes three type states:
 
@@ -65,12 +65,12 @@ current view. Retaining history does not leave competing live definitions.
 Retained design may be stored or labeled separately outside active module
 resolution under the [parent constraints](../README.md#inherited-constraints).
 
-### **AC-3 TODO** Architectural context matches the affected system
+### **AC-3 DONE** Architectural context matches the affected system
 
 Product architecture and workflow/tooling architecture keep their own context;
 workflow tooling is not routed through unrelated product architecture.
 
-### **AC-4 TODO** Stub conversion preserves reviewed design and exposes implementation
+### **AC-4 DONE** Stub conversion preserves reviewed design and exposes implementation
 
 Guidance covers any `.pyi` to `.py` transition and requires it to:
 

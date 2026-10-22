@@ -4,9 +4,10 @@ Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 for any repository change. Read the rest when changing or reviewing code or
 tests. Apply [engineering judgment in review](engineering-review.md) when
 changing or reviewing code or tests. Use
-[check and evidence policy](validation.md) when choosing checks or
-reporting evidence and [architecture](architecture.md) for current system
-contracts.
+[check and evidence policy](validation.md) when choosing checks or reporting
+evidence. For product code, use [product architecture](architecture.md) and
+relevant ADRs for current contracts; for workflow or tooling changes, use the
+relevant owning guidance and source.
 
 ## Fix the underlying problem
 
@@ -347,6 +348,20 @@ does not justify losing information about values or their relationships.
   focused type-checking cases that demonstrate precise results and rejection of
   invalid uses. Runtime tests and a green checker alone do not prove that useful
   type information was preserved.
+
+## Reviewed type stubs
+
+When converting a reviewed `.pyi` interface into an implementation module:
+
+- Preserve the reviewed design and recheck the implementation against it.
+- Remove the shadowing `.pyi` from active module resolution.
+- Retain a superseded design separately with its status or relationship to
+  current architecture.
+- Treat static type checks as evidence only for the checked static contracts;
+  they do not establish runtime validation, purity, or delivered behavior.
+
+See [Architecture exploration](architecture-exploration.md) for architecture
+maturity and reviewed-boundary guidance.
 
 ## Structural review
 

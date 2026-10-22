@@ -26,7 +26,7 @@ fake adapters when appropriate. Review inspects actual data flow as well as
 ownership and contract meaning, including dynamic graph mappings that static
 checks can miss. These are useful progression choices, not mandatory separate
 Works or agent assignments. Shared architecture evolves under
-[architecture maturity guidance](../architecture-exploration/README.md#ac-2-todo-typed-architecture-communicates-its-current-maturity-and-evolution).
+[architecture maturity guidance](../architecture-exploration/README.md#ac-2-done-typed-architecture-communicates-its-current-maturity-and-evolution).
 
 ### **AC-2 TODO** Test intentions and delivered tests receive the right review
 
@@ -62,7 +62,7 @@ Engineering guidance places validation and effects at their owning boundaries:
 
 ## Dependencies
 
-- TODO [Guide architecture exploration](../architecture-exploration/README.md):
+- DONE [Guide architecture exploration](../architecture-exploration/README.md):
   make uncertain decomposition resolvable through minimal typed architecture
   exploration.
 

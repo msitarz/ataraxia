@@ -51,6 +51,16 @@ points: stop new dispatch and implementation, preserve in-flight artifacts and
 evidence, and report the concrete decision and affected scope to the maintainer.
 Contract preparation needed for steering may continue under owner review.
 
+Before a split or required maintainer decision triggers the whole-tree pause,
+bounded typed architecture exploration may resolve unknown decomposition
+within the currently authorized scope, as described in
+[Work definition](work-definition.md#decomposition-and-architectural-exploration).
+This permission does not override a pause already in force. If exploration
+identifies a split or scope change, stop dispatch and implementation and use
+the whole-tree pause above. Resume only under this section and the
+[plan-before-implementation lifecycle rule](#lifecycle); the concrete planning
+PR must merge before expanded implementation begins.
+
 Resume only the authorized scope after the maintainer decision and applicable
 planning gates. Expanded implementation waits for the concrete planning PR to
 merge; a decision alone does not bypass that gate. Independent review and merge

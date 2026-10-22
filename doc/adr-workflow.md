@@ -1,8 +1,11 @@
 # Architecture decision workflow
 
 Read this file when considering, recording, or reviewing an architectural
-decision. Check [architecture](architecture.md), current code, and relevant
-ADRs before treating a proposed direction as implemented behavior.
+decision. Check current code and relevant ADRs before treating a proposed
+direction as implemented behavior. For product architecture, use
+[product architecture](architecture.md); for repository workflow or tooling,
+use its owning guidance and source. The [WDR workflow](wdr-workflow.md) owns
+consequential delivery-workflow decisions.
 
 ## What warrants an ADR
 
@@ -34,8 +37,9 @@ ADRs; the number of implementation choices does not determine it.
 
 1. Search `doc/adr/` for the problem and related decisions. Read covering
    records and follow amendment/supersession links; reuse them instead of
-   duplicating decisions. Read [architecture](architecture.md) before changing
-   boundaries.
+   duplicating decisions. For product architecture, read
+   [product architecture](architecture.md) before changing boundaries. For
+   workflow or tooling, consult the respective owner and source.
 2. Follow the applicable delivery workflow for tracking and approval. For a
    Work, use its local contract and the [Work workflow](workflow.md). Record
    uncovered decisions before implementing the affected design, and reassess

@@ -38,6 +38,7 @@ relevant guidance.
 | Choosing checks and reporting evidence | [Checks and evidence](validation.md) |
 | Markdown formatting, local-link, and Mermaid fence checks | [Make targets](../Makefile) and [rumdl configuration](../pyproject.toml) |
 | Current system relationships, boundaries, and limitations | [Architecture](architecture.md) |
+| Architecture exploration, review, maturity, and retention | [Architecture exploration](architecture-exploration.md) |
 | Introduction, runnable example, and roadmap priorities | [README.md](../README.md) |
 | One architectural choice and its rationale | The relevant [ADR](adr/) |
 | One delivery-workflow choice and its rationale | The relevant [WDR](wdr/) |

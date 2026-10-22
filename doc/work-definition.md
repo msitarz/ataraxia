@@ -36,6 +36,33 @@ scope, sizing, planning gates, lifecycle, and promotion of lasting outcomes;
 [Contributor guidance](../CONTRIBUTING.md#work-branches-review-and-merge) owns
 branch and PR exceptions.
 
+## Decomposition and architectural exploration
+
+Start with one Work per coherent outcome. Ask whether the Work needs
+decomposition:
+
+- **Yes:** split independently useful and deliverable outcomes into child
+  Works.
+- **No:** retain the coherent outcome as one leaf Work.
+- **Unknown:** resolve the uncertainty with the smallest typed architecture
+  exploration that can answer the remaining question within the authorized
+  outcome. It may support retaining one leaf, proposing a split, or framing a
+  bounded Investigation; it does not authorize expanded feature implementation.
+
+When unknown decomposition needs exploration, see
+[Architecture exploration](architecture-exploration.md). If findings identify
+a split or scope change, follow the
+[pause and planning gates](workflow.md#decisions-and-new-splits).
+
+The architecture-exploration guide owns the maturity and review of
+exploratory, reviewed, and implemented architecture, including retention of
+superseded exploration.
+
+Work composition describes which outcomes belong to a parent; scheduling
+dependencies describe which Works must precede others. Neither hierarchy is
+required to mirror the module hierarchy. Preserve a split's exploration and
+rationale with the relevant Work or architecture records.
+
 ## Investigations
 
 An Investigation answers a bounded question and recommends a direction. Its
