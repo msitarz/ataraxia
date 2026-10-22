@@ -120,6 +120,19 @@ Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
   representative trial must explicitly reconcile these pending plans rather than
   inherit them silently.
 
+### Current architecture guidance
+
+The verified planning baseline above remains historical context. Since that
+baseline,
+[WDR 32](../../wdr/0032-resolve-uncertain-decomposition-through-bounded-exploration.md)
+amends WDR 31 to permit bounded typed exploration while decomposition is
+unknown, with split, pause, maintainer, and planning-PR gates intact. The
+[architecture-exploration Work](architecture-exploration/README.md) delivers
+this guidance. Current rules are owned by
+[Architecture exploration](../../architecture-exploration.md), with
+decomposition and pause rules in [Work definition](../../work-definition.md) and
+[Work workflow](../../workflow.md).
+
 ## Decision history and implementation boundary
 
 [WDR workflow](../../wdr-workflow.md) governs consequential changes when the

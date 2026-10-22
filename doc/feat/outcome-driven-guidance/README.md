@@ -126,7 +126,7 @@ trial.
 - DONE [Define outcome contracts](outcome-contracts/README.md): let a Work
   express one outcome with verifiable acceptance conditions and inherited
   constraints.
-- TODO [Guide architecture exploration](architecture-exploration/README.md):
+- DONE [Guide architecture exploration](architecture-exploration/README.md):
   make uncertain decomposition resolvable through minimal typed architecture
   exploration.
 - TODO [Guide progressive delivery](progressive-delivery/README.md): make a
@@ -145,11 +145,11 @@ trial.
 
 ## Additional context
 
-This remains a plan for the guidance migration; cleanup retirement and outcome
-contract guidance are delivered by their children. The parent's own acceptance
-criteria and all other planned migration criteria remain `TODO`. Sequential
-dependencies keep overlapping owner edits reviewable; they do not turn the
-children into mandatory phases of ordinary product Works.
+Cleanup retirement, outcome-contract guidance, and architecture exploration
+are delivered by their children. The parent's own acceptance criteria and the
+remaining child Work criteria are still `TODO`. Sequential dependencies keep
+overlapping owner edits reviewable; they do not turn the children into
+mandatory phases of ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The
