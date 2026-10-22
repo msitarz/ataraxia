@@ -98,8 +98,8 @@ When decomposition is unclear, follow the bounded
 - For a broader outcome, typed composition may establish real sequencing and
   effect ownership before every operation is complete.
 - A walking skeleton may exercise a thin path through that composition while
-  unfinished leaf operations are stubbed; fake adapters may supply external
-  effects.
+  unfinished leaf operations are stubbed; fake adapters may stand in for
+  external effects.
 - Continue by implementing behavior and adding or extending its tests within
   the same outcome, preserving previously delivered behavior.
 - Treat each technique as optional; do not require architecture exploration,

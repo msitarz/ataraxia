@@ -35,8 +35,9 @@ must fail when the behavior it names breaks. Coverage shows that code ran,
 not that assertions detected incorrect behavior.
 
 - For each test, name the behavior and the defect its assertions would detect.
-- Before executable tests exist, review intended scenarios, their observation
-  boundary, failure cases, inherited constraints, and needed evidence.
+- Early review may assess intended scenarios, their observation boundary,
+  failure cases, inherited constraints, and needed evidence before executable
+  tests exist.
 - A scenario name and short expected observation may become an executable test
   as implementation progresses; a separate suite for each step is unnecessary.
 - Once tests exist, inspect the assertions to confirm they detect the named

@@ -43,7 +43,10 @@ on the outcome:
 - Investigation: recorded findings and, where execution is used, shell/code
   execution results retained as artifacts.
 - Evaluation: recorded results required by its declared protocol.
-- For implementation outcomes, distinguish checked static contracts,
+
+For implementation outcomes:
+
+- Distinguish checked static contracts,
   executable composition, and delivered behavior.
 - A type check supports only the static contracts it checks;
   [engineering guidance](engineering.md#reviewed-type-stubs) owns its limits
