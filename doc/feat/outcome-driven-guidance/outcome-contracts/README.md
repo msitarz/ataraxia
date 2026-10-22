@@ -21,31 +21,43 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 The Work template, definition, and sizing guidance let a reader understand a
 coherent outcome, its acceptance conditions, inherited constraints, and
-relationship to architecture in about five minutes. Acceptance criteria describe
-verifiable conditions or behaviors of that single outcome; Given/When/Then is
-optional. Several acceptance conditions do not require several Works, and the
-full implementation diff remains subject to substantive review without a time
-cap. Compatible headings and checker syntax remain usable.
+relationship to architecture in about five minutes. Acceptance criteria:
 
-Conditions cover relevant success, failure or refusal, and preservation or
-compatibility guarantees. Several scenarios may verify the same guarantee
-without each becoming a criterion. Non-runtime acceptance conditions remain
-valid for guidance, Investigations, and Evaluations; behavioral wording is not
-required when the outcome is an inspectable artifact or finding.
+- Describe verifiable conditions or behaviors of that single outcome.
+- May use Given/When/Then, but do not require it.
+- Cover relevant success, failure or refusal, and preservation or compatibility
+  guarantees.
+- May group several scenarios that verify the same guarantee.
+- May describe non-runtime outcomes for guidance, Investigations, and
+  Evaluations; an inspectable artifact or finding does not need behavioral
+  wording.
+- Give independently assessable guarantees separate criteria, while allowing
+  parallel conditions of one guarantee within the same criterion.
 
-Independently assessable guarantees have separate criteria; parallel conditions
-of one guarantee may use bullets within that criterion. This distinction does
-not impose a criterion quota or require more child Works.
+Several acceptance conditions do not require several Works, and these rules do
+not set a criterion quota or require more child Works. The full implementation
+diff remains subject to substantive review without a time cap. Compatible
+headings and checker syntax remain usable.
 
 ### **AC-2 DONE** Shared constraints have an accountable verification scope
 
 Parent contracts own essential shared concepts, invariants, responsibilities,
 dependency direction, and effect limits without predefining every signature.
 Children link to inherited constraints separately from local acceptance
-criteria. Guidance shows where a non-functional requirement is verified locally,
-architecturally, or at the system level; a quantitative threshold includes
-workload and measurement conditions. Parent acceptance checks global guarantees
-and composition rather than merely collecting child completion statuses.
+criteria. Guidance shows where a non-functional requirement is verified:
+
+- Locally, architecturally, or at the system level.
+- With workload and measurement conditions for a quantitative threshold.
+
+Parent acceptance checks global guarantees and composition rather than merely
+collecting child completion statuses.
+
+### **AC-3 TODO** Work contracts and guidance use the shared writing standard
+
+The documentation owner defines a shared writing standard for Work contracts
+and guidance. The Work contract template links to that owner, and changed
+contracts and guidance follow the standard. Documentation review assesses
+readability alongside meaning and completeness.
 
 ## Dependencies
 

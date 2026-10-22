@@ -25,23 +25,26 @@ review sized to the change.
 ## Decision
 
 Give each Work one coherent outcome. Its acceptance criteria describe
-independently assessable guarantees or conditions for that outcome; multiple
-scenarios may establish one guarantee, and there is no criterion quota. Keep
-inherited constraints separate from local criteria. Parent contracts establish
-shared concepts, invariants, responsibilities, dependency direction, and effect
-limits; child contracts link those constraints and may add local constraints
-without weakening them. State whether inherited non-functional requirements are
-verified locally, architecturally, or at system level. Quantitative thresholds
-include workload and measurement conditions. Parent acceptance checks global
-guarantees across the composition rather than only aggregating child completion.
+independently assessable guarantees or conditions for that outcome. Several
+scenarios may establish one guarantee; there is no criterion quota.
+
+Keep inherited constraints separate from local criteria. Parent contracts
+establish shared concepts, invariants, responsibilities, dependency direction,
+and effect limits. Child contracts link those constraints and may add local
+constraints without weakening them. State whether inherited non-functional
+requirements are verified locally, architecturally, or at system level. Include
+workload and measurement conditions with quantitative thresholds. Parent
+acceptance checks global guarantees across the composition rather than only
+aggregating child completion.
 
 Use the five-minute heuristic to make the outcome, acceptance conditions,
 inherited constraints, scope, and architectural relationship quick to
-understand. It does not cap substantive implementation review. Scope and
-cohesion still bound a leaf; a concise contract cannot hide an unbounded outcome
-or omit consequential detail. Given/When/Then is optional, and non-runtime
-acceptance conditions remain valid for guidance, Investigations, and
-Evaluations.
+understand. The heuristic does not cap substantive implementation review.
+
+Scope and cohesion still bound a leaf. A concise contract cannot hide an
+unbounded outcome or omit consequential detail. Given/When/Then is optional.
+Non-runtime acceptance conditions remain valid for guidance, Investigations,
+and Evaluations.
 
 ## Consequences
 

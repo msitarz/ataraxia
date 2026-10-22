@@ -11,6 +11,7 @@ relevant guidance.
 | Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
+| Shared writing standard for Work contracts and guidance | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
 | Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
@@ -76,6 +77,18 @@ and remove or link the others; do not add an exception to reconcile them.
 
 When a guidance file or heading linked by a Make reminder moves or is renamed,
 update the reminder link in the same change and verify its target.
+
+## Writing
+
+Write Work contracts and guidance in plain English. Use familiar words and
+direct sentences. When a dense paragraph contains distinct requirements,
+restructure them as a list with one clear rule or condition per bullet. Use
+short prose for connected explanations and causal relationships. Preserve every
+requirement, condition, exception, owner, and relationship when restructuring.
+
+Documentation review assesses readability alongside meaning and completeness.
+The [Work contract template](work-contract-template.md) links here for this
+shared standard and owns only contract-specific writing instructions.
 
 Keep accepted ADR and WDR history intact, using the [ADR
 workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change

@@ -4,18 +4,19 @@ Read when defining, changing, or reviewing a Work contract. When executing an
 Investigation or Evaluation, also read its applicable section below.
 
 Use the [Work contract template](work-contract-template.md) for structure,
-outcome writing, and examples. A Work owns one coherent outcome; its acceptance
+outcome writing, and examples. A Work owns one coherent outcome. Its acceptance
 criteria state independently assessable guarantees or conditions that establish
-that outcome. Scenarios that establish the same guarantee may stay together,
-and non-runtime conditions are valid for guidance, Investigations, and
-Evaluations. Each Work is identified by its repository
-directory, with its contract in `README.md`. Every `README.md` recursively under
-`doc/feat/` is an active Work contract, independent of its contents; this
-includes planning parents and Investigations. Keep guidance, templates, and
-retained history outside that root. Supporting artifacts may live with their
-Work, but use filenames other than `README.md`; they do not define another
-contract. Do not require YAML frontmatter, a journal, or separate
-human-facing and agent-facing versions of the same contract.
+that outcome; scenarios for the same guarantee may stay together. Non-runtime
+conditions are valid for guidance, Investigations, and Evaluations.
+
+Each Work is identified by its repository directory, with its contract in
+`README.md`. Every `README.md` recursively under `doc/feat/` is an active Work
+contract, independent of its contents; this includes planning parents and
+Investigations. Keep guidance, templates, and retained history outside that
+root. Supporting artifacts may live with their Work, but use filenames other
+than `README.md`; they do not define another contract. Do not require YAML
+frontmatter, a journal, or separate human-facing and agent-facing versions of
+the same contract.
 
 Run `make work-check` to check every active contract, or pass one or more
 repository-local Work README paths or subtrees through `ARGS` for focused

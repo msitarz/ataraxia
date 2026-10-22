@@ -19,9 +19,8 @@ cross-child behavior and declared system-level conditions; the union of child
 `DONE` statuses does not establish the parent's composition outcome.
 
 - `TODO` means the criterion's condition or guarantee is not yet verified from
-  inspectable evidence.
-  Planned checks, implemented tests, and failed, skipped, pending, or unrun
-  checks do not establish the required outcome.
+  inspectable evidence. Planned checks, implemented tests, and failed, skipped,
+  pending, or unrun checks do not establish the required outcome.
 - `DONE` means an independent reviewer verified the criterion's condition or
   guarantee from observed evidence. It does not itself mean maintainer approval
   or merge.
