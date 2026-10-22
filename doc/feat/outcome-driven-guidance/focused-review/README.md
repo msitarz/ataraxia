@@ -29,7 +29,7 @@ rule-specific caller, type, and module context to judge the change. Missing
 context results in a stated uncertainty rather than an invented violation or
 unsupported pass.
 
-### **AC-2 TODO** Repair has a clear stopping rule
+### **AC-2 DONE** Repair has a clear stopping rule
 
 Review and handoff guidance make each autonomous repair round bounded and keep
 its stopping conditions effective across revisions and recovery:
