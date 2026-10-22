@@ -17,6 +17,11 @@ Amended by
 for bounded architecture exploration while decomposition is unknown; split,
 scope-change, and expanded-implementation gates remain in force.
 
+Amended by
+[36. Verify qualitative and quantitative constraints appropriately](0036-verify-qualitative-and-quantitative-constraints.md)
+for inherited non-functional requirement verification scope, responsibility,
+and quantitative measurement conditions.
+
 ## Context
 
 The prior sizing rule applied the five-minute target to the complete expected

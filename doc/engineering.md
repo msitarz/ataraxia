@@ -87,16 +87,19 @@ evaluation; do not add `from __future__ import annotations`.
 ### Progressive implementation
 
 Build and verify one coherent outcome in increments when that helps expose
-integration risks. Choose the progression to fit the change: a small change may
-go directly to its implementation and relevant tests without an architecture
-exploration or a
+integration risks. Within one Work, the artifact may progress from its contract
+to reviewed typed architecture, typed wiring, and completed implementation,
+with tests alongside the relevant increment. Choose only the increments that
+fit the outcome: a small change may go directly to implementation and relevant
+tests without architecture exploration or a
 [walking skeleton](ubiquitous-language.md).
 
 When decomposition is unclear, follow the bounded
 [architecture exploration](architecture-exploration.md) route.
 
-- For a broader outcome, typed composition may establish real sequencing and
-  effect ownership before every operation is complete.
+- For a broader outcome, typed wiring is real typed composition that establishes
+  sequencing and effect ownership while some leaf operations may remain
+  stubbed; it does not establish the stubbed behavior.
 - A walking skeleton may exercise a thin path through that composition while
   unfinished leaf operations are stubbed; fake adapters may stand in for
   external effects.

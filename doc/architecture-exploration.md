@@ -28,6 +28,16 @@ implementation. Consequential design is reviewed before implementation.
 
 ## Review a boundary
 
+Within one Work, an owner may assign a bounded scope to produce typed
+architecture or typed wiring for review before further implementation. This is
+an assignment boundary within the Work, not a new Work or mandatory phase. For
+handoffs, see [Orchestrator guidance](orchestrator.md#roles-and-delegation);
+for owner review, see [review and return](orchestrator.md#review-and-return).
+For return and stopping duties, see
+[Executor guidance](executor.md#assignment-return). For optional, proportional
+progression and the meaning of typed wiring, see
+[progressive implementation](engineering.md#progressive-implementation).
+
 Review architecture for the outcome it supports. Preserve inherited Work
 constraints and make clear:
 

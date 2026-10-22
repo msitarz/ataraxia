@@ -28,10 +28,17 @@ the Work's one coherent outcome:
 - `DONE` means an independent reviewer verified the criterion's condition or
   guarantee from observed evidence. It does not itself mean maintainer approval
   or merge.
+- An assignment return alone establishes neither criterion status nor Work
+  completion.
 
 Any required `TODO` criterion prevents Work completion.
 
 ## Evidence
+
+A Work artifact is a concrete output produced or updated within the Work, such
+as its contract, typed architecture, typed wiring, or implementation. An
+intermediate artifact can support review or verify an acceptance criterion
+without completing the Work's full outcome.
 
 The maintainer accepts Work outcomes based on evidence. Agent review
 prepares that decision and does not replace maintainer review. Evidence depends

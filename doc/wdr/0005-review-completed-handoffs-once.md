@@ -15,6 +15,9 @@ Amended by
 Amended by
 [34. Bound focused review corrections](0034-bound-focused-review-corrections.md).
 
+Amended by
+[35. Distinguish assignment returns from Work completion](0035-distinguish-assignment-returns-from-work-completion.md).
+
 ## Context
 
 Continuous polling and partial review can surface issues earlier, but status

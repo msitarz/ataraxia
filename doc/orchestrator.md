@@ -115,11 +115,12 @@ artifacts supply context. Keep the handoff contextual rather than duplicating
 the Work contract. Supply four
 groups of information:
 
-- **Task:** Work path, requested action, and only missing steering.
+- **Task:** Work path, assigned artifact and scope, requested action, and only
+  missing steering.
 - **Workspace:** destination path, branch, assigned base, create or resume
   instruction, and the existing creation or setup route when applicable.
 - **Authority and stopping point:** approved scope, where to report a gap, and
-  owner review before criteria become `DONE`.
+  the named reviewer and stopping point.
 - **Return:** use the assigned role's requirements: [Definer
   guidance](definer.md) or [Executor guidance](executor.md). Identify changes
   awaiting review or needed steering.
@@ -129,6 +130,14 @@ READMEs only as needed, without recursively loading every parent. Without a Work
 contract, state acceptance criteria in the handoff. Link background instead of
 forwarding the full conversation by default. For approved Work scope, follow
 the [routine-choice rule](workflow.md#scope-and-sizing).
+
+A Work is the coherent outcome and acceptance boundary. A delegated assignment
+is a bounded scope within it and may produce or update a
+[Work artifact](acceptance-tracing.md#evidence). Follow [Executor
+guidance](executor.md#assignment-return) for return contents and
+[Work acceptance](acceptance-tracing.md#criterion-status) for criterion
+status. The maintainer reviews the requested Work at its delivery boundary and
+retains review, merge, and CI authority.
 
 The owning orchestrator independently reviews completed definitions before
 implementation begins. Use the same consolidated correction and review gates
@@ -190,13 +199,24 @@ map changes; child leaf PRs are not published from this requested-parent run.
 After the leaves, review the parent's own acceptance under its immediate
 parent's integration review, or before publication if it is the requested Work.
 
-After handoff and each correction request, wait for the completed artifact or a
-blocker needing maintainer steering before reviewing. Do not poll for routine
-status, inspect partial diffs, or send fragmented corrections. Review the
-completed diff once against acceptance and owner guidance, inspecting evidence
-in its source records. Send one consolidated finding list to the same active
-agent session; review corrections as needed. Reuse applicable evidence and rerun
-focused checks only when a change, failure, or unresolved concern warrants it.
+- After handoff or a correction request, wait for a completed assignment return
+  covering the assigned scope and applicable subordinate reviews, or for a
+  blocker requiring owner or maintainer steering.
+- Do not inspect unfinished edits or interrupt an applicable subordinate
+  review.
+- Independently review a completed intermediate assignment once against its
+  assigned scope and owner guidance, even while the Work continues.
+- When review is the named stopping point, wait for the named reviewer to finish
+  before authorizing continuation.
+- Do not poll for routine status or send fragmented corrections.
+- When the Work itself is returned, review its completed diff against Work
+  acceptance and inspect evidence in its source records.
+- Send one consolidated finding list to the same active agent session.
+- Reuse applicable evidence and rerun focused checks only when a change,
+  failure, or unresolved concern warrants it.
+
+After an assignment review, the owner authorizes the next increment within the
+existing scope.
 Context reuse may help token caching, but caching is not guaranteed. Each
 autonomous repair round follows these rules:
 
