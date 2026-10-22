@@ -141,7 +141,7 @@ commit: ## commit staged changes; requires SUBJECT=... [BODY=...]
 	  if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%s\n' 'If a fundamentally wrong approach was discarded: were it and compensating changes reverted before reimplementation? doc/change-rules.md#fix-the-underlying-problem'; fi
 
 deps-lock: ## update uv.lock after dependency changes; PACKAGE=name targets one package
-	uv lock $(if $(strip $(PACKAGE)),--upgrade-package $(PACKAGE),)
+	uv lock $(if $(strip $(PACKAGE)),--upgrade-package $(call _SHELL_VALUE,$(PACKAGE)),)
 
 .PHONY: clean
 clean: ## remove the virtual environment and test/lint caches
