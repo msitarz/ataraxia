@@ -27,12 +27,18 @@ review of the whole change:
   `PASS`, `VIOLATION`, `NOT_APPLICABLE`, or `UNCERTAIN`.
 - Use concrete evidence and explain each finding's consequence; keep
   suggestions separate from findings.
-- Limit correction work to five requests across all revisions of a reviewed
-  change; five is a fallback cap, not a target.
+- Limit each autonomous repair round to at most five correction requests; five
+  is a fallback cap, not a target. Count requests across revisions, session
+  recovery, and ordinary orchestrator steering without resetting the count.
 - Stop earlier for an unresolved or recurring finding, oscillation, conflicting
-  rules, no progress, or a needed architectural decision.
+  rules, no progress, a needed architectural decision, or a session that cannot
+  continue.
 - Review changed revisions and rerun applicable checks; earlier judgments do
   not cover changed code.
+- Ordinary orchestrator steering may resume an earlier-stopped round within its
+  remaining budget and existing gates. Generic direction to continue does not
+  authorize a new round, reset the count, or permit unlimited retries. Explicit
+  maintainer direction may authorize one additional bounded round.
 - Keep responsible-owner review, session recovery, whole-tree pause, planning,
   maintainer review and merge authority, and final-head CI gates in force.
 

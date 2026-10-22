@@ -200,11 +200,13 @@ completed diff once against acceptance and owner guidance, inspecting evidence
 in its source records. Send one consolidated finding list to the same active
 agent session; review corrections as needed. Reuse applicable evidence and rerun
 focused checks only when a change, failure, or unresolved concern warrants it.
-Context reuse may help token caching, but caching is not guaranteed. Apply these
-correction rules:
+Context reuse may help token caching, but caching is not guaranteed. Each
+autonomous repair round follows these rules:
 
-- Limit correction work to five requests for the reviewed change across all
-  revisions; five is a fallback cap, not a target.
+- Allow at most five correction requests in a round; five is a fallback cap,
+  not a target.
+- Count requests for the reviewed change across revisions, session recovery,
+  and ordinary orchestrator steering. None of these resets the count.
 - Stop earlier if a finding remains after a correction attempt or recurs on a
   later revision, corrections oscillate, applicable rules conflict, a
   correction makes no progress, an architectural decision is needed, or the
@@ -215,8 +217,12 @@ correction rules:
   the decision or help needed. Follow
   [engineering review](engineering-review.md#focused-rule-review) for finding
   evidence and owner reconciliation.
-- Resume only under the existing orchestrator or maintainer steering and
-  recovery rules. Steering does not reset the cap or waive review gates.
+- Ordinary orchestrator steering may resume an earlier-stopped round within
+  its remaining request budget, subject to the existing scope, review, recovery,
+  and planning gates.
+- Generic direction to continue does not authorize a new round, reset the
+  count, or permit unlimited retries. Explicit maintainer direction may
+  authorize one additional bounded round.
 - If a new split or maintainer decision is needed, apply the whole-tree pause
   and planning gates in [Work workflow](workflow.md#decisions-and-new-splits).
 - If the assigned agent is unavailable, report that and wait; do not silently
