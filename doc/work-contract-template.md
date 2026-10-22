@@ -81,18 +81,21 @@ Omit empty criterion subheadings.
 
 <!-- AC code outcome example:
 
-### **AC-1 TODO** Create a directory without overwriting an existing path
+### **AC-1 TODO** Executed purchases update cash and positions correctly
 
-Running `mkdir reports` creates the directory when `reports` does not exist. If the path already exists, the command fails and leaves its contents unchanged. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
+Applying a valid purchase fill produces a successor portfolio reflecting the purchased quantity, execution price, and fees.
 
+#### Purchase without fees
 
-#### What exists
+- **Given** a portfolio with USD 1,000 cash and no positions.
+- **When** a fill purchases two shares of XYZ at USD 100 each, with no fees.
+- **Then** the successor portfolio contains USD 800 cash and two shares of XYZ.
 
-Describe existing behavior or machinery that helps explain this criterion, including what can be reused. Omit when unnecessary.
+#### Purchase with fees
 
-#### Evidence
-
-Identify the command, test, or artifact that demonstrates each scenario.
+- **Given** a portfolio with USD 1,000 cash and no positions.
+- **When** a fill purchases two shares of XYZ at USD 100 each, with a total fee of USD 5.
+- **Then** the successor portfolio contains USD 795 cash and two shares of XYZ.
 -->
 
 <!-- AC guidance outcome example:
