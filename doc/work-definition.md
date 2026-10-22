@@ -8,7 +8,7 @@ outcome writing, and examples. A Work owns one coherent outcome. Its
 acceptance criteria follow these rules:
 
 - State independently assessable guarantees or conditions for that outcome.
-- Keep scenarios that establish the same guarantee together.
+- Scenarios that establish the same guarantee may stay together.
 - Allow non-runtime conditions for guidance, Investigations, and Evaluations.
 
 Work identity and contract discovery follow these rules:

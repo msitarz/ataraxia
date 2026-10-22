@@ -68,7 +68,6 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 
 - A Work owns one coherent outcome. Acceptance criteria state independently assessable conditions or behaviors that establish it; together, they fulfill the Work’s purpose and goals without a target number of criteria.
 - Name each guarantee in the heading and start its criterion with a short sentence stating what becomes possible or changes when it is delivered.
-- Use short prose for connected explanations and unordered, single-sentence bullets for parallel conditions, guarantees, or refusal cases.
 - Include preconditions, expected results, relevant success, failure, refusal, preservation, and compatibility boundaries, and affected interfaces with useful signatures and types needed to determine completion.
 - Keep multiple scenarios that establish the same guarantee together; use separate criteria for guarantees that can be assessed independently. A condition need not describe runtime behavior when the outcome is guidance, an Investigation, or an Evaluation.
 - Given/When/Then is optional. Use it when it makes a condition easier to assess.

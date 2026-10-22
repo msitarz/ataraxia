@@ -36,7 +36,7 @@ establish these shared rules:
 
 - Define concepts, invariants, responsibilities, dependency direction, and
   effect limits.
-- Let child contracts link to the shared constraints and add local constraints
+- Child contracts link to shared constraints and may add local constraints
   without weakening them.
 - State whether inherited non-functional requirements are verified locally,
   architecturally, or at system level.

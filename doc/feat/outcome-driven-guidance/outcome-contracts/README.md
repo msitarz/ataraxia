@@ -53,7 +53,7 @@ criteria. Guidance describes each requirement with:
 Parent acceptance checks global guarantees and composition rather than merely
 collecting child completion statuses.
 
-### **AC-3 TODO** Work contracts and guidance use the shared writing standard
+### **AC-3 DONE** Work contracts and guidance use the shared writing standard
 
 The documentation owner defines a shared writing standard in
 [Documentation ownership](../../../README.md#writing). The template and changed

@@ -85,7 +85,7 @@ establish runtime validation, purity, or delivered behavior.
 
 ## Dependencies
 
-- TODO [Define outcome contracts](../outcome-contracts/README.md): let a Work
+- DONE [Define outcome contracts](../outcome-contracts/README.md): let a Work
   express one outcome with verifiable acceptance conditions and inherited
   constraints.
 
