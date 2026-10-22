@@ -43,10 +43,10 @@ A parent owns these shared constraints without predefining every signature:
 
 Children inherit parent constraints without restating or weakening them.
 
-For each non-functional requirement:
+For every non-functional requirement:
 - State whether the local Work, an architectural integration, or the full system verifies it.
 - Name the responsible verifier.
-- Include workload and measurement conditions with a quantitative threshold.
+- For a quantitative requirement, specify its threshold and the workload and measurement conditions needed to interpret it. A qualitative constraint, such as a purity or dependency-direction rule, still needs an appropriate verification method and scope but does not need a numeric target.
 
 A child can verify its local portion and complete its own outcome while the parent's system-level guarantee remains unverified. The parent verifies that guarantee across the integrated result.
 

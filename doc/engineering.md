@@ -87,9 +87,11 @@ evaluation; do not add `from __future__ import annotations`.
 ### Progressive implementation
 
 Build and verify one coherent outcome in increments when that helps expose
-integration risks. Choose the progression to fit the change: a small change may
-go directly to its implementation and relevant tests without an architecture
-exploration or a
+integration risks. Within one Work, the artifact may progress from its contract
+to reviewed typed architecture, typed wiring, and completed implementation,
+with tests alongside the relevant increment. Choose only the increments that
+fit the outcome: a small change may go directly to implementation and relevant
+tests without architecture exploration or a
 [walking skeleton](ubiquitous-language.md).
 
 When decomposition is unclear, follow the bounded

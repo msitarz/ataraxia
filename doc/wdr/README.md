@@ -47,6 +47,7 @@ authoritative owners.
 - [32. Resolve uncertain decomposition through bounded exploration](0032-resolve-uncertain-decomposition-through-bounded-exploration.md)
 - [33. Deliver one outcome progressively](0033-deliver-one-outcome-progressively.md)
 - [34. Bound focused review corrections](0034-bound-focused-review-corrections.md)
+- [35. Distinguish assignment returns from Work completion](0035-distinguish-assignment-returns-from-work-completion.md)
 
 ## Proposal
 

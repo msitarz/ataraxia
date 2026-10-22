@@ -2,7 +2,9 @@
 
 Read when acting as executor for an assigned repository change.
 The Work README defines the outcome; linked guidance and supporting artifacts
-supply context. This file describes execution and return for owner review.
+supply context. This file describes execution and assignment return for owner
+review. A completed assignment return may be an intermediate artifact within a
+Work; it does not by itself mean the Work is complete.
 
 ## Execute the assignment
 
@@ -51,16 +53,34 @@ concrete evidence, and the decision or help needed instead of expanding scope.
 For parent-map updates, follow the executor route in the
 [Work workflow](workflow.md#lifecycle).
 
+## Assignment return
+
+Return when the assigned scope is complete and any reviews assigned beneath it
+are complete, so the owner can review the exact result. Identify the artifact
+and revision, the assigned scope, the reviewer expected to act next, the
+stopping point, unresolved criteria, and material failures, limitations, or
+blockers. A return may deliver a Work contract, reviewed typed architecture,
+typed wiring, or completed behavior. Tests progress alongside the relevant
+increment; the sequence is proportional to the outcome and does not require
+every kind of artifact or a separate test stage.
+
+An architecture or wiring review assignment returns its reviewed artifact and
+findings to its owner, then waits for that applicable review before
+implementation continues. Do not proceed past the named stopping point on the
+basis of a sent return alone. A return with unfinished assigned scope or
+unfinished subordinate review is a blocker update, not a completed assignment
+return.
+
 ## Return for review
 
-Return the artifact revision and outcome, unresolved criteria, and material
-failures, limitations, or blockers. Point to existing evidence sources needed
-for review under [Work acceptance](acceptance-tracing.md#evidence). A completed
-return identifies changes awaiting owner review; a blocked return says what
-remains and what input or decision is needed. If continuing after an interrupted
-session, report the recovered state and which changes and evidence apply to the
-current revision. If that state is uncertain, report the uncertainty and wait
-for owner steering rather than treating the assignment as complete.
+For a completed Work, follow the Work-level acceptance and evidence rules in
+[Work acceptance](acceptance-tracing.md#evidence). Intermediate assignment
+returns do not mark Work criteria `DONE` or imply that the Work is complete.
+Point to existing evidence sources needed for review. If continuing after an
+interrupted session, report the recovered state and which changes and evidence
+apply to the current revision. If that state is uncertain, report the
+uncertainty and wait for owner steering rather than treating the assignment as
+complete.
 
 The owning orchestrator independently reviews the artifact and evidence,
 coordinates corrections and delivery, and retains publication and maintainer
