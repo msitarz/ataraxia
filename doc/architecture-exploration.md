@@ -32,6 +32,7 @@ Review architecture for the outcome it supports. Preserve inherited Work
 constraints and make clear:
 
 - The intent and responsibility of each boundary.
+- The shared concepts and terms that cross boundaries.
 - The invariants each boundary must preserve.
 - The direction of dependencies and which layer owns composition.
 - The effects a boundary may perform, including I/O and resource lifecycle.

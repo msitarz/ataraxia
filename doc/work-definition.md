@@ -52,9 +52,7 @@ decomposition:
 When unknown decomposition needs exploration, see
 [Architecture exploration](architecture-exploration.md). If findings identify
 a split or scope change, follow the
-[pause and planning gates](workflow.md#decisions-and-new-splits). An
-orchestrator resolving uncertain scope can find this guidance through
-[orchestrator handoffs](orchestrator.md#roles-and-delegation).
+[pause and planning gates](workflow.md#decisions-and-new-splits).
 
 The architecture-exploration guide owns the maturity and review of
 exploratory, reviewed, and implemented architecture, including retention of
