@@ -22,7 +22,7 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Completion no longer triggers the current cleanup process
+### **AC-1 DONE** Completion no longer triggers the current cleanup process
 
 Current guidance and routes no longer prescribe contract deletion, mechanical
 closure publication, cleaner dispatch, or post-merge branch/worktree cleanup as
@@ -35,7 +35,7 @@ removes architecture artifacts manually later. No automatic deletion or new
 cleanup process replaces the retired procedures. Ordinary Git worktree creation
 and safe low-level tools may remain without a required cleanup lifecycle.
 
-### **AC-2 TODO** Pending cleanup plans cannot restore the retired process
+### **AC-2 DONE** Pending cleanup plans cannot restore the retired process
 
 The [post-merge closure parent](../../post-merge-work-closure/README.md), its
 [command child](../../post-merge-work-closure/command/README.md), and

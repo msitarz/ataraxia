@@ -105,7 +105,7 @@ trial.
 
 ## Children
 
-- TODO [Retire the cleanup process](retire-cleanup/README.md): remove prescribed
+- DONE [Retire the cleanup process](retire-cleanup/README.md): remove prescribed
   Work closure and post-merge Git cleanup procedures while preserving artifacts.
 - TODO [Define outcome contracts](outcome-contracts/README.md): let a Work
   express one outcome with verifiable acceptance conditions and inherited
@@ -129,10 +129,11 @@ trial.
 
 ## Additional context
 
-This is a plan for changing guidance, not delivery evidence for that migration.
-All migration acceptance criteria remain `TODO`. Sequential dependencies keep
-overlapping owner edits reviewable; they do not turn the children into mandatory
-phases of ordinary product Works.
+This remains a plan for the guidance migration; cleanup retirement is delivered
+by its child. The parent's own acceptance criteria and all other planned
+migration criteria remain `TODO`. Sequential dependencies keep overlapping
+owner edits reviewable; they do not turn the children into mandatory phases of
+ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The

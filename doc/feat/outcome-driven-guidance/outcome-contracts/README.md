@@ -49,7 +49,7 @@ and composition rather than merely collecting child completion statuses.
 
 ## Dependencies
 
-- TODO [Retire the cleanup process](../retire-cleanup/README.md): remove
+- DONE [Retire the cleanup process](../retire-cleanup/README.md): remove
   prescribed Work closure and post-merge Git cleanup procedures while preserving
   artifacts.
 
