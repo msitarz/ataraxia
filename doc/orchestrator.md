@@ -89,6 +89,12 @@ check that a maintainer can quickly understand:
 - Its inherited constraints and scope.
 - Its relationship to architecture.
 
+When it is unclear whether a coherent outcome should remain one leaf or split,
+use
+[Work definition](work-definition.md#decomposition-and-architectural-exploration)
+to resolve the uncertainty through bounded exploration and preserve the existing
+pause and planning gates.
+
 The five-minute heuristic does not cap substantive implementation review. If
 simplification and reuse leave independently deliverable outcomes, split them
 into nested Works through the

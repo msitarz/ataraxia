@@ -4,9 +4,10 @@ Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
 for any repository change. Read the rest when changing or reviewing code or
 tests. Apply [engineering judgment in review](engineering-review.md) when
 changing or reviewing code or tests. Use
-[check and evidence policy](validation.md) when choosing checks or
-reporting evidence and [architecture](architecture.md) for current system
-contracts.
+[check and evidence policy](validation.md) when choosing checks or reporting
+evidence. For product code, use [product architecture](architecture.md) and
+relevant ADRs for current contracts; for workflow or tooling changes, use the
+relevant owning guidance and source.
 
 ## Fix the underlying problem
 
@@ -23,14 +24,19 @@ files.
 The project requires Python 3.14 or newer and uses native deferred annotation
 evaluation; do not add `from __future__ import annotations`.
 
-When converting a reviewed `.pyi` interface into an implementation module,
-preserve the reviewed design and recheck the implementation against it. Do not
-leave a shadowing `.pyi` beside the `.py` in active module resolution; retain a
-superseded design separately with its status or relationship to the current
-architecture. Static type checks establish only the checked static contracts;
-they do not establish runtime validation, purity, or delivered behavior.
-Architecture exploration and maturity are described in
-[Architecture exploration](architecture-exploration.md).
+## Reviewed type stubs
+
+When converting a reviewed `.pyi` interface into an implementation module:
+
+- Preserve the reviewed design and recheck the implementation against it.
+- Remove the shadowing `.pyi` from active module resolution.
+- Retain a superseded design separately with its status or relationship to
+  current architecture.
+- Treat static type checks as evidence only for the checked static contracts;
+  they do not establish runtime validation, purity, or delivered behavior.
+
+See [Architecture exploration](architecture-exploration.md) for architecture
+maturity and reviewed-boundary guidance.
 
 - Prefer function composition, focused functions, guard clauses, and early
   returns. Ruff's PLR0915 counts statements in source, scripts, and tests and
