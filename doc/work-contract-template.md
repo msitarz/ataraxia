@@ -83,7 +83,6 @@ Omit empty criterion subheadings.
 
 ### **AC-1 TODO** Create a sandbox with an unused name
 
-`make sandbox-create NAME=trial-a` creates a prepared sandbox under the managed root. If that name already exists, Make exits with status 2 without changing the existing sandbox. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
 
 #### What exists
 

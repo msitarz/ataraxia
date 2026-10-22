@@ -65,18 +65,15 @@ decision rather than an open-ended trial mandate.
 
 ## Links
 
-- [Existing workflow parent](../../reviewable-workflow-v2/README.md),
-  [trial preparation](../../reviewable-workflow-v2/trial-preparation/README.md),
-  [trial contract](../../reviewable-workflow-v2/trial-preparation/trial-contract/README.md),
-  and [live trial](../../reviewable-workflow-v2/live-trial/README.md): pending
-  plans to reconcile during implementation.
+- The retired workflow parent, trial preparation, trial contract, and live
+  trial remain available in the
+  [immutable repository history](https://github.com/msitarz/ataraxia/tree/2405ded5e1fb993c9411e77a73111b1d95f1bf2c/doc/feat/reviewable-workflow-v2).
+  Their pending plans do not authorize or constrain this trial.
 - [Task routes](../../../../AGENTS.md) and
   [documentation ownership](../../../README.md): discoverability and consistency
   owners.
 
 ## Additional context
 
-This is a bounded usability trial, not the older pending quantitative
-workflow-efficiency evaluation. Its implementation must make that distinction
-explicit in the affected plans rather than quietly inheriting their
+This is a bounded usability trial. It does not inherit the retired workflow's
 prerequisites or performance claims.
