@@ -36,19 +36,20 @@ removes architecture artifacts manually later. No automatic deletion or new
 cleanup process replaces the retired procedures. Ordinary Git worktree creation
 and safe low-level tools may remain without a required cleanup lifecycle.
 
-### **AC-2 TODO** Remove the three obsolete closure contracts
+### **AC-2 DONE** Remove the three obsolete closure contracts
 
-Delete exactly the obsolete
-[post-merge closure parent](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/README.md),
-[command child](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/command/README.md),
-and
-[adoption child](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/adoption/README.md)
-contracts. The decision record and this Work distinguish the delivered lifecycle
-guidance from the unfinished command and adoption plans; those plans were never
-implemented. Git history retains their prior states. Remove dangling links and
-align current cleanup rationale with
-[WDR 30](../../../wdr/0030-retire-prescribed-work-and-git-cleanup.md). Do not
-change Work discovery, checks, or criterion parsing.
+The following three obsolete contracts are absent from the current tree:
+
+- `doc/feat/post-merge-work-closure/README.md`
+- `doc/feat/post-merge-work-closure/command/README.md`
+- `doc/feat/post-merge-work-closure/adoption/README.md`
+
+The lifecycle guidance was delivered; the command and adoption plans were
+unfinished and were never implemented. Git history preserves their prior
+states. References to the removed contracts are absent from current guidance.
+[WDR 30](../../../wdr/0030-retire-prescribed-work-and-git-cleanup.md) records
+the cleanup rationale. Work discovery, checks, and criterion parsing are
+unchanged.
 
 ## Links
 

@@ -88,7 +88,8 @@ Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
   [Work acceptance](../../acceptance-tracing.md) and
   [Work workflow](../../workflow.md) prescribed selected contract removal, and
   [branch cleanup](../../branch-cleanup.md) prescribed post-merge Git
-  operations. WDR 30 retires those procedures and retains their records.
+  operations. WDR 30 retires those procedures; WDR history and Git preserve
+  their prior states without requiring retention of the obsolete contracts.
 - The post-merge closure lifecycle guidance was delivered. The closure parent,
   command, and adoption contracts are removed under the exact exception in the
   [cleanup retirement Work](retire-cleanup/README.md); Git history preserves
