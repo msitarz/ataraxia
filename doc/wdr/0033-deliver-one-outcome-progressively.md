@@ -16,14 +16,19 @@ must not be mistaken for delivered behavior.
 
 ## Decision
 
-Allow behavior and tests to progress in increments within one coherent Work.
-Use typed composition and an optional
-[walking skeleton](../engineering.md#progressive-implementation) when they help
-expose integration risks; keep sequencing and effect ownership real. Review
-actual data flow, including dynamic mappings that static checks may miss.
-Acceptance still requires observed evidence at the level claimed. Keep existing
-boundary validation, construction, pure-decision, live-effect, review, and
-delivery-gate rules in force.
+Progressive delivery is allowed within one coherent Work, subject to these
+rules:
+
+- Let behavior and tests progress in increments within that Work.
+- Use typed composition and an optional
+  [walking skeleton](../engineering.md#progressive-implementation) when they
+  help expose integration risks.
+- Keep sequencing and effect ownership real.
+- Review actual data flow, including dynamic mappings that static checks may
+  miss.
+- Require observed evidence at the level claimed for acceptance.
+- Keep existing boundary validation, construction, pure-decision, live-effect,
+  review, and delivery-gate rules in force.
 
 ## Consequences
 
