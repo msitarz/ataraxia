@@ -38,6 +38,9 @@ together; local child acceptance cannot establish that cross-guidance result.
   final-head CI requirements.
 - Retain completed Works, exploration findings, and typed architecture artifacts
   through this parent's completion; completion does not authorize deletion.
+- Keep the current architectural view accurate as children change shared
+  architecture, and distinguish superseded exploration and design from it;
+  retention does not require duplicate interfaces in active module resolution.
 - Record consequential workflow rationale through the existing WDR process when
   implementing the relevant guidance change; this plan does not declare
   migration implemented.
@@ -93,9 +96,12 @@ parent.
 
 Observations from two or three representative Works show where the combined
 guidance helps, conflicts, or remains uncertain and support a maintainer
-decision about further adjustment. Unobserved benefits remain claims, and
-unresolved required outcomes remain `TODO`. No broader tuning or cleanup
-replacement is implied by completing the trial.
+decision about further adjustment. The trial includes at least one real Work
+delivery under the
+[trial acceptance conditions](representative-trial/README.md#ac-1-todo-concrete-cases-reveal-guidance-fit-and-remaining-friction).
+Unobserved benefits remain claims, and unresolved required outcomes remain
+`TODO`. No broader tuning or cleanup replacement is implied by completing the
+trial.
 
 ## Children
 
@@ -127,3 +133,8 @@ This is a plan for changing guidance, not delivery evidence for that migration.
 All migration acceptance criteria remain `TODO`. Sequential dependencies keep
 overlapping owner edits reviewable; they do not turn the children into mandatory
 phases of ordinary product Works.
+
+Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
+manually and observe how it evolves before defining another process. The
+maintainer removes retained architecture artifacts manually later; this plan
+introduces no deletion trigger or replacement cleanup process.

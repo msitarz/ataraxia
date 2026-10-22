@@ -15,7 +15,7 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Progressive delivery exposes different levels of confidence
+### **AC-1 TODO** A coherent outcome can become executable progressively
 
 Executor and engineering guidance support conditional typed architecture
 exploration, typed wiring, an executable thin walking skeleton, progressive
@@ -24,16 +24,9 @@ Typed wiring contains real sequencing and effect ownership while leaf operations
 may be stubbed. The walking skeleton executes a representative thin path, using
 fake adapters when appropriate. Review inspects actual data flow as well as
 ownership and contract meaning, including dynamic graph mappings that static
-checks can miss. These are useful progression choices, not
-mandatory separate Works or agent assignments.
-
-Guidance distinguishes static contract checks, executable wiring evidence, and
-evidence of completed behavior. Stubs, placeholders, and unrun tests cannot
-establish passing acceptance evidence. Type checking cannot establish runtime
-validation or purity. Raw ingress is validated, and construction or transitions
-establish new invariants where they are owned. Pure decisions trust established
-invariants; live authorization and resource checks stay with effects. Stateful
-runners may orchestrate pure decisions without themselves being pure.
+checks can miss. These are useful progression choices, not mandatory separate
+Works or agent assignments. Shared architecture evolves under
+[architecture maturity guidance](../architecture-exploration/README.md#ac-2-todo-typed-architecture-communicates-its-current-maturity-and-evolution).
 
 ### **AC-2 TODO** Test intentions and delivered tests receive the right review
 
@@ -48,6 +41,24 @@ level claimed; reviewing test intentions alone cannot complete it, and pending
 placeholder tests cannot pass completion. Implementation preserves reviewed
 behavioral expectations rather than weakening them to match faulty code;
 justified changes return to contract and intent review.
+
+### **AC-3 TODO** Evidence establishes only the confidence it supports
+
+Delivery and acceptance guidance distinguish static contract checks, executable
+wiring evidence, and evidence of completed behavior. Stubs, placeholders, and
+unrun tests cannot establish passing acceptance evidence. Type checking cannot
+establish runtime validation or purity.
+
+### **AC-4 TODO** Invariants and effects retain accountable owners
+
+Engineering guidance places validation and effects at their owning boundaries:
+
+- Raw ingress is validated, and construction or transitions establish new
+  invariants where they are owned.
+- Pure decisions trust established invariants; live authorization and resource
+  checks stay with effects.
+- Stateful runners may orchestrate pure decisions without themselves being
+  pure.
 
 ## Dependencies
 

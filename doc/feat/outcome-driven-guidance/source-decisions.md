@@ -28,9 +28,13 @@ authoritative until changed through those Works.
 - Distinguish exploratory, reviewed, and implemented typed architecture; permit
   reviewed boundary changes with explicit reviewed justification and keep
   private helpers flexible.
+- Keep the current architectural view accurate when later children change
+  shared architecture, and mark retained exploration and superseded design
+  distinguishably through lightweight status or explanation.
 - Preserve reviewed design when converting `.pyi` to `.py`, recheck the
   conversion, and prevent duplicate interfaces from shadowing unchecked
-  implementation.
+  implementation; retained design can be stored or labeled separately outside
+  active module resolution.
 - Progress as useful through conditional architecture exploration, real typed
   wiring with stubbed leaves, a thin executable skeleton with fake adapters,
   behavioral tests and implementation, and engineering review.
@@ -52,10 +56,16 @@ authoritative until changed through those Works.
 - Remove obsolete rules at their owners; avoid mandatory phase agents,
   speculative review automation, and more process before trying two or three
   representative Works.
-- Remove the current cleanup process first and defer its replacement;
-  distinguish Work/artifact closure from branch/worktree cleanup.
+- Require at least one real Work delivery in that future trial, exercising
+  applicable architecture, wiring, testing, implementation, and review in
+  proportion to the change; other cases may be walkthroughs with explicit
+  evidence limits, and this plan authorizes no unrelated implementation.
+- Retire both prescribed Work/artifact closure and post-merge branch/worktree
+  cleanup first so the maintainer can handle cleanup manually and observe its
+  natural evolution before defining another process.
 - Retain completed Works and typed architecture through parent completion;
-  parent completion is not deletion authorization.
+  parent completion is not deletion authorization, and the maintainer removes
+  retained architecture artifacts manually later without a new cleanup process.
 
 ## Verified baseline and affected owners
 

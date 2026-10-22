@@ -33,6 +33,10 @@ without each becoming a criterion. Non-runtime acceptance conditions remain
 valid for guidance, Investigations, and Evaluations; behavioral wording is not
 required when the outcome is an inspectable artifact or finding.
 
+Independently assessable guarantees have separate criteria; parallel conditions
+of one guarantee may use bullets within that criterion. This distinction does
+not impose a criterion quota or require more child Works.
+
 ### **AC-2 TODO** Shared constraints have an accountable verification scope
 
 Parent contracts own essential shared concepts, invariants, responsibilities,

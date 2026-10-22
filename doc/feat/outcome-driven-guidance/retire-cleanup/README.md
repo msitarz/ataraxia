@@ -26,12 +26,14 @@ Apply the [parent constraints](../README.md#inherited-constraints).
 
 Current guidance and routes no longer prescribe contract deletion, mechanical
 closure publication, cleaner dispatch, or post-merge branch/worktree cleanup as
-delivery steps. Work/artifact closure means removing retained delivery records;
-Git cleanup means removing branches and worktrees. Removing either procedure
-does not authorize the other. Completed Works and typed architecture remain
-available through parent completion, which gives no automatic deletion
-authority. Ordinary Git worktree creation and safe low-level tools may remain
-without a required cleanup lifecycle.
+delivery steps. Both procedures are intentionally retired: Work/artifact
+closure removes retained delivery records, while Git cleanup removes branches
+and worktrees. Cleanup is left to the maintainer manually so its natural
+evolution can inform a later process decision. Artifact retention follows the
+[parent constraints](../README.md#inherited-constraints), and the maintainer
+removes architecture artifacts manually later. No automatic deletion or new
+cleanup process replaces the retired procedures. Ordinary Git worktree creation
+and safe low-level tools may remain without a required cleanup lifecycle.
 
 ### **AC-2 TODO** Pending cleanup plans cannot restore the retired process
 
@@ -59,7 +61,7 @@ the supported format and explicit maintainer authorization.
 
 ## Additional context
 
-This child is first so subsequent guidance changes do not inherit a requirement
-to remove their delivery records. This planning change retains the existing
-closure Works unchanged; their disposition is an outcome of this child's later
-implementation.
+This child is first so subsequent guidance changes do not inherit prescribed
+artifact removal or post-merge Git cleanup. This planning change retains the
+existing closure Works unchanged; their disposition is an outcome of this
+child's later implementation.

@@ -26,9 +26,16 @@ A retained record identifies two or three concrete Works and explains why they
 exercise different relevant decisions. Together the cases cover a coherent leaf,
 uncertain decomposition with retained exploration, inherited guarantees and
 composition, progressive evidence, and focused review or a bounded repair
-decision. Existing Works, new guidance-defined contracts, and workflow
-walkthroughs may supply these cases without authorizing unrelated product
-changes.
+decision. At least one case is a real Work delivery that uses the combined
+guidance and retains evidence of applicable architecture, wiring, testing,
+implementation, and review. Progression is proportional to the change; a simple
+change does not acquire unnecessary stages just to satisfy the trial. Remaining
+cases may use existing Works, new guidance-defined contracts, or walkthroughs
+with explicit evidence limits; walkthroughs alone cannot satisfy this criterion.
+
+This is a future acceptance requirement. The trial uses an independently
+authorized Work delivery; defining this trial does not authorize unrelated
+product implementation now or later.
 
 Observations distinguish a contract review or walkthrough from actual
 implementation and runtime evidence. They record consequential ambiguity,
@@ -36,17 +43,20 @@ missing context, excessive process, and unresolved questions without claiming
 unmeasured speed or quality gains. The five-minute intent target never justifies
 omitting consequential detail or disguising an incoherent or unbounded outcome.
 
-### **AC-2 TODO** One usable route supports a bounded next decision
+### **AC-2 TODO** Reading routes agree on the delivered guidance
 
 A reading-route walkthrough verifies that task routes, Make reminders,
 contributor guidance, role guidance, and authoritative owners agree on the
 delivered rules. Conflicting pending workflow trial contracts are explicitly
 reconciled or marked as superseded plans without deleting retained records or
-declaring their unobserved outcomes complete. The record proposes only
-corrections supported by the cases and gives the maintainer a concrete decision
-to retain the guidance, make a bounded correction, or investigate a remaining
-question. Further tuning requires that decision rather than an open-ended trial
-mandate.
+declaring their unobserved outcomes complete.
+
+### **AC-3 TODO** Observed cases support a bounded next decision
+
+The retained record proposes only corrections supported by the cases and gives
+the maintainer a concrete decision to retain the guidance, make a bounded
+correction, or investigate a remaining question. Further tuning requires that
+decision rather than an open-ended trial mandate.
 
 ## Dependencies
 

@@ -39,7 +39,7 @@ is an independently useful outcome. Vertical children add behavior without
 restating prior acceptance conditions; regression checks preserve earlier
 behavior. The example does not approve or implement a parallel-shard feature.
 
-### **AC-2 TODO** Typed architecture communicates its maturity and change boundary
+### **AC-2 TODO** Typed architecture communicates its current maturity and evolution
 
 Architecture guidance distinguishes exploratory types used to learn, reviewed
 types expressing agreed boundaries, and implemented types backed by code and
@@ -50,13 +50,26 @@ signatures remain flexible. Shared architecture is refined as vertical outcomes
 are delivered rather than freezing every module and signature before
 implementation.
 
+When later children change shared architecture, the current architectural view
+reflects the reviewed change. Retained exploration and superseded designs carry
+lightweight status or explanation that makes their relationship to the current
+view clear. Retaining history does not leave competing live definitions;
+retained design may be stored or labeled separately outside active module
+resolution under the [parent constraints](../README.md#inherited-constraints).
+
+### **AC-3 TODO** Architectural context matches the affected system
+
 Product architecture and workflow/tooling architecture keep their own context;
 workflow tooling is not routed through unrelated product architecture.
 
+### **AC-4 TODO** Stub conversion preserves reviewed design and exposes implementation
+
 Guidance covers any `.pyi` to `.py` transition: preserve the reviewed design,
 recheck the conversion, and avoid duplicate interfaces that hide an unchecked
-implementation. A static type check is evidence of the checked static contracts,
-not runtime validation, purity, or delivered behavior.
+implementation. Retention of the prior design follows AC-2 without keeping a
+shadowing `.pyi` in active module resolution. A static type check is evidence of
+the checked static contracts, not runtime validation, purity, or delivered
+behavior.
 
 ## Dependencies
 
