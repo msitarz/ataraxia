@@ -24,18 +24,25 @@ review sized to the change.
 
 ## Decision
 
-Give each Work one coherent outcome. Its acceptance criteria describe
-independently assessable guarantees or conditions for that outcome. Several
-scenarios may establish one guarantee; there is no criterion quota.
+Give each Work one coherent outcome. Its acceptance criteria follow these
+rules:
+
+- Describe independently assessable guarantees or conditions for the outcome.
+- Allow several scenarios to establish one guarantee.
+- Do not set a criterion quota.
 
 Keep inherited constraints separate from local criteria. Parent contracts
-establish shared concepts, invariants, responsibilities, dependency direction,
-and effect limits. Child contracts link those constraints and may add local
-constraints without weakening them. State whether inherited non-functional
-requirements are verified locally, architecturally, or at system level. Include
-workload and measurement conditions with quantitative thresholds. Parent
-acceptance checks global guarantees across the composition rather than only
-aggregating child completion.
+establish these shared rules:
+
+- Define concepts, invariants, responsibilities, dependency direction, and
+  effect limits.
+- Let child contracts link to the shared constraints and add local constraints
+  without weakening them.
+- State whether inherited non-functional requirements are verified locally,
+  architecturally, or at system level.
+- Include workload and measurement conditions with quantitative thresholds.
+- Have parent acceptance check global guarantees across the composition rather
+  than only aggregate child completion.
 
 Use the five-minute heuristic to make the outcome, acceptance conditions,
 inherited constraints, scope, and architectural relationship quick to
@@ -45,6 +52,10 @@ Scope and cohesion still bound a leaf. A concise contract cannot hide an
 unbounded outcome or omit consequential detail. Given/When/Then is optional.
 Non-runtime acceptance conditions remain valid for guidance, Investigations,
 and Evaluations.
+
+Apply the [shared writing standard](../README.md#writing) to Work contracts and
+guidance. Documentation review assesses readability alongside meaning and
+completeness.
 
 ## Consequences
 

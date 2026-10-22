@@ -94,6 +94,9 @@ Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
   [template](../../work-contract-template.md#acceptance-criteria),
   [definition](../../work-definition.md), and
   [acceptance guidance](../../acceptance-tracing.md).
+- The current writing standard for Work contracts and guidance is owned by
+  [Documentation ownership](../../README.md#writing). Its outcome remains
+  pending independent review under AC-3.
 - At the verified planning baseline,
   [Work acceptance](../../acceptance-tracing.md) and
   [Work workflow](../../workflow.md) prescribed selected contract removal, and

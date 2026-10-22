@@ -82,17 +82,22 @@ Before requesting new infrastructure or splitting scope, apply the
 whether simplification and suitable reuse can fulfill the actual required
 outcome with less machinery or review scope. Preserve required safeguards.
 
-Before handoff, check that a maintainer can quickly understand the Work's
-outcome, acceptance conditions, inherited constraints, scope, and relationship
-to architecture under [Work scope and sizing](workflow.md#scope-and-sizing).
-This heuristic does not cap substantive implementation review. If the scope
-contains independently deliverable outcomes after simplification and reuse,
-split them into nested Works through the
+Before handoff, use [Work scope and sizing](workflow.md#scope-and-sizing) to
+check that a maintainer can quickly understand:
+
+- The Work's outcome and acceptance conditions.
+- Its inherited constraints and scope.
+- Its relationship to architecture.
+
+The five-minute heuristic does not cap substantive implementation review. If
+simplification and reuse leave independently deliverable outcomes, split them
+into nested Works through the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
 For an ad hoc handoff, define a parent Work and child Works; for an existing
-Work, nest children and update its parent map. Apply
-[contract review guidance](work-definition.md) and the workflow owner’s sizing
-and planning gates before expanded work.
+Work, nest children and update its parent map. Before expanded work:
+
+- Apply [contract review guidance](work-definition.md).
+- Apply the workflow owner's sizing and planning gates.
 
 Before dispatch, identify dependencies and shared edit surfaces. Coordinate
 shared owners, parent maps, indexes, exact wording, formatter-valid snippets,
@@ -212,19 +217,25 @@ evidence, and contract retention. Follow
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
 
-Before publishing, reassess each leaf's actual diff for outcome cohesion and
-consequential details under
-[Work scope and sizing](workflow.md#scope-and-sizing). The five-minute heuristic
-covers understanding the outcome and contract; substantive implementation review
-has no time cap. If the diff contains an independent outcome that cannot stay
-coherent after simplification and reuse, stop publication and apply the
+Before publishing, reassess each leaf's actual diff under
+[Work scope and sizing](workflow.md#scope-and-sizing):
+
+- Check outcome cohesion and consequential details.
+- Apply the five-minute heuristic to understanding the outcome and contract;
+  substantive implementation review has no time cap.
+- If an independent outcome cannot stay coherent after simplification and
+  reuse, stop publication and apply the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
-preserving valid implementation and evidence. Run `make work-review` as a
-reminder at this checkpoint. Integrated parent review verifies interfaces,
-composition, and shared guarantees across the result. Preserve substantive scope
-requirements and identify unresolved integration or merge issues. Only the
-requested Work owner hands off its final reviewed branch and description for
-[publication](pull-requests.md#publishing).
+  preserving valid implementation and evidence.
+
+Run `make work-review` as a reminder at this checkpoint. Integrated parent
+review checks interfaces, composition, and shared guarantees across the result.
+At this checkpoint:
+
+- Preserve substantive scope requirements.
+- Identify unresolved integration or merge issues.
+- Have only the requested Work owner hand off the final reviewed branch and
+  description for [publication](pull-requests.md#publishing).
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the

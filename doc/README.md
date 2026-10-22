@@ -78,23 +78,24 @@ and remove or link the others; do not add an exception to reconcile them.
 When a guidance file or heading linked by a Make reminder moves or is renamed,
 update the reminder link in the same change and verify its target.
 
-## Writing
-
-Write Work contracts and guidance in plain English. Use familiar words and
-direct sentences. When a dense paragraph contains distinct requirements,
-restructure them as a list with one clear rule or condition per bullet. Use
-short prose for connected explanations and causal relationships. Preserve every
-requirement, condition, exception, owner, and relationship when restructuring.
-
-Documentation review assesses readability alongside meaning and completeness.
-The [Work contract template](work-contract-template.md) links here for this
-shared standard and owns only contract-specific writing instructions.
-
 Keep accepted ADR and WDR history intact, using the [ADR
 workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
 decisions. A new change owns its own evidence. Keep detailed scope in Work
 contracts and evidence in its source records; [PR guidance](pull-requests.md)
 owns delivery descriptions.
+
+## Writing
+
+Apply this shared writing standard to Work contracts and guidance:
+
+- Write in plain English.
+- Use familiar words.
+- Use direct sentences.
+- Restructure dense paragraphs with distinct requirements as lists.
+- Put one clear rule or condition in each bullet.
+- Use short prose for connected explanations and causal relationships.
+- Preserve every requirement, condition, exception, owner, and relationship
+  when restructuring.
 
 ## Vocabulary
 
@@ -135,4 +136,5 @@ Markdown formatting and local links and validate Mermaid fences with the
 embedded renderer; run `make doc-format` to apply the configured formatting.
 Check that prose, headings, and examples use the same glossary terms. Follow
 [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
-cohesive changes.
+cohesive changes. Assess readability alongside meaning and completeness under
+the [shared writing standard](#writing).

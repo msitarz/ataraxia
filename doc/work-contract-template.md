@@ -35,9 +35,20 @@ Example:
 
 ## Inherited constraints
 
-<!-- Optional. Link to the parent-owned constraints that apply to this Work and state any local constraints it adds. A parent owns shared concepts, invariants, responsibilities, dependency direction, and effect limits without predefining every signature; children inherit them without restating or weakening them.
+<!-- Optional. Link to the parent-owned constraints that apply to this Work and state any local constraints it adds.
 
-For a non-functional requirement, state whether the local Work, an architectural integration, or the full system verifies it, and name the responsible verifier. A quantitative threshold includes its workload and measurement conditions. A child can verify its local portion and complete its own outcome while the parent's system-level guarantee remains unverified; the parent verifies that guarantee across the integrated result.
+A parent owns these shared constraints without predefining every signature:
+- Concepts and invariants.
+- Responsibilities, dependency direction, and effect limits.
+
+Children inherit parent constraints without restating or weakening them.
+
+For each non-functional requirement:
+- State whether the local Work, an architectural integration, or the full system verifies it.
+- Name the responsible verifier.
+- Include workload and measurement conditions with a quantitative threshold.
+
+A child can verify its local portion and complete its own outcome while the parent's system-level guarantee remains unverified. The parent verifies that guarantee across the integrated result.
 
 Example: A parent requires p95 response time below 200 ms for a named request mix, concurrency, and deployment class. A child links to that constraint and verifies its route locally. The parent verifies the integrated service under the stated workload; the child's local completion does not claim system-level proof.
 -->
@@ -57,7 +68,7 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 
 - A Work owns one coherent outcome. Acceptance criteria state independently assessable conditions or behaviors that establish it; together, they fulfill the Work’s purpose and goals without a target number of criteria.
 - Name each guarantee in the heading and start its criterion with a short sentence stating what becomes possible or changes when it is delivered.
-- Use short prose for connected explanations and unordered, single-sentence bullets for parallel conditions, guarantees, or refusal cases. Follow the shared [writing standard](README.md#writing).
+- Use short prose for connected explanations and unordered, single-sentence bullets for parallel conditions, guarantees, or refusal cases.
 - Include preconditions, expected results, relevant success, failure, refusal, preservation, and compatibility boundaries, and affected interfaces with useful signatures and types needed to determine completion.
 - Keep multiple scenarios that establish the same guarantee together; use separate criteria for guarantees that can be assessed independently. A condition need not describe runtime behavior when the outcome is guidance, an Investigation, or an Evaluation.
 - Given/When/Then is optional. Use it when it makes a condition easier to assess.

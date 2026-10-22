@@ -10,14 +10,18 @@ Give each criterion a stable ID such as `AC-1`, unique within its owning Work
 headings in the [Work contract template](work-contract-template.md).
 
 A criterion describes an independently assessable guarantee or condition for
-the Work's one coherent outcome. Several scenarios may establish one guarantee;
-they do not need separate criteria. Acceptance conditions may concern runtime
-behavior, guidance, Investigation findings, or Evaluation evidence. A parent's
-inherited constraints remain distinct from the child's local criteria. Parent
-acceptance verifies shared guarantees across the combined result, including
-cross-child behavior and declared system-level conditions; the union of child
-`DONE` statuses does not establish the parent's composition outcome.
+the Work's one coherent outcome:
 
+- Several scenarios may establish one guarantee and do not need separate
+  criteria.
+- Conditions may concern runtime behavior, guidance, Investigation findings,
+  or Evaluation evidence.
+- A parent's inherited constraints remain distinct from a child's local
+  criteria.
+- Parent acceptance verifies shared guarantees across the combined result,
+  including cross-child behavior and declared system-level conditions.
+- The union of child `DONE` statuses does not establish the parent's
+  composition outcome.
 - `TODO` means the criterion's condition or guarantee is not yet verified from
   inspectable evidence. Planned checks, implemented tests, and failed, skipped,
   pending, or unrun checks do not establish the required outcome.

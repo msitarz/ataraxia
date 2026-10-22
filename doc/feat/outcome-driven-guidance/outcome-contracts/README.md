@@ -44,20 +44,25 @@ headings and checker syntax remain usable.
 Parent contracts own essential shared concepts, invariants, responsibilities,
 dependency direction, and effect limits without predefining every signature.
 Children link to inherited constraints separately from local acceptance
-criteria. Guidance shows where a non-functional requirement is verified:
+criteria. Guidance describes each requirement with:
 
-- Locally, architecturally, or at the system level.
-- With workload and measurement conditions for a quantitative threshold.
+- Its local, architectural, or system-level verification scope when it is
+  non-functional.
+- Its workload and measurement conditions when its threshold is quantitative.
 
 Parent acceptance checks global guarantees and composition rather than merely
 collecting child completion statuses.
 
 ### **AC-3 TODO** Work contracts and guidance use the shared writing standard
 
-The documentation owner defines a shared writing standard for Work contracts
-and guidance. The Work contract template links to that owner, and changed
-contracts and guidance follow the standard. Documentation review assesses
-readability alongside meaning and completeness.
+The documentation owner defines a shared writing standard in
+[Documentation ownership](../../../README.md#writing). The template and changed
+contracts and guidance meet these conditions:
+
+- The template links to the shared writing standard.
+- Changed Work contracts follow the standard.
+- Changed guidance follows the standard.
+- Documentation review assesses readability alongside meaning and completeness.
 
 ## Dependencies
 
