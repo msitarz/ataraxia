@@ -64,8 +64,8 @@ adoption through the applicable maintainer decision process. Neither a plan
 merge nor Evaluation completion adopts policy or authorizes another trial.
 
 Preserve the protocol and observed results as supporting artifacts under the
-[Work delivery procedure](acceptance-tracing.md#work-delivery),
-promoting lasting guidance to its owner before cleanup. Git retains removed
-contracts and artifacts. The [Work contract template](work-contract-template.md)
-applies to the contract; the declared protocol determines its supporting
-artifacts. Do not add routine per-revision bookkeeping or a second lifecycle.
+[Work delivery procedure](acceptance-tracing.md#work-delivery), promoting
+lasting guidance to its owner before any maintainer removes retained records.
+The [Work contract template](work-contract-template.md) applies to the contract;
+the declared protocol determines its supporting artifacts. Do not add routine
+per-revision bookkeeping or a second lifecycle.

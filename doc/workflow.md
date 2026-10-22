@@ -59,35 +59,11 @@ guidance links in Dependencies have no Work status.
 - Use `TODO` for an active Work, `DONE` for a Work whose required outcomes are
   independently verified, and `ABORT` for a Work stopped with unsatisfied
   outcomes, including the reason.
-- Keep a Work's contract link while it is open, including a completed Work
-  retained for review; a linked `DONE` therefore differs from an unlinked,
-  explicitly closed `DONE`.
-- On authorized closure of a selected completed Work, set its Children or
-  Dependencies entry to `DONE`, remove its contract link, and preserve its
-  title and purpose, whether its prior status was `TODO` or linked `DONE`.
+- Keep completed child Work contracts and architecture artifacts available
+  through their parent Work's completion. Parent completion does not trigger
+  deletion; the maintainer may remove retained records manually afterward.
 - Update a parent's purpose text when a child's purpose changes; do not require
   outcome summaries or PR references in parent entries.
-- Remove other live links to deleted contracts, or retarget them to a lasting
-  authoritative owner when the information remains needed; stop for maintainer
-  steering when the right disposition is ambiguous.
-- Retain supporting artifacts while active Works need them; after authorized
-  closure, keep them in the current tree only when live documents or Works need
-  them, with Git history preserving deleted committed artifacts and no required
-  promotion of every supporting file.
-- `ABORT` records lifecycle status and does not authorize closure of an
-  incomplete Work by itself. Follow the
-  [authorized closure guidance](acceptance-tracing.md#authorized-closure) for
-  incomplete outcomes.
-
-For example, either active or completed-but-retained entries become the same
-closed entry:
-
-```markdown
-- TODO [Child Work](child/README.md): supplies the parser used by the parent.
-- DONE [Child Work](child/README.md): supplies the parser used by the parent.
-
-- DONE Child Work: supplies the parser used by the parent.
-```
 
 Statuses describe the checked-out branch's verified delivery state, not
 maintainer acceptance or merge; use `master` to determine integrated status.
@@ -101,22 +77,16 @@ orchestrator coordinates local delivery maps within that tree under
 reviewed map updates from their handoff; they need not read orchestrator
 scheduling guidance for that operation.
 
-Retain requested and descendant contracts through implementation PR review and
-corrections until authorized closure. Keep parent entries linked to their active
-contracts through review. Follow
-[Work acceptance](acceptance-tracing.md#work-delivery) for evidence, closure
-authorization, and correction recovery. Keep lasting contracts and decisions at
-their authoritative owners when still needed. PRs hold review discussion; Git
-preserves merged contracts and exact changes.
+Retain requested and descendant contracts through implementation PR review,
+corrections, and after completion. Keep parent entries linked to their
+contracts. Follow [Work acceptance](acceptance-tracing.md#work-delivery) for
+evidence and correction recovery. Keep lasting contracts and decisions at
+their authoritative owners. PRs hold review discussion; Git preserves merged
+contracts and exact changes.
 
-If a Work stops with unsatisfied outcomes, follow
-[authorized closure guidance](acceptance-tracing.md#authorized-closure) for
-recording `ABORT`. Until the checker supports that status, preserve the contract
-and pause the incomplete closure request under the
-[command Work's current tool constraints](feat/post-merge-work-closure/command/README.md).
-
-After a Work PR merges, follow the
-[post-merge branch cleanup](branch-cleanup.md) procedure.
+If a Work stops with unsatisfied outcomes, preserve its contract and report the
+remaining outcomes. There is no required Work closure or post-merge branch and
+worktree cleanup procedure.
 
 Before completing a Work, review tests added during it. Read
 [test ownership](test-ownership.md) when completing a Work.

@@ -13,12 +13,11 @@ local delivery follows
 [orchestrator guidance](orchestrator.md#roles-and-delegation).
 For Work deliveries with acceptance criteria, publish the reviewed
 implementation with requested and descendant contracts retained through
-review and corrections. Explicitly authorized closure changes stay on the same
-PR branch. Require full CI on the latest reviewed PR head, including any
-closure commit, before maintainer merge. Follow
-[Work acceptance](acceptance-tracing.md#work-delivery) for closure
-authorization and correction details. The owning orchestrator's publication
-and description responsibilities are defined [below](#descriptions).
+review, corrections, and completion. Require full CI on the latest reviewed PR
+head before maintainer merge. Follow
+[Work acceptance](acceptance-tracing.md#work-delivery) for correction details.
+The owning orchestrator's publication and description responsibilities are
+defined [below](#descriptions).
 
 Before preparing a rewrite of a published branch, follow the
 [expected-remote capture and lease procedure](publisher.md#published-branch-rewrites).

@@ -66,6 +66,9 @@ authoritative until changed through those Works.
 - Retain completed Works and typed architecture through parent completion;
   parent completion is not deletion authorization, and the maintainer removes
   retained architecture artifacts manually later without a new cleanup process.
+  The maintainer later authorized one exact exception: delete the post-merge
+  closure parent, command, and adoption contracts named in the cleanup
+  retirement Work. This does not authorize deleting other Works or artifacts.
 
 ## Verified baseline and affected owners
 
@@ -81,17 +84,18 @@ Baseline is `c08b883d0d58a4c224136b2ff4ea9fc8cae83f6c` on `master`.
 - [Work template](../../work-contract-template.md) currently gives each
   acceptance criterion one outcome; the new contracts deliberately use one
   outcome per Work and acceptance conditions within it.
-- [Work acceptance](../../acceptance-tracing.md#authorized-closure) and
-  [Work workflow](../../workflow.md#lifecycle) currently prescribe selected
-  contract removal after explicit authorization;
-  [branch cleanup](../../branch-cleanup.md) separately prescribes post-merge Git
-  operations.
-- [Post-merge closure](../post-merge-work-closure/README.md) has delivered
-  lifecycle guidance and pending
-  [command](../post-merge-work-closure/command/README.md) and
-  [adoption](../post-merge-work-closure/adoption/README.md) Works; the first
-  child will retain these records and explicitly supersede their unfinished
-  plans rather than build them.
+- At the verified planning baseline,
+  [Work acceptance](../../acceptance-tracing.md) and
+  [Work workflow](../../workflow.md) prescribed selected contract removal, and
+  [branch cleanup](../../branch-cleanup.md) prescribed post-merge Git
+  operations. WDR 30 retires those procedures; WDR history and Git preserve
+  their prior states without requiring retention of the obsolete contracts.
+- The post-merge closure lifecycle guidance was delivered. The closure parent,
+  command, and adoption contracts are removed under the exact exception in the
+  [cleanup retirement Work](retire-cleanup/README.md); Git history preserves
+  their prior states. The command and adoption outcomes were never implemented.
+  [WDR 30](../../wdr/0030-retire-prescribed-work-and-git-cleanup.md) records
+  the current cleanup rationale.
 - [Engineering](../../engineering.md), [testing](../../testing.md), and
   [engineering review](../../engineering-review.md) already own boundaries, pure
   decisions, meaningful tests, and design judgment; extend those owners rather

@@ -8,7 +8,9 @@ Accepted
 
 Amended by
 [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
-for incomplete closure and publication boundaries.
+for historical incomplete-closure and publication boundaries. Superseded by
+[30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
+for current Work contract and artifact retention.
 
 Amends
 [2. Let parent maps track Work lifecycle](0002-let-parent-maps-track-work-lifecycle.md)
@@ -30,9 +32,10 @@ restoration and repeated deletion, while requested-tree delivery repeats those
 operations across leaves and parents. Retention should continue through review
 until the maintainer explicitly authorizes selected completed Works for closure
 at a reviewed open PR head. The
-[Work closure lifecycle](../feat/post-merge-work-closure/README.md) defines the
-remaining deterministic reference and publication requirements separately; no
-closure command or automatic closure is delivered by this decision.
+[Work closure lifecycle](https://github.com/msitarz/ataraxia/blob/394ed43c768ffeed22320c5d73c5ab4ed666a2bc/doc/feat/post-merge-work-closure/README.md)
+defines the remaining deterministic reference and publication requirements
+separately; no closure command or automatic closure is delivered by this
+decision.
 
 ## Decision
 

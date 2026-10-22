@@ -42,6 +42,7 @@ authoritative owners.
 - [27. Use prototyping within Investigations](0027-use-prototyping-within-investigations.md)
 - [28. Retain Work contracts until authorized closure](0028-retain-work-contracts-until-authorized-closure.md)
 - [29. Publish authorized Work closure on the reviewed PR](0029-publish-authorized-work-closure-on-the-reviewed-pr.md)
+- [30. Retire prescribed Work and Git cleanup](0030-retire-prescribed-work-and-git-cleanup.md)
 
 ## Proposal
 
