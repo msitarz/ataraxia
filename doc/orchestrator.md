@@ -221,8 +221,9 @@ coherent after simplification and reuse, stop publication and apply the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
 preserving valid implementation and evidence. Run `make work-review` as a
 reminder at this checkpoint. Integrated parent review verifies interfaces,
-composition, and shared guarantees across the result. Only the requested Work
-owner hands off its final reviewed branch and description for
+composition, and shared guarantees across the result. Preserve substantive scope
+requirements and identify unresolved integration or merge issues. Only the
+requested Work owner hands off its final reviewed branch and description for
 [publication](pull-requests.md#publishing).
 
 Repository merge settings do not replace maintainer review or maintainer

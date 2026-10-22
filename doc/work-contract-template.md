@@ -33,6 +33,15 @@ Example:
 - `git worktree`: provide separate checkout directory to prevent concurrent edits issues.
 -->
 
+## Inherited constraints
+
+<!-- Optional. Link to the parent-owned constraints that apply to this Work and state any local constraints it adds. A parent owns shared concepts, invariants, responsibilities, dependency direction, and effect limits without predefining every signature; children inherit them without restating or weakening them.
+
+For a non-functional requirement, state whether the local Work, an architectural integration, or the full system verifies it, and name the responsible verifier. A quantitative threshold includes its workload and measurement conditions. A child can verify its local portion and complete its own outcome while the parent's system-level guarantee remains unverified; the parent verifies that guarantee across the integrated result.
+
+Example: A parent requires p95 response time below 200 ms for a named request mix, concurrency, and deployment class. A child links to that constraint and verifies its route locally. The parent verifies the integrated service under the stated workload; the child's local completion does not claim system-level proof.
+-->
+
 ## Visuals
 
 <!-- For meaningful architecture, module relationships, interactions, or lifecycle changes, show proportionate before/after visuals using a suitable GitHub-supported Mermaid type. Tiny changes may use clear before/after prose.
@@ -53,9 +62,7 @@ Check diagram accuracy against source and contracts. Use real Mermaid fences so 
 - Keep multiple scenarios that establish the same guarantee together; use separate criteria for guarantees that can be assessed independently. A condition need not describe runtime behavior when the outcome is guidance, an Investigation, or an Evaluation.
 - Given/When/Then is optional. Use it when it makes a condition easier to assess.
 - State measurement thresholds and the workload and measurement conditions needed to interpret them when they define success.
-- Parent contracts own essential shared concepts, invariants, responsibilities, dependency direction, and effect limits without predefining every signature.
-- Link inherited constraints separately from local acceptance criteria. A child may add local constraints but cannot weaken a parent's shared guarantees.
-- For an inherited non-functional requirement, name its local, architectural, or system verification scope and the responsible verifier. A quantitative threshold includes its workload and measurement conditions.
+- Put inherited constraints in the optional [Inherited constraints](#inherited-constraints) section, separately from local acceptance criteria; a child may add constraints but cannot weaken a parent's shared guarantees.
 - Describe the delivered result rather than listing implementation tasks or instructions to the executor.
 - Keep each requirement at one owner and link to it elsewhere; leave implementation details owned by child Works in those contracts.
 
@@ -66,7 +73,7 @@ Omit empty criterion subheadings.
 
 ### **AC-1 TODO** Create a sandbox with an unused name
 
-`make sandbox-create NAME=trial-a` creates a prepared sandbox under the managed root. If that name already exists, the command exits with status 1 without changing the existing sandbox. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
+`make sandbox-create NAME=trial-a` creates a prepared sandbox under the managed root. If that name already exists, Make exits with status 2 without changing the existing sandbox. These cases establish the same create-without-overwrite guarantee and can remain in one criterion.
 
 #### What exists
 
@@ -79,7 +86,7 @@ Describe existing behavior or machinery that helps explain this criterion, inclu
 
 Engineering guidance requires constructors to validate every consumed field and cross-field invariant before returning a domain value. Rejection may stop at the first error; successful construction guarantees all invariants hold. A compact example shows valid construction and rejection of an invalid field combination. If a child implements a particular constructor, it links to this shared invariant and states its own observable acceptance conditions separately.
 
-For illustration only, a parent could require p95 response time below 200 ms under a named request mix, concurrency, and deployment class. A child verifies its route locally; the parent verifies the integrated system under that workload.
+For constraint inheritance and system-level verification examples, see [Inherited constraints](#inherited-constraints).
 -->
 
 ## Dependencies

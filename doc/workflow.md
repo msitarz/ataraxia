@@ -8,8 +8,9 @@ Work.
 
 ## Scope and sizing
 
-Keep each leaf Work focused on one coherent outcome. The five-minute heuristic
-concerns how quickly a maintainer can understand the outcome, its acceptance
+Each leaf Work delivers one independently verifiable, coherent capability or
+outcome. The five-minute heuristic concerns how quickly a maintainer can
+understand the outcome, its acceptance
 conditions, inherited constraints, scope, and relationship to architecture.
 Substantive implementation review remains proportional to the change and has
 no five-minute cap. Responsibility count and lines of code alone do not predict
