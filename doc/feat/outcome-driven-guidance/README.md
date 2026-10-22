@@ -131,7 +131,7 @@ trial.
   exploration.
 - DONE [Guide progressive delivery](progressive-delivery/README.md): make a
   coherent outcome executable in small steps with honest evidence.
-- DONE [Guide focused engineering review](focused-review/README.md): make
+- TODO [Guide focused engineering review](focused-review/README.md): make
   focused review produce supported findings and bounded repair.
 - TODO [Try representative Works](representative-trial/README.md): use two or
   three Works to assess the guidance and decide the next adjustment.
@@ -145,11 +145,12 @@ trial.
 
 ## Additional context
 
-Cleanup retirement, outcome-contract guidance, architecture exploration,
-progressive delivery, and focused engineering review are delivered by their
-children. The representative trial and the parent's own acceptance criteria
-remain `TODO`. Sequential dependencies keep overlapping owner edits reviewable;
-they do not turn the children into mandatory phases of ordinary product Works.
+Cleanup retirement, outcome-contract guidance, architecture exploration, and
+progressive delivery are delivered by their children. Focused engineering
+review's revised stopping criterion, the representative trial, and the parent's
+own acceptance criteria remain `TODO`. Sequential dependencies keep overlapping
+owner edits reviewable; they do not turn the children into mandatory phases of
+ordinary product Works.
 
 Retiring both prescribed cleanup procedures lets the maintainer handle cleanup
 manually and observe how it evolves before defining another process. The
