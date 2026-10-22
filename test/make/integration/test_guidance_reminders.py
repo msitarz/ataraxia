@@ -233,9 +233,8 @@ def test_work_review_prompts_concise_delivery(
     # Then
     assert review.exit_code == 0, review.output
     assert "Before publication" in review.stdout
-    assert "complete leaf diff" in review.stdout
-    assert "about five minutes" in review.stdout
-    assert "pause and ask the maintainer" in review.stdout
+    assert "actual diff preserve a coherent outcome and contract" in review.stdout
+    assert "substantive implementation review has no time cap" in review.stdout
     assert "normal publisher flow" in review.stdout
     assert "return the PR to the maintainer" in review.stdout
     assert "doc/workflow.md#scope-and-sizing" in review.stdout

@@ -82,17 +82,22 @@ Before requesting new infrastructure or splitting scope, apply the
 whether simplification and suitable reuse can fulfill the actual required
 outcome with less machinery or review scope. Preserve required safeguards.
 
-Before handoff, assess the full
-expected change—including behavior, supporting changes, tests, and new
-concepts—against the quick maintainer review target in
-[Work scope and sizing](workflow.md#scope-and-sizing). If the necessary change
-remains too large after that assessment, split it into independently reviewable
-nested Works through the
+Before handoff, use [Work scope and sizing](workflow.md#scope-and-sizing) to
+check that a maintainer can quickly understand:
+
+- The Work's outcome and acceptance conditions.
+- Its inherited constraints and scope.
+- Its relationship to architecture.
+
+The five-minute heuristic does not cap substantive implementation review. If
+simplification and reuse leave independently deliverable outcomes, split them
+into nested Works through the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
 For an ad hoc handoff, define a parent Work and child Works; for an existing
-Work, nest children and update its parent map. Apply
-[contract review guidance](work-definition.md) and the workflow owner’s sizing
-and planning gates before expanded work.
+Work, nest children and update its parent map. Before expanded work:
+
+- Apply [contract review guidance](work-definition.md).
+- Apply the workflow owner's sizing and planning gates.
 
 Before dispatch, identify dependencies and shared edit surfaces. Coordinate
 shared owners, parent maps, indexes, exact wording, formatter-valid snippets,
@@ -159,9 +164,9 @@ When delegated implementation reveals out-of-scope work, the executor stops
 and reports it under [executor guidance](executor.md). Route a new split or
 needed maintainer decision through the
 [whole requested-tree pause](workflow.md#decisions-and-new-splits), including
-other active subtrees. Apply the split rule when it adds an independent
-responsibility or exceeds the review target. A different delegated agent still
-requires the maintainer's explicit approval.
+other active subtrees. Apply the split rule when an independent outcome cannot
+stay coherent in this leaf after simplification and reuse. A different
+delegated agent still requires the maintainer's explicit approval.
 
 ## Review and return
 
@@ -212,17 +217,25 @@ evidence, and contract retention. Follow
 review before new or amended PR publication, description preparation, ready-PR
 meaning, and publication ownership.
 
-Before publishing, reassess each complete leaf's actual diff, including tests,
-supporting changes, and concepts, under
-[Work scope and sizing](workflow.md#scope-and-sizing). If simplification and
-reuse cannot meet the target, stop publication and apply the
+Before publishing, reassess each leaf's actual diff under
+[Work scope and sizing](workflow.md#scope-and-sizing):
+
+- Check outcome cohesion and consequential details.
+- Apply the five-minute heuristic to understanding the outcome and contract;
+  substantive implementation review has no time cap.
+- If an independent outcome cannot stay coherent after simplification and
+  reuse, stop publication and apply the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits),
-preserving valid implementation and evidence. Run `make work-review` as a
-reminder at this checkpoint. Integrated parent review assesses
-interfaces and composition rather than requiring the entire parent batch to fit
-one leaf's review target. Preserve substantive scope requirements and identify
-remaining merge resolution. Only the requested Work owner hands off its final
-reviewed branch and description for [publication](pull-requests.md#publishing).
+  preserving valid implementation and evidence.
+
+Run `make work-review` as a reminder at this checkpoint. Integrated parent
+review checks interfaces, composition, and shared guarantees across the result.
+At this checkpoint:
+
+- Preserve substantive scope requirements.
+- Identify unresolved integration or merge issues.
+- Have only the requested Work owner hand off the final reviewed branch and
+  description for [publication](pull-requests.md#publishing).
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the

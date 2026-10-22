@@ -11,6 +11,9 @@ Amends
 for contract structure and the single README owner. Directory identity and
 co-located acceptance remain in force.
 
+Amended by
+[31. Define outcome contracts and size for understanding](0031-define-outcome-contracts-and-size-for-understanding.md).
+
 ## Context
 
 The maintainer found Work contracts hard to read. Requirements were spread

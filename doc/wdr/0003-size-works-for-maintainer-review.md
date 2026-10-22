@@ -6,6 +6,9 @@ Date: 2026-10-01
 
 Accepted
 
+Amended by
+[31. Define outcome contracts and size for understanding](0031-define-outcome-contracts-and-size-for-understanding.md).
+
 ## Context
 
 The maintainer identified their understanding and review capacity as the

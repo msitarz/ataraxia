@@ -11,6 +11,7 @@ relevant guidance.
 | Task startup and conditional reading routes | [AGENTS.md](../AGENTS.md) |
 | Repair and scope rules for repository changes | [Change rules](change-rules.md) |
 | Documentation placement, duplication, and shared terms | This file |
+| Shared writing standard for Work contracts and guidance | This file |
 | Shared meanings and distinctions | [Ubiquitous language](ubiquitous-language.md) |
 | Empirical evaluation protocols, observations, and interpretation | [Empirical evaluations](evaluation.md) |
 | Managed evaluation sandbox usage and supported-condition limits | [Managed evaluation sandboxes](evaluation-sandboxes.md) |
@@ -83,6 +84,19 @@ decisions. A new change owns its own evidence. Keep detailed scope in Work
 contracts and evidence in its source records; [PR guidance](pull-requests.md)
 owns delivery descriptions.
 
+## Writing
+
+Apply this shared writing standard to Work contracts and guidance:
+
+- Write in plain English.
+- Use familiar words.
+- Use direct sentences.
+- Restructure dense paragraphs with distinct requirements as lists.
+- Put one clear rule or condition in each bullet.
+- Use short prose for connected explanations and causal relationships.
+- Preserve every requirement, condition, exception, owner, and relationship
+  when restructuring.
+
 ## Vocabulary
 
 Check the [glossary](ubiquitous-language.md) before introducing a term. Define
@@ -122,4 +136,5 @@ Markdown formatting and local links and validate Mermaid fences with the
 embedded renderer; run `make doc-format` to apply the configured formatting.
 Check that prose, headings, and examples use the same glossary terms. Follow
 [repair and scope rules](change-rules.md#fix-the-underlying-problem) for
-cohesive changes.
+cohesive changes. Assess readability alongside meaning and completeness under
+the [shared writing standard](#writing).

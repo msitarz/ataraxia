@@ -8,29 +8,35 @@ Work.
 
 ## Scope and sizing
 
-Keep each leaf Work focused on one responsibility and outcome, then size it for
-the maintainer judgment needed to review the complete expected change, including
-behavior, tests, supporting changes, and concepts to understand. Aim for one
-reviewable question or outcome a maintainer can assess in a short sitting of
-about five minutes. Responsibility count and lines of code alone do not predict
-review effort. Prompts such as what decision or new behavior is under review,
-which concepts the reviewer must understand, and whether the result fits one
-sitting can help; they are optional guidance, not required fields or headings.
+Each leaf Work delivers one independently verifiable, coherent capability or
+outcome. The five-minute heuristic asks how quickly a maintainer can understand
+the outcome, acceptance conditions, inherited constraints, scope, and
+relationship to architecture. Substantive implementation review remains
+proportional to the change and has no five-minute cap.
 
-When the expected change needs more review, nest independently reviewable child
-Works under a parent that maps their outcomes. Do not push additional scope into
-a leaf just because it is nearby. An explicit maintainer request may authorize
-a larger review in the current Work PR so the maintainer can steer that
-revision; ordinary manual review and merge gates still apply. Approval of a
-Work plan alone does not waive the review-effort target if delivery proves
-harder to assess, even when scope has not changed.
+Use these scope rules:
 
-The owning orchestrator assesses the full expected leaf change against this
-target before dispatch and reassesses the actual diff before publication. When
-simplification and suitable reuse cannot keep it bounded, the definer iterates
-concrete child contracts and dependencies under independent owner review,
-following [Definer guidance](definer.md). Merge the concrete planning PR before
-expanded implementation begins.
+- Do not use responsibility count or lines of code alone to predict cohesion or
+  review effort.
+- Optional prompts may ask what decision or new behavior is under review and
+  which concepts the reviewer must understand; they are not required fields or
+  headings.
+- Give independently assessable guarantees separate criteria, while keeping
+  multiple scenarios for one guarantee together. This does not set a criterion
+  quota or require a child Work per criterion.
+- Nest independently deliverable outcomes under a parent Work that maps them.
+- Do not hide a broad or incoherent scope in a short contract or omit
+  consequential details to satisfy the heuristic.
+- Keep ordinary manual review and merge gates in force.
+
+The owning orchestrator checks whether the outcome and contract are quickly
+understandable before dispatch, then reassesses scope and cohesion in the actual
+diff before publication. If simplification and suitable reuse cannot keep the
+outcome coherent, follow these planning steps:
+
+- The definer iterates concrete child contracts and dependencies under
+  independent owner review, following [Definer guidance](definer.md).
+- Merge the concrete planning PR before expanded implementation begins.
 
 Routine choices within the agreed contract need no additional approval,
 whether its acceptance criteria are in a Work contract or supplied in the
@@ -47,8 +53,8 @@ Contract preparation needed for steering may continue under owner review.
 
 Resume only the authorized scope after the maintainer decision and applicable
 planning gates. Expanded implementation waits for the concrete planning PR to
-merge; a decision alone does not bypass that gate. The explicit scope exception
-above still applies, without waiving independent review or merge gates.
+merge; a decision alone does not bypass that gate. Independent review and merge
+gates still apply.
 
 ## Lifecycle
 

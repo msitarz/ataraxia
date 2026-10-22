@@ -9,11 +9,25 @@ Give each criterion a stable ID such as `AC-1`, unique within its owning Work
 `README.md`. The repository-relative path scopes the ID. Use the criterion
 headings in the [Work contract template](work-contract-template.md).
 
-- `TODO` means the outcome is not yet verified from inspectable evidence.
-  Planned checks, implemented tests, and failed, skipped, pending, or unrun
-  checks do not establish the required outcome.
-- `DONE` means an independent reviewer verified the outcome from observed
-  evidence. It does not itself mean maintainer approval or merge.
+A criterion describes an independently assessable guarantee or condition for
+the Work's one coherent outcome:
+
+- Several scenarios may establish one guarantee and do not need separate
+  criteria.
+- Conditions may concern runtime behavior, guidance, Investigation findings,
+  or Evaluation evidence.
+- A parent's inherited constraints remain distinct from a child's local
+  criteria.
+- Parent acceptance verifies shared guarantees across the combined result,
+  including cross-child behavior and declared system-level conditions.
+- The union of child `DONE` statuses does not establish the parent's
+  composition outcome.
+- `TODO` means the criterion's condition or guarantee is not yet verified from
+  inspectable evidence. Planned checks, implemented tests, and failed, skipped,
+  pending, or unrun checks do not establish the required outcome.
+- `DONE` means an independent reviewer verified the criterion's condition or
+  guarantee from observed evidence. It does not itself mean maintainer approval
+  or merge.
 
 Any required `TODO` criterion prevents Work completion.
 
