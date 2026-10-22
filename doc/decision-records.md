@@ -3,7 +3,8 @@
 Read when writing or reviewing an Architecture Decision Record (ADR) or
 Workflow Decision Record (WDR). The ADR and WDR workflows own eligibility,
 reading routes, and their separate indexes; this file owns their shared record
-format and lifecycle.
+format and lifecycle. Follow the shared [writing standard](README.md#writing)
+as well as this record format.
 
 ## One decision per record
 

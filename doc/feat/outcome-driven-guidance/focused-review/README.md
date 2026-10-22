@@ -55,7 +55,7 @@ judgment of the broader outcome and architecture:
 
 ## Dependencies
 
-- TODO [Guide progressive delivery](../progressive-delivery/README.md): make a
+- DONE [Guide progressive delivery](../progressive-delivery/README.md): make a
   coherent outcome executable in small steps with honest evidence.
 
 ## Links

@@ -2,9 +2,8 @@
 
 This local summary preserves the accepted direction from the
 [maintainer conversation](https://chatgpt.com/share/6ad9badc-3914-83ec-a40e-f1f6ace8898b).
-It is planning input, not evidence that migration is delivered. The Work
-contracts carry future acceptance conditions; current guidance remains
-authoritative until changed through those Works.
+It preserves planning history. Work contracts and current owner guidance remain
+authoritative for delivery status and current policy.
 
 ## Accepted direction
 
@@ -133,6 +132,18 @@ this guidance. Current rules are owned by
 decomposition and pause rules in [Work definition](../../work-definition.md) and
 [Work workflow](../../workflow.md).
 
+### Current progressive delivery guidance
+
+The accepted directions above record planning intent, and the verified baseline
+remains historical context.
+[WDR 33](../../wdr/0033-deliver-one-outcome-progressively.md) records the
+progressive-delivery decision. Current rules are owned by
+[executor guidance](../../executor.md),
+[engineering guidance](../../engineering.md#progressive-implementation),
+[engineering review](../../engineering-review.md),
+[testing guidance](../../testing.md), and
+[Work acceptance](../../acceptance-tracing.md).
+
 ## Decision history and implementation boundary
 
 [WDR workflow](../../wdr-workflow.md) governs consequential changes when the
@@ -141,5 +152,6 @@ implementation Works change current guidance. Existing records, particularly
 [retention](../../wdr/0028-retain-work-contracts-until-authorized-closure.md),
 and
 [closure publication](../../wdr/0029-publish-authorized-work-closure-on-the-reviewed-pr.md),
-need their normal amendment or supersession treatment there. This planning PR
-neither rewrites accepted history nor declares new guidance implemented.
+need their normal amendment or supersession treatment there. This source record
+preserves planning history; current owner guidance and WDR records carry the
+current decision and policy.

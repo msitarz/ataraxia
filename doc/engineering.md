@@ -84,6 +84,27 @@ evaluation; do not add `from __future__ import annotations`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
   domain errors.
 
+### Progressive implementation
+
+Build and verify one coherent outcome in increments when that helps expose
+integration risks. Choose the progression to fit the change: a small change may
+go directly to its implementation and relevant tests without an architecture
+exploration or a
+[walking skeleton](ubiquitous-language.md).
+
+When decomposition is unclear, follow the bounded
+[architecture exploration](architecture-exploration.md) route.
+
+- For a broader outcome, typed composition may establish real sequencing and
+  effect ownership before every operation is complete.
+- A walking skeleton may exercise a thin path through that composition while
+  unfinished leaf operations are stubbed; fake adapters may stand in for
+  external effects.
+- Continue by implementing behavior and adding or extending its tests within
+  the same outcome, preserving previously delivered behavior.
+- Treat each technique as optional; do not require architecture exploration,
+  a walking skeleton, or a separate test stage for every change.
+
 ### Validate at boundaries and construction
 
 Validation belongs where uncertainty enters or a value is created. Define the
@@ -200,6 +221,8 @@ children, or probe files or processes; validation belongs at the
 [owning boundary](#validate-at-boundaries-and-construction). A newly
 constructed domain result enforces its own invariants. Calling an effectful
 collaborator remains an effect even when its contract is a `typing.Protocol`.
+Stateful runners may orchestrate pure decisions while retaining execution state
+or coordinating effects; orchestration does not make the runner itself pure.
 
 The illustrative `scheduled_time` decision uses only its validated plan and
 returns either its explicit schedule or `None`. Separate a substantial

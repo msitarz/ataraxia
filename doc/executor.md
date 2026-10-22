@@ -17,6 +17,14 @@ applicable engineering and testing guidance.
 Follow the [routine-choice guidance](workflow.md#scope-and-sizing) for
 decisions within the agreed contract.
 
+For progressive implementation, follow
+[engineering guidance](engineering.md#progressive-implementation),
+[testing guidance](testing.md), and
+[engineering review](engineering-review.md). When architectural exploration
+is needed, follow [architecture exploration](architecture-exploration.md).
+Keep implementation within the approved outcome and preserve its contract and
+review gates.
+
 Before editing, verify that the supplied worktree, branch, and base match the
 assignment. Follow the supplied create-or-resume instructions and report a
 missing or inconsistent assignment to the owning orchestrator before editing.
