@@ -9,8 +9,8 @@ explicit coverage and evidence.
 
 - Make the `reviewer` skill usable for engineering review from change selection
   to a concise parent report.
-- Review changed functions against applicable semantic engineering rules without
-  duplicating reliable deterministic checks.
+- Review changes against applicable semantic engineering rules at a granularity
+  justified by evidence, without duplicating reliable deterministic checks.
 - Expose uncertain judgments, scope gaps, and execution failures for owner
   review.
 
@@ -20,6 +20,7 @@ explicit coverage and evidence.
 - Judge every engineering rule at function scope or claim that all combinations
   of functions and rules are applicable.
 - Automate corrections, owner reconciliation, acceptance, or merge decisions.
+- Deliver automated second-pass precision review or flip-rate testing.
 
 ## Inherited constraints
 
@@ -38,6 +39,12 @@ and receive a report attributable to the intended source and comparison.
 - Given a supported change selection, invocation records the selected source,
   comparison, effective model, reasoning effort, concurrency and resource
   bounds, and evidence location before reporting judgments.
+- Given identical effective inputs and configuration, repeated planning produces
+  the same plan and job identities; changes to source, guidance, context,
+  prompt, or effective settings remain traceable and cannot reuse mismatched
+  results.
+- Before sessions start, the parent sees estimated jobs and tokens; exceeding a
+  configured planning limit visibly refuses execution without launching reviews.
 - Unsupported or ambiguous selections, unavailable source, and invalid settings
   produce an actionable refusal or incomplete report without claiming review
   success.
@@ -49,21 +56,23 @@ and receive a report attributable to the intended source and comparison.
 
 ### **AC-2 TODO** Coverage reflects subjects and applicable semantic rules
 
-The review plan identifies changed functions and derives applicable criteria
+The review plan identifies subjects and derives applicable criteria
 from existing engineering guidance with inspectable reasons for scope decisions.
 
-- Changed functions are the primary subjects, including relevant methods and
-  nested or asynchronous functions in the supported source scope.
+- Subject granularity follows AC-7's decision, including an adaptive approach
+  where justified; whole-diff and function scope remain candidates until then.
 - The plan identifies the source scope it supports and accounts for additions,
   modifications, deletions, non-function changes, and discovery failures without
   silently treating undiscovered material as reviewed.
-- Criteria are traceable to authoritative guidance and its reviewed revision;
-  deterministic-tool exclusions are justified against current configuration and
-  the rule portion actually enforced.
+- Each criterion records explicit applicability and deterministic-enforcement
+  information traceable to immutable authoritative guidance; exclusions consider
+  effective linter enables, per-path exclusions, and the rule portion enforced.
 - A rule's semantic requirements remain eligible when a deterministic metric
   checks only a related signal, such as complexity or statement count.
-- Selection considers applicability rather than scheduling a blind Cartesian
-  product; exclusions and unresolved applicability remain inspectable.
+- Applicability selection favors avoiding missed relevant rules; unresolved
+  applicability is reviewed or reported unresolved, never silently excluded.
+- Exclusions and their reasons remain visible rather than scheduling a blind
+  Cartesian product or claiming excluded checks were performed.
 - Rules needing broader scope are supplied that scope where supported, or
   reported as requiring owner or other-domain review rather than forced into a
   function judgment or silently omitted.
@@ -72,17 +81,20 @@ from existing engineering guidance with inspectable reasons for scope decisions.
 
 ### **AC-3 TODO** Each independent judgment has sufficient focused context
 
-Every planned job evaluates exactly one identified subject against one criterion
-and returns a structured judgment using the existing focused-review vocabulary.
+Every production job evaluates exactly one identified subject against one
+criterion and returns a structured verdict with evidence using the existing
+focused-review vocabulary; AC-7's baseline comparator is distinct.
 
 - The prompt identifies the criterion and subject, supplies relevant old and new
   source and necessary caller, type, and module context, and avoids unrelated
   material.
-- The reviewer can return `UNCERTAIN` with the missing context or ambiguity;
+- The reviewer returns `UNCERTAIN` when context is insufficient or ambiguous;
   context assembly failures do not fabricate semantic results.
 - `VIOLATION` includes concrete source evidence and its consequence;
   `NOT_APPLICABLE` explains its reason, and findings remain separate from
   optional suggestions.
+- A judgment without a correction suggestion is valid when its verdict and
+  supporting evidence satisfy the review contract.
 - `PASS` means adequate context supports no violation of this one criterion;
   sound code needs no finding or refactor quota.
 
@@ -136,7 +148,12 @@ observe each guarantee:
 
 - Controlled judgments exercise all four outcomes and mixed-result aggregation,
   malformed and missing output, duplicates, identity mismatch, source drift,
-  launch failure, timeout, cancellation, and resource exhaustion.
+  guidance drift, launch failure, timeout, cancellation, and resource
+  exhaustion.
+- Planning checks observe repeatable plans and identities, separation of results
+  with different effective inputs, conservative applicability, and pre-execution
+  job/token reporting and budget refusal; any cache tests cover the parent's
+  full identity invariant.
 - Real process-boundary tests in disposable environments observe concurrency,
   cleanup, read-only preservation, settings propagation, and report/evidence
   correspondence without requiring live network access or wall-clock sleeps.
@@ -149,6 +166,65 @@ observe each guarantee:
 - Live judgments are independently inspected against the supplied subject,
   criterion, and context, with their semantic limits stated; repeatable output
   across LLM runs and universal rule accuracy are not promised.
+
+### **AC-7 TODO** Granularity follows representative detection evidence
+
+The engineering delivery has a recorded granularity decision supported by
+evidence about detecting overlooked rules in realistic large changes, including
+deep code, rather than a prior assumption about whole-diff or function review.
+
+The representative comparison includes these matched strategies:
+
+- A: one whole-diff session with the complete applicable rule list.
+- B: independent whole-diff sessions, each assessing one rule.
+- C: independent changed-function sessions, each assessing one applicable rule.
+
+A is a conventional multi-rule comparator, outside the production job invariant;
+B and C explore focused production candidates without selecting a winner now.
+
+Before execution, a declared protocol under
+[empirical evaluation guidance](../../../evaluation.md) fixes the bounded
+question, conditions, quality and preservation rubric, severity labels, budgets,
+metrics, completion conditions, and thresholds for success, reconsideration, and
+inconclusive results. It includes:
+
+- Frozen realistic, sufficiently large diffs derived from classified historical
+  engineering incidents, with known seeded violations at varied depths and
+  locations, including deeply nested and less prominent code, plus realistic
+  compliant code for false-positive measurement.
+- Owner-validated reference labels and mappings from incident classes to rules,
+  seeding locations, expected detections, and compliant cases, withheld from
+  reviewers; manual owner judgments validate and deduplicate reported findings
+  against a common rubric rather than treating every report as a true positive.
+- Common model, reasoning effort, source material, applicable rule set,
+  permitted context/reference access, tool versions, and review conditions
+  across A/B/C, with intended granularity and prompt differences explicit.
+- Declared repeated independent sessions, run order, fresh context, bounded
+  dispatch and correction limits, and verified isolation from labels, reachable
+  history, indexes, prior sessions, and cached answers.
+- Declared handling of failures, timeouts, interruptions, exhausted budgets,
+  contamination, exclusions, and reruns, retaining affected observations and
+  deviations rather than silently replacing them or claiming successful
+  coverage.
+- Separate recall, precision, token consumption, and elapsed-time measurements,
+  with denominators, units, timing boundaries, and methods; estimates, actual
+  observed usage, and unavailable metrics remain distinct, and unknown usage is
+  not inferred from time or diff size.
+
+Retained observations identify inputs, settings, prompts, raw judgments, owner
+labels and reviewer identity/blinding, failures, confounds, and protocol
+deviations. Matched comparisons retain separate detection quality and latency
+while evaluating effectiveness relative to consumed resources; lower token use
+alone does not establish success, and focused review may cost more tokens.
+
+The recorded decision considers per-rule differences and whether adaptive
+granularity is warranted. It cites evidence against the declared thresholds and
+limits its claims to measured conditions. Inconclusive results permit the
+simplest viable initial approach with explicit remaining uncertainty. Any
+secondary cross-model or cross-effort generalizability study is optional and
+reported separately, without confounding the common-model primary comparison.
+Cached results never count as independent trials. Evidence informs owner review
+and the applicable adoption decision; it does not itself change review policy.
 
 ## Links
 

@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Make independent focused LLM reviews reusable without losing coverage,
-revision traceability, or the responsible owner's judgment of the whole change.
+Reduce instruction drift, especially overlooked rules deep in generated code,
+through reusable focused LLM reviews with traceable coverage and owner judgment.
 
 ## Goals
 
@@ -13,6 +13,8 @@ revision traceability, or the responsible owner's judgment of the whole change.
   subjects, criteria, and context differ.
 - Give the parent agent a concise, inspectable account of findings, uncertainty,
   and incomplete coverage.
+- Choose review granularity from detection evidence relative to resource use,
+  accepting higher token consumption when it improves review quality.
 
 ## Glossary
 
@@ -42,6 +44,8 @@ Execution failure is not a semantic judgment.
   internal algorithms and interfaces before architecture review.
 - Change delegation, correction limits, maintainer authority, review gates, or
   existing guidance ownership.
+- Deliver automated reviewer-alignment workflows, accept/reject UX, automated
+  second-pass precision review, or flip-rate testing in the initial scope.
 
 ## Mechanisms
 
@@ -64,15 +68,25 @@ integration under this parent's acceptance criteria.
   assembly; generic execution and aggregation do not assume function subjects.
 - Deterministic Python behavior owns execution, resource limits, result
   validation, and accounting; LLM judgments remain nondeterministic.
-- Jobs judge exactly one subject against exactly one criterion, with independent
-  sessions and no interactive parent intervention required for completion.
+- Production jobs judge exactly one subject against exactly one criterion,
+  with independent sessions and no interactive parent intervention required for
+  completion; the engineering experiment's multi-rule baseline is a comparator,
+  not a production job or an exception for production reviews.
+- Subject granularity follows a recorded decision supported by evidence,
+  potentially varying by criterion; whole-diff and function scope remain open.
+- Each criterion exposes applicability and deterministic-enforcement
+  information; applicability favors avoiding missed relevant rules, and
+  exclusions have inspectable reasons in coverage reports.
 - Exclude only the portions of rules reliably enforced by existing deterministic
-  tools; passing a metric does not settle related semantic questions.
+  tools after considering effective enables and exclusions; passing a metric
+  does not settle related semantic questions.
 - Prompts include sufficient rule-specific context, including old and new source
-  when relevant, without unrelated material; missing context permits
-  `UNCERTAIN`.
-- Findings include concrete source evidence and consequences, separated from
-  suggestions; `NOT_APPLICABLE` explains why the criterion does not apply.
+  when relevant, without unrelated material; insufficient context produces
+  `UNCERTAIN`, and broader rules are not forced into function scope.
+- Verdict and supporting evidence are primary; findings include concrete source
+  evidence and consequences, and `NOT_APPLICABLE` explains non-applicability.
+- Correction suggestions are optional, separate from judgments, and never a
+  condition of review validity.
 - The responsible owner retains deduplication, rule-conflict and applicability
   reconciliation, whole-change judgment, and correction responsibilities under
   [engineering review](../../engineering-review.md) and
@@ -85,13 +99,19 @@ integration under this parent's acceptance criteria.
 
 - Review sessions are read-only with respect to repository files and refs;
   evidence output is separate from the reviewed source and cannot change it.
-- Every run identifies its intended immutable source revision, comparison scope,
-  guidance and criterion provenance, job inputs, and effective execution
-  settings.
-- Results are attributable to that run, job, subject, criterion, and source;
-  mismatched or stale results cannot count toward its coverage.
-- Source changes during preparation or execution cannot silently produce mixed
-  revision judgments; preserve an immutable input or report incomplete coverage.
+- Reviews use consistent immutable source and guidance revisions; changes during
+  preparation or execution cannot silently mix revisions or count as coverage.
+- Identical complete effective inputs and configuration yield the same review
+  plan and stable job identities; this does not promise identical LLM judgments.
+- Every result is traceable to its complete effective prompt, source,
+  comparison, context, criterion, guidance, and execution configuration;
+  different effective inputs are never treated as interchangeable.
+- Before execution, planning reports estimated job and token budgets and visibly
+  refuses to proceed if configured limits would be exceeded; estimates remain
+  distinct from observed usage and unavailable measurements.
+- If caching is adopted, identity includes effective prompt, review inputs,
+  relevant guidance, and execution configuration; cached results cannot count as
+  independent experimental trials.
 - A finite positive concurrency limit and finite per-session execution bound
   constrain resource use; invalid settings fail before sessions start.
 - Process output, retained artifacts, and any retries have finite declared
@@ -150,21 +170,23 @@ preserved from invocation through owner handoff.
 
 Independent parent integration review traces representative success,
 uncertainty, and incomplete runs through the actual skill and runner, verifies
-the shared constraints across their boundaries, and confirms that existing
-review routes and correction authority remain available. Child completion alone
-does not establish this guarantee.
+the shared constraints across their boundaries, including deterministic
+planning, pre-execution budget refusal, and complete input identity, and
+confirms that existing review routes and correction authority remain available.
+The integrated delivery follows the engineering child's granularity decision and
+supporting evidence. Child completion alone does not establish this guarantee.
 
 ### **AC-2 TODO** Future domains fit without function-specific execution
 
-The reviewed execution boundary can accept jobs whose subjects are not
-functions, without moving domain selection or context assembly into generic
-execution.
+Generic execution supports non-function subjects without moving domain selection
+or context assembly into execution; this is a mandatory delivered guarantee.
 
 Architecture review checks concrete examples from test review (fixtures,
 helpers, and isolation context), architecture review (boundaries and dependency
 flows), and guidance review (surrounding sections and cross-owner
-contradictions). These examples establish design fit and responsibility
-separation, not delivered domain behavior or a requirement for a plugin
+contradictions). Controlled execution evidence verifies non-function job
+handling and aggregation, while design review verifies responsibility separation
+for those examples. This does not require delivering those domains or a plugin
 framework.
 
 ## Children
@@ -182,6 +204,14 @@ layers. Whether this child needs further coherent outcomes remains unknown
 until bounded typed architecture under
 [Work definition](../../work-definition.md#decomposition-and-architectural-exploration).
 
+The
+[engineering experiment](engineering/README.md#ac-7-todo-granularity-follows-representative-detection-evidence)
+belongs to that child because its incidents, criteria, owner labels, and
+delivery decision concern engineering effectiveness. The parent owns
+cross-domain invariants and integration, not a duplicate experiment criterion.
+No strategy winner or function-level or whole-diff child is chosen before
+evidence exists.
+
 Test review is a distinct future domain with its own
 [testing rules](../../testing.md), not engineering review applied to test files.
 Architecture and guidance review likewise need their own scope and context.
@@ -196,6 +226,10 @@ validation, cancellation, bounded output and retries, and the smallest usable
 invocation. It must assess whether any resulting capability is independently
 deliverable before proposing a split. No architecture, skeleton, implementation,
 or guidance migration is authorized by this definition artifact.
+
+Hashes, snapshots, caches, rule-index schemas, parsers, and orchestration APIs
+remain architectural candidates. The experiment also remains unexecuted at this
+definition stage; its protocol and measurements must not be invented here.
 
 There is no intended conflict with current owner review or delegation duties.
 Consequential architecture or workflow choices follow the existing
