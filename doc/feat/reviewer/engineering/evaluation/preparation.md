@@ -411,3 +411,41 @@ not-started. This disposition neither replenishes the exhausted none allowance
 nor performs other-effort calibration. Raw evidence files remain unchanged.
 
 [candidate-record]: preparation/evidence/prompt-input-candidates.json
+
+## Bounded process cleanup preparation
+
+The maintained process owner is `script/process_supervisor.py`, with its
+installed-CLI check exposed as `make process-cleanup-check`. It runs each
+command in a dedicated POSIX session, retains the leader's actual return code,
+caps combined stdout and stderr, and applies the execution deadline until both
+leader exit and pipe completion. The public boundary enforces the protocol's
+300-second execution, 10-second cleanup, and 1 MiB combined-output caps; stdin
+is closed unless an input contract is added. SIGINT and SIGTERM are handled at
+the main-thread invocation boundary, converted to cancellation status, and
+previous handlers are restored after cleanup. Cleanup polls and reaps the
+leader, signals only the verified session group, escalates from TERM to KILL
+within the cleanup budget, and reports an unresolved group as incomplete. A
+process-group probe observes group presence but does not distinguish live
+members from descendant zombies. Descendants that deliberately leave the owned
+session are outside this bounded ownership guarantee. Permission errors remain
+explicit cleanup failures.
+
+`test/script/integration/test_process_supervisor.py` exercises normal and
+nonzero leader exits, a leader that exits while a descendant holds its pipes,
+a descendant that closes inherited pipes, a leader that closes its own pipes
+while continuing to run, a TERM-resistant descendant, combined output
+overflow, closed stdin, real SIGINT and SIGTERM cancellation, invalid limits,
+permission denial, unverified group identity, and an injected read exception.
+Tests use readiness handshakes and disposable processes with bounded waits and
+independent finalizer cleanup. The optional `codex --version` check through the
+same process owner reports the installed version and exercises CLI startup and
+leader status/reaping only, with no model request. It does not prove descendant
+behavior inside Codex or authenticated/model execution.
+
+The historical attempt 04 cleanup `PermissionError` remains unexplained. The
+retained record does not include a traceback or enough process-state detail to
+identify why that signal was denied. The implementation fixes the demonstrated
+unconditional-signal and lost-leader-status defects without attributing that
+historical error to a specific host restriction. All Evaluation acceptance
+criteria remain TODO, and the accepted CLI-context and matched-baseline
+accounting dispositions above are unchanged.
