@@ -3,23 +3,30 @@
 Read this file when choosing checks or reporting evidence. The
 [Makefile](../Makefile) owns the available commands and their behavior.
 
-While preparing a PR, run the checks affected by the change, including
-focused tests for code changes. A local full `make ci` run is optional; it is
-not a prerequisite for publishing every PR.
+- While preparing a PR, run the checks affected by the change, including
+  focused tests for code changes.
+- A local full `make ci` run is optional; it is not a prerequisite for
+  publishing every PR.
 
 Actual automated execution and results in CI on the latest reviewed PR head
-are authoritative for mechanical-check outcomes. Required mechanical checks
-must be covered by CI; agent-written summaries, inventories, and review
-comments cannot establish passing checks. Local focused checks remain useful
-preparation. Independent review assesses judgments CI cannot establish.
+are authoritative for mechanical-check outcomes.
 
-Assess local behavior, type, and manual evidence against the Work's stated
-outcomes under [Work acceptance](acceptance-tracing.md#evidence).
+- Required mechanical checks must be covered by CI.
+- Agent-written summaries, inventories, and review comments cannot establish
+  passing checks.
 
-Before merge, require the full CI workflow to pass on the latest reviewed PR
-head. Evidence from an earlier revision does not cover later changes. The
+Local focused checks remain useful preparation. Independent review assesses
+judgments CI cannot establish.
+
+- Assess local behavior, type, and manual evidence against the Work's stated
+  outcomes under [Work acceptance](acceptance-tracing.md#evidence).
+- Before merge, require the full CI workflow to pass on the latest reviewed PR
+  head.
+
+Evidence from an earlier revision does not cover later changes. The
 [CI workflow](../.github/workflows/ci.yml) owns its jobs and required commands.
-Local focused checks do not replace this merge gate.
+
+- Local focused checks do not replace this merge gate.
 
 Run `make ci` when a full local run is useful:
 
@@ -34,19 +41,28 @@ package jobs run independently of the check job, so their evidence remains
 available when static checks or the audit fail. The check job runs its local
 checks before auditing, and all jobs must pass for the full CI merge gate.
 
-After setup, agents without network access can run `make verify` for local
-evidence. It checks the locked environment without installing or resolving
-dependencies, then reuses the same local check recipes as CI with uv network
-access disabled. Missing or stale environments fail; rerun `make setup` with
-network access to prepare them. A passing local run does not include the
-vulnerability audit and cannot satisfy the full CI merge gate.
+- After setup, agents without network access can run `make verify` for local
+  evidence.
+
+It checks the locked environment without installing or resolving dependencies,
+then reuses the same local check recipes as CI with uv network access disabled.
+Missing or stale environments fail.
+
+- For missing or stale environments, rerun `make setup` with network access to
+  prepare them.
+
+A passing local run does not include the vulnerability audit and cannot satisfy
+the full CI merge gate.
 
 CI rejects a missing or stale `uv.lock` through the locked environment setup in
 `make ci-setup`. Subsequent checks use the synchronized environment without
-updating dependency resolution. After intentional dependency changes, run
-`make deps-lock` and commit the updated lockfile. The YAML, conflict-marker,
-and private-key checks reuse the pinned
-hooks in `.pre-commit-config.yaml` and inspect all tracked files.
+updating dependency resolution.
+
+- After intentional dependency changes, run `make deps-lock`.
+- After intentional dependency changes, commit the updated lockfile.
+
+The YAML, conflict-marker, and private-key checks reuse the pinned hooks in
+`.pre-commit-config.yaml` and inspect all tracked files.
 
 For a manual example run, use:
 
