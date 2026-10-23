@@ -142,19 +142,21 @@ multi-rule prompt changes no other applicable shared guarantee.
 
 ## Links
 
-- [Comparison protocol](protocol.md) starts with a small static binary
-  calibration and retains the later A/B/C comparison, with proposed inputs,
-  input-only execution, budgets and thresholds for owner review.
+- [Comparison protocol](protocol.md) compares A/B/C on fixed static
+  inputs, including prepared function/context packets, with input-only
+  execution, budgets and thresholds for owner review.
 - [Engineering review](../README.md) owns the recorded decision and integrated
   delivery; [Engineering reviewer delivery](../delivery/README.md) depends on
   this completed evidence and that decision.
 
 ## Additional context
 
-The supporting protocol stages a small PASS/VIOLATION check before the full
-comparison required above. That first check does not complete the Evaluation or
-support a production granularity decision. Actual prepared sources, private
-labels, runtime binding and input-only boundary evidence remain unprepared and
-require the protocol's later authorization and freeze gates. This definition
-executes no telemetry preparation, experimental wrapper, trial, production
-architecture or implementation. All acceptance criteria remain TODO.
+The supporting protocol starts with a bounded static PASS/VIOLATION comparison
+of all three A/B/C strategies. Function/context extraction happens during
+preparation and requires no production reviewer. The initial corpus does not
+complete the historical/diversity evidence required above or support a
+production granularity decision. Actual prepared sources, private labels,
+runtime binding and input-only boundary evidence remain unprepared and require
+the protocol's later authorization and freeze gates. This definition executes no
+telemetry preparation, experimental wrapper, trial, production architecture or
+implementation. All acceptance criteria remain TODO.
