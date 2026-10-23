@@ -12,6 +12,12 @@ model dispatch. The fourth returned the requested neutral greeting under
 invocation. It returned 7,983 input tokens and 15 output tokens; server-internal
 binding details remain unavailable.
 
+**Current Step 1 status: blocked / boundary unverified.** The combined fourth
+static candidate below still declares an outer `functions.exec` wrapper and
+MCP resource tools, and retains permission, collaboration, and environment
+context. The separate attempt 04 neutral response confirmed requested `none`
+effort support for that invocation only; it did not verify isolation.
+
 ## Proposed neutral inputs
 
 The proposed fixed instruction and neutral task are nonempty and contain no
@@ -212,3 +218,153 @@ The prior debug render still fails the input-only gate. A successful neutral
 greeting would not establish tool isolation or production readiness. No corpus
 trial, fixture, harness, or Evaluation completion is authorized by this
 preparation record.
+
+## Follow-up non-live tool-surface investigation
+
+On 2026-10-23, the supported `codex debug prompt-input` renderer was checked
+against the official
+[Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+for code-mode namespace controls. The reference documents
+`features.code_mode.excluded_tool_namespaces` as excluding namespaces from
+nested code-mode guidance and executor exposure, and
+`features.code_mode.direct_only_tool_namespaces` as requiring direct calls for
+those namespaces. This describes nested code-mode exposure; it does not promise
+removal of the outer `functions.exec` wrapper or other host-provided context.
+
+Two read-only render candidates used the unchanged `min.md` bytes, neutral
+`READY` prompt, `gpt-6-luna`, and requested `medium` effort, with an empty
+temporary `CODEX_HOME`:
+
+1. `features.code_mode.enabled=false`,
+   `features.code_mode.excluded_tool_namespaces=["functions"]`,
+   `features.multi_agent=false`, `features.shell_tool=false`,
+   `features.apps=false`, `features.plugins=false`,
+   `skills.bundled.enabled=false`, `memories.use_memories=false`, and
+   `agents.enabled=false`, plus the existing browser, computer, image, and
+   skill-search feature disables. The exact raw render is
+   [`prompt-input-code-mode-excluded-functions.json`](preparation/evidence/prompt-input-code-mode-excluded-functions.json),
+   SHA-256 `f415de7c324eb704fb1b405759906dbfd5e1ddf53d00d406bf9320ef856a767d`.
+2. The same settings with code mode enabled,
+   `features.code_mode.excluded_tool_namespaces=["functions", "clock",`
+   `"mcp__codex_app"]`,
+   and `features.code_mode.direct_only_tool_namespaces=["functions"]`. The
+   exact raw render is
+   [`prompt-input-code-mode-direct-exclusion.json`](preparation/evidence/prompt-input-code-mode-direct-exclusion.json),
+   SHA-256 `3a927988dae213df7c0c21bb265525508a899a853e104b92e406989093095d6e`.
+
+Both rendered outputs still declare the `functions` namespace with `exec`,
+`wait`, and request-input functions, and the `clock.sleep` tool. The `exec`
+description continues to expose its generic nested-tools mechanism, including
+MCP resource readers. Both outputs also retain the developer permission and
+collaboration-mode messages and an environment-context block. They show no
+project `AGENTS.md`, skill, memory, or prior-answer content for those exact
+static renders. The prompt renders do not report effective configuration. A
+separate strict startup-config parse and a render with
+`features.sleep_tool=false` are recorded below. The reference's scope and
+unchanged outer declarations do not establish removal of the outer host wrapper.
+
+The noninteractive `codex exec --help` surface offers no general tool
+allowlist/denylist or output of a complete authenticated runtime tool
+declaration. No supported candidate has passed the protocol's input-only gate;
+this work therefore stops before another live call. The retained renders are
+static diagnostic evidence, not proof of actual invocation capability or
+runtime context. No change to the prior raw artifacts or neutral-call budget is
+made.
+
+## Pinned app-server controls and offline schemas
+
+The follow-up checked `codex app-server --help`, `codex features list`, and the
+installed app-server's supported offline JSON Schema generator. The pinned
+feature listing reports `code_mode` as under development and off by default,
+`sleep_tool` as stable and on, and `shell_tool`, `multi_agent`, and
+`unified_exec` as stable and on. `codex app-server --strict-config
+--print-startup-config` accepted `features.code_mode.enabled`, both code-mode
+namespace settings, and `features.sleep_tool=false`, exiting 0 and reporting
+app-server version `0.164.0`. This establishes parser acceptance only; the
+startup-config output does not report an effective tool list.
+
+A third read-only candidate used the same neutral prompt and exact `min.md`
+bytes, enabled code mode with the excluded and direct-only namespaces, and set
+`features.sleep_tool=false`, `features.shell_tool=false`,
+`features.multi_agent=false`, `features.apps=false`,
+`features.plugins=false`, `skills.bundled.enabled=false`,
+`memories.use_memories=false`, and `agents.enabled=false`, with the same
+browser, computer, image, and skill-search disables as the prior candidates.
+Its raw render is
+[`prompt-input-code-mode-sleep-off.json`](preparation/evidence/prompt-input-code-mode-sleep-off.json),
+SHA-256 `21e2ffce44def447e410a5d87fa0709b23329ca92bf16e1d8a3126f524177827`.
+That render omits `clock.sleep`, showing the stable sleep feature control in
+this diagnostic, while retaining the outer `functions` namespace and its
+`exec` and `wait` declarations. This distinguishes removal of a nested tool
+from removal of the outer wrapper.
+
+The generated `ThreadStartParams` schema contains caller-provided
+`dynamicTools`, instruction, config, environment, model, and policy fields; it
+has no general tools property. `TurnStartParams` has input, additional-context,
+environment, model, sandbox, policy, and collaboration fields, but no tools or
+dynamic-tools property. An empty `dynamicTools` list can express no
+caller-supplied custom functions; the schema does not claim it removes Codex's
+built-in tools. Empty environment lists disable environment access for the
+turn/thread scope described by the schema, not all built-in tools. Nullable
+instruction fields and an open-ended `config` object do not, by themselves,
+prove all inherited context is absent or that a particular configuration took
+effect. No app-server process or RPC was started, so its authenticated runtime
+declaration and effective prompt remain unobserved.
+
+The exact commands, schema hashes, inspected fields, and official app-server
+documentation references are retained in
+[`app-server-start-turn-schema-summary.txt`](preparation/evidence/app-server-start-turn-schema-summary.txt).
+The official documentation describes initializing the protocol, starting a
+thread, then starting a turn; it does not identify a control that removes all
+built-in tools or proves inherited context is absent. This finding is limited to
+the inspected CLI 0.164.0 help, configuration parser, generated protocol
+schemas, and the cited documentation. It does not establish that no host-level
+configuration exists outside these surfaces.
+
+## Combined Step 1 candidate and stopping point
+
+Four distinct static candidate configurations were rendered in this follow-up
+within the eight-candidate cap. The exact argv arrays, cwd, explicit
+`CODEX_HOME`, input digests, output sizes, and reconstruction limits are
+retained in the
+[candidate invocation record][candidate-record].
+Candidates 01-03 are reconstructed from the recorded tool-call arguments; no
+separate argv recorder was running. Their external cwd and `CODEX_HOME` matched,
+but emptiness was not verified before those runs. Candidate 04 used a fresh
+external cwd and `CODEX_HOME`; `rg --files --hidden` returned no files directly
+before the render. The CLI then created installation metadata there. The exact
+`min.md` digest was
+`e6a735386f908f03c35bbe65be9e786d7c23ab471ce112b6d0b7f6f198be1cdd`. The
+exact 38-byte prompt argument digest was
+`b0c0ccb73ad2dd6519da8f42c662ddb1677dcdaabbfce50603e196429051b975`.
+
+Candidate 04 combined the already documented settings for code-mode namespace
+exclusion/direct-only, `sleep_tool=false`, shell/apps/plugins/multi-agent off,
+bundled skills and memories off, `agents.enabled=false`, request-input off,
+view-image off, web search disabled, and browser/computer/image/app feature
+disables. Its full raw render is
+[`prompt-input-candidate-04.json`](preparation/evidence/prompt-input-candidate-04.json),
+SHA-256
+`130774f4840003de874b61f00df3b6b54fbc09aa816a493088f0f32fb4be1ecc`.
+`request_user_input`, `request_user_input_async`, and `clock.sleep` are absent
+from that render, showing the corresponding visible controls applied there.
+However, the declaration still includes `functions.exec` and `functions.wait`,
+plus nested `list_mcp_resources`, `list_mcp_resource_templates`,
+`read_mcp_resource`, and `apply_patch`. The generic `exec` description also
+advertises access to the nested `tools` object. The prompt includes the exact
+task instruction, developer permission instructions, and user environment
+context. No assistant prior-turn message, project `AGENTS.md`, or skill or
+memory content is present in this particular static render. That observation
+does not prove the authenticated runtime input is identical.
+
+The thread/start and turn/start field excerpts are now retained locally in
+[`app-server-thread-turn-schema-excerpts.txt`](preparation/evidence/app-server-thread-turn-schema-excerpts.txt)
+with hashes for the full generated schema source files, so the quoted field
+semantics do not depend on a temporary directory.
+
+**Next decision:** stop Step 1 as blocked until the owner identifies a supported
+host/invocation surface that removes the outer tool wrapper and permits review
+of complete effective tools and context. Further feature-flag combinations
+have not met the gate. No live call is proposed or authorized by this record.
+
+[candidate-record]: preparation/evidence/prompt-input-candidates.json
