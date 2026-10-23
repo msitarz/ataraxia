@@ -14,12 +14,13 @@ handoff and final-CI assessment. Select delegated roles by responsibility:
 | Executor | GPT-6 Luna, medium | Implement bounded code, tests, documentation, or other changes under approved contracts. |
 | Publisher | GPT-6 Luna, medium | Mechanically publish exact independently reviewed inputs under its procedural owner. |
 
-Explicit maintainer task-specific role, model, or effort overrides take
-precedence; otherwise use this routing. This changes no orchestrator model
-selection or agent-creation authorization. Frozen empirical protocols retain
-their declared conditions and require alignment or explicit authorization before
-execution. Investigation and Evaluation contract definition uses the definer;
-bounded investigation or evaluation execution uses the executor.
+- Explicit maintainer task-specific role, model, or effort overrides take
+  precedence; otherwise use this routing.
+- This changes no orchestrator model selection or agent-creation authorization.
+- Frozen empirical protocols retain their declared conditions and require
+  alignment or explicit authorization before execution.
+- Investigation and Evaluation contract definition uses the definer.
+- Bounded investigation or evaluation execution uses the executor.
 
 The [Definer](definer.md) owns assigned Work contract changes and serial
 coordination of shared parent-map edits. The publisher gains no artifact-review
@@ -27,25 +28,32 @@ or merge authority.
 
 For a Work tree, the orchestrator that owns a Work node with children owns
 planning and integration for that subtree and manages its immediate child
-agents. Delegate each leaf directly to its responsible definer or executor; the
-leaf's owning parent reviews it. A child node with children has its own
-orchestrator owner for that subtree. Each leaf has one responsible orchestrator;
-do not add a dedicated wrapper around a leaf by default. Work tree nodes
-mark responsibility boundaries, not required runtime layers. Parent and
-subtree reviews own integration and interfaces, and reuse leaf evidence
-instead of repeating a full leaf review. Schedule work by dependency readiness,
-available concurrency, and expected shared edits rather than launching the
-entire tree at once. Do not invent intermediary Work nodes solely to justify
-runtime layers.
+agents. Work tree nodes mark responsibility boundaries, not required runtime
+layers.
+
+- Delegate each leaf directly to its responsible definer or executor.
+- The leaf's owning parent reviews it.
+- A child node with children has its own orchestrator owner for that subtree.
+- Each leaf has one responsible orchestrator.
+- Do not add a dedicated wrapper around a leaf by default.
+- Parent and subtree reviews own integration and interfaces, and reuse leaf
+  evidence instead of repeating a full leaf review.
+- Schedule work by dependency readiness, available concurrency, and expected
+  shared edits rather than launching the entire tree at once.
+- Do not invent intermediary Work nodes solely to justify runtime layers.
 
 The maintainer's requested Work defines the delivery boundary. Delegating a
-child does not make it a new publication root. Each child parent uses a separate
-isolated branch/worktree at the base ref assigned by its immediate parent owner;
-its direct leaves use the sequential execution route below. Independent child
-parents may run in parallel when dependencies, capacity, and shared edits
-permit. Serialize shared owner/map edits and integrate subtree commits as linear
-history while retaining their contracts through requested-tree review under
-[Work acceptance](acceptance-tracing.md#work-delivery).
+child does not make it a new publication root.
+
+- Each child parent uses a separate isolated branch/worktree at the base ref
+  assigned by its immediate parent owner.
+- Its direct leaves use the sequential execution route below.
+- Independent child parents may run in parallel when dependencies, capacity,
+  and shared edits permit.
+- Serialize shared owner/map edits.
+- Integrate subtree commits as linear history while retaining their contracts
+  through requested-tree review under
+  [Work acceptance](acceptance-tracing.md#work-delivery).
 
 The immediate parent reviews child-parent interfaces and composition, reusing
 valid leaf evidence. Integration review of each child-parent interface remains
@@ -68,10 +76,12 @@ After exact-artifact and description review and acceptance assessment, hand
 mechanical publication to the separate operational `publisher` with
 [its owner](publisher.md), worktree, exact reviewed commit, approved title and
 description file plus a digest or immutable copy, and existing PR when updating.
-Include authorized repository/base overrides and, for a rewrite, the expected
-remote commit captured before rebase. The orchestrator retains publication
-accountability, final-CI assessment, and maintainer handoff; assess the
-publisher's returned publication state and blockers.
+
+- Include authorized repository/base overrides.
+- For a rewrite, include the expected remote commit captured before rebase.
+- The orchestrator retains publication accountability, final-CI assessment,
+  and maintainer handoff.
+- Assess the publisher's returned publication state and blockers.
 
 Before requesting new infrastructure or splitting scope, apply the
 [Work-definition guidance](work-definition.md) and underlying
@@ -96,24 +106,28 @@ The five-minute heuristic does not cap substantive implementation review. If
 simplification and reuse leave independently deliverable outcomes, split them
 into nested Works through the
 [planning and tree-wide pause rules](workflow.md#decisions-and-new-splits).
-For an ad hoc handoff, define a parent Work and child Works; for an existing
-Work, nest children and update its parent map. Before expanded work:
+For an ad hoc handoff, define a parent Work and child Works. For an existing
+Work, nest children and update its parent map.
+
+Before expanded work:
 
 - Apply [contract review guidance](work-definition.md).
 - Apply the workflow owner's sizing and planning gates.
 
-Before dispatch, identify dependencies and shared edit surfaces. Coordinate
-shared owners, parent maps, indexes, exact wording, formatter-valid snippets,
-and reserved WDR numbers where needed. If overlap is unavoidable, sequence the
-Works or name the remaining merge resolution; do not invent index categories or
-ordering to hide a conflict. Start the assigned agent promptly once necessary
-preflight is complete; remaining reviewer reading may overlap execution when
-it does not defer integration preflight.
+Before dispatch, identify dependencies and shared edit surfaces.
+
+- Coordinate shared owners, parent maps, indexes, exact wording,
+  formatter-valid snippets, and reserved WDR numbers where needed.
+- If overlap is unavoidable, sequence the Works or name the remaining merge
+  resolution.
+- Do not invent index categories or ordering to hide a conflict.
+- Start the assigned agent promptly once necessary preflight is complete.
+- Remaining reviewer reading may overlap execution when it does not defer
+  integration preflight.
 
 A Work README defines acceptance criteria; linked guidance and supporting
 artifacts supply context. Keep the handoff contextual rather than duplicating
-the Work contract. Supply four
-groups of information:
+the Work contract. Supply four groups of information:
 
 - **Task:** Work path, assigned artifact and scope, requested action, and only
   missing steering.
@@ -125,41 +139,51 @@ groups of information:
   guidance](definer.md) or [Executor guidance](executor.md). Identify changes
   awaiting review or needed steering.
 
-The assigned agent reads the Work and applicable contracts; consult ancestor
-READMEs only as needed, without recursively loading every parent. Without a Work
-contract, state acceptance criteria in the handoff. Link background instead of
-forwarding the full conversation by default. For approved Work scope, follow
-the [routine-choice rule](workflow.md#scope-and-sizing).
+The assigned agent reads the Work and applicable contracts.
+
+- Consult ancestor READMEs only as needed, without recursively loading every
+  parent.
+- Without a Work contract, state acceptance criteria in the handoff.
+- Link background instead of forwarding the full conversation by default.
+- For approved Work scope, follow the
+  [routine-choice rule](workflow.md#scope-and-sizing).
 
 A Work is the coherent outcome and acceptance boundary. A delegated assignment
 is a bounded scope within it and may produce or update a
-[Work artifact](acceptance-tracing.md#evidence). Follow [Executor
-guidance](executor.md#assignment-return) for return contents and
-[Work acceptance](acceptance-tracing.md#criterion-status) for criterion
-status. The maintainer reviews the requested Work at its delivery boundary and
-retains review, merge, and CI authority.
+[Work artifact](acceptance-tracing.md#evidence).
+
+- Follow [Executor guidance](executor.md#assignment-return) for return contents.
+- Follow [Work acceptance](acceptance-tracing.md#criterion-status) for criterion
+  status.
+- The maintainer reviews the requested Work at its delivery boundary and
+  retains review, merge, and CI authority.
 
 The owning orchestrator independently reviews completed definitions before
 implementation begins. Use the same consolidated correction and review gates
 below for either responsibility.
 
-Definers and executors use an isolated Git worktree before editing. For a
-requested leaf, create its isolated branch/worktree and follow the usual
-[Work PR flow](../CONTRIBUTING.md#work-branches-review-and-merge). Follow
-[Definer guidance](definer.md) or [Executor guidance](executor.md) for the
-assigned role's setup and work. When assigning an executor to that leaf, use a
-fresh session. For each parent's implementation run, assign a fresh executor
-session and reuse it only
-for that parent's direct leaves and correction cycles, sequentially in one
-accumulating isolated branch/worktree. Distinct child parents use distinct fresh
-executor sessions even when scheduled sequentially; do not share an executor
-session across parents. Reuse the tree for successive leaves rather than
-creating a tree per leaf. Retire the executor session when the parent run or
-requested leaf delivery and its corrections are complete; never repurpose it for
-another Work. Retirement means stop assigning tasks, without requiring teardown,
-automatic termination, or cache purging. Before work begins, the handoff names
-the destination path, branch, and base ref and gives the creation command, for
-example:
+- Definers and executors use an isolated Git worktree before editing.
+- For a requested leaf, create its isolated branch/worktree and follow the
+  usual [Work PR flow](../CONTRIBUTING.md#work-branches-review-and-merge).
+- Follow [Definer guidance](definer.md) or [Executor guidance](executor.md) for
+  the assigned role's setup and work.
+- When assigning an executor to that leaf, use a fresh session.
+- For each parent's implementation run, assign a fresh executor session.
+- Reuse that session only for that parent's direct leaves and correction
+  cycles, sequentially in one accumulating isolated branch/worktree.
+- Distinct child parents use distinct fresh executor sessions even when
+  scheduled sequentially.
+- Do not share an executor session across parents.
+- Reuse the tree for successive leaves rather than creating a tree per leaf.
+- Retire the executor session when the parent run or requested leaf delivery
+  and its corrections are complete.
+- Never repurpose it for another Work.
+
+Retirement means stop assigning tasks, without requiring teardown, automatic
+termination, or cache purging.
+
+Before work begins, the handoff names the destination path, branch, and base ref
+and gives the creation command, for example:
 
 ```sh
 make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
@@ -167,18 +191,23 @@ make worktree-create WORKTREE=/private/tmp/ataraxia-example BRANCH=work/example
 
 This target creates from local `master`. For an assigned child base, first
 prepare the new clean tree with that command, then set its branch to the
-assigned ref using a separate ordinary Git operation before editing. Verify the
-resulting base and environment; use `make ci-setup` and `make verify-setup` if
-dependencies need synchronization. Do not invent a base argument for the
-creation target.
+assigned ref using a separate ordinary Git operation before editing.
+
+- Verify the resulting base and environment.
+- Use `make ci-setup` and `make verify-setup` if dependencies need
+  synchronization.
+- Do not invent a base argument for the creation target.
 
 When delegated implementation reveals out-of-scope work, the executor stops
-and reports it under [executor guidance](executor.md). Route a new split or
-needed maintainer decision through the
-[whole requested-tree pause](workflow.md#decisions-and-new-splits), including
-other active subtrees. Apply the split rule when an independent outcome cannot
-stay coherent in this leaf after simplification and reuse. A different
-delegated agent still requires the maintainer's explicit approval.
+and reports it under [executor guidance](executor.md).
+
+- Route a new split or needed maintainer decision through the
+  [whole requested-tree pause](workflow.md#decisions-and-new-splits), including
+  other active subtrees.
+- Apply the split rule when an independent outcome cannot stay coherent in
+  this leaf after simplification and reuse.
+- A different delegated agent still requires the maintainer's explicit
+  approval.
 
 ## Review and return
 
@@ -186,29 +215,36 @@ Before accepting changed code or tests and before publishing the exact final
 revision, independently apply [engineering judgment in
 review](engineering-review.md) alongside the applicable engineering and
 testing guidance. Passing checks do not settle design judgment. Review may
-accept the design unchanged; when the same unchanged revision's review applies
-at both checkpoints, reuse it. Review corrected changes on the final revision
-before publication.
+accept the design unchanged.
+
+- When the same unchanged revision's review applies at both checkpoints,
+  reuse it.
+- Review corrected changes on the final revision before publication.
 
 For a requested parent's direct leaves, complete the local artifact/evidence
-review and any consolidated corrections before assigning the next leaf. Follow
-the [local delivery sequence](acceptance-tracing.md#work-delivery) for each
-accepted leaf. Within that accumulating branch, local acceptance of a dependency
-permits its next dependent leaf without a `master` merge. The parent owner owns
-map changes; child leaf PRs are not published from this requested-parent run.
+review and any consolidated corrections before assigning the next leaf.
+
+- Follow the [local delivery sequence](acceptance-tracing.md#work-delivery) for
+  each accepted leaf.
+- Within that accumulating branch, local acceptance of a dependency permits
+  its next dependent leaf without a `master` merge.
+- The parent owner owns map changes.
+- Child leaf PRs are not published from this requested-parent run.
+
 After the leaves, review the parent's own acceptance under its immediate
 parent's integration review, or before publication if it is the requested Work.
 
 - After handoff or a correction request, wait for a completed assignment return
   covering the assigned scope and applicable subordinate reviews, or for a
   blocker requiring owner or maintainer steering.
-- Do not inspect unfinished edits or interrupt an applicable subordinate
-  review.
+- Do not inspect unfinished edits.
+- Do not interrupt an applicable subordinate review.
 - Independently review a completed intermediate assignment once against its
   assigned scope and owner guidance, even while the Work continues.
 - When review is the named stopping point, wait for the named reviewer to finish
   before authorizing continuation.
-- Do not poll for routine status or send fragmented corrections.
+- Do not poll for routine status.
+- Do not send fragmented corrections.
 - When the Work itself is returned, review its completed diff against Work
   acceptance and inspect evidence in its source records.
 - Send one consolidated finding list to the same active agent session.
@@ -216,9 +252,8 @@ parent's integration review, or before publication if it is the requested Work.
   failure, or unresolved concern warrants it.
 
 After an assignment review, the owner authorizes the next increment within the
-existing scope.
-Context reuse may help token caching, but caching is not guaranteed. Each
-autonomous repair round follows these rules:
+existing scope. Context reuse may help token caching, but caching is not
+guaranteed. Each autonomous repair round follows these rules:
 
 - Allow at most five correction requests in a round; five is a fallback cap,
   not a target.
@@ -231,15 +266,16 @@ autonomous repair round follows these rules:
 - After each changed revision, review that revision and rerun applicable checks;
   earlier judgments do not cover changed code.
 - When stopping, report the attempts, current revision, concrete evidence, and
-  the decision or help needed. Follow
+  the decision or help needed.
+- When stopping, follow
   [engineering review](engineering-review.md#focused-rule-review) for finding
   evidence and owner reconciliation.
 - Ordinary orchestrator steering may resume an earlier-stopped round within
   its remaining request budget, subject to the existing scope, review, recovery,
   and planning gates.
 - Generic direction to continue does not authorize a new round, reset the
-  count, or permit unlimited retries. Explicit maintainer direction may
-  authorize one additional bounded round.
+  count, or permit unlimited retries.
+- Explicit maintainer direction may authorize one additional bounded round.
 - If a new split or maintainer decision is needed, apply the whole-tree pause
   and planning gates in [Work workflow](workflow.md#decisions-and-new-splits).
 - If the assigned agent is unavailable, report that and wait; do not silently
@@ -247,20 +283,28 @@ autonomous repair round follows these rules:
 
 Keep independent review and maintainer review, merge, and CI gates.
 
-If a definer or executor session is cancelled or lost, recover from the Work
-contract, parent map, branch or PR, and available evidence. Establish which
-changes remain, which evidence applies to the current revision, and which
-criteria are unresolved before continuing. If uncertain, state that and ask for
-steering rather than treating the handoff as complete. A fresh session in the
-same role may continue the same approved scope after recovery. Delayed
-corrections after a completed executor run likewise use a fresh session after
-recovery; do not repurpose the retired session.
+If a definer or executor session is cancelled or lost:
+
+- Recover from the Work contract, parent map, branch or PR, and available
+  evidence.
+- Before continuing, establish which changes remain, which evidence applies
+  to the current revision, and which criteria are unresolved.
+- If uncertain, state that and ask for steering rather than treating the
+  handoff as complete.
+
+A fresh session in the same role may continue the same approved scope after
+recovery.
+
+- Delayed corrections after a completed executor run likewise use a fresh
+  session after recovery.
+- Do not repurpose the retired session.
 
 Follow [Work acceptance](acceptance-tracing.md) for criterion status, outcome
-evidence, and contract retention. Follow
-[Pull requests](pull-requests.md#descriptions) for executor returns, local
-review before new or amended PR publication, description preparation, ready-PR
-meaning, and publication ownership.
+evidence, and contract retention.
+
+- Follow [Pull requests](pull-requests.md#descriptions) for executor returns,
+  local review before new or amended PR publication, description preparation,
+  ready-PR meaning, and publication ownership.
 
 Before publishing, reassess each leaf's actual diff under
 [Work scope and sizing](workflow.md#scope-and-sizing):
@@ -284,9 +328,13 @@ At this checkpoint:
 
 Repository merge settings do not replace maintainer review or maintainer
 authority. The maintainer reviews the current PR revision and performs the
-merge. Agents must not merge autonomously; an agent may merge only with explicit
-maintainer instruction. Do not change repository settings, use an admin
-override, or bypass review or CI requirements.
+merge.
+
+- Agents must not merge autonomously; an agent may merge only with explicit
+  maintainer instruction.
+- Do not change repository settings.
+- Do not use an admin override.
+- Do not bypass review or CI requirements.
 
 The requested Work owner continues from executor completion through the
 existing independent review and corrections, publication via the publisher,
