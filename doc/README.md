@@ -46,43 +46,60 @@ relevant guidance.
 
 ## Placement and maintenance
 
-Find the owner before adding information. Give independently triggered guidance
-a focused owner and clear reading trigger. Route directly to that owner, then
-link from broader documents without repeating its rules. Navigation summaries
-may name a capability and its status, but must not repeat defaults, schemas,
-lifecycle rules, or
-procedures. Examples may demonstrate a contract without becoming a second
-definition. Derive deterministic information from executable configuration
-where practical; documentation explains its use rather than maintaining another
-settings inventory.
+- Find the owner before adding information.
+- Give independently triggered guidance a focused owner and clear reading
+  trigger.
+- Route directly to that owner, then link from broader documents without
+  repeating its rules.
+- Navigation summaries may name a capability and its status.
+- Navigation summaries must not repeat defaults, schemas, lifecycle rules, or
+  procedures.
+- Examples may demonstrate a contract without becoming a second definition.
+- Derive deterministic information from executable configuration where
+  practical.
 
-Keep `AGENTS.md` a short entry point. Add guidance to its existing owner. Create
-a document only for a distinct responsibility with a clear reading trigger; add
-a route only when existing routes cannot discover it. Do not split files just
-to move their size elsewhere or create a chain of indexes agents must read for
-every task.
+Documentation explains its use rather than maintaining another settings
+inventory.
 
-When adding or changing a reading route, check whether its target contains
-guidance unrelated to the triggering task. Extract independently triggered rules
-into a focused owner before routing there. Follow linked guidance only when its
-stated reading trigger applies; a link alone does not require reading the
-target.
+- Keep `AGENTS.md` a short entry point.
+- Add guidance to its existing owner.
+- Create a document only for a distinct responsibility with a clear reading
+  trigger.
+- Add a route only when existing routes cannot discover it.
+- Do not split files just to move their size elsewhere or create a chain of
+  indexes agents must read for every task.
+- When adding or changing a reading route, check whether its target contains
+  guidance unrelated to the triggering task.
+- Extract independently triggered rules into a focused owner before routing
+  there.
+- Follow linked guidance only when its stated reading trigger applies.
 
-Separate current guidance, proposed behavior, accepted decisions, implemented
-behavior, and evidence. Accepted ADRs and WDRs explain decisions, not
-implementation status. Verify current behavior in code and tests. If behavior
-conflicts with an approved contract, surface the mismatch rather than treating
-implementation as the intended design. Resolve inconsistent copies at the owner
-and remove or link the others; do not add an exception to reconcile them.
+A link alone does not require reading the target.
 
-When a guidance file or heading linked by a Make reminder moves or is renamed,
-update the reminder link in the same change and verify its target.
+- Separate current guidance, proposed behavior, accepted decisions, implemented
+  behavior, and evidence.
 
-Keep accepted ADR and WDR history intact, using the [ADR
-workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
-decisions. A new change owns its own evidence. Keep detailed scope in Work
-contracts and evidence in its source records; [PR guidance](pull-requests.md)
-owns delivery descriptions.
+Accepted ADRs and WDRs explain decisions, not implementation status.
+
+- Verify current behavior in code and tests.
+- If behavior conflicts with an approved contract, surface the mismatch rather
+  than treating implementation as the intended design.
+- Resolve inconsistent copies at the owner and remove or link the others.
+- Do not add an exception to reconcile inconsistent copies.
+- When a guidance file or heading linked by a Make reminder moves or is
+  renamed, update the reminder link in the same change.
+- When a guidance file or heading linked by a Make reminder moves or is
+  renamed, verify the reminder link's target.
+- Keep accepted ADR and WDR history intact, using the [ADR
+  workflow](adr-workflow.md) or [WDR workflow](wdr-workflow.md) to change
+  decisions.
+
+A new change owns its own evidence.
+
+- Keep detailed scope in Work contracts.
+- Keep evidence in its source records.
+
+[PR guidance](pull-requests.md) owns delivery descriptions.
 
 ## Writing
 
@@ -99,42 +116,57 @@ Apply this shared writing standard to Work contracts, guidance, ADRs, and WDRs:
 
 ## Vocabulary
 
-Check the [glossary](ubiquitous-language.md) before introducing a term. Define
-new shared terms there before using them in specifications or implementation:
-state their meaning, responsibility, distinctions, relationships, and essential
-units or lifecycle rules. Keep delivery workflow language separate from
-computation and trading language. Works and trading Features have distinct
-definitions; local Work rules belong in their own contracts, with glossary
-entries linking rather than reproducing those rules.
+- Check the [glossary](ubiquitous-language.md) before introducing a term.
+- Define new shared terms there before using them in specifications or
+  implementation: state their meaning, responsibility, distinctions,
+  relationships, and essential units or lifecycle rules.
+- Keep delivery workflow language separate from computation and trading
+  language.
 
-Use the glossary term consistently for each shared concept; avoid synonyms that
-suggest an undefined distinction. Reuse the same established term for the same
-concept as often as necessary; do not vary it solely to avoid repeating a word.
-Repeating a term is distinct from duplicating its definition or instructions;
-follow the [placement and maintenance rules](#placement-and-maintenance) for
+Works and trading Features have distinct definitions. Local Work rules belong
+in their own contracts, with glossary entries linking rather than reproducing
+those rules.
+
+- Use the glossary term consistently for each shared concept.
+- Avoid synonyms that suggest an undefined distinction.
+- Reuse the same established term for the same concept as often as necessary.
+- Do not vary it solely to avoid repeating a word.
+
+Repeating a term is distinct from duplicating its definition or instructions.
+Follow the [placement and maintenance rules](#placement-and-maintenance) for
 those.
 
-Reuse abstractions when their meaning fits. Qualify terms at boundary mappings.
-Resolve ambiguity from the request and repository; if interpretations still
-imply materially different behavior, present concrete alternatives before
-implementation. Do not invent domain rules. Consistent naming needs no
-approval.
+- Reuse abstractions when their meaning fits.
+- Qualify terms at boundary mappings.
+- Resolve ambiguity from the request and repository.
+- If interpretations still imply materially different behavior, present
+  concrete alternatives before implementation.
+- Do not invent domain rules.
+
+Consistent naming needs no approval.
 
 ## Review
 
-Check ownership and duplication when defining or reviewing a Work, and when
-changing general guidance. Review the affected surrounding section and directly
-related rules as a whole, including neighboring explanations affected by the
-change. Integrate requirements at their owner, consolidate repeated explanations
-within it, and replace cross-owner repetition with links. Preserve substantive
-requirements, reading routes, anchors, distinct exceptions, and useful examples;
-do not shorten guidance at the expense of meaning. Verify local links and
-anchors, distinguish history from current instructions, and walk through
-affected reading routes. Check that moved requirements remain discoverable and
-examples agree with their owning contracts. Run `make doc-check` to check
-Markdown formatting and local links and validate Mermaid fences with the
-embedded renderer; run `make doc-format` to apply the configured formatting.
-Check that prose, headings, and examples use the same glossary terms. Follow
-[repair and scope rules](change-rules.md#fix-the-underlying-problem) for
-cohesive changes. Assess readability alongside meaning and completeness under
-the [shared writing standard](#writing).
+- Check ownership and duplication when defining or reviewing a Work, and when
+  changing general guidance.
+- Review the affected surrounding section and directly related rules as a
+  whole, including neighboring explanations affected by the change.
+- Integrate requirements at their owner.
+- Consolidate repeated explanations within the owner.
+- Replace cross-owner repetition with links.
+- Preserve substantive requirements, reading routes, anchors, distinct
+  exceptions, and useful examples.
+- Do not shorten guidance at the expense of meaning.
+- Verify local links and anchors.
+- Distinguish history from current instructions.
+- Walk through affected reading routes.
+- Check that moved requirements remain discoverable.
+- Check that examples agree with their owning contracts.
+- Run `make doc-check` to check Markdown formatting and local links and validate
+  Mermaid fences with the embedded renderer.
+- Run `make doc-format` to apply the configured formatting.
+- Check that prose, headings, and examples use the same glossary terms.
+- Follow [repair and scope rules](change-rules.md#fix-the-underlying-problem)
+  for cohesive changes.
+- Assess readability alongside meaning and completeness under the
+  [shared writing standard](#writing).
