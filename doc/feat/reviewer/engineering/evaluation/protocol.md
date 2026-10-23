@@ -18,10 +18,14 @@ construction, telemetry preparation, wrapper implementation, or model trials.
 Those activities need later maintainer authorization within the existing Work;
 these stages are assignments, not new Work children.
 
-After authorization, prepare the fixed inputs and private answers, verify the
-actual invocation boundary, and obtain independent engineering-owner review
-before freezing and running trials. Stop preparation if the declared workload
-or bounds cannot be met. Do not silently reduce coverage or substitute a model.
+After authorization:
+
+- Prepare the fixed inputs and private answers.
+- Verify the actual invocation boundary.
+- Obtain independent engineering-owner review before freezing and running
+  trials.
+- Stop preparation if the declared workload or bounds cannot be met.
+- Do not silently reduce coverage or substitute a model.
 
 For this fixed suite, a call list, prepared prompt files, and a small bounded
 wrapper and scorer are sufficient. No production rule discovery, dynamic context
@@ -47,10 +51,13 @@ ID derived from the fixed call list identifies each repetition; different
 complete effective inputs must remain distinguishable. Record runtime metadata
 that cannot be pinned and its limits. No canonical identity scheme is needed.
 
-Any post-outcome change to source, labels, rules, prompts, tools, model binding,
-or relevant settings is a retained deviation requiring a newly reviewed freeze
-before another comparison. Do not tune inputs from answers, refill failed cases,
-or count cached answers as independent observations.
+Treat any post-outcome change to source, labels, rules, prompts, tools, model
+binding, or relevant settings as a retained deviation. A new comparison
+requires a newly reviewed freeze. Do not:
+
+- Tune inputs from answers.
+- Refill failed cases.
+- Count cached answers as independent observations.
 
 ## Initial static A/B/C comparison
 
@@ -155,9 +162,9 @@ runtime verification. No cross-model comparison is planned.
 
 Preparation must establish the actual provider/model binding and effective
 effort for every level. Read-only inspection of codex-cli 0.164.0's bundled
-model catalog advertised low, medium, high, xhigh, and max for `gpt-6-luna`, but
-not none. The maintainer reports a successful none invocation; catalog absence
-does not establish impossibility.
+model catalog advertised low, medium, high, xhigh, and max for `gpt-6-luna`,
+but not none. The maintainer reports a successful none invocation. Catalog
+absence does not establish impossibility.
 
 - Verify accepted and runtime-effective effort before trials for that level.
 - Never substitute a default effort or silently remove a level.
@@ -204,10 +211,10 @@ At each effort, use three fresh independent repetitions:
 - Within B/C, order rule IDs, file IDs, and qualified function names lexically.
 - Never resume a prior session or supply hints or prior answers.
 
-Each effort uses 3 × (1 + 3 + 24) = 84 trial calls and 216 assessment
-opportunities. The four-effort matrix uses 336 unique trial calls and 864
-assessment opportunities. Each strategy/effort/repetition has the same 24
-expected pairs. Repetitions add no source diversity.
+For each effort, three repetitions use 3 × (1 + 3 + 24) = 84 trial calls and
+216 assessment opportunities. Across four efforts, the matrix uses 336 unique
+trial calls and 864 assessment opportunities. Each strategy/effort/repetition
+has the same 24 expected pairs. Repetitions add no source diversity.
 
 Use this predetermined effort-block order within each repetition:
 
@@ -318,10 +325,14 @@ codex exec --model gpt-6-luna \
   --disable apps --disable artifact "hi how are you" --json
 ```
 
-During authorized preparation, replace the greeting with the frozen generated
-prompt text and vary only the declared effort. Freeze a nonempty reviewed
-`min.md` before all conditions; this definition creates no such file. Use the
-same exact instruction-file bytes for primary and secondary conditions.
+During authorized preparation:
+
+- Replace the greeting with the frozen generated prompt text.
+- Vary only the declared effort.
+- Freeze a nonempty reviewed `min.md` before all conditions; this definition
+  creates no such file.
+- Use the same exact instruction-file bytes for primary and secondary
+  conditions.
 
 The
 [official configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
@@ -345,8 +356,9 @@ local image/file readers; preserve the input-only refusal gate above.
 
 The maintainer reports 7,380 `input_tokens` for one none/greeting invocation
 using this configuration. No raw event stream was supplied or independently
-verified. This is a reported whole-input observation for one setup, not a
-universal system-instruction count or an estimate for other efforts and prompts.
+verified. Treat this as a reported whole-input observation for one setup. It is
+not a universal system-instruction count or an estimate for other efforts and
+prompts.
 
 Use neutral preparation to establish the actual baseline at each effort:
 
@@ -386,18 +398,27 @@ limits for review, not measured usage.
 | Findings | At most 2,400 raw finding records across the matrix for complete adjudication |
 
 At the per-call time bound, 336 × 310 seconds is about 28.9 serial
-process-hours. The 40-hour trial deadline includes scheduling gaps and may still
-leave the matrix incomplete. Do not conceal timed-out high or none calls or
-extend their limits from observed outcomes.
+process-hours. The 40-hour trial deadline includes scheduling gaps and may
+still leave the matrix incomplete. Do not:
+
+- Conceal timed-out high or none calls.
+- Extend limits based on observed outcomes.
 
 Preflight prints the exact call count, each input estimate and method/version,
-reserved output/reasoning allowance, and total. Refuse over-budget plans before
-launch. Bound actual output/context growth and reserve evidence capacity for
-all attempts. Estimates do not establish actual hidden usage or a hard token
-cap. Preparation records which usage fields and limits the actual invocation
-exposes. If hard token enforcement is unavailable, disclose that fact and obtain
-owner approval of the finite session/time/output bounds before trials; make no
-hard token-consumption claim.
+the reserved output/reasoning allowance, and the total. Before launch:
+
+- Refuse over-budget plans.
+- Reserve evidence capacity for all attempts.
+
+During execution, bound actual output/context growth.
+
+Estimates do not establish actual hidden usage or a hard token cap. Preparation
+records which usage fields and limits the actual invocation exposes. If hard
+token enforcement is unavailable:
+
+- Disclose that fact.
+- Obtain owner approval of the finite session/time/output bounds before trials.
+- Make no hard token-consumption claim.
 
 Controlled disposable process checks exercise success, failure, timeout,
 cancellation, oversized output, malformed/duplicate/foreign results, budget
@@ -407,13 +428,19 @@ review processes. Checks with fake output establish wrapper behavior only;
 they cannot prove live isolation, context contents, or semantic accuracy.
 Actual invocation evidence must establish those integration properties.
 
-Stop new dispatch for input drift, label exposure, unauthorized access or
-writes, escaped processes, invalid accounting, changed model/settings, exhausted
-bounds, or cancellation. Cancel active calls, verify cleanup, and preserve every
-planned call with a terminal status, including not-started calls. Three
-consecutive infrastructure failures end the run as incomplete. Retain
-contaminated results outside quality claims and retain ordinary failures in
-coverage accounting. No silent replacement or budget extension is allowed.
+Stop new dispatch for any of these conditions:
+
+- Input drift or label exposure.
+- Unauthorized access or writes.
+- Escaped processes or invalid accounting.
+- Changed model/settings or exhausted bounds.
+- Cancellation.
+
+When stopping, cancel active calls, verify cleanup, and preserve every planned
+call with a terminal status, including not-started calls. Three consecutive
+infrastructure failures end the run as incomplete. Retain contaminated results
+outside quality claims and ordinary failures in coverage accounting. Do not
+silently replace calls or extend the budget.
 
 At the human or finding cap, preserve all records and mark adjudication and
 conclusions incomplete. Do not sample the remainder or claim the reviewed subset
@@ -447,8 +474,8 @@ unexpected valid findings without changing the frozen label denominator. An
 incorrect private label discovered after outcomes is a deviation, not a silent
 answer-key repair.
 
-A strategy/effort condition meets the initial quality screen only with all of
-these conditions:
+A strategy/effort condition meets the initial quality screen only when all of
+these conditions hold:
 
 - Verified isolation and preservation.
 - Every planned call for that strategy/effort condition is complete and valid.
@@ -463,14 +490,15 @@ reviewed freeze. Incomplete measurements or adjudication are inconclusive.
 These are practical screening thresholds for 24 authored examples, not claims of
 statistical significance.
 
-Apply the following primary comparisons only to the common-medium slice.
-For a bounded quality improvement over A, require all of these conditions:
+Apply primary comparisons only to the common-medium slice. A bounded quality
+improvement over A requires all of these conditions:
 
 - Both compared strategies pass the screen.
 - Recall improves by at least 10 percentage points in each repetition.
 - Precision loses at most five percentage points in each repetition.
 
-Otherwise, a bounded resource improvement requires all of these conditions:
+If the quality-improvement conditions do not hold, a bounded resource
+improvement requires all of these conditions:
 
 - Both compared strategies pass the screen.
 - Recall stays within five percentage points of A in each repetition.
@@ -478,8 +506,9 @@ Otherwise, a bounded resource improvement requires all of these conditions:
 - Complete observed tokens or median matched latency decreases by at least 20%.
 - The report identifies the improved metric and any opposing metric.
 
-Reconsider a strategy that fails the screen or loses at least 10 recall points
-to A in any repetition. Report inconclusive results if any of these holds:
+Reconsider a strategy if it fails the screen or loses at least 10 recall points
+to A in any repetition. Report inconclusive results if any of these conditions
+hold:
 
 - Neither improvement condition holds.
 - Repetitions conflict.
