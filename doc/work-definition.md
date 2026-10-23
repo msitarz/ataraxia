@@ -22,15 +22,18 @@ Work identity and contract discovery follow these rules:
   `README.md`; they do not define another contract.
 - Do not require YAML frontmatter, a journal, or separate human-facing and
   agent-facing versions of the same contract.
+- Run `make work-check` to check every active contract.
+- For focused feedback, pass one or more repository-local Work README paths or
+  subtrees through `ARGS`.
 
-Run `make work-check` to check every active contract. For focused feedback, pass
-one or more repository-local Work README paths or subtrees through `ARGS`. The
-`make doc-check` target also checks every active contract; its `ARGS` only
+The `make doc-check` target also checks every active contract; its `ARGS` only
 focuses its documentation checks.
 
-Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
-when assessing existing machinery and the remaining gap. Use an Investigation
-when feasibility needs checking. [Work workflow](workflow.md) owns
+- Apply the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
+  when assessing existing machinery and the remaining gap.
+- Use an Investigation when feasibility needs checking.
+
+[Work workflow](workflow.md) owns
 scope, sizing, planning gates, lifecycle, and promotion of lasting outcomes;
 [Work acceptance](acceptance-tracing.md) owns criterion status and evidence.
 [Contributor guidance](../CONTRIBUTING.md#work-branches-review-and-merge) owns
@@ -46,13 +49,16 @@ decomposition:
 - **No:** retain the coherent outcome as one leaf Work.
 - **Unknown:** resolve the uncertainty with the smallest typed architecture
   exploration that can answer the remaining question within the authorized
-  outcome. It may support retaining one leaf, proposing a split, or framing a
-  bounded Investigation; it does not authorize expanded feature implementation.
+  outcome.
 
-When unknown decomposition needs exploration, see
-[Architecture exploration](architecture-exploration.md). If findings identify
-a split or scope change, follow the
-[pause and planning gates](workflow.md#decisions-and-new-splits).
+For unknown decomposition, the exploration may support retaining one leaf,
+proposing a split, or framing a bounded Investigation; it does not authorize
+expanded feature implementation.
+
+- When unknown decomposition needs exploration, see
+  [Architecture exploration](architecture-exploration.md).
+- If findings identify a split or scope change, follow the
+  [pause and planning gates](workflow.md#decisions-and-new-splits).
 
 The architecture-exploration guide owns the maturity and review of
 exploratory, reviewed, and implemented architecture, including retention of
@@ -60,26 +66,33 @@ superseded exploration.
 
 Work composition describes which outcomes belong to a parent; scheduling
 dependencies describe which Works must precede others. Neither hierarchy is
-required to mirror the module hierarchy. Preserve a split's exploration and
-rationale with the relevant Work or architecture records.
+required to mirror the module hierarchy.
+
+- Preserve a split's exploration and rationale with the relevant Work or
+  architecture records.
 
 ## Investigations
 
-An Investigation answers a bounded question and recommends a direction. Its
-contract states the question, constraints, and decision needed. When comparing
-candidates, record each serious candidate's fit, pros and cons, and what was
-checked versus what remains uncertain. Conclude with findings and a
-recommendation explaining the choice.
+An Investigation answers a bounded question and recommends a direction.
+
+- Its contract states the question, constraints, and decision needed.
+- When comparing candidates, record each serious candidate's fit, pros and
+  cons, and what was checked versus what remains uncertain.
+- Conclude with findings and a recommendation explaining the choice.
 
 A small comparison can stay in one file; link candidate files when that makes
 review easier. A supporting Evaluation supplies empirical evidence; it is not
 required merely because the Work is an Investigation.
 
 An Investigation may use prototyping to answer feasibility questions through
-exploratory implementation. Its contract states the implementation limits and
-observable evidence needed to answer the question. Retain findings and observed
-execution results as supporting artifacts, including unsuccessful results, and
-distinguish them from assumptions.
+exploratory implementation.
+
+- Its contract states the implementation limits and observable evidence needed
+  to answer the question.
+- Retain findings and observed execution results as supporting artifacts,
+  including unsuccessful results.
+- Distinguish findings and observed execution results from assumptions.
+
 Production adoption requires a separate reviewed Work contract that addresses
 missing production and integration requirements; a successful prototype alone
 does not establish production readiness.
