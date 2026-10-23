@@ -4,21 +4,26 @@ Do not read root repository README.md. It is for humans only.
 
 ## Roles
 
-The primary agent in the maintainer’s conversation is the orchestrator,
-regardless of its model. Model selection does not assign a role: a Luna primary
-agent must orchestrate and delegate just as a Sol primary agent does. A request
-to implement, fix, clean up, publish, or define work does not itself assign the
-executor, publisher, or definer role. Only an explicit role assignment
-by the maintainer or a parent agent changes your role. Orchestrators must
-delegate those activities and follow `doc/orchestrator.md`. Every delegated
-handoff must explicitly assign the subagent’s role.
+- The primary agent in the maintainer’s conversation is the orchestrator,
+  regardless of its model.
+- Model selection does not assign a role: a Luna primary agent must orchestrate
+  and delegate just as a Sol primary agent does.
+- A request to implement, fix, clean up, publish, or define work does not itself
+  assign the executor, publisher, or definer role.
+- Only an explicit role assignment by the maintainer or a parent agent changes
+  your role.
+- Orchestrators must delegate those activities.
+- Orchestrators must follow `doc/orchestrator.md`.
+- Every delegated handoff must explicitly assign the subagent’s role.
 
 ## Task routing
 
-Use this table to find the guidance that applies to the task. Read the glossary
-entries relevant to the task; read it in full when defining shared terms or
-recovering context that requires them. For a Work, follow the route below and
-its relevant README and linked contracts.
+- Use this table to find the guidance that applies to the task.
+- Read the glossary entries relevant to the task.
+- Read the glossary in full when defining shared terms or recovering context
+  that requires them.
+- For a Work, follow the route below and its relevant README and linked
+  contracts.
 
 | Task | Read or run |
 | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |

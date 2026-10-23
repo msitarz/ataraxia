@@ -1,13 +1,16 @@
 # Engineering conventions
 
 Read the [repair and scope rules](change-rules.md#fix-the-underlying-problem)
-for any repository change. Read the rest when changing or reviewing code or
-tests. Apply [engineering judgment in review](engineering-review.md) when
-changing or reviewing code or tests. Use
-[check and evidence policy](validation.md) when choosing checks or reporting
-evidence. For product code, use [product architecture](architecture.md) and
-relevant ADRs for current contracts; for workflow or tooling changes, use the
-relevant owning guidance and source.
+for any repository change.
+
+- Read the rest when changing or reviewing code or tests.
+- Apply [engineering judgment in review](engineering-review.md) when changing
+  or reviewing code or tests.
+- Use [check and evidence policy](validation.md) when choosing checks or
+  reporting evidence.
+- For product code, use [product architecture](architecture.md) and relevant
+  ADRs for current contracts.
+- For workflow or tooling changes, use the relevant owning guidance and source.
 
 ## Fix the underlying problem
 
@@ -17,82 +20,112 @@ See [Repair and scope rules](change-rules.md#fix-the-underlying-problem).
 
 [Ruff configuration](../pyproject.toml) owns formatting, imports, and docstring
 checks; [EditorConfig](../.editorconfig) owns file whitespace and encoding.
-Use four-space indentation, 88-character lines, double quotes, Google-style
-docstrings, `snake_case` functions/modules, and `PascalCase` classes. Satisfy
-strict Pyrefly and add `# SPDX-License-Identifier: Apache-2.0` to new source
-files.
-The project requires Python 3.14 or newer and uses native deferred annotation
-evaluation; do not add `from __future__ import annotations`.
 
+- Use four-space indentation, 88-character lines, double quotes, Google-style
+  docstrings, `snake_case` functions/modules, and `PascalCase` classes.
+- Satisfy strict Pyrefly.
+- Add `# SPDX-License-Identifier: Apache-2.0` to new source files.
+
+The project requires Python 3.14 or newer and uses native deferred annotation
+evaluation.
+
+- Do not add `from __future__ import annotations`.
 - Prefer function composition, focused functions, guard clauses, and early
-  returns. Ruff's PLR0915 counts statements in source, scripts, and tests and
-  blocks lint above 25. Treat the limit as a readability signal, not a target
-  function shape. Don't split code only to lower a count. Extract cohesive
-  helpers that improve readability.
+  returns.
+
+Ruff's PLR0915 counts statements in source, scripts, and tests and blocks lint
+above 25.
+
+- Treat the limit as a readability signal, not a target function shape.
+- Don't split code only to lower a count.
+- Extract cohesive helpers that improve readability.
 - Inject dependencies through arguments or constructor/dataclass fields.
 - Define reusable `typing.Protocol` ports from consumer needs, with precise
-  inputs, outputs, documented errors, and lifecycle ownership. Concrete
-  adapters satisfy them structurally and are supplied by composition;
-  dependencies point toward the consumer's contract, and core imports no
-  concrete adapters. Use `@runtime_checkable` only when runtime conformance is
-  actually checked. Value objects and internal helpers need no protocol; see
-  `compute/protocol.py` and `provider.py` under `src/ataraxia/`.
-- Model records with dataclasses; prefer `frozen=True` for values and node
-  specifications, and `field(default_factory=...)` for per-instance
-  containers/collaborators. Keep specifications hashable and execution state in
-  runners; see `source.py` and `feature.py`.
+  inputs, outputs, documented errors, and lifecycle ownership.
+
+Concrete adapters satisfy them structurally and are supplied by composition;
+dependencies point toward the consumer's contract, and core imports no concrete
+adapters.
+
+- Use `@runtime_checkable` only when runtime conformance is actually checked.
+- Value objects and internal helpers need no protocol; see `compute/protocol.py`
+  and `provider.py` under `src/ataraxia/`.
+- Model records with dataclasses.
+- Prefer `frozen=True` for values and node specifications.
+- Prefer `field(default_factory=...)` for per-instance containers/collaborators.
+- Keep specifications hashable and execution state in runners; see `source.py`
+  and `feature.py`.
 - For dictionary records, use `TypedDict` (`BrokerReturn`,
-  `BacktestShardReturn`); reserve typed `Mapping[K, V]`/`MutableMapping[K, V]`
+  `BacktestShardReturn`).
+- Reserve typed `Mapping[K, V]`/`MutableMapping[K, V]`
   for dynamic keys such as nodes or dependency names.
 - Node pattern: `deps()` names inputs, `factory()` supplies a runner, and runner
-  `__call__` computes. Match dependency keys to runner parameters. Extract
-  reusable calculations, as `SmaRunner` does with `sma`.
+  `__call__` computes.
+- Match dependency keys to runner parameters.
+- Extract reusable calculations, as `SmaRunner` does with `sma`.
 - Use modern typing: `T | None`, built-in generics, `type` aliases,
   parameterized protocols/classes, and `Literal` for closed sets (signal sides).
-  Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`);
-  require mutability only when needed.
+- Prefer `collections.abc` contracts (`Sequence`, `Mapping`, `Iterator`).
+- Require mutability only when needed.
 - Use `match` when one stable value selects among mutually exclusive cases;
-  preserve supported cases and required unmatched-input behavior. For
-  independent constraints, use short guards or separate `if` statements. A
-  small local collection of conditions and diagnostics suits cases where
-  callers need accumulated findings; keep type prerequisites explicit and
-  preserve distinctions callers rely on. A dictionary lookup can suit a simple
-  mapping from keys to fixed values, but tables and variants are not mandatory.
-  Do not hide dense predicates in guards, comprehensions, or extracted helpers
+  preserve supported cases and required unmatched-input behavior.
+- For independent constraints, use short guards or separate `if` statements.
+
+A small local collection of conditions and diagnostics suits cases where
+callers need accumulated findings.
+
+- For such a collection, keep type prerequisites explicit and preserve
+  distinctions callers rely on.
+
+A dictionary lookup can suit a simple mapping from keys to fixed values, but
+tables and variants are not mandatory.
+
+- Do not hide dense predicates in guards, comprehensions, or extracted helpers
   merely to lower a metric.
-- Complexipy 8.0.1's inclusive function-complexity maximum of 15 pairs with
-  Ruff `PLR0916`'s maximum of five Boolean expressions in `if` and `elif`
-  conditions. They cover different signals: Complexipy does not count
-  Boolean operations inside `match` guards, and `PLR0916` does not cover
-  `match` guards or Boolean expressions in `while`, `assert`, conditional
-  expressions, and comprehensions. Keep those forms readable for manual review.
-  Treat either metric as a prompt to inspect the function, not proof of
+
+Complexipy 8.0.1's inclusive function-complexity maximum of 15 pairs with
+Ruff `PLR0916`'s maximum of five Boolean expressions in `if` and `elif`
+conditions. They cover different signals: Complexipy does not count Boolean
+operations inside `match` guards, and `PLR0916` does not cover `match` guards or
+Boolean expressions in `while`, `assert`, conditional expressions, and
+comprehensions.
+
+- Keep those forms readable for manual review.
+- Treat either metric as a prompt to inspect the function, not proof of
   readability: simplify a dense condition or split a function at a cohesive
   responsibility boundary, preserving validation, diagnostics, and safety
-  behavior. [Project configuration](../pyproject.toml) owns these settings;
-  lint writes function line locations to `.cache/complexipy.sarif`.
+  behavior.
+
+[Project configuration](../pyproject.toml) owns these settings; lint writes
+function line locations to `.cache/complexipy.sarif`.
+
 - Do not nest `try` statements within the same execution scope, including
   through branches or loops and inside `except`, `else`, or `finally`; this
-  applies equally to `async` functions and `except*`. Sequential `try`
-  statements are allowed when they protect distinct operations. Separate nested
-  function or method scopes with `try` statements are allowed. Use context
-  managers for resource cleanup and extract cohesive helpers that preserve
-  operation-specific catches, exception causes, cleanup, and resource ownership.
-  Do not split code into tiny helpers merely to avoid nesting.
+  applies equally to `async` functions and `except*`.
+- Sequential `try` statements are allowed when they protect distinct operations.
+- Separate nested function or method scopes with `try` statements are allowed.
+- Use context managers for resource cleanup and extract cohesive helpers that
+  preserve operation-specific catches, exception causes, cleanup, and resource
+  ownership.
+- Do not split code into tiny helpers merely to avoid nesting.
 - Use context managers for files/providers, preserving source/provider lifecycle
-  delegation and cleanup on success/failure; use `pathlib.Path`.
+  delegation and cleanup on success/failure.
+- Use `pathlib.Path`.
 - Keep console output in `src/ataraxia/cli.py`; libraries return values or raise
   domain errors.
 
 ### Progressive implementation
 
-Build and verify one coherent outcome in increments when that helps expose
-integration risks. Within one Work, the artifact may progress from its contract
-to reviewed typed architecture, typed wiring, and completed implementation,
-with tests alongside the relevant increment. Choose only the increments that
-fit the outcome: a small change may go directly to implementation and relevant
-tests without architecture exploration or a
-[walking skeleton](ubiquitous-language.md).
+- Build and verify one coherent outcome in increments when that helps expose
+  integration risks.
+
+Within one Work, the artifact may progress from its contract to reviewed typed
+architecture, typed wiring, and completed implementation, with tests alongside
+the relevant increment.
+
+- Choose only the increments that fit the outcome: a small change may go
+  directly to implementation and relevant tests without architecture exploration
+  or a [walking skeleton](ubiquitous-language.md).
 
 When decomposition is unclear, follow the bounded
 [architecture exploration](architecture-exploration.md) route.
@@ -110,34 +143,41 @@ When decomposition is unclear, follow the bounded
 
 ### Validate at boundaries and construction
 
-Validation belongs where uncertainty enters or a value is created. Define the
-consumed record as every field and relationship an operation relies on,
-including ownership, persistence, and security requirements.
+Validation belongs where uncertainty enters or a value is created.
 
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
 - At raw or untyped ingress, including persisted data, validate the consumed
   structure, runtime types, and relationships before adapting it to a project
-  type. Check contract gaps and domain invariants around a documented typed
-  library API; rely on its documented guarantees instead of repeating them.
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
 - At trusted typed internal construction, rely on declared argument types and
-  already validated child domain values. Enforce the invariants owned by the
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
   new value, including semantic and cross-field rules, without revalidating
   children or claiming arbitrary untyped-schema validation.
 - Check runtime types when the domain or storage contract requires it; for an
-  integer domain, exclude `bool` when it is not a valid value. Annotations alone
-  never validate raw runtime data.
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
 - Keep consumed ownership, persistence, and security fields in the validated
-  record even when one pure decision does not read them. Leave unused extension
-  data opaque and preserve it when transport or persistence compatibility
-  requires it.
-- Keep internal invariant failures concise. At external boundaries, give
-  actionable context and distinguish failures when callers need different
-  responses; rejecting at the first error is fine. At Ataraxia library API
-  boundaries, translate expected low-level library failures into contextual
-  exceptions in `src/ataraxia/errors.py`. Derive from `AtaraxiaError`, retain
-  an appropriate built-in base, and preserve causes, for example
-  `raise DomainError("Useful context") from exc`. Document caller-handled
-  domain errors in Google-style `Raises` sections.
-  Don't blanket-wrap programming errors or normal iteration termination.
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
 
 For example, a proposed transfer record can own its positive-amount and
 different-account invariants. A raw request adapter checks incoming field
@@ -194,20 +234,27 @@ def schedule(plan: ImmediateTransfer, execute_at: datetime) -> ScheduledTransfer
     return ScheduledTransfer(details=plan.details, execute_at=execute_at)
 ```
 
-Fields needed together form a product record; a variant-specific field such as
-`execute_at` belongs on its alternative when that makes invalid combinations
-harder to express. A flat record remains suitable when its fields fit every
-case. Frozen dataclasses are shallow: use immutable containers or document who
-owns mutable contents. Represent a state transition by constructing a new
-validated result or variant from the prior valid value, rather than mutating a
-frozen value or bypassing construction with `object.__setattr__`. Stateful
-runners and resource holders keep their explicit mutable ownership.
+Fields needed together form a product record.
 
-For a closed union, handle each alternative while preserving type narrowing; a
-supported exhaustive helper such as `assert_never` makes a missing case visible
-to the type checker. Python `match` alone does not guarantee exhaustive
-handling. Do not erase useful variant types with casts, broad types, or
-suppressions.
+- A variant-specific field such as `execute_at` belongs on its alternative when
+  that makes invalid combinations harder to express.
+- A flat record remains suitable when its fields fit every case.
+
+Frozen dataclasses are shallow.
+
+- For frozen dataclasses, use immutable containers or document who owns mutable
+  contents.
+- Represent a state transition by constructing a new validated result or variant
+  from the prior valid value, rather than mutating a frozen value or bypassing
+  construction with `object.__setattr__`.
+- Stateful runners and resource holders keep their explicit mutable ownership.
+- For a closed union, handle each alternative while preserving type narrowing.
+
+A supported exhaustive helper such as `assert_never` makes a missing case
+visible to the type checker. Python `match` alone does not guarantee exhaustive
+handling.
+
+- Do not erase useful variant types with casts, broad types, or suppressions.
 
 `Transfer("acct-a", "acct-b", 125)` is a valid construction; using
 `"acct-a"` for both IDs raises `ValueError`. Calling `schedule` with an
@@ -217,43 +264,56 @@ plan unchanged.
 ### Pure typed decisions
 
 A pure decision is a pure function over valid typed domain values; its result
-is determined by those explicit inputs. It performs no I/O, reads no
-environment, clock, random source, or global state, and does not mutate its
-arguments. It does not reparse raw input, repeat defensive checks on validated
-children, or probe files or processes; validation belongs at the
-[owning boundary](#validate-at-boundaries-and-construction). A newly
-constructed domain result enforces its own invariants. Calling an effectful
-collaborator remains an effect even when its contract is a `typing.Protocol`.
+is determined by those explicit inputs.
+
+- It performs no I/O.
+- It reads no environment, clock, random source, or global state.
+- It does not mutate its arguments.
+- It does not reparse raw input, repeat defensive checks on validated children,
+  or probe files or processes; validation belongs at the
+  [owning boundary](#validate-at-boundaries-and-construction).
+- A newly constructed domain result enforces its own invariants.
+
+Calling an effectful collaborator remains an effect even when its contract is
+a `typing.Protocol`.
 Stateful runners may orchestrate pure decisions while retaining execution state
 or coordinating effects; orchestration does not make the runner itself pure.
 
 The illustrative `scheduled_time` decision uses only its validated plan and
-returns either its explicit schedule or `None`. Separate a substantial
-per-item decision from collection traversal and cross-item state when that
-clarifies the contract; keep accumulators visible in a loop instead of hiding
-them in a comprehension. Prefer standard Python protocols such as iteration
-and `collections.abc.Sized` when their semantics fit, and retain named methods
-when they express distinct domain meaning.
+returns either its explicit schedule or `None`.
+
+- Separate a substantial per-item decision from collection traversal and
+  cross-item state when that clarifies the contract.
+- Keep accumulators visible in a loop instead of hiding them in a comprehension.
+- Prefer standard Python protocols such as iteration and `collections.abc.Sized`
+  when their semantics fit.
+- Retain named methods when they express distinct domain meaning.
 
 ### Effects and live resource safety belong to adapters
 
 Adapters own effectful operations, expected failure translation, and the
-lifecycle of resources they acquire. Normalize untyped inputs once at their
-ingress boundary, then reuse the adapted values and observations; rely on a
-documented typed API's guarantees instead of repeating them or routinely
-preflighting an operation. Follow the existing
-[boundary error guidance](#validate-at-boundaries-and-construction) for
-context and causes, and the [resource handling conventions](#code-style) for
-cleanup on success and failure.
+lifecycle of resources they acquire.
 
-Keep essential current ownership, authorization, lifecycle, and safety checks
-at the operation that needs them. Use transactions or synchronization to make
-state-dependent checks and writes atomic where required; a valid persisted
-record alone does not prove that current access or resource state is safe.
-When validation or control flow changes, preserve supported inputs, documented
-errors and causes, state invariants, persistence compatibility, and necessary
-effect ordering. Incidental check order and defensive branch layout remain
-implementation choices.
+- Normalize untyped inputs once at their ingress boundary, then reuse the
+  adapted values and observations.
+- Rely on a documented typed API's guarantees instead of repeating them or
+  routinely preflighting an operation.
+- Follow the existing
+  [boundary error guidance](#validate-at-boundaries-and-construction) for
+  context and causes.
+- Follow the [resource handling conventions](#code-style) for cleanup on success
+  and failure.
+- Keep essential current ownership, authorization, lifecycle, and safety checks
+  at the operation that needs them.
+- Use transactions or synchronization to make state-dependent checks and writes
+  atomic where required; a valid persisted record alone does not prove that
+  current access or resource state is safe.
+- When validation or control flow changes, preserve supported inputs, documented
+  errors and causes, state invariants, persistence compatibility, and necessary
+  effect ordering.
+
+Incidental check order and defensive branch layout remain implementation
+choices.
 
 For example, the consumer-owned transfer port can be backed by a small SQLite
 adapter. Ingress adapts raw request fields once into the validated `Transfer`;
@@ -336,44 +396,57 @@ does not justify losing information about values or their relationships.
 
 - Never resolve a mismatch by widening a meaningful type to `Any`, `object`, an
   unparameterized container, or a base type that discards the required contract.
-  Do not remove annotations or add catch-all union members to make incompatible
-  values fit. Existing broad types are debt, not precedent for spreading them.
+- Do not remove annotations or add catch-all union members to make incompatible
+  values fit.
+
+Existing broad types are debt, not precedent for spreading them.
+
 - A repository-owned, reviewed static expectation loaded only as an opaque
   fixture may use `object` honestly. This does not justify widening a meaningful
   structured contract; see
   [test data guidance](testing.md#treat-test-data-as-data).
 - Introduce types or explicit unions of supported variants as needed to model
-  the contract. Preserve input/output relationships with type parameters through
-  producers, runners, consumers, and containers. A type parameter must be
-  determined by a typed input or owning instance; an unconstrained return-only
+  the contract.
+- Preserve input/output relationships with type parameters through producers,
+  runners, consumers, and containers.
+- A type parameter must be determined by a typed input or owning instance; an
+  unconstrained return-only
   parameter does not establish safety.
 - When annotations and behavior disagree, determine the intended supported cases
-  and update the affected call chain coherently. Do not retain a false narrow
-  annotation, silently drop supported behavior, or substitute a broad return
-  type followed by caller-side runtime checks. Creating an appropriate type or
-  separating distinct operations is preferable to erasing the distinction.
+  and update the affected call chain coherently.
+- Do not retain a false narrow annotation, silently drop supported behavior, or
+  substitute a broad return type followed by caller-side runtime checks.
+
+Creating an appropriate type or separating distinct operations is preferable
+to erasing the distinction.
+
 - Keep unavoidable untyped input at the external boundary, following
   [boundary and construction guidance](#validate-at-boundaries-and-construction).
-  Do not expose that uncertainty through public result types. Casts,
-  `TypeGuard`/`TypeIs`, ignores, and disabled diagnostics must not conceal a
-  mismatch or replace a missing type model; narrowing predicates must actually
-  establish their claimed contract.
-- Use named `Literal` aliases for intentionally finite string domains. At the
-  consuming boundary, validate that external input is a string and a supported
-  member before passing it to typed logic. Annotations alone do not validate
-  runtime data.
+- Do not expose that uncertainty through public result types.
+- Casts, `TypeGuard`/`TypeIs`, ignores, and disabled diagnostics must not
+  conceal a mismatch or replace a missing type model.
+- Narrowing predicates must actually establish their claimed contract.
+- Use named `Literal` aliases for intentionally finite string domains.
+- At the consuming boundary, validate that external input is a string and a
+  supported member before passing it to typed logic.
 
-  For a flat PEP 695 alias, a domain-specific `TypeIs[Domain]` predicate can use
-  value in `get_args(Domain.__value__)` to share one authoritative member
-  inventory. The predicate must establish the membership it claims; repeated
-  action cases must cover every supported member. Keep str and meaningful
-  defaults for open domains—match arms and test values alone do not establish
-  closure.
-- Verify both behavior and static guarantees. Run strict Pyrefly and inspect the
-  affected signatures and inferred types; for generic or variant contracts, add
-  focused type-checking cases that demonstrate precise results and rejection of
-  invalid uses. Runtime tests and a green checker alone do not prove that useful
-  type information was preserved.
+Annotations alone do not validate runtime data.
+
+For a flat PEP 695 alias, a domain-specific `TypeIs[Domain]` predicate can use
+value in `get_args(Domain.__value__)` to share one authoritative member
+inventory.
+
+- The predicate must establish the membership it claims.
+- Repeated action cases must cover every supported member.
+- Keep str and meaningful defaults for open domains—match arms and test values
+  alone do not establish closure.
+- Verify both behavior and static guarantees.
+- Run strict Pyrefly and inspect the affected signatures and inferred types.
+- For generic or variant contracts, add focused type-checking cases that
+  demonstrate precise results and rejection of invalid uses.
+
+Runtime tests and a green checker alone do not prove that useful type
+information was preserved.
 
 ## Reviewed type stubs
 
@@ -395,6 +468,6 @@ See [engineering judgment in review](engineering-review.md).
 
 ## Testing guidelines
 
-When writing, changing, or reviewing tests, read [Testing](testing.md) and its
-relevant test-type guidance. Read [Test ownership](test-ownership.md) when
-reviewing tests for cleanup.
+- When writing, changing, or reviewing tests, read [Testing](testing.md) and its
+  relevant test-type guidance.
+- Read [Test ownership](test-ownership.md) when reviewing tests for cleanup.

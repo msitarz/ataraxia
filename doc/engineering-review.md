@@ -12,20 +12,27 @@ you make small changes and when you review the completed result:
 - Do types, behavior, tests, and effects live with the responsibility that
   owns them?
 
-Keep intentional overlap when it is clearer and explain it in the PR. Move code
-or extract a helper only when that clarifies its responsibility and resulting
-contract. Review may accept the design unchanged; no refactor or comment quota
-applies.
+Review may accept the design unchanged; no refactor or comment quota applies.
 
-Review the actual data flow through composition, including dependency-key to
-runner-parameter mappings, execution order, and effect ownership. Static typing
-may miss incorrect dynamic graph mappings; follow representative inputs through
-the wired path and verify the resulting behavior at its owning boundary.
+- Keep intentional overlap when it is clearer.
+- Explain intentional overlap in the PR when it is clearer.
+- Move code or extract a helper only when that clarifies its responsibility
+  and resulting contract.
+- Review the actual data flow through composition, including dependency-key to
+  runner-parameter mappings, execution order, and effect ownership.
+
+Static typing may miss incorrect dynamic graph mappings.
+
+- Follow representative inputs through the wired path.
+- Verify the resulting behavior at its owning boundary.
 
 ## Focused rule review
 
-Focused rule review is optional. Assess each named engineering rule against one
-identified, immutable revision and return one judgment for that rule:
+Focused rule review is optional. When using focused rule review:
+
+- Assess each named engineering rule against one identified, immutable revision.
+
+Return one judgment for that rule:
 
 - `PASS`: adequate context supports that the change does not violate this rule.
 - `VIOLATION`: evidence shows that this rule is broken.
@@ -38,17 +45,19 @@ Use the following context and finding rules:
 - Include the old and new function when relevant to the rule.
 - Include the rule-specific caller, type, and module context needed to make the
   judgment.
-- Support each finding with concrete evidence and explain its consequence.
+- Support each finding with concrete evidence.
+- Explain each finding's consequence.
 - Keep findings separate from suggestions for possible improvement.
-- Have the responsible owner deduplicate overlapping findings and judge
-  conflicts between rules and rule applicability.
+- Have the responsible owner deduplicate overlapping findings.
+- Have the responsible owner judge conflicts between rules and rule
+  applicability.
 - Use focused findings to support the owner's judgment of the whole change.
-- Keep architecture review responsible for intent, ownership, and dependencies;
-  keep engineering review responsible for implementation quality.
+- Keep architecture review responsible for intent, ownership, and dependencies.
+- Keep engineering review responsible for implementation quality.
 - Do not treat focused judgments as a replacement for substantive whole-change
   review.
-- Do not set a finding quota or require refactoring when the reviewed change is
-  sound.
+- Do not set a finding quota when the reviewed change is sound.
+- Do not require refactoring when the reviewed change is sound.
 
 ## Three contrasts
 

@@ -22,11 +22,12 @@ process. Keep higher-level tests for behavior that lower levels cannot prove.
 | Integration | `test/ataraxia/integration`, `test/script/integration`, `test/make/integration` | real components or external tools across a boundary | [Integration tests](testing-integration.md) |
 | Acceptance | `test/ataraxia/acceptance` | the shipped command as a user runs it | [Acceptance tests](testing-acceptance.md) |
 
-Choose tests from the changed behavior and existing coverage. Reuse suitable
-existing tests; an acceptance criterion does not automatically require a new
-test. Read the guidance for the type you are writing or reviewing after this
-file. Run a focused selection with `make test ARGS=<paths>`; example strategy
-tests use the example targets in the [Makefile](../Makefile).
+- Choose tests from the changed behavior and existing coverage.
+- Reuse suitable existing tests; an acceptance criterion does not automatically
+  require a new test.
+- Read the guidance for the type you are writing or reviewing after this file.
+- Run a focused selection with `make test ARGS=<paths>`; example strategy tests
+  use the example targets in the [Makefile](../Makefile).
 
 ## What a test proves
 
@@ -58,48 +59,59 @@ verification technique, not a requirement to mutate production for every test.
 
 ## Choose the boundary and doubles
 
-Exercise behavior through the narrowest public interface that runs it for real:
-arguments and return values, a node's `deps` and `factory`, the command line, or
-a Make target. Keep the behavior under test real. If a private helper matters,
-exercise it through the public path that uses it.
-
-Use small doubles at designed collaborator boundaries, such as a `Protocol`
-for a source or provider, or at external boundaries such as processes, network,
-clock, randomness, and the user's home directory. A fake should be simpler than
-what it replaces and conform to the collaborator's contract. Prefer a
-hand-written fake over an unrestricted `MagicMock`, and a real file in
-`tmp_path` over `mock_open` when file behavior matters.
+- Exercise behavior through the narrowest public interface that runs it for
+  real: arguments and return values, a node's `deps` and `factory`, the command
+  line, or a Make target.
+- Keep the behavior under test real.
+- If a private helper matters, exercise it through the public path that uses it.
+- Use small doubles at designed collaborator boundaries, such as a `Protocol`
+  for a source or provider, or at external boundaries such as processes,
+  network, clock, randomness, and the user's home directory.
+- A fake should be simpler than what it replaces and conform to the
+  collaborator's contract.
+- Prefer a hand-written fake over an unrestricted `MagicMock`.
+- Prefer a real file in `tmp_path` over `mock_open` when file behavior matters.
 
 A double may return the value ultimately asserted when the contract is
 forwarding or selecting that value. That proves forwarding or selection, not
-the computation replaced by the double. Assert interactions only when they are
-observable obligations, such as entering a source once and exiting with the
-error that stopped the run, rather than internal call counts.
+the computation replaced by the double.
 
-Use pytest's `monkeypatch` for scoped process state such as `sys.argv`, the
-working directory, environment variables, `PATH`, and home-directory settings.
-For child processes, prefer an explicit environment dictionary. Isolate clock
-and randomness through injected collaborators where possible. Every temporary
-replacement must be restored when the test ends.
+- Assert interactions only when they are observable obligations, such as
+  entering a source once and exiting with the error that stopped the run,
+  rather than internal call counts.
+- Use pytest's `monkeypatch` for scoped process state such as `sys.argv`, the
+  working directory, environment variables, `PATH`, and home-directory settings.
+- For child processes, prefer an explicit environment dictionary.
+- Isolate clock and randomness through injected collaborators where possible.
+- Every temporary replacement must be restored when the test ends.
 
 Avoid patching our own modules by dotted name, such as
 `patch("ataraxia.backtest.compute")`: it couples tests to the internal call
-graph and may bypass the behavior being tested. Prefer an existing dependency
-injection point or a real integration test. If internal patching is unavoidable
-within the task, explain why, keep the behavior under test real, and use scoped
-`unittest.mock.patch` with `autospec=True` or a signature-compatible small
-replacement. Do not use an unrestricted mock to conceal contract mismatches. The
-type-specific guidance may impose stricter boundaries.
+graph and may bypass the behavior being tested.
+
+- Prefer an existing dependency injection point or a real integration test.
+- If internal patching is unavoidable within the task, explain why.
+- If internal patching is unavoidable within the task, keep the behavior under
+  test real.
+- If internal patching is unavoidable within the task, use scoped
+  `unittest.mock.patch` with `autospec=True` or a signature-compatible small
+  replacement.
+- Do not use an unrestricted mock to conceal contract mismatches.
+
+The type-specific guidance may impose stricter boundaries.
 
 ## Keep setup readable
 
-Keep simple, unique arrangements in the test or its module. Extract reusable
-fixtures and substantial plumbing, especially subprocess execution and
-external-tool setup. Read existing helpers before adding another; an owning
-suite's `conftest.py` and `support.py` are appropriate for suite-wide reuse,
-while narrower helpers belong with their users. Share helpers across suites
-only when surviving callers need the same behavior. Name helpers for what they
-provide and avoid hiding behavior in setup.
+- Keep simple, unique arrangements in the test or its module.
+- Extract reusable fixtures and substantial plumbing, especially subprocess
+  execution and external-tool setup.
+- Read existing helpers before adding another; an owning suite's `conftest.py`
+  and `support.py` are appropriate for suite-wide reuse, while narrower helpers
+  belong with their users.
+- Share helpers across suites only when surviving callers need the same
+  behavior.
+- Name helpers for what they provide.
+- Avoid hiding behavior in setup.
 
 Repeated setup is a signal to consider sharing it, not a reason to force every
 arrangement into a central file. A process helper should set a timeout and
@@ -109,8 +121,10 @@ assertion diagnostics.
 ## Make expectations independent
 
 Expected values come from the contract, not from running or copying the
-implementation. Use literals or independently reviewed fixtures. Explain
-non-obvious numeric expectations with a hand-derived comment.
+implementation.
+
+- Use literals or independently reviewed fixtures.
+- Explain non-obvious numeric expectations with a hand-derived comment.
 
 ```python
 def test_a_gap_through_the_stop_fills_at_the_open():
@@ -132,13 +146,14 @@ def test_a_gap_through_the_stop_fills_at_the_open():
   property, or text-fragment assertion is appropriate when it establishes the
   named contract; do not use it as a substitute for checking required contents.
 - Do not restate the production formula, as in `int(10.25 * 4)`. Assert the
-  specified value or property. For tooling, assert the promised effect rather
-  than reproducing the command transcript unless exact arguments are the
-  contract.
+  specified value or property.
+- For tooling, assert the promised effect rather than reproducing the command
+  transcript unless exact arguments are the contract.
 - Assert failures precisely: exception type, `match=` on the reason, and
-  `__cause__` when preservation is part of the contract. Assert the defined
-  process exit code rather than only `!= 0`. Check relevant state left behind,
-  such as unchanged files, absent output, or closed resources.
+  `__cause__` when preservation is part of the contract.
+- Assert the defined process exit code rather than only `!= 0`.
+- Check relevant state left behind, such as unchanged files, absent output, or
+  closed resources.
 - For human-facing diagnostics, distinctive fragments such as the path and
   reason avoid coupling to incidental wording. Compare exact text when its
   formatting is part of the contract.
@@ -152,14 +167,16 @@ def test_a_gap_through_the_stop_fills_at_the_open():
   `test_worktree_remove_error`.
 - Every new or changed test function has `# Given`, `# When`, and `# Then`
   comments separating arrangement, action, and observation, with blank lines
-  between phases. Fixture inputs may provide the whole Given phase; say so in
-  its comment. Use a separate result assignment when it makes the action clear.
+  between phases.
+- Fixture inputs may provide the whole Given phase; say so in its comment.
+- Use a separate result assignment when it makes the action clear.
 - Exercise one behavior per test. A lifecycle or state-transition behavior may
   require a sequence of actions; do not split away the steps needed to prove it.
 - Keep branching and loops out of test bodies where parametrized cases or
-  collection assertions express the behavior clearly. Use
-  `pytest.mark.parametrize` with descriptive `ids`. Supply complete arrangements
-  as case data rather than making the body branch on a flag.
+  collection assertions express the behavior clearly.
+- Use `pytest.mark.parametrize` with descriptive `ids`.
+- Supply complete arrangements as case data rather than making the body branch
+  on a flag.
 - Around ten statements is a signal to review setup and responsibility. Extract
   cohesive plumbing or separate unrelated behaviors, not code solely to meet a
   count. The statement-count guidance in
@@ -169,39 +186,44 @@ def test_a_gap_through_the_stop_fills_at_the_open():
 
 ## Treat test data as data
 
-Use small builders with defaults when they make relevant input fields easier to
-see. Keep substantial source or data inputs, especially strategy modules, as
-real files under the owning suite's `fixtures/` directory (currently
-`test/script/fixtures/`) and copy them into `tmp_path`. Give variants
-names that explain their differences. Avoid assembling source from joined
-strings or `.replace` edits that hide it from formatting and static analysis.
-Tiny inputs such as a malformed CSV row may be written directly in setup.
-
-For a repository-owned, reviewed static expectation used only for complete
-equality, keep the loaded value opaque and compare the complete actual value to
-it. A JSON file does not become external or untrusted merely because it is
-parsed from disk; do not duplicate its schema or contents solely to satisfy
-typing. Complete equality must still detect missing or unexpected fields. Add
-only the validation needed for structured consumer access or adaptation,
-genuinely external or untrusted input, or a separate validation contract. Keep
-meaningful input and output contracts precise, and validate them at their real
-boundary.
-
-Write test-created files under `tmp_path` and leave the checkout untouched. If
-an external tool requires a repository, copy the minimum it needs there or
-create a disposable repository. Do not depend on live network access,
-wall-clock timing, uncontrolled randomness, or sleeps. Every subprocess has a
-timeout, normally owned by its execution helper.
+- Use small builders with defaults when they make relevant input fields easier
+  to see.
+- Keep substantial source or data inputs, especially strategy modules, as real
+  files under the owning suite's `fixtures/` directory (currently
+  `test/script/fixtures/`) and copy them into `tmp_path`.
+- Give variants names that explain their differences.
+- Avoid assembling source from joined strings or `.replace` edits that hide it
+  from formatting and static analysis.
+- Tiny inputs such as a malformed CSV row may be written directly in setup.
+- For a repository-owned, reviewed static expectation used only for complete
+  equality, keep the loaded value opaque and compare the complete actual value
+  to it.
+- A JSON file does not become external or untrusted merely because it is parsed
+  from disk; do not duplicate its schema or contents solely to satisfy typing.
+- Complete equality must still detect missing or unexpected fields.
+- Add only the validation needed for structured consumer access or adaptation,
+  genuinely external or untrusted input, or a separate validation contract.
+- Keep meaningful input and output contracts precise, and validate them at
+  their real boundary.
+- Write test-created files under `tmp_path` and leave the checkout untouched.
+- If an external tool requires a repository, copy the minimum it needs there or
+  create a disposable repository.
+- Do not depend on live network access, wall-clock timing, uncontrolled
+  randomness, or sleeps.
+- Every subprocess has a timeout, normally owned by its execution helper.
 
 ## Layout, ownership, and adoption
 
-Use pytest, `test_*.py` files, and `test_*` functions. Mirror source modules
-inside each test directory where practical. Use fixtures for reusable inputs,
-`pytest.raises` for failures, `tmp_path` for filesystem work, and `capsys` for
-in-process CLI output. Cover changed behavior and relevant edges; meet the
-branch coverage threshold in [pyproject.toml](../pyproject.toml), without
-mistaking that floor for proof of quality. Type-contract cases under
-`test/ataraxia/typecheck` follow [engineering conventions](engineering.md).
+- Use pytest, `test_*.py` files, and `test_*` functions.
+- Mirror source modules inside each test directory where practical.
+- Use fixtures for reusable inputs, `pytest.raises` for failures, `tmp_path` for
+  filesystem work, and `capsys` for in-process CLI output.
+- Cover changed behavior and relevant edges.
+- Meet the branch coverage threshold in [pyproject.toml](../pyproject.toml),
+  without mistaking that floor for proof of quality.
+
+Type-contract cases under `test/ataraxia/typecheck` follow
+[engineering conventions](engineering.md).
 
 [Test ownership](test-ownership.md) distinguishes retained regression tests
 from temporary upstream-adoption probes. Exercise our boundary rather than
@@ -211,24 +233,30 @@ Hypothesis settings are selected in [`test/conftest.py`](../test/conftest.py):
 properties use 100 examples normally and deterministic generation in CI.
 Local runs retain Hypothesis's example database for replay; deterministic CI
 does not use that database. Both profiles retain shrinking, deadlines, and
-health checks. A property that
-invokes a subprocess may set `@settings(max_examples=25, deadline=None)`; its
-process execution helper still needs a timeout. Create mutable and filesystem
-state within each generated invocation and open resources with fresh context
-managers, rather than relying on function-scoped pytest fixtures to reset per
-example. See Hypothesis's
+health checks.
+
+- A property that invokes a subprocess may set
+  `@settings(max_examples=25, deadline=None)`; its process execution helper
+  still needs a timeout.
+- Create mutable and filesystem state within each generated invocation, rather
+  than relying on function-scoped pytest fixtures to reset per example.
+- Open resources with fresh context managers, rather than relying on
+  function-scoped pytest fixtures to reset per example.
+
+See Hypothesis's
 [settings guide](https://hypothesis.readthedocs.io/en/latest/tutorial/settings.html)
 and
 [function-scoped fixture health check](https://hypothesis.readthedocs.io/en/latest/_modules/hypothesis/_settings.html).
 
-Annotate fixture and test parameters, returns, helpers, and collaborators with
-precise supported types under
-[engineering guidance](engineering.md#preserve-type-precision). Pyrefly's
-strict check covers the configured project folders; keep changed modules,
-helpers, and executable fixtures within those roots so normal type checking
-covers them automatically. Do not add redundant per-file include entries. Keep
-intentional-negative `test/*/typecheck` cases excluded from the normal check and
-on the existing `--expectations` route.
+- Annotate fixture and test parameters, returns, helpers, and collaborators with
+  precise supported types under
+  [engineering guidance](engineering.md#preserve-type-precision).
+- Pyrefly's strict check covers the configured project folders; keep changed
+  modules, helpers, and executable fixtures within those roots so normal type
+  checking covers them automatically.
+- Do not add redundant per-file include entries.
+- Keep intentional-negative `test/*/typecheck` cases excluded from the normal
+  check and on the existing `--expectations` route.
 
 Existing tests may predate these rules. The type-specific references illustrate
 named strengths, not blanket compliance. Apply this guidance to new or changed
