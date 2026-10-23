@@ -1,8 +1,8 @@
 # Engineering review comparison protocol
 
 Read when preparing, executing, or interpreting the [Evaluation](README.md).
-This is a proposed protocol for owner review, with no observed results or
-production-policy decision. All Evaluation criteria remain TODO.
+This is a proposed protocol for owner review, with no Evaluation trial results
+or production-policy decision. All Evaluation criteria remain TODO.
 
 Compare A/B/C immediately on a bounded static corpus: can focused rules or
 function/context packets improve judgments on realistic large examples? Prepare
@@ -36,8 +36,9 @@ Freeze and retain these items before outcomes:
 - Complete rendered prompts, output schema, expected assessment sets, ordered
   call list, model/provider identifier, reasoning effort, and effective
   settings.
-- Invocation and wrapper versions, effective instructions and tool surface,
-  input estimates, finite limits, evidence destination, and owner approval.
+- Invocation and wrapper versions, exact nonempty `min.md` instruction bytes
+  and digest, effective tool surface, input estimates, finite limits, evidence
+  destination, and owner approval.
 - Private index and independently reviewed rationales, stored separately from
   every model-visible input.
 
@@ -147,10 +148,37 @@ stop for owner review rather than remove pairs after outcomes.
 
 ### Fixed calls and output
 
-Propose GPT-6 Luna with medium reasoning effort for every call. Later
-preparation must establish the supported `codex exec` model/provider identifier
-and effective effort using the actual invocation; a desktop routing name is not
-proof of CLI support. No cross-model or cross-effort comparison is planned.
+The primary A/B/C comparison uses `gpt-6-luna` at medium reasoning effort.
+A separate matched analysis compares none, low, medium, and high within each
+strategy. Interpret the maintainer's requested “hard” level as high, subject to
+runtime verification. No cross-model comparison is planned.
+
+Preparation must establish the actual provider/model binding and effective
+effort for every level. Read-only inspection of codex-cli 0.164.0's bundled
+model catalog advertised low, medium, high, xhigh, and max for `gpt-6-luna`, but
+not none. The maintainer reports a successful none invocation; catalog absence
+does not establish impossibility.
+
+- Verify accepted and runtime-effective effort before trials for that level.
+- Never substitute a default effort or silently remove a level.
+- If neutral preparation cannot verify a level, mark it unsupported/unverified
+  and retain its planned trial calls as not-started/incomplete.
+- Treat an unsupported effort alone as a level-specific binding gap, not a
+  shared infrastructure failure.
+- Keep that level visible in the matrix and its fixed assessment denominators;
+  report the binding gap and incomplete secondary study.
+- Allow independently verified predeclared supported conditions, including the
+  medium primary comparison, to proceed within existing authorization and
+  bounds.
+- Do not claim completion of the four-level study when a level is incomplete.
+- Preserve otherwise valid primary records despite incomplete secondary
+  evidence.
+- Stop all affected work for shared source/tool drift or isolation failure.
+- Require review before scope or configuration changes.
+- Keep source, task prompts, instruction-file bytes, and surfaced tools matched
+  across efforts; ordinary opaque session identifiers may vary.
+- Vary effort only in the runtime setting and trusted call-list/run metadata.
+- Preserve the intended A/B/C granularity differences across all efforts.
 
 Use the same frozen bundle and private index for all three strategies:
 
@@ -167,7 +195,7 @@ the production single-criterion invariant. B and C are independent one-rule
 sessions. A/B source and reference access is identical; C intentionally omits
 unrelated source, with all relevant context drawn from that same bundle.
 
-Use three fresh independent repetitions:
+At each effort, use three fresh independent repetitions:
 
 - Repetition one runs A, then B, then C.
 - Repetition two runs B, then C, then A.
@@ -176,9 +204,32 @@ Use three fresh independent repetitions:
 - Within B/C, order rule IDs, file IDs, and qualified function names lexically.
 - Never resume a prior session or supply hints or prior answers.
 
-This gives 3 × (1 + 3 + 24) = 84 trial calls. Each strategy assesses the same
-24 expected pairs per repetition, giving 216 assessment opportunities across
-all strategies and repetitions. Repetitions add no source diversity.
+Each effort uses 3 × (1 + 3 + 24) = 84 trial calls and 216 assessment
+opportunities. The four-effort matrix uses 336 unique trial calls and 864
+assessment opportunities. Each strategy/effort/repetition has the same 24
+expected pairs. Repetitions add no source diversity.
+
+Use this predetermined effort-block order within each repetition:
+
+| Repetition | Effort order | Strategy order within each effort |
+| --- | --- | --- |
+| 1 | none, low, medium, high | A, B, C |
+| 2 | low, medium, high, none | B, C, A |
+| 3 | medium, high, none, low | C, A, B |
+
+Finish all strategies in an effort block before moving to the next block.
+This rotation interleaves efforts across repetitions; three repetitions cannot
+balance four effort positions perfectly. Retain order, load, and caching as
+confounds rather than claim complete counterbalancing.
+
+Use the medium slice's 84 observations both for primary A/B/C reporting and as
+the secondary effort control.
+
+- Identify the same source session records in both reports.
+- Do not rerun medium.
+- Do not count reused results as independent repetitions.
+- Do not select a strategy/effort from these outcomes and claim an independent
+  confirmation study.
 
 Assemble prompt files once with these declared substitutions:
 
@@ -191,15 +242,19 @@ Missing context or unresolved ambiguity requires UNCERTAIN, never PASS.
 Explain each judgment with concrete source evidence and consequences.
 Explain NOT_APPLICABLE. Keep optional correction suggestions separate.
 Return only the supplied JSON contract. Declare incomplete output explicitly.
-Session: {session_id}; strategy: {A|B|C}; input: {prepared_input_id}
+Session: {opaque_session_id}; strategy: {A|B|C}; input: {prepared_input_id}
 Expected assessments: {rule_id, file_id, qualified_function_name for each pair}
 Rules: {all three exact rule files for A; one for B/C}
 Context: {whole prepared bundle for A/B; frozen function/context packet for C}
 ```
 
 The frozen JSON contract requires session, strategy and input IDs, a completion
-flag, and exactly one assessment per expected function/rule pair. Each
-assessment identifies its rule, file, and qualified function name. A/B must
+flag, and exactly one assessment per expected function/rule pair. The wrapper
+binds a validated response to effort using its trusted issued-session record.
+Keep effort labels out of the model-visible task prompt; a model's self-reported
+effort does not establish the actual runtime setting.
+
+Each assessment identifies its rule, file, and qualified function name. A/B must
 return explicit per-pair judgments; a whole-rule verdict or absence of findings
 never implies PASS. Every assessment contains an explanation and source
 locations and quotations supporting any VIOLATION. Findings describe
@@ -244,22 +299,96 @@ If the available runtime cannot establish input-only operation, refuse trials
 and return the limitation for owner review. Do not substitute a prompt asking
 the model not to read files. This definition has verified no live boundary.
 
+### Candidate invocation and input overhead
+
+The maintainer supplied this candidate configuration, shown with shell quoting
+that preserves TOML string values. This is an unverified recipe, not proof of
+the input-only boundary:
+
+```sh
+codex exec --model gpt-6-luna \
+  -c 'model_reasoning_effort="none"' \
+  -c 'model_instructions_file="min.md"' \
+  -c 'skills.bundled.enabled=false' \
+  -c 'web_search="disabled"' \
+  -c 'features.multi_agent=false' \
+  -c 'features.unified_exec=false' \
+  -c 'features.shell_tool=false' \
+  -c 'tools.experimental_request_user_input.enabled=false' \
+  --disable apps --disable artifact "hi how are you" --json
+```
+
+During authorized preparation, replace the greeting with the frozen generated
+prompt text and vary only the declared effort. Freeze a nonempty reviewed
+`min.md` before all conditions; this definition creates no such file. Use the
+same exact instruction-file bytes for primary and secondary conditions.
+
+The
+[official configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+explains the relevant controls and their limits:
+
+- `model_instructions_file` replaces built-in instructions; it does not
+  establish that every other model-visible instruction or tool declaration is
+  absent.
+- Supported reasoning levels depend on the model and client.
+- `shell_tool` controls command-execution tools.
+- A false `unified_exec` user opt-out is ignored in the documented runtime;
+  managed disabling still leaves one-shot execution available.
+- `web_search="disabled"` removes that tool.
+- Local image attachment has its own `tools.view_image` control.
+
+The public reference did not establish the candidate's
+`skills.bundled.enabled` or `tools.experimental_request_user_input.enabled`
+behavior. Validate support and effect on the pinned CLI rather than assuming
+these settings are invalid or effective. Inspect every surfaced tool, including
+local image/file readers; preserve the input-only refusal gate above.
+
+The maintainer reports 7,380 `input_tokens` for one none/greeting invocation
+using this configuration. No raw event stream was supplied or independently
+verified. This is a reported whole-input observation for one setup, not a
+universal system-instruction count or an estimate for other efforts and prompts.
+
+Use neutral preparation to establish the actual baseline at each effort:
+
+- Retain raw JSONL, CLI version, effective configuration, exact neutral prompt,
+  instruction-file bytes, surfaced tools, and observed usage categories.
+- Include all automatic/system/developer instructions, tool declarations,
+  `min.md`, and task context within the 32,000-token input planning cap.
+- Never add overhead above that cap or assume the greeting's count transfers to
+  corpus prompts.
+- Report raw complete input totals as the primary resource measure.
+- Do not subtract 7,380 to claim pure review cost.
+- Label any optional matched baseline deltas as diagnostics with their own
+  provenance and limitations.
+- Revalidate the baseline after relevant CLI, model, instruction, configuration,
+  or tool changes through a new reviewed freeze.
+- Keep neutral preparation separate from corpus outcomes and rule tuning.
+
 ### Bounds and stop handling
 
-A basic wrapper enforces these proposed initial-comparison bounds:
+A basic wrapper enforces these proposed matrix bounds. They supersede the
+former medium-only allowance of 84 trial calls plus four preparation calls,
+4,048,000 planning tokens, ten trial hours, and 256 MiB. They are proposed
+limits for review, not measured usage.
 
 | Resource | Bound |
 | --- | --- |
-| Preparation | Four neutral, non-corpus model calls; no detection tuning |
-| Trials | 84 calls; no retries or correction calls |
+| Preparation | At most four neutral, non-corpus calls per effort, 16 total; no detection tuning |
+| Trials | 84 per effort, 336 unique calls total; no retries or correction calls |
+| All attempts | At most 352, including preparation |
 | Concurrency | One; invalid or unbounded settings refuse launch |
 | Per-call time | 300 seconds through exit, then at most 10 seconds for descendant cleanup |
 | Output | 1 MiB combined stdout/stderr per call; terminate on overflow and retain bounded prefix/status |
-| Evidence | 256 MiB including inputs, private records, streams, and report; reserve capacity before dispatch |
-| Trial elapsed time | Ten hours from first trial launch through final cleanup, including gaps |
-| Planning tokens | At most 32,000 input plus 14,000 output/reasoning per call; 4,048,000 across all 88 calls |
-| Human effort | Six hours source/prompt preparation, four hours independent reference validation, eight hours complete adjudication/report review |
-| Findings | At most 600 raw finding records for complete adjudication |
+| Evidence | 1 GiB including inputs, private records, streams, and reports; reserve capacity before dispatch |
+| Trial elapsed time | 40 hours from first matrix trial launch through final cleanup, including gaps |
+| Planning tokens | At most 32,000 input plus 14,000 output/reasoning per call; 16,192,000 across all 352 calls |
+| Human effort | Eight hours source/prompt/binding preparation, four hours independent reference validation, 32 hours complete adjudication/report review |
+| Findings | At most 2,400 raw finding records across the matrix for complete adjudication |
+
+At the per-call time bound, 336 × 310 seconds is about 28.9 serial
+process-hours. The 40-hour trial deadline includes scheduling gaps and may still
+leave the matrix incomplete. Do not conceal timed-out high or none calls or
+extend their limits from observed outcomes.
 
 Preflight prints the exact call count, each input estimate and method/version,
 reserved output/reasoning allowance, and total. Refuse over-budget plans before
@@ -293,10 +422,11 @@ minutes, blinding limits, and source-grounded dispositions.
 
 ### Scores and initial-comparison interpretation
 
-Freeze the same denominators for each strategy and repetition: 24 assessments,
-12 expected violations and 12 expected passes. Report per strategy, input, rule,
-repetition, and pooled opportunities. Never pool unlike strategies into a single
-quality or resource score; three repetitions add no source diversity.
+Freeze the same denominators for each strategy, effort, and repetition: 24
+assessments, 12 expected violations and 12 expected passes. Report per strategy,
+effort, input, rule, repetition, and pooled matched opportunities. Never pool
+unlike strategies or efforts into a single quality or resource score; three
+repetitions add no source diversity.
 
 - Label agreement is correct binary judgments / all 24 expected assessments.
 - Violation recall is correctly emitted VIOLATION / all 12 expected violations.
@@ -317,10 +447,11 @@ unexpected valid findings without changing the frozen label denominator. An
 incorrect private label discovered after outcomes is a deviation, not a silent
 answer-key repair.
 
-A strategy meets the initial quality screen only with all of these conditions:
+A strategy/effort condition meets the initial quality screen only with all of
+these conditions:
 
 - Verified isolation and preservation.
-- Every planned call for that strategy is complete and valid.
+- Every planned call for that strategy/effort condition is complete and valid.
 - Complete independent adjudication.
 - At least 80% label agreement in each repetition.
 - At least 80% violation recall in each repetition.
@@ -332,6 +463,7 @@ reviewed freeze. Incomplete measurements or adjudication are inconclusive.
 These are practical screening thresholds for 24 authored examples, not claims of
 statistical significance.
 
+Apply the following primary comparisons only to the common-medium slice.
 For a bounded quality improvement over A, require all of these conditions:
 
 - Both compared strategies pass the screen.
@@ -358,10 +490,30 @@ Missing token totals block token claims, not an otherwise supported quality or
 timing finding. These are bounded comparisons on one prepared bundle, not a
 production strategy selection or viable production fallback.
 
+### Secondary effort analysis
+
+Report none/low/high against medium separately within A, within B, and within C.
+This isolates intended effort differences from granularity differences.
+
+- Use the same private index and fixed denominators for every level.
+- Reuse the common quality screen without relaxing thresholds by effort.
+- Apply the quality-improvement conditions above with medium as the comparator
+  within each strategy.
+- Otherwise apply the resource-improvement conditions with the same comparator.
+- Retain the same reconsideration and inconclusive conditions.
+- Show all three repetitions and matched per-rule results for each comparison.
+- Keep exploratory strategy/effort interactions separately labeled.
+- Report incomplete levels and failures; never silently omit none or high.
+- Do not present these multiple matched comparisons as statistical significance
+  or independent confirmation of an outcome-selected winner.
+
 ### Complete-strategy resources
 
-- Sum every constituent B/C call, including failures.
+- Sum every constituent B/C call at the reported effort, including failures.
+- Include repeated base-context overhead in every call; shared source bytes do
+  not imply one-time input consumption.
 - Report preparation separately from trials.
+- Report the matrix total once, with medium reuse contributing no extra usage.
 - Preserve observed input/cached/output/reasoning categories using provider
   definitions without double counting.
 - Keep unknown usage unknown; never infer tokens or cost from time or bytes.
@@ -469,7 +621,8 @@ Propose this fixed schedule:
 - Finish each strategy before starting the next.
 - Limit concurrency to two within B/C.
 
-The former full-study bounds remain deferred proposals:
+The following medium-only historical-expansion bounds remain deferred proposals;
+they do not add an effort matrix to that expansion:
 
 | Resource | Bound |
 | --- | --- |
@@ -594,7 +747,9 @@ Retain these records:
 - Frozen source/rule/prompt bytes and revisions/digests.
 - Private index and rationales.
 - Expected sets and ordered calls.
-- Effective context, tools, and settings.
+- Effective context, instruction-file bytes, tools, and settings.
+- Neutral per-effort baseline observations and provenance.
+- Medium-session reuse correspondence between primary and secondary reports.
 - All bounded raw output and overflow markers.
 - Attempts and terminal outcomes.
 - Timestamps, usage, and missing fields.
@@ -608,13 +763,14 @@ Keep private records outside model access but available to authorized
 independent review through parent Work completion. Do not delete evidence
 automatically.
 
-Sort reports by input, repetition, strategy, rule, function, and session ID so
-identical validated observations aggregate identically regardless of completion
-order. Give each planned call one terminal outcome; rejected attempts never
-silently overwrite valid evidence.
+Sort reports by input, repetition, strategy, effort, rule, function, and session
+ID so identical validated observations aggregate identically regardless of
+completion order. Give each planned call one terminal outcome; rejected attempts
+never silently overwrite valid evidence.
 
-The initial report states matched A/B/C binary scores, complete-strategy
-resources, and limitations against the frozen thresholds. Final Evaluation
+The initial report states primary medium A/B/C scores and a separate matched
+effort analysis, with complete-strategy resources and limitations against the
+frozen thresholds. Final Evaluation
 completion still requires AC-1's full declared comparison, AC-2's matched A/B/C
 quality/resource observations, and AC-3's actual boundary verification. Neither
 this protocol nor initial static-comparison success completes those criteria,
