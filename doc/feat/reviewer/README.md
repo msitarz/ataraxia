@@ -215,9 +215,10 @@ evidence exists.
 Test review is a distinct future domain with its own
 [testing rules](../../testing.md), not engineering review applied to test files.
 Architecture and guidance review likewise need their own scope and context.
-These domains and other extensions require later concrete outcomes and
-contracts; they are not completion conditions for this initial parent beyond
-AC-2's design fit. No speculative child contracts are defined now.
+Delivering these domains and other extensions requires later concrete outcomes
+and contracts and remains deferred. The parent's
+[mandatory non-function execution and responsibility separation guarantee](#ac-2-todo-future-domains-fit-without-function-specific-execution)
+still applies. No speculative child contracts are defined now.
 
 Typed architecture must resolve revision handling for committed and dirty
 inputs, changed/deleted or unparseable subjects, rule selection and context

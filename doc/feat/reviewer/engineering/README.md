@@ -26,8 +26,8 @@ explicit coverage and evidence.
 
 All [reviewer shared constraints](../README.md#inherited-constraints) apply.
 This child verifies its complete invocation-to-report flow and local resource
-and failure behavior; the parent owner verifies integrated guarantees and future
-domain design fit under the parent's criteria.
+and failure behavior; the parent owner verifies integrated guarantees, including
+[non-function execution and responsibility separation](../README.md#ac-2-todo-future-domains-fit-without-function-specific-execution).
 
 ## Acceptance criteria
 
