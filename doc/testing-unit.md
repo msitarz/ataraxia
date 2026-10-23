@@ -6,9 +6,11 @@ Read this file when writing, changing, or reviewing a unit test, after
 ## What a unit test covers
 
 A unit test exercises one function, class, or compute node through its public
-interface and checks its behavior apart from the rest of the system. Use the
-[common boundary and double policy](testing.md#choose-the-boundary-and-doubles)
-to isolate collaborators without replacing the behavior under test.
+interface and checks its behavior apart from the rest of the system.
+
+- Use the
+  [common boundary and double policy](testing.md#choose-the-boundary-and-doubles)
+  to isolate collaborators without replacing the behavior under test.
 
 Product unit tests live in `test/ataraxia/unit` and mirror `src/ataraxia`, so
 the tests for `src/ataraxia/compute/loop.py` are in
@@ -20,10 +22,13 @@ Script unit tests live in `test/script/unit`.
 
 ## Keep it fast and local
 
-Keep unit tests fast and within one process. They start no subprocess and need
-no Git repository. Filesystem input is appropriate when reading files is the
-unit's responsibility. If the arrangement requires a process or repository,
-use an integration test.
+- Keep unit tests fast.
+- Keep unit tests within one process.
+- Unit tests start no subprocess.
+- Unit tests need no Git repository.
+- Filesystem input is appropriate when reading files is the unit's
+  responsibility.
+- If the arrangement requires a process or repository, use an integration test.
 
 ## Test rules as tables of cases
 
@@ -61,12 +66,16 @@ A good table covers:
 
 ## Test compute nodes and lifecycles
 
-Build the smallest graph from hand-written nodes that append what happens to a
-list, run it, and assert the whole list. For anything with a lifecycle (sources,
-sinks, providers), assert the observable state on every exit path: the stream is
-exhausted, a runner raises, or the generator is closed early. Check that the
-resource ended closed and that the error reached the caller, not that a cleanup
-function was called.
+- Build the smallest graph from hand-written nodes that append what happens to
+  a list.
+- Run the graph.
+- Assert the whole list.
+- For anything with a lifecycle (sources, sinks, providers), assert the
+  observable state on every exit path: the stream is exhausted, a runner raises,
+  or the generator is closed early.
+- For anything with a lifecycle, check that the resource ended closed.
+- For anything with a lifecycle, check that the error reached the caller, not
+  that a cleanup function was called.
 
 ## Cover required behaviors
 
@@ -82,9 +91,13 @@ For relevant changes, cover:
 Unit tests of the CLI cover argument parsing, validation messages, and exit
 codes up to the point where work would start. A fixture sets `sys.argv`, and
 `capsys` reads the output. A test that has to run a backtest, or that patches
-`backtest_dir` to avoid running one, is not a unit test. Move it to the
-[integration tests](testing-integration.md) with real inputs, and leave the
-user-visible flow to the [acceptance tests](testing-acceptance.md).
+`backtest_dir` to avoid running one, is not a unit test.
+
+- Move a test that has to run a backtest, or that patches `backtest_dir` to
+  avoid running one, to the [integration tests](testing-integration.md) with
+  real inputs.
+- Leave the user-visible flow to the
+  [acceptance tests](testing-acceptance.md).
 
 ## Patterns in existing tests
 
