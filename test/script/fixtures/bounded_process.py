@@ -71,11 +71,28 @@ def burst() -> int:
     return 0
 
 
+def tagged(tag: str) -> int:
+    sys.stdout.write(f"out:{tag}\n")
+    sys.stderr.write(f"err:{tag}\n")
+    return 0
+
+
 def check_stdin() -> int:
     if sys.stdin.buffer.read():
         sys.stdout.write("stdin-data\n")
         return 1
     sys.stdout.write("stdin-eof\n")
+    return 0
+
+
+def gated(marker: Path, readiness_path: str) -> int:
+    """Announce readiness and wait for an explicit parent release."""
+    marker.write_text(str(os.getpid()), encoding="utf-8")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
+        connection.connect(readiness_path)
+        connection.sendall(str(os.getpid()).encode())
+        if connection.recv(16) != b"exit":
+            return 92
     return 0
 
 
@@ -93,8 +110,12 @@ def main() -> int:
         return leader(Path(args[1]), args[0], int(args[2]))
     if mode == "burst":
         return burst()
+    if mode == "tagged":
+        return tagged(args[0])
     if mode == "stdin":
         return check_stdin()
+    if mode == "gated":
+        return gated(Path(args[0]), args[1])
     raise ValueError(f"unknown fixture mode: {mode}")
 
 

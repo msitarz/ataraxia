@@ -414,32 +414,41 @@ nor performs other-effort calibration. Raw evidence files remain unchanged.
 
 ## Bounded process cleanup preparation
 
-The maintained process owner is `script/process_supervisor.py`, with its
-installed-CLI check exposed as `make process-cleanup-check`. It runs each
-command in a dedicated POSIX session, retains the leader's actual return code,
-caps combined stdout and stderr, and applies the execution deadline until both
-leader exit and pipe completion. The public boundary enforces the protocol's
-300-second execution, 10-second cleanup, and 1 MiB combined-output caps; stdin
-is closed unless an input contract is added. SIGINT and SIGTERM are handled at
-the main-thread invocation boundary, converted to cancellation status, and
-previous handlers are restored after cleanup. Cleanup polls and reaps the
-leader, signals only the verified session group, escalates from TERM to KILL
-within the cleanup budget, and reports an unresolved group as incomplete. A
-process-group probe observes group presence but does not distinguish live
-members from descendant zombies. Descendants that deliberately leave the owned
-session are outside this bounded ownership guarantee. Permission errors remain
-explicit cleanup failures.
+The maintained process owner is `script/process_supervisor.py`. Its native
+async `run_bounded` API owns one command in a dedicated POSIX session, retains
+the leader's actual return code, caps combined stdout and stderr, and applies
+the execution deadline until leader exit and both pipe EOFs have been
+observed. The public boundary enforces the protocol's 300-second execution,
+10-second cleanup, and 1 MiB combined-output caps; stdin is closed unless an
+input contract is added. Callers can compose invocations with a `TaskGroup`, a
+bounded semaphore, and a shared cancellation event. Task cancellation is
+re-raised only after shielded cleanup; the synchronous CLI adapter owns SIGINT
+and SIGTERM once, converts them to shared cancellation, and restores prior
+handlers. Cleanup signals only the verified session group, escalates from TERM
+to KILL within the cleanup budget, reaps the leader, closes its pipes, and
+reports an unresolved group as incomplete. A process-group probe observes
+group presence but does not distinguish live members from descendant zombies.
+Descendants that deliberately leave the owned session are outside this bounded
+ownership guarantee. Permission errors remain explicit cleanup failures. OS
+process creation itself cannot be forcibly interrupted; cancellation during
+creation waits for the acquisition task to settle so any acquired handle can
+be cleaned before cancellation is re-raised.
 
 `test/script/integration/test_process_supervisor.py` exercises normal and
 nonzero leader exits, a leader that exits while a descendant holds its pipes,
 a descendant that closes inherited pipes, a leader that closes its own pipes
 while continuing to run, a TERM-resistant descendant, combined output
-overflow, closed stdin, real SIGINT and SIGTERM cancellation, invalid limits,
-permission denial, unverified group identity, and an injected read exception.
-Tests use readiness handshakes and disposable processes with bounded waits and
-independent finalizer cleanup. The optional `codex --version` check through the
-same process owner reports the installed version and exercises CLI startup and
-leader status/reaping only, with no model request. It does not prove descendant
+overflow, exact-cap output, closed stdin, real SIGINT and SIGTERM cancellation,
+invalid limits, permission denial, unverified group identity, and injected
+output-callback exceptions. Concurrent invocations verify isolated output,
+caller-limited process starts, and shared cancellation. Controlled tests cancel
+during acquisition and repeat cancellation during cleanup. Tests use readiness
+handshakes and disposable processes with bounded waits and independent finalizer
+cleanup; they also prove that one task's cancellation leaves its active sibling
+running successfully and that TaskGroup cancellation settles every owned child.
+The optional `codex --version` check through the same process owner
+reports the installed version and exercises CLI startup and leader
+status/reaping only, with no model request. It does not prove descendant
 behavior inside Codex or authenticated/model execution.
 
 The historical attempt 04 cleanup `PermissionError` remains unexplained. The

@@ -1,22 +1,22 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Run one bounded command in an owned POSIX session."""
+"""Run bounded asynchronous commands in owned POSIX sessions."""
 
 import argparse
-from collections.abc import Callable
-from dataclasses import dataclass
+import asyncio
+from collections.abc import Awaitable, Callable
+from contextlib import suppress
+from dataclasses import dataclass, field
 import math
 import os
 from pathlib import Path
-import selectors
 import signal
-import subprocess
 import sys
-import threading
-import time
 from types import FrameType
-from typing import Literal, cast
+from typing import Any, Literal, cast, override
 
 type StopReason = Literal["completed", "timeout", "output_limit", "cancelled"]
+type GroupObservation = Literal["group_absent", "group_unresolved"]
+type SignalHandler = signal.Handlers | Callable[[int, FrameType | None], Any]
 MAX_TIMEOUT_SECONDS = 300
 MAX_CLEANUP_SECONDS = 10
 MAX_OUTPUT_BYTES = 1024 * 1024
@@ -24,7 +24,7 @@ MAX_OUTPUT_BYTES = 1024 * 1024
 
 @dataclass(frozen=True)
 class ProcessResult:
-    """Bounded process output and the observed cleanup result."""
+    """Bounded output and the observed cleanup result."""
 
     returncode: int | None
     stdout: bytes
@@ -32,16 +32,98 @@ class ProcessResult:
     stop_reason: StopReason
     output_limit_hit: bool
     cleanup_complete: bool
-    cleanup_observation: Literal["group_absent", "group_unresolved"]
+    cleanup_observation: GroupObservation
     cleanup_error: str | None
     cancellation_signal: str | None
 
 
-@dataclass(frozen=True)
-class _SignalHandling:
-    previous: dict[signal.Signals, object]
-    cancelled: threading.Event
-    received: list[str]
+@dataclass
+class _Execution:
+    """Mutable state for one subprocess protocol."""
+
+    loop: asyncio.AbstractEventLoop
+    changed: asyncio.Event = field(default_factory=asyncio.Event)
+    leader_exited: bool = False
+    stdout_eof: bool = False
+    stderr_eof: bool = False
+    returncode: int | None = None
+    stdout: bytearray = field(default_factory=bytearray)
+    stderr: bytearray = field(default_factory=bytearray)
+    total: int = 0
+    output_limit_hit: bool = False
+    error: BaseException | None = None
+    transport: asyncio.SubprocessTransport | None = None
+    transport_closed: asyncio.Event = field(default_factory=asyncio.Event)
+    cleanup_deadline: float | None = None
+    on_data: Callable[[int, bytes], None] | None = None
+    capturing: bool = True
+
+    @property
+    def streams_complete(self) -> bool:
+        """Whether both captured streams reached EOF."""
+        return self.stdout_eof and self.stderr_eof
+
+    def data_received(self, fd: int, data: bytes) -> None:
+        """Retain the exact combined prefix and observe overflow."""
+        if not self.capturing:
+            return
+        if self.on_data is not None:
+            self.on_data(fd, data)
+        room = self.output_limit_bytes - self.total
+        destination = self.stdout if fd == 1 else self.stderr
+        accepted = min(room, len(data))
+        destination.extend(data[:accepted])
+        self.total += accepted
+        if len(data) > room:
+            self.output_limit_hit = True
+        self.changed.set()
+
+    output_limit_bytes: int = MAX_OUTPUT_BYTES
+
+
+class _ProcessProtocol(asyncio.SubprocessProtocol):
+    """Collect public subprocess callbacks without private transports."""
+
+    def __init__(self, execution: _Execution) -> None:
+        self.execution = execution
+
+    @override
+    def connection_made(self, transport: asyncio.BaseTransport) -> None:
+        self.execution.transport = cast(asyncio.SubprocessTransport, transport)
+
+    @override
+    def pipe_data_received(self, fd: int, data: bytes) -> None:
+        try:
+            self.execution.data_received(fd, data)
+        except BaseException as error:
+            if self.execution.error is None:
+                self.execution.error = error
+            self.execution.changed.set()
+
+    @override
+    def pipe_connection_lost(self, fd: int, exc: Exception | None) -> None:
+        if fd == 1:
+            self.execution.stdout_eof = True
+        elif fd == 2:
+            self.execution.stderr_eof = True
+        if exc is not None and self.execution.error is None:
+            self.execution.error = exc
+        self.execution.changed.set()
+
+    @override
+    def connection_lost(self, exc: Exception | None) -> None:
+        if exc is not None and self.execution.error is None:
+            self.execution.error = exc
+        self.execution.transport_closed.set()
+        self.execution.changed.set()
+
+    @override
+    def process_exited(self) -> None:
+        transport = self.execution.transport
+        if transport is not None:
+            self.execution.returncode = transport.get_returncode()
+        self.execution.leader_exited = True
+        self.execution.changed.set()
 
 
 def _positive_duration(name: str, value: float, maximum: float) -> None:
@@ -66,62 +148,22 @@ def _positive_output_limit(value: int) -> None:
         )
 
 
-def _install_signal_handling() -> _SignalHandling:
-    previous: dict[signal.Signals, object] = {}
-    cancelled = threading.Event()
-    received: list[str] = []
-    if threading.current_thread() is not threading.main_thread():
-        return _SignalHandling(previous, cancelled, received)
-
-    def handle(signum: int, frame: FrameType | None) -> None:
-        del frame
-        if not cancelled.is_set():
-            received.append(signal.Signals(signum).name)
-            cancelled.set()
-
-    try:
-        for signum in (signal.SIGINT, signal.SIGTERM):
-            previous[signum] = signal.signal(signum, handle)
-    except BaseException:
-        _restore_signal_handling(previous)
-        raise
-    return _SignalHandling(previous, cancelled, received)
-
-
-def _restore_signal_handling(
-    previous: dict[signal.Signals, object],
-) -> list[BaseException]:
-    errors: list[BaseException] = []
-    for signum, handler in previous.items():
-        try:
-            signal.signal(signum, cast(signal.Handlers, handler))
-        except BaseException as error:
-            errors.append(error)
-    return errors
-
-
-def _group_exists(pgid: int) -> bool:
+def _observe_group(pgid: int) -> tuple[bool, str | None]:
     try:
         os.killpg(pgid, 0)
     except ProcessLookupError:
-        return False
-    return True
-
-
-def _observe_group(pgid: int) -> tuple[bool, str | None]:
-    try:
-        return _group_exists(pgid), None
+        return False, None
     except PermissionError as error:
-        return (
-            True,
+        return True, (
             f"cannot inspect owned process group {pgid}: "
-            f"{type(error).__name__}: {error}",
+            f"{type(error).__name__}: {error}"
         )
+    return True, None
 
 
-def _signal_owned_group(pgid: int, sig: signal.Signals) -> str | None:
+def _signal_group(pgid: int, signum: signal.Signals) -> str | None:
     try:
-        os.killpg(pgid, sig)
+        os.killpg(pgid, signum)
     except ProcessLookupError:
         return None
     except PermissionError as error:
@@ -131,220 +173,443 @@ def _signal_owned_group(pgid: int, sig: signal.Signals) -> str | None:
     return None
 
 
-def _cleanup_group(
-    process: subprocess.Popen[bytes], pgid: int, cleanup_seconds: float
-) -> tuple[bool, Literal["group_absent", "group_unresolved"], str | None]:
-    """Reap the leader, terminate remaining group members, and verify absence.
-
-    Returns:
-        Completion, observed group state, and any cleanup diagnostics.
-    """
-    deadline = time.monotonic() + cleanup_seconds
-    errors: list[str] = []
-
-    process.poll()
-    errors.extend(_terminate_group(process, pgid, deadline, cleanup_seconds))
-
-    if process.poll() is None:
-        try:
-            process.wait(timeout=max(0.0, deadline - time.monotonic()))
-        except subprocess.TimeoutExpired:
-            errors.append("leader could not be reaped within cleanup deadline")
-
-    absent, error = _wait_for_group_absence(pgid, deadline)
-    if error is not None and error not in errors:
-        errors.append(error)
-    if not absent:
-        errors.append(
-            "owned process group remains; the group probe cannot distinguish "
-            "live members from unreaped descendant zombies"
-        )
-    observation: Literal["group_absent", "group_unresolved"] = (
-        "group_absent" if absent else "group_unresolved"
-    )
-    return (
-        absent and process.returncode is not None,
-        observation,
-        "; ".join(errors) or None,
-    )
+async def _wait_for_change(execution: _Execution, seconds: float) -> None:
+    execution.changed.clear()
+    if seconds <= 0:
+        return
+    with suppress(TimeoutError):
+        await asyncio.wait_for(execution.changed.wait(), timeout=seconds)
 
 
-def _terminate_group(
-    process: subprocess.Popen[bytes],
-    pgid: int,
+async def _capture(
+    execution: _Execution,
     deadline: float,
+    cancel_event: asyncio.Event | None,
+) -> StopReason:
+    loop = execution.loop
+    if execution.error is not None:
+        execution.capturing = False
+        raise execution.error
+    if execution.output_limit_hit:
+        execution.capturing = False
+        return "output_limit"
+    while not (execution.leader_exited and execution.streams_complete):
+        if execution.error is not None:
+            execution.capturing = False
+            raise execution.error
+        if execution.output_limit_hit:
+            execution.capturing = False
+            return "output_limit"
+        if cancel_event is not None and cancel_event.is_set():
+            execution.capturing = False
+            return "cancelled"
+        remaining = deadline - loop.time()
+        if remaining <= 0:
+            execution.capturing = False
+            return "timeout"
+        await _wait_for_change(execution, min(remaining, 0.1))
+    execution.capturing = False
+    if execution.error is not None:
+        raise execution.error
+    if execution.output_limit_hit:
+        return "output_limit"
+    return "completed"
+
+
+async def _cleanup(
+    execution: _Execution,
+    pgid: int | None,
+    cleanup_seconds: float,
+) -> _CleanupResult:
+    if execution.transport is None:
+        return _CleanupResult(True, "group_absent", None)
+    if pgid is None:
+        return await _cleanup_unverified(execution, cleanup_seconds)
+    return await _cleanup_verified(execution, pgid, cleanup_seconds)
+
+
+async def _cleanup_unverified(
+    execution: _Execution, cleanup_seconds: float
+) -> _CleanupResult:
+    errors: list[str] = []
+    transport = execution.transport
+    if transport is not None and not execution.leader_exited:
+        errors.extend(
+            await _stop_unverified_leader(execution, transport, cleanup_seconds)
+        )
+    errors.append("child session identity is unverified; descendants remain unverified")
+    return _CleanupResult(False, "group_unresolved", "; ".join(errors))
+
+
+async def _stop_unverified_leader(
+    execution: _Execution,
+    transport: asyncio.SubprocessTransport,
     cleanup_seconds: float,
 ) -> list[str]:
     errors: list[str] = []
-    exists, error = _observe_group(pgid)
-    if error is not None:
-        errors.append(error)
-    if process.returncode is None or exists:
-        error = _signal_owned_group(pgid, signal.SIGTERM)
-        if error is not None:
-            errors.append(error)
-        grace = min(cleanup_seconds / 2, 1.0)
-        _wait_for_term(process, pgid, min(deadline, time.monotonic() + grace), errors)
-    exists, error = _observe_group(pgid)
-    if error is not None and error not in errors:
-        errors.append(error)
-    if exists:
-        error = _signal_owned_group(pgid, signal.SIGKILL)
-        if error is not None:
-            errors.append(error)
+    term_error = _signal_leader(transport, signal.SIGTERM)
+    if term_error is not None:
+        errors.append(term_error)
+    reaped, wait_error = await _wait_leader_within(execution, cleanup_seconds / 2)
+    if wait_error is not None:
+        errors.append(wait_error)
+    if reaped:
+        return errors
+    kill_error = _signal_leader(transport, signal.SIGKILL)
+    if kill_error is not None:
+        errors.append(kill_error)
+    reaped, wait_error = await _wait_leader_within(execution, cleanup_seconds / 2)
+    if wait_error is not None:
+        errors.append(wait_error)
+    if not reaped:
+        errors.append("unverified leader could not be reaped")
     return errors
 
 
-def _wait_for_term(
-    process: subprocess.Popen[bytes], pgid: int, deadline: float, errors: list[str]
+async def _wait_leader_within(
+    execution: _Execution, timeout: float
+) -> tuple[bool, str | None]:
+    try:
+        await asyncio.wait_for(_wait_leader(execution), timeout)
+    except TimeoutError:
+        return False, None
+    except Exception as error:
+        return False, f"unverified leader wait failed: {error}"
+    return True, None
+
+
+def _signal_leader(
+    transport: asyncio.SubprocessTransport, signum: signal.Signals
+) -> str | None:
+    try:
+        transport.send_signal(signum)
+    except ProcessLookupError:
+        return None
+    except BaseException as error:
+        return f"cannot signal unverified leader: {type(error).__name__}: {error}"
+    return None
+
+
+async def _cleanup_verified(
+    execution: _Execution,
+    pgid: int,
+    cleanup_seconds: float,
+) -> _CleanupResult:
+    deadline = execution.loop.time() + cleanup_seconds
+    errors: list[str] = []
+    await _terminate_owned_group(execution, pgid, deadline, cleanup_seconds, errors)
+    complete, observation = await _confirm_cleanup(execution, pgid, deadline, errors)
+    return _CleanupResult(complete, observation, "; ".join(errors) or None)
+
+
+async def _terminate_owned_group(
+    execution: _Execution,
+    pgid: int,
+    deadline: float,
+    cleanup_seconds: float,
+    errors: list[str],
 ) -> None:
-    while time.monotonic() < deadline:
-        process.poll()
+    exists, error = _observe_group(pgid)
+    if error is not None:
+        errors.append(error)
+    if not execution.leader_exited or exists:
+        error = _signal_group(pgid, signal.SIGTERM)
+        if error is not None:
+            errors.append(error)
+        await _wait_for_term(execution, pgid, deadline, cleanup_seconds, errors)
+        exists, observed_error = _observe_group(pgid)
+        if observed_error is not None and observed_error not in errors:
+            errors.append(observed_error)
+        if exists:
+            error = _signal_group(pgid, signal.SIGKILL)
+            if error is not None:
+                errors.append(error)
+
+
+async def _confirm_cleanup(
+    execution: _Execution, pgid: int, deadline: float, errors: list[str]
+) -> tuple[bool, GroupObservation]:
+    if not execution.leader_exited:
+        try:
+            await asyncio.wait_for(
+                _wait_leader(execution), max(0, deadline - execution.loop.time())
+            )
+        except TimeoutError:
+            errors.append("leader could not be reaped within cleanup deadline")
+
+    exists, observed_error = _observe_group(pgid)
+    if observed_error is not None and observed_error not in errors:
+        errors.append(observed_error)
+    exists = await _wait_for_group_absence(execution, pgid, deadline, exists, errors)
+    if exists:
+        errors.append(
+            "owned process group remains; the probe cannot distinguish live "
+            "members from unreaped descendant zombies"
+        )
+    observation: GroupObservation = "group_unresolved" if exists else "group_absent"
+    complete = not exists and execution.leader_exited
+    return complete, observation
+
+
+async def _wait_for_term(
+    execution: _Execution,
+    pgid: int,
+    cleanup_deadline: float,
+    cleanup_seconds: float,
+    errors: list[str],
+) -> None:
+    term_deadline = min(
+        cleanup_deadline, execution.loop.time() + min(cleanup_seconds / 2, 1.0)
+    )
+    while execution.loop.time() < term_deadline:
         exists, error = _observe_group(pgid)
         if error is not None and error not in errors:
             errors.append(error)
-        if process.returncode is not None and not exists:
+        if execution.leader_exited and not exists:
             return
-        remaining = deadline - time.monotonic()
-        if remaining > 0:
-            time.sleep(min(0.02, remaining))
+        remaining = term_deadline - execution.loop.time()
+        await _wait_for_change(execution, min(0.02, remaining))
 
 
-def _wait_for_group_absence(pgid: int, deadline: float) -> tuple[bool, str | None]:
-    exists, error = _observe_group(pgid)
-    while exists and time.monotonic() < deadline:
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            break
-        time.sleep(min(0.02, remaining))
-        exists, current_error = _observe_group(pgid)
-        if current_error is not None:
-            error = current_error
-    return not exists, error
-
-
-def _capture_output(
-    process: subprocess.Popen[bytes],
+async def _wait_for_group_absence(
+    execution: _Execution,
+    pgid: int,
     deadline: float,
-    output_limit_bytes: int,
-    cancel_events: tuple[threading.Event, ...],
-    read_chunk: Callable[[int, int], bytes],
-) -> tuple[bytes, bytes, StopReason, bool]:
-    """Capture both output pipes through the shared byte limit.
+    exists: bool,
+    errors: list[str],
+) -> bool:
+    while exists and execution.loop.time() < deadline:
+        await asyncio.sleep(min(0.02, deadline - execution.loop.time()))
+        exists, error = _observe_group(pgid)
+        if error is not None and error not in errors:
+            errors.append(error)
+    return exists
 
-    Returns:
-        Captured stdout and stderr prefixes, stop reason, and overflow status.
-    """
-    stdout = bytearray()
-    stderr = bytearray()
-    total = 0
+
+async def _wait_leader(execution: _Execution) -> None:
+    while not execution.leader_exited:
+        await _wait_for_change(execution, 0.05)
+
+
+async def _close(execution: _Execution) -> None:
+    transport = execution.transport
+    if transport is None:
+        return
+    transport.close()
+    deadline = execution.cleanup_deadline
+    if deadline is None:
+        await asyncio.sleep(0)
+        return
+    remaining = deadline - execution.loop.time()
+    if remaining > 0:
+        try:
+            await asyncio.wait_for(execution.transport_closed.wait(), remaining)
+        except TimeoutError:
+            raise TimeoutError(
+                "subprocess transport did not close within cleanup deadline"
+            ) from None
+
+
+async def _settle(
+    execution: _Execution,
+    pgid: int | None,
+    cleanup_seconds: float,
+) -> _CleanupResult:
+    execution.cleanup_deadline = execution.loop.time() + cleanup_seconds
+    close_reserve = min(0.05, cleanup_seconds / 10)
     try:
-        with selectors.DefaultSelector() as selector:
-            assert process.stdout is not None and process.stderr is not None
-            selector.register(process.stdout, selectors.EVENT_READ, stdout)
-            selector.register(process.stderr, selectors.EVENT_READ, stderr)
-            stop_reason, total, output_limit_hit = _drain_until_stop(
-                process,
-                selector,
-                deadline,
-                output_limit_bytes,
-                cancel_events,
-                read_chunk,
-                total,
-                stdout,
-                stderr,
-            )
-    except BaseException as error:
-        for name, prefix in (
-            ("stdout_prefix", bytes(stdout)),
-            ("stderr_prefix", bytes(stderr)),
-        ):
-            setattr(error, name, prefix)
-        raise
-    return bytes(stdout), bytes(stderr), stop_reason, output_limit_hit
-
-
-def _drain_until_stop(
-    process: subprocess.Popen[bytes],
-    selector: selectors.BaseSelector,
-    deadline: float,
-    output_limit_bytes: int,
-    cancel_events: tuple[threading.Event, ...],
-    read_chunk: Callable[[int, int], bytes],
-    total: int,
-    stdout: bytearray,
-    stderr: bytearray,
-) -> tuple[StopReason, int, bool]:
-    """Drain output until EOF, deadline, cancellation, or overflow.
-
-    Returns:
-        Stop reason, captured byte count, and overflow status.
-    """
-    reason: StopReason = "completed"
-    overflow = False
-    while selector.get_map() or process.poll() is None:
-        if any(event.is_set() for event in cancel_events):
-            return "cancelled", total, overflow
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            return "timeout", total, overflow
-        if not selector.get_map():
-            time.sleep(min(0.02, remaining))
-            continue
-        total, overflow = _read_ready(
-            selector,
-            min(0.1, remaining),
-            output_limit_bytes,
-            total,
-            read_chunk,
-            stdout,
-            stderr,
+        cleanup = await _cleanup(
+            execution, pgid, max(0.001, cleanup_seconds - close_reserve)
         )
-        if overflow:
-            reason = "output_limit"
-            break
-    return reason, total, overflow
+        cleanup_error = None
+    except BaseException as error:
+        cleanup = _CleanupResult(
+            False, "group_unresolved", f"cleanup raised {error}", error
+        )
+        cleanup_error = error
+    try:
+        await _close(execution)
+    except BaseException as error:
+        if cleanup_error is None:
+            cleanup_error = error
+        else:
+            cleanup_error.add_note(f"closing subprocess transport failed: {error}")
+    return _CleanupResult(
+        cleanup.complete and cleanup_error is None,
+        cleanup.observation if cleanup_error is None else "group_unresolved",
+        _combine_diagnostics(
+            cleanup.diagnostic,
+            None
+            if cleanup_error is None
+            else f"transport close failed: {cleanup_error}",
+        ),
+        cleanup_error or cleanup.error,
+    )
 
 
-def _read_ready(
-    selector: selectors.BaseSelector,
-    wait_seconds: float,
-    output_limit_bytes: int,
-    total: int,
-    read_chunk: Callable[[int, int], bytes],
-    stdout: bytearray,
-    stderr: bytearray,
-) -> tuple[int, bool]:
-    """Read available pipe bytes while retaining a bounded combined prefix.
-
-    Returns:
-        Updated captured byte count and whether the limit was exceeded.
-    """
-    for key, _ in selector.select(wait_seconds):
-        chunk = read_chunk(key.fd, min(65536, output_limit_bytes - total + 1))
-        if not chunk:
-            selector.unregister(key.fileobj)
-            continue
-        room = output_limit_bytes - total
-        destination: bytearray = key.data
-        destination.extend(chunk[:room])
-        total += min(room, len(chunk))
-        if len(chunk) > room:
-            return total, True
-    return total, False
+def _combine_diagnostics(first: str | None, second: str | None) -> str | None:
+    if first is None:
+        return second
+    if second is None:
+        return first
+    return f"{first}; {second}"
 
 
-def _verify_session_group(process: subprocess.Popen[bytes], pgid: int) -> None:
-    """Reject a process that does not own its dedicated session group.
+async def _settle_shielded(
+    execution: _Execution,
+    pgid: int | None,
+    cleanup_seconds: float,
+    primary: BaseException | None,
+) -> _CleanupResult:
+    task = asyncio.create_task(_settle(execution, pgid, cleanup_seconds))
+    cancellations: list[asyncio.CancelledError] = []
+    result = await _await_settlement(task, cancellations)
+    if primary is not None:
+        _attach_cleanup_diagnostics(primary, execution, result)
+        for cancellation in cancellations:
+            primary.add_note(f"additional cancellation during cleanup: {cancellation}")
+        if isinstance(primary, asyncio.CancelledError):
+            raise primary
+        return result
+    if cancellations:
+        cancellation = cancellations[0]
+        _attach_cleanup_diagnostics(cancellation, execution, result)
+        for additional in cancellations[1:]:
+            cancellation.add_note(
+                f"additional cancellation during cleanup: {additional}"
+            )
+        raise cancellation
+    return result
 
-    Raises:
-        ValueError: If the process group differs from the child PID.
-    """
-    if pgid != process.pid:
+
+async def _await_settlement(
+    task: asyncio.Task[_CleanupResult],
+    cancellations: list[asyncio.CancelledError],
+) -> _CleanupResult:
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError as error:
+            cancellations.append(error)
+    return task.result()
+
+
+def _attach_cleanup_diagnostics(
+    error: BaseException, execution: _Execution, cleanup: _CleanupResult
+) -> None:
+    for name, value in (
+        ("stdout_prefix", bytes(execution.stdout)),
+        ("stderr_prefix", bytes(execution.stderr)),
+        ("cleanup_complete", cleanup.complete),
+        ("cleanup_observation", cleanup.observation),
+        ("cleanup_error", cleanup.diagnostic),
+    ):
+        setattr(error, name, value)
+    if cleanup.error is not None:
+        error.add_note(f"cleanup failed: {cleanup.error}")
+
+
+@dataclass(frozen=True)
+class _RunState:
+    pgid: int | None
+    reason: StopReason
+    error: BaseException | None
+
+
+@dataclass(frozen=True)
+class _CleanupResult:
+    complete: bool
+    observation: GroupObservation
+    diagnostic: str | None
+    error: BaseException | None = None
+
+
+async def _acquire_and_capture(
+    execution: _Execution,
+    spawn_task: asyncio.Task[tuple[asyncio.SubprocessTransport, _ProcessProtocol]],
+    deadline: float,
+    cancel_event: asyncio.Event | None,
+    get_process_group_id: Callable[[int], int],
+) -> _RunState:
+    error = await _await_spawn(spawn_task)
+    pgid: int | None = None
+    reason: StopReason = "completed"
+    try:
+        execution.transport, _ = spawn_task.result()
+    except BaseException as caught:
+        if error is None:
+            error = caught
+        elif error is not caught:
+            error.add_note(f"subprocess creation failed: {caught}")
+    if execution.transport is not None:
+        pgid, error, reason = await _verify_and_capture(
+            execution, deadline, cancel_event, get_process_group_id, error
+        )
+    return _RunState(pgid, reason, error)
+
+
+async def _await_spawn(
+    spawn_task: asyncio.Task[tuple[asyncio.SubprocessTransport, _ProcessProtocol]],
+) -> BaseException | None:
+    primary: BaseException | None = None
+    while not spawn_task.done():
+        try:
+            await asyncio.shield(spawn_task)
+        except BaseException as error:
+            if primary is None:
+                primary = error
+            elif primary is not error:
+                primary.add_note(f"subprocess creation failed: {error}")
+    return primary
+
+
+async def _verify_and_capture(
+    execution: _Execution,
+    deadline: float,
+    cancel_event: asyncio.Event | None,
+    get_process_group_id: Callable[[int], int],
+    primary: BaseException | None,
+) -> tuple[int | None, BaseException | None, StopReason]:
+    transport = execution.transport
+    assert transport is not None
+    pgid: int | None = None
+    reason: StopReason = "completed"
+    try:
+        pgid = _get_verified_group_id(
+            transport.get_pid(), get_process_group_id, execution.leader_exited
+        )
+        if primary is None:
+            reason = await _capture(execution, deadline, cancel_event)
+    except asyncio.CancelledError as caught:
+        if primary is None:
+            primary = caught
+    except BaseException as caught:
+        if primary is None:
+            primary = caught
+        else:
+            primary.add_note(f"subprocess observation failed: {caught}")
+    return pgid, primary, reason
+
+
+def _get_verified_group_id(
+    pid: int,
+    get_process_group_id: Callable[[int], int],
+    leader_exited: bool,
+) -> int:
+    try:
+        candidate = get_process_group_id(pid)
+    except ProcessLookupError:
+        if not leader_exited:
+            raise
+        # start_new_session guarantees that the child's initial process group
+        # ID is its PID, even if asyncio reaped the leader before this check.
+        return pid
+    if candidate != pid:
         raise ValueError("child did not own its dedicated session group")
+    return candidate
 
 
-def run_bounded(
+async def run_bounded(
     argv: list[str],
     *,
     timeout_seconds: float,
@@ -352,354 +617,209 @@ def run_bounded(
     output_limit_bytes: int,
     cwd: Path | None = None,
     env: dict[str, str] | None = None,
-    cancel_event: threading.Event | None = None,
-    read_chunk: Callable[[int, int], bytes] = os.read,
+    cancel_event: asyncio.Event | None = None,
     get_process_group_id: Callable[[int], int] = os.getpgid,
+    on_data: Callable[[int, bytes], None] | None = None,
 ) -> ProcessResult:
-    """Run a command with bounded output, execution time, and group cleanup.
+    """Run and clean one process within the declared protocol caps.
 
-    Execution allows at most 300 seconds, cleanup at most 10 seconds, and
-    combined output at most 1 MiB. stdin is `/dev/null` unless a future contract
-    explicitly adds an input stream. SIGINT/SIGTERM are converted to a cancelled
-    result on the main thread; prior signal handlers are restored afterward.
-
-    The process must run on POSIX, where a dedicated session can be created and
-    signalled. Descendants that deliberately leave that session are outside this
-    ownership boundary. A remaining group is unresolved, including if it may
-    contain zombies that the supervisor is not permitted to reap.
+    Task cancellation is re-raised after bounded cleanup. A shared event stops
+    the invocation cooperatively and returns a ``cancelled`` result. SIGINT and
+    SIGTERM belong to the command-line entry boundary, not this composable API.
 
     Returns:
-        Output prefixes, leader status, stop reason, and cleanup observation.
+        The leader status, bounded output prefixes, and cleanup observation.
 
     Raises:
-        NotImplementedError: If the host cannot create a POSIX session.
+        NotImplementedError: If POSIX process-group control is unavailable.
     """
     _positive_duration("timeout_seconds", timeout_seconds, MAX_TIMEOUT_SECONDS)
     _positive_duration("cleanup_seconds", cleanup_seconds, MAX_CLEANUP_SECONDS)
     _positive_output_limit(output_limit_bytes)
     if os.name != "posix":
         raise NotImplementedError("owned process-group control requires POSIX")
-
-    handling = _install_signal_handling()
-    result: ProcessResult | None = None
-    primary_error: BaseException | None = None
-    try:
-        result = _run_validated(
-            argv,
-            timeout_seconds,
-            cleanup_seconds,
-            output_limit_bytes,
-            cwd,
-            env,
-            cancel_event,
-            read_chunk,
-            get_process_group_id,
-            handling,
+    if cancel_event is not None and cancel_event.is_set():
+        return ProcessResult(
+            returncode=None,
+            stdout=b"",
+            stderr=b"",
+            stop_reason="cancelled",
+            output_limit_hit=False,
+            cleanup_complete=True,
+            cleanup_observation="group_absent",
+            cleanup_error=None,
+            cancellation_signal=(
+                cancel_event.signal_name
+                if isinstance(cancel_event, _CancellationEvent)
+                else None
+            ),
         )
-    except BaseException as error:
-        primary_error = error
-    restore_errors = _restore_signal_handling(handling.previous)
-    if primary_error is not None:
-        for error in restore_errors:
-            primary_error.add_note(f"signal handler restoration failed: {error}")
-        raise primary_error
-    if restore_errors:
-        raise restore_errors[0]
-    assert result is not None
-    return result
 
-
-def _run_validated(
-    argv: list[str],
-    timeout_seconds: float,
-    cleanup_seconds: float,
-    output_limit_bytes: int,
-    cwd: Path | None,
-    env: dict[str, str] | None,
-    cancel_event: threading.Event | None,
-    read_chunk: Callable[[int, int], bytes],
-    get_process_group_id: Callable[[int], int],
-    handling: _SignalHandling,
-) -> ProcessResult:
-    """Run and clean a process after public resource bounds are validated.
-
-    Returns:
-        Leader status, bounded output, cancellation state, and cleanup status.
-    """
-    deadline = time.monotonic() + timeout_seconds
-    run = _execute(
-        argv,
-        cwd,
-        env,
-        deadline,
-        output_limit_bytes,
-        tuple(
-            event for event in (cancel_event, handling.cancelled) if event is not None
-        ),
-        read_chunk,
-        get_process_group_id,
+    loop = asyncio.get_running_loop()
+    execution = _Execution(
+        loop=loop, output_limit_bytes=output_limit_bytes, on_data=on_data
     )
-    return _complete_execution(run, cleanup_seconds, handling)
+    deadline = loop.time() + timeout_seconds
+    spawn = loop.subprocess_exec(
+        lambda: _ProcessProtocol(execution),
+        *argv,
+        cwd=cwd,
+        env=env,
+        stdin=asyncio.subprocess.DEVNULL,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        start_new_session=True,
+    )
+    spawn_task = asyncio.create_task(spawn)
+    state = await _acquire_and_capture(
+        execution, spawn_task, deadline, cancel_event, get_process_group_id
+    )
+    cleanup = await _settle_shielded(
+        execution,
+        state.pgid,
+        cleanup_seconds,
+        state.error,
+    )
 
-
-def _settle_execution(
-    run: _Execution, cleanup_seconds: float
-) -> tuple[
-    tuple[bool, Literal["group_absent", "group_unresolved"], str | None],
-    BaseException | None,
-    list[BaseException],
-]:
-    """Attempt bounded cleanup and close process pipes on every path.
-
-    Returns:
-        Cleanup result, its raised error, and errors while closing pipes.
-    """
-    cleanup: tuple[bool, Literal["group_absent", "group_unresolved"], str | None]
-    cleanup_error: BaseException | None = None
-    try:
-        cleanup = _finish(run.process, run.pgid, cleanup_seconds)
-    except BaseException as error:
-        cleanup = (False, "group_unresolved", f"cleanup raised {error}")
-        cleanup_error = error
-    close_errors = [] if run.process is None else _close_process_pipes(run.process)
-    return cleanup, cleanup_error, close_errors
-
-
-def _complete_execution(
-    run: _Execution, cleanup_seconds: float, handling: _SignalHandling
-) -> ProcessResult:
-    """Report the primary error only after cleanup and pipe closure attempts.
-
-    Returns:
-        Bounded output and cleanup observations for the completed operation.
-    """
-    cleanup, cleanup_error, close_errors = _settle_execution(run, cleanup_seconds)
-    if run.error is not None:
-        _attach_process_diagnostics(
-            run.error, run, cleanup, cleanup_error, close_errors
-        )
-        raise run.error
-    if cleanup_error is not None:
-        cleanup_error.add_note(
-            "cleanup did not complete; owned process state is unresolved"
-        )
-        for error in close_errors:
-            cleanup_error.add_note(f"closing process pipe failed: {error}")
-        raise cleanup_error
-    if close_errors:
-        primary = close_errors[0]
-        for error in close_errors[1:]:
-            primary.add_note(f"additional pipe close failed: {error}")
-        raise primary
-    assert run.process is not None
+    if state.error is not None:
+        raise state.error
+    if cleanup.error is not None:
+        raise cleanup.error
     return ProcessResult(
-        returncode=run.process.returncode,
-        stdout=run.stdout,
-        stderr=run.stderr,
-        stop_reason=run.stop_reason,
-        output_limit_hit=run.output_limit_hit,
-        cleanup_complete=cleanup[0],
-        cleanup_observation=cleanup[1],
-        cleanup_error=cleanup[2],
-        cancellation_signal=handling.received[0] if handling.received else None,
+        returncode=execution.returncode,
+        stdout=bytes(execution.stdout),
+        stderr=bytes(execution.stderr),
+        stop_reason=state.reason,
+        output_limit_hit=execution.output_limit_hit,
+        cleanup_complete=cleanup.complete,
+        cleanup_observation=cleanup.observation,
+        cleanup_error=cleanup.diagnostic,
+        cancellation_signal=(
+            cancel_event.signal_name
+            if isinstance(cancel_event, _CancellationEvent)
+            else None
+        ),
     )
-
-
-def _attach_process_diagnostics(
-    primary: BaseException,
-    run: _Execution,
-    cleanup: tuple[bool, Literal["group_absent", "group_unresolved"], str | None],
-    cleanup_error: BaseException | None,
-    close_errors: list[BaseException],
-) -> None:
-    for name, value in (
-        ("stdout_prefix", run.stdout),
-        ("stderr_prefix", run.stderr),
-        ("cleanup_complete", cleanup[0]),
-        ("cleanup_observation", cleanup[1]),
-        ("cleanup_error", cleanup[2]),
-    ):
-        setattr(primary, name, value)
-    primary.add_note(
-        f"cleanup_complete={cleanup[0]}; "
-        f"cleanup_observation={cleanup[1]}; cleanup_error={cleanup[2]}"
-    )
-    if cleanup_error is not None:
-        primary.add_note(
-            f"cleanup raised {type(cleanup_error).__name__}: {cleanup_error}"
-        )
-    for error in close_errors:
-        primary.add_note(f"closing process pipe failed: {error}")
-
-
-@dataclass(frozen=True)
-class _Execution:
-    process: subprocess.Popen[bytes] | None
-    pgid: int | None
-    stdout: bytes
-    stderr: bytes
-    stop_reason: StopReason
-    output_limit_hit: bool
-    error: BaseException | None
-
-
-def _execute(
-    argv: list[str],
-    cwd: Path | None,
-    env: dict[str, str] | None,
-    deadline: float,
-    output_limit_bytes: int,
-    cancel_events: tuple[threading.Event, ...],
-    read_chunk: Callable[[int, int], bytes],
-    get_process_group_id: Callable[[int], int],
-) -> _Execution:
-    """Start, verify, and capture one owned process session.
-
-    Returns:
-        Process identity, captured output, stop details, and any primary error.
-    """
-    process: subprocess.Popen[bytes] | None = None
-    pgid: int | None = None
-    stdout = b""
-    stderr = b""
-    reason: StopReason = "completed"
-    overflow = False
-    error: BaseException | None = None
-    try:
-        process = subprocess.Popen(
-            argv,
-            cwd=cwd,
-            env=env,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            start_new_session=True,
-        )
-        candidate_pgid = get_process_group_id(process.pid)
-        _verify_session_group(process, candidate_pgid)
-        pgid = candidate_pgid
-        stdout, stderr, reason, overflow = _capture_output(
-            process, deadline, output_limit_bytes, cancel_events, read_chunk
-        )
-    except BaseException as caught:
-        error = caught
-        stdout = getattr(caught, "stdout_prefix", b"")
-        stderr = getattr(caught, "stderr_prefix", b"")
-    return _Execution(process, pgid, stdout, stderr, reason, overflow, error)
-
-
-def _finish(
-    process: subprocess.Popen[bytes] | None, pgid: int | None, cleanup_seconds: float
-) -> tuple[bool, Literal["group_absent", "group_unresolved"], str | None]:
-    if process is None:
-        return True, "group_absent", None
-    if pgid is None:
-        error = _cleanup_unverified_leader(process, cleanup_seconds)
-        return (
-            False,
-            "group_unresolved",
-            f"could not verify the child session; {error}",
-        )
-    return _cleanup_group(process, pgid, cleanup_seconds)
-
-
-def _cleanup_unverified_leader(
-    process: subprocess.Popen[bytes], cleanup_seconds: float
-) -> str:
-    """Stop and reap the owned leader when its descendant group is unverified.
-
-    Returns:
-        A diagnostic that leaves descendant cleanup explicitly unresolved.
-    """
-    errors: list[str] = []
-    if process.poll() is None:
-        error = _signal_unverified_leader(process, "terminate")
-        if error is not None:
-            errors.append(error)
-        error = _wait_unverified_leader(process, cleanup_seconds / 2)
-        if error is not None:
-            errors.append(error)
-        if process.poll() is None:
-            error = _signal_unverified_leader(process, "kill")
-            if error is not None:
-                errors.append(error)
-            error = _wait_unverified_leader(process, cleanup_seconds / 2)
-            if error is not None:
-                errors.append(error)
-    status = "leader reaped" if process.returncode is not None else "leader unresolved"
-    errors.append(f"{status}; descendants remain unverified")
-    return "; ".join(errors)
-
-
-def _signal_unverified_leader(
-    process: subprocess.Popen[bytes], action: Literal["terminate", "kill"]
-) -> str | None:
-    try:
-        getattr(process, action)()
-    except ProcessLookupError:
-        return None
-    except BaseException as error:
-        return f"leader {action} failed: {type(error).__name__}: {error}"
-    return None
-
-
-def _wait_unverified_leader(
-    process: subprocess.Popen[bytes], timeout: float
-) -> str | None:
-    try:
-        process.wait(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        return "leader could not be reaped within cleanup deadline"
-    except BaseException as error:
-        return f"leader wait failed: {type(error).__name__}: {error}"
-    return None
-
-
-def _close_process_pipes(process: subprocess.Popen[bytes]) -> list[BaseException]:
-    errors: list[BaseException] = []
-    for stream in (process.stdout, process.stderr):
-        if stream is not None:
-            try:
-                stream.close()
-            except BaseException as error:
-                errors.append(error)
-    return errors
 
 
 def _codex_check() -> int:
-    """Exercise the installed CLI's process identity through this owner.
+    """Run non-inference installed CLI startup checks.
 
     Returns:
-        0 when both CLI commands exit successfully and cleanup is complete;
+        0 when both commands exit successfully and cleanup is complete;
         otherwise 1.
     """
-    for args in (["codex", "--version"], ["codex", "--help"]):
-        result = run_bounded(
-            list(args),
-            timeout_seconds=10,
-            cleanup_seconds=2,
-            output_limit_bytes=64 * 1024,
-        )
-        sys.stdout.write(
-            f"argv={args!r} exit={result.returncode} "
-            f"cleanup={result.cleanup_observation} "
-            f"complete={result.cleanup_complete}\n"
-        )
-        if result.stdout:
-            first_line = result.stdout.decode(errors="replace").splitlines()[0]
-            sys.stdout.write(f"{first_line}\n")
-        if result.returncode != 0 or not result.cleanup_complete:
-            if result.cleanup_error:
-                sys.stderr.write(f"{result.cleanup_error}\n")
-            return 1
-    return 0
+    cancelled = _CancellationEvent()
+
+    async def check() -> int:
+        for args in (["codex", "--version"], ["codex", "--help"]):
+            result = await run_bounded(
+                list(args),
+                timeout_seconds=10,
+                cleanup_seconds=2,
+                output_limit_bytes=64 * 1024,
+                cancel_event=cancelled,
+            )
+            sys.stdout.write(
+                f"argv={args!r} exit={result.returncode} "
+                f"cleanup={result.cleanup_observation} "
+                f"complete={result.cleanup_complete}\n"
+            )
+            if result.stdout:
+                first_line = result.stdout.decode(errors="replace").splitlines()[0]
+                sys.stdout.write(first_line + "\n")
+            if result.returncode != 0 or not result.cleanup_complete:
+                if result.cleanup_error:
+                    sys.stderr.write(f"{result.cleanup_error}\n")
+                return 1
+        return 0
+
+    return asyncio.run(_cli_with_signals(check(), cancelled))
+
+
+async def _cli_with_signals[T](
+    operation: Awaitable[T], cancelled: _CancellationEvent
+) -> T:
+    """Own process signals once around the CLI's active async operation.
+
+    Returns:
+        The wrapped operation's exit status.
+    """
+    loop = asyncio.get_running_loop()
+    previous: dict[signal.Signals, SignalHandler] = {}
+    primary: BaseException | None = None
+
+    def handle(signum: signal.Signals) -> None:
+        if not cancelled.is_set():
+            cancelled.signal_name = signum.name
+            cancelled.set()
+
+    try:
+        for signum in (signal.SIGINT, signal.SIGTERM):
+            previous[signum] = _restorable_signal_handler(signum)
+            loop.add_signal_handler(signum, handle, signum)
+        return await operation
+    except BaseException as error:
+        primary = error
+        raise
+    finally:
+        errors = _restore_signal_handlers(loop, previous)
+        if primary is not None:
+            for error in errors:
+                primary.add_note(f"signal handler restoration failed: {error}")
+        elif errors:
+            for error in errors[1:]:
+                errors[0].add_note(f"additional signal restoration failure: {error}")
+            raise errors[0]
+
+
+def _restorable_signal_handler(signum: signal.Signals) -> SignalHandler:
+    """Read a handler that the owner can restore.
+
+    Returns:
+        The prior callable or enum handler.
+
+    Raises:
+        RuntimeError: If the platform returns no previous handler.
+    """
+    handler = signal.getsignal(signum)
+    if handler is None:
+        raise RuntimeError(f"signal {signum.name} has no restorable handler")
+    if isinstance(handler, signal.Handlers):
+        return handler
+    if isinstance(handler, int):
+        raise RuntimeError(f"signal {signum.name} has an unsupported integer handler")
+    return handler
+
+
+def _restore_signal_handlers(
+    loop: asyncio.AbstractEventLoop,
+    previous: dict[signal.Signals, SignalHandler],
+) -> list[BaseException]:
+    errors: list[BaseException] = []
+    for signum, handler in previous.items():
+        try:
+            loop.remove_signal_handler(signum)
+        except BaseException as error:
+            errors.append(error)
+        try:
+            signal.signal(signum, handler)
+        except BaseException as error:
+            errors.append(error)
+    return errors
+
+
+class _CancellationEvent(asyncio.Event):
+    """CLI cancellation event that retains the first received signal."""
+
+    signal_name: str | None = None
 
 
 def main() -> int:
-    """Run the non-inference installed Codex process check.
+    """Run the optional installed Codex check.
 
     Returns:
-        The exit status of the installed Codex check.
+        The installed CLI check's exit status.
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--codex-check", action="store_true")
