@@ -142,14 +142,17 @@ multi-rule prompt changes no other applicable shared guarantee.
 
 ## Links
 
+- [Comparison protocol](protocol.md) proposes the workload, prompts, budgets,
+  freeze gates, metrics and interpretation for owner review before execution.
 - [Engineering review](../README.md) owns the recorded decision and integrated
   delivery; [Engineering reviewer delivery](../delivery/README.md) depends on
   this completed evidence and that decision.
 
 ## Additional context
 
-The concrete protocol still needs owner-reviewed workload sizes, repetitions,
-budgets, thresholds, and viability conditions before execution. None are
-invented by this definition. No telemetry preparation, experimental harness,
-trial, production architecture, or implementation is executed by this contract
-update.
+The supporting protocol declares proposed sizes, repetitions, budgets,
+thresholds and fallback viability conditions. Actual fixtures, withheld labels,
+runtime binding and boundary evidence remain unprepared and require the
+protocol's later authorization and freeze gates. This definition executes no
+telemetry preparation, experimental harness, trial, production architecture or
+implementation, and does not complete the Evaluation.
