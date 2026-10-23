@@ -29,8 +29,13 @@ comparison before production implementation and granularity are finalized; it
 need not satisfy every
 [Delivery criterion](../delivery/README.md#acceptance-criteria). This is no
 exemption from applicable immutable-input, read-only, bounded-resource,
-provenance, isolation, or failure-accounting guarantees. AC-3 verifies them
-locally; engineering and reviewer owners retain their integration guarantees.
+provenance, withheld-label and prior-answer separation, or failure-accounting
+guarantees. The maintainer accepts the CLI declarations and automatic context
+limitation defined at the
+[protocol boundary](protocol.md#cli-invocation-boundary-and-accepted-limitation);
+this does not establish tool-free operation or waive those retained protections.
+AC-3 verifies them locally; engineering and reviewer owners retain their
+integration guarantees.
 
 [Empirical evaluation guidance](../../../../evaluation.md) owns general protocol
 declaration, isolation, independent repetitions, failure and stop handling,
@@ -118,9 +123,11 @@ on unverified production behavior or treating failures as detections.
 
 Concrete verification at the actual harness boundary establishes:
 
-- Immutable source and guidance, traceability to complete effective prompts,
-  inputs and settings, stable plans/identities for identical inputs, separation
-  for changed inputs, and isolation from withheld labels and prior answers.
+- Immutable source and guidance, traceability to exact supplied prompts, inputs
+  and settings, retained observable context and disclosed opaque
+  automatic-context limits, stable plans/identities for identical inputs,
+  separation for changed inputs, and isolation from withheld labels and prior
+  answers.
 - Pre-execution job/token estimates and visible budget refusal, finite
   concurrency, timeout, output and retry limits, and cleanup after success,
   failure, timeout, or cancellation without leftover review processes.
@@ -138,13 +145,16 @@ Controlled process-boundary checks exercise those success and failure conditions
 in disposable environments; actual invocation observations establish integration
 and what telemetry is available. Evidence identifies what each method proves and
 its limits under [testing guidance](../../../../testing.md). The baseline's
-multi-rule prompt changes no other applicable shared guarantee.
+multi-rule prompt changes no other applicable shared guarantee; the accepted
+CLI limitation is disclosed under the protocol rather than claimed as verified
+isolation.
 
 ## Links
 
 - [Comparison protocol](protocol.md) compares A/B/C on fixed static
-  inputs, including prepared function/context packets, with input-only
-  execution, budgets and thresholds for owner review; a separately reported
+  inputs, including prepared function/context packets, with the declared CLI
+  limitation, retained boundary protections, raw and adjusted token accounting,
+  budgets and thresholds for owner review; a separately reported
   effort analysis reuses the common-medium primary observations.
 - [Engineering review](../README.md) owns the recorded decision and integrated
   delivery; [Engineering reviewer delivery](../delivery/README.md) depends on
@@ -158,7 +168,9 @@ none/low/medium/high effort analysis on the same inputs. Function/context
 extraction happens during preparation and requires no production reviewer. The
 initial corpus does not complete the historical/diversity evidence required
 above or support a production granularity decision. Actual prepared sources,
-private labels, runtime binding and input-only boundary evidence remain
-unprepared and require the protocol's later authorization and freeze gates. This
-definition executes no telemetry preparation, experimental wrapper, trial,
+private labels, runtime binding, retained boundary evidence, and matched input
+baselines remain unprepared and require the protocol's later authorization and
+freeze gates. The accepted CLI limitation is not evidence that these
+requirements have been satisfied. This definition executes no telemetry
+preparation, experimental wrapper, trial,
 production architecture or implementation. All acceptance criteria remain TODO.

@@ -12,11 +12,25 @@ model dispatch. The fourth returned the requested neutral greeting under
 invocation. It returned 7,983 input tokens and 15 output tokens; server-internal
 binding details remain unavailable.
 
-**Current Step 1 status: blocked / boundary unverified.** The combined fourth
-static candidate below still declares an outer `functions.exec` wrapper and
-MCP resource tools, and retains permission, collaboration, and environment
-context. The separate attempt 04 neutral response confirmed requested `none`
-effort support for that invocation only; it did not verify isolation.
+**Current Step 1 status: maintainer-accepted known issue; boundary unverified.**
+The maintainer decided to continue with `codex exec`, accepting the remaining
+tool declarations and injected permission, collaboration, and environment
+context, and to subtract measured configuration-specific input baselines in
+final reporting. The combined fourth static candidate still declares
+`functions.exec`/`functions.wait`, MCP resource readers, and `apply_patch`.
+Their presence alone no longer blocks preparation. This is acceptance of a
+limitation, not verified tool-free operation or authenticated runtime isolation.
+Attempt 04 confirmed requested `none` effort support for that invocation only.
+
+The
+[protocol's CLI boundary and accounting rules](protocol.md#cli-invocation-boundary-and-accepted-limitation)
+retain immutable-input, read-only-source, withheld-label and prior-answer
+separation, bounded-resource, and failure/stop protections. Token subtraction
+cannot undo possible tool/context influence on judgments. Other preparation
+requirements remain unresolved; neither all bounded preparation nor the
+Evaluation is complete. All acceptance criteria remain TODO. No additional
+calls, fixtures, wrapper implementation, corpus trials, or production delivery
+are authorized by this amendment.
 
 ## Proposed neutral inputs
 
@@ -68,9 +82,10 @@ complete rendered prompt input is in
 declaration excerpt lists `apply_patch` and MCP resource readers. Its generic
 example mentions `exec_command`, but this diagnostic does not establish that
 `exec_command` or those nested readers are available in an authenticated live
-invocation. The visible declaration itself violates the protocol's no-tool gate.
-This is evidence about the non-live debug render only, not a claim about
-universal CLI behavior or actual live file access.
+invocation. The visible declaration failed the former no-tool gate; the
+maintainer now accepts its presence as the known limitation above. This is
+evidence about the non-live debug render only, not a claim about universal CLI
+behavior or actual live file access.
 
 The render also included developer permission and collaboration-mode messages
 and a user environment bundle. It showed no project `AGENTS.md`, skill,
@@ -214,9 +229,10 @@ maintainer-requested neutral support check, within the original four-call
 per-effort allowance. This is a retained preparation deviation; it does not
 change the trial stop rule or authorize corpus trials.
 
-The prior debug render still fails the input-only gate. A successful neutral
-greeting would not establish tool isolation or production readiness. No corpus
-trial, fixture, harness, or Evaluation completion is authorized by this
+The prior debug render retains the accepted tool/context limitation. A
+successful neutral greeting does not establish tool isolation or production
+readiness. No corpus trial, fixture, harness, or Evaluation completion is
+authorized by this
 preparation record.
 
 ## Follow-up non-live tool-surface investigation
@@ -265,11 +281,11 @@ unchanged outer declarations do not establish removal of the outer host wrapper.
 
 The noninteractive `codex exec --help` surface offers no general tool
 allowlist/denylist or output of a complete authenticated runtime tool
-declaration. No supported candidate has passed the protocol's input-only gate;
-this work therefore stops before another live call. The retained renders are
-static diagnostic evidence, not proof of actual invocation capability or
-runtime context. No change to the prior raw artifacts or neutral-call budget is
-made.
+declaration. No supported candidate established tool-free/input-only operation.
+The investigation stopped before another live call; the maintainer has since
+accepted that remaining limitation. The retained renders are static diagnostic
+evidence, not proof of actual invocation capability or runtime context. No
+change to the prior raw artifacts or neutral-call budget is made.
 
 ## Pinned app-server controls and offline schemas
 
@@ -362,9 +378,36 @@ The thread/start and turn/start field excerpts are now retained locally in
 with hashes for the full generated schema source files, so the quoted field
 semantics do not depend on a temporary directory.
 
-**Next decision:** stop Step 1 as blocked until the owner identifies a supported
-host/invocation surface that removes the outer tool wrapper and permits review
-of complete effective tools and context. Further feature-flag combinations
-have not met the gate. No live call is proposed or authorized by this record.
+**Step 1 disposition:** the maintainer accepts the remaining declarations and
+injected context as a known issue and keeps the CLI route. Further removal of
+the outer wrapper is no longer a prerequisite to preparation. The static
+observations and authenticated-boundary uncertainty remain as recorded; no live
+call or additional capability is established by this disposition.
+
+## Baseline accounting disposition
+
+Final reports will show raw usage categories, adjusted input, and adjusted
+complete tokens. Subtract the applicable measured fixed input baseline once per
+session, including each of B's three and C's 24 calls per repetition, while
+retaining complete provider-total output consumption without double-counting
+reasoning tokens. The
+[protocol](protocol.md#candidate-invocation-and-input-overhead) owns baseline
+provenance, the pre-trial freeze, drift/recalibration, unknown and negative
+values, complete output accounting, aggregation, and raw-consumption budget/cost
+rules.
+
+No matched configuration baseline is frozen here. The 7,983 input tokens from
+attempt 04 include its neutral task and all other supplied input; they do not
+measure exact unintended-context tokens. The separate 7,380-token observation
+remains maintainer-reported. Neither value is universally subtractable across
+efforts or configurations. The neutral prompt contribution belongs in a measured
+baseline unless separately measured and removed by the declared calculation.
+Opaque dynamic metadata and unavailable runtime binding/context remain limits
+to declaring an applicable fixed baseline. Missing baselines or usage leave
+adjusted totals unavailable, rather than inferred from these greetings.
+
+Attempt counts remain none 4/4 and total 4/16; the other efforts remain
+not-started. This disposition neither replenishes the exhausted none allowance
+nor performs other-effort calibration. Raw evidence files remain unchanged.
 
 [candidate-record]: preparation/evidence/prompt-input-candidates.json
