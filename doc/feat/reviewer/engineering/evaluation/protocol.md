@@ -804,3 +804,7 @@ completion still requires AC-1's full declared comparison, AC-2's matched A/B/C
 quality/resource observations, and AC-3's actual boundary verification. Neither
 this protocol nor initial static-comparison success completes those criteria,
 adopts review policy, or authorizes production delivery.
+
+The current non-live CLI findings are recorded in
+[bounded preparation](preparation.md). They do not complete any
+Evaluation criterion or authorize trials.
