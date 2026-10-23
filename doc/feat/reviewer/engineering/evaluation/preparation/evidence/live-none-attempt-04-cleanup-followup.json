@@ -1,0 +1,32 @@
+{
+  "attempt_id": 4,
+  "inspection_time_utc": "2026-10-23T18:07:43Z",
+  "checks": [
+    {
+      "argv": [
+        "ps",
+        "-p",
+        "94280",
+        "-o",
+        "pid=,pgid=,stat=,command="
+      ],
+      "exit_status": 1,
+      "output": ""
+    },
+    {
+      "argv": [
+        "ps",
+        "-axo",
+        "pid=,pgid=,stat=",
+        "|",
+        "rg",
+        " +94280( |$)"
+      ],
+      "exit_status": 1,
+      "output": ""
+    }
+  ],
+  "result": "No leader or process-group member remained at inspection; no cleanup action was needed.",
+  "preserved_invocation_record": "cleanup_complete=false; cleanup_exception=PermissionError; exit_status=null",
+  "limitation": "The later process inspection confirms absence at inspection time, but cannot reconstruct the leader exit status that the supervisor could not reap."
+}

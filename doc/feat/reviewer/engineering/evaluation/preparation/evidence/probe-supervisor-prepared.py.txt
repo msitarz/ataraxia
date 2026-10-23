@@ -1,0 +1,216 @@
+import argparse
+import hashlib
+import json
+import os
+import selectors
+import signal
+import subprocess
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path('/private/tmp/ataraxia-reviewer-preflight-probe')
+CWD = ROOT / 'cwd'
+REPO = Path('/private/tmp/ataraxia-reviewer-preflight')
+EVIDENCE = REPO / 'doc/feat/reviewer/engineering/evaluation/preparation/evidence'
+PROMPT = 'hi how are you'
+INSTRUCTIONS = REPO / 'doc/feat/reviewer/engineering/evaluation/preparation/min.md'
+ARGV = [
+    'codex', 'exec', '--model', 'gpt-6-luna',
+    '-c', 'model_reasoning_effort="none"',
+    '-c', f'model_instructions_file="{INSTRUCTIONS}"',
+    '-c', 'skills.bundled.enabled=false',
+    '-c', 'web_search="disabled"',
+    '-c', 'features.multi_agent=false',
+    '-c', 'features.unified_exec=false',
+    '-c', 'features.shell_tool=false',
+    '-c', 'tools.experimental_request_user_input.enabled=false',
+    '--disable', 'apps', '--disable', 'artifact',
+    '--skip-git-repo-check', PROMPT, '--json',
+]
+OUTPUT_LIMIT = 1024 * 1024
+TIMEOUT_SECONDS = 300
+CLEANUP_SECONDS = 10
+
+
+def plan_record(launch_requested: bool, launch_authorized: bool) -> dict[str, object]:
+    return {
+        'argv': ARGV,
+        'cwd': str(CWD),
+        'prompt_sha256': hashlib.sha256(PROMPT.encode()).hexdigest(),
+        'instruction_file': str(INSTRUCTIONS),
+        'instruction_sha256': hashlib.sha256(INSTRUCTIONS.read_bytes()).hexdigest(),
+        'timeout_seconds': TIMEOUT_SECONDS,
+        'cleanup_seconds': CLEANUP_SECONDS,
+        'combined_output_limit_bytes': OUTPUT_LIMIT,
+        'concurrency': 1,
+        'launch_requested': launch_requested,
+        'launch_authorized': launch_authorized,
+    }
+
+
+def validate_plan() -> None:
+    if '--skip-git-repo-check' not in ARGV:
+        raise ValueError('external cwd requires --skip-git-repo-check')
+    if ARGV.count('model_reasoning_effort="none"') != 1:
+        raise ValueError('argv must contain exactly one none effort setting')
+    if ARGV.count(PROMPT) != 1:
+        raise ValueError('argv must contain exactly one unchanged greeting')
+    if ARGV[ARGV.index('--model') + 1] != 'gpt-6-luna':
+        raise ValueError('argv model changed')
+
+
+def signal_group(pgid: int, sig: int) -> None:
+    try:
+        os.killpg(pgid, sig)
+    except ProcessLookupError:
+        pass
+
+
+def cancel(signum: int, frame: object) -> None:
+    raise KeyboardInterrupt(signal.Signals(signum).name)
+
+
+def group_exists(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    return True
+
+
+def terminate_and_reap(process: subprocess.Popen[bytes]) -> bool:
+    """Stop the full session and reap its leader within the cleanup budget."""
+    deadline = time.monotonic() + CLEANUP_SECONDS
+    try:
+        signal_group(process.pid, signal.SIGTERM)
+        grace_deadline = min(deadline, time.monotonic() + 1.0)
+        while time.monotonic() < grace_deadline and group_exists(process.pid):
+            process.poll()
+            time.sleep(min(0.05, grace_deadline - time.monotonic()))
+    finally:
+        signal_group(process.pid, signal.SIGKILL)
+        while process.poll() is None and time.monotonic() < deadline:
+            try:
+                process.wait(timeout=min(0.05, deadline - time.monotonic()))
+            except subprocess.TimeoutExpired:
+                pass
+        while group_exists(process.pid) and time.monotonic() < deadline:
+            time.sleep(min(0.05, deadline - time.monotonic()))
+    return not group_exists(process.pid) and process.poll() is not None
+
+
+def launch() -> None:
+    CWD.mkdir(parents=True, exist_ok=True)
+    record = plan_record(launch_requested=True, launch_authorized=True)
+    started = time.monotonic()
+    deadline = started + TIMEOUT_SECONDS
+    record['start_utc'] = datetime.now(timezone.utc).isoformat()
+    record['start_monotonic'] = started
+    process = None
+    selector = selectors.DefaultSelector()
+    chunks = {'stdout': bytearray(), 'stderr': bytearray()}
+    total = 0
+    output_limit_hit = False
+    timeout_hit = False
+    cleanup_complete = False
+    process_start_failed = False
+    exception_text = None
+    cleanup_exception = None
+    stop_reason = 'completed'
+    signal.signal(signal.SIGTERM, cancel)
+
+    try:
+        process = subprocess.Popen(
+            ARGV,
+            cwd=CWD,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            start_new_session=True,
+        )
+        for name, stream in [('stdout', process.stdout), ('stderr', process.stderr)]:
+            selector.register(stream, selectors.EVENT_READ, name)
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                timeout_hit = True
+                stop_reason = 'timeout'
+                break
+            for key, _ in selector.select(min(0.25, remaining)):
+                data = os.read(key.fd, 65536)
+                if not data:
+                    selector.unregister(key.fileobj)
+                    continue
+                room = OUTPUT_LIMIT - total
+                retained = data[:room]
+                chunks[key.data].extend(retained)
+                total += len(retained)
+                if len(data) > room:
+                    output_limit_hit = True
+                    stop_reason = 'output_limit'
+                    break
+            if output_limit_hit:
+                break
+    except BaseException as exc:
+        exception_text = f'{type(exc).__name__}: {exc}'
+        process_start_failed = process is None
+        stop_reason = 'exception'
+        raise
+    finally:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        if process is not None:
+            try:
+                cleanup_complete = terminate_and_reap(process)
+            except BaseException as exc:
+                cleanup_exception = f'{type(exc).__name__}: {exc}'
+        for key in list(selector.get_map().values()):
+            try:
+                selector.unregister(key.fileobj)
+            except (KeyError, ValueError):
+                pass
+        selector.close()
+        if process is not None:
+            for stream in (process.stdout, process.stderr):
+                if stream is not None:
+                    stream.close()
+        record.update({
+            'end_utc': datetime.now(timezone.utc).isoformat(),
+            'end_monotonic': time.monotonic(),
+            'exit_status': process.returncode if process is not None else None,
+            'process_start_failed': process_start_failed,
+            'combined_output_bytes': total,
+            'output_limit_hit': output_limit_hit,
+            'timeout_hit': timeout_hit,
+            'stop_reason': stop_reason,
+            'cleanup_complete': cleanup_complete,
+            'cleanup_exception': cleanup_exception,
+            'attempts_launched': process is not None,
+            'exception': exception_text,
+        })
+        for name, data in chunks.items():
+            suffix = 'jsonl' if name == 'stdout' else 'txt'
+            (EVIDENCE / f'live-none-attempt-03-{name}.{suffix}').write_bytes(data)
+        (EVIDENCE / 'live-none-attempt-03-invocation.json').write_text(
+            json.dumps(record, indent=2) + '\n'
+        )
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--launch', action='store_true')
+    parser.add_argument('--authorized', action='store_true')
+    args = parser.parse_args()
+    validate_plan()
+    if args.launch and not args.authorized:
+        parser.error('--launch requires explicit --authorized')
+    if args.authorized and not args.launch:
+        parser.error('--authorized requires --launch')
+    EVIDENCE.mkdir(parents=True, exist_ok=True)
+    plan = plan_record(args.launch, args.authorized)
+    (EVIDENCE / 'live-none-attempt-03-plan.json').write_text(
+        json.dumps(plan, indent=2) + '\n'
+    )
+    print(json.dumps(ARGV))
+    if args.launch:
+        launch()

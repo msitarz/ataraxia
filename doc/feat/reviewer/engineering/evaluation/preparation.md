@@ -1,10 +1,16 @@
 # Bounded CLI preparation
 
-This record covers the authorized, non-live preparation increment for the
+This record covers bounded preparation for the
 [comparison protocol](protocol.md). It does not change the Evaluation's
 acceptance criteria or authorize fixtures, corpus trials, or production
-reviewer delivery. No model request was made, so there are no observed usage
-totals or neutral-call JSONL.
+reviewer delivery. The maintainer confirms that `gpt-6-luna` supports `none`.
+Four authorized neutral CLI invocations were made. The first two were refused
+because the external working directory was not trusted. The third failed
+during local app-server initialization with `Operation not permitted`, before
+model dispatch. The fourth returned the requested neutral greeting under
+`gpt-6-luna` with reasoning effort `none`, confirming acceptance for that
+invocation. It returned 7,983 input tokens and 15 output tokens; server-internal
+binding details remain unavailable.
 
 ## Proposed neutral inputs
 
@@ -24,9 +30,12 @@ cannot establish tool isolation.
 
 The installed CLI reported version `0.164.0`. Its bundled catalog lists
 `low`, `medium`, `high`, `xhigh`, and `max` for `gpt-6-luna`, but omits `none`.
-Omission does not establish that `none` is unsupported. Strict configuration
-parsing accepted `model_reasoning_effort="none"`; no model request checked
-runtime acceptance or effective effort. The [OpenAI Configuration
+This unchanged bundled catalog is an older CLI artifact; its omission does not
+override the maintainer's direct confirmation that `none` is supported. Strict
+configuration parsing accepted `model_reasoning_effort="none"`. The successful
+neutral response in attempt 04 confirms acceptance of the requested `none`
+setting for that invocation. The response did not expose server-internal model
+binding or effective-setting telemetry. The [OpenAI Configuration
 Reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 documents the candidate's relevant instruction, shell, and memory settings,
 and states that a user opt-out of `features.unified_exec` is ignored. That
@@ -67,13 +76,19 @@ or retained.
 
 ## Effort status
 
-No live calls were made. The preparation allowance is 16 neutral calls total,
-at most four per effort; 0/16 calls were used. All runtime-effective effort
-and usage remain unknown; all Evaluation acceptance criteria remain TODO.
+The preparation allowance is 16 neutral calls total, at most four per effort.
+All four none attempts were used, leaving 12/16 total attempts for other
+efforts. Three attempts produced no model response; attempt 04 returned a
+neutral response and usage telemetry.
+The prior maintainer-reported baseline of 7,380 `input_tokens` for a separate
+none/greeting invocation remains reported, not independently captured here.
+Attempt 04's successful response confirms the requested `none` effort was
+accepted for that invocation. The stream does not expose server-internal model
+binding. All Evaluation acceptance criteria remain TODO.
 
 | Effort | Neutral calls | Runtime-effective effort | Usage |
 | --- | ---: | --- | --- |
-| none | 0/4 | unknown; strict parse accepted, catalog omitted | unknown / not started |
+| none | 4/4 attempts; 1 response | requested effort accepted for attempt 04; internal binding unknown | attempt 04: 7,983 input, 0 cached input, 0 cache-write input, 15 output, 0 reasoning tokens; prior 7,380-token baseline is maintainer-reported |
 | low | 0/4 | unknown / not started | unknown / not started |
 | medium | 0/4 | unknown / not started | unknown / not started |
 | high (`hard`) | 0/4 | unknown / not started | unknown / not started |
@@ -129,14 +144,71 @@ The rendering did not include a source timestamp, and the original shell call
 did not record capture time. File modification times reflect copying into this
 worktree, not observation time.
 
-## Stopping point
+## Live attempt and stopping point
 
-The proposed command in
-[`protocol.md`](protocol.md) is not run: an empty directory and read-only
-sandbox do not establish input-only operation. The exposed declaration and
-inherited context fail the current no-tool/minimal-context gate. No live runner
-was built because the supported non-live surfaces already show that the
-candidate does not pass that gate. Any later capture method must follow the
-protocol's bounds and retain raw output and only usage metadata actually
-returned. This is a blocked preparation result, not successful telemetry
-preparation, and does not complete any Evaluation criterion.
+All four attempts used the unchanged greeting and exact reviewed `min.md` bytes
+from an external temporary working directory. The standard-library capture
+supervisors were configured for a 300-second deadline, 10-second cleanup, 1 MiB
+combined output cap, and concurrency one; these configured bounds are recorded
+with each attempt. The source used for attempts 01-02 is retained in
+[`probe-supervisor-attempts-01-02.py.txt`](preparation/evidence/probe-supervisor-attempts-01-02.py.txt).
+The exact argv, cwd, UTC and monotonic timing, exit status, prompt and
+instruction digests, stdout, and stderr for each attempt are retained in the
+[`attempt 01 evidence`](preparation/evidence/live-none-attempt-01-invocation.json)
+and
+[`attempt 02 evidence`](preparation/evidence/live-none-attempt-02-invocation.json).
+Both commands exited with status 1 before any model request and reported
+`Not inside a trusted directory and --skip-git-repo-check was not specified.`
+Both used the same argv without that flag; the second was intended to add it,
+but the supervisor's argv remained unchanged. Attempt 03 used the reviewed
+`--skip-git-repo-check` flag, but local app-server initialization failed with
+`Operation not permitted` before a model response. Its raw stderr and empty
+JSONL stdout are retained in the
+[`attempt 03 evidence`](preparation/evidence/live-none-attempt-03-invocation.json).
+The supervisor recorded `exit_status: null`, `cleanup_complete: false`, and a
+process-group `PermissionError`. A later elevated inspection found no matching
+leader or process-group member. The original exit status remains unavailable;
+the follow-up is retained separately in
+[`attempt 03 cleanup follow-up`](preparation/evidence/live-none-attempt-03-cleanup-followup.json).
+
+Attempt 04 ran the reviewed command through the supervisor with elevated
+permissions. The JSONL stream contains a neutral greeting and a completed-turn
+usage record. It reports 7,983 `input_tokens`, zero cached and cache-write
+input tokens, 15 `output_tokens`, and zero `reasoning_output_tokens`; no cost
+field or server-internal model binding was returned. The stream contains no
+tool-call event, which does not establish input-only isolation. The raw
+response is retained in
+[`attempt 04 stdout`](preparation/evidence/live-none-attempt-04-stdout.jsonl)
+with its
+[`invocation record`](preparation/evidence/live-none-attempt-04-invocation.json)
+and stderr. The supervisor again recorded `cleanup_complete: false` and a
+process-group `PermissionError`. Although attempt 04 was dispatched with
+elevated permissions, that cleanup call still failed. Later elevated checks
+found neither PID/PGID 94280 nor any process-group member. That follow-up is
+retained in
+[`attempt 04 cleanup follow-up`](preparation/evidence/live-none-attempt-04-cleanup-followup.json);
+the leader's exit status could not be reconstructed. No further launch was
+made. Hard token/context caps remain unknown; the 32,000-token planning cap is
+not a runtime-enforced limit.
+
+The fourth-attempt supervisor and argv are retained in
+[`probe-supervisor-attempt-04.py.txt`](preparation/evidence/probe-supervisor-attempt-04.py.txt)
+and [`attempt 04 plan`](preparation/evidence/live-none-attempt-04-plan.json).
+The plan asserts the required `--skip-git-repo-check`, exactly one `none`
+setting, and exactly one unchanged greeting. The supervisor requires both
+`--launch` and `--authorized`, records process ID and group ID, applies a
+300-second deadline independent of leader exit, and configures process-group
+termination and leader reaping for the 10-second cleanup window. Cleanup
+attempts 03 and 04 recorded `PermissionError`; later elevated checks found no
+remaining processes in either group.
+
+Attempts 01-03 met the protocol's infrastructure stop condition. The owner
+separately authorized attempt 04 as an elevated final recovery for the
+maintainer-requested neutral support check, within the original four-call
+per-effort allowance. This is a retained preparation deviation; it does not
+change the trial stop rule or authorize corpus trials.
+
+The prior debug render still fails the input-only gate. A successful neutral
+greeting would not establish tool isolation or production readiness. No corpus
+trial, fixture, harness, or Evaluation completion is authorized by this
+preparation record.

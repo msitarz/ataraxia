@@ -1,0 +1,14 @@
+{
+  "attempt_id": 4,
+  "command": [
+    "python3",
+    "doc/feat/reviewer/engineering/evaluation/preparation/evidence/probe-supervisor-attempt-04.py.txt",
+    "--launch",
+    "--authorized"
+  ],
+  "sandbox_permissions": "require_escalated",
+  "authorization": "owner-approved fourth and final bounded neutral call",
+  "supervisor_exit_status": 0,
+  "launched_codex_pid": 94280,
+  "launched_process_group": 94280
+}

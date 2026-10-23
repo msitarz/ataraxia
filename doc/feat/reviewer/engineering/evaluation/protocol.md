@@ -162,9 +162,11 @@ runtime verification. No cross-model comparison is planned.
 
 Preparation must establish the actual provider/model binding and effective
 effort for every level. Read-only inspection of codex-cli 0.164.0's bundled
-model catalog advertised low, medium, high, xhigh, and max for `gpt-6-luna`,
-but not none. The maintainer reports a successful none invocation. Catalog
-absence does not establish impossibility.
+model catalog omits `none` from its `gpt-6-luna` entries. The maintainer
+confirms support, and a successful neutral probe confirms acceptance of the
+requested level for that invocation. See [bounded preparation](preparation.md)
+for the probe record and limits; catalog omission does not establish
+impossibility.
 
 - Verify accepted and runtime-effective effort before trials for that level.
 - Never substitute a default effort or silently remove a level.
@@ -805,6 +807,6 @@ quality/resource observations, and AC-3's actual boundary verification. Neither
 this protocol nor initial static-comparison success completes those criteria,
 adopts review policy, or authorizes production delivery.
 
-The current non-live CLI findings are recorded in
+Current CLI findings and all four neutral attempts are recorded in
 [bounded preparation](preparation.md). They do not complete any
 Evaluation criterion or authorize trials.
