@@ -72,8 +72,9 @@ integration under this parent's acceptance criteria.
   with independent sessions and no interactive parent intervention required for
   completion; the engineering experiment's multi-rule baseline is a comparator,
   not a production job or an exception for production reviews.
-- Subject granularity follows a recorded decision supported by evidence,
-  potentially varying by criterion; whole-diff and function scope remain open.
+- Production subject granularity follows a recorded decision supported by
+  evidence, potentially varying by criterion; whole-diff and function scope
+  remain open.
 - Each criterion exposes applicability and deterministic-enforcement
   information; applicability favors avoiding missed relevant rules, and
   exclusions have inspectable reasons in coverage reports.
@@ -191,26 +192,26 @@ framework.
 
 ## Children
 
-- TODO [Engineering review](engineering/README.md): Let a parent agent obtain
-  focused engineering judgments for a change with explicit coverage and
-  evidence.
+- TODO [Engineering review](engineering/README.md): Integrate engineering-review
+  evidence and a recorded granularity decision into a usable reviewer with
+  explicit coverage and traceable judgments.
 
 ## Additional context
 
-Engineering is one independently useful vertical outcome: invocation, domain
-selection, execution, and report together make review usable. Separate runner,
-discovery, and aggregation Works are not justified solely by implementation
-layers. Whether this child needs further coherent outcomes remains unknown
-until bounded typed architecture under
+Engineering owns the integrated vertical outcome, with separate
+[Evaluation evidence](engineering/evaluation/README.md) and
+[usable Delivery](engineering/delivery/README.md) children. Delivery follows
+completed Evaluation evidence and the engineering owner's recorded decision.
+Separate runner, discovery, and aggregation Works are not justified solely by
+implementation layers. Any further decomposition remains unknown until bounded
+typed architecture under
 [Work definition](../../work-definition.md#decomposition-and-architectural-exploration).
 
-The
-[engineering experiment](engineering/README.md#ac-7-todo-granularity-follows-representative-detection-evidence)
-belongs to that child because its incidents, criteria, owner labels, and
-delivery decision concern engineering effectiveness. The parent owns
-cross-domain invariants and integration, not a duplicate experiment criterion.
-No strategy winner or function-level or whole-diff child is chosen before
-evidence exists.
+The engineering parent owns the
+[granularity decision](engineering/README.md#ac-7-todo-granularity-follows-representative-detection-evidence);
+its Evaluation owns the experiment's evidence without adopting policy. This
+parent owns cross-domain invariants and integration. No strategy winner or
+function-level or whole-diff child is chosen before evidence exists.
 
 Test review is a distinct future domain with its own
 [testing rules](../../testing.md), not engineering review applied to test files.
