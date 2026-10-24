@@ -20,7 +20,6 @@ from script.process_supervisor import (
     CleanupOutcome,
     Completed,
     InfrastructureFailure,
-    NativeProcessEffects,
     NotLaunched,
     OutputLimitExceeded,
     ProcessHandle,
@@ -692,22 +691,6 @@ def test_capture_control_flow_exceptions_cleanup_and_propagate(
     evidence = failure_evidence(received)
     assert evidence is not None
     assert evidence.observation.cleanup.dispatch_permitted
-
-
-def test_default_unimplemented_acquisition_remains_visible(
-    attempt_request: AttemptRequest,
-) -> None:
-    # Given
-    clock = FakeClock([])
-
-    # When
-    with pytest.raises(
-        NotImplementedError, match="process acquisition is pending"
-    ) as raised:
-        asyncio.run(run_attempt(attempt_request, NativeProcessEffects(), clock))
-
-    # Then
-    assert failure_evidence(raised.value) is None
 
 
 def test_acquisition_adapter_cancellation_reports_uncertain_ownership(

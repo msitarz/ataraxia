@@ -1,12 +1,15 @@
 # Process supervisor architecture
 
-**Status: reviewed boundary; typed wiring implemented, process behavior
-pending.** The retained [reviewed interface](design/reviewed-interface.pyi)
+**Status: reviewed boundary; native child AC-1 and AC-2 implementation
+accepted.** Representative caller scenarios exercise the child AC-3 boundary,
+while actual parent Evaluation harness integration remains pending. The retained
+[reviewed interface](design/reviewed-interface.pyi)
 records the original agreed types. The active
 [`script/process_supervisor.py`](../../../../../../script/process_supervisor.py)
-defines the importable records, effect seam, one-attempt composition, and narrow
-caller stop hook. Its native process adapter still raises `NotImplementedError`;
-the wiring tests use fake collaborators and establish no OS lifecycle behavior.
+defines the importable records, effect seam, one-attempt composition, narrow
+caller stop hook, and native process adapter. Disposable process regressions
+exercise native lifecycle and a representative caller pattern; actual AC-3
+integration in the parent Evaluation harness remains pending.
 
 ## TL;DR
 
@@ -18,8 +21,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   while the parent Evaluation Work owns the full experiment runner.
 - The async framework supplies subprocess, stream, task-cancellation, and wait
   mechanisms, while POSIX supplies process-group, signal, and exit mechanisms.
-- The reviewed design does not establish runtime guarantees until implemented
-  and supported by evidence.
+- Runtime claims remain limited to the specific disposable process scenarios
+  exercised by focused regressions.
 - The scope in the [Work contract](README.md#additional-context) governs typed
   wiring and implementation.
 - The supervisor is the child's sole service, with only the call-site
@@ -33,7 +36,7 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 - `AttemptRequest` describes one attempt with positive finite execution and
   cleanup timeouts and a nonnegative integer `output_limit_bytes`.
 - `AttemptRequest` construction enforces those timeout and output-limit
-  invariants while native launch enforcement remains pending.
+  invariants before native acquisition begins.
 - Zero disables the output byte cap, while a positive value caps the total
   retained stdout and stderr bytes.
 - Invalid or nonfinite timeouts and negative output limits refuse launch.
@@ -95,7 +98,7 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 - The boundary must not leave an unawaited creation operation that can later
   acquire an unowned child.
 
-## Wired composition (behavior pending)
+## Wired composition and native behavior
 
 - `run_attempt` starts its monotonic clock immediately before acquisition and
   derives the execution deadline from that same instant.
@@ -114,6 +117,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   capture failure, or capture cancellation.
 - Capture cancellation retains its partial output in the same
   `AttemptCancelled` object while adding final cleanup and elapsed evidence.
+- Cancellation during reader settlement keeps both the cancellation and the
+  original capture error inspectable.
 - The capture effect translates cancellation while it owns stream buffers into
   `AttemptCancelled` with those partial bytes.
 - If raw cancellation escapes or capture fails before exposing buffers, output
@@ -142,9 +147,16 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   collaborator and does not detach its cleanup task.
 - Elapsed time ends after cleanup evidence returns, and the clock boundary is
   covered by fake-effect wiring tests.
-- `NativeProcessEffects` leaves acquisition, stream capture, direct-child wait,
-  process-group signaling, and bounded cleanup unimplemented, and acquisition's
-  `NotImplementedError` remains visible to its caller.
+- `NativeProcessEffects` launches the supplied argv in a new session and
+  captures separate streams under a combined cap and execution deadline.
+- It SIGKILLs the owned group before awaiting the direct child under the
+  cleanup deadline and records signal and wait failures.
+- Disposable regressions observe completion, nonzero status, exact and
+  overflowing caps, zero-cap capture, descendant-held pipes, repeated
+  cancellation output retention, delayed acquisition settlement, and signal
+  exit status within those scenarios.
+- Scoped asyncio-boundary substitutions exercise direct-wait expiry and error
+  accounting without claiming those outcomes from the real OS.
 - Acquisition interruption before a handle is returned is reported as
   uncertain ownership, while absence of a late unowned child remains unproven.
 - `call_supervisor` forwards attempt results unchanged and calls the
@@ -173,8 +185,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   cancellation, tagged-result forwarding, status reconciliation, stop gating,
   repeated task cancellation, acquisition settlement, and elapsed-time
   boundaries only.
-- Timeout enforcement, output capture, acquisition ownership, and OS cleanup
-  behavior still require implementation and boundary evidence.
+- Native adapter coverage remains limited to the disposable scenarios listed
+  in the evidence section and leaves other OS outcomes unestablished.
 
 ## External collaborators
 
@@ -182,11 +194,19 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 
 - The parent owns the full caller, trial scheduling, retry policy, budgets,
   scoring, and evidence persistence.
-- This child integrates the supervisor only far enough to establish the
-  [AC-3 stop and accounting guarantees](README.md#ac-3-todo-stop-handling-prevents-further-experimental-dispatch).
-- The narrow integration handles signals and cancellation, stops dispatch on
-  failed or uncertain cleanup, preserves retry ownership without overlap, and
-  retains active-call status and not-started accounting.
+- The executable `process_supervisor_caller.py` fixture demonstrates one
+  representative call-site pattern using public `call_supervisor` and
+  `run_attempt` paths.
+- Its regressions observe delivered `SIGINT` and `SIGTERM`, task cancellation,
+  stop latching before cancellation and recording, unsafe-cleanup dispatch
+  prevention, and not-started accounting.
+- Stop regressions attempt later real CLI dispatch through the same guard and
+  assert its fixture marker is absent when the latch refuses it.
+- Its retry scenario observes dispatch after direct-child reaping and no
+  overlap by retaining the prior child PID, exit status, and direct-wait
+  evidence before the retry dispatch event.
+- These representative tests do not verify wiring in the absent Evaluation
+  harness; parent-owned integration remains necessary before AC-3 assessment.
 - The caller resolves `codex` through `PATH` before every attempt.
 - The caller records the resolved executable, actual version, and environment
   configuration and provenance.
@@ -240,17 +260,18 @@ flowchart LR
 ## Evidence still required
 
 - Static checks can verify declared relationships and imports only.
-- Runtime work must establish combined-output capping for positive limits,
-  capture without a byte cap for zero, rejection of negative limits, and
-  truthful completion status.
-- Runtime work must establish timeout when a leader exits while an owned child
-  keeps output open.
-- Runtime work must establish overflow termination for positive output limits
-  instead of successful truncation.
-- Runtime work must establish signal/wait reporting and cancellation
+- Disposable-process tests observe combined-output capping for positive limits,
+  uncapped capture at zero, and truthful completion status.
+- A disposable-process test observes timeout when a leader exits while an
+  owned child keeps output open.
+- Disposable-process tests observe overflow termination for positive output
+  limits instead of successful truncation.
+- Disposable-process tests observe signal/wait reporting and cancellation
   propagation with cleanup evidence.
-- Runtime work must establish caller stop/retry accounting.
-- No such behavior is claimed by this design.
+- Representative caller tests exercise the public stop hook, signal delivery,
+  cleanup-failure stop, accounting, and retry ordering.
+- Actual Evaluation-harness signal wiring, accounting, and scheduling remain
+  pending parent-owned integration and review.
 - Closing a suspended attempt coroutine cannot await asynchronous finalization.
 - Cleanup guarantees require the supported cancellation and awaiting lifecycle;
   raw closure alone does not establish OS cleanup.

@@ -20,14 +20,17 @@ Accepted limitations for this experiment:
 - Direct termination may interrupt buffered output or local state writes.
 - The boundary has no additional guard against PID/PGID reuse.
 
-Native acquisition, capture, and cleanup operations remain pending.
+Native acquisition, capture, and cleanup are implemented by the adapter below;
+the contract limits what its process observations establish.
 """
 
 import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass, replace
 import math
+import os
 from pathlib import Path
+import signal
 from time import monotonic
 from typing import Literal, Never, Protocol
 
@@ -231,9 +234,9 @@ async def run_attempt(
     """Compose one attempt's acquisition, observation, and cleanup effects.
 
     Timing starts before acquisition and ends after cleanup evidence returns.
-    The default adapter explicitly leaves native process behavior pending.
-    This wiring does not establish timeout enforcement, capture, cleanup, or OS
-    guarantees.
+    The default adapter uses ``NativeProcessEffects``; its disposable-process
+    evidence is limited to the scenarios exercised by focused integration
+    tests.
 
     Acquisition, capture, or cleanup cancellation propagates as
     ``AttemptCancelled``. Unexpected errors propagate unchanged; acquired
@@ -376,11 +379,26 @@ class ProcessEffects(Protocol):
 
 @dataclass(frozen=True)
 class NativeProcessEffects:
-    """Placeholder for the OS adapter; leaf process behavior is still pending."""
+    """Native asyncio/POSIX process effects for one owned CLI attempt."""
 
     async def acquire(self, request: AttemptRequest, /) -> ProcessHandle | NotLaunched:
-        """Pending native child acquisition."""
-        raise NotImplementedError("process acquisition is pending")
+        """Acquire the direct child in a new POSIX session.
+
+        Returns:
+            The native handle, or a normalized no-launch OS error.
+        """
+        try:
+            process = await asyncio.create_subprocess_exec(
+                *request.argv,
+                cwd=request.cwd,
+                stdin=asyncio.subprocess.DEVNULL,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                start_new_session=True,
+            )
+        except OSError as exc:
+            return NotLaunched(type(exc).__name__, str(exc))
+        return _NativeHandle(process)
 
     async def capture(
         self,
@@ -389,14 +407,86 @@ class NativeProcessEffects:
         execution_deadline: float,
         /,
     ) -> AttemptResult:
-        """Pending stream capture and direct-child wait."""
-        raise NotImplementedError("stream capture and direct-child wait are pending")
+        """Drain separate streams under one combined cap and execution deadline.
+
+        Returns:
+            The terminal capture result with partial bytes when observed.
+
+        Raises:
+            RuntimeError: Required subprocess streams are absent.
+            TypeError: The handle belongs to a different effects adapter.
+        """
+        if not isinstance(handle, _NativeHandle):
+            raise TypeError("NativeProcessEffects requires its own process handle")
+        process = handle.process
+        if process.stdout is None or process.stderr is None:
+            raise RuntimeError("captured subprocess streams were not created")
+        output = _OutputCapture(request.output_limit_bytes)
+        readers = {
+            asyncio.create_task(output.read(process.stdout, "stdout")),
+            asyncio.create_task(output.read(process.stderr, "stderr")),
+        }
+        waiter = asyncio.create_task(process.wait())
+        return await _capture_and_settle(
+            output, process, readers, waiter, execution_deadline
+        )
 
     async def cleanup(
         self, handle: ProcessHandle, timeout_seconds: float, /
     ) -> CleanupOutcome:
-        """Pending process-group signaling and bounded cleanup."""
-        raise NotImplementedError("group signaling and bounded cleanup are pending")
+        """SIGKILL the owned group and await the direct child within the deadline.
+
+        Returns:
+            Separate signal and direct-child wait evidence.
+
+        Raises:
+            TypeError: The handle belongs to a different effects adapter.
+        """
+        if not isinstance(handle, _NativeHandle):
+            raise TypeError("NativeProcessEffects requires its own process handle")
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout_seconds
+        try:
+            os.killpg(handle.process_group_id, signal.SIGKILL)
+        except ProcessLookupError:
+            signal_result: Literal["sent", "no_target", "failed"] = "no_target"
+            signal_diagnostic = None
+        except OSError as exc:
+            signal_result = "failed"
+            signal_diagnostic = f"{type(exc).__name__}: {exc}"
+        else:
+            signal_result = "sent"
+            signal_diagnostic = None
+        try:
+            await asyncio.wait_for(
+                handle.process.wait(), timeout=max(0.0, deadline - loop.time())
+            )
+        except TimeoutError:
+            return CleanupOutcome(
+                CleanupEvidence(
+                    "owned",
+                    signal_result,
+                    signal_diagnostic,
+                    "expired",
+                    "direct-child wait expired",
+                ),
+                handle.process.returncode,
+            )
+        except OSError as exc:
+            return CleanupOutcome(
+                CleanupEvidence(
+                    "owned",
+                    signal_result,
+                    signal_diagnostic,
+                    "failed",
+                    f"{type(exc).__name__}: {exc}",
+                ),
+                handle.process.returncode,
+            )
+        return CleanupOutcome(
+            CleanupEvidence("owned", signal_result, signal_diagnostic, "reaped", None),
+            handle.process.returncode,
+        )
 
 
 class AttemptRunner(Protocol):
@@ -418,6 +508,199 @@ class DispatchStop(Protocol):
     def __call__(self, reason: AttemptResult | BaseException, /) -> None:
         """Record the stop reason and prevent later dispatch."""
         ...
+
+
+@dataclass(frozen=True)
+class _NativeHandle:
+    process: asyncio.subprocess.Process
+
+    @property
+    def pid(self) -> int:
+        return self.process.pid
+
+    @property
+    def process_group_id(self) -> int:
+        return self.process.pid
+
+
+class _OutputCapture:
+    def __init__(self, limit: int) -> None:
+        self.limit = limit
+        self.stdout = bytearray()
+        self.stderr = bytearray()
+        self.total = 0
+        self.overflowed = False
+
+    async def read(
+        self, stream: asyncio.StreamReader, name: Literal["stdout", "stderr"]
+    ) -> None:
+        target = self.stdout if name == "stdout" else self.stderr
+        while chunk := await stream.read(65536):
+            if self.limit == 0:
+                target.extend(chunk)
+                continue
+            available = max(0, self.limit - self.total)
+            target.extend(chunk[:available])
+            self.total += min(len(chunk), available)
+            if len(chunk) > available:
+                self.overflowed = True
+                return
+
+
+def _native_observation(output: _OutputCapture) -> AttemptObservation:
+    """Build the stream observation before composition adds elapsed/cleanup.
+
+    Returns:
+        The currently retained stream prefixes with cleanup still pending.
+    """
+    return AttemptObservation(
+        CapturedOutput(bytes(output.stdout), bytes(output.stderr)),
+        None,
+        CleanupEvidence("owned", "not_started", None, "not_started", None),
+    )
+
+
+async def _drain_capture_tasks(
+    tasks: set[asyncio.Task[None] | asyncio.Task[int]],
+    cancellation: CancelledError | None,
+) -> CancelledError | None:
+    """Drain cancelled capture tasks despite repeated owner cancellation.
+
+    Returns:
+        The first observed cancellation, if any.
+    """
+    settled = asyncio.gather(*tasks, return_exceptions=True)
+    while not settled.done():
+        try:
+            await asyncio.shield(settled)
+        except CancelledError as exc:
+            cancellation = cancellation or exc
+    return cancellation
+
+
+async def _capture_and_settle(
+    output: _OutputCapture,
+    process: asyncio.subprocess.Process,
+    readers: set[asyncio.Task[None]],
+    waiter: asyncio.Task[int],
+    execution_deadline: float,
+) -> AttemptResult:
+    """Capture to a terminal result and retain buffers through cancellation.
+
+    Returns:
+        The terminal attempt result when capture completes normally.
+
+    Raises:
+        GeneratorExit: The capture coroutine is closed.
+    """
+    result: AttemptResult | None = None
+    cancellation: CancelledError | None = None
+    error: BaseException | None = None
+    closing = False
+    try:
+        result = await _await_capture(
+            output, process, readers, waiter, execution_deadline
+        )
+    except CancelledError as exc:
+        cancellation = exc
+    except GeneratorExit:
+        closing = True
+        raise
+    except BaseException as exc:
+        error = exc
+    finally:
+        if closing:
+            _cancel_capture_tasks(readers, waiter)
+        else:
+            cancellation = await _stop_and_drain_capture_tasks(
+                readers, waiter, cancellation
+            )
+    return _resolve_capture(result, error, cancellation, output, process.returncode)
+
+
+def _resolve_capture(
+    result: AttemptResult | None,
+    error: BaseException | None,
+    cancellation: CancelledError | None,
+    output: _OutputCapture,
+    exit_status: int | None,
+) -> AttemptResult:
+    """Resolve capture completion, error, and cancellation precedence.
+
+    Returns:
+        The captured result when no error or cancellation took precedence.
+    """
+    if cancellation is not None:
+        stopped = AttemptCancelled(_native_observation(output), exit_status)
+        if error is None:
+            raise stopped from cancellation
+        vars(stopped)["process_supervisor_capture_error"] = error
+        stopped.add_note(f"Capture failed: {_error_diagnostic(error)}")
+        stopped.add_note(f"Capture cancellation: {_error_diagnostic(cancellation)}")
+        raise stopped from error
+    if error is not None:
+        raise error
+    assert result is not None, "capture must return a result or raise"
+    return result
+
+
+async def _stop_and_drain_capture_tasks(
+    readers: set[asyncio.Task[None]],
+    waiter: asyncio.Task[int],
+    cancellation: CancelledError | None,
+) -> CancelledError | None:
+    """Cancel stream work and await it through repeated owner cancellation.
+
+    Returns:
+        The first cancellation observed while capture tasks are drained.
+    """
+    _cancel_capture_tasks(readers, waiter)
+    return await _drain_capture_tasks(readers | {waiter}, cancellation)
+
+
+def _cancel_capture_tasks(
+    readers: set[asyncio.Task[None]], waiter: asyncio.Task[int]
+) -> None:
+    """Request cancellation for any active stream and child-wait tasks."""
+    for task in readers:
+        if not task.done():
+            task.cancel()
+    if not waiter.done():
+        waiter.cancel()
+
+
+async def _await_capture(
+    output: _OutputCapture,
+    process: asyncio.subprocess.Process,
+    readers: set[asyncio.Task[None]],
+    waiter: asyncio.Task[int],
+    execution_deadline: float,
+) -> AttemptResult:
+    """Wait until process and both pipes finish, overflow, or deadline.
+
+    Returns:
+        Completion, overflow, or timeout with currently retained output.
+    """
+    pending = readers | {waiter}
+    while pending:
+        remaining = execution_deadline - monotonic()
+        done, pending = await asyncio.wait(
+            pending,
+            timeout=max(0.0, remaining),
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if not done:
+            return TimedOut(_native_observation(output), process.returncode)
+        for task in done:
+            if not task.cancelled():
+                error = task.exception()
+                if error is not None:
+                    raise error
+        if output.overflowed:
+            return OutputLimitExceeded(_native_observation(output), process.returncode)
+    status = process.returncode
+    assert status is not None, "completed process wait must set an exit status"
+    return Completed(_native_observation(output), status)
 
 
 @dataclass(frozen=True)

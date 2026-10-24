@@ -54,21 +54,24 @@ production readiness.
 
 ## Visuals
 
-The active supervisor module now provides typed composition for one attempt and
-a narrow caller stop hook, including retained acquisition/cleanup tasks,
-cancellation evidence, and post-termination exit-status forwarding. Native
-acquisition, output capture, process-group signaling, and direct-child cleanup
-remain explicit unimplemented leaves. Focused wiring tests exercise these
-contracts through fake collaborators; they establish no runtime guarantees for
-subprocess behavior.
+The active supervisor module provides one-attempt composition and a narrow
+caller stop hook, including retained acquisition/cleanup tasks, cancellation
+evidence, and post-termination exit-status forwarding. The native adapter and
+disposable process regressions now cover acquisition, output capture,
+process-group signaling, and direct-child cleanup. A reusable disposable caller
+fixture exercises stop latching, cancellation and signal delivery, unsafe
+cleanup accounting, and retry after confirmed cleanup through the public
+boundary. This represents the generic call-site pattern and does not verify
+the absent Evaluation harness. The child AC-1 and AC-2 behavior has been
+reviewed and accepted; AC-3 remains TODO until the parent-owned Evaluation
+harness is integrated and reviewed. The parent Evaluation Work remains TODO.
 
-The [architecture](architecture.md) distinguishes this implemented wiring from
-the still-pending process behavior and records the effect sequence and
-ownership.
+The [architecture](architecture.md) records the implemented native behavior,
+effect sequence, and ownership.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Async invocation returns bounded, truthful observations
+### **AC-1 DONE** Async invocation returns bounded, truthful observations
 
 An Evaluation caller can await one command attempt with the existing protocol
 limits and receive observed output, exit status when available, termination
@@ -94,7 +97,7 @@ reason, and cleanup status through a reviewed typed boundary.
   owned child keeps its output open; a leader's zero exit cannot turn timeout,
   cancellation, or overflow into success.
 
-### **AC-2 TODO** Termination has bounded, accountable cleanup
+### **AC-2 DONE** Termination has bounded, accountable cleanup
 
 Success, failure, timeout, cancellation, and overflow request termination of the
 owned group through the OS and await/reap the direct CLI within the protocol
@@ -152,9 +155,8 @@ preserves truthful incomplete-run accounting.
 - Private helpers and incidental signatures remain flexible under
   [architecture exploration](../../../../../architecture-exploration.md).
 
-Further implementation of the native process leaves waits for the concrete
-planning PR to merge and subsequent authorization under
-[Work workflow](../../../../../workflow.md#lifecycle).
+The maintainer explicitly authorized implementation of this Work before its
+planning PR merges and waived that prerequisite for this Work.
 
 The Evaluation explicitly trusts upstream Codex for internal lifecycle beyond
 the owned group. Children do not generally exit when their parent exits, so the
@@ -166,17 +168,19 @@ boundary must disclose that limit rather than promise a hard creation bound.
 These assumptions qualify only the experiment, preserving stronger production
 delivery requirements.
 
-Required future evidence uses a few focused disposable scenarios for success,
+Required native evidence uses a few focused disposable scenarios for success,
 nonzero exit, timeout, cancellation, positive-limit overflow, zero-limit
 capture, invalid limits, and a controlled owned child, plus cleanup-failure and
 stop-dispatch accounting. Relevant resource-acquisition failure checks must
 observe the public boundary without adding test-only options. These checks
 establish deterministic lifecycle behavior, not live Codex isolation or model
-quality; none has passed by virtue of this contract. Pending specifications map
-scenarios to AC-1, AC-2, and AC-3; see
+quality; the implementation regressions are reported in the architecture
+evidence below. Representative caller tests cover only the child boundary; the
+actual Evaluation harness still requires parent-owned integration and review.
+See
 [tests](../../../../../../test/script/integration/test_process_supervisor.py).
-Their strict xfails raise only `NotImplementedError`; they describe intended
-observations and establish no runtime behavior. All three acceptance criteria
-remain TODO.
+AC-1 and AC-2 are DONE for this child Work. AC-3 remains TODO pending
+integration and review in the parent Evaluation harness; the parent Evaluation
+Work remains TODO.
 The [preparation record](../preparation.md) retains the CLI known issue,
 baseline-accounting policy, and exhausted call allowances unchanged.
