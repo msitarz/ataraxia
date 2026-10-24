@@ -26,7 +26,7 @@ requiring a production reviewer runner.
 
 ## Mechanisms
 
-- Python `asyncio` owns subprocess creation, bounded stream reading, waiting,
+- Python `asyncio` owns subprocess creation, stream reading, waiting,
   cancellation, and cleanup for one attempt through an awaitable boundary.
 - A dedicated POSIX process group scopes termination to the invocation's owned
   group; a small direct-kill policy is sufficient without a mandatory
@@ -43,6 +43,8 @@ and [protocol bounds and stop handling](../protocol.md#bounds-and-stop-handling)
 apply unchanged except for the Evaluation-scoped process guarantee defined here.
 The protocol owns execution and cleanup deadlines, combined-output allowance,
 concurrency, and retries; this Work adds no call budget.
+The supervisor API permits capture without a byte cap, but the Evaluation
+caller must retain the protocol's positive 1 MiB combined-output allowance.
 
 The supervisor verifies its local lifecycle and output guarantees with
 disposable processes. The Evaluation owner verifies actual invocation,
@@ -71,13 +73,22 @@ An Evaluation caller can await one command attempt with the existing protocol
 limits and receive observed output, exit status when available, termination
 reason, and cleanup status through a reviewed typed boundary.
 
-- Invalid or unbounded invocation limits refuse launch; there are no hidden
-  retries.
-- Success and nonzero exit retain their actual exit status and bounded output;
+- Execution and cleanup timeouts must be positive and finite, and invalid
+  values refuse launch.
+- `AttemptRequest.output_limit_bytes` accepts nonnegative integers, with zero
+  disabling the output byte cap and positive values capping retained stdout
+  and stderr bytes in total.
+- Negative output limits refuse launch.
+- The supervisor performs no hidden retries.
+- Success and nonzero exit retain their actual exit status and observed output;
   unavailable observations stay unavailable.
-- The combined stdout/stderr prefix stays within the protocol allowance, and
-  overflow is visible and terminates the invocation rather than silently
-  truncating successful output.
+- With a positive output limit, the retained stdout/stderr prefixes stay within
+  the combined allowance, and overflow is visible and terminates the invocation
+  rather than silently truncating successful output.
+- With a zero output limit, capture has no byte cap and cannot terminate for
+  output overflow.
+- Cancelled or interrupted attempts retain observed partial prefixes even when
+  the output limit is zero.
 - Timeout bounds the active invocation even when the CLI leader exits while an
   owned child keeps its output open; a leader's zero exit cannot turn timeout,
   cancellation, or overflow into success.
@@ -154,12 +165,13 @@ These assumptions qualify only the experiment, preserving stronger production
 delivery requirements.
 
 Required future evidence uses a few focused disposable scenarios for success,
-nonzero exit, timeout, cancellation, overflow, and a controlled owned child,
-plus cleanup-failure and stop-dispatch accounting. Relevant resource-acquisition
-failure checks must observe the public boundary without adding test-only
-options. These checks establish deterministic lifecycle behavior, not live
-Codex isolation or model quality; none has passed by virtue of this contract.
-Pending specifications map scenarios to AC-1, AC-2, and AC-3; see
+nonzero exit, timeout, cancellation, positive-limit overflow, zero-limit
+capture, invalid limits, and a controlled owned child, plus cleanup-failure and
+stop-dispatch accounting. Relevant resource-acquisition failure checks must
+observe the public boundary without adding test-only options. These checks
+establish deterministic lifecycle behavior, not live Codex isolation or model
+quality; none has passed by virtue of this contract. Pending specifications map
+scenarios to AC-1, AC-2, and AC-3; see
 [tests](../../../../../../test/script/integration/test_process_supervisor.py).
 Their strict xfails raise only `NotImplementedError`; they describe intended
 observations and establish no runtime behavior. All three acceptance criteria

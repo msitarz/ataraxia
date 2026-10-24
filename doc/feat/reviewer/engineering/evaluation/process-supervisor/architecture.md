@@ -9,7 +9,7 @@ runtime behavior.
 
 - The Evaluation caller owns experiment policy and composes one asynchronous
   process-supervisor attempt per call.
-- The supervisor owns subprocess resources, bounded output capture, process
+- The supervisor owns subprocess resources, output capture, process
   group signaling, direct-child waiting, and truthful attempt evidence.
 - This child delivers the supervisor and minimal AC-3 call-site integration,
   while the parent Evaluation Work owns the full experiment runner.
@@ -27,13 +27,19 @@ runtime behavior.
 
 ### One-attempt supervisor
 
-- `AttemptRequest` describes one attempt with finite timeout, cleanup timeout,
-  and combined-output limits.
+- `AttemptRequest` describes one attempt with positive finite execution and
+  cleanup timeouts and a nonnegative integer `output_limit_bytes`.
+- Zero disables the output byte cap, while a positive value caps the total
+  retained stdout and stderr bytes.
+- Invalid or nonfinite timeouts and negative output limits refuse launch.
 - The supervisor starts one subprocess operation and performs no hidden retry.
-- `CapturedOutput` retains stdout and stderr separately as per-stream prefixes
-  whose total bytes obey the single combined allowance.
-- Exceeding the combined output allowance is visible and terminates the
+- `CapturedOutput` retains stdout and stderr separately as observed per-stream
+  prefixes whose total bytes obey any positive combined allowance.
+- Exceeding a positive combined output allowance is visible and terminates the
   invocation rather than silently truncating successful output.
+- Zero-limit capture has no byte cap and cannot terminate for output overflow.
+- Cancelled or interrupted attempts can retain partial prefixes even with a
+  zero output limit.
 - Captured output makes no claim about ordering between stdout and stderr.
 - Keeping stdout separate preserves raw JSONL for the caller to parse without
   diagnostic stderr.
@@ -92,7 +98,8 @@ runtime behavior.
 - The caller resolves `codex` through `PATH` before every attempt.
 - The caller records the resolved executable, actual version, and environment
   configuration and provenance.
-- The caller builds the static reviewed argv and finite limits.
+- The caller builds the static reviewed argv and protocol limits, including
+  the positive 1 MiB combined-output allowance rather than zero-limit capture.
 - The caller explicitly sets stdin to `DEVNULL`.
 - The caller supplies prompt and review context through the reviewed
   argv/context contract rather than an interactive prompt channel.
@@ -117,7 +124,8 @@ runtime behavior.
 
 - Asyncio supplies subprocess creation, stream access, task cancellation, and
   direct-process waiting through the awaitable boundary.
-- The supervisor bounds stream reading and owns cancellation cleanup.
+- The supervisor applies any positive output byte cap and owns cancellation
+  cleanup.
 - POSIX supplies the dedicated process group and the signal and exit mechanisms
   used to clean up the invocation's owned group.
 - A small direct-kill policy is sufficient without a mandatory
@@ -140,12 +148,13 @@ flowchart LR
 ## Evidence still required
 
 - Static checks can verify declared relationships and imports only.
-- Runtime work must establish bounded combined output and truthful completion
-  status.
+- Runtime work must establish combined-output capping for positive limits,
+  capture without a byte cap for zero, rejection of negative limits, and
+  truthful completion status.
 - Runtime work must establish timeout when a leader exits while an owned child
   keeps output open.
-- Runtime work must establish overflow termination instead of successful
-  truncation.
+- Runtime work must establish overflow termination for positive output limits
+  instead of successful truncation.
 - Runtime work must establish signal/wait reporting and cancellation
   propagation with cleanup evidence.
 - Runtime work must establish caller stop/retry accounting.
