@@ -55,6 +55,10 @@ boundary between the Evaluation caller and its system CLI command. The caller
 keeps experiment policy; the boundary owns only its subprocess resources and
 reports their outcome.
 
+The [reviewed typed design](architecture.md) defines the boundary for a future
+implementation. Behavior remains pending; the types and architecture establish
+no runtime guarantees.
+
 ## Acceptance criteria
 
 ### **AC-1 TODO** Async invocation returns bounded, truthful observations
