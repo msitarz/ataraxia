@@ -144,5 +144,10 @@ plus cleanup-failure and stop-dispatch accounting. Relevant resource-acquisition
 failure checks must observe the public boundary without adding test-only
 options. These checks establish deterministic lifecycle behavior, not live
 Codex isolation or model quality; none has passed by virtue of this contract.
+Pending specifications map scenarios to AC-1, AC-2, and AC-3; see
+[tests](../../../../../../test/script/integration/test_process_supervisor.py).
+Their strict xfails raise only `NotImplementedError`; they describe intended
+observations and establish no runtime behavior. All three acceptance criteria
+remain TODO.
 The [preparation record](../preparation.md) retains the CLI known issue,
 baseline-accounting policy, and exhausted call allowances unchanged.
