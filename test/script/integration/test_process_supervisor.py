@@ -2,6 +2,7 @@
 """Disposable real-process regressions for native supervisor behavior."""
 
 import asyncio
+from asyncio.transports import ReadTransport
 from collections.abc import Callable, Coroutine
 from contextlib import suppress
 from dataclasses import replace
@@ -13,7 +14,7 @@ import signal
 import subprocess
 import sys
 from time import monotonic
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -239,6 +240,77 @@ def test_combined_cap_and_overflow(
         assert total == cap
     else:
         assert total == cap
+
+
+def test_overflow_closes_owned_output_pipes_without_garbage_collection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    attempt = request(tmp_path, 1, "emit", "--burst-bytes", "200000", timeout=3.0)
+
+    # When
+    result = asyncio.run(_run_overflow_after_backpressure(attempt, monkeypatch))
+
+    # Then
+    assert isinstance(result, OutputLimitExceeded)
+
+
+async def _run_overflow_after_backpressure(
+    attempt: AttemptRequest, monkeypatch: pytest.MonkeyPatch
+) -> AttemptResult:
+    """Run capture only after the real child has backlogged and paused stdout."""
+    create_subprocess_exec = asyncio.create_subprocess_exec
+    acquired: asyncio.subprocess.Process | None = None
+
+    async def acquire_after_backpressure(
+        *args: str, **kwargs: Any
+    ) -> asyncio.subprocess.Process:
+        nonlocal acquired
+        acquired = await create_subprocess_exec(*args, **kwargs)
+        await _wait_for_stdout_backpressure(acquired)
+        return acquired
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", acquire_after_backpressure)
+    try:
+        result = await run_attempt(attempt)
+        assert acquired is not None
+        stdout_pipe, stderr_pipe = _process_output_pipes(acquired)
+        assert stdout_pipe.is_closing()
+        assert stderr_pipe.is_closing()
+        return result
+    finally:
+        if acquired is not None:
+            await _emergency_stop_process(acquired)
+
+
+async def _wait_for_stdout_backpressure(process: asyncio.subprocess.Process) -> None:
+    stdout_pipe, _ = _process_output_pipes(process)
+    deadline = asyncio.get_running_loop().time() + 2.0
+    while stdout_pipe.is_reading():
+        if asyncio.get_running_loop().time() >= deadline:
+            raise TimeoutError("noisy child did not pause its stdout pipe")
+        await asyncio.sleep(0)
+
+
+def _process_output_pipes(
+    process: asyncio.subprocess.Process,
+) -> tuple[ReadTransport, ReadTransport]:
+    transport = cast(asyncio.SubprocessTransport, vars(process)["_transport"])
+    stdout_pipe = transport.get_pipe_transport(1)
+    stderr_pipe = transport.get_pipe_transport(2)
+    assert stdout_pipe is not None and stderr_pipe is not None
+    return cast(ReadTransport, stdout_pipe), cast(ReadTransport, stderr_pipe)
+
+
+async def _emergency_stop_process(process: asyncio.subprocess.Process) -> None:
+    for pipe in _process_output_pipes(process):
+        pipe.close()
+    if process.returncode is not None:
+        return
+    with suppress(ProcessLookupError):
+        os.killpg(process.pid, signal.SIGKILL)
+    with suppress(TimeoutError):
+        await asyncio.wait_for(process.wait(), timeout=2.0)
 
 
 def test_zero_cap_retains_unbounded_separate_streams(tmp_path: Path) -> None:

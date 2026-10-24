@@ -32,7 +32,7 @@ import os
 from pathlib import Path
 import signal
 from time import monotonic
-from typing import Literal, Never, Protocol
+from typing import Literal, Never, Protocol, cast
 
 
 @dataclass(frozen=True)
@@ -457,6 +457,7 @@ class NativeProcessEffects:
         else:
             signal_result = "sent"
             signal_diagnostic = None
+        handle.close_output_pipes()
         try:
             await asyncio.wait_for(
                 handle.process.wait(), timeout=max(0.0, deadline - loop.time())
@@ -521,6 +522,19 @@ class _NativeHandle:
     @property
     def process_group_id(self) -> int:
         return self.process.pid
+
+    def close_output_pipes(self) -> None:
+        """Release parent pipe descriptors after capture has stopped.
+
+        asyncio exposes subprocess readers but no public operation to close
+        their owning pipe transports. Keep this adapter detail here so failed
+        or expired child waits do not leave the parent's descriptors to GC.
+        """
+        transport = cast(asyncio.SubprocessTransport, vars(self.process)["_transport"])
+        for fd in (1, 2):
+            pipe = transport.get_pipe_transport(fd)
+            if pipe is not None:
+                pipe.close()
 
 
 class _OutputCapture:
