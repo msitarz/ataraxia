@@ -1,0 +1,60 @@
+Offline generated schemas from pinned `codex-cli 0.164.0`
+
+Generator command:
+`CODEX_HOME=/private/tmp/ataraxia-reviewer-preflight-codex-home codex app-server generate-json-schema --out /private/tmp/ataraxia-reviewer-preflight-app-server-schema --experimental`
+
+The generator exited 0. The following exact property excerpts are copied from
+the generated schema files. Source hashes identify the complete source files
+from which these excerpts were taken.
+
+Source: `v2/ThreadStartParams.json`
+SHA-256: `80a40a7fac15b4bf70efb7f893fb353acc0a0d30c68f54aee4f01923deca85de`
+
+```json
+"baseInstructions": {
+  "type": ["string", "null"]
+},
+"config": {
+  "additionalProperties": true,
+  "type": ["object", "null"]
+},
+"developerInstructions": {
+  "type": ["string", "null"]
+},
+"dynamicTools": {
+  "default": null,
+  "items": {"$ref": "#/definitions/DynamicToolSpec"},
+  "type": ["array", "null"]
+},
+"environments": {
+  "description": "Optional sticky environments for this thread.\n\nOmitted selects the default environment when environment access is enabled. Empty disables environment access for turns that do not provide a turn override. Non-empty selects the first environment as the current turn environment.",
+  "items": {"$ref": "#/definitions/TurnEnvironmentParams"},
+  "type": ["array", "null"]
+}
+```
+
+Source: `v2/TurnStartParams.json`
+SHA-256: `f671d01c24995e99fcc110862ff3251c26d334fba212c7dc12857fb939506e47`
+
+```json
+"additionalContext": {
+  "additionalProperties": {
+    "$ref": "#/definitions/AdditionalContextEntry"
+  },
+  "description": "Optional client-provided context fragments keyed by an opaque source identifier.",
+  "type": ["object", "null"]
+},
+"environments": {
+  "description": "Optional environments for this turn and subsequent turns.\n\nOmitted uses the thread sticky environments. Empty disables environment access for this turn. Non-empty selects the first environment as the current turn environment for this turn.",
+  "items": {"$ref": "#/definitions/TurnEnvironmentParams"},
+  "type": ["array", "null"]
+}
+```
+
+These schemas contain no general `tools` property in either `ThreadStartParams`
+or `TurnStartParams`. `dynamicTools` is a caller-provided dynamic function
+surface; the schema does not claim that an empty list removes built-in Codex
+tools. `additionalContext` adds client-supplied fragments. Empty environments
+disable environment access only. Nullable instruction and open-ended config
+fields do not alone prove the model receives no inherited instructions or
+context.
