@@ -150,8 +150,8 @@ class AttemptCancelled(CancelledError):
 class AttemptFailureEvidence:
     """Structured cleanup evidence on an original escaping programming error.
 
-    The supervisor attaches this value as ``process_supervisor_evidence`` to
-    the same exception object, preserving its type, message, and traceback.
+    The supervisor stores this value in the original exception's instance
+    dictionary, preserving its type, message, and traceback.
     """
 
     observation: AttemptObservation
@@ -165,7 +165,7 @@ def failure_evidence(error: Exception) -> AttemptFailureEvidence | None:
         The attached evidence, or ``None`` when the error escaped before the
         supervisor acquired enough information to create it.
     """
-    evidence = getattr(error, "process_supervisor_evidence", None)
+    evidence = vars(error).get("process_supervisor_evidence")
     return evidence if isinstance(evidence, AttemptFailureEvidence) else None
 
 
@@ -597,8 +597,6 @@ def _apply_finalization_policy(
         )
     if error is not None:
         _attach_failure_evidence(error, observation, status)
-        if cleanup.error is not None:
-            error.add_note(f"Cleanup also failed: {_error_diagnostic(cleanup.error)}")
         raise error
     if cleanup.error is not None:
         _attach_failure_evidence(cleanup.error, observation, status)
@@ -670,13 +668,8 @@ def _attach_failure_evidence(
     error: Exception, observation: AttemptObservation, exit_status: int | None
 ) -> None:
     """Attach structured evidence without replacing the original exception."""
-    setattr(  # ruff: ignore[set-attr-with-constant] - Exception has no declared field.
-        error,
-        "process_supervisor_evidence",
-        AttemptFailureEvidence(observation, exit_status),
-    )
-    error.add_note(
-        "Process cleanup evidence is available on process_supervisor_evidence."
+    vars(error)["process_supervisor_evidence"] = AttemptFailureEvidence(
+        observation, exit_status
     )
 
 

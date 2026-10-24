@@ -50,6 +50,14 @@ class FakeHandle:
 
 
 @dataclass(frozen=True)
+class FrozenCaptureError(Exception):
+    detail: str
+
+    def __post_init__(self) -> None:
+        Exception.__init__(self, self.detail)
+
+
+@dataclass(frozen=True)
 class ClockRead:
     value: float
 
@@ -415,6 +423,19 @@ class SuccessfulCaptureCleanupCrashesEffects(FakeEffects):
     ) -> CleanupOutcome:
         self.events.append(CleanupCall(handle, timeout_seconds))
         raise RuntimeError("cleanup implementation bug")
+
+
+class FrozenCleanupErrorEffects(FakeEffects):
+    def __init__(self, events: list[WireEvent], clock: FakeClock) -> None:
+        super().__init__(events, clock)
+        self.error = FrozenCaptureError("cleanup failed")
+
+    @override
+    async def cleanup(
+        self, handle: ProcessHandle, timeout_seconds: float, /
+    ) -> CleanupOutcome:
+        self.events.append(CleanupCall(handle, timeout_seconds))
+        raise self.error
 
 
 class SelfCancellingAcquisitionEffects(FakeEffects):
@@ -893,6 +914,72 @@ def test_unexpected_capture_error_stops_caller_with_evidence_and_original_cause(
     assert isinstance(evidence, AttemptFailureEvidence)
     assert evidence.observation.cleanup.dispatch_permitted
     assert stops == [raised.value]
+
+
+def test_frozen_capture_error_keeps_identity_and_cleanup_evidence_at_public_boundary(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = CleanupCrashesEffects(events, clock, FrozenCaptureError)
+    effects.error = FrozenCaptureError("restricted capture failed")
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        return await run_attempt(request, effects, clock)
+
+    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+
+    # When
+    with pytest.raises(FrozenCaptureError, match="restricted capture failed") as raised:
+        asyncio.run(call_supervisor(attempt_request, attempt, stops.append))
+
+    # Then
+    assert raised.value is effects.error
+    assert raised.value.__traceback__ is not None
+    evidence = failure_evidence(raised.value)
+    assert evidence is not None
+    assert evidence.observation.output is None
+    assert evidence.exit_status is None
+    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.wait_diagnostic == (
+        "RuntimeError: cleanup implementation bug"
+    )
+    assert not evidence.observation.cleanup.dispatch_permitted
+    assert len(stops) == 1
+    assert stops[0] is effects.error
+
+
+def test_frozen_cleanup_error_keeps_identity_and_failure_evidence(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = FrozenCleanupErrorEffects(events, clock)
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        return await run_attempt(request, effects, clock)
+
+    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+
+    # When
+    with pytest.raises(FrozenCaptureError, match="cleanup failed") as raised:
+        asyncio.run(call_supervisor(attempt_request, attempt, stops.append))
+
+    # Then
+    assert raised.value is effects.error
+    evidence = failure_evidence(raised.value)
+    assert evidence is not None
+    assert evidence.observation.output == CapturedOutput(b"result\n", b"diagnostic\n")
+    assert evidence.exit_status == 0
+    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.wait_diagnostic == (
+        "FrozenCaptureError: cleanup failed"
+    )
+    assert not evidence.observation.cleanup.dispatch_permitted
+    assert len(stops) == 1
+    assert stops[0] is effects.error
 
 
 def test_cleanup_programmer_error_does_not_replace_capture_error(
