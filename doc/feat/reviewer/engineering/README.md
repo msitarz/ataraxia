@@ -74,8 +74,11 @@ decision.
 The Evaluation is independently reviewable evidence; Delivery is independently
 reviewable usable behavior. Their ordering does not require production
 implementation before experimentation. The engineering owner records AC-7's
-decision between them; neither the Evaluation nor its harness adopts policy. No
-discovery, runner, aggregation, function-level, or whole-diff Works are added.
+decision between them; neither the Evaluation nor its harness adopts policy. The
+Evaluation's
+[experimental process supervisor](evaluation/process-supervisor/README.md) is a
+bounded harness child, not a production-runner decomposition. No discovery,
+aggregation, function-level, or whole-diff Works are added.
 
 Remaining typed architecture and further decomposition questions follow
 [Work definition](../../../work-definition.md#decomposition-and-architectural-exploration)

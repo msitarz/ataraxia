@@ -37,6 +37,12 @@ this does not establish tool-free operation or waive those retained protections.
 AC-3 verifies them locally; engineering and reviewer owners retain their
 integration guarantees.
 
+For this experiment only, process cleanup has the owned-group scope and
+explicit upstream lifecycle assumption in the
+[process supervisor contract](process-supervisor/README.md#additional-context).
+That contract owns lifecycle details; this qualification does not weaken
+production delivery requirements.
+
 [Empirical evaluation guidance](../../../../evaluation.md) owns general protocol
 declaration, isolation, independent repetitions, failure and stop handling,
 retention, and interpretation. The criteria below add this comparison's concrete
@@ -130,7 +136,8 @@ Concrete verification at the actual harness boundary establishes:
   answers.
 - Pre-execution job/token estimates and visible budget refusal, finite
   concurrency, timeout, output and retry limits, and cleanup after success,
-  failure, timeout, or cancellation without leftover review processes.
+  failure, timeout, or cancellation under the
+  [experimental process guarantee](process-supervisor/README.md#acceptance-criteria).
 - Read-only source and refs under successful, failing, and attempted-write runs;
   a prompt instruction alone does not prove enforcement.
 - Accounting for every planned session, with failed, missing, timed-out,
@@ -148,6 +155,12 @@ its limits under [testing guidance](../../../../testing.md). The baseline's
 multi-rule prompt changes no other applicable shared guarantee; the accepted
 CLI limitation is disclosed under the protocol rather than claimed as verified
 isolation.
+
+## Children
+
+- TODO [Experimental CLI process supervisor](process-supervisor/README.md):
+  Provide bounded CLI invocation for the engineering-review experiment without
+  requiring a production reviewer runner.
 
 ## Links
 

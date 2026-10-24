@@ -119,7 +119,10 @@ integration under this parent's acceptance criteria.
   limits; exhaustion is visible as incomplete coverage rather than hidden
   truncation or unbounded work.
 - Success, failure, timeout, and cancellation release acquired resources and
-  leave no review processes running after the runner returns.
+  leave no review processes running after the runner returns; for the
+  engineering Evaluation only, the
+  [experimental process guarantee](engineering/evaluation/process-supervisor/README.md#acceptance-criteria)
+  and its explicit upstream lifecycle assumption qualify this requirement.
 - The initial engineering child verifies these limits with controlled workloads;
   future children verify their additions, and parent integration review checks
   that no domain bypasses them.
@@ -203,7 +206,10 @@ Engineering owns the integrated vertical outcome, with separate
 [usable Delivery](engineering/delivery/README.md) children. Delivery follows
 completed Evaluation evidence and the engineering owner's recorded decision.
 Separate runner, discovery, and aggregation Works are not justified solely by
-implementation layers. Any further decomposition remains unknown until bounded
+implementation layers. The Evaluation's
+[experimental process supervisor](engineering/evaluation/process-supervisor/README.md)
+is the explicitly authorized bounded harness child. Further production
+decomposition remains unknown until bounded
 typed architecture under
 [Work definition](../../work-definition.md#decomposition-and-architectural-exploration).
 

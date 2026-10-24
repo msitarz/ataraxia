@@ -447,7 +447,7 @@ limits for review, not measured usage.
 | Trials | 84 per effort, 336 unique calls total; no retries or correction calls |
 | All attempts | At most 352, including preparation |
 | Concurrency | One; invalid or unbounded settings refuse launch |
-| Per-call time | 300 seconds through exit, then at most 10 seconds for descendant cleanup |
+| Per-call time | 300 seconds for execution, then at most 10 seconds for owned-group cleanup |
 | Output | 1 MiB combined stdout/stderr per call; terminate on overflow and retain bounded prefix/status |
 | Evidence | 1 GiB including inputs, private records, streams, and reports; reserve capacity before dispatch |
 | Trial elapsed time | 40 hours from first matrix trial launch through final cleanup, including gaps |
@@ -481,8 +481,10 @@ token enforcement is unavailable:
 Controlled disposable process checks exercise success, failure, timeout,
 cancellation, oversized output, malformed/duplicate/foreign results, budget
 refusal, and aggregation in different completion orders. Verify immutable source
-and refs, denial of attempted writes and unintended reads, and no surviving
-review processes. Checks with fake output establish wrapper behavior only;
+and refs, denial of attempted writes and unintended reads, and the
+[experimental process guarantee](process-supervisor/README.md#acceptance-criteria).
+That child contract owns cleanup scope, confirmation, and the explicit upstream
+lifecycle assumption. Checks with fake output establish wrapper behavior only;
 they cannot prove live isolation, context contents, or semantic accuracy.
 Actual invocation evidence must establish those integration properties.
 
@@ -490,15 +492,17 @@ Stop new dispatch for any of these conditions:
 
 - Input drift or label exposure.
 - Unauthorized access or writes.
-- Escaped processes or invalid accounting.
+- Unconfirmed owned-group cleanup, an observed breach of the upstream lifecycle
+  assumption, or invalid accounting.
 - Changed model/settings or exhausted bounds.
 - Cancellation.
 
-When stopping, cancel active calls, verify cleanup, and preserve every planned
-call with a terminal status, including not-started calls. Three consecutive
-infrastructure failures end the run as incomplete. Retain contaminated results
-outside quality claims and ordinary failures in coverage accounting. Do not
-silently replace calls or extend the budget.
+When stopping, cancel active calls, verify cleanup under the linked process
+guarantee, and preserve every planned call with a terminal status, including
+not-started calls. Unconfirmed cleanup immediately ends the run as incomplete.
+Three consecutive infrastructure failures end the run as incomplete. Retain
+contaminated results outside quality claims and ordinary failures in coverage
+accounting. Do not silently replace calls or extend the budget.
 
 At the human or finding cap, preserve all records and mark adjudication and
 conclusions incomplete. Do not sample the remainder or claim the reviewed subset

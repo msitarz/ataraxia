@@ -1,0 +1,133 @@
+# Experimental CLI process supervisor
+
+## Purpose
+
+Provide bounded CLI invocation for the engineering-review experiment without
+requiring a production reviewer runner.
+
+## Goals
+
+- Run the pinned experimental `codex exec` command through a small native async
+  boundary with truthful output, exit, and completion accounting.
+- Clean up the owned POSIX process group on termination and stop the experiment
+  when cleanup cannot be confirmed.
+
+## Non-Goals
+
+- Deliver a production runner, generic batch scheduler, or concurrency library.
+- Discover arbitrary process trees, contain escaped daemons, classify zombies,
+  or sandbox CPU, memory, or process counts.
+- Change invocation policy, trial budgets, telemetry accounting, or authorize
+  model calls.
+- Add elaborate exception aggregation or public options used only by tests.
+
+## Mechanisms
+
+- Python `asyncio` owns subprocess creation, bounded stream reading, waiting,
+  cancellation, and cleanup through an awaitable invocation boundary.
+- A dedicated POSIX process group scopes termination to the invocation's owned
+  group; a small direct-kill policy is sufficient without a mandatory
+  TERM/grace/KILL sequence.
+- The Evaluation caller owns dispatch policy, signal handling, and evidence
+  accounting, composing the async boundary without a global scheduler.
+
+## Inherited constraints
+
+The [Evaluation constraints](../README.md#inherited-constraints),
+[CLI boundary](../protocol.md#cli-invocation-boundary-and-accepted-limitation),
+and [protocol bounds and stop handling](../protocol.md#bounds-and-stop-handling)
+apply unchanged except for the Evaluation-scoped process guarantee defined here.
+The protocol owns execution and cleanup deadlines, combined-output allowance,
+concurrency, and retries; this Work adds no call budget.
+
+The supervisor verifies its local lifecycle and output guarantees with
+disposable processes. The Evaluation owner verifies actual invocation,
+dispatch, retained evidence, and all other experiment protections across the
+integrated harness; child completion does not establish those guarantees or
+production readiness.
+
+## Visuals
+
+At base `40a22224e4006b0e437d63254d5319d47d7aebbf`, the protocol and historical
+preparation evidence remain, but there is no active supervisor implementation
+or supervisor Make target. The proposed change adds one async invocation
+boundary between the Evaluation caller and its pinned CLI command. The caller
+keeps experiment policy; the boundary owns only its subprocess resources and
+reports their outcome.
+
+## Acceptance criteria
+
+### **AC-1 TODO** Async invocation returns bounded, truthful observations
+
+An Evaluation caller can await the pinned command with the existing protocol
+limits and receive observed output, exit status when available, termination
+reason, and cleanup status through a reviewed typed boundary.
+
+- Invalid or unbounded invocation limits refuse launch; there are no hidden
+  retries.
+- Success and nonzero exit retain their actual exit status and bounded output;
+  unavailable observations stay unavailable.
+- The combined stdout/stderr prefix stays within the protocol allowance, and
+  overflow is visible and terminates the invocation rather than silently
+  truncating successful output.
+- Timeout bounds the active invocation even when the CLI leader exits while an
+  owned child keeps its output open; a leader's zero exit cannot turn timeout,
+  cancellation, or overflow into success.
+
+### **AC-2 TODO** Termination has bounded, accountable cleanup
+
+Success, failure, timeout, cancellation, and overflow release the invocation's
+acquired resources within the protocol cleanup deadline or explicitly report
+that cleanup could not be confirmed.
+
+- The CLI launches in a dedicated owned group; cleanup kills that group,
+  including children remaining after leader exit, and waits for and reaps the
+  direct CLI.
+- Cleanup is complete only when owned-group termination and direct CLI reaping
+  are confirmed; expiry, permission errors, and unknown outcomes remain
+  explicit cleanup failures, with useful original failure diagnostics retained.
+- Task cancellation propagates after bounded cleanup and cannot become a
+  retryable `OSError` or successful result.
+- Acquisition failure or interruption leaves no unawaited operation that could
+  subsequently acquire an unowned subprocess; any uncertainty is reported as
+  incomplete cleanup.
+
+### **AC-3 TODO** Stop handling prevents further experimental dispatch
+
+The owning Evaluation runner stops new dispatch immediately on cancellation or
+unconfirmed cleanup and preserves truthful incomplete-run accounting.
+
+- `SIGINT` and `SIGTERM` at that owning boundary stop new calls and clean up the
+  active invocation through AC-2; `SIGKILL` cannot execute cleanup.
+- A cleanup failure marks the run incomplete and forbids another dispatch,
+  independently of the protocol's ordinary infrastructure-failure threshold.
+- The active call's failure and cleanup status remain inspectable, and planned
+  but undispatched calls retain the protocol's not-started accounting.
+
+## Additional context
+
+This is one coherent child Work. Proportionate reviewed increments inside it
+cover typed architecture, typed wiring, and implementation with focused tests;
+they are not separate child Works. Typed review establishes lifecycle ownership,
+result/error distinctions, and caller composition before implementation, leaving
+private helper choices flexible under
+[architecture exploration](../../../../../architecture-exploration.md).
+Implementation waits for the concrete planning PR to merge and subsequent
+authorization under [Work workflow](../../../../../workflow.md#lifecycle).
+
+The Evaluation explicitly trusts upstream Codex for internal lifecycle beyond
+the owned group. Codex may spawn children; this Work does not establish
+containment of processes that leave that group or whole-host process absence.
+OS process-creation latency may not be interruptible by the async deadline; the
+boundary must disclose that limit rather than promise a hard creation bound.
+These assumptions qualify only the experiment, preserving stronger production
+delivery requirements.
+
+Required future evidence uses a few focused disposable scenarios for success,
+nonzero exit, timeout, cancellation, overflow, and a controlled owned child,
+plus cleanup-failure and stop-dispatch accounting. Relevant resource-acquisition
+failure checks must observe the public boundary without adding test-only
+options. These checks establish deterministic lifecycle behavior, not live
+Codex isolation or model quality; none has passed by virtue of this contract.
+The [preparation record](../preparation.md) retains the CLI known issue,
+baseline-accounting policy, and exhausted call allowances unchanged.
