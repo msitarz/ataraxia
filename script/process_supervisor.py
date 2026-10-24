@@ -141,6 +141,70 @@ class AttemptCancelled(CancelledError):
         self.observation = observation
 
 
+async def run_attempt(
+    request: AttemptRequest,
+    effects: ProcessEffects | None = None,
+    clock: Clock | None = None,
+) -> AttemptResult:
+    """Compose one attempt's acquisition, observation, and cleanup effects.
+
+    Timing starts before acquisition and ends after cleanup evidence returns.
+    The default adapter explicitly leaves native process behavior pending.
+    This wiring does not establish timeout enforcement, capture, cleanup, or OS
+    guarantees.
+
+    Returns:
+        The terminal result supplied by the capture effect, with cleanup and
+        elapsed evidence attached by this composition.
+
+    Raises:
+        AttemptCancelled: Acquisition was cancelled before ownership was known.
+    """
+    process_effects = effects if effects is not None else NativeProcessEffects()
+    attempt_clock = clock if clock is not None else SystemClock()
+    started_at = attempt_clock.monotonic()
+    execution_deadline = started_at + request.timeout_seconds
+    try:
+        handle = await process_effects.acquire(request)
+    except CancelledError as exc:
+        finished_at = attempt_clock.monotonic()
+        observation = AttemptObservation(
+            CapturedOutput(b"", b""),
+            finished_at - started_at,
+            CleanupEvidence("acquisition_uncertain", "unknown", None, "unknown", None),
+        )
+        raise AttemptCancelled(observation) from exc
+    return await _run_owned_attempt(
+        request, process_effects, attempt_clock, started_at, execution_deadline, handle
+    )
+
+
+async def call_supervisor(
+    request: AttemptRequest, attempt: AttemptRunner, stop_dispatch: DispatchStop
+) -> AttemptResult:
+    """Forward one outcome and stop caller dispatch when cleanup is uncertain.
+
+    Cancellation remains cancellation after the stop hook records the active
+    evidence. The parent owns planned-call accounting and all broader policy.
+
+    Returns:
+        The exact attempt result returned by the runner.
+
+    Raises:
+        CancelledError: The runner was cancelled; the same cancellation is
+            re-raised after the parent stop hook observes it.
+    """
+    try:
+        outcome = await attempt(request)
+    except CancelledError as exc:
+        stop_dispatch(exc)
+        raise
+
+    if not outcome.observation.cleanup.confirmed:
+        stop_dispatch(outcome)
+    return outcome
+
+
 class ProcessHandle(Protocol):
     """Owned direct child and the POSIX process group assigned to it."""
 
@@ -221,42 +285,20 @@ class NativeProcessEffects:
         raise NotImplementedError("group signaling and bounded cleanup are pending")
 
 
-async def run_attempt(
-    request: AttemptRequest,
-    effects: ProcessEffects | None = None,
-    clock: Clock | None = None,
-) -> AttemptResult:
-    """Compose one attempt's acquisition, observation, and cleanup effects.
+class AttemptRunner(Protocol):
+    """Caller-owned port for one supervisor attempt."""
 
-    Timing starts before acquisition and ends after cleanup evidence returns.
-    The default adapter explicitly leaves native process behavior pending.
-    This wiring does not establish timeout enforcement, capture, cleanup, or OS
-    guarantees.
+    async def __call__(self, request: AttemptRequest, /) -> AttemptResult:
+        """Run one attempt using the supplied request."""
+        ...
 
-    Returns:
-        The terminal result supplied by the capture effect, with cleanup and
-        elapsed evidence attached by this composition.
 
-    Raises:
-        AttemptCancelled: Acquisition was cancelled before ownership was known.
-    """
-    process_effects = effects if effects is not None else NativeProcessEffects()
-    attempt_clock = clock if clock is not None else SystemClock()
-    started_at = attempt_clock.monotonic()
-    execution_deadline = started_at + request.timeout_seconds
-    try:
-        handle = await process_effects.acquire(request)
-    except CancelledError as exc:
-        finished_at = attempt_clock.monotonic()
-        observation = AttemptObservation(
-            CapturedOutput(b"", b""),
-            finished_at - started_at,
-            CleanupEvidence("acquisition_uncertain", "unknown", None, "unknown", None),
-        )
-        raise AttemptCancelled(observation) from exc
-    return await _run_owned_attempt(
-        request, process_effects, attempt_clock, started_at, execution_deadline, handle
-    )
+class DispatchStop(Protocol):
+    """Parent-owned hook that records the active outcome and stops new work."""
+
+    def __call__(self, reason: AttemptResult | CancelledError, /) -> None:
+        """Record the stop reason and prevent later dispatch."""
+        ...
 
 
 async def _run_owned_attempt(
@@ -311,45 +353,3 @@ def _observation(
         The output, elapsed time through cleanup, and cleanup evidence.
     """
     return AttemptObservation(output, clock.monotonic() - started_at, cleanup)
-
-
-class AttemptRunner(Protocol):
-    """Caller-owned port for one supervisor attempt."""
-
-    async def __call__(self, request: AttemptRequest, /) -> AttemptResult:
-        """Run one attempt using the supplied request."""
-        ...
-
-
-class DispatchStop(Protocol):
-    """Parent-owned hook that records the active outcome and stops new work."""
-
-    def __call__(self, reason: AttemptResult | CancelledError, /) -> None:
-        """Record the stop reason and prevent later dispatch."""
-        ...
-
-
-async def call_supervisor(
-    request: AttemptRequest, attempt: AttemptRunner, stop_dispatch: DispatchStop
-) -> AttemptResult:
-    """Forward one outcome and stop caller dispatch when cleanup is uncertain.
-
-    Cancellation remains cancellation after the stop hook records the active
-    evidence. The parent owns planned-call accounting and all broader policy.
-
-    Returns:
-        The exact attempt result returned by the runner.
-
-    Raises:
-        CancelledError: The runner was cancelled; the same cancellation is
-            re-raised after the parent stop hook observes it.
-    """
-    try:
-        outcome = await attempt(request)
-    except CancelledError as exc:
-        stop_dispatch(exc)
-        raise
-
-    if not outcome.observation.cleanup.confirmed:
-        stop_dispatch(outcome)
-    return outcome
