@@ -163,6 +163,15 @@ class Clock(Protocol):
         ...
 
 
+@dataclass(frozen=True)
+class SystemClock:
+    """Production monotonic clock adapter."""
+
+    def monotonic(self) -> float:
+        """Return monotonic seconds."""
+        return monotonic()
+
+
 class ProcessEffects(Protocol):
     """Supervisor-owned OS/asyncio effects, isolated at their actual boundary."""
 
@@ -302,15 +311,6 @@ def _observation(
         The output, elapsed time through cleanup, and cleanup evidence.
     """
     return AttemptObservation(output, clock.monotonic() - started_at, cleanup)
-
-
-@dataclass(frozen=True)
-class SystemClock:
-    """Production monotonic clock adapter."""
-
-    def monotonic(self) -> float:
-        """Return monotonic seconds."""
-        return monotonic()
 
 
 class AttemptRunner(Protocol):
