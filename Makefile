@@ -133,10 +133,6 @@ else
 	uv run ataraxia $(_CLI_ARGS)
 endif
 
-.PHONY: process-cleanup-check
-process-cleanup-check: ## verify bounded process ownership and installed Codex CLI status
-	uv run python -m script.process_supervisor --codex-check
-
 .PHONY: commit
 commit: export ATARAXIA_COMMIT_SUBJECT := $(value SUBJECT)
 commit: export ATARAXIA_COMMIT_BODY := $(value BODY)
