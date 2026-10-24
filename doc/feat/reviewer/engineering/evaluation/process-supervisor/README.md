@@ -55,10 +55,12 @@ production readiness.
 ## Visuals
 
 The active supervisor module now provides typed composition for one attempt and
-a narrow caller stop hook. Acquisition, output capture, process-group signaling,
-and direct-child cleanup remain explicit unimplemented leaves. Focused wiring
-tests exercise request/result flow and stop handling through fake collaborators;
-they establish no runtime guarantees for subprocess behavior.
+a narrow caller stop hook, including retained acquisition/cleanup tasks,
+cancellation evidence, and post-termination exit-status forwarding. Native
+acquisition, output capture, process-group signaling, and direct-child cleanup
+remain explicit unimplemented leaves. Focused wiring tests exercise these
+contracts through fake collaborators; they establish no runtime guarantees for
+subprocess behavior.
 
 The [architecture](architecture.md) distinguishes this implemented wiring from
 the still-pending process behavior and records the effect sequence and

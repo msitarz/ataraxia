@@ -93,6 +93,11 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   derives the execution deadline from that same instant.
 - The acquisition effect receives the caller's request unchanged, including
   the recorded absolute CLI path in `argv[0]`.
+- Acquisition returns an owned handle or an explicit `NotLaunched` with a
+  normalized error type and diagnostic.
+- External cancellation waits for acquisition to settle before deciding
+  whether cleanup is required.
+- A raw acquisition error remains visible and the caller stops conservatively.
 - The capture effect receives the acquired handle and absolute execution
   deadline, then supplies one of the reviewed tagged attempt results.
 - Composition preserves the leaf's concrete result variant, exit status,
@@ -101,9 +106,25 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   capture failure, or capture cancellation.
 - Capture cancellation retains its partial output in the same
   `AttemptCancelled` object while adding final cleanup and elapsed evidence.
-- Capture exceptions are re-raised unchanged after cleanup, so pending
-  `NotImplementedError` and programmer errors cannot become infrastructure
-  results or apparent success.
+- The capture effect translates cancellation while it owns stream buffers into
+  `AttemptCancelled` with those partial bytes.
+- If raw cancellation escapes, composition records empty bytes as “none
+  observed here,” not proof of empty child output.
+- Unexpected capture exceptions keep their original type, message, traceback,
+  and identity.
+- A typed `AttemptFailureEvidence` value is attached to that exception for the
+  caller's stop hook.
+- Unexpected capture errors remain exceptions and never become retryable
+  `InfrastructureFailure` results.
+- Cleanup returns signal/wait evidence and an optional direct-child exit status
+  observed after termination.
+- A missing result status may be filled from cleanup without changing its
+  terminal variant.
+- Composition retains and shields one cleanup task through repeated external
+  cancellation.
+- The cleanup adapter owns enforcement of its positive finite timeout.
+- Composition cannot promise a hard deadline for a cancellation-resistant
+  collaborator and does not detach its cleanup task.
 - Elapsed time ends after cleanup evidence returns, and the clock boundary is
   covered by fake-effect wiring tests.
 - `NativeProcessEffects` leaves acquisition, stream capture, direct-child wait,
@@ -124,8 +145,9 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 - The caller owns CLI resolution, and this module does not discover or
   version-probe Codex.
 - Fake-effect tests establish request flow, cleanup order on error and
-  cancellation, tagged-result forwarding, stop gating, cancellation forwarding,
-  and elapsed-time boundaries only.
+  cancellation, tagged-result forwarding, status reconciliation, stop gating,
+  repeated task cancellation, acquisition settlement, and elapsed-time
+  boundaries only.
 - Timeout enforcement, output capture, acquisition ownership, and OS cleanup
   behavior still require implementation and boundary evidence.
 

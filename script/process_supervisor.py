@@ -23,11 +23,12 @@ Accepted limitations for this experiment:
 Native acquisition, capture, and cleanup operations remain pending.
 """
 
+import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass, replace
 from pathlib import Path
 from time import monotonic
-from typing import Literal, Protocol
+from typing import Literal, Never, Protocol
 
 
 @dataclass(frozen=True)
@@ -134,11 +135,53 @@ type AttemptResult = Completed | TimedOut | OutputLimitExceeded | Infrastructure
 
 
 class AttemptCancelled(CancelledError):
-    """Cancellation propagated with the best available lifecycle evidence."""
+    """Cancellation plus lifecycle evidence and any post-kill child status."""
 
-    def __init__(self, observation: AttemptObservation) -> None:
+    def __init__(
+        self, observation: AttemptObservation, exit_status: int | None = None
+    ) -> None:
         super().__init__("process-supervisor attempt cancelled")
         self.observation = observation
+        self.exit_status = exit_status
+
+
+@dataclass(frozen=True)
+class AttemptFailureEvidence:
+    """Structured cleanup evidence on an original escaping programming error.
+
+    The supervisor attaches this value as ``process_supervisor_evidence`` to
+    the same exception object, preserving its type, message, and traceback.
+    """
+
+    observation: AttemptObservation
+    exit_status: int | None
+
+
+def failure_evidence(error: Exception) -> AttemptFailureEvidence | None:
+    """Return structured supervisor evidence attached to an escaping error.
+
+    Returns:
+        The attached evidence, or ``None`` when the error escaped before the
+        supervisor acquired enough information to create it.
+    """
+    evidence = getattr(error, "process_supervisor_evidence", None)
+    return evidence if isinstance(evidence, AttemptFailureEvidence) else None
+
+
+@dataclass(frozen=True)
+class NotLaunched:
+    """Acquisition proves no child started and no acquisition operation remains."""
+
+    error_type: str
+    diagnostic: str
+
+
+@dataclass(frozen=True)
+class CleanupOutcome:
+    """Cleanup facts, including a direct-child status observed after signaling."""
+
+    evidence: CleanupEvidence
+    exit_status: int | None = None
 
 
 async def run_attempt(
@@ -164,16 +207,31 @@ async def run_attempt(
     attempt_clock = clock if clock is not None else SystemClock()
     started_at = attempt_clock.monotonic()
     execution_deadline = started_at + request.timeout_seconds
-    try:
-        handle = await process_effects.acquire(request)
-    except CancelledError as exc:
-        finished_at = attempt_clock.monotonic()
+    acquisition = await _settle_acquisition(process_effects, request)
+    if acquisition.cancellation is not None:
+        return await _finish_cancelled_acquisition(
+            acquisition, process_effects, request, attempt_clock, started_at
+        )
+    if acquisition.error is not None:
+        raise acquisition.error
+    if acquisition.acquired is None:
         observation = AttemptObservation(
             CapturedOutput(b"", b""),
-            finished_at - started_at,
+            attempt_clock.monotonic() - started_at,
             CleanupEvidence("acquisition_uncertain", "unknown", None, "unknown", None),
         )
-        raise AttemptCancelled(observation) from exc
+        raise AttemptCancelled(observation) from None
+    if isinstance(acquisition.acquired, NotLaunched):
+        acquired = acquisition.acquired
+        observation = AttemptObservation(
+            CapturedOutput(b"", b""),
+            attempt_clock.monotonic() - started_at,
+            CleanupEvidence("not_started", "not_started", None, "not_started", None),
+        )
+        return InfrastructureFailure(
+            observation, None, acquired.error_type, acquired.diagnostic
+        )
+    handle = acquisition.acquired
     return await _run_owned_attempt(
         request, process_effects, attempt_clock, started_at, execution_deadline, handle
     )
@@ -191,12 +249,20 @@ async def call_supervisor(
         The exact attempt result returned by the runner.
 
     Raises:
-        CancelledError: The runner was cancelled; the same cancellation is
+        AttemptCancelled: The runner was cancelled; the same cancellation is
             re-raised after the parent stop hook observes it.
+        CancelledError: The runner escaped with raw task cancellation.
     """
     try:
         outcome = await attempt(request)
+    except AttemptCancelled as exc:
+        stop_dispatch(exc)
+        raise
     except CancelledError as exc:
+        stop_dispatch(exc)
+        raise
+    except Exception as exc:
+        # Keep the original programming or unexpected effect exception visible.
         stop_dispatch(exc)
         raise
 
@@ -239,8 +305,12 @@ class SystemClock:
 class ProcessEffects(Protocol):
     """Supervisor-owned OS/asyncio effects, isolated at their actual boundary."""
 
-    async def acquire(self, request: AttemptRequest, /) -> ProcessHandle:
-        """Start argv exactly as recorded and return ownership of the child."""
+    async def acquire(self, request: AttemptRequest, /) -> ProcessHandle | NotLaunched:
+        """Start argv or prove that no child or pending acquisition exists.
+
+        Expected OS launch failures may return ``NotLaunched`` with their
+        normalized type and diagnostic. Unexpected errors remain exceptions.
+        """
         ...
 
     async def capture(
@@ -250,13 +320,24 @@ class ProcessEffects(Protocol):
         execution_deadline: float,
         /,
     ) -> AttemptResult:
-        """Return the leaf's tagged terminal observation under the deadline."""
+        """Return tagged output or cancellation with observed partial buffers.
+
+        The effect owns the stream buffers and translates cancellation into
+        ``AttemptCancelled`` with its retained partial prefixes subject to the
+        requested output limit. If raw cancellation escapes, composition has
+        no byte observations.
+        """
         ...
 
     async def cleanup(
         self, handle: ProcessHandle, timeout_seconds: float, /
-    ) -> CleanupEvidence:
-        """Signal the owned group and await the direct child within the deadline."""
+    ) -> CleanupOutcome:
+        """Signal the group and await the direct child within the timeout.
+
+        The adapter enforces the positive finite timeout and converts expected
+        OS failures into evidence. Composition keeps awaiting a retained task;
+        it cannot impose a hard bound on a cancellation-resistant adapter.
+        """
         ...
 
 
@@ -264,7 +345,7 @@ class ProcessEffects(Protocol):
 class NativeProcessEffects:
     """Placeholder for the OS adapter; leaf process behavior is still pending."""
 
-    async def acquire(self, request: AttemptRequest, /) -> ProcessHandle:
+    async def acquire(self, request: AttemptRequest, /) -> ProcessHandle | NotLaunched:
         """Pending native child acquisition."""
         raise NotImplementedError("process acquisition is pending")
 
@@ -280,7 +361,7 @@ class NativeProcessEffects:
 
     async def cleanup(
         self, handle: ProcessHandle, timeout_seconds: float, /
-    ) -> CleanupEvidence:
+    ) -> CleanupOutcome:
         """Pending process-group signaling and bounded cleanup."""
         raise NotImplementedError("group signaling and bounded cleanup are pending")
 
@@ -296,9 +377,103 @@ class AttemptRunner(Protocol):
 class DispatchStop(Protocol):
     """Parent-owned hook that records the active outcome and stops new work."""
 
-    def __call__(self, reason: AttemptResult | CancelledError, /) -> None:
+    def __call__(self, reason: AttemptResult | CancelledError | Exception, /) -> None:
         """Record the stop reason and prevent later dispatch."""
         ...
+
+
+@dataclass(frozen=True)
+class _AcquisitionSettlement:
+    acquired: ProcessHandle | NotLaunched | None
+    cancellation: CancelledError | None
+    error: Exception | None
+
+
+@dataclass(frozen=True)
+class _CleanupSettlement:
+    outcome: CleanupOutcome
+    cancellation: CancelledError | None
+    error: Exception | None
+
+
+async def _settle_acquisition(
+    effects: ProcessEffects, request: AttemptRequest
+) -> _AcquisitionSettlement:
+    """Wait for acquisition to settle even when the owner task is cancelled.
+
+    Returns:
+        The acquired handle or proven no-launch outcome, any cancellation, and
+        an acquisition error that completed after cancellation.
+    """
+    acquisition = asyncio.create_task(effects.acquire(request))
+    cancellation: CancelledError | None = None
+    while True:
+        try:
+            acquired = await asyncio.shield(acquisition)
+            return _AcquisitionSettlement(acquired, cancellation, None)
+        except CancelledError as exc:
+            if acquisition.cancelled():
+                return _AcquisitionSettlement(None, cancellation or exc, None)
+            cancellation = cancellation or exc
+        except Exception as exc:
+            return _AcquisitionSettlement(None, cancellation, exc)
+
+
+async def _finish_cancelled_acquisition(
+    acquisition: _AcquisitionSettlement,
+    effects: ProcessEffects,
+    request: AttemptRequest,
+    clock: Clock,
+    started_at: float,
+) -> Never:
+    """Propagate acquisition cancellation after ownership and evidence settle.
+
+    Raises:
+        AttemptCancelled: Acquisition settled after owner cancellation.
+    """
+    cancellation = acquisition.cancellation
+    if isinstance(acquisition.acquired, NotLaunched):
+        observation = AttemptObservation(
+            CapturedOutput(b"", b""),
+            clock.monotonic() - started_at,
+            CleanupEvidence("not_started", "not_started", None, "not_started", None),
+        )
+        stopped = AttemptCancelled(observation)
+        stopped.add_note(
+            f"Acquisition safely failed: {acquisition.acquired.error_type}: "
+            f"{acquisition.acquired.diagnostic}"
+        )
+        stopped.add_note(
+            f"Acquisition was cancelled: {_error_diagnostic(cancellation)}"
+        )
+        raise stopped from (acquisition.error or cancellation)
+    if acquisition.acquired is None:
+        diagnostic = _error_diagnostic(acquisition.error) if acquisition.error else None
+        observation = AttemptObservation(
+            CapturedOutput(b"", b""),
+            clock.monotonic() - started_at,
+            CleanupEvidence(
+                "acquisition_uncertain", "unknown", diagnostic, "unknown", diagnostic
+            ),
+        )
+        if acquisition.error is not None:
+            stopped = AttemptCancelled(observation)
+            stopped.add_note(f"Acquisition also failed: {diagnostic}")
+            stopped.add_note(
+                f"Acquisition was cancelled: {_error_diagnostic(cancellation)}"
+            )
+            raise stopped from acquisition.error
+        raise AttemptCancelled(observation) from cancellation
+    cleanup = await _settle_cleanup(
+        effects, acquisition.acquired, request.cleanup_timeout_seconds
+    )
+    observation = _observation(
+        CapturedOutput(b"", b""), cleanup.outcome.evidence, clock, started_at
+    )
+    stopped = AttemptCancelled(observation, cleanup.outcome.exit_status)
+    _explain_cleanup_settlement(stopped, cleanup)
+    stopped.add_note(f"Acquisition was cancelled: {_error_diagnostic(cancellation)}")
+    raise stopped from (cleanup.error or cancellation)
 
 
 async def _run_owned_attempt(
@@ -316,29 +491,189 @@ async def _run_owned_attempt(
         evidence attached.
 
     Raises:
-        AttemptCancelled: The leaf supplied cancellation evidence.
-        CancelledError: Capture or cleanup was cancelled after acquisition.
+        AttemptCancelled: The leaf or owner task was cancelled.
     """
     try:
         result = await effects.capture(handle, request, execution_deadline)
     except AttemptCancelled as exc:
-        cleanup = await effects.cleanup(handle, request.cleanup_timeout_seconds)
-        exc.observation = _observation(
-            exc.observation.output, cleanup, clock, started_at
+        await _complete_cancelled_attempt(
+            exc, effects, handle, request, clock, started_at
         )
         raise
-    except CancelledError:
-        await effects.cleanup(handle, request.cleanup_timeout_seconds)
-        raise
-    except Exception:
-        await effects.cleanup(handle, request.cleanup_timeout_seconds)
+    except CancelledError as exc:
+        await _cancelled_attempt(exc, effects, handle, request, clock, started_at)
+    except Exception as exc:
+        await _finish_failed_attempt(exc, effects, handle, request, clock, started_at)
         raise
     else:
-        cleanup = await effects.cleanup(handle, request.cleanup_timeout_seconds)
-        observation = _observation(
-            result.observation.output, cleanup, clock, started_at
+        return await _finish_completed_attempt(
+            result, effects, handle, request, clock, started_at
         )
+
+
+async def _settle_cleanup(
+    effects: ProcessEffects, handle: ProcessHandle, timeout_seconds: float
+) -> _CleanupSettlement:
+    """Retain cleanup through repeated cancellation until its adapter settles.
+
+    Returns:
+        Final cleanup outcome, any waiting cancellation, and an unexpected
+        cleanup error. Unexpected errors retain their type and message in the
+        unknown cleanup evidence.
+    """
+    cleanup_task = asyncio.create_task(effects.cleanup(handle, timeout_seconds))
+    cancellation: CancelledError | None = None
+    while True:
+        try:
+            outcome = await asyncio.shield(cleanup_task)
+            return _CleanupSettlement(outcome, cancellation, None)
+        except CancelledError as exc:
+            cancellation = cancellation or exc
+            if cleanup_task.cancelled():
+                diagnostic = _error_diagnostic(exc)
+                outcome = CleanupOutcome(
+                    CleanupEvidence(
+                        "owned", "unknown", diagnostic, "unknown", diagnostic
+                    )
+                )
+                return _CleanupSettlement(outcome, cancellation, None)
+        except Exception as exc:
+            diagnostic = _error_diagnostic(exc)
+            outcome = CleanupOutcome(
+                CleanupEvidence("owned", "unknown", diagnostic, "unknown", diagnostic)
+            )
+            return _CleanupSettlement(outcome, cancellation, exc)
+
+
+async def _cancelled_attempt(
+    cause: CancelledError,
+    effects: ProcessEffects,
+    handle: ProcessHandle,
+    request: AttemptRequest,
+    clock: Clock,
+    started_at: float,
+) -> Never:
+    """Build cancellation evidence when capture did not provide its buffers."""
+    cleanup = await _settle_cleanup(effects, handle, request.cleanup_timeout_seconds)
+    observation = _observation(
+        CapturedOutput(b"", b""), cleanup.outcome.evidence, clock, started_at
+    )
+    stopped = AttemptCancelled(observation, cleanup.outcome.exit_status)
+    _explain_cleanup_settlement(stopped, cleanup)
+    raise stopped from cause
+
+
+async def _complete_cancelled_attempt(
+    cancellation: AttemptCancelled,
+    effects: ProcessEffects,
+    handle: ProcessHandle,
+    request: AttemptRequest,
+    clock: Clock,
+    started_at: float,
+) -> None:
+    """Attach final cleanup and post-termination status to leaf cancellation."""
+    cleanup = await _settle_cleanup(effects, handle, request.cleanup_timeout_seconds)
+    cancellation.observation = _observation(
+        cancellation.observation.output, cleanup.outcome.evidence, clock, started_at
+    )
+    if cancellation.exit_status is None:
+        cancellation.exit_status = cleanup.outcome.exit_status
+    _explain_cleanup_settlement(cancellation, cleanup)
+
+
+async def _finish_failed_attempt(
+    error: Exception,
+    effects: ProcessEffects,
+    handle: ProcessHandle,
+    request: AttemptRequest,
+    clock: Clock,
+    started_at: float,
+) -> None:
+    """Attach cleanup evidence to the original unexpected capture exception."""
+    cleanup = await _settle_cleanup(effects, handle, request.cleanup_timeout_seconds)
+    observation = _observation(
+        CapturedOutput(b"", b""), cleanup.outcome.evidence, clock, started_at
+    )
+    if cleanup.cancellation is not None:
+        stopped = AttemptCancelled(observation, cleanup.outcome.exit_status)
+        _explain_cleanup_settlement(stopped, cleanup)
+        stopped.add_note(f"Capture also failed: {_error_diagnostic(error)}")
+        raise stopped from error
+    _attach_failure_evidence(error, observation, cleanup.outcome.exit_status)
+    if cleanup.error is not None:
+        error.add_note(f"Cleanup also failed: {_error_diagnostic(cleanup.error)}")
+
+
+async def _finish_completed_attempt(
+    result: AttemptResult,
+    effects: ProcessEffects,
+    handle: ProcessHandle,
+    request: AttemptRequest,
+    clock: Clock,
+    started_at: float,
+) -> AttemptResult:
+    """Attach cleanup evidence and reconcile an observed child exit status.
+
+    Returns:
+        The leaf variant with final cleanup and the best observed exit status.
+
+    """
+    cleanup = await _settle_cleanup(effects, handle, request.cleanup_timeout_seconds)
+    observation = _observation(
+        result.observation.output, cleanup.outcome.evidence, clock, started_at
+    )
+    result_status = result.exit_status
+    status = result_status if result_status is not None else cleanup.outcome.exit_status
+    if cleanup.cancellation is not None:
+        stopped = AttemptCancelled(observation, status)
+        _explain_cleanup_settlement(stopped, cleanup)
+        raise stopped from (cleanup.error or cleanup.cancellation)
+    if cleanup.error is not None:
+        _attach_failure_evidence(cleanup.error, observation, status)
+        raise cleanup.error
+    if isinstance(result, Completed):
         return replace(result, observation=observation)
+    return replace(result, observation=observation, exit_status=status)
+
+
+def _error_diagnostic(error: BaseException | None) -> str:
+    """Format an exception with its type and message for retained evidence.
+
+    Returns:
+        The type-qualified diagnostic, or a placeholder for absent errors.
+    """
+    if error is None:
+        return "unknown error"
+    return f"{type(error).__name__}: {error}"
+
+
+def _explain_cleanup_settlement(
+    error: BaseException, settlement: _CleanupSettlement
+) -> None:
+    """Retain unexpected cleanup errors and cancellations as exception notes."""
+    if settlement.error is not None:
+        error.add_note(
+            f"Cleanup raised unexpectedly: {_error_diagnostic(settlement.error)}"
+        )
+    if settlement.cancellation is not None:
+        error.add_note(
+            f"Cleanup wait received cancellation: "
+            f"{_error_diagnostic(settlement.cancellation)}"
+        )
+
+
+def _attach_failure_evidence(
+    error: Exception, observation: AttemptObservation, exit_status: int | None
+) -> None:
+    """Attach structured evidence without replacing the original exception."""
+    setattr(  # ruff: ignore[set-attr-with-constant] - Exception has no declared field.
+        error,
+        "process_supervisor_evidence",
+        AttemptFailureEvidence(observation, exit_status),
+    )
+    error.add_note(
+        "Process cleanup evidence is available on process_supervisor_evidence."
+    )
 
 
 def _observation(
