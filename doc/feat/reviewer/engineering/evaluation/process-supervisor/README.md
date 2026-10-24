@@ -15,6 +15,9 @@ requiring a production reviewer runner.
 ## Non-Goals
 
 - Deliver a production runner, generic batch scheduler, or concurrency library.
+- Implement the full Evaluation caller, trial scheduling, retry policy, budgets,
+  scoring, or evidence persistence, which remain owned by the parent Evaluation
+  Work.
 - Discover arbitrary process trees, contain escaped daemons, classify zombies,
   or sandbox CPU, memory, or process counts.
 - Change invocation policy, trial budgets, telemetry accounting, or authorize
@@ -29,7 +32,8 @@ requiring a production reviewer runner.
   group; a small direct-kill policy is sufficient without a mandatory
   TERM/grace/KILL sequence.
 - The Evaluation caller owns dispatch policy, signal handling, and evidence
-  accounting, composing the async boundary without a global scheduler.
+  accounting, with this child delivering only the call-site integration needed
+  for AC-3 alongside the supervisor.
 
 ## Inherited constraints
 
@@ -102,9 +106,9 @@ cleanup deadline, or explicitly report failure or expiry of that step.
 
 ### **AC-3 TODO** Stop handling prevents further experimental dispatch
 
-The owning Evaluation runner stops new dispatch immediately on cancellation or
-failed or unconfirmed signal/wait cleanup and preserves truthful incomplete-run
-accounting.
+The narrow integration with the owning Evaluation caller stops new dispatch
+immediately on cancellation or failed or unconfirmed signal/wait cleanup and
+preserves truthful incomplete-run accounting.
 
 - `SIGINT` and `SIGTERM` at that owning boundary stop new calls and clean up the
   active invocation through AC-2; `SIGKILL` cannot execute cleanup.
@@ -119,12 +123,23 @@ accounting.
 
 ## Additional context
 
-This is one coherent child Work. Proportionate reviewed increments inside it
-cover typed architecture, typed wiring, and implementation with focused tests;
-they are not separate child Works. Typed review establishes lifecycle ownership,
-result/error distinctions, and caller composition before implementation, leaving
-private helper choices flexible under
-[architecture exploration](../../../../../architecture-exploration.md).
+- This child delivers one service, the supervisor, plus the minimal call-site
+  integration that establishes AC-3.
+- The Evaluation caller and OS/asyncio are external collaborators.
+- The parent Evaluation Work owns the full experiment runner, including the
+  full caller, trial scheduling, retry policy, budgets, scoring, and evidence
+  persistence.
+- This boundary governs both typed wiring and implementation.
+- AC-3 retains the caller's stop, cleanup, retry-without-overlap, active-status,
+  and not-started accounting obligations.
+- Proportionate reviewed increments inside this Work cover typed architecture,
+  typed wiring, and implementation with focused tests rather than separate
+  child Works.
+- Typed review establishes lifecycle ownership, result/error distinctions, and
+  the narrow caller integration before implementation.
+- Private helpers and incidental signatures remain flexible under
+  [architecture exploration](../../../../../architecture-exploration.md).
+
 Implementation waits for the concrete planning PR to merge and subsequent
 authorization under [Work workflow](../../../../../workflow.md#lifecycle).
 

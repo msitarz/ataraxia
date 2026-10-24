@@ -11,38 +11,19 @@ runtime behavior.
   process-supervisor attempt per call.
 - The supervisor owns subprocess resources, bounded output capture, process
   group signaling, direct-child waiting, and truthful attempt evidence.
+- This child delivers the supervisor and minimal AC-3 call-site integration,
+  while the parent Evaluation Work owns the full experiment runner.
 - The async framework supplies subprocess, stream, task-cancellation, and wait
   mechanisms, while POSIX supplies process-group, signal, and exit mechanisms.
 - The reviewed design does not establish runtime guarantees until implemented
   and supported by evidence.
+- The scope in the [Work contract](README.md#additional-context) governs typed
+  wiring and implementation.
+- The supervisor is the child's sole service, with only the call-site
+  integration needed to meet AC-3 added at the external caller boundary.
+- Private helpers and incidental signatures remain flexible.
 
 ## Services
-
-### Evaluation caller
-
-- The caller resolves `codex` through `PATH` before every attempt.
-- The caller records the resolved executable, actual version, and environment
-  configuration and provenance.
-- The caller builds the static reviewed argv and finite limits.
-- The caller explicitly sets stdin to `DEVNULL`.
-- The caller supplies prompt and review context through the reviewed
-  argv/context contract rather than an interactive prompt channel.
-- The process deliberately inherits the caller-configured environment.
-- The caller awaits one supervisor attempt per invocation.
-- The caller classifies completed observations and applies Evaluation policy.
-- The caller records every attempt and planned call that never started.
-- The caller owns signal handling, retry policy, and evidence accounting.
-- The caller may retry timeout and eligible infrastructure failures up to three
-  additional times, only after cleanup is confirmed.
-- A nonzero exit is retry-eligible infrastructure failure only when the caller
-  establishes that no semantic result exists.
-- Overflow, malformed output, and semantic results prohibit retry for that
-  planned call, but do not by themselves stop global dispatch.
-- Failed, expired, or unknown signal/wait evidence, uncertain acquisition, and
-  cancellation stop new dispatch immediately and mark the run incomplete.
-- Other global stops and remaining budgets stay with the caller.
-- No retry loop, signal handler, global scheduler, authentication, output
-  writing, or scoring belongs to the supervisor.
 
 ### One-attempt supervisor
 
@@ -97,7 +78,42 @@ runtime behavior.
 - The boundary must not leave an unawaited creation operation that can later
   acquire an unowned child.
 
-### Async framework and POSIX operating system
+## External collaborators
+
+### Evaluation caller (parent Evaluation Work)
+
+- The parent owns the full caller, trial scheduling, retry policy, budgets,
+  scoring, and evidence persistence.
+- This child integrates the supervisor only far enough to establish the
+  [AC-3 stop and accounting guarantees](README.md#ac-3-todo-stop-handling-prevents-further-experimental-dispatch).
+- The narrow integration handles signals and cancellation, stops dispatch on
+  failed or uncertain cleanup, preserves retry ownership without overlap, and
+  retains active-call status and not-started accounting.
+- The caller resolves `codex` through `PATH` before every attempt.
+- The caller records the resolved executable, actual version, and environment
+  configuration and provenance.
+- The caller builds the static reviewed argv and finite limits.
+- The caller explicitly sets stdin to `DEVNULL`.
+- The caller supplies prompt and review context through the reviewed
+  argv/context contract rather than an interactive prompt channel.
+- The process deliberately inherits the caller-configured environment.
+- The caller awaits one supervisor attempt per invocation.
+- The caller classifies completed observations and applies Evaluation policy.
+- The caller records every attempt and planned call that never started.
+- The caller owns signal handling, retry policy, and evidence accounting.
+- The caller may retry timeout and eligible infrastructure failures up to three
+  additional times, only after cleanup is confirmed.
+- A nonzero exit is retry-eligible infrastructure failure only when the caller
+  establishes that no semantic result exists.
+- Overflow, malformed output, and semantic results prohibit retry for that
+  planned call, but do not by themselves stop global dispatch.
+- Failed, expired, or unknown signal/wait evidence, uncertain acquisition, and
+  cancellation stop new dispatch immediately and mark the run incomplete.
+- Other global stops and remaining budgets stay with the caller.
+- No retry loop, signal handler, global scheduler, authentication, output
+  writing, or scoring belongs to the supervisor.
+
+### Async framework and POSIX operating system (external mechanisms)
 
 - Asyncio supplies subprocess creation, stream access, task cancellation, and
   direct-process waiting through the awaitable boundary.
@@ -111,9 +127,9 @@ runtime behavior.
 
 ```mermaid
 flowchart LR
-    Caller[Evaluation caller\nCLI discovery/version\nargv, limits, retries, signals, accounting]
-    Boundary[one async attempt\nscript/process_supervisor.pyi]
-    OS[asyncio + POSIX OS\nspawn, streams, group signal, direct-child wait]
+    Caller[External: parent Evaluation caller\nfull experiment runner\nwith narrow child AC-3 call-site integration]
+    Boundary[Child service: one async attempt\nscript/process_supervisor.pyi]
+    OS[External: asyncio + POSIX OS\nspawn, streams, group signal, direct-child wait]
     Caller -->|AttemptRequest| Boundary
     Boundary -->|one subprocess operation| OS
     OS -->|observations and cleanup evidence| Boundary
