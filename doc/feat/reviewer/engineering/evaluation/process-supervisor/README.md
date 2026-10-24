@@ -7,10 +7,10 @@ requiring a production reviewer runner.
 
 ## Goals
 
-- Run the pinned experimental `codex exec` command through a small native async
+- Run the system `codex exec` command through a small native async
   boundary with truthful output, exit, and completion accounting.
-- Clean up the owned POSIX process group on termination and stop the experiment
-  when cleanup cannot be confirmed.
+- Request termination of the owned POSIX process group, await the direct CLI,
+  and stop the experiment if that signal/wait step fails.
 
 ## Non-Goals
 
@@ -24,7 +24,7 @@ requiring a production reviewer runner.
 ## Mechanisms
 
 - Python `asyncio` owns subprocess creation, bounded stream reading, waiting,
-  cancellation, and cleanup through an awaitable invocation boundary.
+  cancellation, and cleanup for one attempt through an awaitable boundary.
 - A dedicated POSIX process group scopes termination to the invocation's owned
   group; a small direct-kill policy is sufficient without a mandatory
   TERM/grace/KILL sequence.
@@ -51,7 +51,7 @@ production readiness.
 At base `40a22224e4006b0e437d63254d5319d47d7aebbf`, the protocol and historical
 preparation evidence remain, but there is no active supervisor implementation
 or supervisor Make target. The proposed change adds one async invocation
-boundary between the Evaluation caller and its pinned CLI command. The caller
+boundary between the Evaluation caller and its system CLI command. The caller
 keeps experiment policy; the boundary owns only its subprocess resources and
 reports their outcome.
 
@@ -59,7 +59,7 @@ reports their outcome.
 
 ### **AC-1 TODO** Async invocation returns bounded, truthful observations
 
-An Evaluation caller can await the pinned command with the existing protocol
+An Evaluation caller can await one command attempt with the existing protocol
 limits and receive observed output, exit status when available, termination
 reason, and cleanup status through a reviewed typed boundary.
 
@@ -76,16 +76,20 @@ reason, and cleanup status through a reviewed typed boundary.
 
 ### **AC-2 TODO** Termination has bounded, accountable cleanup
 
-Success, failure, timeout, cancellation, and overflow release the invocation's
-acquired resources within the protocol cleanup deadline or explicitly report
-that cleanup could not be confirmed.
+Success, failure, timeout, cancellation, and overflow request termination of the
+owned group through the OS and await/reap the direct CLI within the protocol
+cleanup deadline, or explicitly report failure or expiry of that step.
 
-- The CLI launches in a dedicated owned group; cleanup kills that group,
-  including children remaining after leader exit, and waits for and reaps the
-  direct CLI.
-- Cleanup is complete only when owned-group termination and direct CLI reaping
-  are confirmed; expiry, permission errors, and unknown outcomes remain
-  explicit cleanup failures, with useful original failure diagnostics retained.
+- The CLI launches in a dedicated owned group; the termination request targets
+  that group even after leader exit, when children may remain.
+- Cleanup status records the OS signaling outcome and direct CLI wait/reaping
+  outcome; signal or wait failure, expiry, permission errors, and unknown
+  outcomes remain explicit failures, with original failure diagnostics retained.
+- The supervisor trusts OS signal/exit semantics and ordinary resource
+  reclamation on exit; it does not enumerate group members, probe absence or
+  zombies, or prove that every descendant exited.
+- No process-tree discovery, whole-host audit, or graceful escalation framework
+  is required.
 - Task cancellation propagates after bounded cleanup and cannot become a
   retryable `OSError` or successful result.
 - Acquisition failure or interruption leaves no unawaited operation that could
@@ -95,12 +99,17 @@ that cleanup could not be confirmed.
 ### **AC-3 TODO** Stop handling prevents further experimental dispatch
 
 The owning Evaluation runner stops new dispatch immediately on cancellation or
-unconfirmed cleanup and preserves truthful incomplete-run accounting.
+failed or unconfirmed signal/wait cleanup and preserves truthful incomplete-run
+accounting.
 
 - `SIGINT` and `SIGTERM` at that owning boundary stop new calls and clean up the
   active invocation through AC-2; `SIGKILL` cannot execute cleanup.
 - A cleanup failure marks the run incomplete and forbids another dispatch,
   independently of the protocol's ordinary infrastructure-failure threshold.
+- The caller owns the protocol's optional retries; the supervisor runs exactly
+  one attempt and never overlaps a retry with an unstopped direct CLI from a
+  previous attempt.
+- Cancellation, including Ctrl+C and `SIGTERM`, stops evaluation without retry.
 - The active call's failure and cleanup status remain inspectable, and planned
   but undispatched calls retain the protocol's not-started accounting.
 
@@ -116,7 +125,9 @@ Implementation waits for the concrete planning PR to merge and subsequent
 authorization under [Work workflow](../../../../../workflow.md#lifecycle).
 
 The Evaluation explicitly trusts upstream Codex for internal lifecycle beyond
-the owned group. Codex may spawn children; this Work does not establish
+the owned group. Children do not generally exit when their parent exits, so the
+owned-group stop and direct-child wait remain necessary before another attempt.
+Codex may spawn children; this Work does not establish
 containment of processes that leave that group or whole-host process absence.
 OS process-creation latency may not be interruptible by the async deadline; the
 boundary must disclose that limit rather than promise a hard creation bound.
