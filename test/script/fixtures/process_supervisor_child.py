@@ -15,6 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stderr", default="")
     parser.add_argument("--status", type=int, default=0)
     parser.add_argument("--ready-file")
+    parser.add_argument("--grandchild-file")
     parser.add_argument("--burst-bytes", type=int, default=0)
     parser.add_argument("--dispatch-marker")
     return parser.parse_args()
@@ -36,6 +37,12 @@ def write_ready_file(args: argparse.Namespace) -> None:
             ready.write(str(os.getpid()))
 
 
+def write_grandchild_file(args: argparse.Namespace, pid: int) -> None:
+    if args.grandchild_file is not None:
+        with open(args.grandchild_file, "w", encoding="utf-8") as grandchild:
+            grandchild.write(str(pid))
+
+
 def write_dispatch_marker(args: argparse.Namespace) -> None:
     if args.dispatch_marker is not None:
         with open(args.dispatch_marker, "w", encoding="utf-8"):
@@ -49,7 +56,12 @@ def run_mode(args: argparse.Namespace) -> int:
     if args.mode == "sleep":
         time.sleep(30)
     if args.mode == "hold-pipe":
-        subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        grandchild = subprocess.Popen([
+            sys.executable,
+            "-c",
+            "import time; time.sleep(30)",
+        ])
+        write_grandchild_file(args, grandchild.pid)
     return args.status
 
 

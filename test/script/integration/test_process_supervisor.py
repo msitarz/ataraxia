@@ -14,6 +14,7 @@ import signal
 import subprocess
 import sys
 from time import monotonic
+from time import sleep as time_sleep
 from typing import Any, cast, override
 
 import pytest
@@ -406,12 +407,30 @@ def test_timeout_when_exited_leader_child_holds_output_pipe(
     tmp_path: Path, cap: int
 ) -> None:
     # Given
+    leader_file = tmp_path / "leader.pid"
+    grandchild_file = tmp_path / "grandchild.pid"
     attempt = request(
-        tmp_path, cap, "hold-pipe", "--stdout", "7365656e0a", timeout=0.25
+        tmp_path,
+        cap,
+        "hold-pipe",
+        "--stdout",
+        "7365656e0a",
+        "--ready-file",
+        str(leader_file),
+        "--grandchild-file",
+        str(grandchild_file),
+        timeout=2.0,
     )
+    effects = _ObservePipeHolder(grandchild_file)
 
     # When
-    result = asyncio.run(run_attempt(attempt))
+    grandchild_stopped_after_cleanup = False
+    try:
+        result = asyncio.run(run_attempt(attempt, effects))
+        grandchild_pid = int(grandchild_file.read_text(encoding="utf-8"))
+        grandchild_stopped_after_cleanup = _wait_for_process_stop(grandchild_pid)
+    finally:
+        _emergency_stop_fixture_group(leader_file, grandchild_file)
 
     # Then
     assert isinstance(result, TimedOut)
@@ -420,6 +439,61 @@ def test_timeout_when_exited_leader_child_holds_output_pipe(
     assert result.observation.output.stdout == b"seen\n"
     assert result.observation.cleanup.signal == "sent"
     assert result.observation.cleanup.direct_wait == "reaped"
+    assert effects.grandchild_was_running_at_cleanup
+    assert grandchild_stopped_after_cleanup
+
+
+class _ObservePipeHolder(NativeProcessEffects):
+    def __init__(self, grandchild_file: Path) -> None:
+        self.grandchild_file = grandchild_file
+        self.grandchild_was_running_at_cleanup = False
+
+    @override
+    async def cleanup(
+        self, handle: ProcessHandle, timeout_seconds: float, /
+    ) -> CleanupOutcome:
+        grandchild_pid = int(self.grandchild_file.read_text(encoding="utf-8"))
+        self.grandchild_was_running_at_cleanup = _process_state(grandchild_pid) not in {
+            None,
+            "Z",
+        }
+        return await super().cleanup(handle, timeout_seconds)
+
+
+def _process_state(pid: int) -> str | None:
+    result = subprocess.run(
+        ["ps", "-o", "stat=", "-p", str(pid)],
+        capture_output=True,
+        check=False,
+        text=True,
+        timeout=1.0,
+    )
+    if result.returncode == 1 and not result.stdout.strip() and not result.stderr:
+        return None
+    assert result.returncode == 0, result.stderr
+    state = result.stdout.strip()
+    return state[0] if state else None
+
+
+def _wait_for_process_stop(pid: int) -> bool:
+    deadline = monotonic() + 3.0
+    while True:
+        state = _process_state(pid)
+        if state is None or state == "Z":
+            return True
+        if monotonic() >= deadline:
+            return False
+        time_sleep(0.05)
+
+
+def _emergency_stop_fixture_group(leader_file: Path, grandchild_file: Path) -> None:
+    if not leader_file.exists():
+        return
+    process_group_id = int(leader_file.read_text(encoding="utf-8"))
+    with suppress(ProcessLookupError):
+        os.killpg(process_group_id, signal.SIGKILL)
+    if grandchild_file.exists():
+        assert _wait_for_process_stop(int(grandchild_file.read_text(encoding="utf-8")))
 
 
 @pytest.mark.parametrize(
