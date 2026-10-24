@@ -14,7 +14,7 @@ import signal
 import subprocess
 import sys
 from time import monotonic
-from typing import Any, cast
+from typing import Any, cast, override
 
 import pytest
 
@@ -24,6 +24,7 @@ from script.process_supervisor import (
     AttemptRequest,
     AttemptResult,
     CleanupOutcome,
+    Clock,
     Completed,
     NativeProcessEffects,
     NotLaunched,
@@ -49,6 +50,26 @@ def request(
         cap,
         "devnull",
     )
+
+
+class OffsetClock:
+    def __init__(self, offset_seconds: float = -1_000.0) -> None:
+        self.offset_seconds = offset_seconds
+
+    def monotonic(self) -> float:
+        return monotonic() + self.offset_seconds
+
+
+class ClockAdvancingNativeEffects(NativeProcessEffects):
+    def __init__(self, clock: OffsetClock) -> None:
+        self.clock = clock
+
+    @override
+    async def acquire(self, attempt: AttemptRequest, /) -> ProcessHandle | NotLaunched:
+        acquired = await super().acquire(attempt)
+        if not isinstance(acquired, NotLaunched):
+            self.clock.offset_seconds += attempt.timeout_seconds + 1.0
+        return acquired
 
 
 def _caller_environment(repository_root: Path) -> dict[str, str]:
@@ -203,6 +224,46 @@ def test_nonzero_completion_preserves_status_and_output(tmp_path: Path) -> None:
     assert result.exit_status == 7
     assert result.observation.output is not None
     assert result.observation.output.stdout == b"partial\n"
+
+
+@pytest.mark.parametrize(
+    "effects",
+    [
+        pytest.param(None, id="default-native"),
+        pytest.param(NativeProcessEffects(), id="explicit-native"),
+    ],
+)
+def test_native_capture_uses_run_attempt_clock_domain(
+    tmp_path: Path, effects: NativeProcessEffects | None
+) -> None:
+    # Given
+    attempt = request(tmp_path, 100, "emit", "--stdout", "6f6b0a")
+    clock = OffsetClock()
+
+    # When
+    result = asyncio.run(run_attempt(attempt, effects, clock))
+
+    # Then
+    assert isinstance(result, Completed)
+    assert result.observation.output is not None
+    assert result.observation.output.stdout == b"ok\n"
+
+
+def test_native_capture_keeps_acquisition_inside_execution_timeout(
+    tmp_path: Path,
+) -> None:
+    # Given
+    attempt = request(tmp_path, 100, "sleep")
+    clock = OffsetClock()
+    effects = ClockAdvancingNativeEffects(clock)
+
+    # When
+    result = asyncio.run(run_attempt(attempt, effects, clock))
+
+    # Then
+    assert isinstance(result, TimedOut)
+    assert result.observation.elapsed_seconds is not None
+    assert result.observation.elapsed_seconds >= attempt.timeout_seconds
 
 
 @pytest.mark.parametrize(
@@ -659,9 +720,10 @@ class DelayedNativeAcquisition:
         handle: ProcessHandle,
         attempt: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
-        return await self.native.capture(handle, attempt, execution_deadline)
+        return await self.native.capture(handle, attempt, execution_deadline, clock)
 
     async def cleanup(
         self, handle: ProcessHandle, timeout_seconds: float, /

@@ -354,6 +354,7 @@ class ProcessEffects(Protocol):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         """Return tagged output or cancellation with observed partial buffers.
@@ -405,6 +406,7 @@ class NativeProcessEffects:
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         """Drain separate streams under one combined cap and execution deadline.
@@ -428,7 +430,7 @@ class NativeProcessEffects:
         }
         waiter = asyncio.create_task(process.wait())
         return await _capture_and_settle(
-            output, process, readers, waiter, execution_deadline
+            output, process, readers, waiter, execution_deadline, clock
         )
 
     async def cleanup(
@@ -598,6 +600,7 @@ async def _capture_and_settle(
     readers: set[asyncio.Task[None]],
     waiter: asyncio.Task[int],
     execution_deadline: float,
+    clock: Clock,
 ) -> AttemptResult:
     """Capture to a terminal result and retain buffers through cancellation.
 
@@ -613,7 +616,7 @@ async def _capture_and_settle(
     closing = False
     try:
         result = await _await_capture(
-            output, process, readers, waiter, execution_deadline
+            output, process, readers, waiter, execution_deadline, clock
         )
     except CancelledError as exc:
         cancellation = exc
@@ -689,6 +692,7 @@ async def _await_capture(
     readers: set[asyncio.Task[None]],
     waiter: asyncio.Task[int],
     execution_deadline: float,
+    clock: Clock,
 ) -> AttemptResult:
     """Wait until process and both pipes finish, overflow, or deadline.
 
@@ -697,7 +701,7 @@ async def _await_capture(
     """
     pending = readers | {waiter}
     while pending:
-        remaining = execution_deadline - monotonic()
+        remaining = execution_deadline - clock.monotonic()
         done, pending = await asyncio.wait(
             pending,
             timeout=max(0.0, remaining),
@@ -826,7 +830,7 @@ async def _run_owned_attempt(
 
     """
     try:
-        result = await effects.capture(handle, request, execution_deadline)
+        result = await effects.capture(handle, request, execution_deadline, clock)
     except CancelledError as exc:
         cancellation = exc
         result = None

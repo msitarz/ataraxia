@@ -102,6 +102,9 @@ integration in the parent Evaluation harness remains pending.
 
 - `run_attempt` starts its monotonic clock immediately before acquisition and
   derives the execution deadline from that same instant.
+- `run_attempt` passes the same clock to capture so the native adapter
+  compares the deadline in the same clock domain.
+- The execution timeout budget begins at acquisition, not capture.
 - The acquisition effect receives the caller's request unchanged, including
   the recorded absolute CLI path in `argv[0]`.
 - Acquisition returns an owned handle or an explicit `NotLaunched` with a
@@ -109,8 +112,9 @@ integration in the parent Evaluation harness remains pending.
 - External cancellation waits for acquisition to settle before deciding
   whether cleanup is required.
 - A raw acquisition error remains visible and the caller stops conservatively.
-- The capture effect receives the acquired handle and absolute execution
-  deadline, then supplies one of the reviewed tagged attempt results.
+- The capture effect receives the acquired handle, absolute execution deadline,
+  and the same clock used to construct it, then supplies one of the reviewed
+  tagged attempt results.
 - Composition preserves the leaf's concrete result variant, exit status,
   output, and diagnostic while adding final cleanup and elapsed observations.
 - After acquisition, `run_attempt` requests cleanup after capture success,

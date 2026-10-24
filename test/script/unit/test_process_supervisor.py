@@ -18,6 +18,7 @@ from script.process_supervisor import (
     CapturedOutput,
     CleanupEvidence,
     CleanupOutcome,
+    Clock,
     Completed,
     InfrastructureFailure,
     NotLaunched,
@@ -157,6 +158,7 @@ class CaptureCall:
     handle: ProcessHandle
     request: AttemptRequest
     execution_deadline: float
+    clock: Clock
 
 
 @dataclass(frozen=True)
@@ -197,9 +199,10 @@ class FakeEffects:
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
-        self.events.append(CaptureCall(handle, request, execution_deadline))
+        self.events.append(CaptureCall(handle, request, execution_deadline, clock))
         self.clock.value = 12.0
         return Completed(
             AttemptObservation(
@@ -229,6 +232,7 @@ class WaitingCaptureEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         self.capture_started.set()
@@ -271,10 +275,11 @@ class FailingCaptureEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        await super().capture(handle, request, execution_deadline)
+        await super().capture(handle, request, execution_deadline, clock)
         raise self.error
 
     def __init__(
@@ -294,10 +299,11 @@ class CancellingCaptureEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        await super().capture(handle, request, execution_deadline)
+        await super().capture(handle, request, execution_deadline, clock)
         raise self.cancellation
 
     def __init__(self, events: list[WireEvent], clock: FakeClock) -> None:
@@ -318,9 +324,10 @@ class OutcomeEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
-        self.events.append(CaptureCall(handle, request, execution_deadline))
+        self.events.append(CaptureCall(handle, request, execution_deadline, clock))
         self.clock.value = 12.0
         return self.result
 
@@ -348,6 +355,7 @@ class CancellingTaskEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         self.capture_started.set()
@@ -388,6 +396,7 @@ class RawCancellingCaptureEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         self.capture_started.set()
@@ -411,9 +420,10 @@ class PostKillStatusEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
-        self.events.append(CaptureCall(handle, request, execution_deadline))
+        self.events.append(CaptureCall(handle, request, execution_deadline, clock))
         return self.result
 
     @override
@@ -486,6 +496,7 @@ class CompletedCleanupEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         return Completed(
@@ -599,7 +610,7 @@ def test_attempt_wires_request_through_owned_effect_sequence(
     assert events == [
         ClockRead(10.0),
         AcquireCall(attempt_request),
-        CaptureCall(effects.handle, attempt_request, 40.0),
+        CaptureCall(effects.handle, attempt_request, 40.0, clock),
         CleanupCall(effects.handle, 5.0),
         ClockRead(13.5),
     ]
@@ -633,7 +644,7 @@ def test_capture_failure_cleans_owned_handle_and_preserves_failure(
     # Then
     assert events[1:4] == [
         AcquireCall(attempt_request),
-        CaptureCall(effects.handle, attempt_request, 40.0),
+        CaptureCall(effects.handle, attempt_request, 40.0, clock),
         CleanupCall(effects.handle, 5.0),
     ]
     assert raised.value is effects.error
@@ -654,6 +665,7 @@ class SystemExitCaptureEffects(FakeEffects):
         handle: ProcessHandle,
         request: AttemptRequest,
         execution_deadline: float,
+        clock: Clock,
         /,
     ) -> AttemptResult:
         raise self.control_flow
@@ -749,7 +761,7 @@ def test_capture_cancellation_cleans_owned_handle_and_propagates_evidence(
     # Then
     assert events[1:4] == [
         AcquireCall(attempt_request),
-        CaptureCall(effects.handle, attempt_request, 40.0),
+        CaptureCall(effects.handle, attempt_request, 40.0, clock),
         CleanupCall(effects.handle, 5.0),
     ]
     assert raised.value is effects.cancellation
