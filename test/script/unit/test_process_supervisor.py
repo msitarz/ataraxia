@@ -2,6 +2,7 @@
 """Wiring tests for the experimental process-supervisor increment."""
 
 import asyncio
+from contextlib import suppress
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Literal, override
@@ -48,6 +49,7 @@ def attempt_request() -> AttemptRequest:
     ("field", "value"),
     [
         pytest.param("timeout_seconds", 0.0, id="execution-zero"),
+        pytest.param("timeout_seconds", True, id="execution-boolean"),
         pytest.param("timeout_seconds", -1.0, id="execution-negative"),
         pytest.param("timeout_seconds", float("nan"), id="execution-nan"),
         pytest.param("timeout_seconds", float("inf"), id="execution-positive-infinity"),
@@ -55,6 +57,7 @@ def attempt_request() -> AttemptRequest:
             "timeout_seconds", float("-inf"), id="execution-negative-infinity"
         ),
         pytest.param("cleanup_timeout_seconds", 0.0, id="cleanup-zero"),
+        pytest.param("cleanup_timeout_seconds", True, id="cleanup-boolean"),
         pytest.param("cleanup_timeout_seconds", -1.0, id="cleanup-negative"),
         pytest.param("cleanup_timeout_seconds", float("nan"), id="cleanup-nan"),
         pytest.param(
@@ -214,6 +217,52 @@ class FakeEffects:
         self.events.append(CleanupCall(handle, timeout_seconds))
         self.clock.value = 13.5
         return CleanupOutcome(CleanupEvidence("owned", "sent", None, "reaped", None))
+
+
+class WaitingCaptureEffects(FakeEffects):
+    def __init__(self, events: list[WireEvent], clock: FakeClock) -> None:
+        super().__init__(events, clock)
+        self.capture_started = asyncio.Event()
+
+    @override
+    async def capture(
+        self,
+        handle: ProcessHandle,
+        request: AttemptRequest,
+        execution_deadline: float,
+        /,
+    ) -> AttemptResult:
+        self.capture_started.set()
+        await asyncio.Future[AttemptResult]()
+        raise AssertionError("capture future completed unexpectedly")
+
+
+def test_coroutine_close_does_not_schedule_async_finalization(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = WaitingCaptureEffects(events, clock)
+
+    async def close_suspended_attempt() -> None:
+        attempt = run_attempt(attempt_request, effects, clock)
+        task = asyncio.create_task(attempt)
+        try:
+            await effects.capture_started.wait()
+
+            # When
+            attempt.close()
+            await asyncio.sleep(0)
+
+            # Then
+            assert not any(isinstance(event, CleanupCall) for event in events)
+        finally:
+            task.cancel()
+            with suppress(asyncio.CancelledError, RuntimeError):
+                await task
+
+    asyncio.run(close_suspended_attempt())
 
 
 class FailingCaptureEffects(FakeEffects):

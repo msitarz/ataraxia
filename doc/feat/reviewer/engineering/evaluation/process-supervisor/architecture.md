@@ -163,6 +163,10 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   descendant absence.
 - The parent Evaluation owns process signals, undispatched-call accounting,
   retries, budgets, classification, and evidence persistence.
+- Before any fallible attempt or run-evidence recording, the parent caller sets
+  a stop latch when a stop condition is known.
+- The parent caller checks the stop latch before every dispatch so a recording
+  failure cannot reopen dispatch.
 - The caller owns CLI resolution, and this module does not discover or
   version-probe Codex.
 - Fake-effect tests establish request flow, cleanup order on error and
@@ -247,3 +251,6 @@ flowchart LR
   propagation with cleanup evidence.
 - Runtime work must establish caller stop/retry accounting.
 - No such behavior is claimed by this design.
+- Closing a suspended attempt coroutine cannot await asynchronous finalization.
+- Cleanup guarantees require the supported cancellation and awaiting lifecycle;
+  raw closure alone does not establish OS cleanup.

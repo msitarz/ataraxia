@@ -57,13 +57,15 @@ class AttemptRequest:
             ValueError: A timeout or output limit violates the protocol.
         """
         if (
-            not isinstance(self.timeout_seconds, (int, float))
+            isinstance(self.timeout_seconds, bool)
+            or not isinstance(self.timeout_seconds, (int, float))
             or not math.isfinite(self.timeout_seconds)
             or self.timeout_seconds <= 0
         ):
             raise ValueError("timeout_seconds must be positive and finite")
         if (
-            not isinstance(self.cleanup_timeout_seconds, (int, float))
+            isinstance(self.cleanup_timeout_seconds, bool)
+            or not isinstance(self.cleanup_timeout_seconds, (int, float))
             or not math.isfinite(self.cleanup_timeout_seconds)
             or self.cleanup_timeout_seconds <= 0
         ):
@@ -532,7 +534,7 @@ async def _run_owned_attempt(
         cancellation = exc
         result = None
         error = None
-    except BaseException as exc:
+    except (Exception, KeyboardInterrupt, SystemExit) as exc:
         cancellation = None
         result = None
         error = exc
