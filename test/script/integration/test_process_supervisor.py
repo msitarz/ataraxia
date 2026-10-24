@@ -16,7 +16,7 @@ import pytest
         pytest.param("timeout", 0, id="zero-timeout"),
         pytest.param("cleanup timeout", -1, id="negative-cleanup-timeout"),
         pytest.param("timeout", float("nan"), id="nonfinite-timeout"),
-        pytest.param("output cap", float("inf"), id="unbounded-output-cap"),
+        pytest.param("output cap", -1, id="negative-output-cap"),
     ],
 )
 @pytest.mark.xfail(
@@ -24,7 +24,7 @@ import pytest
     reason="AC-1 pending: reject invalid invocation limits before launch",
     strict=True,
 )
-def test_invalid_or_unbounded_limits_refuse_to_launch(
+def test_invalid_limits_refuse_to_launch(
     limit_case: str,
     invalid_value: int | float,
 ) -> None:
@@ -109,23 +109,56 @@ def test_combined_output_cap_distinguishes_exact_limit_from_overflow(
 
 @pytest.mark.xfail(
     raises=NotImplementedError,
+    reason="AC-1 pending: retain separate streams with zero byte cap",
+    strict=True,
+)
+def test_zero_output_cap_retains_both_streams_without_overflow() -> None:
+    """AC-1: zero retains complete separate streams without overflow."""
+    # Given
+    # A disposable CLI exits 0 within the execution deadline after emitting
+    # b"stdout\n" to stdout and b"stderr\n" to stderr.
+
+    # When
+    # The integrated caller captures output with output_limit_bytes=0.
+
+    # Then
+    # The result is Completed(0), both complete streams remain separate in the
+    # observation, and no output-overflow outcome is returned.
+    raise NotImplementedError("Pending observation for zero-byte-cap capture")
+
+
+@pytest.mark.parametrize(
+    "cap",
+    [
+        pytest.param(6, id="positive-cap"),
+        pytest.param(0, id="zero-cap"),
+    ],
+)
+@pytest.mark.xfail(
+    raises=NotImplementedError,
     reason="AC-1 pending: bound timeout with a descendant-held output pipe",
     strict=True,
 )
-def test_timeout_bounds_call_when_exited_leader_child_keeps_pipe_open() -> None:
+def test_timeout_bounds_call_when_exited_leader_child_keeps_pipe_open(
+    cap: int,
+) -> None:
     """AC-1: an exited leader cannot hide the still-open invocation pipe."""
     # Given
     # A disposable leader emits b"seen\n", exits zero, and leaves an owned
-    # child holding stdout open.
+    # child holding stdout open, with output_limit_bytes=cap. The output fits
+    # the positive-cap case.
 
     # When
-    # The integrated invocation reaches its deadline.
+    # The integrated invocation with the parameterized cap reaches its
+    # positive execution deadline.
 
     # Then
     # The result must report timeout, retain every observed output prefix and
     # leader status 0 if observed, and leave exit/time unavailable only when
     # those observations were genuinely unavailable.
-    raise NotImplementedError("Pending observation for descendant-held pipe timeout")
+    raise NotImplementedError(
+        f"Pending observation for descendant-held pipe timeout, cap={cap}"
+    )
 
 
 @pytest.mark.parametrize(

@@ -13,12 +13,19 @@ from typing import Literal
 
 @dataclass(frozen=True)
 class AttemptRequest:
-    """One reviewed command attempt with finite limits and inherited env."""
+    """One reviewed command attempt with bounded deadlines and inherited env.
+
+    Execution and cleanup deadlines must be positive and finite.
+    ``output_limit_bytes`` must be nonnegative: zero disables the byte cap while
+    retaining captured output, and a positive value caps combined stdout and
+    stderr bytes. Deadlines and cleanup still apply when capture is uncapped.
+    """
 
     argv: tuple[str, ...]
     cwd: Path
     timeout_seconds: float
     cleanup_timeout_seconds: float
+    # Zero is uncapped capture; positive values cap both streams.
     output_limit_bytes: int
     stdin: Literal["devnull"]
 
@@ -34,7 +41,7 @@ class CleanupEvidence:
 
 @dataclass(frozen=True)
 class CapturedOutput:
-    """Per-stream bytes retained under one combined allowance."""
+    """Observed stdout and stderr retained separately under an optional cap."""
 
     stdout: bytes
     stderr: bytes
@@ -63,7 +70,7 @@ class TimedOut:
 
 @dataclass(frozen=True)
 class OutputLimitExceeded:
-    """Combined output exceeded the request's byte allowance."""
+    """Combined output exceeded the request's positive byte cap."""
 
     observation: AttemptObservation
     exit_status: int | None
