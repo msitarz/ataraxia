@@ -62,25 +62,24 @@ class Completed:
     exit_status: int
 
 @dataclass(frozen=True)
-class TimedOut:
+class IncompleteAttempt:
+    """An attempt without normal completion, with any observed exit status."""
+
+    observation: AttemptObservation
+    exit_status: int | None
+
+@dataclass(frozen=True)
+class TimedOut(IncompleteAttempt):
     """The active attempt exceeded its deadline."""
 
-    observation: AttemptObservation
-    exit_status: int | None
-
 @dataclass(frozen=True)
-class OutputLimitExceeded:
+class OutputLimitExceeded(IncompleteAttempt):
     """Combined output exceeded the request's positive byte cap."""
 
-    observation: AttemptObservation
-    exit_status: int | None
-
 @dataclass(frozen=True)
-class InfrastructureFailure:
+class InfrastructureFailure(IncompleteAttempt):
     """A non-cancellation failure during launch, I/O, or waiting."""
 
-    observation: AttemptObservation
-    exit_status: int | None
     error_type: str
     diagnostic: str
 
