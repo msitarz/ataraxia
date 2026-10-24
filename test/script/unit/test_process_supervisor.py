@@ -201,6 +201,7 @@ class CancellingTaskEffects(FakeEffects):
         self.capture_started = asyncio.Event()
         self.cleanup_started = asyncio.Event()
         self.cleanup_release = asyncio.Event()
+        self.cleanup_finished = asyncio.Event()
 
     @override
     async def capture(
@@ -231,8 +232,9 @@ class CancellingTaskEffects(FakeEffects):
         self.cleanup_started.set()
         await self.cleanup_release.wait()
         self.clock.value = 13.5
+        self.cleanup_finished.set()
         return CleanupOutcome(
-            CleanupEvidence("owned", "sent", None, "reaped", None), 143
+            CleanupEvidence("owned", "sent", None, "reaped", None), -15
         )
 
 
@@ -282,7 +284,7 @@ class PostKillStatusEffects(FakeEffects):
         self.events.append(CleanupCall(handle, timeout_seconds))
         self.clock.value = 13.5
         return CleanupOutcome(
-            CleanupEvidence("owned", "sent", None, "reaped", None), 137
+            CleanupEvidence("owned", "sent", None, "reaped", None), -9
         )
 
 
@@ -364,7 +366,7 @@ class CompletedCleanupEffects(FakeEffects):
         return CleanupOutcome(FINAL_CLEANUP)
 
 
-class NonconfirmedCleanupEffects(FakeEffects):
+class UnsafeCleanupEffects(FakeEffects):
     @override
     async def cleanup(
         self, handle: ProcessHandle, timeout_seconds: float, /
@@ -415,6 +417,21 @@ class SuccessfulCaptureCleanupCrashesEffects(FakeEffects):
         raise RuntimeError("cleanup implementation bug")
 
 
+class SelfCancellingAcquisitionEffects(FakeEffects):
+    @override
+    async def acquire(self, request: AttemptRequest, /) -> ProcessHandle | NotLaunched:
+        raise asyncio.CancelledError("acquisition adapter cancelled itself")
+
+
+class SelfCancellingCleanupEffects(FakeEffects):
+    @override
+    async def cleanup(
+        self, handle: ProcessHandle, timeout_seconds: float, /
+    ) -> CleanupOutcome:
+        self.events.append(CleanupCall(handle, timeout_seconds))
+        raise asyncio.CancelledError("cleanup adapter cancelled itself")
+
+
 def test_attempt_wires_request_through_owned_effect_sequence(
     attempt_request: AttemptRequest,
 ) -> None:
@@ -438,7 +455,7 @@ def test_attempt_wires_request_through_owned_effect_sequence(
     assert result.exit_status == 0
     assert result.observation.output == CapturedOutput(b"result\n", b"diagnostic\n")
     assert result.observation.elapsed_seconds == pytest.approx(3.5)
-    assert result.observation.cleanup.confirmed
+    assert result.observation.cleanup.dispatch_permitted
 
 
 @pytest.mark.parametrize(
@@ -470,7 +487,8 @@ def test_capture_failure_cleans_owned_handle_and_preserves_failure(
     assert raised.value is effects.error
     evidence = failure_evidence(raised.value)
     assert isinstance(evidence, AttemptFailureEvidence)
-    assert evidence.observation.cleanup.confirmed
+    assert evidence.observation.output is None
+    assert evidence.observation.cleanup.dispatch_permitted
 
 
 def test_default_unimplemented_acquisition_remains_visible(
@@ -480,11 +498,54 @@ def test_default_unimplemented_acquisition_remains_visible(
     clock = FakeClock([])
 
     # When
-    with pytest.raises(NotImplementedError, match="process acquisition is pending"):
+    with pytest.raises(
+        NotImplementedError, match="process acquisition is pending"
+    ) as raised:
         asyncio.run(run_attempt(attempt_request, NativeProcessEffects(), clock))
 
     # Then
-    assert clock.value == pytest.approx(10.0)
+    assert failure_evidence(raised.value) is None
+
+
+def test_acquisition_adapter_cancellation_reports_uncertain_ownership(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = SelfCancellingAcquisitionEffects(events, clock)
+
+    # When
+    with pytest.raises(AttemptCancelled) as raised:
+        asyncio.run(run_attempt(attempt_request, effects, clock))
+
+    # Then
+    assert raised.value.observation.output is None
+    assert raised.value.observation.cleanup.process == "acquisition_uncertain"
+    assert isinstance(raised.value.__cause__, asyncio.CancelledError)
+
+
+def test_cleanup_adapter_cancellation_stops_with_unknown_cleanup(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = SelfCancellingCleanupEffects(events, clock)
+
+    # When
+    with pytest.raises(AttemptCancelled) as raised:
+        asyncio.run(run_attempt(attempt_request, effects, clock))
+
+    # Then
+    assert raised.value.observation.output == CapturedOutput(
+        b"result\n", b"diagnostic\n"
+    )
+    assert raised.value.observation.cleanup.signal == "unknown"
+    assert raised.value.observation.cleanup.direct_wait == "unknown"
+    assert isinstance(raised.value.__cause__, asyncio.CancelledError)
+    assert any("adapter cancelled itself" in note for note in raised.value.__notes__)
+    assert events.count(CleanupCall(effects.handle, 5.0)) == 1
 
 
 def test_capture_cancellation_cleans_owned_handle_and_propagates_evidence(
@@ -509,7 +570,7 @@ def test_capture_cancellation_cleans_owned_handle_and_propagates_evidence(
     assert raised.value.observation.output == CapturedOutput(
         b"partial stdout", b"partial stderr"
     )
-    assert raised.value.observation.cleanup.confirmed
+    assert raised.value.observation.cleanup.dispatch_permitted
     assert raised.value.observation.elapsed_seconds == pytest.approx(3.5)
 
 
@@ -527,6 +588,10 @@ def test_repeated_task_cancellation_waits_for_cleanup_and_forwards_observed_stat
         task.cancel()
         await effects.cleanup_started.wait()
         task.cancel()
+        await asyncio.sleep(0)
+        task.cancel()
+        await asyncio.sleep(0)
+        task.cancel()
         effects.cleanup_release.set()
         with pytest.raises(AttemptCancelled) as raised:
             await task
@@ -539,8 +604,9 @@ def test_repeated_task_cancellation_waits_for_cleanup_and_forwards_observed_stat
     assert cancellation.observation.output == CapturedOutput(
         b"partial stdout", b"partial stderr"
     )
-    assert cancellation.observation.cleanup.confirmed
-    assert cancellation.exit_status == 143
+    assert cancellation.observation.cleanup.dispatch_permitted
+    assert cancellation.exit_status == -15
+    assert effects.cleanup_finished.is_set()
     assert events.count(CleanupCall(effects.handle, 5.0)) == 1
 
 
@@ -564,8 +630,8 @@ def test_raw_task_cancellation_reports_only_bytes_observed_by_composition(
     cancellation = asyncio.run(run_cancelled_attempt())
 
     # Then
-    assert cancellation.observation.output == CapturedOutput(b"", b"")
-    assert cancellation.observation.cleanup.confirmed
+    assert cancellation.observation.output is None
+    assert cancellation.observation.cleanup.dispatch_permitted
 
 
 def test_acquisition_cancellation_settles_owned_handle_before_cleanup(
@@ -589,7 +655,7 @@ def test_acquisition_cancellation_settles_owned_handle_before_cleanup(
     cancellation = asyncio.run(run_cancelled_attempt())
 
     # Then
-    assert cancellation.observation.cleanup.confirmed
+    assert cancellation.observation.cleanup.dispatch_permitted
     assert events.count(CleanupCall(effects.handle, 5.0)) == 1
     assert not any(isinstance(event, CaptureCall) for event in events)
 
@@ -648,7 +714,7 @@ def test_cancellation_during_acquisition_propagates_after_late_settlement(
     assert effects.acquire_finished.is_set()
 
 
-def test_proven_no_launch_returns_confirmed_infrastructure_observation(
+def test_proven_no_launch_returns_dispatch_permitted_infrastructure_observation(
     attempt_request: AttemptRequest,
 ) -> None:
     # Given
@@ -675,7 +741,8 @@ def test_proven_no_launch_returns_confirmed_infrastructure_observation(
     assert isinstance(outcome, InfrastructureFailure)
     assert outcome.error_type == "PermissionError"
     assert outcome.diagnostic == "launch refused"
-    assert outcome.observation.cleanup.confirmed
+    assert outcome.observation.output == CapturedOutput(b"", b"")
+    assert outcome.observation.cleanup.dispatch_permitted
     assert stops == []
     assert not any(isinstance(event, CleanupCall) for event in events)
 
@@ -728,8 +795,8 @@ def test_post_kill_exit_status_fills_incomplete_result_without_changing_variant(
 
     # Then
     assert isinstance(result, TimedOut)
-    assert result.exit_status == 137
-    assert result.observation.cleanup.confirmed
+    assert result.exit_status == -9
+    assert result.observation.cleanup.dispatch_permitted
 
 
 def test_cleanup_cancellation_preserves_completed_exit_status(
@@ -755,7 +822,7 @@ def test_cleanup_cancellation_preserves_completed_exit_status(
     # Then
     assert cancellation.observation.output == CapturedOutput(b"done", b"")
     assert cancellation.exit_status == 7
-    assert cancellation.observation.cleanup.confirmed
+    assert cancellation.observation.cleanup.dispatch_permitted
 
 
 def test_cleanup_programmer_error_preserves_completed_exit_status(
@@ -788,7 +855,7 @@ def test_public_composition_stops_on_normalized_cleanup_failure(
     # Given
     events: list[WireEvent] = []
     clock = FakeClock(events)
-    effects = NonconfirmedCleanupEffects(events, clock)
+    effects = UnsafeCleanupEffects(events, clock)
     stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
 
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
@@ -824,7 +891,7 @@ def test_unexpected_capture_error_stops_caller_with_evidence_and_original_cause(
     assert raised.value is effects.error
     evidence = failure_evidence(raised.value)
     assert isinstance(evidence, AttemptFailureEvidence)
-    assert evidence.observation.cleanup.confirmed
+    assert evidence.observation.cleanup.dispatch_permitted
     assert stops == [raised.value]
 
 
@@ -872,7 +939,7 @@ def test_cleanup_cancellation_retains_original_capture_error_as_cause(
 
     # Then
     assert cancellation.__cause__ is effects.error
-    assert cancellation.observation.cleanup.confirmed
+    assert cancellation.observation.cleanup.dispatch_permitted
     assert any(
         "Capture also failed: ValueError: capture failed" in note
         for note in cancellation.__notes__
@@ -960,12 +1027,12 @@ def test_composition_preserves_noncompleted_leaf_result_variants(
         pytest.param(
             CleanupEvidence("owned", "sent", None, "reaped", None),
             False,
-            id="owned-signal-and-reap-confirmed",
+            id="owned-signal-and-reap-permits-dispatch",
         ),
         pytest.param(
             CleanupEvidence("owned", "no_target", None, "reaped", None),
             False,
-            id="owned-no-target-and-reap-confirmed",
+            id="owned-no-target-and-reap-permits-dispatch",
         ),
         pytest.param(
             CleanupEvidence("not_started", "not_started", None, "not_started", None),
@@ -1030,6 +1097,33 @@ def test_caller_gate_allows_only_safe_no_launch_or_owned_cleanup(
     assert tuple(stops) == ((result,) if should_stop else ())
 
 
+def test_timed_out_attempt_with_unsafe_cleanup_stops_dispatch(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    result = TimedOut(
+        AttemptObservation(
+            CapturedOutput(b"partial", b""),
+            3.0,
+            CleanupEvidence("owned", "failed", "denied", "expired", "deadline"),
+        ),
+        -9,
+    )
+    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+
+    async def attempt(actual_request: AttemptRequest, /) -> TimedOut:
+        assert actual_request is attempt_request
+        await asyncio.sleep(0)
+        return result
+
+    # When
+    returned = asyncio.run(call_supervisor(attempt_request, attempt, stops.append))
+
+    # Then
+    assert returned is result
+    assert stops == [result]
+
+
 def test_caller_records_cancellation_then_propagates_it(
     attempt_request: AttemptRequest,
 ) -> None:
@@ -1055,4 +1149,5 @@ def test_caller_records_cancellation_then_propagates_it(
     # Then
     assert raised.value is cancellation
     assert stops == [cancellation]
+    assert raised.value.observation.output is not None
     assert raised.value.observation.output.stdout == b"partial"

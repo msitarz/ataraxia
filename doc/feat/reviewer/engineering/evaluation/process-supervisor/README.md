@@ -119,7 +119,7 @@ cleanup deadline, or explicitly report failure or expiry of that step.
 ### **AC-3 TODO** Stop handling prevents further experimental dispatch
 
 The narrow integration with the owning Evaluation caller stops new dispatch
-immediately on cancellation or failed or unconfirmed signal/wait cleanup and
+immediately on cancellation or unsafe signal/wait cleanup and
 preserves truthful incomplete-run accounting.
 
 - `SIGINT` and `SIGTERM` at that owning boundary stop new calls and clean up the

@@ -38,6 +38,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 - The supervisor starts one subprocess operation and performs no hidden retry.
 - `CapturedOutput` retains stdout and stderr separately as observed per-stream
   prefixes whose total bytes obey any positive combined allowance.
+- `AttemptObservation.output` is absent when no byte observation is available;
+  observed empty streams use empty byte prefixes.
 - Exceeding a positive combined output allowance is visible and terminates the
   invocation rather than silently truncating successful output.
 - Zero-limit capture has no byte cap and cannot terminate for output overflow.
@@ -50,6 +52,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   not observe them.
 - `Completed` always carries the actual exit status, including a nonzero
   status.
+- Exit status follows asyncio's POSIX convention: nonnegative values are exit
+  codes and negative values identify the terminating signal.
 - Infrastructure diagnostics retain the original exception type and message.
 - A completed child observation does not itself authorize another dispatch.
 - A leader's zero exit cannot turn timeout, cancellation, or overflow into
@@ -66,8 +70,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   member exists.
 - The process field distinguishes a safe no-launch startup failure, an acquired
   child, and interrupted acquisition whose ownership is uncertain.
-- Signal cleanup is confirmed by `sent` or `no_target` together with a reaped
-  direct child.
+- Signal cleanup permits dispatch by `sent` or `no_target` together with a
+  reaped direct child.
 - No-launch is safe only when no child was acquired and no creation operation
   remains able to acquire one.
 - Uncertain acquisition is incomplete cleanup and forbids further dispatch.
@@ -78,6 +82,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   discloses this limit to the caller.
 - Cancellation triggers the same bounded cleanup and then propagates as
   `AttemptCancelled`.
+- Cancellation by the owner, capture effect, or cleanup adapter stops
+  dispatch; a cleanup adapter's self-cancellation leaves cleanup unknown.
 - `AttemptCancelled` is a `CancelledError` subtype that carries partial
   observation and cleanup evidence.
 - Cancellation is never represented as infrastructure failure and must not be
@@ -108,8 +114,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   `AttemptCancelled` object while adding final cleanup and elapsed evidence.
 - The capture effect translates cancellation while it owns stream buffers into
   `AttemptCancelled` with those partial bytes.
-- If raw cancellation escapes, composition records empty bytes as “none
-  observed here,” not proof of empty child output.
+- If raw cancellation escapes or capture fails before exposing buffers, output
+  is unavailable; an observed empty stream remains distinct.
 - Unexpected capture exceptions keep their original type, message, traceback,
   and identity.
 - A typed `AttemptFailureEvidence` value is attached to that exception for the
@@ -122,6 +128,11 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   terminal variant.
 - Composition retains and shields one cleanup task through repeated external
   cancellation.
+- Owned-attempt finalization requests cleanup once and applies this precedence:
+  owner cancellation, leaf or adapter cancellation, capture error, cleanup
+  error, then result.
+- Cleanup adapter self-cancellation is a cancellation outcome with unknown
+  cleanup evidence and stops dispatch.
 - The cleanup adapter owns enforcement of its positive finite timeout.
 - Composition cannot promise a hard deadline for a cancellation-resistant
   collaborator and does not detach its cleanup task.
@@ -176,7 +187,7 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 - The caller records every attempt and planned call that never started.
 - The caller owns signal handling, retry policy, and evidence accounting.
 - The caller may retry timeout and eligible infrastructure failures up to three
-  additional times, only after cleanup is confirmed.
+  additional times, only after cleanup permits dispatch.
 - A nonzero exit is retry-eligible infrastructure failure only when the caller
   establishes that no semantic result exists.
 - Overflow, malformed output, and semantic results prohibit retry for that
