@@ -1,14 +1,17 @@
 # Process supervisor architecture
 
-**Status: reviewed; implementation pending.** The
-[typed contract](../../../../../../script/process_supervisor.pyi) defines the
-accepted boundary. No implementation exists, and static checks establish no
-runtime behavior.
+**Status: reviewed boundary; typed wiring implemented, process behavior
+pending.** The retained [reviewed interface](design/reviewed-interface.pyi)
+records the original agreed types. The active
+[`script/process_supervisor.py`](../../../../../../script/process_supervisor.py)
+defines the importable records, effect seam, one-attempt composition, and narrow
+caller stop hook. Its native process adapter still raises `NotImplementedError`;
+the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 
 ## TL;DR
 
-- The Evaluation caller owns experiment policy and composes one asynchronous
-  process-supervisor attempt per call.
+- The Evaluation caller owns experiment policy and calls the narrow stop hook
+  around one asynchronous process-supervisor attempt.
 - The supervisor owns subprocess resources, output capture, process
   group signaling, direct-child waiting, and truthful attempt evidence.
 - This child delivers the supervisor and minimal AC-3 call-site integration,
@@ -84,6 +87,48 @@ runtime behavior.
 - The boundary must not leave an unawaited creation operation that can later
   acquire an unowned child.
 
+## Wired composition (behavior pending)
+
+- `run_attempt` starts its monotonic clock immediately before acquisition and
+  derives the execution deadline from that same instant.
+- The acquisition effect receives the caller's request unchanged, including
+  the recorded absolute CLI path in `argv[0]`.
+- The capture effect receives the acquired handle and absolute execution
+  deadline, then supplies one of the reviewed tagged attempt results.
+- Composition preserves the leaf's concrete result variant, exit status,
+  output, and diagnostic while adding final cleanup and elapsed observations.
+- After acquisition, `run_attempt` requests cleanup after capture success,
+  capture failure, or capture cancellation.
+- Capture cancellation retains its partial output in the same
+  `AttemptCancelled` object while adding final cleanup and elapsed evidence.
+- Capture exceptions are re-raised unchanged after cleanup, so pending
+  `NotImplementedError` and programmer errors cannot become infrastructure
+  results or apparent success.
+- Elapsed time ends after cleanup evidence returns, and the clock boundary is
+  covered by fake-effect wiring tests.
+- `NativeProcessEffects` leaves acquisition, stream capture, direct-child wait,
+  process-group signaling, and bounded cleanup unimplemented, and acquisition's
+  `NotImplementedError` remains visible to its caller.
+- Acquisition interruption before a handle is returned is reported as
+  uncertain ownership, while absence of a late unowned child remains unproven.
+- `call_supervisor` forwards attempt results unchanged and calls the
+  parent-owned stop hook when signal or direct-child wait evidence is unsafe.
+- On cancellation, `call_supervisor` calls the stop hook and re-raises the same
+  cancellation object.
+- A safe no-launch observation and an owned process with an accepted signal
+  result plus a reaped direct child allow dispatch to continue.
+- These signal and direct-child observations do not prove whole-group or
+  descendant absence.
+- The parent Evaluation owns process signals, undispatched-call accounting,
+  retries, budgets, classification, and evidence persistence.
+- The caller owns CLI resolution, and this module does not discover or
+  version-probe Codex.
+- Fake-effect tests establish request flow, cleanup order on error and
+  cancellation, tagged-result forwarding, stop gating, cancellation forwarding,
+  and elapsed-time boundaries only.
+- Timeout enforcement, output capture, acquisition ownership, and OS cleanup
+  behavior still require implementation and boundary evidence.
+
 ## External collaborators
 
 ### Evaluation caller (parent Evaluation Work)
@@ -136,7 +181,7 @@ runtime behavior.
 ```mermaid
 flowchart LR
     Caller[External: parent Evaluation caller\nfull experiment runner\nwith narrow child AC-3 call-site integration]
-    Boundary[Child service: one async attempt\nscript/process_supervisor.pyi]
+    Boundary[Child service: one async attempt\nscript/process_supervisor.py]
     OS[External: asyncio + POSIX OS\nspawn, streams, group signal, direct-child wait]
     Caller -->|AttemptRequest| Boundary
     Boundary -->|one subprocess operation| OS

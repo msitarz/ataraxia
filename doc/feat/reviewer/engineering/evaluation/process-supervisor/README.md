@@ -54,16 +54,15 @@ production readiness.
 
 ## Visuals
 
-At base `40a22224e4006b0e437d63254d5319d47d7aebbf`, the protocol and historical
-preparation evidence remain, but there is no active supervisor implementation
-or supervisor Make target. The proposed change adds one async invocation
-boundary between the Evaluation caller and its system CLI command. The caller
-keeps experiment policy; the boundary owns only its subprocess resources and
-reports their outcome.
+The active supervisor module now provides typed composition for one attempt and
+a narrow caller stop hook. Acquisition, output capture, process-group signaling,
+and direct-child cleanup remain explicit unimplemented leaves. Focused wiring
+tests exercise request/result flow and stop handling through fake collaborators;
+they establish no runtime guarantees for subprocess behavior.
 
-The [reviewed typed design](architecture.md) defines the boundary for a future
-implementation. Behavior remains pending; the types and architecture establish
-no runtime guarantees.
+The [architecture](architecture.md) distinguishes this implemented wiring from
+the still-pending process behavior and records the effect sequence and
+ownership.
 
 ## Acceptance criteria
 
@@ -151,8 +150,9 @@ preserves truthful incomplete-run accounting.
 - Private helpers and incidental signatures remain flexible under
   [architecture exploration](../../../../../architecture-exploration.md).
 
-Implementation waits for the concrete planning PR to merge and subsequent
-authorization under [Work workflow](../../../../../workflow.md#lifecycle).
+Further implementation of the native process leaves waits for the concrete
+planning PR to merge and subsequent authorization under
+[Work workflow](../../../../../workflow.md#lifecycle).
 
 The Evaluation explicitly trusts upstream Codex for internal lifecycle beyond
 the owned group. Children do not generally exit when their parent exits, so the

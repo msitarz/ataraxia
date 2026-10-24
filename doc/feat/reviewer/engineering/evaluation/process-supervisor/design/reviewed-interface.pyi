@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Reviewed typed boundary for one experimental CLI attempt.
+"""Historical reviewed interface from revision 2d1863fe1d5324.
+
+The active implementation is ``script/process_supervisor.py``. This retained
+file records the interface that guided the wiring; it is outside active module
+resolution and is not a second interface definition.
 
 This experimental scope has the following accepted limits:
 
@@ -22,9 +26,7 @@ This experimental scope has the following accepted limits:
 - Direct termination may interrupt buffered output or local state writes.
 - The boundary has no additional guard against PID/PGID reuse.
 
-This stub intentionally has no matching implementation module. See the child
-Work's architecture.md. Remove this active stub when introducing the reviewed
-implementation module.
+See the child Work's architecture.md for the current status and evidence.
 """
 
 from asyncio import CancelledError
