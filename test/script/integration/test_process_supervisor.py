@@ -303,7 +303,7 @@ def test_combined_cap_and_overflow(
         assert total == cap
 
 
-def test_overflow_closes_owned_output_pipes_without_garbage_collection(
+def test_overflow_kills_live_process_and_closes_output_pipes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # Given
@@ -314,6 +314,10 @@ def test_overflow_closes_owned_output_pipes_without_garbage_collection(
 
     # Then
     assert isinstance(result, OutputLimitExceeded)
+    assert result.exit_status == -int(signal.SIGKILL)
+    assert result.observation.output == process_supervisor.CapturedOutput(b"p", b"")
+    assert result.observation.cleanup.signal == "sent"
+    assert result.observation.cleanup.direct_wait == "reaped"
 
 
 async def _run_overflow_after_backpressure(
@@ -329,6 +333,7 @@ async def _run_overflow_after_backpressure(
         nonlocal acquired
         acquired = await create_subprocess_exec(*args, **kwargs)
         await _wait_for_stdout_backpressure(acquired)
+        assert acquired.returncode is None
         return acquired
 
     monkeypatch.setattr(asyncio, "create_subprocess_exec", acquire_after_backpressure)
