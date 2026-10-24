@@ -26,6 +26,7 @@ Native acquisition, capture, and cleanup operations remain pending.
 import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass, replace
+import math
 from pathlib import Path
 from time import monotonic
 from typing import Literal, Never, Protocol
@@ -48,6 +49,31 @@ class AttemptRequest:
     cleanup_timeout_seconds: float
     output_limit_bytes: int
     stdin: Literal["devnull"]
+
+    def __post_init__(self) -> None:
+        """Reject invalid protocol limits before any acquisition effect.
+
+        Raises:
+            ValueError: A timeout or output limit violates the protocol.
+        """
+        if (
+            not isinstance(self.timeout_seconds, (int, float))
+            or not math.isfinite(self.timeout_seconds)
+            or self.timeout_seconds <= 0
+        ):
+            raise ValueError("timeout_seconds must be positive and finite")
+        if (
+            not isinstance(self.cleanup_timeout_seconds, (int, float))
+            or not math.isfinite(self.cleanup_timeout_seconds)
+            or self.cleanup_timeout_seconds <= 0
+        ):
+            raise ValueError("cleanup_timeout_seconds must be positive and finite")
+        if (
+            isinstance(self.output_limit_bytes, bool)
+            or not isinstance(self.output_limit_bytes, int)
+            or self.output_limit_bytes < 0
+        ):
+            raise ValueError("output_limit_bytes must be a nonnegative integer")
 
 
 @dataclass(frozen=True)
@@ -156,9 +182,10 @@ class AttemptFailureEvidence:
 
     observation: AttemptObservation
     exit_status: int | None
+    stop_dispatch_diagnostic: str | None = None
 
 
-def failure_evidence(error: Exception) -> AttemptFailureEvidence | None:
+def failure_evidence(error: BaseException) -> AttemptFailureEvidence | None:
     """Return structured supervisor evidence attached to an escaping error.
 
     Returns:
@@ -167,6 +194,15 @@ def failure_evidence(error: Exception) -> AttemptFailureEvidence | None:
     """
     evidence = vars(error).get("process_supervisor_evidence")
     return evidence if isinstance(evidence, AttemptFailureEvidence) else None
+
+
+def stop_dispatch_diagnostic(error: BaseException) -> str | None:
+    """Return a stop-hook failure diagnostic retained on the original error."""
+    evidence = failure_evidence(error)
+    if evidence is not None and evidence.stop_dispatch_diagnostic is not None:
+        return evidence.stop_dispatch_diagnostic
+    diagnostic = vars(error).get("process_supervisor_stop_dispatch_diagnostic")
+    return diagnostic if isinstance(diagnostic, str) else None
 
 
 @dataclass(frozen=True)
@@ -249,22 +285,20 @@ async def call_supervisor(
     Returns:
         The exact attempt result returned by the runner.
 
-    Raises:
-        CancelledError: The runner raised cancellation, including
-            ``AttemptCancelled``, after the stop hook records it.
     """
     try:
         outcome = await attempt(request)
-    except CancelledError as exc:
-        stop_dispatch(exc)
-        raise
-    except Exception as exc:
-        # Keep the original programming or unexpected effect exception visible.
-        stop_dispatch(exc)
+    except BaseException as exc:
+        # Keep the original exception or cancellation visible.
+        _stop_preserving_error(stop_dispatch, exc)
         raise
 
     if not outcome.observation.cleanup.dispatch_permitted:
-        stop_dispatch(outcome)
+        try:
+            stop_dispatch(outcome)
+        except BaseException as exc:
+            vars(exc)["process_supervisor_outcome"] = outcome
+            raise
     return outcome
 
 
@@ -372,9 +406,14 @@ class AttemptRunner(Protocol):
 
 
 class DispatchStop(Protocol):
-    """Parent-owned hook that records the active outcome and stops new work."""
+    """Parent-owned hook that records the active outcome and stops new work.
 
-    def __call__(self, reason: AttemptResult | CancelledError | Exception, /) -> None:
+    Implementations should not raise; hook failures on exception paths are
+    retained as diagnostics while the original exception propagates, and hook
+    failures on unsafe-result paths propagate directly.
+    """
+
+    def __call__(self, reason: AttemptResult | BaseException, /) -> None:
         """Record the stop reason and prevent later dispatch."""
         ...
 
@@ -493,7 +532,7 @@ async def _run_owned_attempt(
         cancellation = exc
         result = None
         error = None
-    except Exception as exc:
+    except BaseException as exc:
         cancellation = None
         result = None
         error = exc
@@ -541,7 +580,7 @@ async def _settle_cleanup(
 
 async def _finalize_owned_attempt(
     result: AttemptResult | None,
-    error: Exception | None,
+    error: BaseException | None,
     cancellation: CancelledError | None,
     effects: ProcessEffects,
     handle: ProcessHandle,
@@ -578,7 +617,7 @@ async def _finalize_owned_attempt(
 
 def _apply_finalization_policy(
     result: AttemptResult | None,
-    error: Exception | None,
+    error: BaseException | None,
     cancellation: CancelledError | None,
     leaf_cancellation: AttemptCancelled | None,
     cleanup: _CleanupSettlement,
@@ -608,7 +647,7 @@ def _apply_finalization_policy(
 
 
 def _raise_cancelled_finalization(
-    error: Exception | None,
+    error: BaseException | None,
     cancellation: CancelledError | None,
     leaf_cancellation: AttemptCancelled | None,
     cleanup: _CleanupSettlement,
@@ -665,12 +704,27 @@ def _explain_cleanup_settlement(
 
 
 def _attach_failure_evidence(
-    error: Exception, observation: AttemptObservation, exit_status: int | None
+    error: BaseException, observation: AttemptObservation, exit_status: int | None
 ) -> None:
     """Attach structured evidence without replacing the original exception."""
     vars(error)["process_supervisor_evidence"] = AttemptFailureEvidence(
         observation, exit_status
     )
+
+
+def _stop_preserving_error(stop_dispatch: DispatchStop, error: BaseException) -> None:
+    """Call the stop hook while retaining the attempt's control-flow object."""
+    try:
+        stop_dispatch(error)
+    except BaseException as hook_error:
+        diagnostic = _error_diagnostic(hook_error)
+        evidence = failure_evidence(error)
+        if evidence is not None:
+            vars(error)["process_supervisor_evidence"] = replace(
+                evidence, stop_dispatch_diagnostic=diagnostic
+            )
+        else:
+            vars(error)["process_supervisor_stop_dispatch_diagnostic"] = diagnostic
 
 
 def _observation(

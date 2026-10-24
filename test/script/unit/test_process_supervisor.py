@@ -4,7 +4,7 @@
 import asyncio
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import override
+from typing import Literal, override
 
 import pytest
 
@@ -27,6 +27,7 @@ from script.process_supervisor import (
     call_supervisor,
     failure_evidence,
     run_attempt,
+    stop_dispatch_diagnostic,
 )
 
 
@@ -41,6 +42,88 @@ def attempt_request() -> AttemptRequest:
         output_limit_bytes=1_048_576,
         stdin="devnull",
     )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        pytest.param("timeout_seconds", 0.0, id="execution-zero"),
+        pytest.param("timeout_seconds", -1.0, id="execution-negative"),
+        pytest.param("timeout_seconds", float("nan"), id="execution-nan"),
+        pytest.param("timeout_seconds", float("inf"), id="execution-positive-infinity"),
+        pytest.param(
+            "timeout_seconds", float("-inf"), id="execution-negative-infinity"
+        ),
+        pytest.param("cleanup_timeout_seconds", 0.0, id="cleanup-zero"),
+        pytest.param("cleanup_timeout_seconds", -1.0, id="cleanup-negative"),
+        pytest.param("cleanup_timeout_seconds", float("nan"), id="cleanup-nan"),
+        pytest.param(
+            "cleanup_timeout_seconds", float("inf"), id="cleanup-positive-infinity"
+        ),
+        pytest.param(
+            "cleanup_timeout_seconds", float("-inf"), id="cleanup-negative-infinity"
+        ),
+    ],
+)
+def test_request_rejects_nonpositive_or_nonfinite_deadlines(
+    attempt_request: AttemptRequest,
+    field: Literal["timeout_seconds", "cleanup_timeout_seconds"],
+    value: float,
+) -> None:
+    # Given
+    expected = f"{field} must be positive and finite"
+
+    # When
+    with pytest.raises(ValueError) as raised:
+        if field == "timeout_seconds":
+            replace(attempt_request, timeout_seconds=value)
+        else:
+            replace(attempt_request, cleanup_timeout_seconds=value)
+
+    # Then
+    assert str(raised.value) == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(-1, id="negative"),
+        pytest.param(1.5, id="fractional"),
+        pytest.param(True, id="boolean"),
+    ],
+)
+def test_request_rejects_invalid_output_limits(
+    attempt_request: AttemptRequest, value: int | float
+) -> None:
+    # Given
+    expected = "output_limit_bytes must be a nonnegative integer"
+
+    # When
+    with pytest.raises(ValueError) as raised:
+        if isinstance(value, float):
+            # This deliberately tests malformed runtime input outside the annotated API.
+            replace(attempt_request, output_limit_bytes=value)  # pyrefly: ignore[bad-argument-type]
+        else:
+            replace(attempt_request, output_limit_bytes=value)
+
+    # Then
+    assert str(raised.value) == expected
+
+
+def test_request_accepts_positive_timeouts_and_zero_uncapped_output(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    # When
+    request = replace(
+        attempt_request,
+        timeout_seconds=0.001,
+        cleanup_timeout_seconds=0.001,
+        output_limit_bytes=0,
+    )
+
+    # Then
+    assert request.output_limit_bytes == 0
 
 
 @dataclass(frozen=True)
@@ -512,6 +595,56 @@ def test_capture_failure_cleans_owned_handle_and_preserves_failure(
     assert evidence.observation.cleanup.dispatch_permitted
 
 
+class SystemExitCaptureEffects(FakeEffects):
+    def __init__(self, events: list[WireEvent], clock: FakeClock) -> None:
+        super().__init__(events, clock)
+        self.control_flow: BaseException = SystemExit(17)
+
+    @override
+    async def capture(
+        self,
+        handle: ProcessHandle,
+        request: AttemptRequest,
+        execution_deadline: float,
+        /,
+    ) -> AttemptResult:
+        raise self.control_flow
+
+
+@pytest.mark.parametrize(
+    "control_flow",
+    [
+        pytest.param(SystemExit(17), id="system-exit"),
+        pytest.param(KeyboardInterrupt(), id="keyboard-interrupt"),
+    ],
+)
+def test_capture_control_flow_exceptions_cleanup_and_propagate(
+    attempt_request: AttemptRequest, control_flow: BaseException
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = SystemExitCaptureEffects(events, clock)
+    effects.control_flow = control_flow
+
+    async def catch_control_flow_inside_coroutine() -> BaseException:
+        try:
+            await run_attempt(attempt_request, effects, clock)
+        except BaseException as exc:
+            return exc
+        raise AssertionError("capture control flow was not propagated")
+
+    # When
+    received = asyncio.run(catch_control_flow_inside_coroutine())
+
+    # Then
+    assert received is control_flow
+    assert events[-2] == CleanupCall(effects.handle, 5.0)
+    evidence = failure_evidence(received)
+    assert evidence is not None
+    assert evidence.observation.cleanup.dispatch_permitted
+
+
 def test_default_unimplemented_acquisition_remains_visible(
     attempt_request: AttemptRequest,
 ) -> None:
@@ -708,7 +841,7 @@ def test_cancellation_during_acquisition_propagates_after_late_settlement(
     events: list[WireEvent] = []
     clock = FakeClock(events)
     effects = effects_type(events, clock)
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         return await run_attempt(request, effects, clock)
@@ -739,7 +872,7 @@ def test_proven_no_launch_returns_dispatch_permitted_infrastructure_observation(
     attempt_request: AttemptRequest,
 ) -> None:
     # Given
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     class NoLaunchEffects(FakeEffects):
         @override
@@ -773,7 +906,7 @@ def test_unexpected_acquisition_error_stops_dispatch_and_remains_an_error(
 ) -> None:
     # Given
     error = NotImplementedError("acquisition implementation pending")
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     class FailingAcquisitionEffects(FakeEffects):
         @override
@@ -877,7 +1010,7 @@ def test_public_composition_stops_on_normalized_cleanup_failure(
     events: list[WireEvent] = []
     clock = FakeClock(events)
     effects = UnsafeCleanupEffects(events, clock)
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         return await run_attempt(request, effects, clock)
@@ -899,7 +1032,7 @@ def test_unexpected_capture_error_stops_caller_with_evidence_and_original_cause(
     events: list[WireEvent] = []
     clock = FakeClock(events)
     effects = FailingCaptureEffects(events, clock, ValueError)
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         return await run_attempt(request, effects, clock)
@@ -928,7 +1061,7 @@ def test_frozen_capture_error_keeps_identity_and_cleanup_evidence_at_public_boun
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         return await run_attempt(request, effects, clock)
 
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     # When
     with pytest.raises(FrozenCaptureError, match="restricted capture failed") as raised:
@@ -961,7 +1094,7 @@ def test_frozen_cleanup_error_keeps_identity_and_failure_evidence(
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         return await run_attempt(request, effects, clock)
 
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     # When
     with pytest.raises(FrozenCaptureError, match="cleanup failed") as raised:
@@ -980,6 +1113,37 @@ def test_frozen_cleanup_error_keeps_identity_and_failure_evidence(
     assert not evidence.observation.cleanup.dispatch_permitted
     assert len(stops) == 1
     assert stops[0] is effects.error
+
+
+def test_stop_hook_failure_retains_composed_frozen_failure_evidence(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = FrozenCleanupErrorEffects(events, clock)
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        return await run_attempt(request, effects, clock)
+
+    def broken_stop(reason: AttemptResult | BaseException, /) -> None:
+        raise RuntimeError("stop hook failed")
+
+    # When
+    with pytest.raises(FrozenCaptureError) as raised:
+        asyncio.run(call_supervisor(attempt_request, attempt, broken_stop))
+
+    # Then
+    assert raised.value is effects.error
+    assert str(raised.value) == "cleanup failed"
+    evidence = failure_evidence(raised.value)
+    assert evidence is not None
+    assert evidence.observation.output == CapturedOutput(b"result\n", b"diagnostic\n")
+    assert evidence.exit_status == 0
+    assert evidence.observation.cleanup.wait_diagnostic == (
+        "FrozenCaptureError: cleanup failed"
+    )
+    assert stop_dispatch_diagnostic(raised.value) == "RuntimeError: stop hook failed"
 
 
 def test_cleanup_programmer_error_does_not_replace_capture_error(
@@ -1169,7 +1333,7 @@ def test_caller_gate_allows_only_safe_no_launch_or_owned_cleanup(
         "PermissionError",
         "permission denied",
     )
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(actual_request: AttemptRequest, /) -> InfrastructureFailure:
         assert actual_request is attempt_request
@@ -1196,7 +1360,7 @@ def test_timed_out_attempt_with_unsafe_cleanup_stops_dispatch(
         ),
         -9,
     )
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(actual_request: AttemptRequest, /) -> TimedOut:
         assert actual_request is attempt_request
@@ -1222,7 +1386,7 @@ def test_caller_records_cancellation_then_propagates_it(
             CleanupEvidence("owned", "sent", None, "reaped", None),
         )
     )
-    stops: list[AttemptResult | asyncio.CancelledError | Exception] = []
+    stops: list[AttemptResult | BaseException] = []
 
     async def attempt(actual_request: AttemptRequest, /) -> Completed:
         assert actual_request is attempt_request
@@ -1238,3 +1402,90 @@ def test_caller_records_cancellation_then_propagates_it(
     assert stops == [cancellation]
     assert raised.value.observation.output is not None
     assert raised.value.observation.output.stdout == b"partial"
+
+
+@pytest.mark.parametrize(
+    "error_kind",
+    ["ordinary", "cancelled", "frozen"],
+    ids=["ordinary", "cancelled", "frozen"],
+)
+def test_stop_hook_failure_preserves_original_attempt_control_flow(
+    attempt_request: AttemptRequest, error_kind: str
+) -> None:
+    # Given
+    observation = AttemptObservation(
+        CapturedOutput(b"partial", b""), 1.0, FINAL_CLEANUP
+    )
+    original: BaseException = {
+        "ordinary": RuntimeError("attempt failed"),
+        "cancelled": AttemptCancelled(observation),
+        "frozen": FrozenCaptureError("frozen attempt failed"),
+    }[error_kind]
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        raise original
+
+    def broken_stop(reason: AttemptResult | BaseException, /) -> None:
+        raise RuntimeError("stop hook failed")
+
+    # When
+    with pytest.raises(type(original)) as raised:
+        asyncio.run(call_supervisor(attempt_request, attempt, broken_stop))
+
+    # Then
+    assert raised.value is original
+    assert stop_dispatch_diagnostic(raised.value) == "RuntimeError: stop hook failed"
+
+
+def test_unsafe_result_stop_hook_failure_propagates_with_outcome_evidence(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    outcome = Completed(
+        AttemptObservation(
+            CapturedOutput(b"result", b"diagnostic"),
+            1.0,
+            CleanupEvidence("owned", "failed", "denied", "expired", "deadline"),
+        ),
+        0,
+    )
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        return outcome
+
+    hook_error = RuntimeError("stop hook failed")
+
+    def broken_stop(reason: AttemptResult | BaseException, /) -> None:
+        raise hook_error
+
+    # When
+    with pytest.raises(RuntimeError, match="stop hook failed") as raised:
+        asyncio.run(call_supervisor(attempt_request, attempt, broken_stop))
+
+    # Then
+    assert raised.value is hook_error
+    assert vars(raised.value)["process_supervisor_outcome"] is outcome
+
+
+def test_safe_result_does_not_invoke_stop_hook(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given
+    outcome = Completed(
+        AttemptObservation(CapturedOutput(b"result", b""), 1.0, FINAL_CLEANUP), 0
+    )
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        return outcome
+
+    def unexpected_stop(reason: AttemptResult | BaseException, /) -> None:
+        raise AssertionError("safe result must not invoke the stop hook")
+
+    # When
+    result = asyncio.run(call_supervisor(attempt_request, attempt, unexpected_stop))
+
+    # Then
+    assert result is outcome

@@ -32,6 +32,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
 
 - `AttemptRequest` describes one attempt with positive finite execution and
   cleanup timeouts and a nonnegative integer `output_limit_bytes`.
+- `AttemptRequest` construction enforces those timeout and output-limit
+  invariants while native launch enforcement remains pending.
 - Zero disables the output byte cap, while a positive value caps the total
   retained stdout and stderr bytes.
 - Invalid or nonfinite timeouts and negative output limits refuse launch.
@@ -118,6 +120,8 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   is unavailable; an observed empty stream remains distinct.
 - Unexpected capture exceptions keep their original type, message, traceback,
   and identity.
+- Capture-time control-flow exceptions such as `SystemExit` or
+  `KeyboardInterrupt` trigger retained cleanup before they propagate.
 - A typed `AttemptFailureEvidence` value is attached to that exception for the
   caller's stop hook.
 - Unexpected capture errors remain exceptions and never become retryable
@@ -147,6 +151,12 @@ the wiring tests use fake collaborators and establish no OS lifecycle behavior.
   parent-owned stop hook when signal or direct-child wait evidence is unsafe.
 - On cancellation, `call_supervisor` calls the stop hook and re-raises the same
   cancellation object.
+- Stop-hook failures on attempt exceptions and cancellations retain a
+  diagnostic while the original control flow keeps precedence.
+- A stop-hook failure on an unsafe result propagates with that result's evidence
+  attached.
+- Stop hooks should not raise, and their failures are never retryable
+  infrastructure outcomes.
 - A safe no-launch observation and an owned process with an accepted signal
   result plus a reaped direct child allow dispatch to continue.
 - These signal and direct-child observations do not prove whole-group or
