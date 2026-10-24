@@ -1,6 +1,27 @@
 # SPDX-License-Identifier: Apache-2.0
 """Reviewed typed boundary for one experimental CLI attempt.
 
+This experimental scope has the following accepted limits:
+
+- Cleanup immediately signals the owned POSIX group and waits for the direct
+  CLI, without a graceful TERM/grace/KILL period or orderly-flushing guarantee.
+- Signal outcome and direct-child wait are observations, not proof that every
+  descendant exited; the boundary does not discover process trees, probe group
+  absence or zombies, or contain escaped children.
+- The Evaluation trusts upstream Codex and OS lifecycle behavior beyond those
+  observations.
+- The expected workload uses supported controls to disable optional model
+  command and tool access to avoid tool-launched work, but this does not
+  establish that Codex launches no internal subprocesses; retained tool
+  declarations and accepted uncertainty are recorded in the Evaluation
+  protocol.
+- If this supervisor is itself SIGKILLed or OOM-killed, it cannot clean up or
+  recover orphan work.
+- Blocking process creation may outlast an async deadline and delay
+  cancellation or other tasks.
+- Direct termination may interrupt buffered output or local state writes.
+- The boundary has no additional guard against PID/PGID reuse.
+
 This stub intentionally has no matching implementation module. See the child
 Work's architecture.md. Remove this active stub when introducing the reviewed
 implementation module.
