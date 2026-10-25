@@ -376,7 +376,12 @@ class GitRepositoryReader:
             ValueError: Git reports any worktree or index changes.
         """
         status = self._git(
-            root, "status", "--porcelain=v1", "-z", "--untracked-files=all"
+            root,
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--ignore-submodules=none",
         )
         if status:
             raise ValueError(
@@ -511,7 +516,16 @@ class GitRepositoryReader:
         """
         environment = os.environ.copy()
         environment["GIT_OPTIONAL_LOCKS"] = "0"
-        for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"):
+        for name in (
+            "GIT_DIR",
+            "GIT_WORK_TREE",
+            "GIT_INDEX_FILE",
+            "GIT_COMMON_DIR",
+            "GIT_LITERAL_PATHSPECS",
+            "GIT_GLOB_PATHSPECS",
+            "GIT_NOGLOB_PATHSPECS",
+            "GIT_ICASE_PATHSPECS",
+        ):
             environment.pop(name, None)
         try:
             result = subprocess.run(

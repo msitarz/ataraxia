@@ -3,6 +3,7 @@
 
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
+import os
 from pathlib import Path
 import subprocess
 
@@ -38,6 +39,23 @@ def commit(repository: Path) -> str:
     git(repository, "add", "--all")
     git(repository, "commit", "-m", "fixture")
     return git(repository, "rev-parse", "HEAD").decode().strip()
+
+
+def commit_blob_id(repository: Path, head: str, path: str) -> str:
+    """Read one pinned commit blob ID using Git's literal pathspec support."""
+    record = git(
+        repository,
+        "ls-tree",
+        "-r",
+        "-z",
+        "--full-tree",
+        head,
+        "--",
+        f":(literal){path}",
+    ).split(b"\0", 1)[0]
+    metadata, actual_path = record.split(b"\t", 1)
+    assert os.fsdecode(actual_path) == path
+    return metadata.decode("ascii").split()[2]
 
 
 def repository_with_context(
@@ -99,9 +117,12 @@ def config(*directories: Path, instructions: Path | None = None) -> HarnessConfi
     )
 
 
-def worktree_status(repository: Path) -> bytes:
+def worktree_status(repository: Path, *, include_submodules: bool = False) -> bytes:
     """Return complete staged, unstaged, and untracked status bytes."""
-    return git(repository, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    arguments = ["status", "--porcelain=v1", "-z", "--untracked-files=all"]
+    if include_submodules:
+        arguments.append("--ignore-submodules=none")
+    return git(repository, *arguments)
 
 
 def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
@@ -147,14 +168,17 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
         (4, "context one/empty.txt"),
         (4, "context one/z [x].txt"),
     ]
-    assert [source.content for source in frozen.sources] == [
-        "alpha ☃\n".encode(),
-        b"",
-        b"zeta\r\n",
-        b"beta\n",
-        "alpha ☃\n".encode(),
-        b"",
-        b"zeta\r\n",
+    assert [(source.content, source.commit_blob_sha) for source in frozen.sources] == [
+        (content, commit_blob_id(repository, head, path))
+        for (content, path) in [
+            ("alpha ☃\n".encode(), "context one/a\n雪.txt"),
+            (b"", "context one/empty.txt"),
+            (b"zeta\r\n", "context one/z [x].txt"),
+            (b"beta\n", "second/literal*file.txt"),
+            ("alpha ☃\n".encode(), "context one/a\n雪.txt"),
+            (b"", "context one/empty.txt"),
+            (b"zeta\r\n", "context one/z [x].txt"),
+        ]
     ]
     assert all(
         source.content_sha256 == sha256(source.content).hexdigest()
@@ -163,6 +187,9 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
     assert frozen.instructions_file is not None
     assert frozen.instructions_file.repository_path == "instructions.txt"
     assert frozen.instructions_file.content == b"separate instructions\n"
+    assert frozen.instructions_file.commit_blob_sha == commit_blob_id(
+        repository, head, "instructions.txt"
+    )
     assert (
         frozen.instructions_file.content_sha256
         == sha256(b"separate instructions\n").hexdigest()
@@ -401,6 +428,52 @@ def test_freezing_refuses_nested_submodule_input(tmp_path: Path) -> None:
 
     # Then
     assert (foreign_context / "file.txt").read_bytes() == b"foreign\n"
+
+
+def test_freezing_detects_dirty_submodule_even_when_git_config_ignores_it(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    nested_context = add_nested_repository(repository)
+    nested_file = nested_context / "file.txt"
+    nested_file.write_bytes(b"changed foreign contents\n")
+    git(repository, "config", "diff.ignoreSubmodules", "all")
+    before = worktree_status(repository, include_submodules=True)
+
+    # When
+    with pytest.raises(ValueError, match="worktree must be clean"):
+        GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert worktree_status(repository, include_submodules=True) == before
+    assert nested_file.read_bytes() == b"changed foreign contents\n"
+
+
+def test_freezing_ignores_inherited_git_pathspec_modes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    repository = make_repository(tmp_path / "repo")
+    context = repository / "context"
+    context.mkdir()
+    context_file = context / "literal*file[1].txt"
+    context_file.write_bytes(b"context\n")
+    instructions = repository / "instructions*[2].txt"
+    instructions.write_bytes(b"instructions\n")
+    commit(repository)
+    monkeypatch.setenv("GIT_LITERAL_PATHSPECS", "1")
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(context, instructions=instructions))
+
+    # Then
+    assert [(source.repository_path, source.content) for source in frozen.sources] == [
+        ("context/literal*file[1].txt", b"context\n")
+    ]
+    assert frozen.instructions_file is not None
+    assert frozen.instructions_file.repository_path == "instructions*[2].txt"
+    assert frozen.instructions_file.content == b"instructions\n"
 
 
 def test_freezing_refuses_symbolic_link_entries(tmp_path: Path) -> None:
