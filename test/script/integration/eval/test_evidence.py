@@ -75,3 +75,44 @@ def test_request_uses_staged_instructions_after_original_file_changes() -> None:
     # argv maps -c model_instructions_file=PATH to the staged snapshot path and
     # execution remains based on the captured bytes.
     pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-3 output destination containment and exclusivity",
+)
+def test_new_output_requires_external_or_ignored_location_before_any_launch() -> None:
+    """Check destination policy before any artifacts or model process can exist."""
+    # Given
+    # New destinations inside the input repository (ignored and nonignored) and
+    # outside it, plus already-existing destinations.
+
+    # When
+    # The evidence store prepares a run directory before supervisor dispatch.
+
+    # Then
+    # A new nonignored in-repository path is refused before writes or launch;
+    # new ignored in-repository and external paths are accepted; existing paths
+    # remain rejected without replacement.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-2 omitted instruction file preserves Codex defaults",
+)
+def test_omitted_instructions_file_adds_no_override_or_staged_artifact() -> None:
+    """Retain default/unavailable metadata when the optional -i input is absent."""
+    # Given
+    # A clean planned invocation with no -i / --instructions-file setting.
+
+    # When
+    # The effective request is built and the frozen plan is persisted.
+
+    # Then
+    # argv has no model_instructions_file override, no instruction artifact is
+    # staged, and metadata says defaults are preserved with automatic bytes
+    # unavailable.
+    pass
