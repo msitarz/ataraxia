@@ -1,0 +1,5 @@
+WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)
+2026-10-23T17:51:17.773476Z  WARN codex_state::runtime: failed to open memories db at /Users/nzs/.codex/memories_1.sqlite: failed to open memories DB at /Users/nzs/.codex/memories_1.sqlite: error returned from database: (code: 14) unable to open database file
+2026-10-23T17:51:17.774649Z  WARN codex_rollout::state_db: failed to initialize state runtime: failed to initialize state runtime at /Users/nzs/.codex: failed to open memories DB at /Users/nzs/.codex/memories_1.sqlite: error returned from database: (code: 14) unable to open database file: error returned from database: (code: 14) unable to open database file: (code: 14) unable to open database file
+Reading additional input from stdin...
+Not inside a trusted directory and --skip-git-repo-check was not specified.

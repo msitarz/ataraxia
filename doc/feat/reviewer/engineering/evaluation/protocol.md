@@ -162,9 +162,11 @@ runtime verification. No cross-model comparison is planned.
 
 Preparation must establish the actual provider/model binding and effective
 effort for every level. Read-only inspection of codex-cli 0.164.0's bundled
-model catalog advertised low, medium, high, xhigh, and max for `gpt-6-luna`,
-but not none. The maintainer reports a successful none invocation. Catalog
-absence does not establish impossibility.
+model catalog omits `none` from its `gpt-6-luna` entries. The maintainer
+confirms support, and a successful neutral probe confirms acceptance of the
+requested level for that invocation. See [bounded preparation](preparation.md)
+for the probe record and limits; catalog omission does not establish
+impossibility.
 
 - Verify accepted and runtime-effective effort before trials for that level.
 - Never substitute a default effort or silently remove a level.
@@ -180,7 +182,8 @@ absence does not establish impossibility.
 - Do not claim completion of the four-level study when a level is incomplete.
 - Preserve otherwise valid primary records despite incomplete secondary
   evidence.
-- Stop all affected work for shared source/tool drift or isolation failure.
+- Stop all affected work for shared source/tool drift or failure of the retained
+  source, label, or prior-answer protections below.
 - Require review before scope or configuration changes.
 - Keep source, task prompts, instruction-file bytes, and surfaced tools matched
   across efforts; ordinary opaque session identifiers may vary.
@@ -276,13 +279,33 @@ scores. A comparator checks label agreement; it cannot establish the truth of
 arbitrary textual findings. The owner still validates evidence, applicability,
 conflicts, and unexpected findings.
 
-### Input-only invocation boundary
+### CLI invocation boundary and accepted limitation
 
-The model must receive only the supplied rules, prepared source/context, and
-minimal fixed review/output instructions. Expose no file, shell, search, MCP,
-browser, image, or delegation tools. Give it no inherited repository guidance,
-configuration instructions, skills, memory, history, prior answers, or labels.
-Retain the complete effective context and tool declaration for owner review.
+Use the system `codex` executable discovered through `PATH` for independent
+non-interactive `codex exec` sessions. Record its resolved executable path and
+actual CLI version with the evaluation provenance; no installation or version
+lock is required. Keep matched comparisons within the frozen version and
+configuration, and treat a version change as drift requiring review. Historical
+preparation on 0.164.0 remains evidence only for that observed setup; it neither
+requires that release nor supplies a baseline for a different version.
+
+Supply only the frozen
+rules, prepared source/context, and minimal fixed review/output instructions as
+review material. Disable supported optional tools and automatic context sources
+and retain the rendered context, tool declarations, settings, and actual
+invocation evidence for owner review. Do not supply inherited repository
+guidance, skills, memory, history, prior answers, private labels, or rationales.
+
+The maintainer accepts the remaining CLI tool declarations and injected
+permission, collaboration, and environment context as a known issue. The
+[preparation record](preparation.md) retains the observed surface and the limits
+of its evidence. Their presence alone no longer blocks Step 1 or later
+preparation, and tool-free/input-only operation is not a prerequisite for this
+comparison. This decision does not establish authenticated runtime isolation,
+prove the declarations are inert, or permit access to additional source,
+withheld labels, prior answers, or private scoring material. Keep the limitation
+visible in quality and resource conclusions; input-token subtraction does not
+undo the tools' or context's possible influence on judgments.
 
 Use fresh sessions in an isolated working directory outside the repository.
 Keep supervisor input reading, output writing, authentication, and private
@@ -300,17 +323,20 @@ described in
 it does not alone prove that every reading surface or automatic instruction has
 been removed. This protocol prescribes no unverified exact CLI recipe.
 
-Later bounded preparation must inspect the actual effective tools and context,
-and retain actual invocation evidence that establishes the required boundary.
-If the available runtime cannot establish input-only operation, refuse trials
-and return the limitation for owner review. Do not substitute a prompt asking
-the model not to read files. This definition has verified no live boundary.
+Before trials, verify immutable-input and read-only-source protections and
+separation from withheld labels and prior answers at the actual invocation
+boundary. Retain what can be observed about effective tools/context, distinguish
+static renders from authenticated runtime evidence, and declare opaque or
+unavailable context. Refuse trials when these retained protections cannot be
+established; a prompt asking the model not to read files is not enforcement.
+The accepted declarations/context alone are not such a failure. Configuration
+or context drift outside the frozen limitation still requires review.
 
 ### Candidate invocation and input overhead
 
 The maintainer supplied this candidate configuration, shown with shell quoting
 that preserves TOML string values. This is an unverified recipe, not proof of
-the input-only boundary:
+tool-free or input-only operation:
 
 ```sh
 codex exec --model gpt-6-luna \
@@ -348,11 +374,11 @@ explains the relevant controls and their limits:
 - `web_search="disabled"` removes that tool.
 - Local image attachment has its own `tools.view_image` control.
 
-The public reference did not establish the candidate's
-`skills.bundled.enabled` or `tools.experimental_request_user_input.enabled`
-behavior. Validate support and effect on the pinned CLI rather than assuming
-these settings are invalid or effective. Inspect every surfaced tool, including
-local image/file readers; preserve the input-only refusal gate above.
+The public reference did not establish the candidate's `skills.bundled.enabled`
+or `tools.experimental_request_user_input.enabled` behavior. Validate support
+and effect on the actual system CLI rather than assuming these settings are
+invalid or effective. Inspect every surfaced tool, including local image/file
+readers, under the accepted limitation and retained protections above.
 
 The maintainer reports 7,380 `input_tokens` for one none/greeting invocation
 using this configuration. No raw event stream was supplied or independently
@@ -360,21 +386,61 @@ verified. Treat this as a reported whole-input observation for one setup. It is
 not a universal system-instruction count or an estimate for other efforts and
 prompts.
 
-Use neutral preparation to establish the actual baseline at each effort:
+Use measured fixed input baselines for each exact CLI configuration, including
+reasoning effort, in final reporting. Before trials, declare and freeze each
+baseline's value, measurement method, raw usage evidence, and applicability:
 
-- Retain raw JSONL, CLI version, effective configuration, exact neutral prompt,
-  instruction-file bytes, surfaced tools, and observed usage categories.
-- Include all automatic/system/developer instructions, tool declarations,
-  `min.md`, and task context within the 32,000-token input planning cap.
-- Never add overhead above that cap or assume the greeting's count transfers to
-  corpus prompts.
-- Report raw complete input totals as the primary resource measure.
-- Do not subtract 7,380 to claim pure review cost.
-- Label any optional matched baseline deltas as diagnostics with their own
-  provenance and limitations.
-- Revalidate the baseline after relevant CLI, model, instruction, configuration,
-  or tool changes through a new reviewed freeze.
-- Keep neutral preparation separate from corpus outcomes and rule tuning.
+- Identify the model/provider binding and its verification limits, effort, CLI
+  version, exact `min.md` bytes, settings, surfaced tools, automatic context,
+  neutral prompt bytes, and that prompt's token contribution.
+- Include the neutral prompt contribution in the baseline unless it is
+  separately measured and removed by a declared calculation. A whole-input
+  greeting does not isolate exact unintended-context tokens.
+- Account for opaque dynamic metadata: record what varies, what is unobserved,
+  and the resulting uncertainty in treating the baseline as fixed.
+- Retain raw JSONL and observed input/cached/output/reasoning categories using
+  provider definitions. An unknown baseline or usage value stays unknown.
+- Recalibrate with matched measurements and a new reviewed freeze after
+  relevant model, provider, effort, CLI, instruction, settings, tools, or
+  automatic-context drift. Do not reuse a mismatched baseline.
+- Keep neutral preparation separate from corpus outcomes and rule tuning, within
+  the existing allowance: none has used 4/4 attempts and preparation has used
+  4/16 total. This amendment grants no further calls or replacement attempts.
+
+For each attempt, report:
+
+- `adjusted input = observed session input - applicable measured configuration baseline`.
+- `adjusted complete tokens = adjusted input + provider-total output tokens`.
+
+Use provider definitions to identify total output consumption, including
+reasoning tokens where they are part of that total. Never add reasoning tokens
+a second time. If the exposed categories do not establish complete output
+accounting, leave adjusted complete tokens unavailable rather than fabricate a
+sum. Report raw input/cached/output/reasoning categories, adjusted input, and
+adjusted complete tokens alongside each other in final results, with the
+baseline's scope and uncertainty. Neither 7,380 nor the recorded 7,983-input
+greeting is a universal matched overhead baseline. No applicable trial baseline
+is yet frozen.
+
+A missing baseline or missing input usage makes adjusted input unavailable.
+Adjusted complete tokens require both adjusted input and complete output
+accounting. Any missing constituent makes the corresponding complete-strategy
+total unavailable. Keep negative adjusted values visible as evidence of
+mismatch or measurement uncertainty; do not clamp them. A zero or negative
+adjusted complete-token comparator cannot support a percentage improvement
+claim; report that comparison as unavailable or inconclusive.
+
+Subtract once for every observed attempt using its applicable baseline: without
+retries, A has one subtraction, B three, and C 24 per complete strategy
+repetition; each retry adds its own subtraction and consumption.
+Aggregate adjusted input and adjusted complete tokens across every constituent
+attempt, including failed attempts with observed usage, and retain unknown
+consumption. Do not subtract input baselines from output or reasoning tokens.
+Keep these adjusted measures distinct from actual consumption, cost, and other
+resource/quality confounds. Costs and actual budget accounting use actual
+consumed tokens. Include all automatic/system/developer instructions, tool
+declarations, `min.md`, and task context within the 32,000-token raw input
+planning cap; baseline subtraction never increases that cap.
 
 ### Bounds and stop handling
 
@@ -386,29 +452,45 @@ limits for review, not measured usage.
 | Resource | Bound |
 | --- | --- |
 | Preparation | At most four neutral, non-corpus calls per effort, 16 total; no detection tuning |
-| Trials | 84 per effort, 336 unique calls total; no retries or correction calls |
-| All attempts | At most 352, including preparation |
+| Trials | 84 per effort, 336 planned calls total; no correction calls |
+| Optional trial retries | Up to three additional attempts per planned call, at most 1,008; subject to remaining global bounds |
+| All attempts | At most 1,344 trial attempts; at most 1,360 including the original 16 neutral preparation allowance |
 | Concurrency | One; invalid or unbounded settings refuse launch |
-| Per-call time | 300 seconds through exit, then at most 10 seconds for descendant cleanup |
-| Output | 1 MiB combined stdout/stderr per call; terminate on overflow and retain bounded prefix/status |
+| Per-attempt time | 300 seconds for execution, then at most 10 seconds for owned-group cleanup |
+| Output | 1 MiB combined stdout/stderr per attempt; terminate on overflow and retain bounded prefix/status |
 | Evidence | 1 GiB including inputs, private records, streams, and reports; reserve capacity before dispatch |
 | Trial elapsed time | 40 hours from first matrix trial launch through final cleanup, including gaps |
-| Planning tokens | At most 32,000 input plus 14,000 output/reasoning per call; 16,192,000 across all 352 calls |
+| Planning tokens | At most 32,000 input plus 14,000 output/reasoning per attempt; unchanged 16,192,000 aggregate raw planning/consumption envelope, originally sized for 336 trials plus 16 preparation calls |
 | Human effort | Eight hours source/prompt/binding preparation, four hours independent reference validation, 32 hours complete adjudication/report review |
 | Findings | At most 2,400 raw finding records across the matrix for complete adjudication |
 
-At the per-call time bound, 336 × 310 seconds is about 28.9 serial
-process-hours. The 40-hour trial deadline includes scheduling gaps and may
-still leave the matrix incomplete. Do not:
+The optional retry ceiling does not enlarge time, token, evidence, or human
+budgets or authorize calls. Neutral preparation remains exhausted at 4/4 none
+attempts and 4/16 total used; no preparation retry or new call is authorized.
+
+At the per-attempt time bound, the 336 planned trials use about 28.9 serial
+process-hours; 1,344 trial attempts would use about 115.7 hours, exceeding the
+unchanged 40-hour deadline. That deadline includes gaps. Completion is not
+guaranteed, and the retry ceiling promises no budget for every retry. Do not:
 
 - Conceal timed-out high or none calls.
 - Extend limits based on observed outcomes.
 
-Preflight prints the exact call count, each input estimate and method/version,
-the reserved output/reasoning allowance, and the total. Before launch:
+Preflight distinguishes the 336 planned trial calls and original 16 preparation
+slots from the optional retry ceiling. It prints each input estimate and
+method/version, reserved output/reasoning allowance, and base-plan total. Before
+launch:
 
 - Refuse over-budget plans.
-- Reserve evidence capacity for all attempts.
+- Reserve evidence capacity for the base plan, including retained preparation
+  evidence, within 1 GiB; do not reserve the optional 1,360-attempt ceiling as
+  guaranteed output capacity.
+
+Before each permitted retry, reserve its time, raw token allowance, and evidence
+capacity within the remaining global bounds while respecting reservations for
+remaining planned calls. If those resources cannot cover it, retain the failure
+and report exhausted/incomplete coverage. Retry usage consumes the same
+aggregate envelope; it does not create a larger token or evidence budget.
 
 During execution, bound actual output/context growth.
 
@@ -423,24 +505,52 @@ token enforcement is unavailable:
 Controlled disposable process checks exercise success, failure, timeout,
 cancellation, oversized output, malformed/duplicate/foreign results, budget
 refusal, and aggregation in different completion orders. Verify immutable source
-and refs, denial of attempted writes and unintended reads, and no surviving
-review processes. Checks with fake output establish wrapper behavior only;
+and refs, denial of attempted writes and unintended reads, and the
+[experimental process guarantee](process-supervisor/README.md#acceptance-criteria).
+That child contract owns cleanup scope, confirmation, and the explicit upstream
+lifecycle assumption. Checks with fake output establish wrapper behavior only;
 they cannot prove live isolation, context contents, or semantic accuracy.
 Actual invocation evidence must establish those integration properties.
+
+The Evaluation caller owns this initial study's retry policy; the supervisor
+owns one attempt. Each planned trial call may have up to three additional
+attempts after timeout or infrastructure failure, subject to all global stops
+and remaining budgets:
+
+- Retry failed startup, transient transport failure, or nonzero infrastructure
+  failure only when no semantic result exists.
+- Request termination of the owned POSIX group through the OS and await/reap the
+  direct CLI before retry, under the child contract's signal/wait guarantee;
+  failure or expiry marks the run incomplete and forbids further dispatch.
+- Use identical frozen inputs, model, effort, version, and configuration in a
+  fresh session; retain every attempt, its outcome, and raw resource usage.
+- Ctrl+C, `SIGTERM`, and task cancellation stop evaluation without automatic
+  retry.
+- Never retry semantic quality, UNCERTAIN, a completed valid result, malformed
+  model output, overflow, label exposure, source/tool/configuration drift, or
+  failed cleanup.
+- Do not hide retries inside the caller's invocation layer or send correction
+  prompts; each additional attempt is explicit in evaluation accounting.
 
 Stop new dispatch for any of these conditions:
 
 - Input drift or label exposure.
 - Unauthorized access or writes.
-- Escaped processes or invalid accounting.
+- Failed or unconfirmed signal/wait cleanup, an observed breach of the upstream
+  lifecycle assumption, or invalid accounting.
 - Changed model/settings or exhausted bounds.
 - Cancellation.
 
-When stopping, cancel active calls, verify cleanup, and preserve every planned
-call with a terminal status, including not-started calls. Three consecutive
-infrastructure failures end the run as incomplete. Retain contaminated results
-outside quality claims and ordinary failures in coverage accounting. Do not
-silently replace calls or extend the budget.
+When stopping, cancel active calls, verify cleanup under the linked process
+guarantee, and preserve every planned call with a terminal status, including
+not-started calls. Failed or unconfirmed signal/wait cleanup immediately ends
+the run as incomplete. For initial-study trials only, three consecutive planned
+calls that exhaust their permitted infrastructure-recovery attempts end the run
+as incomplete; count these scheduled-call terminal outcomes, not individual
+attempt failures. Immediate global stops still take precedence over retries.
+This rule does not redefine prior preparation stopping history. Retain
+contaminated results outside quality claims and ordinary failures in coverage
+accounting. Do not silently replace calls or extend the budget.
 
 At the human or finding cap, preserve all records and mark adjudication and
 conclusions incomplete. Do not sample the remainder or claim the reviewed subset
@@ -477,16 +587,18 @@ answer-key repair.
 A strategy/effort condition meets the initial quality screen only when all of
 these conditions hold:
 
-- Verified isolation and preservation.
+- Verified retained source/label/prior-answer protections and preservation,
+  with the accepted CLI limitation disclosed.
 - Every planned call for that strategy/effort condition is complete and valid.
 - Complete independent adjudication.
 - At least 80% label agreement in each repetition.
 - At least 80% violation recall in each repetition.
 - At most 20% false positives in each repetition.
 
-Any boundary failure invalidates the affected evidence. A threshold failure
-calls for reconsidering source, rules, or review feasibility through a new
-reviewed freeze. Incomplete measurements or adjudication are inconclusive.
+Failure of a retained boundary protection invalidates the affected evidence. The
+disclosed accepted CLI limitation alone does not invalidate it. A threshold
+failure calls for reconsidering source, rules, or review feasibility through a
+new reviewed freeze. Incomplete measurements or adjudication are inconclusive.
 These are practical screening thresholds for 24 authored examples, not claims of
 statistical significance.
 
@@ -503,7 +615,9 @@ improvement requires all of these conditions:
 - Both compared strategies pass the screen.
 - Recall stays within five percentage points of A in each repetition.
 - Precision stays within five percentage points of A in each repetition.
-- Complete observed tokens or median matched latency decreases by at least 20%.
+- Complete-strategy adjusted complete tokens or median matched latency
+  decreases by at least 20%; show adjusted input, raw usage categories, and
+  opposing metrics separately.
 - The report identifies the improved metric and any opposing metric.
 
 Reconsider a strategy if it fails the screen or loses at least 10 recall points
@@ -538,9 +652,12 @@ This isolates intended effort differences from granularity differences.
 
 ### Complete-strategy resources
 
-- Sum every constituent B/C call at the reported effort, including failures.
-- Include repeated base-context overhead in every call; shared source bytes do
-  not imply one-time input consumption.
+- Sum every constituent B/C call and all its attempts at the reported effort,
+  including failures.
+- Include repeated base-context overhead in every raw call total; shared source
+  bytes do not imply one-time consumption. Sum adjusted input and adjusted
+  complete tokens only after applying each attempt's matched input baseline and
+  retaining its complete output consumption, as defined above.
 - Report preparation separately from trials.
 - Report the matrix total once, with medium reuse contributing no extra usage.
 - Preserve observed input/cached/output/reasoning categories using provider
@@ -550,8 +667,10 @@ This isolates intended effort differences from granularity differences.
 - Record UTC preparation, launch, completion, adjudication, and report
   boundaries.
 - Record human active effort separately.
-- Require complete comparable usage and retained price/date/unit evidence for
-  cost or detection-per-token claims.
+- Require complete comparable usage for token claims and identify whether a
+  detection-per-token denominator uses raw consumption or adjusted complete
+  tokens; report adjusted-input-only measures explicitly as such. Cost
+  claims require retained price/date/unit evidence and actual consumed tokens.
 - Record provider caching and load as confounds.
 
 ## Expanded historical evidence
@@ -570,7 +689,8 @@ Reuse the fixed-packet approach and matched strategies:
 
 ### Conditions and assessment sets
 
-Use the same static rule/context approach and input-only boundary.
+Use the same static rule/context approach and CLI boundary, including its
+accepted limitation and retained protections.
 
 - Hold model, effort, applicable rules, source bytes, permitted references, and
   other review conditions constant.
@@ -743,7 +863,9 @@ finding only if all of these conditions hold:
 - The strategy is viable.
 - Recall stays within five percentage points of A.
 - Precision stays within five percentage points of A.
-- Complete observed tokens or median matched latency decreases by at least 20%.
+- Complete-strategy adjusted complete tokens or median matched latency
+  decreases by at least 20%; show adjusted input, raw usage categories, and
+  opposing metrics separately.
 - The report identifies the improved metric and shows opposing metrics.
 
 Reconsider a strategy if viability fails or recall loses at least 10 percentage
@@ -776,8 +898,11 @@ Retain these records:
 - Frozen source/rule/prompt bytes and revisions/digests.
 - Private index and rationales.
 - Expected sets and ordered calls.
-- Effective context, instruction-file bytes, tools, and settings.
-- Neutral per-effort baseline observations and provenance.
+- Observed effective context, instruction-file bytes, tools, settings, and
+  declared opaque-context limits under the accepted CLI limitation.
+- Frozen per-configuration/effort baselines, neutral observations, provenance,
+  and per-session raw usage, adjusted input, and adjusted complete-token
+  calculations with unavailable values.
 - Medium-session reuse correspondence between primary and secondary reports.
 - All bounded raw output and overflow markers.
 - Attempts and terminal outcomes.
@@ -794,8 +919,11 @@ automatically.
 
 Sort reports by input, repetition, strategy, effort, rule, function, and session
 ID so identical validated observations aggregate identically regardless of
-completion order. Give each planned call one terminal outcome; rejected attempts
-never silently overwrite valid evidence.
+completion order. Give each attempt its own outcome and each planned call one
+terminal outcome after its permitted attempts or a stop. Only its complete valid
+result supplies coverage; earlier failed attempts remain in resource and failure
+reporting and add no assessment opportunities. Rejected attempts never silently
+overwrite valid evidence.
 
 The initial report states primary medium A/B/C scores and a separate matched
 effort analysis, with complete-strategy resources and limitations against the
@@ -804,3 +932,7 @@ completion still requires AC-1's full declared comparison, AC-2's matched A/B/C
 quality/resource observations, and AC-3's actual boundary verification. Neither
 this protocol nor initial static-comparison success completes those criteria,
 adopts review policy, or authorizes production delivery.
+
+Current CLI findings and all four neutral attempts are recorded in
+[bounded preparation](preparation.md). They do not complete any
+Evaluation criterion or authorize trials.

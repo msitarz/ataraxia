@@ -1,0 +1,63 @@
+import hashlib, json, os, selectors, signal, subprocess, sys, time
+from datetime import datetime, timezone
+from pathlib import Path
+
+root = Path('/private/tmp/ataraxia-reviewer-preflight-probe')
+cwd = root / 'cwd'
+cwd.mkdir(exist_ok=True)
+repo = Path('/private/tmp/ataraxia-reviewer-preflight')
+evidence = repo / 'doc/feat/reviewer/engineering/evaluation/preparation/evidence'
+prompt = 'hi how are you'
+min_file = repo / 'doc/feat/reviewer/engineering/evaluation/preparation/min.md'
+argv = ['codex', 'exec', '--model', 'gpt-6-luna', '-c', 'model_reasoning_effort="none"', '-c', f'model_instructions_file="{min_file}"', '-c', 'skills.bundled.enabled=false', '-c', 'web_search="disabled"', '-c', 'features.multi_agent=false', '-c', 'features.unified_exec=false', '-c', 'features.shell_tool=false', '-c', 'tools.experimental_request_user_input.enabled=false', '--disable', 'apps', '--disable', 'artifact', prompt, '--json']
+limit = 1024 * 1024
+timeout = 300
+cleanup = 10
+start_utc = datetime.now(timezone.utc).isoformat()
+start_mono = time.monotonic()
+p = subprocess.Popen(argv, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True)
+sel = selectors.DefaultSelector()
+for name, stream in [('stdout', p.stdout), ('stderr', p.stderr)]:
+    sel.register(stream, selectors.EVENT_READ, name)
+chunks = {'stdout': bytearray(), 'stderr': bytearray()}
+size = 0
+out_limit = False
+timeout_hit = False
+while sel.get_map():
+    remaining = timeout - (time.monotonic() - start_mono)
+    if remaining <= 0 and p.poll() is None:
+        timeout_hit = True
+        os.killpg(p.pid, signal.SIGTERM)
+        try: p.wait(timeout=cleanup)
+        except subprocess.TimeoutExpired:
+            os.killpg(p.pid, signal.SIGKILL)
+        break
+    for key, _ in sel.select(min(0.25, max(0.0, remaining))):
+        data = os.read(key.fd, 65536)
+        if not data:
+            sel.unregister(key.fileobj)
+            continue
+        room = limit - size
+        if room > 0:
+            kept = data[:room]
+            chunks[key.data].extend(kept)
+            size += len(kept)
+        if len(data) > room:
+            out_limit = True
+            os.killpg(p.pid, signal.SIGTERM)
+            try: p.wait(timeout=cleanup)
+            except subprocess.TimeoutExpired: os.killpg(p.pid, signal.SIGKILL)
+            break
+    if out_limit: break
+if p.poll() is None:
+    try: p.wait(timeout=cleanup)
+    except subprocess.TimeoutExpired:
+        os.killpg(p.pid, signal.SIGKILL)
+        p.wait()
+end_mono = time.monotonic()
+end_utc = datetime.now(timezone.utc).isoformat()
+for name, data in chunks.items():
+    (evidence / f'live-none-attempt-02-{name}.jsonl' if name == 'stdout' else evidence / f'live-none-attempt-02-{name}.txt').write_bytes(data)
+record = {'argv': argv, 'cwd': str(cwd), 'start_utc': start_utc, 'end_utc': end_utc, 'start_monotonic': start_mono, 'end_monotonic': end_mono, 'elapsed_seconds': end_mono-start_mono, 'exit_status': p.returncode, 'timeout_seconds': timeout, 'cleanup_seconds': cleanup, 'combined_output_limit_bytes': limit, 'combined_output_bytes': size, 'output_limit_hit': out_limit, 'timeout_hit': timeout_hit, 'prompt': prompt, 'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest(), 'instruction_file': str(min_file), 'instruction_sha256': hashlib.sha256(min_file.read_bytes()).hexdigest(), 'supervisor': str(Path(__file__)), 'attempts_launched': 1}
+(evidence / 'live-none-attempt-02-invocation.json').write_text(json.dumps(record, indent=2) + '\n')
+print(json.dumps({k: record[k] for k in ['exit_status','elapsed_seconds','combined_output_bytes','output_limit_hit','timeout_hit']}))

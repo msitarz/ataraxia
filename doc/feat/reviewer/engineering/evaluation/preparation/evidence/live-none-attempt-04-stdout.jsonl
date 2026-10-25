@@ -1,0 +1,4 @@
+{"type":"thread.started","thread_id":"01a169f2-109c-7541-8aae-438abb961813"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"I’m doing well, thanks! How are you?"}}
+{"type":"turn.completed","usage":{"input_tokens":7983,"cached_input_tokens":0,"cache_write_input_tokens":0,"output_tokens":15,"reasoning_output_tokens":0}}

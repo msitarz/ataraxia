@@ -1,0 +1,89 @@
+Pinned CLI: codex-cli 0.164.0
+Date checked: 2026-10-23
+
+Offline commands
+
+1. `codex app-server --help`
+   Lists `--print-startup-config`, `--strict-config`, `--enable`, and
+   `--disable`; no tool allowlist/denylist option is listed.
+2. `codex app-server generate-json-schema --out
+   /private/tmp/ataraxia-reviewer-preflight-app-server-schema --experimental`
+   Exited 0 and generated local protocol JSON schemas without starting the
+   server or sending an RPC. `--experimental` included experimental fields.
+3. `codex app-server --strict-config --print-startup-config -c
+   'features.code_mode.enabled=true' -c
+   'features.code_mode.excluded_tool_namespaces=["functions", "clock",
+   "mcp__codex_app"]' -c
+   'features.code_mode.direct_only_tool_namespaces=["functions"]' -c
+   'features.sleep_tool=false'`
+   Exited 0 with
+   `{"appServerVersion":"0.164.0","configRequirements":{"supportsIndependentSpeedModes":true,"requirements":null}}`.
+   This proves strict config parsing accepts these fields in this CLI; it
+   does not show the effective tool declaration. The generated `ThreadStart`
+   schema's `config` field is an open object, so its shape alone cannot prove
+   every nested setting is consumed at runtime.
+4. A third static `codex debug prompt-input` render used those code-mode
+   settings plus `features.sleep_tool=false`, `features.shell_tool=false`,
+   `features.multi_agent=false`, `features.apps=false`,
+   `features.plugins=false`, `skills.bundled.enabled=false`,
+   `memories.use_memories=false`, and `agents.enabled=false`, plus the same
+   browser/computer/image/skill-search disables and exact existing `min.md`
+   and neutral prompt. Its raw JSON is
+   `prompt-input-code-mode-sleep-off.json`, SHA-256
+   `21e2ffce44def447e410a5d87fa0709b23329ca92bf16e1d8a3126f524177827`.
+
+Observed render result
+
+- The stable `sleep_tool` setting is reflected: `clock.sleep` is absent from
+  this render. This is positive evidence for that one feature control.
+- The top-level `functions` namespace and `functions.exec` and `functions.wait`
+  remain declared. Request-input tools also remain. The `exec` description
+  continues to describe dynamic nested tools. Thus disabling sleep removes that
+  declared clock tool, while code-mode namespace settings do not remove the
+  outer functions wrapper from this renderer.
+- The render retains permission, collaboration-mode, and environment-context
+  blocks. It is static `prompt-input` output and is not proof of an authenticated
+  standalone app-server turn's actual prompt or runtime capabilities.
+
+Generated schema inspection
+
+`v2/ThreadStartParams.json` has `dynamicTools`, `baseInstructions`,
+`developerInstructions`, `config`, `environments`, `cwd`, and policy/model
+fields. It has no general `tools` property. `dynamicTools` accepts an array of
+custom function specs or namespace specs and defaults to null; setting it to an
+empty array could represent no caller-supplied dynamic functions. The schema
+does not state that this disables Codex's built-in shell, search, MCP, browser,
+image, or delegation tools. `config` is open-ended and does not establish
+effective configuration by itself. `environments: []` explicitly disables
+environment access for turns that do not provide a turn override.
+
+`v2/TurnStartParams.json` has `input`, `additionalContext`, per-turn
+`environments`, `permissions`, `sandboxPolicy`, `approvalPolicy`, `model`, and
+collaboration settings. It has no `dynamicTools` or general `tools` field.
+`additionalContext` adds client-provided fragments; it is not a context-removal
+control. An empty environments list disables environment access for that turn,
+not every built-in tool surface. `baseInstructions` and
+`developerInstructions` are nullable strings in `thread/start`, but the schema
+does not define empty/null semantics sufficient to establish that all inherited
+or host context is absent.
+
+Schema SHA-256 values from the generated local bundle:
+
+Verbatim field excerpts with these hashes are retained in
+`app-server-thread-turn-schema-excerpts.txt` beside this summary.
+
+- `ThreadStartParams.json`: `80a40a7fac15b4bf70efb7f893fb353acc0a0d30c68f54aee4f01923deca85de`
+- `TurnStartParams.json`: `f671d01c24995e99fcc110862ff3251c26d334fba212c7dc12857fb939506e47`
+- `ConfigReadResponse.json`: `4ec77e1a3eed746037149799c3b6bb8fe7b4b593e5930fc9f410e6282de9df50`
+
+The inspected official app-server documentation describes the client sequence
+as `initialize`, `initialized`, `thread/start`, then `turn/start`; it documents
+model/context/tool lifecycle and client ownership, but no field that disables
+all built-in tool declarations or proves removal of injected context. Sources:
+
+- https://developers.openai.com/siwc/token-sharing-open-source/codex-app-server
+- https://developers.openai.com/blog/codex-as-a-platform
+
+No app-server process was started, no RPC was sent, and no inference or auth
+operation was performed. This offline schema review does not prove that no
+supported host-level configuration exists outside the inspected CLI/protocol.

@@ -1,0 +1,15 @@
+{
+  "attempt_id": 3,
+  "inspection_time_utc": "2026-10-23T17:57:42Z",
+  "action": "elevated targeted inspection after cleanup PermissionError",
+  "argv": [
+    "ps",
+    "-axo",
+    "pid=,pgid=,command="
+  ],
+  "filter": "[c]odex exec --model gpt-6-luna",
+  "result": "no matching process found (exit status 1; no output)",
+  "recorded_pid": null,
+  "cleanup_action": "none; no matching process remained to target",
+  "limitation": "attempt 03 invocation record did not capture PID/PGID; the earlier cleanup_complete=false result remains preserved"
+}
