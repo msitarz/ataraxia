@@ -21,10 +21,15 @@ observations for caller-owned experiments.
   runs, or scientific claims.
 - Add a plugin framework, generic scheduler library, production reviewer, or
   replacement process supervisor.
+- Rewrite the existing supervisor's dataclasses.
 
 ## Mechanisms
 
 - A Make entry point exposes a small Python `asyncio` context-matrix runner.
+- Pydantic validates and serializes or loads the tooling harness's
+  configuration, run plan, provenance, and attempt metadata, initially as a
+  development dependency with version and model design deferred to
+  implementation.
 - [The existing supervisor](../../../../../../script/process_supervisor.py)
   executes each attempt and owns its process acquisition, capture, and cleanup.
 - An `asyncio` semaphore limits active attempts until their cleanup settles.
@@ -113,6 +118,12 @@ A caller can inspect the complete scheduled matrix before any model call.
 
 Retained evidence identifies the exact supplied bytes and execution settings.
 
+- Configuration, run-plan, provenance, and attempt-metadata boundaries use
+  strict Pydantic validation and reject unknown fields when loading or
+  serializing records.
+- Validation preserves the declared setting constraints, including zero output
+  allowance and finite positive deadlines, without performing Git checks, file
+  I/O, or process execution inside validators.
 - Before dispatch, the runner freezes all selected source bytes and composed
   prompts in snapshots and records ordered source paths, source SHA-256
   digests, composed-prompt SHA-256 digests, and ordered separator settings and
