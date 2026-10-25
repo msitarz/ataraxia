@@ -58,16 +58,21 @@ dispatch policy, and run evidence around that boundary.
 **Implemented:**
 [`script/eval/inputs.py`](../../../../../../script/eval/inputs.py) provides the
 `RepositoryReader` port and `GitRepositoryReader` adapter. It requires all
-inputs to resolve to one non-bare worktree, rejects nested repositories and
-submodules, checks the whole checkout for staged, unstaged, and untracked
-changes, and batches tracked-file and commit-blob queries. It selects immediate
-regular files in lexical order without recursion, requires each context
-directory to contain an immediate regular file, rejects symlink components and
-entries, strictly decodes selected bytes as UTF-8, and compares each read with
-the pinned commit blob before returning snapshots. Empty files are preserved.
-Instructions remain a distinct snapshot. Git commands have a finite timeout
-and disable optional index locks; the freezer performs no writes or model
-calls. The reviewed
+inputs to resolve to one non-bare worktree, checks the whole checkout for
+staged, unstaged, and untracked changes, and batches tracked-file and
+commit-blob queries. It selects immediate regular files in lexical order
+without recursion, requires each context directory to contain an immediate
+regular file, and strictly decodes selected bytes as UTF-8. Symlink aliases and
+parent components in context-directory paths are resolved normally; selected
+file entries and the final instructions-file entry must be regular
+nonsymlinks, while symlinked directory entries are skipped. A root-directory
+context skips the linked-worktree `.git` administrative file. Read bytes must
+exactly match pinned commit blobs; filter or line-ending transformations are
+reported as mismatches. Empty files are preserved. Instructions remain a
+distinct snapshot. Git commands have a finite timeout, use a deterministic
+locale, disable replacement objects, ambient global/system config, fsmonitor,
+and optional index locks; the freezer performs no writes or model calls. The
+reviewed
 [`inputs.pyi`](design/eval/inputs.pyi) remains the historical port definition.
 
 **TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to
@@ -75,10 +80,10 @@ the pure planner.
 
 - This component resolves one repository root and HEAD for all inputs, checks
   the checkout and tracked-file membership in batches, and rejects paths that
-  escape the repository or traverse symbolic links.
+  escape the repository.
 - It selects immediate regular files in lexical order, strictly decodes UTF-8,
-  and compares each selected snapshot with the corresponding commit blob before
-  dispatch.
+  skips symlinked directory entries, and compares exact selected bytes with
+  their corresponding commit blobs before dispatch.
 - A configured instructions file passes the same repository containment,
   clean-checkout, tracked-file, strict UTF-8, and commit-blob checks. Its bytes,
   repository path, blob SHA, and content digest form a separate
@@ -112,6 +117,12 @@ the pure planner.
   snapshots, planned calls, the frozen plan, and persisted records. They use
   `ConfigDict(extra="forbid", strict=True, frozen=True)`; nested settings are
   tuples and immutable scalar or byte values rather than mutable mappings.
+- Configuration validation enforces unique increasing option positions,
+  separator placement and supported escapes, and numeric bounds. Frozen plans
+  bind calls to complete in-range snapshot groups and require instruction
+  configuration and snapshots to agree. Persisted records bind calls and
+  attempts by run, call, and position; source paths and digests remain parallel,
+  and timestamps must be ordered UTC ISO values.
 - Validators check value constraints only. Git checks, file reads, estimates,
   directory creation, and process execution belong to explicit operations.
 - A scheduled position has no effective-call identity until execution resolves
