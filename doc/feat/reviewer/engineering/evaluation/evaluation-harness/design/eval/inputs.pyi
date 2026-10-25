@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Consumer-owned port for read-only Git and filesystem input freezing."""
+"""Historical reviewed port; implemented by ``script.eval.inputs``."""
 
 from typing import Protocol
 

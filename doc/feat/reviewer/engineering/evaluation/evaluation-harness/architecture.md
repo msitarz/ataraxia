@@ -3,11 +3,13 @@
 **Status: current view for the generic harness Work.** The Work contract in
 [README.md](README.md) owns behavior and acceptance. The shared model records
 are implemented in
-[`script/eval/model.py`](../../../../../../script/eval/model.py); the remaining
-components below are planned. No implementation authorizes model calls. The
-sibling [process supervisor](../process-supervisor/README.md) is implemented and
-owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
-and run evidence around that boundary.
+[`script/eval/model.py`](../../../../../../script/eval/model.py), and the input
+freezer is implemented in
+[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py); the
+remaining components below are planned. No implementation authorizes model
+calls. The sibling [process supervisor](../process-supervisor/README.md) is
+implemented and owns one attempt's process lifecycle; this harness owns plans,
+dispatch policy, and run evidence around that boundary.
 
 ## TL;DR
 
@@ -52,6 +54,19 @@ and run evidence around that boundary.
   Git, source, process, or evidence effects itself.
 
 ### Input freezer
+
+**Implemented:**
+[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py) provides the
+`RepositoryReader` port and `GitRepositoryReader` adapter. It requires all
+inputs to resolve to one non-bare worktree, rejects nested repositories and
+submodules, checks the whole checkout for staged, unstaged, and untracked
+changes, and batches tracked-file and commit-blob queries. It selects immediate
+regular files in lexical order without recursion, rejects symlink components
+and entries, requires nonempty strict UTF-8 bytes, and compares each read with
+the pinned commit blob before returning snapshots. Instructions remain a
+distinct snapshot. Git commands have a finite timeout and disable optional
+index locks; the freezer performs no writes or model calls. The reviewed
+[`inputs.pyi`](design/eval/inputs.pyi) remains the historical port definition.
 
 **TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to
 the pure planner.
