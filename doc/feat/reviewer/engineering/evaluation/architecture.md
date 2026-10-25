@@ -1,12 +1,16 @@
 # Evaluation harness architecture
 
-**TL;DR:** This is a typed architecture proposal for a small fixed-call-list
-Evaluation harness; it is not implemented and completes no acceptance
-criterion. It adds only an architecture view and a design interface at
-[`design/evaluation_harness.pyi`](design/evaluation_harness.pyi). The existing
-[protocol](protocol.md) owns the call matrix, budgets, retry eligibility, and
-reporting rules; this proposal authorizes no calls, corpus preparation,
-baseline measurement, scoring, or production wiring.
+## TL;DR
+
+- This is a typed architecture proposal for a small fixed-call-list Evaluation
+  harness.
+- It is not implemented and completes no acceptance criterion.
+- It adds only an architecture view and a design interface at
+  [`design/evaluation_harness.pyi`](design/evaluation_harness.pyi).
+- The existing [protocol](protocol.md) owns the call matrix, budgets, retry
+  eligibility, and reporting rules.
+- This proposal authorizes no calls, corpus preparation, baseline measurement,
+  scoring, or production wiring.
 
 ## Services
 
@@ -53,90 +57,170 @@ flowchart LR
 ### Composition and guarantees
 
 The evaluation entry point supplies the supervisor call, stop hook, configured
-resource ledger, evidence sink, and clock to one small coordinator; the
-coordinator owns its active-task registry, protocol order, per-condition
-verification, retries, and exactly-once terminal accounting. On global stop,
-the coordinator cancels and awaits active tasks, then settles their resource
-leases only after cleanup. The resource ledger owns bounds, base reservations,
-and atomic slot/resource accounting, not task cancellation or process cleanup.
-The supervisor owns process acquisition, deadlines, output limits, and cleanup,
-and its existing process lifecycle limitations remain documented in the
+resource ledger, evidence sink, and clock to one small coordinator.
+
+#### Ownership
+
+The coordinator owns the following:
+
+- Its active-task registry.
+- Protocol order and per-condition verification.
+- Retries and exactly-once terminal accounting.
+- Cancellation and awaiting of active tasks on global stop.
+- Settlement of resource leases only after cleanup on global stop.
+
+The resource ledger owns:
+
+- Bounds and base reservations.
+- Atomic slot and resource accounting.
+- Task cancellation and process cleanup remain outside its ownership.
+
+The supervisor owns process acquisition, deadlines, output limits, and cleanup.
+Its existing process lifecycle limitations remain documented in the
 [supervisor contract](process-supervisor/README.md).
 
-The plan freezes expected triples of rule, file, and qualified function, plus
-the exact prompt/input/session identity and source, instruction, and
-configuration digests. Responses bind session, strategy, and prepared input to
-that identity; effort comes only from trusted issued-session metadata, never
-model self-report. The validator accepts only retained raw output bytes,
-decodes and checks the schema and identities, then checks duplicate keys before
-mapping. Malformed, stale, incomplete, duplicate, foreign, or missing results
-return a typed refusal that cannot be treated as a pass or retried. Each
-assessment retains one of `PASS`, `VIOLATION`, `NOT_APPLICABLE`, or `UNCERTAIN`,
-an explanation, and any violation locations, quotations, and consequences.
-This is schema and identity validation only; private-label comparison and
+#### Identities and validation
+
+The plan freezes the following identities and digests:
+
+- Expected rule, file, and qualified-function triples.
+- The exact prompt, input, and session identity.
+- Source, instruction, and configuration digests.
+
+Responses bind the session, strategy, and prepared input to the frozen
+identity. Effort comes only from trusted issued-session metadata. Model
+self-report does not establish effort.
+
+The validator applies these checks:
+
+- It accepts only retained raw output bytes.
+- It decodes and checks the schema and identities.
+- It checks for duplicate keys before mapping results.
+- Malformed, stale, incomplete, duplicate, foreign, or missing results produce
+  a typed refusal.
+- A typed refusal cannot count as a pass or be retried.
+- Each assessment retains one of `PASS`, `VIOLATION`, `NOT_APPLICABLE`, or
+  `UNCERTAIN`.
+- Each assessment retains an explanation and any violation locations,
+  quotations, and consequences.
+
+This validates schema and identity only. Private-label comparison and
 independent evidence adjudication remain later operations.
 
-The configured concurrency cap is a frozen run setting supplied through the
-library argument, defaults to one, and must be a positive integer that excludes
-booleans. The same cap applies across matched strategies and efforts and is
-validated before calls can be issued. It applies only to distinct calls within
-the current strategy/effort/repetition block; A naturally offers one call,
-while B and C offer three and 24. Strategy, effort, and repetition barriers
-remain fixed by the protocol. Initial attempts follow the frozen call order. An
-atomic reservation couples stop inspection, slot acquisition, and resource
-reservations before dispatch; settlement releases them only after cleanup.
-Retries reserve fresh capacity after predecessor cleanup and never overlap
-their predecessor. Concurrent terminal events are evaluated in frozen call
-order for the consecutive-failure rule. Global stop cancels and awaits active
-calls, preserves every planned call's terminal accounting, and prevents further
-dispatch.
+#### Concurrency and dispatch
 
-Per-call estimates record value, method, and version. Unknown usage is never
-treated as zero: a dispatch needs a conservative raw-ceiling reservation under
-the protocol, including active attempts and calls still planned; if that
-reservation cannot be made, the call and remaining calls retain incomplete
-accounting. The ledger records observed utilization, wall time from run launch
-through final cleanup, and summed attempt duration separately. No estimate
-claims a hard provider token cap; budgets continue to use raw observed
-consumption and only protocol-matched measured baselines support adjusted
-reports.
+The concurrency cap has these rules:
 
-The condition gate consumes authorized, retained preparation evidence bound to
-the exact CLI version, model, calibration input, configuration, surfaced tools,
-and condition; it does not launch a calibration call. An unverified effort
-produces a condition-scoped skip while other independently verified conditions
-may proceed unless a global stop applies. A detected shared source, label, or
-prior-answer protection breach globally stops dispatch; absent required proof
-refuses its recorded condition or run scope. An unavailable opaque
-runtime-context observation remains disclosed as unavailable and does not count
-as verified isolation. The gate retains exact source/config bindings, model and
+- It is a frozen run setting supplied through the library argument.
+- It defaults to one.
+- It must be a positive integer, and booleans are not accepted.
+- It applies across matched strategies and efforts.
+- It is validated before calls can be issued.
+- It applies only to distinct calls in the current strategy, effort, and
+  repetition block.
+
+Strategy A naturally offers one call. Strategy B offers three calls, and
+strategy C offers 24. The protocol fixes the strategy, effort, and repetition
+barriers.
+
+Dispatch follows these rules:
+
+- Initial attempts follow the frozen call order.
+- Before dispatch, one atomic reservation couples stop inspection, slot
+  acquisition, and resource reservations.
+- Reservations are released only after cleanup.
+- A retry reserves fresh capacity after its predecessor's cleanup.
+- A retry never overlaps its predecessor.
+- Concurrent terminal events are evaluated in frozen call order for the
+  consecutive-failure rule.
+- A global stop cancels and awaits active calls.
+- A global stop preserves terminal accounting for every planned call.
+- A global stop prevents further dispatch.
+
+#### Resource estimates and accounting
+
+Per-call estimates record their value, method, and version. Resource accounting
+follows these rules:
+
+- Unknown usage is never treated as zero.
+- Under the protocol, dispatch requires a conservative raw-ceiling reservation
+  that includes active attempts and calls still planned.
+- If that reservation cannot be made, the call and remaining calls retain
+  incomplete accounting.
+- The ledger records observed utilization, wall time from run launch through
+  final cleanup, and summed attempt duration separately.
+- No estimate claims a hard provider token cap.
+- Budgets continue to use raw observed consumption.
+- Only protocol-matched measured baselines support adjusted reports.
+
+#### Condition verification
+
+The condition gate consumes authorized, retained preparation evidence. That
+evidence is bound to the following:
+
+- The exact CLI version and model.
+- The calibration input and configuration.
+- The surfaced tools and condition.
+
+The gate does not launch a calibration call. Its verification outcomes follow
+these rules:
+
+- An unverified effort produces a skip scoped to its condition.
+- Other independently verified conditions may proceed unless a global stop
+  applies.
+- A detected breach of shared source, label, or prior-answer protection
+  globally stops dispatch.
+- Without required proof, the gate refuses the recorded condition or run
+  scope.
+- Unavailable opaque runtime-context observations remain disclosed as
+  unavailable and do not count as verified isolation.
+
+The gate retains exact source and configuration bindings, model and
 effective-effort observations, and references to concrete boundary checks.
-Source protection requires an enforceable allow-listed input boundary with
-read-only source access and attempted-read/write checks. Private labels and
-prior answers remain in a separate scoring store unavailable to the invocation
-boundary; a prompt instruction or static render cannot establish that
-separation. Until these controls and actual invocation observations are
-verified, the gate refuses affected trial launches. The accepted CLI
-tool/context limitation is recorded, and does not itself prove source or label
-protection.
+Source protection requires all of the following:
 
-Preflight refusal produces no launch. Its accepted receipt binds the plan
-digest, exact bounds, frozen concurrency, and base reservations; dispatch
-requires that receipt to match the supplied run exactly. The resource ledger is
-configured from that run, bounds, and receipt before any dispatch.
+- An enforceable allow-listed input boundary.
+- Read-only source access.
+- Attempted-read and attempted-write checks.
+
+Private labels and prior answers remain in a separate scoring store that the
+invocation boundary cannot access. A prompt instruction or static render cannot
+establish that separation. Until these controls and actual invocation
+observations are verified, the gate refuses affected trial launches. The
+accepted CLI tool/context limitation is recorded. It does not itself prove
+source or label protection.
+
+#### Preflight
+
+Preflight refusal produces no launch. The accepted preflight receipt binds the
+following:
+
+- The plan digest and exact bounds.
+- Frozen concurrency and base reservations.
+
+Dispatch requires that receipt to match the supplied run exactly. The resource
+ledger is configured from that run, bounds, and receipt before any dispatch.
+
+#### Evidence and design limits
 
 Cancellation and escaping exceptions are captured as typed evidence snapshots
-with available supervisor cleanup observations. The stop latch is set before
-evidence persistence; the original cancellation or exception is then
-re-raised, and persistence failure is retained as an evidence-incomplete stop
-without replacing control flow. Evidence includes an append-only plan record,
-all attempt snapshots and raw usage, validated public results, one final state
-per planned call, stop record, and resource/time summary; private labels,
-rationales, and prior answers never enter these artifacts.
+with available supervisor cleanup observations. Evidence handling follows these
+rules:
 
-Static types describe ownership and required fields but do not establish
+- The stop latch is set before evidence is persisted.
+- The original cancellation or exception is then re-raised.
+- A persistence failure is retained as an evidence-incomplete stop.
+- A persistence failure does not replace control flow.
+- Evidence includes an append-only plan record.
+- Evidence includes all attempt snapshots and raw usage.
+- Evidence includes validated public results.
+- Evidence includes one final state per planned call.
+- Evidence includes a stop record and a resource and time summary.
+- Private labels, rationales, and prior answers never enter these artifacts.
+
+Static types describe ownership and required fields. They do not establish
 effective effort, read-only access, label separation, process cleanup, or
 accounting behavior. Those guarantees require the protocol's controlled
 boundary checks and invocation evidence before launch. The design does not
-claim the accepted CLI limitation is resolved or that the Evaluation's TODO
-criteria are complete.
+claim that the accepted CLI limitation is resolved or that the Evaluation's
+TODO criteria are complete.
