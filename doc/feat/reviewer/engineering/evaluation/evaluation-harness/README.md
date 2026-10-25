@@ -54,8 +54,8 @@ A caller can inspect the complete scheduled matrix before any model call.
 
 - The Make entry point accepts repeated ordered `-d`/`--directory`, repeated
   ordered `-m`/`--model`, repeated ordered `-e`/`--effort`, positive integer
-  `-c`/`--concurrency`, `-o`/`--output-directory`, and `-n`/`--dry-run`
-  arguments.
+  `-c`/`--concurrency`, `-o`/`--output-directory`, `-n`/`--dry-run`, and ordered
+  `-s`/`--separator` arguments.
 - Dry run uses the same validation, ordered matrix, and frozen source-byte
   composition as execution, held in memory without dispatch; the output
   directory may be omitted because dry run writes no output, while execution
@@ -68,7 +68,15 @@ A caller can inspect the complete scheduled matrix before any model call.
 - Files must decode as strict UTF-8, and invalid encoding or unreadable files
   refuse all model calls before dispatch.
 - Each call selects one file from every directory and joins their unchanged
-  bytes in directory argument order with exactly two LF bytes between files.
+  bytes in directory argument order using the separator for each directory
+  boundary, defaulting to exactly two LF bytes.
+- A separator argument between successive directory arguments overrides that
+  boundary for every selected file combination, preserving directory order
+  across intervening flags rather than attaching separators to files.
+- Separator arguments before the first or after the last directory argument, or
+  multiple separator arguments for one boundary, are rejected before dispatch.
+- Separator values allow empty strings and decode only `\n`, `\r`, `\t`, and
+  `\\` escapes before UTF-8 encoding, rejecting unknown or dangling escapes.
 - The full Cartesian product uses directory argument order with the last
   directory varying fastest, then model argument order, then effort argument
   order for each context combination, retaining repeated arguments as separate
@@ -98,11 +106,12 @@ Retained evidence identifies the exact supplied bytes and execution settings.
 
 - Before dispatch, the runner freezes all selected source bytes and composed
   prompts in snapshots and records ordered source paths, source SHA-256
-  digests, and composed-prompt SHA-256 digests.
+  digests, composed-prompt SHA-256 digests, and ordered separator settings and
+  exact decoded bytes sufficient to reproduce composition.
 - Dispatch uses those frozen bytes rather than rereading mutable source files.
-- Stable call identity includes ordered selected inputs, composed bytes, model,
-  effort, and relevant invocation settings, while changed effective inputs
-  produce a separate identity.
+- Stable call identity includes ordered selected inputs, separator settings and
+  bytes, composed bytes, model, effort, and relevant invocation settings, while
+  changed effective inputs produce a separate identity.
 - Records retain the resolved absolute Codex path, CLI and runner versions,
   requested model and effort, argv, cwd, explicit configuration, and observable
   effective settings, with unavailable runtime bindings or context marked
