@@ -25,6 +25,7 @@ dev = [
     "mermaidx==0.9.5",
     "quickjs-ng==0.17.0.1",
     "prek>=0.5.3",
+    "pydantic>=2.12,<3",
     "pyrefly>=1.3.0",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",

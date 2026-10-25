@@ -1,11 +1,13 @@
 # Generic evaluation harness architecture
 
-**Status: exploratory proposal for the generic harness Work.** The Work
-contract in [README.md](README.md) owns behavior and acceptance. This proposal
-does not authorize implementation or model calls. The sibling
-[process supervisor](../process-supervisor/README.md) is implemented and owns
-one attempt's process lifecycle; this harness owns plans, dispatch policy, and
-run evidence around that boundary.
+**Status: current view for the generic harness Work.** The Work contract in
+[README.md](README.md) owns behavior and acceptance. The shared model records
+are implemented in
+[`script/eval/model.py`](../../../../../../script/eval/model.py); the remaining
+components below are planned. No implementation authorizes model calls. The
+sibling [process supervisor](../process-supervisor/README.md) is implemented and
+owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
+and run evidence around that boundary.
 
 ## TL;DR
 
@@ -274,9 +276,12 @@ The dry-run branch never resolves or probes the CLI.
 
 ## Type boundary
 
-The adjacent exploratory [package-shaped types](design/eval/)
-sketch consumer-facing ports and shared values under the intended `script/eval`
-module names. They do not create or authorize a runtime package. Private
+The adjacent [package-shaped type sketch](design/eval/) records the reviewed
+boundary from which implementation proceeds. Its `model.pyi` is historical
+design reference; the active implementation is
+[`script/eval/model.py`](../../../../../../script/eval/model.py). The model
+increment implements shared validated values and persisted record shapes;
+composition, effects, and delivered harness behavior remain planned. Private
 helpers and concrete persistence formats remain flexible; supervisor outcomes
 and requests continue to use the existing public types.
 
