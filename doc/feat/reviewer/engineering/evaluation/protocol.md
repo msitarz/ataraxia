@@ -210,8 +210,12 @@ At each effort, use three fresh independent repetitions:
 - Repetition one runs A, then B, then C.
 - Repetition two runs B, then C, then A.
 - Repetition three runs C, then A, then B.
-- Run sequentially and finish each complete strategy before starting the next.
+- Finish each complete strategy, including retries and cleanup, before starting
+  the next.
 - Within B/C, order rule IDs, file IDs, and qualified function names lexically.
+- Allow parallel distinct calls only within the current strategy, effort, and
+  repetition block under the
+  [frozen concurrency limit](#bounds-and-stop-handling).
 - Never resume a prior session or supply hints or prior answers.
 
 For each effort, three repetitions use 3 × (1 + 3 + 24) = 84 trial calls and
@@ -455,7 +459,7 @@ limits for review, not measured usage.
 | Trials | 84 per effort, 336 planned calls total; no correction calls |
 | Optional trial retries | Up to three additional attempts per planned call, at most 1,008; subject to remaining global bounds |
 | All attempts | At most 1,344 trial attempts; at most 1,360 including the original 16 neutral preparation allowance |
-| Concurrency | One; invalid or unbounded settings refuse launch |
+| Concurrency | Configurable positive finite integer, default one; booleans, invalid values, and unbounded settings refuse launch |
 | Per-attempt time | 300 seconds for execution, then at most 10 seconds for owned-group cleanup |
 | Output | 1 MiB combined stdout/stderr per attempt; terminate on overflow and retain bounded prefix/status |
 | Evidence | 1 GiB including inputs, private records, streams, and reports; reserve capacity before dispatch |
@@ -468,10 +472,24 @@ The optional retry ceiling does not enlarge time, token, evidence, or human
 budgets or authorize calls. Neutral preparation remains exhausted at 4/4 none
 attempts and 4/16 total used; no preparation retry or new call is authorized.
 
+Freeze concurrency in run configuration before outcomes:
+
+- Accept the limit through a library argument or an existing CLI option without
+  requiring a new CLI.
+- Use the same configured cap across matched strategies and efforts.
+- Count each active attempt against the cap until its cleanup settles.
+- Dispatch initial attempts in frozen call-list order within the current block,
+  with A naturally offering one call, B three, and C 24.
+- Keep the strategy, effort, and repetition barriers in
+  [fixed calls](#fixed-calls-and-output), without adding a broader parallel
+  scheduler.
+
 At the per-attempt time bound, the 336 planned trials use about 28.9 serial
-process-hours; 1,344 trial attempts would use about 115.7 hours, exceeding the
-unchanged 40-hour deadline. That deadline includes gaps. Completion is not
-guaranteed, and the retry ceiling promises no budget for every retry. Do not:
+process-hours; 1,344 trial attempts would use about 115.7 process-hours, so
+serial execution would exceed the unchanged 40-hour wall deadline, which
+includes gaps. Concurrency may reduce wall latency but adds no resource budget;
+completion is not guaranteed, and the retry ceiling promises no budget for
+every retry. Do not:
 
 - Conceal timed-out high or none calls.
 - Extend limits based on observed outcomes.
@@ -486,11 +504,13 @@ launch:
   evidence, within 1 GiB; do not reserve the optional 1,360-attempt ceiling as
   guaranteed output capacity.
 
-Before each permitted retry, reserve its time, raw token allowance, and evidence
-capacity within the remaining global bounds while respecting reservations for
-remaining planned calls. If those resources cannot cover it, retain the failure
-and report exhausted/incomplete coverage. Retry usage consumes the same
-aggregate envelope; it does not create a larger token or evidence budget.
+Before every initial or retry dispatch, atomically check the stop latch and
+concurrency slot and reserve its time, raw token allowance, and evidence
+capacity within the remaining global bounds, including simultaneous active
+reservations and reservations for remaining planned calls. If those resources
+cannot cover it, retain the failure and report exhausted/incomplete coverage.
+Retry usage consumes the same aggregate envelope; it does not create a larger
+token or evidence budget.
 
 During execution, bound actual output/context growth.
 
@@ -522,6 +542,7 @@ and remaining budgets:
 - Request termination of the owned POSIX group through the OS and await/reap the
   direct CLI before retry, under the child contract's signal/wait guarantee;
   failure or expiry marks the run incomplete and forbids further dispatch.
+- Never overlap a retry with its predecessor attempt or unfinished cleanup.
 - Use identical frozen inputs, model, effort, version, and configuration in a
   fresh session; retain every attempt, its outcome, and raw resource usage.
 - Ctrl+C, `SIGTERM`, and task cancellation stop evaluation without automatic
@@ -541,13 +562,24 @@ Stop new dispatch for any of these conditions:
 - Changed model/settings or exhausted bounds.
 - Cancellation.
 
-When stopping, cancel active calls, verify cleanup under the linked process
-guarantee, and preserve every planned call with a terminal status, including
-not-started calls. Failed or unconfirmed signal/wait cleanup immediately ends
-the run as incomplete. For initial-study trials only, three consecutive planned
-calls that exhaust their permitted infrastructure-recovery attempts end the run
-as incomplete; count these scheduled-call terminal outcomes, not individual
-attempt failures. Immediate global stops still take precedence over retries.
+When stopping:
+
+- Latch the global stop before fallible evidence recording or further dispatch.
+- Cancel and await all active calls and verify cleanup under the linked process
+  guarantee, including after cancellation or unsafe cleanup.
+- Preserve every planned call with a terminal status, including not-started
+  calls, and mark failed or unconfirmed signal/wait cleanup incomplete.
+
+For initial-study trials only, three consecutive planned calls that exhaust
+their permitted infrastructure-recovery attempts end the run as incomplete:
+
+- Resolve scheduled-call terminal outcomes in frozen call-list order rather
+  than completion order, counting exhausted calls rather than attempt failures.
+- Latch the global stop immediately when that ordered evidence establishes the
+  threshold, with immediate global stops taking precedence over retries.
+- Disclose and cancel or settle already-inflight work without dispatching any
+  further calls after the latch.
+
 This rule does not redefine prior preparation stopping history. Retain
 contaminated results outside quality claims and ordinary failures in coverage
 accounting. Do not silently replace calls or extend the budget.
@@ -663,7 +695,8 @@ This isolates intended effort differences from granularity differences.
 - Preserve observed input/cached/output/reasoning categories using provider
   definitions without double counting.
 - Keep unknown usage unknown; never infer tokens or cost from time or bytes.
-- Measure monotonic seconds from strategy launch through final cleanup.
+- Measure wall latency in monotonic seconds from strategy launch through final
+  cleanup, separately from summed attempt seconds including retries and cleanup.
 - Record UTC preparation, launch, completion, adjudication, and report
   boundaries.
 - Record human active effort separately.
@@ -671,7 +704,10 @@ This isolates intended effort differences from granularity differences.
   detection-per-token denominator uses raw consumption or adjusted complete
   tokens; report adjusted-input-only measures explicitly as such. Cost
   claims require retained price/date/unit evidence and actual consumed tokens.
-- Record provider caching and load as confounds.
+- Record the configured cap, actual active-attempt load and utilization over
+  time, and provider caching/load as confounds rather than claim matched load
+  from a shared cap or attribute concurrency latency gains to lower resource
+  use.
 
 ## Expanded historical evidence
 

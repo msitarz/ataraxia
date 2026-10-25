@@ -178,6 +178,9 @@ isolation.
 
 ## Links
 
+- [Proposed harness architecture](architecture.md) and its
+  [typed design interface](design/evaluation_harness.pyi) remain proposals and
+  authorize no calls or implementation.
 - [Comparison protocol](protocol.md) compares A/B/C on fixed static
   inputs, including prepared function/context packets, with the declared CLI
   limitation, retained boundary protections, raw and adjusted token accounting,
