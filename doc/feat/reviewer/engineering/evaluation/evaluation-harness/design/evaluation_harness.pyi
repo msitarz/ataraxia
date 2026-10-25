@@ -107,9 +107,10 @@ class PlannedCall(StrictModel):
     prompt: bytes
 
 class FrozenPlan(StrictModel):
-    """Pure composition of frozen inputs and an ordered call matrix."""
+    """Pure composition, immutable CLI configuration, and ordered call matrix."""
 
     run_id: RunId
+    configuration: HarnessConfig
     repository_root: Path
     head_commit: str
     snapshots: tuple[SourceSnapshot, ...]
@@ -270,6 +271,10 @@ class AttemptRecord(StrictModel):
     ended_at_utc: str | None
     argv: tuple[str, ...]
     cwd: str
+    timeout_seconds: float
+    cleanup_timeout_seconds: float
+    grace_seconds: float
+    output_limit_bytes: int
     elapsed_seconds: float | None
     elapsed_basis: Literal["supervisor_observation", "unavailable"]
     exit_status: int | None

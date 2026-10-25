@@ -71,8 +71,12 @@ the pure planner.
   boundary bytes, then build the Cartesian product of contexts, models, and
   efforts. Duplicate scheduled positions remain distinct.
 - The plan records source paths and digests, prompt digests, commit provenance,
-  and exact separator bytes. Execution uses these snapshots and never
-  re-reads mutable source files.
+  exact separator bytes, and the strict immutable CLI configuration that
+  produced them. Ordered option events preserve which separators were explicit;
+  omission remains distinguishable from an explicit two-LF separator. The
+  configuration also retains concurrency, retry, deadline, grace, and output
+  limits. Execution uses these snapshots and never re-reads mutable source
+  files.
 - Frozen dataclasses represent in-memory preparation and invocation values.
   Pydantic boundary models cover configuration, ordered option events, source
   snapshots, planned calls, the frozen plan, and persisted records. They use
@@ -190,7 +194,10 @@ evidence.
   request's argv and cwd, plus elapsed time and whether that time came from a
   supervisor observation or is unavailable. Returned outcomes, cancellations,
   and attached failure evidence each provide the supervisor observation basis;
-  an exception without attached evidence has no elapsed observation.
+  an exception without attached evidence has no elapsed observation. Each
+  record also stores the request's execution timeout, cleanup timeout, grace,
+  and output-byte allowance, which are supervisor settings rather than CLI
+  arguments.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -205,10 +212,11 @@ evidence.
   planning, the selected token estimator, CLI binding, request construction,
   coordinator, supervisor adapter, and evidence store.
 - For execution, it resolves the CLI binding, asks the evidence store to
-  exclusively create the run area and persist the frozen plan and instruction
-  artifact, builds requests from the returned artifact path, then passes one
-  bound-run value and the same evidence-store adapter to the coordinator. That
-  setup step must succeed before the first supervisor launch.
+  exclusively create the run area and persist the frozen plan, including its
+  original strict CLI configuration, and instruction artifact; it builds
+  requests from the returned artifact path, then passes one bound-run value
+  and the same evidence-store adapter to the coordinator. That setup step must
+  succeed before the first supervisor launch.
 - The composition owns the evidence-store adapter once; the coordinator
   receives it for attempt and final-run records. Dry run returns after planning
   and estimation, before CLI binding, output creation, or request construction.
