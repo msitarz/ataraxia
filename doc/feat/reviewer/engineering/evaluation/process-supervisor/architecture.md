@@ -1,16 +1,17 @@
 # Process supervisor architecture
 
-**Status: immediate-SIGKILL boundary accepted for AC-1 and AC-2; optional grace
-is implemented and accepted for AC-4.**
-Representative caller scenarios exercise the child AC-3 boundary, while actual
-parent Evaluation harness integration remains pending. The retained
+**Status: AC-1 through AC-4 are implemented and accepted within the supervisor
+and representative caller scope.**
+Actual parent Evaluation harness integration remains pending under
+[parent AC-3](../README.md#ac-3-todo-experimental-execution-verifies-its-applicable-guarantees).
+The retained
 [reviewed interface](design/reviewed-interface.pyi)
 records the original agreed types. The active
 [`script/process_supervisor.py`](../../../../../../script/process_supervisor.py)
 defines the importable records, effect seam, one-attempt composition, narrow
 caller stop hook, and native process adapter. Disposable process regressions
-exercise native lifecycle and a representative caller pattern; actual AC-3
-integration in the parent Evaluation harness remains pending.
+exercise native lifecycle and a representative caller pattern; they do not
+establish actual Evaluation-harness integration.
 
 The [grace typed delta](design/grace-interface.pyi) records only the affected
 public shapes and cleanup seam. It does not replace the active module or alter
@@ -25,16 +26,16 @@ regressions cover the AC-4 lifecycle, which has passed independent acceptance.
   around one asynchronous process-supervisor attempt.
 - The supervisor owns subprocess resources, output capture, process
   group signaling, direct-child waiting, and truthful attempt evidence.
-- This child delivers the supervisor and minimal AC-3 call-site integration,
-  while the parent Evaluation Work owns the full experiment runner.
+- This child delivers the supervisor, stop hook, and representative caller
+  boundary; the parent Evaluation Work owns the full experiment runner.
 - The async framework supplies subprocess, stream, task-cancellation, and wait
   mechanisms, while POSIX supplies process-group, signal, and exit mechanisms.
 - Runtime claims remain limited to the specific disposable process scenarios
   exercised by focused regressions.
 - The scope in the [Work contract](README.md#additional-context) governs typed
   wiring and implementation.
-- The supervisor is the child's sole service, with only the call-site
-  integration needed to meet AC-3 added at the external caller boundary.
+- The supervisor is the child's sole service; AC-3 verifies its stop hook and
+  a representative external caller boundary.
 - Private helpers and incidental signatures remain flexible.
 
 ## Services
@@ -217,8 +218,9 @@ regressions cover the AC-4 lifecycle, which has passed independent acceptance.
 - Its retry scenario observes dispatch after direct-child reaping and no
   overlap by retaining the prior child PID, exit status, and direct-wait
   evidence before the retry dispatch event.
-- These representative tests do not verify wiring in the absent Evaluation
-  harness; parent-owned integration remains necessary before AC-3 assessment.
+- These representative tests establish child AC-3, while actual harness wiring
+  and its stop, retry, and accounting guarantees remain pending under parent
+  AC-3.
 - The caller resolves `codex` through `PATH` before every attempt.
 - The caller records the resolved executable, actual version, and environment
   configuration and provenance.
@@ -259,7 +261,7 @@ regressions cover the AC-4 lifecycle, which has passed independent acceptance.
 
 ```mermaid
 flowchart LR
-    Caller[External: parent Evaluation caller\nfull experiment runner\nwith narrow child AC-3 call-site integration]
+    Caller[External: parent Evaluation caller\nfull experiment runner\nconsumes child stop hook]
     Boundary[Child service: one async attempt\nscript/process_supervisor.py]
     OS[External: asyncio + POSIX OS\nspawn, streams, group signal, direct-child wait]
     Caller -->|AttemptRequest| Boundary
@@ -350,8 +352,8 @@ Capture and cleanup retain distinct resource ownership:
 - Cancellation independently stops dispatch under the existing caller contract.
 
 The AC-4 implementation and its focused disposable-process regressions have
-passed independent review and acceptance. AC-4 is DONE; AC-3 integration in
-the parent Evaluation harness remains pending.
+passed independent review and acceptance. AC-4 is DONE; actual harness
+integration remains pending under parent AC-3.
 
 - The new file is outside active module resolution and describes deltas rather
   than a second full API.

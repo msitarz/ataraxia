@@ -35,8 +35,8 @@ requiring a production reviewer runner.
   group, with immediate SIGKILL by default and an optional
   SIGTERM/grace/SIGKILL path under the same total cleanup budget.
 - The Evaluation caller owns dispatch policy, signal handling, and evidence
-  accounting, with this child delivering only the call-site integration needed
-  for AC-3 alongside the supervisor.
+  accounting; this child delivers the stop hook and representative caller
+  boundary verified by AC-3.
 
 ## Inherited constraints
 
@@ -65,9 +65,9 @@ process-group signaling, and direct-child cleanup. A reusable disposable caller
 fixture exercises stop latching, cancellation and signal delivery, unsafe
 cleanup accounting, and retry after confirmed cleanup through the public
 boundary. This represents the generic call-site pattern and does not verify
-the absent Evaluation harness. The child AC-1 and AC-2 behavior has been
-reviewed and accepted; AC-3 remains TODO until the parent-owned Evaluation
-harness is integrated and reviewed. The parent Evaluation Work remains TODO.
+the absent Evaluation harness. All child criteria have been reviewed and
+accepted within this local scope. The parent Evaluation Work remains TODO,
+including actual harness integration under its AC-3.
 
 The [architecture](architecture.md) records native behavior, effect sequence,
 and ownership. AC-1 and AC-2 describe the accepted immediate-SIGKILL baseline;
@@ -125,22 +125,27 @@ cleanup deadline, or explicitly report failure or expiry of that step.
   subsequently acquire an unowned subprocess; any uncertainty is reported as
   incomplete cleanup.
 
-### **AC-3 TODO** Stop handling prevents further experimental dispatch
+### **AC-3 DONE** Stop hook supports a verified representative caller
 
-The narrow integration with the owning Evaluation caller stops new dispatch
-immediately on cancellation or unsafe signal/wait cleanup and
-preserves truthful incomplete-run accounting.
+The supervisor's public stop hook reports cancellation and unsafe cleanup to
+its caller. A representative caller verifies stop handling, retry ordering,
+and incomplete-run accounting through that boundary.
 
-- `SIGINT` and `SIGTERM` at that owning boundary stop new calls and clean up the
-  active invocation through AC-2; `SIGKILL` cannot execute cleanup.
-- A cleanup failure marks the run incomplete and forbids another dispatch,
-  independently of the protocol's ordinary infrastructure-failure threshold.
-- The caller owns the protocol's optional retries; the supervisor runs exactly
-  one attempt and never overlaps a retry with an unstopped direct CLI from a
-  previous attempt.
-- Cancellation, including Ctrl+C and `SIGTERM`, stops evaluation without retry.
-- The active call's failure and cleanup status remain inspectable, and planned
-  but undispatched calls retain the protocol's not-started accounting.
+- `call_supervisor` invokes the caller's stop hook on cancellation or unsafe
+  signal/wait cleanup and preserves the attempt's failure and cleanup evidence.
+- The representative caller receives `SIGINT` and `SIGTERM`, or task
+  cancellation, latches stop before fallible recording, and cleans up the active
+  invocation through AC-2 without retry.
+- Unsafe cleanup marks that representative run incomplete and prevents later
+  dispatch independently of the ordinary infrastructure-failure threshold.
+- The representative caller retains active-call evidence and not-started
+  accounting, including when recording fails after stop is latched.
+- A representative retry starts only after the prior direct CLI is reaped and
+  cleanup permits dispatch; the supervisor itself runs exactly one attempt.
+
+Actual Evaluation-harness integration and verification remain owned by
+[parent AC-3](../README.md#ac-3-todo-experimental-execution-verifies-its-applicable-guarantees).
+These representative checks do not establish that integrated outcome.
 
 ### **AC-4 DONE** Optional grace preserves bounded, accountable cleanup
 
@@ -214,15 +219,15 @@ integration.
 
 ## Additional context
 
-- This child delivers one service, the supervisor, plus the minimal call-site
-  integration that establishes AC-3.
+- This child delivers one service, the supervisor, plus the stop hook and
+  representative caller boundary that establish AC-3.
 - The Evaluation caller and OS/asyncio are external collaborators.
 - The parent Evaluation Work owns the full experiment runner, including the
   full caller, trial scheduling, retry policy, budgets, scoring, and evidence
   persistence.
 - This boundary governs both typed wiring and implementation.
-- AC-3 retains the caller's stop, cleanup, retry-without-overlap, active-status,
-  and not-started accounting obligations.
+- Parent AC-3 owns actual harness stop, cleanup, retry-without-overlap,
+  active-status, and not-started accounting verification.
 - Proportionate reviewed increments inside this Work cover typed architecture,
   typed wiring, and implementation with focused tests rather than separate
   child Works.
@@ -255,7 +260,8 @@ evidence below. Representative caller tests cover only the child boundary; the
 actual Evaluation harness still requires parent-owned integration and review.
 See
 [tests](../../../../../../test/script/integration/test_process_supervisor.py).
-AC-1, AC-2 and AC-4 are DONE. AC-3 remains TODO pending integration and review
-in the parent Evaluation harness; the parent Evaluation Work remains TODO. The
+All child criteria are DONE within the supervisor and representative caller
+scope; actual harness integration remains pending under parent AC-3. The parent
+Evaluation Work remains TODO. The
 [preparation record](../preparation.md) retains the CLI known issue,
 baseline-accounting policy, and exhausted call allowances unchanged.

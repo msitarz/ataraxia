@@ -138,6 +138,20 @@ Concrete verification at the actual harness boundary establishes:
   concurrency, timeout, output and retry limits, and cleanup after success,
   failure, timeout, or cancellation under the
   [experimental process guarantee](process-supervisor/README.md#acceptance-criteria).
+- Actual harness wiring to the supervisor's public stop hook, with stop latched
+  before fallible evidence recording and checked before every dispatch.
+- `SIGINT`, `SIGTERM`, and task cancellation stop new calls, clean up the active
+  invocation, and end evaluation without retry; `SIGKILL` cannot execute
+  cleanup.
+- Unsafe signal/wait cleanup or uncertain acquisition marks the run incomplete
+  and forbids further dispatch independently of the ordinary infrastructure-
+  failure threshold.
+- The caller owns the protocol's optional retries and starts another attempt
+  only after prior cleanup permits dispatch, without overlapping an unstopped
+  direct CLI; the supervisor performs no hidden retries.
+- Active-call failure and cleanup evidence remain inspectable, and every planned
+  but undispatched call retains not-started accounting, including recording
+  failures after stop is latched.
 - Read-only source and refs under successful, failing, and attempted-write runs;
   a prompt instruction alone does not prove enforcement.
 - Accounting for every planned session, with failed, missing, timed-out,
@@ -158,7 +172,7 @@ isolation.
 
 ## Children
 
-- TODO [Experimental CLI process supervisor](process-supervisor/README.md):
+- DONE [Experimental CLI process supervisor](process-supervisor/README.md):
   Provide bounded CLI invocation for the engineering-review experiment without
   requiring a production reviewer runner.
 
