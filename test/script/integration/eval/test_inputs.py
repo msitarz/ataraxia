@@ -6,6 +6,7 @@ from hashlib import sha256
 import os
 from pathlib import Path
 import shlex
+import shutil
 import subprocess
 import sys
 
@@ -28,6 +29,9 @@ def make_repository(path: Path) -> Path:
 def git_test_environment() -> dict[str, str]:
     """Isolate fixture Git commands from ambient config, hooks, and variables."""
     environment = os.environ.copy()
+    for name in tuple(environment):
+        if name.startswith("GIT_"):
+            environment.pop(name)
     environment.update({
         "GIT_CONFIG_NOSYSTEM": "1",
         "GIT_CONFIG_GLOBAL": os.devnull,
@@ -43,26 +47,6 @@ def git_test_environment() -> dict[str, str]:
         "LC_ALL": "C",
         "LANG": "C",
     })
-    for name in (
-        "GIT_DIR",
-        "GIT_WORK_TREE",
-        "GIT_INDEX_FILE",
-        "GIT_COMMON_DIR",
-        "GIT_OBJECT_DIRECTORY",
-        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-        "GIT_SHALLOW_FILE",
-        "GIT_REPLACE_REF_BASE",
-        "GIT_NAMESPACE",
-        "GIT_CONFIG_PARAMETERS",
-        "GIT_CONFIG_SYSTEM",
-        "GIT_CEILING_DIRECTORIES",
-        "GIT_DISCOVERY_ACROSS_FILESYSTEM",
-        "GIT_LITERAL_PATHSPECS",
-        "GIT_GLOB_PATHSPECS",
-        "GIT_NOGLOB_PATHSPECS",
-        "GIT_ICASE_PATHSPECS",
-    ):
-        environment.pop(name, None)
     return environment
 
 
@@ -168,6 +152,38 @@ def worktree_status(repository: Path, *, include_submodules: bool = False) -> by
     if include_submodules:
         arguments.append("--ignore-submodules=none")
     return git(repository, *arguments)
+
+
+def test_fixture_git_commands_ignore_ambient_repository_and_config_redirects(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    repository = make_repository(tmp_path / "target")
+    other_repository = make_repository(tmp_path / "redirected")
+    staged_input = repository / "input.txt"
+    staged_input.write_text("fixture data\n", encoding="utf-8")
+    external_index = tmp_path / "ambient-index"
+    external_config = tmp_path / "ambient-config"
+    external_config.write_text("[user]\n\tname = preserved\n", encoding="utf-8")
+    original_config = external_config.read_bytes()
+    monkeypatch.setenv("GIT_DIR", str(other_repository / ".git"))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(external_index))
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(external_config))
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "core.fsmonitor")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "ambient-command-that-does-not-exist")
+
+    # When
+    root = git(repository, "rev-parse", "--show-toplevel").rstrip(b"\n")
+    git(repository, "add", "--", "input.txt")
+    status = git(repository, "status", "--porcelain=v1", "-z")
+
+    # Then
+    assert Path(os.fsdecode(root)) == repository
+    assert (repository / ".git" / "index").exists()
+    assert not external_index.exists()
+    assert external_config.read_bytes() == original_config
+    assert status == b"A  input.txt\0"
 
 
 def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
@@ -465,15 +481,9 @@ def test_freezing_rejects_filter_transformed_worktree_bytes(
     # Given
     repository, context = repository_with_context(tmp_path / "repo")
     filter_script = tmp_path / "filter.py"
-    filter_script.write_text(
-        "import sys\n"
-        "content = sys.stdin.buffer.read()\n"
-        "if sys.argv[1] == 'clean':\n"
-        "    content = content.replace(b'\\r\\n', b'\\n')\n"
-        "else:\n"
-        "    content = content.replace(b'\\n', b'\\r\\n')\n"
-        "sys.stdout.buffer.write(content)\n",
-        encoding="utf-8",
+    shutil.copyfile(
+        Path(__file__).parents[2] / "fixtures" / "eval" / "line_ending_filter.py",
+        filter_script,
     )
     command = f"{shlex.quote(sys.executable)} {shlex.quote(str(filter_script))}"
     git(repository, "config", "filter.harness.clean", f"{command} clean")

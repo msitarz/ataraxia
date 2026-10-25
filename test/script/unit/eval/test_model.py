@@ -510,6 +510,15 @@ def test_frozen_plan_json_round_trip_preserves_nested_binary_and_path_values() -
     assert restored.repository_root == Path("/repo")
 
 
+def test_frozen_plan_requires_one_boundary_between_configured_directories() -> None:
+    # Given
+    values = frozen_plan().model_dump() | {"boundary_bytes": ()}
+
+    # When / Then
+    with pytest.raises(ValidationError, match="one value between each directory"):
+        FrozenPlan.model_validate(values)
+
+
 def test_frozen_plan_rejects_mutation_of_nested_models() -> None:
     # Given
     plan = frozen_plan()

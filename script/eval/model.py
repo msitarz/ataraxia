@@ -223,6 +223,8 @@ class FrozenPlan(StrictModel):
         Returns:
             The validated plan.
 
+        Raises:
+            ValueError: The plan's configured contexts or boundaries are inconsistent.
         """
         directory_positions = tuple(
             option.position
@@ -230,6 +232,10 @@ class FrozenPlan(StrictModel):
             if isinstance(option, DirectoryOption)
         )
         self._validate_snapshot_coverage(directory_positions)
+        if len(self.boundary_bytes) != len(directory_positions) - 1:
+            raise ValueError(
+                "boundary_bytes must contain one value between each directory"
+            )
         self._validate_call_contexts(directory_positions)
         self._validate_instruction_choice()
         return self

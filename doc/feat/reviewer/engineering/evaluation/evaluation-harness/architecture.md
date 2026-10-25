@@ -119,10 +119,12 @@ the pure planner.
   tuples and immutable scalar or byte values rather than mutable mappings.
 - Configuration validation enforces unique increasing option positions,
   separator placement and supported escapes, and numeric bounds. Frozen plans
-  bind calls to complete in-range snapshot groups and require instruction
-  configuration and snapshots to agree. Persisted records bind calls and
-  attempts by run, call, and position; source paths and digests remain parallel,
-  and timestamps must be ordered UTC ISO values.
+  bind each call to one in-range snapshot from every configured directory, in
+  directory order, and require instruction configuration and snapshots to
+  agree. Persisted records bind calls and attempts by run, call, and position;
+  source paths and digests remain parallel. Timestamps must be UTC ISO values,
+  while monotonic elapsed time owns duration because wall-clock timestamps can
+  move backwards.
 - Validators check value constraints only. Git checks, file reads, estimates,
   directory creation, and process execution belong to explicit operations.
 - A scheduled position has no effective-call identity until execution resolves
