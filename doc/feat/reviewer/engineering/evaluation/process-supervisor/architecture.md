@@ -1,8 +1,9 @@
 # Process supervisor architecture
 
-**Status: reviewed boundary; native child AC-1 and AC-2 implementation
-accepted.** Representative caller scenarios exercise the child AC-3 boundary,
-while actual parent Evaluation harness integration remains pending. The retained
+**Status: immediate-SIGKILL boundary implemented and accepted for AC-1 and AC-2;
+optional grace extension proposed for review under AC-4 TODO.** Representative
+caller scenarios exercise the child AC-3 boundary, while actual parent
+Evaluation harness integration remains pending. The retained
 [reviewed interface](design/reviewed-interface.pyi)
 records the original agreed types. The active
 [`script/process_supervisor.py`](../../../../../../script/process_supervisor.py)
@@ -11,8 +12,14 @@ caller stop hook, and native process adapter. Disposable process regressions
 exercise native lifecycle and a representative caller pattern; actual AC-3
 integration in the parent Evaluation harness remains pending.
 
+The [proposed typed delta](design/grace-interface.pyi) records only the affected
+public shapes and cleanup seam. It does not replace the active module or alter
+the historical reviewed interface. No grace behavior is implemented or verified.
+
 ## TL;DR
 
+- The implemented baseline uses immediate SIGKILL; optional grace remains
+  proposed under AC-4 TODO.
 - The Evaluation caller owns experiment policy and calls the narrow stop hook
   around one asynchronous process-supervisor attempt.
 - The supervisor owns subprocess resources, output capture, process
@@ -260,6 +267,90 @@ flowchart LR
     Boundary -->|AttemptResult or cancellation with evidence| Caller
     Caller -->|eligible timeout / infrastructure only\nup to 3 additional attempts| Caller
 ```
+
+## Proposed optional grace extension
+
+The
+[AC-4 contract](README.md#ac-4-todo-optional-grace-preserves-bounded-accountable-cleanup)
+owns the new guarantees. The verified before revision is
+`9df46f001408fbbebb5735b9477a1b0b190a0274`: native cleanup immediately sends
+SIGKILL, closes local pipes, then waits for the direct child. The proposal keeps
+that default and adds a positive-grace branch inside the same supervisor; there
+is no additional service or general signal-policy abstraction.
+
+```mermaid
+flowchart TD
+    Start[Cleanup entry: one loop.time deadline]
+    Grace{grace_seconds positive?}
+    Term[Request group SIGTERM; retain observation]
+    Sent{SIGTERM sent?}
+    Drain[Drain and discard both pipes until grace or cleanup deadline]
+    Kill[Request group SIGKILL; retain observation]
+    Close[Explicitly close local output pipes]
+    Wait[Direct-child wait with remaining budget only]
+    Evidence[Return separate signal and wait evidence]
+    Start --> Grace
+    Grace -->|no: implemented default| Kill
+    Grace -->|yes: proposed| Term
+    Term --> Sent
+    Sent -->|yes| Drain
+    Sent -->|failed or no_target| Kill
+    Drain -->|even after leader exit or EOF| Kill
+    Kill --> Close
+    Close --> Wait
+    Wait --> Evidence
+```
+
+The typed delta describes the affected public boundary:
+
+- `AttemptRequest` adds `grace_seconds = 0.0`.
+- `ProcessEffects.cleanup(handle, timeout_seconds, grace_seconds, /)` receives
+  both validated limits unchanged from `run_attempt`.
+- The native adapter owns the shared cleanup deadline in the running loop's
+  clock domain under AC-4.
+- The existing execution clock and capture deadline remain unchanged.
+- `SignalAttempt` is a small immutable observation with signal identity,
+  outcome and diagnostic.
+- An ordered tuple replaces the old single signal fields on `CleanupEvidence`.
+- The revised evidence flows through the existing `CleanupOutcome`,
+  `AttemptObservation`, result and exception evidence paths while their other
+  fields and tagged variants remain as in the active module.
+- Public callers and fake effects will need the changed cleanup signature and
+  evidence shape when implementation is authorized.
+
+Capture and cleanup retain distinct resource ownership:
+
+- Capture owns the retained output prefix and original terminal reason.
+- Settled capture transfers stream ownership to cleanup without concurrent
+  readers or detached draining tasks.
+- Cleanup drains and discards during grace and settles its drain operations
+  within the same lifecycle as AC-4's pipe closure.
+- Exact private reader mechanics remain implementation choices.
+
+`CleanupEvidence.dispatch_permitted` applies these rules:
+
+- Owned cleanup accepts only the exact ordered signal identities
+  `("SIGKILL",)` or `("SIGTERM", "SIGKILL")`.
+- Every signal outcome must be `sent` or `no_target`, and `direct_wait` must be
+  `reaped`.
+- Missing final KILL, unknown outcomes, duplicates and reordered sequences
+  forbid dispatch.
+- A failed TERM forbids dispatch even when the following KILL succeeds.
+- The adapter selects the expected sequence from validated grace; the evidence
+  property needs no new request or configuration field.
+- Proven no-launch remains safe only with empty signal evidence, no direct wait
+  and no diagnostic.
+- Uncertain acquisition remains unsafe.
+- Cancellation independently stops dispatch under the existing caller contract.
+
+This proposal is for boundary review; implementation and AC-4 acceptance
+scenarios remain pending.
+
+- The new file is outside active module resolution and describes deltas rather
+  than a second full API.
+- It contains no executable helpers or static test fixtures.
+- The opportunity to react to TERM and the limits on guarantees and scope remain
+  owned by AC-4 and the Work's Non-Goals.
 
 ## Evidence still required
 
