@@ -42,9 +42,6 @@ class GitRepositoryReader:
         Returns:
             The one-commit snapshot of all selected inputs.
 
-        Raises:
-            ValueError: Inputs are missing, dirty, unsafe, untracked, or differ
-                from the selected commit.
         """
         directories = tuple(
             option
@@ -56,8 +53,6 @@ class GitRepositoryReader:
             if config.instructions_file_path is not None
             else ()
         )
-        if not input_paths:
-            raise ValueError("at least one context directory is required")
 
         root, head = self._resolve_clean_repository(input_paths)
         relative_directories = tuple(
@@ -244,11 +239,7 @@ class GitRepositoryReader:
                     f"nested Git repository or submodule input is not allowed: {root}"
                 )
 
-    def _safe_relative_path(
-        self, root: Path, path: Path | None, *, directory: bool
-    ) -> str:
-        if path is None:
-            raise ValueError("input path is missing")
+    def _safe_relative_path(self, root: Path, path: Path, *, directory: bool) -> str:
         absolute = path if path.is_absolute() else Path.cwd() / path
         self._reject_symlink_components(absolute)
         try:
