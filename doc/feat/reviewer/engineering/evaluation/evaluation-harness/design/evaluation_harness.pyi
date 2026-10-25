@@ -190,18 +190,27 @@ class EffectiveCall:
     planned_call: PlannedCall
     request: AttemptRequest
 
+@dataclass(frozen=True)
+class PreparedEvidence:
+    """Exclusive run destination with durable plan and staged instructions."""
+
+    output_directory: Path
+    plan_artifact: Path
+    model_instructions_file: Path | None
+
 class AttemptRequestBuilder(Protocol):
-    """Build a request only from frozen prompt and instruction bytes."""
+    """Purely build a request from frozen bytes and their staged artifact path."""
 
     def build(
         self,
+        plan: FrozenPlan,
         call: PlannedCall,
         binding: CliBinding,
-        replacement_instruction: bytes | None,
+        evidence: PreparedEvidence,
         config: HarnessConfig,
         /,
     ) -> EffectiveCall:
-        """Hash effective inputs and settings, then build AttemptRequest."""
+        """Hash frozen effective inputs and build argv without opening paths."""
         ...
 
 @dataclass(frozen=True)
@@ -212,6 +221,7 @@ class AttemptEvidence:
     outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
     error_type: str | None
     diagnostic: str | None
+    request: AttemptRequest
     started_at_utc: str
     ended_at_utc: str | None
     usage_telemetry: bytes | None
@@ -258,6 +268,10 @@ class AttemptRecord(StrictModel):
     ]
     started_at_utc: str
     ended_at_utc: str | None
+    argv: tuple[str, ...]
+    cwd: str
+    elapsed_seconds: float | None
+    elapsed_basis: Literal["supervisor_observation", "unavailable"]
     exit_status: int | None
     termination_reason: str | None
     cleanup: CleanupRecord | None
@@ -285,8 +299,12 @@ class CleanupRecord(StrictModel):
 class EvidenceStore(Protocol):
     """Exclusive, append-only run evidence boundary."""
 
-    def create(self, output_directory: Path, plan: FrozenPlan, /) -> None:
-        """Exclusively create a new run destination and persist its plan."""
+    def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
+        """Exclusively create run storage and persist plan/instructions pre-dispatch.
+
+        Returns paths to the durable plan and staged model instruction file.
+        No supervisor process may launch before this call succeeds.
+        """
         ...
 
     def record_attempt(
@@ -322,16 +340,25 @@ class Coordinator:
     """Own run concurrency, global stop, retries, and not-started accounting."""
 
     attempt: AttemptCall
-    evidence: EvidenceStore
 
     async def run(
         self,
-        calls: tuple[EffectiveCall, ...],
+        bound_run: BoundRun,
+        evidence: EvidenceStore,
         config: HarnessConfig,
         /,
     ) -> RunRecord:
-        """Run distinct calls concurrently under the single config limits."""
+        """Run bound calls concurrently under one config and evidence adapter."""
         ...
+
+@dataclass(frozen=True)
+class BoundRun:
+    """Plan, resolved CLI, staged evidence paths, and built effective calls."""
+
+    plan: FrozenPlan
+    binding: CliBinding
+    evidence: PreparedEvidence
+    calls: tuple[EffectiveCall, ...]
 
 @dataclass(frozen=True)
 class Composition:
@@ -343,7 +370,13 @@ class Composition:
     binding_resolver: CliBindingResolver
     request_builder: AttemptRequestBuilder
     coordinator: Coordinator
+    evidence: EvidenceStore
 
     async def execute(self, config: HarnessConfig, /) -> DryRunReport | RunRecord:
-        """Freeze and plan inputs, then report estimates or execute bound calls."""
+        """Plan and estimate; execution persists plan/instructions before dispatch.
+
+        Dry run returns before CLI binding, evidence creation, and request
+        construction. Execution resolves binding, creates evidence, builds
+        bound calls, then passes the same evidence adapter to the coordinator.
+        """
         ...

@@ -115,15 +115,20 @@ supervisor request.
 
 - Execution resolves the absolute Codex path and observable CLI version and
   settings after the dry-run branch, without probing the CLI during dry run.
-- A small request builder consumes a scheduled call's frozen prompt bytes,
-  separately frozen replacement instruction bytes, and the resolved binding.
-  It returns an effective-call identity and `AttemptRequest`; it does not
-  reopen source paths or infer defaults from mutable files.
+- A small request builder consumes the frozen plan and scheduled call, the
+  resolved binding, and the staged `model_instructions_file` path returned by
+  evidence preparation. It places that path in the request's CLI configuration,
+  then returns an effective-call identity and `AttemptRequest`.
+- The builder is pure: the plan supplies run identity and ordered frozen
+  inputs, the binding supplies runtime settings, and the evidence result
+  supplies the staged path. It hashes those effective inputs without opening
+  the staged file or original source path.
 - When runtime binding is unavailable during dry run, the report marks its
   binding and effective-call identity unknown. It may show a plan identity,
   clearly labeled as such, but never as the effective invocation identity.
-- Effects: execution-time CLI path/version probes and request construction.
-  Dry run uses neither probe nor request construction.
+- Effects: the binding resolver performs execution-time CLI path/version
+  probes. Request construction has no I/O. Dry run uses neither probe nor
+  request construction.
 
 ### Async dispatch coordinator
 
@@ -160,6 +165,10 @@ evidence.
 
 - The store exclusively creates a new output directory, after confirming its
   location is outside the input repository or ignored there.
+- Before any supervisor process can launch, `create` writes the frozen plan to
+  that new area and materializes configured instruction bytes as the
+  `model_instructions_file` artifact. It returns those artifact paths to the
+  request builder. Dry run never calls `create` and writes no artifacts.
 - It writes finalized metadata and exact stdout and stderr bytes as separate,
   immutable artifacts. Empty output, unavailable output, partial output, and
   unavailable usage remain distinct; observed exit, termination, cleanup,
@@ -177,7 +186,11 @@ evidence.
   type. The strict Pydantic attempt record is only the persisted projection,
   with structured cleanup observations and separate stream artifact references.
   An unexpected original exception remains in control flow with its supervisor
-  evidence snapshot when one is available.
+  evidence snapshot when one is available. Each record also keeps the actual
+  request's argv and cwd, plus elapsed time and whether that time came from a
+  supervisor observation or is unavailable. Returned outcomes, cancellations,
+  and attached failure evidence each provide the supervisor observation basis;
+  an exception without attached evidence has no elapsed observation.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -191,6 +204,14 @@ evidence.
 - The entry point connects CLI settings, input freezing, pure composition and
   planning, the selected token estimator, CLI binding, request construction,
   coordinator, supervisor adapter, and evidence store.
+- For execution, it resolves the CLI binding, asks the evidence store to
+  exclusively create the run area and persist the frozen plan and instruction
+  artifact, builds requests from the returned artifact path, then passes one
+  bound-run value and the same evidence-store adapter to the coordinator. That
+  setup step must succeed before the first supervisor launch.
+- The composition owns the evidence-store adapter once; the coordinator
+  receives it for attempt and final-run records. Dry run returns after planning
+  and estimation, before CLI binding, output creation, or request construction.
 - The existing `script/process_supervisor.py` remains a separate dependency:
   its `AttemptRunner` owns one attempt, while `call_supervisor` forwards the
   outcome and invokes the harness-owned `DispatchStop` hook when cancellation
@@ -210,7 +231,8 @@ flowchart LR
     EST --> DRY{Dry run?}
     DRY -->|yes| REPORT[Plan and estimate report]
     DRY -->|no| BIND[Resolve CLI binding]
-    BIND --> REQUEST[Build effective calls and AttemptRequest]
+    BIND --> INIT[Exclusive evidence setup: frozen plan and instructions]
+    INIT --> REQUEST[Build effective calls and AttemptRequest]
     REQUEST --> COORD[Async dispatch coordinator]
     COORD --> STORE[Evidence store]
     COORD --> SUP[Existing process supervisor]
