@@ -95,7 +95,7 @@ def test_positive_grace_escalates_and_freezes_captured_prefix(
         burst_stream,
         "--term-marker",
         str(marker),
-        grace=0.25,
+        grace=0.5,
     )
 
     # When

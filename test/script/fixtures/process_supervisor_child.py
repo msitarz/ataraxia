@@ -71,7 +71,7 @@ def install_term_handler(args: argparse.Namespace) -> None:
                     if args.term_burst_stream == "stdout"
                     else sys.stderr.buffer
                 )
-                stream.write(b"discarded" * 16384)
+                stream.write(b"discarded" * 524_288)
                 stream.flush()
             if args.term_marker is not None:
                 with open(args.term_marker, "w", encoding="utf-8"):
