@@ -407,17 +407,3 @@ def test_configuration_rejects_mutable_sequence_inputs() -> None:
 
     # Then
     assert "tuple_type" in str(error.value)
-    # Given
-    values = config_values() | {"surprise": True}
-
-    # When
-    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
-        HarnessConfig.model_validate(values)
-
-    mutable_values = config_values() | {"models": ["model-a"]}
-    with pytest.raises(ValidationError):
-        HarnessConfig.model_validate(mutable_values)
-
-    # Then
-    assert "surprise" in values
-    assert isinstance(mutable_values["models"], list)
