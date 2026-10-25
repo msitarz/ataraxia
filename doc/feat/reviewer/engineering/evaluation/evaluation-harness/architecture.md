@@ -274,8 +274,46 @@ The dry-run branch never resolves or probes the CLI.
 
 ## Type boundary
 
-The adjacent [typed interface](design/evaluation_harness.pyi) sketches only
-shared values and the consumer-facing ports needed to review ownership and
-effects. It is exploratory, is not importable runtime API, and intentionally
-leaves private helpers and concrete persistence formats flexible. It does not
-replace or redeclare the supervisor's types.
+The adjacent exploratory [package-shaped types](design/eval/)
+sketch consumer-facing ports and shared values under the intended `script/eval`
+module names. They do not create or authorize a runtime package. Private
+helpers and concrete persistence formats remain flexible; supervisor outcomes
+and requests continue to use the existing public types.
+
+| Proposed module | Responsibility |
+| --- | --- |
+| `script/eval/cli.py` | Ordered arguments, help text, and one-time composition root. |
+| `script/eval/model.py` | Shared validated configuration, plan values, observations, and persisted records. |
+| `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
+| `script/eval/plan.py` | Pure composition and deterministic matrix planning port. |
+| `script/eval/tokens.py` | Local token-estimation port. |
+| `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
+| `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
+| `script/eval/__main__.py` | Thin entry point delegating to the CLI composition. |
+
+The dependency direction stays toward the shared values and consumer-owned
+ports. Within this package, `model.py` has no adapter imports and refers to the
+supervisor's public attempt types only for observation fields; concrete
+adapters are connected in `cli.py`.
+
+```mermaid
+flowchart LR
+    CLI[cli.py] --> MODEL[model.py]
+    CLI --> INPUTS[inputs.py]
+    CLI --> PLAN[plan.py]
+    CLI --> TOKENS[tokens.py]
+    CLI --> RUNNER[runner.py]
+    CLI --> EVIDENCE[evidence.py]
+    INPUTS --> MODEL
+    PLAN --> MODEL
+    TOKENS --> MODEL
+    RUNNER --> MODEL
+    RUNNER --> EVIDENCE
+    EVIDENCE --> MODEL
+    MODEL --> SUP[Existing process_supervisor.py public types]
+    RUNNER --> SUP
+    MAIN[__main__.py] --> CLI
+```
+
+These module names are a typed design map only. They do not specify private
+file boundaries, create runtime modules, or change the existing supervisor.
