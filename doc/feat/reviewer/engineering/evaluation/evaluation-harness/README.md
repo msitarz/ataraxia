@@ -64,7 +64,12 @@ A caller can inspect the complete scheduled matrix before any model call.
 - The Make entry point accepts repeated ordered `-d`/`--directory`, repeated
   ordered `-m`/`--model`, repeated ordered `-e`/`--effort`, positive integer
   `-c`/`--concurrency`, `-o`/`--output-directory`, `-n`/`--dry-run`, and ordered
-  `-s`/`--separator` arguments.
+  `-s`/`--separator` arguments, plus optional
+  `-i FILE`/`--instructions-file FILE`.
+- CLI help explains that the instructions-file option passes its frozen staged
+  path through Codex's native `-c model_instructions_file=PATH` setting and
+  replaces Codex's default system instructions, while `-d` files remain ordinary
+  supplied context.
 - Dry run uses the same validation, ordered matrix, and frozen source-byte
   composition as execution, held in memory without dispatch; the output
   directory may be omitted because dry run writes no output, while execution
@@ -108,9 +113,9 @@ A caller can inspect the complete scheduled matrix before any model call.
   on the exact composed bytes, and identify the estimation method, library and
   tokenizer versions, and requested-model compatibility; unsupported models
   have unknown or explicitly approximate estimates, never billing precision.
-- Estimates cover only supplied composed context; automatic CLI or system
-  context is unavailable and excluded, and any included explicitly configured
-  extra execution context has its separate estimation basis labeled.
+- Supplied-context estimates exclude unavailable automatic CLI or system
+  context, and a configured instructions file receives a separate labeled
+  estimate using the same method and compatibility disclosures.
 - Dry run applies the same Git validation using read-only Git subprocesses,
   launches no Codex CLI subprocess or model call, including live version probes,
   creates no output directory, and does not mutate retained evidence.
@@ -145,8 +150,15 @@ Retained evidence identifies the exact supplied bytes and execution settings.
   requested model and effort, argv, cwd, explicit configuration, and observable
   effective settings, with unavailable runtime bindings or context marked
   unknown.
-- Replacement system-instruction bytes and digests, when configured, belong to
-  execution metadata rather than imposing a semantic role on a context file.
+- A configured instructions file passes the same repository containment,
+  clean-checkout, tracked-file, strict UTF-8, and frozen snapshot-to-commit-blob
+  checks as context inputs, including in dry run.
+- Its repository-relative path, exact bytes, and digest are retained separately
+  in execution metadata, and execution stages those frozen bytes for the CLI
+  rather than rereading the original file.
+- Omitting the instructions-file option preserves Codex's default system
+  instructions and records no override, with automatic system bytes marked
+  unavailable rather than reporting zero system context.
 
 ### **AC-3 TODO** Raw evidence survives without replacement or interpretation
 
