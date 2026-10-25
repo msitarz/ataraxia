@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -24,6 +24,9 @@ type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
 type SettingValue = str | int | float | bool | None
+type PositiveSeconds = Annotated[float, Field(gt=0, allow_inf_nan=False)]
+type NonnegativeSeconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
+type NonnegativeBytes = Annotated[int, Field(ge=0)]
 
 
 class StrictModel(BaseModel):
@@ -64,16 +67,16 @@ class HarnessConfig(StrictModel):
     concurrency: int = Field(gt=0)
     output_directory: Path | None
     dry_run: bool
-    timeout_seconds: float = Field(gt=0, allow_inf_nan=False)
-    cleanup_timeout_seconds: float = Field(gt=0, allow_inf_nan=False)
-    grace_seconds: float = Field(ge=0, allow_inf_nan=False)
-    output_limit_bytes: int = Field(ge=0)
+    timeout_seconds: PositiveSeconds
+    cleanup_timeout_seconds: PositiveSeconds
+    grace_seconds: NonnegativeSeconds
+    output_limit_bytes: NonnegativeBytes
     retry_limit: int = Field(default=0, ge=0)
     retry_nonzero_exit: bool = False
     instructions_file_path: Path | None
 
     @model_validator(mode="after")
-    def grace_fits_cleanup_deadline(self) -> HarnessConfig:
+    def validate_relationships(self) -> HarnessConfig:
         """Enforce config relationships that do not require external effects.
 
         Returns:
@@ -294,11 +297,11 @@ class AttemptRecord(StrictModel):
     ended_at_utc: str | None
     argv: tuple[str, ...]
     cwd: str
-    timeout_seconds: float
-    cleanup_timeout_seconds: float
-    grace_seconds: float
-    output_limit_bytes: int
-    elapsed_seconds: float | None
+    timeout_seconds: PositiveSeconds
+    cleanup_timeout_seconds: PositiveSeconds
+    grace_seconds: NonnegativeSeconds
+    output_limit_bytes: NonnegativeBytes
+    elapsed_seconds: NonnegativeSeconds | None
     elapsed_basis: Literal["supervisor_observation", "unavailable"]
     exit_status: int | None
     termination_reason: str | None
@@ -308,6 +311,24 @@ class AttemptRecord(StrictModel):
     usage_telemetry: bytes | None
     error_type: str | None
     diagnostic: str | None
+
+    @model_validator(mode="after")
+    def validate_observation(self) -> AttemptRecord:
+        """Keep saved execution bounds and elapsed-time basis consistent.
+
+        Returns:
+            The validated attempt record.
+
+        Raises:
+            ValueError: Grace exceeds cleanup or elapsed data contradicts its basis.
+        """
+        if self.grace_seconds >= self.cleanup_timeout_seconds:
+            raise ValueError("grace_seconds must be less than cleanup_timeout_seconds")
+        elapsed_was_observed = self.elapsed_seconds is not None
+        basis_has_observation = self.elapsed_basis == "supervisor_observation"
+        if elapsed_was_observed != basis_has_observation:
+            raise ValueError("elapsed_seconds must match elapsed_basis")
+        return self
 
 
 class CallRecord(StrictModel):
