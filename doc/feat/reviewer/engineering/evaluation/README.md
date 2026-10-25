@@ -172,6 +172,9 @@ isolation.
 
 ## Children
 
+- TODO [Generic evaluation harness](evaluation-harness/README.md):
+  Run reproducible context combinations through the CLI while retaining raw
+  observations for caller-owned experiments.
 - DONE [Experimental CLI process supervisor](process-supervisor/README.md):
   Provide bounded CLI invocation for the engineering-review experiment without
   requiring a production reviewer runner.
