@@ -118,6 +118,14 @@ Concurrency never permits a later attempt to bypass required cleanup.
 
 - Execution and cleanup deadlines are positive and finite, retries have an
   explicit finite limit defaulting to zero, and no hidden retry occurs.
+- Retries apply only to explicitly declared process or infrastructure outcomes,
+  such as launch failure, timeout, or caller-authorized nonzero exit status,
+  after safe settlement, without assuming a nonzero exit produced no semantic
+  result.
+- Completed zero-exit output is never retried based on its content, and
+  cancellation, overflow, unsafe cleanup, uncertain acquisition, or recording
+  failure never permits retry.
+- The experiment caller retains any stricter retry eligibility requirements.
 - A semaphore slot remains held through cleanup on success, failure, timeout,
   overflow, or cancellation, and a retry starts only when cleanup permits it.
 - The output allowance accepts nonnegative integers, with zero intentionally
@@ -142,6 +150,8 @@ A caller can rerun a manually selected subset as a new run.
 
 - A caller selects directories containing the desired files, models, and efforts
   explicitly, with no automatic scanning of prior output or hidden resume.
+- A sparse subset that cannot be expressed as one Cartesian product uses
+  separate invocations with distinct output directories.
 - A new output directory preserves earlier raw evidence and frozen identities,
   while changed source or configuration remains a separate effective input.
 - Usage guidance explains that the caller must reconcile prior attempts against
