@@ -24,7 +24,7 @@ type RunId = str
 type CallId = str
 type AttemptNumber = int
 type EstimateCompatibility = Literal["exact", "approximate", "unknown"]
-type EstimateBasis = Literal["supplied_context", "replacement_instruction"]
+type EstimateBasis = Literal["supplied_context", "instructions_file"]
 type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
@@ -68,12 +68,20 @@ class HarnessConfig(StrictModel):
     output_limit_bytes: int
     retry_limit: int = 0
     retry_nonzero_exit: bool = False
-    replacement_instruction_path: Path | None
+    instructions_file_path: Path | None
 
 class SourceSnapshot(StrictModel):
     """One tracked regular input and its exact frozen bytes."""
 
     directory_position: int
+    repository_path: str
+    commit_blob_sha: str
+    content_sha256: str
+    content: bytes
+
+class InstructionsSnapshot(StrictModel):
+    """Tracked instruction input, separate from generic context files."""
+
     repository_path: str
     commit_blob_sha: str
     content_sha256: str
@@ -86,8 +94,7 @@ class FrozenInputs:
     repository_root: Path
     head_commit: str
     sources: tuple[SourceSnapshot, ...]
-    replacement_instruction: bytes | None
-    replacement_instruction_sha256: str | None
+    instructions_file: InstructionsSnapshot | None
 
 class RepositoryReader(Protocol):
     """Read-only Git and source boundary; it does not compose or plan calls."""
@@ -107,7 +114,11 @@ class PlannedCall(StrictModel):
     prompt: bytes
 
 class FrozenPlan(StrictModel):
-    """Pure composition, immutable CLI configuration, and ordered call matrix."""
+    """Pure composition, configuration, instruction choice, and call matrix.
+
+    A missing instructions file means Codex defaults are preserved; their
+    automatic bytes are unavailable to the harness.
+    """
 
     run_id: RunId
     configuration: HarnessConfig
@@ -115,8 +126,7 @@ class FrozenPlan(StrictModel):
     head_commit: str
     snapshots: tuple[SourceSnapshot, ...]
     boundary_bytes: tuple[bytes, ...]
-    replacement_instruction: bytes | None
-    replacement_instruction_sha256: str | None
+    instructions_file: InstructionsSnapshot | None
     calls: tuple[PlannedCall, ...]
 
 class PlanBuilder(Protocol):
@@ -150,11 +160,11 @@ class TokenEstimator(Protocol):
 
 @dataclass(frozen=True)
 class CallEstimate:
-    """Required context estimate and a separate optional instruction estimate."""
+    """Required context estimate and separate optional instruction estimate."""
 
     position: int
     context: TokenEstimate
-    replacement_instruction: TokenEstimate | None
+    instructions_file: TokenEstimate | None
 
 @dataclass(frozen=True)
 class DryRunReport:

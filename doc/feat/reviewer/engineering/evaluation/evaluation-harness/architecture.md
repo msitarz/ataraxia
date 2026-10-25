@@ -33,7 +33,12 @@ run evidence around that boundary.
 **TL;DR:** Parse the public options and preserve their order and positions.
 
 - The CLI owns repeated directory, model, effort, and separator arguments,
-  positive concurrency, output destination, and dry-run mode.
+  positive concurrency, output destination, dry-run mode, and optional
+  `-i FILE` / `--instructions-file FILE`.
+- CLI help states that the flag freezes the selected file and passes its staged
+  path to Codex using `-c model_instructions_file=PATH`. It replaces Codex's
+  native system instructions for that call; it does not add the file to generic
+  context directories.
 - It turns separators into directory-boundary values only after validating
   exactly one separator per boundary; omitted values mean two LF bytes.
 - It rejects missing required values and invalid combinations before handing
@@ -55,10 +60,16 @@ the pure planner.
 - It selects immediate regular files in lexical order, strictly decodes UTF-8,
   and compares each selected snapshot with the corresponding commit blob before
   dispatch.
-- It returns the repository root, HEAD, ordered source snapshots, and any
-  separately configured replacement instruction bytes with their digest.
-- Replacement instructions remain a separate configured input and metadata
-  field; no context file receives an instruction or data role.
+- A configured instructions file passes the same repository containment,
+  clean-checkout, tracked-file, strict UTF-8, and commit-blob checks. Its bytes,
+  repository path, blob SHA, and content digest form a separate
+  `InstructionsSnapshot`; no context file receives an instruction role.
+- When the flag is omitted, the plan records that no instruction file was
+  configured. Codex keeps its default system instructions, whose automatic
+  bytes are unavailable to the harness; omission does not mean there is no
+  system context.
+- It returns the repository root, HEAD, ordered context snapshots, and the
+  optional separately typed instructions snapshot.
 - Effects: read-only Git subprocesses and filesystem reads. It does not compose
   prompts or make plans. No CLI process or output writes are permitted during
   preparation.
@@ -105,10 +116,12 @@ the pure planner.
   compatibility is an explicit unknown or approximate estimate, never an
   omitted estimate or billing precision.
 - Estimates cover supplied composed context only; unavailable automatic CLI or
-  system context is excluded and labeled.
-- A configured replacement instruction receives its own separately labeled
-  estimate; it is never folded into the supplied-context count without its
-  basis being disclosed.
+  system context is excluded and labeled. If no instructions file is
+  configured, the report says Codex defaults are preserved and their automatic
+  bytes are unavailable; it does not report that no system instructions exist.
+- A configured instructions file receives its own separately labeled estimate;
+  it is never folded into the supplied-context count without its basis being
+  disclosed.
 - Effects: local computation only. The port cannot call the model CLI or change
   the frozen prompt.
 
@@ -120,9 +133,11 @@ supervisor request.
 - Execution resolves the absolute Codex path and observable CLI version and
   settings after the dry-run branch, without probing the CLI during dry run.
 - A small request builder consumes the frozen plan and scheduled call, the
-  resolved binding, and the staged `model_instructions_file` path returned by
-  evidence preparation. It places that path in the request's CLI configuration,
-  then returns an effective-call identity and `AttemptRequest`.
+  resolved binding, and the staged instruction path returned by evidence
+  preparation. When configured, it passes that path to Codex as
+  `-c model_instructions_file=PATH`; when omitted, it adds no override and
+  leaves Codex's native system instructions in place. It then returns an
+  effective-call identity and `AttemptRequest`.
 - The builder is pure: the plan supplies run identity and ordered frozen
   inputs, the binding supplies runtime settings, and the evidence result
   supplies the staged path. It hashes those effective inputs without opening
@@ -170,9 +185,11 @@ evidence.
 - The store exclusively creates a new output directory, after confirming its
   location is outside the input repository or ignored there.
 - Before any supervisor process can launch, `create` writes the frozen plan to
-  that new area and materializes configured instruction bytes as the
-  `model_instructions_file` artifact. It returns those artifact paths to the
-  request builder. Dry run never calls `create` and writes no artifacts.
+  that new area and materializes configured instructions-file bytes as the
+  artifact referenced by `model_instructions_file`. It returns that artifact
+  path to the request builder. If no instructions file was configured, the
+  plan records that Codex defaults are preserved and automatic bytes are
+  unavailable. Dry run never calls `create` and writes no artifacts.
 - It writes finalized metadata and exact stdout and stderr bytes as separate,
   immutable artifacts. Empty output, unavailable output, partial output, and
   unavailable usage remain distinct; observed exit, termination, cleanup,
