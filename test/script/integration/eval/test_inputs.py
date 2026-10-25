@@ -5,12 +5,14 @@ from collections.abc import Mapping, Sequence
 from hashlib import sha256
 import os
 from pathlib import Path
+import shlex
 import subprocess
+import sys
 
 import pytest
 
 from script.eval import inputs as inputs_module
-from script.eval.inputs import GitRepositoryReader
+from script.eval.inputs import GitCommandError, GitRepositoryReader
 from script.eval.model import DirectoryOption, HarnessConfig, SeparatorOption
 
 
@@ -23,6 +25,47 @@ def make_repository(path: Path) -> Path:
     return path
 
 
+def git_test_environment() -> dict[str, str]:
+    """Isolate fixture Git commands from ambient config, hooks, and variables."""
+    environment = os.environ.copy()
+    environment.update({
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_COUNT": "3",
+        "GIT_CONFIG_KEY_0": "core.fsmonitor",
+        "GIT_CONFIG_VALUE_0": "false",
+        "GIT_CONFIG_KEY_1": "core.hooksPath",
+        "GIT_CONFIG_VALUE_1": os.devnull,
+        "GIT_CONFIG_KEY_2": "commit.gpgsign",
+        "GIT_CONFIG_VALUE_2": "false",
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "LC_ALL": "C",
+        "LANG": "C",
+    })
+    for name in (
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_INDEX_FILE",
+        "GIT_COMMON_DIR",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_SHALLOW_FILE",
+        "GIT_REPLACE_REF_BASE",
+        "GIT_NAMESPACE",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_CONFIG_SYSTEM",
+        "GIT_CEILING_DIRECTORIES",
+        "GIT_DISCOVERY_ACROSS_FILESYSTEM",
+        "GIT_LITERAL_PATHSPECS",
+        "GIT_GLOB_PATHSPECS",
+        "GIT_NOGLOB_PATHSPECS",
+        "GIT_ICASE_PATHSPECS",
+    ):
+        environment.pop(name, None)
+    return environment
+
+
 def git(repository: Path, *arguments: str) -> bytes:
     """Run Git in a disposable test repository."""
     result = subprocess.run(
@@ -30,6 +73,7 @@ def git(repository: Path, *arguments: str) -> bytes:
         check=True,
         capture_output=True,
         timeout=10,
+        env=git_test_environment(),
     )
     return result.stdout
 
@@ -68,7 +112,8 @@ def repository_with_context(
     repository = make_repository(path)
     context = repository / "context"
     context.mkdir()
-    for name, content in (files or {"tracked.txt": b"tracked\n"}).items():
+    contents = files if files is not None else {"tracked.txt": b"tracked\n"}
+    for name, content in contents.items():
         target = context / name
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(content)
@@ -137,6 +182,7 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
     first_files = {
         "z [x].txt": b"zeta\r\n",
         "a\n雪.txt": "alpha ☃\n".encode(),
+        "copy.txt": b"zeta\r\n",
         "empty.txt": b"",
     }
     for name, content in first_files.items():
@@ -161,10 +207,12 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
         (source.directory_position, source.repository_path) for source in frozen.sources
     ] == [
         (0, "context one/a\n雪.txt"),
+        (0, "context one/copy.txt"),
         (0, "context one/empty.txt"),
         (0, "context one/z [x].txt"),
         (2, "second/literal*file.txt"),
         (4, "context one/a\n雪.txt"),
+        (4, "context one/copy.txt"),
         (4, "context one/empty.txt"),
         (4, "context one/z [x].txt"),
     ]
@@ -172,10 +220,12 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
         (content, commit_blob_id(repository, head, path))
         for (content, path) in [
             ("alpha ☃\n".encode(), "context one/a\n雪.txt"),
+            (b"zeta\r\n", "context one/copy.txt"),
             (b"", "context one/empty.txt"),
             (b"zeta\r\n", "context one/z [x].txt"),
             (b"beta\n", "second/literal*file.txt"),
             ("alpha ☃\n".encode(), "context one/a\n雪.txt"),
+            (b"zeta\r\n", "context one/copy.txt"),
             (b"", "context one/empty.txt"),
             (b"zeta\r\n", "context one/z [x].txt"),
         ]
@@ -183,6 +233,14 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
     assert all(
         source.content_sha256 == sha256(source.content).hexdigest()
         for source in frozen.sources
+    ) and next(
+        source.commit_blob_sha
+        for source in frozen.sources
+        if source.repository_path == "context one/copy.txt"
+    ) == next(
+        source.commit_blob_sha
+        for source in frozen.sources
+        if source.repository_path == "context one/z [x].txt"
     )
     assert frozen.instructions_file is not None
     assert frozen.instructions_file.repository_path == "instructions.txt"
@@ -194,6 +252,29 @@ def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
         frozen.instructions_file.content_sha256
         == sha256(b"separate instructions\n").hexdigest()
     )
+
+
+def test_instructions_file_may_also_be_selected_as_context(tmp_path: Path) -> None:
+    # Given
+    repository = make_repository(tmp_path / "repo")
+    context = repository / "context"
+    context.mkdir()
+    (context / "context.txt").write_bytes(b"context\n")
+    instructions = context / "instructions.txt"
+    instructions.write_bytes(b"same path, separate role\n")
+    commit(repository)
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(context, instructions=instructions))
+
+    # Then
+    assert [(source.repository_path, source.content) for source in frozen.sources] == [
+        ("context/context.txt", b"context\n"),
+        ("context/instructions.txt", b"same path, separate role\n"),
+    ]
+    assert frozen.instructions_file is not None
+    assert frozen.instructions_file.repository_path == "context/instructions.txt"
+    assert frozen.instructions_file.content == b"same path, separate role\n"
 
 
 def test_freezing_accepts_empty_instructions_file(tmp_path: Path) -> None:
@@ -299,11 +380,9 @@ def test_freezing_refuses_an_ignored_context_file(tmp_path: Path) -> None:
 
 def test_freezing_refuses_an_empty_context_directory(tmp_path: Path) -> None:
     # Given
-    repository = make_repository(tmp_path / "repo")
-    context = repository / "empty"
-    context.mkdir()
-    (repository / "tracked.txt").write_bytes(b"keeps HEAD available\n")
-    commit(repository)
+    repository, context = repository_with_context(
+        tmp_path / "repo", {}, extra_files={"tracked.txt": b"keeps HEAD available\n"}
+    )
 
     # When
     with pytest.raises(ValueError, match="context directory is empty"):
@@ -359,6 +438,86 @@ def test_freezing_refuses_invalid_utf8_instructions(tmp_path: Path) -> None:
 
     # Then
     assert worktree_status(repository) == b""
+
+
+def test_freezing_rejects_skip_worktree_edits_hidden_from_status(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    source = context / "tracked.txt"
+    git(repository, "update-index", "--skip-worktree", "--", "context/tracked.txt")
+    source.write_bytes(b"hidden edit\n")
+    assert worktree_status(repository) == b""
+
+    # When
+    with pytest.raises(ValueError, match="differ from the pinned commit blob"):
+        GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert source.read_bytes() == b"hidden edit\n"
+    assert worktree_status(repository) == b""
+
+
+def test_freezing_rejects_filter_transformed_worktree_bytes(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    filter_script = tmp_path / "filter.py"
+    filter_script.write_text(
+        "import sys\n"
+        "content = sys.stdin.buffer.read()\n"
+        "if sys.argv[1] == 'clean':\n"
+        "    content = content.replace(b'\\r\\n', b'\\n')\n"
+        "else:\n"
+        "    content = content.replace(b'\\n', b'\\r\\n')\n"
+        "sys.stdout.buffer.write(content)\n",
+        encoding="utf-8",
+    )
+    command = f"{shlex.quote(sys.executable)} {shlex.quote(str(filter_script))}"
+    git(repository, "config", "filter.harness.clean", f"{command} clean")
+    git(repository, "config", "filter.harness.smudge", f"{command} smudge")
+    attributes = repository / ".gitattributes"
+    attributes.write_text("*.txt filter=harness\n", encoding="utf-8")
+    source = context / "tracked.txt"
+    source.write_bytes(b"tracked\r\n")
+    git(repository, "add", "context/tracked.txt")
+    commit(repository)
+    assert worktree_status(repository) == b""
+
+    # When
+    with pytest.raises(
+        ValueError,
+        match="possibly due to filters or line-ending conversion",
+    ):
+        GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert source.read_bytes() == b"tracked\r\n"
+
+
+def test_freezing_uses_raw_objects_when_head_has_a_replacement_ref(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    original_head = git(repository, "rev-parse", "HEAD").decode().strip()
+    source = context / "tracked.txt"
+    source.write_bytes(b"replacement contents\n")
+    replacement_head = commit(repository)
+    git(repository, "reset", "--hard", original_head)
+    git(repository, "replace", original_head, replacement_head)
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert frozen.head_commit == original_head
+    assert frozen.sources[0].content == b"tracked\n"
+    assert frozen.sources[0].commit_blob_sha == commit_blob_id(
+        repository, original_head, "context/tracked.txt"
+    )
 
 
 def test_freezing_refuses_external_instructions_path(tmp_path: Path) -> None:
@@ -423,7 +582,7 @@ def test_freezing_refuses_nested_submodule_input(tmp_path: Path) -> None:
     foreign_context = add_nested_repository(repository)
 
     # When
-    with pytest.raises(ValueError, match="nested Git repository"):
+    with pytest.raises(ValueError, match="same Git repository"):
         GitRepositoryReader().freeze(config(context, foreign_context))
 
     # Then
@@ -495,26 +654,74 @@ def test_freezing_refuses_symbolic_link_entries(tmp_path: Path) -> None:
     assert worktree_status(repository) == before
 
 
-def test_freezing_checks_symlink_components_before_dotdot_resolution(
+def test_freezing_accepts_symlinked_directory_and_parent_alias(
     tmp_path: Path,
 ) -> None:
     # Given
-    repository, context = repository_with_context(tmp_path / "repo")
-    ordinary = repository / "ordinary"
-    ordinary.mkdir()
-    alias = repository / "alias"
-    alias.symlink_to(ordinary, target_is_directory=True)
-    commit(repository)
-    symlink_route = alias / ".." / context.name
-    ordinary_route = ordinary / ".." / context.name
+    _, context = repository_with_context(tmp_path / "repo")
+    alias = tmp_path / "context-alias"
+    alias.symlink_to(context, target_is_directory=True)
 
     # When
-    with pytest.raises(ValueError, match="symbolic-link"):
-        GitRepositoryReader().freeze(config(symlink_route))
-    frozen = GitRepositoryReader().freeze(config(ordinary_route))
+    frozen = GitRepositoryReader().freeze(config(alias / ".." / "context"))
 
     # Then
     assert frozen.sources[0].repository_path == "context/tracked.txt"
+
+
+def test_freezing_ignores_symlinked_directory_entries(tmp_path: Path) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "not-selected.txt").write_bytes(b"outside\n")
+    (context / "directory-alias").symlink_to(outside, target_is_directory=True)
+    commit(repository)
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert [source.repository_path for source in frozen.sources] == [
+        "context/tracked.txt"
+    ]
+
+
+def test_freezing_refuses_symlinked_instructions_file(tmp_path: Path) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    instructions_target = repository / "real-instructions.txt"
+    instructions_target.write_bytes(b"instructions\n")
+    instructions = repository / "instructions.txt"
+    instructions.symlink_to(instructions_target)
+    commit(repository)
+
+    # When
+    with pytest.raises(ValueError, match="instructions input is not a regular file"):
+        GitRepositoryReader().freeze(config(context, instructions=instructions))
+
+    # Then
+    assert instructions.is_symlink()
+
+
+def test_freezing_root_context_in_linked_worktree_skips_git_admin_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    repository, _ = repository_with_context(tmp_path / "repo")
+    root_file = repository / "root.txt"
+    root_file.write_bytes(b"root input\n")
+    head = commit(repository)
+    linked = tmp_path / "linked"
+    git(repository, "worktree", "add", "--detach", str(linked), head)
+    monkeypatch.chdir(linked)
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(Path(".")))
+
+    # Then
+    assert frozen.repository_root == linked
+    assert [source.repository_path for source in frozen.sources] == ["root.txt"]
 
 
 def test_freezing_preserves_repository_root_trailing_spaces_and_newlines(
@@ -550,7 +757,7 @@ def test_freezing_refuses_bytes_changed_during_snapshot_read(
     monkeypatch.setattr(Path, "read_bytes", race_on_source)
 
     # When
-    with pytest.raises(ValueError, match="differ from commit"):
+    with pytest.raises(ValueError, match="differ from the pinned commit blob"):
         GitRepositoryReader().freeze(config(context))
 
     # Then
@@ -604,6 +811,7 @@ def test_git_query_count_does_not_grow_with_selected_file_count(
     assert len(small.sources) == 1
     assert len(large.sources) == 12
     assert len(commands) == small_query_count
+    assert len(commands) <= 6
     assert sum(command[3] == "cat-file" for command in commands) == 1
 
 
@@ -635,6 +843,7 @@ def test_git_missing_executable_preserves_the_os_error_cause(
             capture_output=True,
             check=True,
             timeout=10,
+            env=git_test_environment(),
         ).stdout
         == status_before
     )
@@ -661,6 +870,26 @@ def test_git_timeout_preserves_the_timeout_cause(
 
     # Then
     assert isinstance(error.value.__cause__, subprocess.TimeoutExpired)
+
+
+def test_git_nonzero_status_retains_structured_error_details(
+    tmp_path: Path,
+) -> None:
+    # Given
+    outside = tmp_path / "not-a-repository"
+    outside.mkdir()
+    context = outside / "context"
+    context.mkdir()
+
+    # When
+    with pytest.raises(GitCommandError, match="Git rev-parse failed") as error:
+        GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert error.value.returncode != 0
+    assert error.value.stderr
+    assert error.value.cwd == context
+    assert error.value.arguments[0] == "rev-parse"
 
 
 def test_git_nonzero_exit_reports_binary_stderr_deterministically(

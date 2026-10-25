@@ -17,6 +17,28 @@ from script.eval.model import (
 )
 
 
+class GitCommandError(ValueError):
+    """A Git command that ran to completion and returned a nonzero status."""
+
+    def __init__(
+        self,
+        arguments: tuple[str, ...],
+        cwd: Path,
+        returncode: int,
+        stderr: bytes,
+    ) -> None:
+        """Retain process failure details alongside a readable diagnostic."""
+        self.arguments = arguments
+        self.cwd = cwd
+        self.returncode = returncode
+        self.stderr = stderr
+        diagnostic = stderr.decode("utf-8", errors="replace").strip()
+        command = arguments[0] if arguments else "Git"
+        super().__init__(
+            f"Git {command} failed in {cwd} with status {returncode}: {diagnostic}"
+        )
+
+
 class RepositoryReader(Protocol):
     """Read-only Git and source boundary for frozen harness inputs."""
 
@@ -25,7 +47,11 @@ class RepositoryReader(Protocol):
 
 
 class GitRepositoryReader:
-    """Read source bytes and verify their identity against one Git HEAD."""
+    """Read source bytes and verify them against one Git HEAD.
+
+    Context directories may use symlink aliases; selected files and the optional
+    instructions file must be regular nonsymlink files.
+    """
 
     def __init__(self, *, timeout_seconds: float = 30.0) -> None:
         """Set the maximum duration for each Git subprocess.
@@ -33,11 +59,15 @@ class GitRepositoryReader:
         Raises:
             ValueError: The timeout is not finite and positive.
         """
-        if (
-            isinstance(timeout_seconds, bool)
-            or not math.isfinite(timeout_seconds)
-            or timeout_seconds <= 0
-        ):
+        try:
+            valid_timeout = (
+                not isinstance(timeout_seconds, bool)
+                and math.isfinite(timeout_seconds)
+                and timeout_seconds > 0
+            )
+        except TypeError:
+            valid_timeout = False
+        if not valid_timeout:
             raise ValueError("Git timeout must be finite and positive")
         self._timeout_seconds = timeout_seconds
 
@@ -71,17 +101,13 @@ class GitRepositoryReader:
             for option in directories
         )
         instruction_relative = (
-            self._safe_relative_path(
-                root, config.instructions_file_path, directory=False
-            )
+            self._safe_instructions_path(root, config.instructions_file_path)
             if config.instructions_file_path is not None
             else None
         )
 
         discovered = self._discover_files(root, directories, relative_directories)
         instruction_path = root / instruction_relative if instruction_relative else None
-        if instruction_path is not None:
-            self._require_regular_file(instruction_path)
         tracked = self._tracked_paths(root, relative_directories, instruction_relative)
         self._require_tracked(
             discovered, instruction_relative, instruction_path, tracked
@@ -90,9 +116,9 @@ class GitRepositoryReader:
             (instruction_relative,) if instruction_relative is not None else ()
         )
         blobs = self._commit_blobs(root, head, selected)
-        sources = self._source_snapshots(discovered, blobs, head)
+        sources = self._source_snapshots(discovered, blobs)
         instructions = self._instruction_snapshot(
-            instruction_relative, instruction_path, blobs, head
+            instruction_relative, instruction_path, blobs
         )
         return FrozenInputs(root, head, sources, instructions)
 
@@ -103,19 +129,22 @@ class GitRepositoryReader:
             The repository root and HEAD commit ID.
 
         Raises:
-            ValueError: Inputs span repositories or Git cannot verify a clean HEAD.
+            ValueError: Inputs span repositories or the checkout is not clean.
+            GitCommandError: Git cannot resolve the repository or pinned HEAD.
         """
-        roots = tuple(self._repository_root(path) for path in paths)
+        roots = tuple(self._repository_root(path) for path in dict.fromkeys(paths))
         root = roots[0]
         if any(candidate != root for candidate in roots[1:]):
             raise ValueError("all inputs must belong to the same Git repository")
         try:
-            head_output = self._git(root, "rev-parse", "--verify", "HEAD^{commit}")
-            head = head_output.decode().strip()
-        except ValueError as exc:
-            if str(exc).startswith("Git rev-parse failed"):
+            head_output = self._git(
+                root, "rev-parse", "--verify", "--quiet", "HEAD^{commit}"
+            )
+        except GitCommandError as exc:
+            if exc.returncode == 1 and not exc.stderr:
                 raise ValueError(f"Git repository has no HEAD: {root}") from exc
             raise
+        head = head_output.decode("ascii").removesuffix("\n")
         if not head:
             raise ValueError(f"Git repository has no HEAD: {root}")
         self._require_clean_checkout(root)
@@ -142,6 +171,8 @@ class GitRepositoryReader:
             file_count = 0
             for entry in entries:
                 entry_path = Path(entry.path)
+                if relative == "." and entry.name == ".git":
+                    continue
                 if not self._is_selected_file(entry, entry_path):
                     continue
                 relative_file = (Path(relative) / entry.name).as_posix()
@@ -182,10 +213,10 @@ class GitRepositoryReader:
             ValueError: The entry is a symlink or is not a regular file/directory.
         """
         if entry.is_symlink():
+            if entry.is_dir():
+                return False
             raise ValueError(f"symbolic-link input is not allowed: {path}")
         if entry.is_dir(follow_symlinks=False):
-            if (path / ".git").exists():
-                raise ValueError(f"nested Git repository or submodule input: {path}")
             return False
         if not entry.is_file(follow_symlinks=False):
             raise ValueError(f"context entries must be regular files: {path}")
@@ -218,7 +249,6 @@ class GitRepositoryReader:
         self,
         discovered: list[tuple[int, str, Path]],
         blobs: dict[str, tuple[str, bytes]],
-        head: str,
     ) -> tuple[SourceSnapshot, ...]:
         """Verify live context bytes against Git blobs and build their snapshots.
 
@@ -233,7 +263,10 @@ class GitRepositoryReader:
             content = self._read_utf8(absolute)
             blob_sha, blob_content = blobs[relative]
             if content != blob_content:
-                raise ValueError(f"input bytes differ from commit {head}: {absolute}")
+                raise ValueError(
+                    "worktree bytes differ from the pinned commit blob "
+                    f"(possibly due to filters or line-ending conversion): {absolute}"
+                )
             snapshots.append(
                 SourceSnapshot(
                     directory_position=position,
@@ -250,7 +283,6 @@ class GitRepositoryReader:
         relative: str | None,
         path: Path | None,
         blobs: dict[str, tuple[str, bytes]],
-        head: str,
     ) -> InstructionsSnapshot | None:
         """Verify optional instructions against its Git blob and snapshot it.
 
@@ -266,7 +298,8 @@ class GitRepositoryReader:
         blob_sha, blob_content = blobs[relative]
         if content != blob_content:
             raise ValueError(
-                f"instructions file bytes differ from commit {head}: {path}"
+                "instructions worktree bytes differ from the pinned commit blob "
+                f"(possibly due to filters or line-ending conversion): {path}"
             )
         return InstructionsSnapshot(
             repository_path=relative,
@@ -285,7 +318,6 @@ class GitRepositoryReader:
             ValueError: The path is unsafe or is not in a valid worktree.
         """
         absolute = path if path.is_absolute() else Path.cwd() / path
-        self._reject_symlink_components(absolute)
         probe = absolute if absolute.is_dir() else absolute.parent
         root_output = self._git(probe, "rev-parse", "--show-toplevel")
         if root_output.endswith(b"\n"):
@@ -295,23 +327,8 @@ class GitRepositoryReader:
             raise ValueError(f"input is not inside a Git worktree: {path}")
         canonical_root = Path(root).resolve(strict=True)
         if (canonical_root / ".git").is_file() or (canonical_root / ".git").is_dir():
-            self._reject_nested_repository(canonical_root)
             return canonical_root
         raise ValueError(f"input is not inside a Git worktree: {path}")
-
-    @staticmethod
-    def _reject_nested_repository(root: Path) -> None:
-        """Reject roots nested beneath another repository or submodule.
-
-        Raises:
-            ValueError: The root is nested inside a repository or submodule.
-        """
-        for ancestor in root.parents:
-            git_marker = ancestor / ".git"
-            if git_marker.is_file() or git_marker.is_dir():
-                raise ValueError(
-                    f"nested Git repository or submodule input is not allowed: {root}"
-                )
 
     def _safe_relative_path(self, root: Path, path: Path, *, directory: bool) -> str:
         """Resolve an existing input beneath root and return its Git path.
@@ -323,7 +340,6 @@ class GitRepositoryReader:
             ValueError: The input is unsafe, missing, or outside the repository.
         """
         absolute = path if path.is_absolute() else Path.cwd() / path
-        self._reject_symlink_components(absolute)
         try:
             resolved = absolute.resolve(strict=True)
             relative = resolved.relative_to(root)
@@ -337,27 +353,20 @@ class GitRepositoryReader:
             raise ValueError(f"instructions input is not a regular file: {path}")
         return relative.as_posix()
 
-    @staticmethod
-    def _reject_symlink_components(path: Path) -> None:
-        """Inspect each supplied path component without following symlinks.
+    def _safe_instructions_path(self, root: Path, path: Path) -> str:
+        """Reject a final symlink before resolving instructions within the root.
+
+        Returns:
+            The root-relative Git path of the instructions file.
 
         Raises:
-            ValueError: A path component is a symlink or cannot be inspected.
+            ValueError: The file is a symlink or is not a regular repository file.
         """
         absolute = path if path.is_absolute() else Path.cwd() / path
-        current = Path(absolute.anchor)
-        for component in absolute.parts[1:]:
-            if component == "..":
-                current = current.parent
-                continue
-            current /= component
-            try:
-                if current.is_symlink():
-                    raise ValueError(
-                        f"symbolic-link path component is not allowed: {current}"
-                    )
-            except OSError as exc:
-                raise ValueError(f"cannot inspect input path {current}: {exc}") from exc
+        if absolute.is_symlink():
+            raise ValueError(f"instructions input is not a regular file: {path}")
+        self._require_regular_file(absolute)
+        return self._safe_relative_path(root, absolute, directory=False)
 
     @staticmethod
     def _require_regular_file(path: Path) -> None:
@@ -440,13 +449,14 @@ class GitRepositoryReader:
             ValueError: A selected path is missing or is not a regular blob.
         """
         object_ids: dict[str, str] = {}
+        requested_paths = set(paths)
         for record in output.split(b"\0"):
             if not record:
                 continue
             metadata, raw_path = record.split(b"\t", 1)
             mode, kind, object_id = metadata.decode("ascii").split()
             path = os.fsdecode(raw_path)
-            if path in paths:
+            if path in requested_paths:
                 if kind != "blob" or mode == "120000":
                     raise ValueError(
                         f"input is not a regular tracked file at HEAD: {path}"
@@ -474,11 +484,20 @@ class GitRepositoryReader:
         blobs: dict[str, tuple[str, bytes]] = {}
         cursor = 0
         for path, object_id in object_ids.items():
-            line_end = batch.index(b"\n", cursor)
-            header = batch[cursor:line_end].decode("ascii").split()
+            line_end = batch.find(b"\n", cursor)
+            if line_end < 0:
+                raise ValueError(f"Git returned a truncated blob header for {path}")
+            try:
+                header = batch[cursor:line_end].decode("ascii").split()
+                size = int(header[2]) if len(header) == 3 else -1
+            except UnicodeDecodeError, ValueError:
+                raise ValueError(
+                    f"Git returned an invalid blob header for {path}"
+                ) from None
             if len(header) != 3 or header[0] != object_id or header[1] != "blob":
                 raise ValueError(f"Git returned an invalid blob record for {path}")
-            size = int(header[2])
+            if size < 0:
+                raise ValueError(f"Git returned an invalid blob size for {path}")
             start, end = line_end + 1, line_end + 1 + size
             content = batch[start:end]
             if len(content) != size or batch[end : end + 1] != b"\n":
@@ -512,7 +531,8 @@ class GitRepositoryReader:
             The command's standard output.
 
         Raises:
-            ValueError: Git cannot start, times out, or exits unsuccessfully.
+            ValueError: Git cannot start or its command times out.
+            GitCommandError: Git exits with a nonzero status.
         """
         environment = os.environ.copy()
         environment["GIT_OPTIONAL_LOCKS"] = "0"
@@ -521,12 +541,36 @@ class GitRepositoryReader:
             "GIT_WORK_TREE",
             "GIT_INDEX_FILE",
             "GIT_COMMON_DIR",
+            "GIT_OBJECT_DIRECTORY",
+            "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+            "GIT_SHALLOW_FILE",
+            "GIT_REPLACE_REF_BASE",
+            "GIT_NAMESPACE",
+            "GIT_CONFIG_PARAMETERS",
+            "GIT_CONFIG_SYSTEM",
+            "GIT_CEILING_DIRECTORIES",
+            "GIT_DISCOVERY_ACROSS_FILESYSTEM",
             "GIT_LITERAL_PATHSPECS",
             "GIT_GLOB_PATHSPECS",
             "GIT_NOGLOB_PATHSPECS",
             "GIT_ICASE_PATHSPECS",
         ):
             environment.pop(name, None)
+        for name in tuple(environment):
+            if name.startswith("GIT_CONFIG_KEY_") or name.startswith(
+                "GIT_CONFIG_VALUE_"
+            ):
+                environment.pop(name, None)
+        environment.update({
+            "GIT_NO_REPLACE_OBJECTS": "1",
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_CONFIG_GLOBAL": os.devnull,
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "core.fsmonitor",
+            "GIT_CONFIG_VALUE_0": "false",
+            "LC_ALL": "C",
+            "LANG": "C",
+        })
         try:
             result = subprocess.run(
                 ["git", "-C", os.fspath(cwd), *args],
@@ -543,8 +587,5 @@ class GitRepositoryReader:
         except OSError as exc:
             raise ValueError(f"cannot run Git command {args[0]}: {exc}") from exc
         if result.returncode:
-            diagnostic = result.stderr.decode("utf-8", errors="replace").strip()
-            raise ValueError(
-                f"Git {args[0]} failed in {cwd}: {diagnostic or result.returncode}"
-            )
+            raise GitCommandError(tuple(args), cwd, result.returncode, result.stderr)
         return result.stdout
