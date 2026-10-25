@@ -5,6 +5,10 @@
 Run reproducible context combinations through the CLI while retaining raw
 observations for caller-owned experiments.
 
+The exploratory [architecture proposal](architecture.md) and its
+[typed boundary](design/evaluation_harness.pyi) describe one possible
+component split; this Work contract remains authoritative.
+
 ## Goals
 
 - Compose one selected file from each ordered context directory for every
