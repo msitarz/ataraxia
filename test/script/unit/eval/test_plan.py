@@ -18,7 +18,8 @@ def test_plan_orders_context_model_and_effort_products_deterministically() -> No
     # The pure planner composes every context, model, and effort combination.
 
     # Then
-    # The full product order and exact composed bytes are stable and inspectable.
+    # The full product has last-context-fastest order before model and effort
+    # order; exact separator bytes and duplicate scheduled positions are retained.
     pass
 
 

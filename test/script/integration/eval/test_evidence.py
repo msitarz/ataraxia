@@ -38,3 +38,40 @@ def test_attempt_records_preserve_raw_streams_and_missing_observations() -> None
     # Then
     # Provenance, settings, cleanup, timestamps, and available telemetry stay truthful.
     pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-2 attempted supervisor limits remain in evidence",
+)
+def test_attempt_record_retains_effective_deadline_grace_and_output_limit() -> None:
+    """Trace request policy even for limits that are not CLI arguments."""
+    # Given
+    # A planned run with explicit execution, cleanup, grace, and output limits.
+
+    # When
+    # The actual AttemptRequest runs and its evidence is persisted.
+
+    # Then
+    # The record retains the limits used for that attempt, not later config values.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-2 staged instruction snapshot survives source edits",
+)
+def test_request_uses_staged_instructions_after_original_file_changes() -> None:
+    """Prove the native setting targets frozen evidence, never a reopened source."""
+    # Given
+    # A clean tracked -i file frozen into the new evidence area.
+
+    # When
+    # The original source changes after freeze and the request is then constructed.
+
+    # Then
+    # argv maps -c model_instructions_file=PATH to the staged snapshot path and
+    # execution remains based on the captured bytes.
+    pass

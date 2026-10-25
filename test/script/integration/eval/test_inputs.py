@@ -41,3 +41,24 @@ def test_input_freezing_refuses_invalid_membership_or_changed_bytes() -> None:
     # Then
     # The refusal identifies the invalid input and launches no CLI process.
     pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-1 missing, empty, symlink, and invalid UTF-8 inputs refuse"
+    ),
+)
+def test_input_freezing_refuses_missing_empty_symlink_and_invalid_utf8_inputs() -> None:
+    """Cover the source-selection refusal cases through real filesystem inputs."""
+    # Given
+    # Separate disposable repositories with a missing path, empty directory,
+    # symlink entry, or tracked source containing invalid UTF-8.
+
+    # When
+    # The input freezer prepares the selected context directory.
+
+    # Then
+    # Every invalid selection fails before planning or model dispatch.
+    pass

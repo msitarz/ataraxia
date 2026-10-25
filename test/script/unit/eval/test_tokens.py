@@ -18,5 +18,7 @@ def test_estimates_keep_configured_instructions_separate_from_context() -> None:
     # The estimator builds one report entry for each scheduled call.
 
     # Then
-    # Configured instructions have a separate estimate; default bytes are unknown.
+    # Each result identifies method, library/tokenizer versions, and model
+    # compatibility; unknown compatibility is explicit. Configured instructions
+    # have a separate estimate; automatic default bytes are unavailable.
     pass
