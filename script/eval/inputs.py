@@ -28,6 +28,11 @@ class GitRepositoryReader:
     """Read source bytes and verify their identity against one Git HEAD."""
 
     def __init__(self, *, timeout_seconds: float = 30.0) -> None:
+        """Set the maximum duration for each Git subprocess.
+
+        Raises:
+            ValueError: The timeout is not finite and positive.
+        """
         if (
             isinstance(timeout_seconds, bool)
             or not math.isfinite(timeout_seconds)
@@ -41,6 +46,9 @@ class GitRepositoryReader:
 
         Returns:
             The one-commit snapshot of all selected inputs.
+
+        Ruff's DOC502 check only sees direct raises; validation helpers raise
+        the documented exception.
 
         Raises:  # noqa: DOC502
             ValueError: Inputs are missing, dirty, unsafe, untracked, or differ
@@ -89,6 +97,14 @@ class GitRepositoryReader:
         return FrozenInputs(root, head, sources, instructions)
 
     def _resolve_clean_repository(self, paths: tuple[Path, ...]) -> tuple[Path, str]:
+        """Resolve one shared root and verify its clean committed HEAD.
+
+        Returns:
+            The repository root and HEAD commit ID.
+
+        Raises:
+            ValueError: Inputs span repositories or Git cannot verify a clean HEAD.
+        """
         roots = tuple(self._repository_root(path) for path in paths)
         root = roots[0]
         if any(candidate != root for candidate in roots[1:]):
@@ -111,6 +127,14 @@ class GitRepositoryReader:
         directories: tuple[DirectoryOption, ...],
         relative_directories: tuple[str, ...],
     ) -> list[tuple[int, str, Path]]:
+        """Collect immediate regular files in directory and option order.
+
+        Returns:
+            Each selected file's option position, repository path, and filesystem path.
+
+        Raises:
+            ValueError: A context directory has no immediate regular files.
+        """
         discovered: list[tuple[int, str, Path]] = []
         for option, relative in zip(directories, relative_directories, strict=True):
             absolute = root / relative
@@ -131,6 +155,11 @@ class GitRepositoryReader:
 
     @staticmethod
     def _directory_entries(absolute: Path) -> list[os.DirEntry[str]]:
+        """Return sorted immediate entries from a readable nonempty directory.
+
+        Raises:
+            ValueError: The directory is empty or cannot be read.
+        """
         try:
             with os.scandir(absolute) as scan:
                 entries = sorted(scan, key=lambda entry: entry.name)
@@ -144,6 +173,14 @@ class GitRepositoryReader:
 
     @staticmethod
     def _is_selected_file(entry: os.DirEntry[str], path: Path) -> bool:
+        """Reject unsafe entries and report whether an entry is a regular file.
+
+        Returns:
+            Whether the entry is a regular file selected as input.
+
+        Raises:
+            ValueError: The entry is a symlink or is not a regular file/directory.
+        """
         if entry.is_symlink():
             raise ValueError(f"symbolic-link input is not allowed: {path}")
         if entry.is_dir(follow_symlinks=False):
@@ -161,6 +198,11 @@ class GitRepositoryReader:
         instruction_path: Path | None,
         tracked: set[str],
     ) -> None:
+        """Require every selected context and instruction path to be tracked.
+
+        Raises:
+            ValueError: A selected path is untracked or ignored.
+        """
         for _, relative, absolute in discovered:
             if relative not in tracked:
                 raise ValueError(
@@ -178,6 +220,14 @@ class GitRepositoryReader:
         blobs: dict[str, tuple[str, bytes]],
         head: str,
     ) -> tuple[SourceSnapshot, ...]:
+        """Verify live context bytes against Git blobs and build their snapshots.
+
+        Returns:
+            Snapshots in the original directory and lexical file order.
+
+        Raises:
+            ValueError: A file is unreadable, invalid UTF-8, or differs from HEAD.
+        """
         snapshots = []
         for position, relative, absolute in discovered:
             content = self._read_utf8(absolute)
@@ -202,6 +252,14 @@ class GitRepositoryReader:
         blobs: dict[str, tuple[str, bytes]],
         head: str,
     ) -> InstructionsSnapshot | None:
+        """Verify optional instructions against its Git blob and snapshot it.
+
+        Returns:
+            The verified instructions snapshot, or None when instructions are absent.
+
+        Raises:
+            ValueError: Instructions are unreadable, invalid UTF-8, or differ from HEAD.
+        """
         if relative is None or path is None:
             return None
         content = self._read_utf8(path)
@@ -218,6 +276,14 @@ class GitRepositoryReader:
         )
 
     def _repository_root(self, path: Path) -> Path:
+        """Find the canonical worktree root containing a path, rejecting nesting.
+
+        Returns:
+            The canonical repository root.
+
+        Raises:
+            ValueError: The path is unsafe or is not in a valid worktree.
+        """
         absolute = path if path.is_absolute() else Path.cwd() / path
         self._reject_symlink_components(absolute)
         probe = absolute if absolute.is_dir() else absolute.parent
@@ -235,6 +301,11 @@ class GitRepositoryReader:
 
     @staticmethod
     def _reject_nested_repository(root: Path) -> None:
+        """Reject roots nested beneath another repository or submodule.
+
+        Raises:
+            ValueError: The root is nested inside a repository or submodule.
+        """
         for ancestor in root.parents:
             git_marker = ancestor / ".git"
             if git_marker.is_file() or git_marker.is_dir():
@@ -243,6 +314,14 @@ class GitRepositoryReader:
                 )
 
     def _safe_relative_path(self, root: Path, path: Path, *, directory: bool) -> str:
+        """Resolve an existing input beneath root and return its Git path.
+
+        Returns:
+            The root-relative POSIX path used by Git.
+
+        Raises:
+            ValueError: The input is unsafe, missing, or outside the repository.
+        """
         absolute = path if path.is_absolute() else Path.cwd() / path
         self._reject_symlink_components(absolute)
         try:
@@ -260,6 +339,11 @@ class GitRepositoryReader:
 
     @staticmethod
     def _reject_symlink_components(path: Path) -> None:
+        """Inspect each supplied path component without following symlinks.
+
+        Raises:
+            ValueError: A path component is a symlink or cannot be inspected.
+        """
         absolute = path if path.is_absolute() else Path.cwd() / path
         current = Path(absolute.anchor)
         for component in absolute.parts[1:]:
@@ -277,10 +361,20 @@ class GitRepositoryReader:
 
     @staticmethod
     def _require_regular_file(path: Path) -> None:
+        """Require the optional instructions path to be a regular file.
+
+        Raises:
+            ValueError: The path is a symlink or is not a regular file.
+        """
         if path.is_symlink() or not path.is_file():
             raise ValueError(f"instructions input is not a regular file: {path}")
 
     def _require_clean_checkout(self, root: Path) -> None:
+        """Reject staged, unstaged, and untracked changes across the worktree.
+
+        Raises:
+            ValueError: Git reports any worktree or index changes.
+        """
         status = self._git(
             root, "status", "--porcelain=v1", "-z", "--untracked-files=all"
         )
@@ -292,6 +386,11 @@ class GitRepositoryReader:
     def _tracked_paths(
         self, root: Path, directories: tuple[str, ...], instruction: str | None
     ) -> set[str]:
+        """List tracked files under literal input pathspecs in one Git query.
+
+        Returns:
+            The repository-relative tracked file paths.
+        """
         pathspecs = tuple(
             ":(top)" if path == "." else f":(top,literal){path.rstrip('/')}/"
             for path in dict.fromkeys(directories)
@@ -308,6 +407,11 @@ class GitRepositoryReader:
     def _commit_blobs(
         self, root: Path, commit: str, paths: tuple[str, ...]
     ) -> dict[str, tuple[str, bytes]]:
+        """Read selected commit blobs in one batched Git object query.
+
+        Returns:
+            A mapping from repository path to blob ID and exact blob bytes.
+        """
         unique_paths = tuple(dict.fromkeys(paths))
         pathspecs = tuple(f":(literal){path}" for path in unique_paths)
         output = self._git(
@@ -322,6 +426,14 @@ class GitRepositoryReader:
     def _blob_object_ids(
         output: bytes, paths: tuple[str, ...], commit: str
     ) -> dict[str, str]:
+        """Map requested repository paths to regular-file blob object IDs.
+
+        Returns:
+            The requested paths mapped to their blob object IDs.
+
+        Raises:
+            ValueError: A selected path is missing or is not a regular blob.
+        """
         object_ids: dict[str, str] = {}
         for record in output.split(b"\0"):
             if not record:
@@ -346,6 +458,14 @@ class GitRepositoryReader:
     def _parse_blob_batch(
         batch: bytes, object_ids: dict[str, str]
     ) -> dict[str, tuple[str, bytes]]:
+        """Parse and validate the length-delimited records from cat-file batch.
+
+        Returns:
+            The paths mapped to their blob IDs and exact contents.
+
+        Raises:
+            ValueError: Git returns an invalid or truncated blob record.
+        """
         blobs: dict[str, tuple[str, bytes]] = {}
         cursor = 0
         for path, object_id in object_ids.items():
@@ -363,6 +483,14 @@ class GitRepositoryReader:
         return blobs
 
     def _read_utf8(self, path: Path) -> bytes:
+        """Read exact file bytes and require strict UTF-8 decoding.
+
+        Returns:
+            The unchanged file bytes.
+
+        Raises:
+            ValueError: The file cannot be read or contains invalid UTF-8.
+        """
         try:
             content = path.read_bytes()
             content.decode("utf-8", errors="strict")
@@ -373,6 +501,14 @@ class GitRepositoryReader:
         return content
 
     def _git(self, cwd: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
+        """Run a bounded read-only Git command and return stdout bytes.
+
+        Returns:
+            The command's standard output.
+
+        Raises:
+            ValueError: Git cannot start, times out, or exits unsuccessfully.
+        """
         environment = os.environ.copy()
         environment["GIT_OPTIONAL_LOCKS"] = "0"
         for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"):
