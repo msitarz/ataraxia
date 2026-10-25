@@ -42,6 +42,9 @@ class GitRepositoryReader:
         Returns:
             The one-commit snapshot of all selected inputs.
 
+        Raises:  # noqa: DOC502
+            ValueError: Inputs are missing, dirty, unsafe, untracked, or differ
+                from the selected commit.
         """
         directories = tuple(
             option
