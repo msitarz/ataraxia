@@ -80,8 +80,8 @@ def config(*directories: Path, instructions: Path | None = None) -> HarnessConfi
         option
         for index, directory in enumerate(directories)
         for option in (
+            *((SeparatorOption(position=index * 2 - 1, value="\n"),) if index else ()),
             DirectoryOption(position=index * 2, path=directory),
-            *((SeparatorOption(position=index * 2 + 1, value="\n"),) if index else ()),
         )
     )
     return HarnessConfig(
@@ -561,6 +561,7 @@ def test_git_missing_executable_preserves_the_os_error_cause(
             ["git", "-C", str(repository), "status", "--porcelain=v1", "-z"],
             capture_output=True,
             check=True,
+            timeout=10,
         ).stdout
         == status_before
     )
