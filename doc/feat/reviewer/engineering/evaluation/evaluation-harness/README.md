@@ -225,7 +225,10 @@ A caller can rerun a manually selected subset as a new run.
 
 ## Additional context
 
-This change defines the Work only; it authorizes no runner implementation,
-typed architecture, corpus preparation, or model calls.
+The original Work definition authorized no runner implementation, typed
+architecture, corpus preparation, or model calls. A later bounded assignment
+authorizes this exploratory architecture proposal and typed boundary only; it
+does not authorize runner implementation, wiring, corpus preparation, or model
+calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.

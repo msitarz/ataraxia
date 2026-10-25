@@ -3,7 +3,7 @@
 
 This is not an importable runtime module. See ../architecture.md for ownership
 and effects; the Work README remains the behavior contract. The supervisor's
-types are imported from their active module and are not redeclared here.
+outcome and failure types are imported from their active module.
 """
 
 from dataclasses import dataclass
@@ -12,25 +12,36 @@ from typing import Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict
 
-from script.process_supervisor import AttemptRequest, AttemptResult, DispatchStop
+from script.process_supervisor import (
+    AttemptCancelled,
+    AttemptFailureEvidence,
+    AttemptRequest,
+    AttemptResult,
+    DispatchStop,
+)
 
 type RunId = str
 type CallId = str
-type AttemptId = str
+type AttemptNumber = int
 type EstimateCompatibility = Literal["exact", "approximate", "unknown"]
+type EstimateBasis = Literal["supplied_context", "replacement_instruction"]
 type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
+type SettingValue = str | int | float | bool | None
 
-@dataclass(frozen=True)
-class DirectoryOption:
+class StrictModel(BaseModel):
+    """Raw configuration and persisted records reject extras and coercion."""
+
+    model_config: ConfigDict = ConfigDict(extra="forbid", strict=True, frozen=True)
+
+class DirectoryOption(StrictModel):
     """Directory argument at its original command-line position."""
 
     position: int
     path: Path
 
-@dataclass(frozen=True)
-class SeparatorOption:
+class SeparatorOption(StrictModel):
     """Separator argument at its original command-line position."""
 
     position: int
@@ -38,16 +49,11 @@ class SeparatorOption:
 
 type OrderedOption = DirectoryOption | SeparatorOption
 
-class StrictModel(BaseModel):
-    """Base for raw configuration and persisted records; frozen, reject extras."""
-
-    model_config: ConfigDict = ConfigDict(extra="forbid", frozen=True)
-
 class HarnessConfig(StrictModel):
-    """Validated CLI configuration; does not perform I/O or process effects.
+    """CLI settings; validators enforce values but perform no I/O or dispatch.
 
-    output_limit_bytes accepts zero, which disables the byte cap. retry_limit
-    is finite and nonnegative, defaulting to zero at the CLI boundary.
+    Zero output bytes disables the cap. Retry limit defaults to zero, and
+    nonzero exit retry requires explicit opt-in.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -60,113 +66,172 @@ class HarnessConfig(StrictModel):
     cleanup_timeout_seconds: float
     grace_seconds: float
     output_limit_bytes: int
-    retry_limit: int
+    retry_limit: int = 0
+    retry_nonzero_exit: bool = False
+    replacement_instruction_path: Path | None
 
-@dataclass(frozen=True)
-class SourceSnapshot:
+class SourceSnapshot(StrictModel):
     """One tracked regular input and its exact frozen bytes."""
 
+    directory_position: int
     repository_path: str
     commit_blob_sha: str
     content_sha256: str
     content: bytes
 
 @dataclass(frozen=True)
-class TokenEstimate:
-    """Estimate and method metadata for supplied prompt bytes."""
+class FrozenInputs:
+    """Read-only Git result, including any separately configured instruction."""
 
-    token_count: int | None
-    method: str
-    library_version: str | None
-    tokenizer_version: str | None
-    compatibility: EstimateCompatibility
+    repository_root: Path
+    head_commit: str
+    sources: tuple[SourceSnapshot, ...]
+    replacement_instruction: bytes | None
+    replacement_instruction_sha256: str | None
 
-class TokenEstimator(Protocol):
-    """Local estimator port; it cannot dispatch model calls."""
+class RepositoryReader(Protocol):
+    """Read-only Git and source boundary; it does not compose or plan calls."""
 
-    def estimate(self, prompt: bytes, model: str, /) -> TokenEstimate:
-        """Estimate supplied prompt bytes for the requested model."""
+    def freeze(self, config: HarnessConfig, /) -> FrozenInputs:
+        """Validate repository inputs and return commit-checked snapshots."""
         ...
 
-@dataclass(frozen=True)
-class PlannedCall:
-    """One scheduled position, distinct from effective call identity."""
+class PlannedCall(StrictModel):
+    """One ordered matrix position; effective identity awaits runtime binding."""
 
     position: int
-    call_id: CallId
     context_indices: tuple[int, ...]
     model: str
     effort: str
-    effective_settings_sha256: str
     prompt_sha256: str
     prompt: bytes
 
-@dataclass(frozen=True)
-class FrozenPlan:
-    """Complete ordered matrix and source provenance prepared before dispatch."""
+class FrozenPlan(StrictModel):
+    """Pure composition of frozen inputs and an ordered call matrix."""
 
     run_id: RunId
     repository_root: Path
     head_commit: str
     snapshots: tuple[SourceSnapshot, ...]
     boundary_bytes: tuple[bytes, ...]
+    replacement_instruction: bytes | None
+    replacement_instruction_sha256: str | None
     calls: tuple[PlannedCall, ...]
+
+class PlanBuilder(Protocol):
+    """Pure composer and matrix planner; performs no I/O."""
+
+    def plan(self, inputs: FrozenInputs, config: HarnessConfig, /) -> FrozenPlan:
+        """Compose exact snapshot bytes and return the complete ordered plan."""
+        ...
+
+@dataclass(frozen=True)
+class TokenEstimate:
+    """Estimate for exact bytes, with an explicit basis and compatibility."""
+
+    model: str
+    token_count: int | None
+    method: str
+    library_version: str | None
+    tokenizer_version: str | None
+    basis: EstimateBasis
+    compatibility: EstimateCompatibility
+    diagnostic: str | None
+
+class TokenEstimator(Protocol):
+    """Local estimator port; it cannot dispatch model calls."""
+
+    def estimate(
+        self, content: bytes, model: str, basis: EstimateBasis, /
+    ) -> TokenEstimate:
+        """Return an estimate or an explicit unknown value for supplied bytes."""
+        ...
+
+@dataclass(frozen=True)
+class CallEstimate:
+    """Required context estimate and a separate optional instruction estimate."""
+
+    position: int
+    context: TokenEstimate
+    replacement_instruction: TokenEstimate | None
+
+@dataclass(frozen=True)
+class DryRunReport:
+    """Plan plus one explicit estimate for each scheduled call."""
+
+    plan: FrozenPlan
+    scheduled_call_count: int
+    estimates: tuple[CallEstimate, ...]
+    cli_binding_known: Literal[False]
+    effective_call_identities_known: Literal[False]
+
+class CliBindingResolver(Protocol):
+    """Resolve runtime CLI identity and observable settings during execution."""
+
+    def resolve(self, config: HarnessConfig, /) -> CliBinding:
+        """Resolve the absolute executable path, version, and effective settings."""
+        ...
+
+@dataclass(frozen=True)
+class CliBinding:
+    """Execution-only binding; dry run deliberately has no instance."""
+
+    executable_path: Path
+    cli_version: str | None
+    runner_version: str
+    effective_settings: tuple[tuple[str, SettingValue], ...]
+
+@dataclass(frozen=True)
+class EffectiveCall:
+    """One planned call bound to settings, identity, and its supervisor request."""
+
+    run_id: RunId
+    call_id: CallId
+    planned_call: PlannedCall
+    request: AttemptRequest
+
+class AttemptRequestBuilder(Protocol):
+    """Build a request only from frozen prompt and instruction bytes."""
+
+    def build(
+        self,
+        call: PlannedCall,
+        binding: CliBinding,
+        replacement_instruction: bytes | None,
+        config: HarnessConfig,
+        /,
+    ) -> EffectiveCall:
+        """Hash effective inputs and settings, then build AttemptRequest."""
+        ...
 
 @dataclass(frozen=True)
 class AttemptEvidence:
-    """One supervisor outcome and exact raw stream observations."""
+    """In-memory supervisor outcome associated with its planned call."""
 
-    attempt_id: AttemptId
-    started_at_utc: str
-    ended_at_utc: str | None
-    elapsed_seconds: float | None
     control_flow: ControlFlow
-    result: AttemptResult | None
+    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
     error_type: str | None
     diagnostic: str | None
-    stdout: bytes | None
-    stderr: bytes | None
+    started_at_utc: str
+    ended_at_utc: str | None
     usage_telemetry: bytes | None
-    exit_status: int | None
-    termination_reason: str | None
-    cleanup_observations: bytes
-
-@dataclass(frozen=True)
-class CallEvidence:
-    """Final status for one planned call and all of its attempts."""
-
-    call_id: CallId
-    position: int
-    state: CallState
-    attempts: tuple[AttemptEvidence, ...]
-
-@dataclass(frozen=True)
-class RunEvidence:
-    """Run-level provenance and truthful planned-call accounting."""
-
-    run_id: RunId
-    head_commit: str
-    state: RunState
-    calls: tuple[CallEvidence, ...]
-    stop_reason: str | None
 
 class RunRecord(StrictModel):
-    """Strict serialized run provenance and frozen-plan metadata."""
-
     run_id: RunId
     repository_root: str
     head_commit: str
+    state: RunState
     runner_version: str
-    codex_path: str
+    codex_path: str | None
     cli_version: str | None
-    invocation_settings: dict[str, str | int | float | bool | None]
+    effective_settings: tuple[tuple[str, SettingValue], ...]
+    calls: tuple[CallRecord, ...]
 
 class CallRecord(StrictModel):
-    """Strict serialized effective call and scheduled-position record."""
-
     run_id: RunId
     call_id: CallId
     position: int
+    state: CallState
     source_paths: tuple[str, ...]
     source_sha256: tuple[str, ...]
     boundary_bytes_hex: tuple[str, ...]
@@ -174,46 +239,71 @@ class CallRecord(StrictModel):
     model: str
     effort: str
     effective_settings_sha256: str
+    attempts: tuple[AttemptRecord, ...]
 
 class AttemptRecord(StrictModel):
-    """Strict serialized attempt metadata, separate from raw stream artifacts."""
-
     run_id: RunId
     call_id: CallId
-    attempt_id: AttemptId
-    argv: tuple[str, ...]
-    cwd: str
+    position: int
+    attempt_number: AttemptNumber
+    control_flow: ControlFlow
+    outcome_kind: Literal[
+        "completed",
+        "timed_out",
+        "output_limit_exceeded",
+        "infrastructure_failure",
+        "cancelled",
+        "unexpected_exception",
+        "no_observation",
+    ]
     started_at_utc: str
     ended_at_utc: str | None
-    elapsed_seconds: float | None
-    control_flow: ControlFlow
     exit_status: int | None
     termination_reason: str | None
-    cleanup_observations: bytes
+    cleanup: CleanupRecord | None
+    stdout_artifact: str | None
+    stderr_artifact: str | None
+    usage_telemetry: bytes | None
     error_type: str | None
     diagnostic: str | None
+
+class SignalRecord(StrictModel):
+    """Serialized OS signal observation retained by the supervisor."""
+
+    signal: Literal["SIGTERM", "SIGKILL"]
+    outcome: Literal["sent", "no_target", "failed", "unknown"]
+    diagnostic: str | None
+
+class CleanupRecord(StrictModel):
+    """Structured persistence projection of supervisor cleanup evidence."""
+
+    process: Literal["not_started", "owned", "acquisition_uncertain"]
+    signals: tuple[SignalRecord, ...]
+    direct_wait: Literal["not_started", "reaped", "failed", "expired", "unknown"]
+    wait_diagnostic: str | None
 
 class EvidenceStore(Protocol):
     """Exclusive, append-only run evidence boundary."""
 
     def create(self, output_directory: Path, plan: FrozenPlan, /) -> None:
-        """Exclusively create a new run destination and record its frozen plan."""
+        """Exclusively create a new run destination and persist its plan."""
         ...
 
-    def record_attempt(self, evidence: AttemptEvidence, /) -> None:
-        """Persist one attempt; failure stops dispatch and cannot erase control flow."""
+    def record_attempt(
+        self,
+        run_id: RunId,
+        call_id: CallId,
+        position: int,
+        attempt_number: AttemptNumber,
+        evidence: AttemptEvidence,
+        /,
+    ) -> AttemptRecord:
+        """Persist an explicitly associated attempt without replacing evidence."""
         ...
 
-    def finalize(self, evidence: RunEvidence, /) -> None:
-        """Persist final accounting; failures leave the run incomplete."""
+    def finalize(self, record: RunRecord, /) -> None:
+        """Persist truthful final accounting; a failure leaves the run incomplete."""
         ...
-
-@dataclass(frozen=True)
-class RetryPolicy:
-    """Finite, caller-owned retry eligibility; default limit is zero."""
-
-    limit: int = 0
-    retry_nonzero_exit: bool = False
 
 class AttemptCall(Protocol):
     """Adapter to the existing public supervisor boundary."""
@@ -229,22 +319,18 @@ class AttemptCall(Protocol):
 
 @dataclass(frozen=True)
 class Coordinator:
-    """Own ordered dispatch, stop state, retries, and not-started accounting."""
+    """Own run concurrency, global stop, retries, and not-started accounting."""
 
     attempt: AttemptCall
     evidence: EvidenceStore
-    concurrency: int
-    retry_policy: RetryPolicy
 
-    async def run(self, plan: FrozenPlan, config: HarnessConfig, /) -> RunEvidence:
-        """Run a frozen plan and account for every call and attempt."""
-        ...
-
-class RepositoryReader(Protocol):
-    """Read-only Git and source boundary used before plan dispatch."""
-
-    def freeze(self, config: HarnessConfig, /) -> FrozenPlan:
-        """Validate repository inputs and return commit-checked snapshots."""
+    async def run(
+        self,
+        calls: tuple[EffectiveCall, ...],
+        config: HarnessConfig,
+        /,
+    ) -> RunRecord:
+        """Run distinct calls concurrently under the single config limits."""
         ...
 
 @dataclass(frozen=True)
@@ -252,10 +338,12 @@ class Composition:
     """Concrete adapters assembled once by the CLI entry point."""
 
     repository: RepositoryReader
+    planner: PlanBuilder
     estimator: TokenEstimator
-    attempt: AttemptCall
-    evidence: EvidenceStore
+    binding_resolver: CliBindingResolver
+    request_builder: AttemptRequestBuilder
+    coordinator: Coordinator
 
-    async def execute(self, config: HarnessConfig, /) -> RunEvidence | FrozenPlan:
-        """Prepare a plan, then either report dry-run data or execute it."""
+    async def execute(self, config: HarnessConfig, /) -> DryRunReport | RunRecord:
+        """Freeze and plan inputs, then report estimates or execute bound calls."""
         ...

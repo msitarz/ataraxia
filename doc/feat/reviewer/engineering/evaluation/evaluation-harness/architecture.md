@@ -44,10 +44,10 @@ run evidence around that boundary.
 - Effects: argument parsing and diagnostic output only; it does not perform
   Git, source, process, or evidence effects itself.
 
-### Input freezer and prompt composer
+### Input freezer
 
-**TL;DR:** Resolve and freeze the exact tracked inputs used by every planned
-call.
+**TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to
+the pure planner.
 
 - This component resolves one repository root and HEAD for all inputs, checks
   the checkout and tracked-file membership in batches, and rejects paths that
@@ -55,29 +55,37 @@ call.
 - It selects immediate regular files in lexical order, strictly decodes UTF-8,
   and compares each selected snapshot with the corresponding commit blob before
   dispatch.
-- It composes unchanged source bytes in directory-argument order with the
-  selected boundary bytes, then records ordered paths, source digests, prompt
-  digests, commit provenance, and separator bytes.
-- The plan retains the snapshots and sends those frozen bytes to each
-  invocation; execution never re-reads mutable source files.
-- Effects: read-only Git subprocesses and filesystem reads. No CLI process or
-  output writes are permitted during preparation.
+- It returns the repository root, HEAD, ordered source snapshots, and any
+  separately configured replacement instruction bytes with their digest.
+- Replacement instructions remain a separate configured input and metadata
+  field; no context file receives an instruction or data role.
+- Effects: read-only Git subprocesses and filesystem reads. It does not compose
+  prompts or make plans. No CLI process or output writes are permitted during
+  preparation.
 
 ### Plan and boundary records
 
 **TL;DR:** Represent validated settings and frozen work as immutable values.
 
-- The plan records the ordered Cartesian product of selected files, model, and
-  effort, including duplicate scheduled positions as distinct entries.
-- Frozen dataclass values represent internal source, prompt, call, run, and
-  attempt concepts. Pydantic models validate and serialize configuration and
-  persisted records, rejecting extra fields at those raw-data boundaries.
+- A pure composer and planner join the frozen source bytes with the ordered
+  boundary bytes, then build the Cartesian product of contexts, models, and
+  efforts. Duplicate scheduled positions remain distinct.
+- The plan records source paths and digests, prompt digests, commit provenance,
+  and exact separator bytes. Execution uses these snapshots and never
+  re-reads mutable source files.
+- Frozen dataclasses represent in-memory preparation and invocation values.
+  Pydantic boundary models cover configuration, ordered option events, source
+  snapshots, planned calls, the frozen plan, and persisted records. They use
+  `ConfigDict(extra="forbid", strict=True, frozen=True)`; nested settings are
+  tuples and immutable scalar or byte values rather than mutable mappings.
 - Validators check value constraints only. Git checks, file reads, estimates,
   directory creation, and process execution belong to explicit operations.
-- Effective-call identity includes ordered content and all settings that can
-  change the invocation. A separate run identity and position distinguish
-  repetitions and scheduled duplicates. A manual subset is a new run; there is
-  no prior-output scan or implicit resume.
+- A scheduled position has no effective-call identity until execution resolves
+  its CLI binding and invocation settings. The effective identity then includes
+  ordered content, exact instruction bytes, model, effort, executable/version,
+  and all other settings that can change the invocation. Run identity and
+  position distinguish repetitions and duplicate positions. A manual subset
+  is a new run; there is no prior-output scan or implicit resume.
 - Effects: none. These values describe decisions and observations but do not
   perform them.
 
@@ -88,40 +96,62 @@ call.
 - A small consumer-owned port accepts exact composed bytes and the requested
   model and returns an estimate with method, library and tokenizer versions,
   and compatibility status.
-- The concrete token library is deferred to implementation. Unsupported model
-  compatibility is reported as unknown or approximate, never as billing
-  precision.
+- The concrete token library is deferred to implementation. A dry-run report
+  contains one estimate for every scheduled call; unsupported model
+  compatibility is an explicit unknown or approximate estimate, never an
+  omitted estimate or billing precision.
 - Estimates cover supplied composed context only; unavailable automatic CLI or
   system context is excluded and labeled.
+- A configured replacement instruction receives its own separately labeled
+  estimate; it is never folded into the supplied-context count without its
+  basis being disclosed.
 - Effects: local computation only. The port cannot call the model CLI or change
   the frozen prompt.
 
+### CLI binding and request construction
+
+**TL;DR:** Bind runtime settings to frozen call bytes and build the exact
+supervisor request.
+
+- Execution resolves the absolute Codex path and observable CLI version and
+  settings after the dry-run branch, without probing the CLI during dry run.
+- A small request builder consumes a scheduled call's frozen prompt bytes,
+  separately frozen replacement instruction bytes, and the resolved binding.
+  It returns an effective-call identity and `AttemptRequest`; it does not
+  reopen source paths or infer defaults from mutable files.
+- When runtime binding is unavailable during dry run, the report marks its
+  binding and effective-call identity unknown. It may show a plan identity,
+  clearly labeled as such, but never as the effective invocation identity.
+- Effects: execution-time CLI path/version probes and request construction.
+  Dry run uses neither probe nor request construction.
+
 ### Async dispatch coordinator
 
-**TL;DR:** Own all planned-call and retry policy around one supervisor attempt
-at a time.
+**TL;DR:** Run independent calls concurrently while gating retries and stopping
+globally on unsafe outcomes.
 
-- The coordinator walks the frozen plan in order, holds a semaphore slot until
-  an attempt and its cleanup settle, and calls the supervisor's public
-  `call_supervisor` boundary with a caller-owned stop hook.
-- It owns process signal handlers, a stop latch, retry eligibility and count,
-  and explicit accounting for calls that never started. Finite execution,
-  cleanup, grace, output, retry, and concurrency settings are supplied from
-  validated configuration, not hidden protocol constants.
+- The coordinator schedules calls in plan order under one concurrency limit.
+  Distinct planned calls may execute concurrently; completion order does not
+  change their identity or evidence association.
+- A retry belongs to its call and starts only after that call's previous
+  attempt cleanup permits dispatch. Cancellation, overflow, uncertain
+  acquisition, unsafe cleanup, or recording failure latches a global stop and
+  prevents any later dispatch.
 - The default retry count is zero. Only declared infrastructure outcomes can
   be eligible; a completed zero-exit result is never retried based on output
   content. Nonzero exits require explicit caller opt-in and are still not
-  evidence that no semantic result exists. Cancellation, overflow, uncertain
-  acquisition, unsafe cleanup, or recording failure never retries.
-- The stop hook latches stop before any fallible recording. Dispatch checks the
-  latch before each call. No later attempt starts until prior cleanup permits
-  dispatch; cancellation stops new work and waits for bounded supervisor
-  cleanup.
-- Stop reasons and partial observations remain evidence on the original control
-  flow. The coordinator classifies process outcomes but does not parse reviewer
-  answers or assign semantic meaning to output.
-- Effects: async tasks, semaphore, process signal registration, and calls to
-  the existing supervisor. It does not own subprocess creation or cleanup.
+  evidence that no semantic result exists.
+- The stop hook latches stop before any fallible recording. The coordinator
+  checks the latch before each call and attempt. Cancellation stops new work
+  and waits for bounded supervisor cleanup.
+- It owns process signal handlers and not-started accounting. Concurrency,
+  retry count, deadlines, grace, and output allowance have one source: the
+  validated run configuration.
+- Stop reasons and partial observations remain associated with the original
+  control flow. The coordinator does not parse reviewer answers or assign
+  semantic meaning to output.
+- Effects: async tasks, semaphore, signal registration, and calls to the
+  existing supervisor. It does not own subprocess creation or cleanup.
 
 ### Evidence store
 
@@ -140,6 +170,14 @@ evidence.
   attempt's original exception or cancellation; if no earlier failure is
   active, the recording error is returned as the run failure. The store does
   not fabricate a successful record.
+- Every attempt record carries its run ID, call ID, scheduled position, and
+  attempt number explicitly. The in-memory observation reuses the supervisor's
+  `AttemptResult`, `AttemptCancelled`, or `AttemptFailureEvidence` value rather
+  than copying its output, status, and cleanup fields into a second outcome
+  type. The strict Pydantic attempt record is only the persisted projection,
+  with structured cleanup observations and separate stream artifact references.
+  An unexpected original exception remains in control flow with its supervisor
+  evidence snapshot when one is available.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -150,11 +188,9 @@ evidence.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
-- The entry point connects CLI settings, input preparation, the selected token
-  estimator, coordinator, supervisor adapter, and evidence store.
-- It resolves and records the absolute Codex executable and observable
-  invocation settings during execution. It does not perform live CLI version
-  probes in dry-run mode.
+- The entry point connects CLI settings, input freezing, pure composition and
+  planning, the selected token estimator, CLI binding, request construction,
+  coordinator, supervisor adapter, and evidence store.
 - The existing `script/process_supervisor.py` remains a separate dependency:
   its `AttemptRunner` owns one attempt, while `call_supervisor` forwards the
   outcome and invokes the harness-owned `DispatchStop` hook when cancellation
@@ -168,12 +204,14 @@ evidence.
 
 ```mermaid
 flowchart LR
-    CLI[CLI and ordered settings] --> PREP[Input freezer and composer]
-    PREP --> PLAN[Validated frozen plan]
-    PLAN --> DRY{Dry run?}
+    CLI[CLI and ordered settings] --> PREP[Read-only input freezer]
+    PREP --> PLAN[Pure composer and ordered plan]
+    PLAN --> EST[Token estimates]
+    EST --> DRY{Dry run?}
     DRY -->|yes| REPORT[Plan and estimate report]
-    DRY -->|no| ROOT[Entry point composition]
-    ROOT --> COORD[Async dispatch coordinator]
+    DRY -->|no| BIND[Resolve CLI binding]
+    BIND --> REQUEST[Build effective calls and AttemptRequest]
+    REQUEST --> COORD[Async dispatch coordinator]
     COORD --> STORE[Evidence store]
     COORD --> SUP[Existing process supervisor]
     SUP --> OS[CLI process, capture, cleanup]
@@ -182,8 +220,10 @@ flowchart LR
 
 The diagram shows proposed harness boundaries. The existing supervisor and its
 OS adapter are the only implemented service shown; the remaining boxes are
-exploratory. The token estimator is an optional local port used during
-preparation and is omitted from the execution path for clarity.
+exploratory. The input freezer performs read-only Git and filesystem effects;
+composition and planning are pure. Estimation returns one explicit value for
+each planned call, including an unknown value when compatibility is not known.
+The dry-run branch never resolves or probes the CLI.
 
 ## Type boundary
 
