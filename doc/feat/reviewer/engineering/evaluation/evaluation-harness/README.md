@@ -62,6 +62,14 @@ A caller can inspect the complete scheduled matrix before any model call.
   requires it.
 - At least one directory, model, and effort are required, and invalid arguments
   or an empty directory refuse all model calls.
+- Before preparation or model calls, the runner resolves one Git repository
+  root and HEAD commit SHA once for all supplied context directories and files,
+  rejecting external inputs or a missing HEAD.
+- The entire repository must have no staged, unstaged, or untracked changes,
+  including individual untracked files within directories, before preparation.
+- Batched, NUL-delimited Git tracked-file queries scoped to context directories
+  confirm every discovered input file is tracked, rejecting ignored or
+  untracked inputs without a Git subprocess per file.
 - Each directory contributes its immediate regular files in lexical filename
   order, with no recursion and with symbolic-link directories or entries
   rejected rather than followed.
@@ -94,9 +102,10 @@ A caller can inspect the complete scheduled matrix before any model call.
 - Estimates cover only supplied composed context; automatic CLI or system
   context is unavailable and excluded, and any included explicitly configured
   extra execution context has its separate estimation basis labeled.
-- Dry run launches no CLI subprocess or model call, including live version
-  probes, creates no output directory, and does not mutate retained evidence.
-  It may inspect inputs and settings to prepare its report.
+- Dry run applies the same Git validation using read-only Git subprocesses,
+  launches no Codex CLI subprocess or model call, including live version probes,
+  creates no output directory, and does not mutate retained evidence.
+- Dry run may inspect inputs and settings to prepare its report.
 - Unsupported model-effort combinations fail explicitly without silently
   substituting either value, and runtime rejection remains a failed attempt.
 
@@ -108,6 +117,11 @@ Retained evidence identifies the exact supplied bytes and execution settings.
   prompts in snapshots and records ordered source paths, source SHA-256
   digests, composed-prompt SHA-256 digests, and ordered separator settings and
   exact decoded bytes sufficient to reproduce composition.
+- Records retain the resolved repository root, HEAD commit SHA, and ordered
+  repository-relative source paths alongside snapshots and digests.
+- Batched comparison of selected source snapshots against that commit's blobs
+  rejects any byte differences before dispatch or dry-run reporting, so
+  concurrent edits cannot falsely attribute snapshot bytes to the commit.
 - Dispatch uses those frozen bytes rather than rereading mutable source files.
 - Stable call identity includes ordered selected inputs, separator settings and
   bytes, composed bytes, model, effort, and relevant invocation settings, while
@@ -125,6 +139,8 @@ Every scheduled call and launched attempt has inspectable evidence.
 
 - Exclusive creation rejects any existing output directory before model calls,
   including when another process creates it concurrently.
+- The output directory must be outside the context repository or ignored by
+  Git so creating run artifacts does not dirty that checkout.
 - Per-call and per-attempt records are immutable once finalized and preserve
   separate exact raw stdout and stderr bytes apart from metadata.
 - Records retain UTC start and end times, monotonic elapsed time, observed exit
