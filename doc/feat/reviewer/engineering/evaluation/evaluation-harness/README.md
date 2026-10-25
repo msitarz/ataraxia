@@ -239,8 +239,8 @@ A caller can rerun a manually selected subset as a new run.
 
 The original Work definition authorized no runner implementation, typed
 architecture, corpus preparation, or model calls. A later bounded assignment
-authorizes this exploratory architecture proposal and typed boundary only; it
-does not authorize runner implementation, wiring, corpus preparation, or model
-calls.
+authorized the architecture proposal and typed boundary. The current
+incremental assignment implements the shared model records only; it does not
+authorize runner implementation, wiring, corpus preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.

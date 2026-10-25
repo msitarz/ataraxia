@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared immutable values and persisted boundary records."""
+"""Historical reviewed boundary, now implemented in script/eval/model.py."""
 
 from dataclasses import dataclass
 from pathlib import Path
