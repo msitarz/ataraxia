@@ -54,7 +54,12 @@ A caller can inspect the complete scheduled matrix before any model call.
 
 - The Make entry point accepts repeated ordered `-d`/`--directory`, repeated
   ordered `-m`/`--model`, repeated ordered `-e`/`--effort`, positive integer
-  `-c`/`--concurrency`, and `-o`/`--output-directory` arguments.
+  `-c`/`--concurrency`, `-o`/`--output-directory`, and `-n`/`--dry-run`
+  arguments.
+- Dry run uses the same validation, ordered matrix, and frozen source-byte
+  composition as execution, held in memory without dispatch; the output
+  directory may be omitted because dry run writes no output, while execution
+  requires it.
 - At least one directory, model, and effort are required, and invalid arguments
   or an empty directory refuse all model calls.
 - Each directory contributes its immediate regular files in lexical filename
@@ -71,6 +76,19 @@ A caller can inspect the complete scheduled matrix before any model call.
 - The runner assigns no instruction or data role to a context directory or file.
 - The runner prints the scheduled call count and retains the ordered plan before
   dispatch, without claiming that this order supplies experiment block ordering.
+- Dry run prints the scheduled call count and estimated input tokens per
+  composed context and model, or a clearly labeled range and aggregate across
+  the matrix, accounting for separators and repeated scheduled positions.
+- Estimates use a Python token-counting library chosen during implementation
+  on the exact composed bytes, and identify the estimation method, library and
+  tokenizer versions, and requested-model compatibility; unsupported models
+  have unknown or explicitly approximate estimates, never billing precision.
+- Estimates cover only supplied composed context; automatic CLI or system
+  context is unavailable and excluded, and any included explicitly configured
+  extra execution context has its separate estimation basis labeled.
+- Dry run launches no CLI subprocess or model call, including live version
+  probes, creates no output directory, and does not mutate retained evidence.
+  It may inspect inputs and settings to prepare its report.
 - Unsupported model-effort combinations fail explicitly without silently
   substituting either value, and runtime rejection remains a failed attempt.
 
