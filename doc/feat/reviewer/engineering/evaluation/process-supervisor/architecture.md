@@ -1,9 +1,9 @@
 # Process supervisor architecture
 
-**Status: immediate-SIGKILL boundary implemented and accepted for AC-1 and AC-2;
-optional grace extension proposed for review under AC-4 TODO.** Representative
-caller scenarios exercise the child AC-3 boundary, while actual parent
-Evaluation harness integration remains pending. The retained
+**Status: immediate-SIGKILL boundary accepted for AC-1 and AC-2; optional grace
+is implemented and accepted for AC-4.**
+Representative caller scenarios exercise the child AC-3 boundary, while actual
+parent Evaluation harness integration remains pending. The retained
 [reviewed interface](design/reviewed-interface.pyi)
 records the original agreed types. The active
 [`script/process_supervisor.py`](../../../../../../script/process_supervisor.py)
@@ -12,14 +12,15 @@ caller stop hook, and native process adapter. Disposable process regressions
 exercise native lifecycle and a representative caller pattern; actual AC-3
 integration in the parent Evaluation harness remains pending.
 
-The [proposed typed delta](design/grace-interface.pyi) records only the affected
+The [grace typed delta](design/grace-interface.pyi) records only the affected
 public shapes and cleanup seam. It does not replace the active module or alter
-the historical reviewed interface. No grace behavior is implemented or verified.
+the historical reviewed interface. Focused native and controlled effect-boundary
+regressions cover the AC-4 lifecycle, which has passed independent acceptance.
 
 ## TL;DR
 
-- The implemented baseline uses immediate SIGKILL; optional grace remains
-  proposed under AC-4 TODO.
+- Zero grace uses immediate SIGKILL; positive grace requests TERM, drains
+  discarded output, then requests final SIGKILL within one cleanup deadline.
 - The Evaluation caller owns experiment policy and calls the narrow stop hook
   around one asynchronous process-supervisor attempt.
 - The supervisor owns subprocess resources, output capture, process
@@ -268,15 +269,13 @@ flowchart LR
     Caller -->|eligible timeout / infrastructure only\nup to 3 additional attempts| Caller
 ```
 
-## Proposed optional grace extension
+## Optional grace extension
 
 The
-[AC-4 contract](README.md#ac-4-todo-optional-grace-preserves-bounded-accountable-cleanup)
-owns the new guarantees. The verified before revision is
-`9df46f001408fbbebb5735b9477a1b0b190a0274`: native cleanup immediately sends
-SIGKILL, closes local pipes, then waits for the direct child. The proposal keeps
-that default and adds a positive-grace branch inside the same supervisor; there
-is no additional service or general signal-policy abstraction.
+[AC-4 contract](README.md#ac-4-done-optional-grace-preserves-bounded-accountable-cleanup)
+owns the new guarantees. Native cleanup keeps immediate SIGKILL as its default
+and supports a positive-grace TERM/drain/KILL branch inside the same supervisor;
+there is no additional service or general signal-policy abstraction.
 
 ```mermaid
 flowchart TD
@@ -284,14 +283,14 @@ flowchart TD
     Grace{grace_seconds positive?}
     Term[Request group SIGTERM; retain observation]
     Sent{SIGTERM sent?}
-    Drain[Drain and discard both pipes until grace or cleanup deadline]
+    Drain[Drain/discard until grace or cleanup deadline; EOF does not shorten grace]
     Kill[Request group SIGKILL; retain observation]
     Close[Explicitly close local output pipes]
     Wait[Direct-child wait with remaining budget only]
     Evidence[Return separate signal and wait evidence]
     Start --> Grace
-    Grace -->|no: implemented default| Kill
-    Grace -->|yes: proposed| Term
+    Grace -->|no: default| Kill
+    Grace -->|yes| Term
     Term --> Sent
     Sent -->|yes| Drain
     Sent -->|failed or no_target| Kill
@@ -315,8 +314,8 @@ The typed delta describes the affected public boundary:
 - The revised evidence flows through the existing `CleanupOutcome`,
   `AttemptObservation`, result and exception evidence paths while their other
   fields and tagged variants remain as in the active module.
-- Public callers and fake effects will need the changed cleanup signature and
-  evidence shape when implementation is authorized.
+- Public callers and fake effects use the changed cleanup signature and
+  evidence shape.
 
 Capture and cleanup retain distinct resource ownership:
 
@@ -325,6 +324,9 @@ Capture and cleanup retain distinct resource ownership:
   readers or detached draining tasks.
 - Cleanup drains and discards during grace and settles its drain operations
   within the same lifecycle as AC-4's pipe closure.
+- EOF does not end the configured grace early. An unexpected drain read error
+  is propagated only after final KILL, explicit pipe closure and the bounded
+  direct-child wait have settled.
 - Exact private reader mechanics remain implementation choices.
 
 `CleanupEvidence.dispatch_permitted` applies these rules:
@@ -343,8 +345,9 @@ Capture and cleanup retain distinct resource ownership:
 - Uncertain acquisition remains unsafe.
 - Cancellation independently stops dispatch under the existing caller contract.
 
-This proposal is for boundary review; implementation and AC-4 acceptance
-scenarios remain pending.
+The AC-4 implementation and its focused disposable-process regressions have
+passed independent review and acceptance. AC-4 is DONE; AC-3 integration in
+the parent Evaluation harness remains pending.
 
 - The new file is outside active module resolution and describes deltas rather
   than a second full API.
@@ -352,7 +355,7 @@ scenarios remain pending.
 - The opportunity to react to TERM and the limits on guarantees and scope remain
   owned by AC-4 and the Work's Non-Goals.
 
-## Evidence still required
+## Evidence and remaining integration
 
 - Static checks can verify declared relationships and imports only.
 - Disposable-process tests observe combined-output capping for positive limits,
@@ -363,6 +366,9 @@ scenarios remain pending.
   limits instead of successful truncation.
 - Disposable-process tests observe signal/wait reporting and cancellation
   propagation with cleanup evidence.
+- AC-4 regressions observe cooperative and ignored TERM, output draining without
+  retained-prefix growth, a TERM-ignoring pipe holder, repeated cancellation,
+  signal failures, no-target grace skipping, and cleanup-budget exhaustion.
 - Representative caller tests exercise the public stop hook, signal delivery,
   cleanup-failure stop, accounting, and retry ordering.
 - Actual Evaluation-harness signal wiring, accounting, and scheduling remain

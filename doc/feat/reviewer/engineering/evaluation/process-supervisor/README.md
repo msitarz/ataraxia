@@ -32,7 +32,7 @@ requiring a production reviewer runner.
 - Python `asyncio` owns subprocess creation, stream reading, waiting,
   cancellation, and cleanup for one attempt through an awaitable boundary.
 - A dedicated POSIX process group scopes termination to the invocation's owned
-  group, with immediate SIGKILL by default and a proposed optional
+  group, with immediate SIGKILL by default and an optional
   SIGTERM/grace/SIGKILL path under the same total cleanup budget.
 - The Evaluation caller owns dispatch policy, signal handling, and evidence
   accounting, with this child delivering only the call-site integration needed
@@ -69,12 +69,11 @@ the absent Evaluation harness. The child AC-1 and AC-2 behavior has been
 reviewed and accepted; AC-3 remains TODO until the parent-owned Evaluation
 harness is integrated and reviewed. The parent Evaluation Work remains TODO.
 
-The [architecture](architecture.md) records the implemented native behavior,
-effect sequence, and ownership, and separately describes the proposed optional
-grace extension. AC-1 and AC-2 describe the accepted immediate-SIGKILL baseline;
-the new grace behavior in AC-4 is TODO. The
-[proposed typed delta](design/grace-interface.pyi) is for boundary review only;
-runtime implementation and grace regressions are pending.
+The [architecture](architecture.md) records native behavior, effect sequence,
+and ownership. AC-1 and AC-2 describe the accepted immediate-SIGKILL baseline;
+AC-4 is implemented and accepted with focused regressions. The
+[typed delta](design/grace-interface.pyi) records the accepted boundary; the
+historical reviewed interface remains unchanged.
 
 ## Acceptance criteria
 
@@ -143,12 +142,11 @@ preserves truthful incomplete-run accounting.
 - The active call's failure and cleanup status remain inspectable, and planned
   but undispatched calls retain the protocol's not-started accounting.
 
-### **AC-4 TODO** Optional grace preserves bounded, accountable cleanup
+### **AC-4 DONE** Optional grace preserves bounded, accountable cleanup
 
 A caller can opt into SIGTERM followed by a bounded grace period and SIGKILL,
 while the default preserves immediate SIGKILL and the existing result semantics.
-This extension is proposed; the runtime currently supports only AC-2's direct
-SIGKILL path.
+The optional grace path is implemented and accepted under this criterion.
 
 - `AttemptRequest.grace_seconds: float = 0.0` accepts finite nonnegative numbers
   excluding `bool`, strictly less than positive `cleanup_timeout_seconds`;
@@ -161,6 +159,10 @@ SIGKILL path.
 - During grace, the supervisor drains and discards stdout and stderr so a
   cooperative process can progress without blocked pipes; the captured output
   prefixes are already final and do not grow during cleanup.
+- Reaching EOF on both streams does not shorten the requested grace; draining
+  continues until the grace or shared cleanup deadline. If a grace read fails,
+  cleanup still requests final SIGKILL, closes both pipes, and settles the
+  direct-child wait within the remaining budget before propagating that error.
 - SIGKILL is requested for the owned group after grace, even if the leader has
   exited or the streams reached EOF; leader exit never proves group absence.
 - Cleanup computes one absolute deadline using `loop.time()` at cleanup entry;
@@ -177,10 +179,10 @@ SIGKILL path.
   diagnostic; zero grace records only SIGKILL, positive grace records SIGTERM
   then SIGKILL.
 - Missing or unknown required signal evidence, any failed signal (including
-  failed SIGTERM followed by successful SIGKILL), and failed, expired or unknown
-  direct-child wait forbid further dispatch; the accepted signal outcomes
-  `sent` and `no_target` plus a reaped direct child permit it without proving
-  whole-group absence.
+  failed SIGTERM followed by successful SIGKILL), contradictory diagnostics,
+  and failed, expired or unknown direct-child wait forbid further dispatch; the
+  accepted signal outcomes `sent` and `no_target` plus a reaped direct child
+  permit it without proving whole-group absence.
 - Repeated owner cancellation during grace or later cleanup cannot interrupt
   the retained cleanup task; the original cancellation propagates afterwards
   with the final evidence and partial capture, and cannot authorize retry.
@@ -201,8 +203,9 @@ Acceptance requires these focused scenarios:
 - Those failure scenarios verify separate diagnostics, final KILL attempt,
   pipe closure, remaining-budget wait and conservative dispatch refusal.
 
-These scenarios are pending implementation; this contract and typed delta
-establish no passing grace behavior or full Evaluation-harness integration.
+The implementation includes the listed focused scenarios, which passed
+independent review. This child does not provide full Evaluation-harness
+integration.
 
 ## Additional context
 
@@ -247,9 +250,7 @@ evidence below. Representative caller tests cover only the child boundary; the
 actual Evaluation harness still requires parent-owned integration and review.
 See
 [tests](../../../../../../test/script/integration/test_process_supervisor.py).
-AC-1 and AC-2 remain DONE for the accepted immediate-SIGKILL baseline. AC-4
-remains TODO pending grace implementation, focused evidence, and independent
-review. AC-3 remains TODO pending integration and review in the parent
-Evaluation harness; the parent Evaluation Work remains TODO. The
+AC-1, AC-2 and AC-4 are DONE. AC-3 remains TODO pending integration and review
+in the parent Evaluation harness; the parent Evaluation Work remains TODO. The
 [preparation record](../preparation.md) retains the CLI known issue,
 baseline-accounting policy, and exhausted call allowances unchanged.

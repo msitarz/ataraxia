@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Proposed AC-4 public deltas; not implemented or an importable runtime API.
+"""Accepted AC-4 public delta; not an importable runtime API.
 
 Baseline: script/process_supervisor.py at 9df46f001408fbbebb5735b9477a1b0b190a0274.
 See ../architecture.md and ../README.md AC-4 for lifecycle and acceptance rules.
 The historical reviewed-interface.pyi stays unchanged. This non-shadowing file
 shows only changed shapes, not an independently usable replacement module.
-Unchanged public shapes and methods remain defined by the active baseline;
-future implementation substitutes this cleanup evidence throughout observation,
-result and exception paths without duplicating those records here.
+Unchanged public shapes and methods remain defined by the active module; its
+runtime cleanup evidence now uses these deltas throughout result paths.
 """
 
 from dataclasses import dataclass
@@ -58,8 +57,9 @@ class CleanupEvidence:
         """Accept only exact owned sequences and successful signal/wait evidence.
 
         Owned identities must be exactly ("SIGKILL",) or ("SIGTERM", "SIGKILL"),
-        every outcome sent/no_target, and direct_wait reaped. Missing final KILL,
-        unknown outcomes, duplicates and reordered sequences block dispatch.
+        every outcome sent/no_target without diagnostics, and direct_wait reaped
+        without a diagnostic. Missing final KILL, unknown outcomes, duplicates
+        and reordered sequences block dispatch.
         Failed TERM blocks dispatch even after successful KILL. The adapter
         selects the expected sequence from validated grace; no request/config
         field is added here. Proven no-launch requires empty signal evidence,
@@ -70,7 +70,7 @@ class CleanupEvidence:
 
 @dataclass(frozen=True)
 class CleanupOutcome:
-    """Same envelope, now carrying the proposed CleanupEvidence shape."""
+    """Same envelope, carrying the active CleanupEvidence shape."""
 
     evidence: CleanupEvidence
     exit_status: int | None = None

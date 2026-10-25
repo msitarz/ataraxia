@@ -31,6 +31,7 @@ from script.process_supervisor import (  # ruff: ignore[module-import-not-at-top
     Completed,
     NativeProcessEffects,
     ProcessHandle,
+    SignalAttempt,
     call_supervisor,
     failure_evidence,
     run_attempt,
@@ -60,7 +61,7 @@ class RepresentativeCaller:
     events: list[str] = field(default_factory=list)
     attempts: list[str] = field(default_factory=list)
     active_reason: str | None = None
-    active_signal: str | None = None
+    active_signals: list[dict[str, str | None]] = field(default_factory=list)
     active_wait: str | None = None
     not_started: list[str] = field(default_factory=list)
     stop_diagnostic: str | None = None
@@ -81,7 +82,14 @@ class RepresentativeCaller:
         if evidence is not None:
             observation = evidence.observation
         if observation is not None:
-            self.active_signal = observation.cleanup.signal
+            self.active_signals = [
+                {
+                    "signal": item.signal,
+                    "outcome": item.outcome,
+                    "diagnostic": item.diagnostic,
+                }
+                for item in observation.cleanup.signals
+            ]
             self.active_wait = observation.cleanup.direct_wait
         self.events.append("recorded")
 
@@ -109,23 +117,21 @@ class UnsafeReportingEffects(NativeProcessEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        outcome = await super().cleanup(handle, timeout_seconds)
+        outcome = await super().cleanup(handle, timeout_seconds, grace_seconds)
         actual = outcome.evidence
         if self.unsafe_field == "signal":
             evidence = CleanupEvidence(
                 actual.process,
-                "failed",
-                "injected signal diagnostic",
+                (SignalAttempt("SIGKILL", "failed", "injected signal diagnostic"),),
                 actual.direct_wait,
                 actual.wait_diagnostic,
             )
         else:
             evidence = CleanupEvidence(
                 actual.process,
-                actual.signal,
-                actual.signal_diagnostic,
+                actual.signals,
                 "unknown",
                 "injected wait diagnostic",
             )
@@ -272,7 +278,14 @@ async def record_active_outcome(
         result = await active_task
     except AttemptCancelled as error:
         caller.active_reason = type(error).__name__
-        caller.active_signal = error.observation.cleanup.signal
+        caller.active_signals = [
+            {
+                "signal": item.signal,
+                "outcome": item.outcome,
+                "diagnostic": item.diagnostic,
+            }
+            for item in error.observation.cleanup.signals
+        ]
         caller.active_wait = error.observation.cleanup.direct_wait
         caller.stop_diagnostic = stop_dispatch_diagnostic(error)
     except BaseException as error:
@@ -280,7 +293,14 @@ async def record_active_outcome(
         if evidence is None:
             raise
         caller.active_reason = type(error).__name__
-        caller.active_signal = evidence.observation.cleanup.signal
+        caller.active_signals = [
+            {
+                "signal": item.signal,
+                "outcome": item.outcome,
+                "diagnostic": item.diagnostic,
+            }
+            for item in evidence.observation.cleanup.signals
+        ]
         caller.active_wait = evidence.observation.cleanup.direct_wait
         caller.stop_diagnostic = stop_dispatch_diagnostic(error)
     else:
@@ -316,7 +336,7 @@ def report(caller: RepresentativeCaller, args: CallerOptions) -> dict[str, objec
         "events": caller.events,
         "attempts": caller.attempts,
         "active_reason": caller.active_reason,
-        "active_signal": caller.active_signal,
+        "active_signals": caller.active_signals,
         "active_wait": caller.active_wait,
         "not_started": caller.not_started,
         "stop_diagnostic": caller.stop_diagnostic,
@@ -368,7 +388,14 @@ async def run_retry(args: CallerOptions) -> dict[str, object]:
         "statuses": [result.exit_status for result in results],
         "cleanup": [
             {
-                "signal": result.observation.cleanup.signal,
+                "signals": [
+                    {
+                        "signal": item.signal,
+                        "outcome": item.outcome,
+                        "diagnostic": item.diagnostic,
+                    }
+                    for item in result.observation.cleanup.signals
+                ],
                 "direct_wait": result.observation.cleanup.direct_wait,
             }
             for result in results

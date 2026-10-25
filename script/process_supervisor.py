@@ -3,8 +3,8 @@
 
 Accepted limitations for this experiment:
 
-- Cleanup immediately signals the owned POSIX group and waits for the direct
-  CLI, without a graceful TERM/grace/KILL period or orderly-flushing guarantee.
+- Cleanup signals the owned POSIX group immediately by default; callers may
+  request a bounded TERM/grace/KILL period without an orderly-flushing guarantee.
 - Signal outcome and direct-child wait are observations, not proof that every
   descendant exited; the boundary does not discover process trees, probe group
   absence or zombies, or contain escaped children.
@@ -52,6 +52,7 @@ class AttemptRequest:
     cleanup_timeout_seconds: float
     output_limit_bytes: int
     stdin: Literal["devnull"]
+    grace_seconds: float = 0.0
 
     def __post_init__(self) -> None:
         """Reject invalid protocol limits before any acquisition effect.
@@ -79,15 +80,34 @@ class AttemptRequest:
             or self.output_limit_bytes < 0
         ):
             raise ValueError("output_limit_bytes must be a nonnegative integer")
+        if (
+            isinstance(self.grace_seconds, bool)
+            or not isinstance(self.grace_seconds, (int, float))
+            or not math.isfinite(self.grace_seconds)
+            or self.grace_seconds < 0
+            or self.grace_seconds >= self.cleanup_timeout_seconds
+        ):
+            raise ValueError(
+                "grace_seconds must be finite, nonnegative, and less than "
+                "cleanup_timeout_seconds"
+            )
+
+
+@dataclass(frozen=True)
+class SignalAttempt:
+    """One ordered process-group signal observation."""
+
+    signal: Literal["SIGTERM", "SIGKILL"]
+    outcome: Literal["sent", "no_target", "failed", "unknown"]
+    diagnostic: str | None
 
 
 @dataclass(frozen=True)
 class CleanupEvidence:
-    """Separate group-signal and direct-child wait observations."""
+    """Ordered group-signal and direct-child wait observations."""
 
     process: Literal["not_started", "owned", "acquisition_uncertain"]
-    signal: Literal["not_started", "sent", "no_target", "failed", "unknown"]
-    signal_diagnostic: str | None
+    signals: tuple[SignalAttempt, ...]
     direct_wait: Literal["not_started", "reaped", "failed", "expired", "unknown"]
     wait_diagnostic: str | None
 
@@ -99,15 +119,20 @@ class CleanupEvidence:
         """
         if self.process == "not_started":
             return (
-                self.signal == "not_started"
+                not self.signals
                 and self.direct_wait == "not_started"
-                and self.signal_diagnostic is None
                 and self.wait_diagnostic is None
             )
         return (
             self.process == "owned"
-            and self.signal in {"sent", "no_target"}
+            and tuple(item.signal for item in self.signals)
+            in {("SIGKILL",), ("SIGTERM", "SIGKILL")}
+            and all(
+                item.outcome in {"sent", "no_target"} and item.diagnostic is None
+                for item in self.signals
+            )
             and self.direct_wait == "reaped"
+            and self.wait_diagnostic is None
         )
 
 
@@ -267,7 +292,7 @@ async def run_attempt(
         observation = AttemptObservation(
             CapturedOutput(b"", b""),
             attempt_clock.monotonic() - started_at,
-            CleanupEvidence("not_started", "not_started", None, "not_started", None),
+            CleanupEvidence("not_started", (), "not_started", None),
         )
         return InfrastructureFailure(
             observation, None, acquired.error_type, acquired.diagnostic
@@ -367,7 +392,11 @@ class ProcessEffects(Protocol):
         ...
 
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self,
+        handle: ProcessHandle,
+        timeout_seconds: float,
+        grace_seconds: float,
+        /,
     ) -> CleanupOutcome:
         """Signal the group and await the direct child within the timeout.
 
@@ -434,9 +463,13 @@ class NativeProcessEffects:
         )
 
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self,
+        handle: ProcessHandle,
+        timeout_seconds: float,
+        grace_seconds: float,
+        /,
     ) -> CleanupOutcome:
-        """SIGKILL the owned group and await the direct child within the deadline.
+        """Escalate owned-group termination and await the direct child by deadline.
 
         Returns:
             Separate signal and direct-child wait evidence.
@@ -446,50 +479,7 @@ class NativeProcessEffects:
         """
         if not isinstance(handle, _NativeHandle):
             raise TypeError("NativeProcessEffects requires its own process handle")
-        loop = asyncio.get_running_loop()
-        deadline = loop.time() + timeout_seconds
-        try:
-            os.killpg(handle.process_group_id, signal.SIGKILL)
-        except ProcessLookupError:
-            signal_result: Literal["sent", "no_target", "failed"] = "no_target"
-            signal_diagnostic = None
-        except OSError as exc:
-            signal_result = "failed"
-            signal_diagnostic = f"{type(exc).__name__}: {exc}"
-        else:
-            signal_result = "sent"
-            signal_diagnostic = None
-        handle.close_output_pipes()
-        try:
-            await asyncio.wait_for(
-                handle.process.wait(), timeout=max(0.0, deadline - loop.time())
-            )
-        except TimeoutError:
-            return CleanupOutcome(
-                CleanupEvidence(
-                    "owned",
-                    signal_result,
-                    signal_diagnostic,
-                    "expired",
-                    "direct-child wait expired",
-                ),
-                handle.process.returncode,
-            )
-        except OSError as exc:
-            return CleanupOutcome(
-                CleanupEvidence(
-                    "owned",
-                    signal_result,
-                    signal_diagnostic,
-                    "failed",
-                    f"{type(exc).__name__}: {exc}",
-                ),
-                handle.process.returncode,
-            )
-        return CleanupOutcome(
-            CleanupEvidence("owned", signal_result, signal_diagnostic, "reaped", None),
-            handle.process.returncode,
-        )
+        return await _cleanup_native(handle, timeout_seconds, grace_seconds)
 
 
 class AttemptRunner(Protocol):
@@ -539,6 +529,109 @@ class _NativeHandle:
                 pipe.close()
 
 
+async def _discard_stream(reader: asyncio.StreamReader | None) -> None:
+    """Drain bytes without retaining them while cleanup owns the pipes."""
+    if reader is not None:
+        while await reader.read(65536):
+            pass
+
+
+def _send_group_signal(pgid: int, sig: signal.Signals) -> SignalAttempt:
+    identity: Literal["SIGTERM", "SIGKILL"] = (
+        "SIGTERM" if sig == signal.SIGTERM else "SIGKILL"
+    )
+    try:
+        os.killpg(pgid, sig)
+    except ProcessLookupError:
+        return SignalAttempt(identity, "no_target", None)
+    except OSError as exc:
+        return SignalAttempt(identity, "failed", f"{type(exc).__name__}: {exc}")
+    return SignalAttempt(identity, "sent", None)
+
+
+async def _cleanup_native(
+    handle: _NativeHandle, timeout_seconds: float, grace_seconds: float
+) -> CleanupOutcome:
+    """Own the complete native termination sequence under one deadline.
+
+    Returns:
+        Signal and direct-child wait evidence when cleanup completes normally.
+
+    Raises:
+        The original unexpected grace-drain error after final signaling,
+        pipe closure and bounded direct-child settlement.
+    """
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + timeout_seconds
+    attempts: list[SignalAttempt] = []
+    drain_error: BaseException | None = None
+    if grace_seconds > 0:
+        term = _send_group_signal(handle.process_group_id, signal.SIGTERM)
+        attempts.append(term)
+        if term.outcome == "sent":
+            try:
+                await _grace_drain(handle, min(loop.time() + grace_seconds, deadline))
+            except BaseException as exc:
+                drain_error = exc
+    attempts.append(_send_group_signal(handle.process_group_id, signal.SIGKILL))
+    handle.close_output_pipes()
+    outcome = await _wait_direct_child(handle, attempts, deadline)
+    if drain_error is not None:
+        vars(drain_error)["process_supervisor_cleanup_outcome"] = outcome
+        raise drain_error
+    return outcome
+
+
+async def _wait_direct_child(
+    handle: _NativeHandle, attempts: list[SignalAttempt], deadline: float
+) -> CleanupOutcome:
+    """Wait for the direct child using only cleanup time that remains.
+
+    Returns:
+        Reaped, expired or failed wait evidence with any observed returncode.
+    """
+    try:
+        await asyncio.wait_for(
+            handle.process.wait(),
+            timeout=max(0.0, deadline - asyncio.get_running_loop().time()),
+        )
+    except TimeoutError:
+        evidence = CleanupEvidence(
+            "owned", tuple(attempts), "expired", "direct-child wait expired"
+        )
+    except OSError as exc:
+        evidence = CleanupEvidence(
+            "owned", tuple(attempts), "failed", f"{type(exc).__name__}: {exc}"
+        )
+    else:
+        evidence = CleanupEvidence("owned", tuple(attempts), "reaped", None)
+    return CleanupOutcome(evidence, handle.process.returncode)
+
+
+async def _grace_drain(handle: _NativeHandle, deadline: float) -> None:
+    """Drain streams and hold the TERM grace until its deadline, including EOF."""
+    loop = asyncio.get_running_loop()
+    timeout = max(0.0, deadline - loop.time())
+    drains = [
+        asyncio.create_task(_discard_stream(handle.process.stdout)),
+        asyncio.create_task(_discard_stream(handle.process.stderr)),
+    ]
+    try:
+        completed, _pending = await asyncio.wait(
+            drains, timeout=timeout, return_when=asyncio.FIRST_EXCEPTION
+        )
+        for task in completed:
+            task.result()
+    finally:
+        for task in drains:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*drains, return_exceptions=True)
+        remaining = deadline - loop.time()
+        if remaining > 0:
+            await asyncio.sleep(remaining)
+
+
 class _OutputCapture:
     def __init__(self, limit: int) -> None:
         self.limit = limit
@@ -572,7 +665,7 @@ def _native_observation(output: _OutputCapture) -> AttemptObservation:
     return AttemptObservation(
         CapturedOutput(bytes(output.stdout), bytes(output.stderr)),
         None,
-        CleanupEvidence("owned", "not_started", None, "not_started", None),
+        CleanupEvidence("owned", (), "not_started", None),
     )
 
 
@@ -776,7 +869,7 @@ async def _finish_cancelled_acquisition(
         observation = AttemptObservation(
             CapturedOutput(b"", b""),
             clock.monotonic() - started_at,
-            CleanupEvidence("not_started", "not_started", None, "not_started", None),
+            CleanupEvidence("not_started", (), "not_started", None),
         )
         stopped = AttemptCancelled(observation)
         stopped.add_note(
@@ -792,9 +885,7 @@ async def _finish_cancelled_acquisition(
         observation = AttemptObservation(
             None,
             clock.monotonic() - started_at,
-            CleanupEvidence(
-                "acquisition_uncertain", "unknown", diagnostic, "unknown", diagnostic
-            ),
+            CleanupEvidence("acquisition_uncertain", (), "unknown", diagnostic),
         )
         if acquisition.error is not None:
             stopped = AttemptCancelled(observation)
@@ -805,7 +896,10 @@ async def _finish_cancelled_acquisition(
             raise stopped from acquisition.error
         raise AttemptCancelled(observation) from cancellation
     cleanup = await _settle_cleanup(
-        effects, acquisition.acquired, request.cleanup_timeout_seconds
+        effects,
+        acquisition.acquired,
+        request.cleanup_timeout_seconds,
+        request.grace_seconds,
     )
     observation = _observation(None, cleanup.outcome.evidence, clock, started_at)
     stopped = AttemptCancelled(observation, cleanup.outcome.exit_status)
@@ -848,7 +942,10 @@ async def _run_owned_attempt(
 
 
 async def _settle_cleanup(
-    effects: ProcessEffects, handle: ProcessHandle, timeout_seconds: float
+    effects: ProcessEffects,
+    handle: ProcessHandle,
+    timeout_seconds: float,
+    grace_seconds: float = 0.0,
 ) -> _CleanupSettlement:
     """Retain cleanup through repeated cancellation until its adapter settles.
 
@@ -857,7 +954,8 @@ async def _settle_cleanup(
         cleanup error. Unexpected errors retain their type and message in the
         unknown cleanup evidence.
     """
-    cleanup_task = asyncio.create_task(effects.cleanup(handle, timeout_seconds))
+    cleanup_call = effects.cleanup(handle, timeout_seconds, grace_seconds)
+    cleanup_task = asyncio.create_task(cleanup_call)
     cancellation: CancelledError | None = None
     while True:
         try:
@@ -868,15 +966,16 @@ async def _settle_cleanup(
             if cleanup_task.cancelled():
                 diagnostic = _error_diagnostic(exc)
                 outcome = CleanupOutcome(
-                    CleanupEvidence(
-                        "owned", "unknown", diagnostic, "unknown", diagnostic
-                    )
+                    CleanupEvidence("owned", (), "unknown", diagnostic)
                 )
                 return _CleanupSettlement(outcome, cancellation, None, True)
         except Exception as exc:
             diagnostic = _error_diagnostic(exc)
-            outcome = CleanupOutcome(
-                CleanupEvidence("owned", "unknown", diagnostic, "unknown", diagnostic)
+            reported = vars(exc).get("process_supervisor_cleanup_outcome")
+            outcome = (
+                reported
+                if isinstance(reported, CleanupOutcome)
+                else CleanupOutcome(CleanupEvidence("owned", (), "unknown", diagnostic))
             )
             return _CleanupSettlement(outcome, cancellation, exc)
 
@@ -896,7 +995,9 @@ async def _finalize_owned_attempt(
     Returns:
         The terminal result after cleanup evidence is attached.
     """
-    cleanup = await _settle_cleanup(effects, handle, request.cleanup_timeout_seconds)
+    cleanup = await _settle_cleanup(
+        effects, handle, request.cleanup_timeout_seconds, request.grace_seconds
+    )
     leaf_cancellation = (
         cancellation if isinstance(cancellation, AttemptCancelled) else None
     )

@@ -32,6 +32,7 @@ from script.process_supervisor import (
     OutputLimitExceeded,
     ProcessHandle,
     TimedOut,
+    failure_evidence,
     run_attempt,
 )
 
@@ -40,7 +41,7 @@ CALLER_FIXTURE = Path(__file__).parents[1] / "fixtures" / "process_supervisor_ca
 
 
 def request(
-    tmp_path: Path, cap: int, *args: str, timeout: float = 3.0
+    tmp_path: Path, cap: int, *args: str, timeout: float = 3.0, grace: float = 0.0
 ) -> AttemptRequest:
     """Build a bounded request for the disposable CLI fixture."""
     return AttemptRequest(
@@ -50,6 +51,144 @@ def request(
         2.0,
         cap,
         "devnull",
+        grace,
+    )
+
+
+def capture_subprocesses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> list[asyncio.subprocess.Process]:
+    """Observe actual asyncio-owned children through its acquisition boundary."""
+    created: list[asyncio.subprocess.Process] = []
+    original_create = asyncio.create_subprocess_exec
+
+    async def record_create(*args: Any, **kwargs: Any) -> asyncio.subprocess.Process:
+        process = await original_create(*args, **kwargs)
+        created.append(process)
+        return process
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", record_create)
+    return created
+
+
+@pytest.mark.parametrize(
+    ("term_mode", "burst_stream"),
+    [
+        pytest.param("burst", "stdout", id="cooperative-stdout-drain"),
+        pytest.param("burst", "stderr", id="cooperative-stderr-drain"),
+        pytest.param("ignore", "stdout", id="ignored-term"),
+    ],
+)
+def test_positive_grace_escalates_and_freezes_captured_prefix(
+    tmp_path: Path, term_mode: str, burst_stream: str
+) -> None:
+    """TERM is honored or escalated, while cleanup drains without retaining."""
+    # Given: a long-running child and a bounded output prefix.
+    marker = tmp_path / "term-handler-finished"
+    attempt = request(
+        tmp_path,
+        8,
+        "sleep",
+        "--term-mode",
+        term_mode,
+        "--term-burst-stream",
+        burst_stream,
+        "--term-marker",
+        str(marker),
+        grace=0.25,
+    )
+
+    # When
+    result = asyncio.run(run_attempt(attempt))
+
+    # Then
+    assert isinstance(result, TimedOut)
+    assert result.observation.output == process_supervisor.CapturedOutput(b"", b"")
+    assert marker.exists() is (term_mode == "burst")
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert result.observation.cleanup.signals[0].outcome == "sent"
+    assert result.observation.cleanup.signals[1].outcome in {"sent", "no_target"}
+    assert result.observation.cleanup.direct_wait == "reaped"
+
+
+def test_eof_during_grace_does_not_shorten_term_wait(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: TERM closes both output streams but leaves the child alive.
+    ready = tmp_path / "ready"
+    marker = tmp_path / "term-received"
+    attempt = request(
+        tmp_path,
+        0,
+        "sleep",
+        "--term-mode",
+        "close-streams",
+        "--ready-file",
+        str(ready),
+        "--term-marker",
+        str(marker),
+        timeout=1.0,
+        grace=0.35,
+    )
+    real_killpg = os.killpg
+    signal_times: list[tuple[signal.Signals, float]] = []
+
+    def observe_signals(pgid: int, sig: signal.Signals) -> None:
+        signal_times.append((sig, monotonic()))
+        real_killpg(pgid, sig)
+
+    monkeypatch.setattr(process_supervisor.os, "killpg", observe_signals)
+
+    # When
+    result = asyncio.run(run_attempt(attempt))
+
+    # Then
+    assert ready.exists() and marker.exists()
+    assert isinstance(result, TimedOut)
+    assert tuple(sig.name for sig, _ in signal_times) == ("SIGTERM", "SIGKILL")
+    assert signal_times[1][1] - signal_times[0][1] >= 0.30
+    assert result.observation.cleanup.direct_wait == "reaped"
+
+
+def test_grace_expiry_retrieves_all_reader_failures(tmp_path: Path) -> None:
+    # Given: an ignored TERM and a loop handler observing unhandled failures.
+    attempt = request(
+        tmp_path,
+        100,
+        "sleep",
+        "--term-mode",
+        "ignore",
+        timeout=0.1,
+        grace=0.2,
+    )
+    loop_contexts: list[dict[str, object]] = []
+
+    async def run_with_exception_handler() -> TimedOut:
+        loop = asyncio.get_running_loop()
+        loop.set_exception_handler(lambda _loop, context: loop_contexts.append(context))
+
+        # When
+        result = await run_attempt(attempt)
+        await asyncio.sleep(0)
+        assert isinstance(result, TimedOut)
+        return result
+
+    # When
+    result = asyncio.run(run_with_exception_handler())
+
+    # Then
+    assert isinstance(result, TimedOut)
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert result.observation.cleanup.direct_wait == "reaped"
+    assert not any(
+        context.get("message") == "_GatheringFuture exception was never retrieved"
+        for context in loop_contexts
     )
 
 
@@ -207,7 +346,10 @@ def test_completion_preserves_actual_exit_and_distinct_streams(
     assert result.observation.output is not None
     assert result.observation.output.stdout == b"ok\n"
     assert result.observation.output.stderr == b"warning\n"
-    assert result.observation.cleanup.signal in {"sent", "no_target"}
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGKILL",
+    )
+    assert result.observation.cleanup.signals[0].outcome in {"sent", "no_target"}
     assert result.observation.cleanup.direct_wait == "reaped"
 
 
@@ -317,7 +459,7 @@ def test_overflow_kills_live_process_and_closes_output_pipes(
     assert isinstance(result, OutputLimitExceeded)
     assert result.exit_status == -int(signal.SIGKILL)
     assert result.observation.output == process_supervisor.CapturedOutput(b"p", b"")
-    assert result.observation.cleanup.signal == "sent"
+    assert result.observation.cleanup.signals[-1].outcome == "sent"
     assert result.observation.cleanup.direct_wait == "reaped"
 
 
@@ -403,12 +545,14 @@ def test_zero_cap_retains_unbounded_separate_streams(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("cap", [6, 0])
+@pytest.mark.parametrize("grace", [0.0, 0.2], ids=["immediate-kill", "term-grace-kill"])
 def test_timeout_when_exited_leader_child_holds_output_pipe(
-    tmp_path: Path, cap: int
+    tmp_path: Path, cap: int, grace: float
 ) -> None:
     # Given
     leader_file = tmp_path / "leader.pid"
     grandchild_file = tmp_path / "grandchild.pid"
+    grandchild_ready = tmp_path / "grandchild.ready"
     attempt = request(
         tmp_path,
         cap,
@@ -419,7 +563,10 @@ def test_timeout_when_exited_leader_child_holds_output_pipe(
         str(leader_file),
         "--grandchild-file",
         str(grandchild_file),
+        "--grandchild-ready",
+        str(grandchild_ready),
         timeout=2.0,
+        grace=grace,
     )
     effects = _ObservePipeHolder(grandchild_file)
 
@@ -437,7 +584,11 @@ def test_timeout_when_exited_leader_child_holds_output_pipe(
     assert result.exit_status == 0
     assert result.observation.output is not None
     assert result.observation.output.stdout == b"seen\n"
-    assert result.observation.cleanup.signal == "sent"
+    expected_signals = ("SIGTERM", "SIGKILL") if grace else ("SIGKILL",)
+    assert (
+        tuple(item.signal for item in result.observation.cleanup.signals)
+        == expected_signals
+    )
     assert result.observation.cleanup.direct_wait == "reaped"
     assert effects.grandchild_was_running_at_cleanup
     assert grandchild_stopped_after_cleanup
@@ -450,14 +601,18 @@ class _ObservePipeHolder(NativeProcessEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self,
+        handle: ProcessHandle,
+        timeout_seconds: float,
+        grace_seconds: float,
+        /,
     ) -> CleanupOutcome:
         grandchild_pid = int(self.grandchild_file.read_text(encoding="utf-8"))
         self.grandchild_was_running_at_cleanup = _process_state(grandchild_pid) not in {
             None,
             "Z",
         }
-        return await super().cleanup(handle, timeout_seconds)
+        return await super().cleanup(handle, timeout_seconds, grace_seconds)
 
 
 def _process_state(pid: int) -> str | None:
@@ -527,7 +682,7 @@ def test_repeated_cancellation_retains_observed_partial_output(
     assert len(error.observation.output.stdout) > 0
     if cap:
         assert len(error.observation.output.stdout) <= cap
-    assert error.observation.cleanup.signal == "sent"
+    assert error.observation.cleanup.signals[-1].outcome == "sent"
     assert error.observation.cleanup.direct_wait == "reaped"
 
 
@@ -590,7 +745,7 @@ def test_signal_exit_status_is_retained(tmp_path: Path) -> None:
     # Then
     assert isinstance(result, TimedOut)
     assert result.exit_status == -signal.SIGKILL
-    assert result.observation.cleanup.signal == "sent"
+    assert result.observation.cleanup.signals[-1].outcome == "sent"
     assert result.observation.cleanup.direct_wait == "reaped"
 
 
@@ -748,7 +903,7 @@ def test_capture_error_survives_cancellation_during_reader_settlement(
         note.startswith("Capture cancellation: CancelledError")
         for note in error.__notes__
     )
-    assert error.observation.cleanup.signal == "sent"
+    assert error.observation.cleanup.signals[-1].outcome == "sent"
     assert error.observation.cleanup.direct_wait == "reaped"
 
 
@@ -768,12 +923,278 @@ def test_signal_failure_remains_explicit_and_stops_dispatch(
 
     # Then
     assert isinstance(result, Completed)
-    assert result.observation.cleanup.signal == "failed"
-    assert result.observation.cleanup.signal_diagnostic == (
+    assert result.observation.cleanup.signals[-1].outcome == "failed"
+    assert result.observation.cleanup.signals[-1].diagnostic == (
         "PermissionError: test denied group signal"
     )
     assert result.observation.cleanup.direct_wait == "reaped"
     assert not result.observation.cleanup.dispatch_permitted
+
+
+def _deny_selected_signal(
+    monkeypatch: pytest.MonkeyPatch,
+    failed_signal: signal.Signals,
+    diagnostic: str,
+) -> list[signal.Signals]:
+    sent: list[signal.Signals] = []
+    real_killpg = os.killpg
+
+    def controlled_killpg(pgid: int, sig: signal.Signals) -> None:
+        sent.append(sig)
+        if sig == failed_signal:
+            raise PermissionError(diagnostic)
+        real_killpg(pgid, sig)
+
+    monkeypatch.setattr(process_supervisor.os, "killpg", controlled_killpg)
+    return sent
+
+
+@pytest.mark.parametrize(
+    ("failed_signal", "diagnostic"),
+    [(signal.SIGTERM, "term denied"), (signal.SIGKILL, "kill denied")],
+    ids=["term-failure-still-kills", "kill-failure-is-recorded"],
+)
+def test_grace_signal_failures_keep_ordered_diagnostics_and_stop_dispatch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failed_signal: signal.Signals,
+    diagnostic: str,
+) -> None:
+    # Given: a real child and one injected signal failure.
+    attempt = request(tmp_path, 100, "sleep", timeout=0.1, grace=0.2)
+    created = capture_subprocesses(monkeypatch)
+    sent = _deny_selected_signal(monkeypatch, failed_signal, diagnostic)
+
+    # When
+    result = asyncio.run(run_attempt(attempt))
+
+    # Then
+    expected_names = ("SIGTERM", "SIGKILL")
+    assert tuple(sig.name for sig in sent) == expected_names
+    attempts = result.observation.cleanup.signals
+    assert tuple(item.signal for item in attempts) == expected_names
+    failed = 0 if failed_signal == signal.SIGTERM else 1
+    assert attempts[failed].outcome == "failed"
+    assert attempts[failed].diagnostic == f"PermissionError: {diagnostic}"
+    assert result.observation.cleanup.direct_wait == "reaped"
+    assert not result.observation.cleanup.dispatch_permitted
+    assert len(created) == 1 and created[0].returncode is not None
+    stdout_pipe, stderr_pipe = _process_output_pipes(created[0])
+    assert stdout_pipe.is_closing() and stderr_pipe.is_closing()
+
+
+def _inject_grace_reader_error(
+    monkeypatch: pytest.MonkeyPatch, failure: OSError | TimeoutError
+) -> Callable[[], bool]:
+    term_attempted = False
+    injected = False
+    real_killpg = os.killpg
+
+    def signal_and_observe(pgid: int, sig: signal.Signals) -> None:
+        nonlocal term_attempted
+        if sig == signal.SIGTERM:
+            term_attempted = True
+        real_killpg(pgid, sig)
+
+    monkeypatch.setattr(process_supervisor.os, "killpg", signal_and_observe)
+    original_read = asyncio.StreamReader.read
+
+    async def fail_after_term(reader: asyncio.StreamReader, count: int = -1) -> bytes:
+        nonlocal injected
+        if term_attempted and not injected:
+            injected = True
+            raise failure
+        return await original_read(reader, count)
+
+    monkeypatch.setattr(asyncio.StreamReader, "read", fail_after_term)
+    return lambda: injected
+
+
+@pytest.mark.parametrize(
+    "failure_type",
+    [
+        pytest.param(OSError, id="os-error"),
+        pytest.param(TimeoutError, id="reader-timeout-error"),
+    ],
+)
+def test_grace_read_failure_still_kills_closes_and_settles_child(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure_type: type[OSError] | type[TimeoutError],
+) -> None:
+    # Given: a real child and a grace reader failure injected at asyncio's read.
+    ready = tmp_path / "ready"
+    marker = tmp_path / "term-received"
+    created = capture_subprocesses(monkeypatch)
+    failure = failure_type("injected grace stream read failure")
+    injected = _inject_grace_reader_error(monkeypatch, failure)
+    attempt = request(
+        tmp_path,
+        0,
+        "sleep",
+        "--term-mode",
+        "close-streams",
+        "--ready-file",
+        str(ready),
+        "--term-marker",
+        str(marker),
+        timeout=1.0,
+        grace=0.25,
+    )
+
+    # When
+    with pytest.raises(
+        failure_type, match="injected grace stream read failure"
+    ) as raised:
+        asyncio.run(run_attempt(attempt))
+
+    # Then
+    assert ready.exists() and marker.exists()
+    assert injected()
+    assert raised.value is failure
+    assert len(created) == 1 and created[0].returncode is not None
+    stdout_pipe, stderr_pipe = _process_output_pipes(created[0])
+    assert stdout_pipe.is_closing() and stderr_pipe.is_closing()
+    evidence = failure_evidence(raised.value)
+    assert evidence is not None
+    assert tuple(item.signal for item in evidence.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert evidence.observation.cleanup.direct_wait == "reaped"
+
+
+def test_term_no_target_skips_grace_and_still_records_kill(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: capture completes before cleanup and TERM reports no target.
+    attempt = request(tmp_path, 100, "emit", grace=0.8)
+    sent: list[signal.Signals] = []
+    term_attempted = False
+    read_during_grace = False
+    original_read = asyncio.StreamReader.read
+
+    def no_targets(_pgid: int, sig: signal.Signals) -> None:
+        nonlocal term_attempted
+        sent.append(sig)
+        if sig == signal.SIGTERM:
+            term_attempted = True
+        raise ProcessLookupError
+
+    async def observe_read(reader: asyncio.StreamReader, count: int = -1) -> bytes:
+        nonlocal read_during_grace
+        if term_attempted:
+            read_during_grace = True
+        return await original_read(reader, count)
+
+    monkeypatch.setattr(process_supervisor.os, "killpg", no_targets)
+    monkeypatch.setattr(asyncio.StreamReader, "read", observe_read)
+
+    # When
+    result = asyncio.run(run_attempt(attempt))
+
+    # Then
+    assert tuple(sig.name for sig in sent) == ("SIGTERM", "SIGKILL")
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert all(
+        item.outcome == "no_target" for item in result.observation.cleanup.signals
+    )
+    assert not read_during_grace
+
+
+def test_cleanup_budget_expiry_still_attempts_final_kill(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: a synchronous TERM boundary consumes the entire cleanup budget.
+    attempt = replace(
+        request(tmp_path, 100, "sleep", timeout=0.05, grace=0.09),
+        cleanup_timeout_seconds=0.1,
+    )
+    sent: list[signal.Signals] = []
+    real_killpg = os.killpg
+    created = capture_subprocesses(monkeypatch)
+
+    def signal_only(pgid: int, sig: signal.Signals) -> None:
+        sent.append(sig)
+        if sig == signal.SIGTERM:
+            time_sleep(0.15)  # Consume the whole 0.1 second cleanup budget.
+        if sig == signal.SIGKILL:
+            real_killpg(pgid, sig)
+
+    monkeypatch.setattr(process_supervisor.os, "killpg", signal_only)
+
+    # When
+    result = asyncio.run(run_attempt(attempt))
+
+    # Then
+    assert tuple(sig.name for sig in sent) == ("SIGTERM", "SIGKILL")
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert result.observation.cleanup.direct_wait == "expired"
+    assert len(created) == 1
+    stdout_pipe, stderr_pipe = _process_output_pipes(created[0])
+    assert stdout_pipe.is_closing() and stderr_pipe.is_closing()
+
+
+def test_repeated_owner_cancellation_during_grace_finishes_cleanup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: a real child acknowledges TERM and remains alive through grace.
+    ready = tmp_path / "ready"
+    term_marker = tmp_path / "term-received"
+    created = capture_subprocesses(monkeypatch)
+
+    async def scenario() -> AttemptCancelled:
+        attempt = request(
+            tmp_path,
+            0,
+            "sleep",
+            "--stdout",
+            "7061727469616c0a",
+            "--term-mode",
+            "hold",
+            "--ready-file",
+            str(ready),
+            "--term-marker",
+            str(term_marker),
+            timeout=0.5,
+            grace=0.25,
+        )
+        task = asyncio.create_task(run_attempt(attempt))
+        deadline = monotonic() + 3.0
+        while not term_marker.exists() and monotonic() < deadline:
+            await asyncio.sleep(0.005)
+        assert ready.exists() and term_marker.exists()
+        task.cancel("first owner cancellation")
+        await asyncio.sleep(0)
+        task.cancel("second owner cancellation")
+
+        # When: cleanup remains owned despite the second cancellation.
+        with pytest.raises(AttemptCancelled) as raised:
+            await task
+        return raised.value
+
+    error = asyncio.run(scenario())
+
+    # Then: evidence and the real process resources are settled before raise.
+    assert isinstance(error.__cause__, asyncio.CancelledError)
+    assert error.__cause__.args == ("first owner cancellation",)
+    assert error.observation.output == process_supervisor.CapturedOutput(
+        b"partial\n", b""
+    )
+    assert tuple(item.signal for item in error.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
+    assert error.observation.cleanup.direct_wait == "reaped"
+    assert len(created) == 1 and created[0].returncode is not None
+    stdout_pipe, stderr_pipe = _process_output_pipes(created[0])
+    assert stdout_pipe.is_closing() and stderr_pipe.is_closing()
 
 
 class DelayedNativeAcquisition:
@@ -805,9 +1226,9 @@ class DelayedNativeAcquisition:
         return await self.native.capture(handle, attempt, execution_deadline, clock)
 
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        return await self.native.cleanup(handle, timeout_seconds)
+        return await self.native.cleanup(handle, timeout_seconds, grace_seconds)
 
 
 def test_cancelled_acquisition_settles_real_owned_child(tmp_path: Path) -> None:
@@ -838,7 +1259,7 @@ def test_cancelled_acquisition_settles_real_owned_child(tmp_path: Path) -> None:
     # Then
     assert effects.settled
     assert error.observation.output is None
-    assert error.observation.cleanup.signal == "sent"
+    assert error.observation.cleanup.signals[-1].outcome == "sent"
     assert error.observation.cleanup.direct_wait == "reaped"
 
 
@@ -894,7 +1315,9 @@ def test_representative_caller_latches_stop_and_accounts_for_unstarted_calls(
     ]
     assert report["attempts"] == ["active-call"]
     assert report["active_reason"] == "AttemptCancelled"
-    assert report["active_signal"] == "sent"
+    assert report["active_signals"] == [
+        {"signal": "SIGKILL", "outcome": "sent", "diagnostic": None}
+    ]
     assert report["active_wait"] == "reaped"
     assert report["not_started"] == ["later-call"]
     assert report["followup_marker"] is False
@@ -920,7 +1343,9 @@ def test_stop_latch_precedes_a_failing_active_call_recorder(
         "dispatch-refused:later-call",
     ]
     assert report["active_reason"] == "AttemptCancelled"
-    assert report["active_signal"] == "sent"
+    assert report["active_signals"] == [
+        {"signal": "SIGKILL", "outcome": "sent", "diagnostic": None}
+    ]
     assert report["active_wait"] == "reaped"
     assert report["not_started"] == ["later-call"]
     assert report["stop_diagnostic"] == "RuntimeError: representative recorder failed"
@@ -928,7 +1353,7 @@ def test_stop_latch_precedes_a_failing_active_call_recorder(
 
 
 @pytest.mark.parametrize(
-    ("unsafe_cleanup", "expected_signal", "expected_wait"),
+    ("unsafe_cleanup", "expected_signals", "expected_wait"),
     [
         pytest.param("signal", "failed", "reaped", id="signal-failed"),
         pytest.param("wait", "sent", "unknown", id="wait-unknown"),
@@ -937,7 +1362,7 @@ def test_stop_latch_precedes_a_failing_active_call_recorder(
 def test_unsafe_cleanup_stops_representative_dispatch(
     tmp_path: Path,
     unsafe_cleanup: str,
-    expected_signal: str,
+    expected_signals: str,
     expected_wait: str,
 ) -> None:
     # Given
@@ -958,7 +1383,16 @@ def test_unsafe_cleanup_stops_representative_dispatch(
     ]
     assert report["attempts"] == ["active-call"]
     assert report["active_reason"] == "TimedOut"
-    assert report["active_signal"] == expected_signal
+    expected_outcome = expected_signals
+    assert report["active_signals"] == [
+        {
+            "signal": "SIGKILL",
+            "outcome": expected_outcome,
+            "diagnostic": (
+                "injected signal diagnostic" if expected_outcome == "failed" else None
+            ),
+        }
+    ]
     assert report["active_wait"] == expected_wait
     assert report["not_started"] == ["later-call"]
     assert report["followup_marker"] is False
@@ -992,7 +1426,11 @@ def test_representative_caller_retries_after_prior_cleanup_is_confirmed(
     assert len(cleanup) == 2
     assert all(
         isinstance(observation, dict)
-        and observation["signal"] in {"sent", "no_target"}
+        and isinstance(observation["signals"], list)
+        and len(observation["signals"]) == 1
+        and observation["signals"][0]["signal"] == "SIGKILL"
+        and observation["signals"][0]["outcome"] in {"sent", "no_target"}
+        and observation["signals"][0]["diagnostic"] is None
         and observation["direct_wait"] == "reaped"
         for observation in cleanup
     )

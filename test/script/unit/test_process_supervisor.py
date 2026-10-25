@@ -24,6 +24,7 @@ from script.process_supervisor import (
     NotLaunched,
     OutputLimitExceeded,
     ProcessHandle,
+    SignalAttempt,
     TimedOut,
     call_supervisor,
     failure_evidence,
@@ -113,6 +114,28 @@ def test_request_rejects_invalid_output_limits(
     assert str(raised.value) == expected
 
 
+@pytest.mark.parametrize(
+    "value",
+    [
+        pytest.param(True, id="boolean"),
+        pytest.param(-0.1, id="negative"),
+        pytest.param(float("nan"), id="nan"),
+        pytest.param(float("inf"), id="infinite"),
+        pytest.param(5.0, id="equal-to-cleanup-budget"),
+        pytest.param(5.1, id="greater-than-cleanup-budget"),
+    ],
+)
+def test_request_rejects_grace_outside_cleanup_budget(
+    attempt_request: AttemptRequest, value: float
+) -> None:
+    # Given: a valid request and a grace value outside the accepted range.
+    # When
+    with pytest.raises(ValueError, match="grace_seconds"):
+        replace(attempt_request, grace_seconds=value)
+
+    # Then: request validation rejects the invalid grace before execution.
+
+
 def test_request_accepts_positive_timeouts_and_zero_uncapped_output(
     attempt_request: AttemptRequest,
 ) -> None:
@@ -165,12 +188,15 @@ class CaptureCall:
 class CleanupCall:
     handle: ProcessHandle
     timeout_seconds: float
+    grace_seconds: float = 0.0
 
 
 type WireEvent = ClockRead | AcquireCall | CaptureCall | CleanupCall
 
-PENDING_CLEANUP = CleanupEvidence("owned", "not_started", None, "not_started", None)
-FINAL_CLEANUP = CleanupEvidence("owned", "sent", None, "reaped", None)
+PENDING_CLEANUP = CleanupEvidence("owned", (), "not_started", None)
+FINAL_CLEANUP = CleanupEvidence(
+    "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+)
 
 
 class FakeClock:
@@ -208,17 +234,25 @@ class FakeEffects:
             AttemptObservation(
                 CapturedOutput(b"result\n", b"diagnostic\n"),
                 0.25,
-                CleanupEvidence("owned", "not_started", None, "not_started", None),
+                CleanupEvidence("owned", (), "not_started", None),
             ),
             0,
         )
 
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         self.clock.value = 13.5
-        return CleanupOutcome(CleanupEvidence("owned", "sent", None, "reaped", None))
+        signals = (
+            (
+                SignalAttempt("SIGTERM", "sent", None),
+                SignalAttempt("SIGKILL", "sent", None),
+            )
+            if grace_seconds > 0
+            else FINAL_CLEANUP.signals
+        )
+        return CleanupOutcome(CleanupEvidence("owned", signals, "reaped", None))
 
 
 class WaitingCaptureEffects(FakeEffects):
@@ -312,7 +346,7 @@ class CancellingCaptureEffects(FakeEffects):
             AttemptObservation(
                 CapturedOutput(b"partial stdout", b"partial stderr"),
                 1.25,
-                CleanupEvidence("owned", "unknown", None, "unknown", None),
+                CleanupEvidence("owned", (), "unknown", None),
             )
         )
 
@@ -373,16 +407,14 @@ class CancellingTaskEffects(FakeEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         self.cleanup_started.set()
         await self.cleanup_release.wait()
         self.clock.value = 13.5
         self.cleanup_finished.set()
-        return CleanupOutcome(
-            CleanupEvidence("owned", "sent", None, "reaped", None), -15
-        )
+        return CleanupOutcome(FINAL_CLEANUP, -15)
 
 
 class RawCancellingCaptureEffects(FakeEffects):
@@ -428,13 +460,11 @@ class PostKillStatusEffects(FakeEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         self.clock.value = 13.5
-        return CleanupOutcome(
-            CleanupEvidence("owned", "sent", None, "reaped", None), -9
-        )
+        return CleanupOutcome(FINAL_CLEANUP, -9)
 
 
 class DelayedAcquisitionEffects(FakeEffects):
@@ -506,9 +536,9 @@ class CompletedCleanupEffects(FakeEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         self.cleanup_started.set()
         await self.cleanup_release.wait()
         if self.cleanup_error is not None:
@@ -519,12 +549,15 @@ class CompletedCleanupEffects(FakeEffects):
 class UnsafeCleanupEffects(FakeEffects):
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         return CleanupOutcome(
             CleanupEvidence(
-                "owned", "failed", "PermissionError: denied", "expired", "deadline"
+                "owned",
+                (SignalAttempt("SIGKILL", "failed", "PermissionError: denied"),),
+                "expired",
+                "deadline",
             )
         )
 
@@ -532,9 +565,9 @@ class UnsafeCleanupEffects(FakeEffects):
 class CleanupCrashesEffects(FailingCaptureEffects):
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         raise RuntimeError("cleanup implementation bug")
 
 
@@ -550,9 +583,9 @@ class WaitingCleanupAfterCaptureFailure(FailingCaptureEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         self.cleanup_started.set()
         await self.cleanup_release.wait()
         return CleanupOutcome(FINAL_CLEANUP)
@@ -561,9 +594,9 @@ class WaitingCleanupAfterCaptureFailure(FailingCaptureEffects):
 class SuccessfulCaptureCleanupCrashesEffects(FakeEffects):
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         raise RuntimeError("cleanup implementation bug")
 
 
@@ -574,9 +607,9 @@ class FrozenCleanupErrorEffects(FakeEffects):
 
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         raise self.error
 
 
@@ -589,9 +622,9 @@ class SelfCancellingAcquisitionEffects(FakeEffects):
 class SelfCancellingCleanupEffects(FakeEffects):
     @override
     async def cleanup(
-        self, handle: ProcessHandle, timeout_seconds: float, /
+        self, handle: ProcessHandle, timeout_seconds: float, grace_seconds: float, /
     ) -> CleanupOutcome:
-        self.events.append(CleanupCall(handle, timeout_seconds))
+        self.events.append(CleanupCall(handle, timeout_seconds, grace_seconds))
         raise asyncio.CancelledError("cleanup adapter cancelled itself")
 
 
@@ -618,6 +651,27 @@ def test_attempt_wires_request_through_owned_effect_sequence(
     assert result.exit_status == 0
     assert result.observation.output == CapturedOutput(b"result\n", b"diagnostic\n")
     assert result.observation.elapsed_seconds == pytest.approx(3.5)
+    assert result.observation.cleanup.dispatch_permitted
+
+
+def test_attempt_forwards_grace_to_cleanup_effect(
+    attempt_request: AttemptRequest,
+) -> None:
+    # Given: a fake effect boundary and a request with positive grace.
+    events: list[WireEvent] = []
+    clock = FakeClock(events)
+    effects = FakeEffects(events, clock)
+    request_with_grace = replace(attempt_request, grace_seconds=0.5)
+
+    # When
+    result = asyncio.run(run_attempt(request_with_grace, effects, clock))
+
+    # Then
+    assert events[-2] == CleanupCall(effects.handle, 5.0, 0.5)
+    assert tuple(item.signal for item in result.observation.cleanup.signals) == (
+        "SIGTERM",
+        "SIGKILL",
+    )
     assert result.observation.cleanup.dispatch_permitted
 
 
@@ -739,7 +793,7 @@ def test_cleanup_adapter_cancellation_stops_with_unknown_cleanup(
     assert raised.value.observation.output == CapturedOutput(
         b"result\n", b"diagnostic\n"
     )
-    assert raised.value.observation.cleanup.signal == "unknown"
+    assert raised.value.observation.cleanup.signals == ()
     assert raised.value.observation.cleanup.direct_wait == "unknown"
     assert isinstance(raised.value.__cause__, asyncio.CancelledError)
     assert any("adapter cancelled itself" in note for note in raised.value.__notes__)
@@ -1064,7 +1118,7 @@ def test_public_composition_stops_on_normalized_cleanup_failure(
 
     # Then
     assert isinstance(result, Completed)
-    assert result.observation.cleanup.signal == "failed"
+    assert result.observation.cleanup.signals[-1].outcome == "failed"
     assert result.observation.cleanup.direct_wait == "expired"
     assert stops == [result]
 
@@ -1118,7 +1172,7 @@ def test_frozen_capture_error_keeps_identity_and_cleanup_evidence_at_public_boun
     assert evidence is not None
     assert evidence.observation.output is None
     assert evidence.exit_status is None
-    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.signals == ()
     assert evidence.observation.cleanup.wait_diagnostic == (
         "RuntimeError: cleanup implementation bug"
     )
@@ -1150,7 +1204,7 @@ def test_frozen_cleanup_error_keeps_identity_and_failure_evidence(
     assert evidence is not None
     assert evidence.observation.output == CapturedOutput(b"result\n", b"diagnostic\n")
     assert evidence.exit_status == 0
-    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.signals == ()
     assert evidence.observation.cleanup.wait_diagnostic == (
         "FrozenCaptureError: cleanup failed"
     )
@@ -1206,7 +1260,7 @@ def test_cleanup_programmer_error_does_not_replace_capture_error(
     assert raised.value is effects.error
     evidence = failure_evidence(raised.value)
     assert isinstance(evidence, AttemptFailureEvidence)
-    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.signals == ()
     assert evidence.observation.cleanup.wait_diagnostic == (
         "RuntimeError: cleanup implementation bug"
     )
@@ -1256,7 +1310,7 @@ def test_cleanup_programmer_error_after_capture_keeps_error_and_evidence(
     # Then
     evidence = failure_evidence(raised.value)
     assert evidence is not None
-    assert evidence.observation.cleanup.signal == "unknown"
+    assert evidence.observation.cleanup.signals == ()
     assert evidence.observation.cleanup.wait_diagnostic == (
         "RuntimeError: cleanup implementation bug"
     )
@@ -1320,42 +1374,159 @@ def test_composition_preserves_noncompleted_leaf_result_variants(
     ("cleanup", "should_stop"),
     [
         pytest.param(
-            CleanupEvidence("owned", "sent", None, "reaped", None),
+            FINAL_CLEANUP,
             False,
             id="owned-signal-and-reap-permits-dispatch",
         ),
         pytest.param(
-            CleanupEvidence("owned", "no_target", None, "reaped", None),
+            CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "no_target", None),), "reaped", None
+            ),
             False,
             id="owned-no-target-and-reap-permits-dispatch",
         ),
         pytest.param(
-            CleanupEvidence("not_started", "not_started", None, "not_started", None),
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGTERM", "no_target", None),
+                    SignalAttempt("SIGKILL", "sent", None),
+                ),
+                "reaped",
+                None,
+            ),
+            False,
+            id="term-no-target-skips-grace-and-kill-reaps",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGTERM", "sent", None),
+                    SignalAttempt("SIGKILL", "no_target", None),
+                ),
+                "reaped",
+                None,
+            ),
+            False,
+            id="positive-grace-sequence-permits-dispatch",
+        ),
+        pytest.param(
+            CleanupEvidence("not_started", (), "not_started", None),
             False,
             id="safe-no-launch",
         ),
         pytest.param(
-            CleanupEvidence("acquisition_uncertain", "unknown", None, "unknown", None),
+            CleanupEvidence("acquisition_uncertain", (), "unknown", None),
             True,
             id="acquisition-uncertain",
         ),
         pytest.param(
-            CleanupEvidence("acquisition_uncertain", "sent", None, "reaped", None),
+            CleanupEvidence("acquisition_uncertain", (), "reaped", None),
             True,
             id="uncertain-process-despite-success-shaped-cleanup",
         ),
         pytest.param(
-            CleanupEvidence("owned", "failed", "denied", "reaped", None),
+            CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "failed", "denied"),), "reaped", None
+            ),
             True,
             id="signal-failed",
         ),
         pytest.param(
-            CleanupEvidence("owned", "sent", None, "expired", "deadline"),
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGTERM", "failed", "denied"),
+                    SignalAttempt("SIGKILL", "sent", None),
+                ),
+                "reaped",
+                None,
+            ),
+            True,
+            id="term-failure-blocks-even-after-kill",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGTERM", "sent", None),),
+                "reaped",
+                None,
+            ),
+            True,
+            id="missing-kill",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGKILL", "sent", None),
+                    SignalAttempt("SIGTERM", "sent", None),
+                ),
+                "reaped",
+                None,
+            ),
+            True,
+            id="reordered-signals",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGKILL", "sent", None),
+                    SignalAttempt("SIGKILL", "sent", None),
+                ),
+                "reaped",
+                None,
+            ),
+            True,
+            id="duplicate-kill",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGKILL", "sent", "contradictory diagnostic"),),
+                "reaped",
+                None,
+            ),
+            True,
+            id="success-with-diagnostic-is-unsafe",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGTERM", "sent", None),
+                    SignalAttempt("SIGKILL", "unknown", "signal outcome missing"),
+                ),
+                "reaped",
+                None,
+            ),
+            True,
+            id="unknown-kill-outcome-is-unsafe",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGKILL", "sent", None),),
+                "reaped",
+                "contradictory wait diagnostic",
+            ),
+            True,
+            id="reaped-wait-with-diagnostic-is-unsafe",
+        ),
+        pytest.param(
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGKILL", "sent", None),),
+                "expired",
+                "deadline",
+            ),
             True,
             id="wait-expired",
         ),
         pytest.param(
-            CleanupEvidence("owned", "unknown", None, "unknown", None),
+            CleanupEvidence("owned", (), "unknown", None),
             True,
             id="unknown-cleanup",
         ),
@@ -1400,7 +1571,12 @@ def test_timed_out_attempt_with_unsafe_cleanup_stops_dispatch(
         AttemptObservation(
             CapturedOutput(b"partial", b""),
             3.0,
-            CleanupEvidence("owned", "failed", "denied", "expired", "deadline"),
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGKILL", "failed", "denied"),),
+                "expired",
+                "deadline",
+            ),
         ),
         -9,
     )
@@ -1427,7 +1603,7 @@ def test_caller_records_cancellation_then_propagates_it(
         AttemptObservation(
             CapturedOutput(b"partial", b""),
             None,
-            CleanupEvidence("owned", "sent", None, "reaped", None),
+            FINAL_CLEANUP,
         )
     )
     stops: list[AttemptResult | BaseException] = []
@@ -1490,7 +1666,12 @@ def test_unsafe_result_stop_hook_failure_propagates_with_outcome_evidence(
         AttemptObservation(
             CapturedOutput(b"result", b"diagnostic"),
             1.0,
-            CleanupEvidence("owned", "failed", "denied", "expired", "deadline"),
+            CleanupEvidence(
+                "owned",
+                (SignalAttempt("SIGKILL", "failed", "denied"),),
+                "expired",
+                "deadline",
+            ),
         ),
         0,
     )

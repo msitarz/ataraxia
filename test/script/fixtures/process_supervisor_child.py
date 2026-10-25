@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -16,8 +17,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--status", type=int, default=0)
     parser.add_argument("--ready-file")
     parser.add_argument("--grandchild-file")
+    parser.add_argument("--grandchild-ready")
     parser.add_argument("--burst-bytes", type=int, default=0)
     parser.add_argument("--dispatch-marker")
+    parser.add_argument(
+        "--term-mode", choices=("exit", "ignore", "burst", "hold", "close-streams")
+    )
+    parser.add_argument("--term-marker")
+    parser.add_argument(
+        "--term-burst-stream", choices=("stdout", "stderr"), default="stdout"
+    )
     return parser.parse_args()
 
 
@@ -49,19 +58,61 @@ def write_dispatch_marker(args: argparse.Namespace) -> None:
             pass
 
 
+def install_term_handler(args: argparse.Namespace) -> None:
+    if args.term_mode == "ignore":
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+    elif args.term_mode in {"burst", "hold", "close-streams"}:
+
+        def finish_on_term(_signum: int, _frame: object) -> None:
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+            if args.term_mode == "burst":
+                stream = (
+                    sys.stdout.buffer
+                    if args.term_burst_stream == "stdout"
+                    else sys.stderr.buffer
+                )
+                stream.write(b"discarded" * 16384)
+                stream.flush()
+            if args.term_marker is not None:
+                with open(args.term_marker, "w", encoding="utf-8"):
+                    pass
+            if args.term_mode == "close-streams":
+                os.close(sys.stdout.fileno())
+                os.close(sys.stderr.fileno())
+            if args.term_mode == "burst":
+                raise SystemExit(0)
+
+        signal.signal(signal.SIGTERM, finish_on_term)
+
+
+def launch_pipe_holder(args: argparse.Namespace) -> None:
+    ready_path = args.grandchild_ready
+    grandchild_args = [
+        sys.executable,
+        str(__file__),
+        "sleep",
+        "--term-mode",
+        "ignore",
+    ]
+    if ready_path is not None:
+        grandchild_args.extend(("--ready-file", ready_path))
+    grandchild = subprocess.Popen(grandchild_args)
+    write_grandchild_file(args, grandchild.pid)
+    if ready_path is not None:
+        deadline = time.monotonic() + 2.0
+        while not os.path.exists(ready_path) and time.monotonic() < deadline:
+            time.sleep(0.005)
+
+
 def run_mode(args: argparse.Namespace) -> int:
     emit_output(args)
+    install_term_handler(args)
     write_ready_file(args)
     write_dispatch_marker(args)
     if args.mode == "sleep":
         time.sleep(30)
     if args.mode == "hold-pipe":
-        grandchild = subprocess.Popen([
-            sys.executable,
-            "-c",
-            "import time; time.sleep(30)",
-        ])
-        write_grandchild_file(args, grandchild.pid)
+        launch_pipe_holder(args)
     return args.status
 
 
