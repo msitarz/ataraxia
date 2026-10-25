@@ -61,11 +61,13 @@ dispatch policy, and run evidence around that boundary.
 inputs to resolve to one non-bare worktree, rejects nested repositories and
 submodules, checks the whole checkout for staged, unstaged, and untracked
 changes, and batches tracked-file and commit-blob queries. It selects immediate
-regular files in lexical order without recursion, rejects symlink components
-and entries, requires nonempty strict UTF-8 bytes, and compares each read with
-the pinned commit blob before returning snapshots. Instructions remain a
-distinct snapshot. Git commands have a finite timeout and disable optional
-index locks; the freezer performs no writes or model calls. The reviewed
+regular files in lexical order without recursion, requires each context
+directory to contain an immediate regular file, rejects symlink components and
+entries, strictly decodes selected bytes as UTF-8, and compares each read with
+the pinned commit blob before returning snapshots. Empty files are preserved.
+Instructions remain a distinct snapshot. Git commands have a finite timeout
+and disable optional index locks; the freezer performs no writes or model
+calls. The reviewed
 [`inputs.pyi`](design/eval/inputs.pyi) remains the historical port definition.
 
 **TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to

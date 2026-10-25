@@ -95,9 +95,13 @@ class GitRepositoryReader:
         root = roots[0]
         if any(candidate != root for candidate in roots[1:]):
             raise ValueError("all inputs must belong to the same Git repository")
-        head = (
-            self._git(root, "rev-parse", "--verify", "HEAD^{commit}").decode().strip()
-        )
+        try:
+            head_output = self._git(root, "rev-parse", "--verify", "HEAD^{commit}")
+            head = head_output.decode().strip()
+        except ValueError as exc:
+            if str(exc).startswith("Git rev-parse failed"):
+                raise ValueError(f"Git repository has no HEAD: {root}") from exc
+            raise
         if not head:
             raise ValueError(f"Git repository has no HEAD: {root}")
         self._require_clean_checkout(root)
@@ -219,7 +223,10 @@ class GitRepositoryReader:
         absolute = path if path.is_absolute() else Path.cwd() / path
         self._reject_symlink_components(absolute)
         probe = absolute if absolute.is_dir() else absolute.parent
-        root = self._git(probe, "rev-parse", "--show-toplevel").decode().strip()
+        root_output = self._git(probe, "rev-parse", "--show-toplevel")
+        if root_output.endswith(b"\n"):
+            root_output = root_output[:-1]
+        root = os.fsdecode(root_output)
         if not root:
             raise ValueError(f"input is not inside a Git worktree: {path}")
         canonical_root = Path(root).resolve(strict=True)
@@ -259,9 +266,12 @@ class GitRepositoryReader:
 
     @staticmethod
     def _reject_symlink_components(path: Path) -> None:
-        absolute = Path(os.path.abspath(path))
+        absolute = path if path.is_absolute() else Path.cwd() / path
         current = Path(absolute.anchor)
         for component in absolute.parts[1:]:
+            if component == "..":
+                current = current.parent
+                continue
             current /= component
             try:
                 if current.is_symlink():
@@ -366,8 +376,6 @@ class GitRepositoryReader:
             raise ValueError(f"input is not valid UTF-8: {path}") from exc
         except OSError as exc:
             raise ValueError(f"cannot read input {path}: {exc}") from exc
-        if not content:
-            raise ValueError(f"input file is empty: {path}")
         return content
 
     def _git(self, cwd: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
