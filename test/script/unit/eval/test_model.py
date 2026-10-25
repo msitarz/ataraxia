@@ -136,6 +136,14 @@ def frozen_plan() -> FrozenPlan:
         content_sha256=sha256(other_source_bytes).hexdigest(),
         content=other_source_bytes,
     )
+    second_other_bytes = b"second other context source"
+    second_other_source = SourceSnapshot(
+        directory_position=2,
+        repository_path="more-context/second-other.bin",
+        commit_blob_sha="second-other-source-blob",
+        content_sha256=sha256(second_other_bytes).hexdigest(),
+        content=second_other_bytes,
+    )
     second_source_bytes = b"second context source"
     second_source = SourceSnapshot(
         directory_position=0,
@@ -152,7 +160,7 @@ def frozen_plan() -> FrozenPlan:
     )
     call = PlannedCall(
         position=0,
-        context_indices=(0, 1),
+        context_indices=(0, 2),
         model="model-a",
         effort="low",
         prompt_sha256=sha256(prompt_bytes).hexdigest(),
@@ -160,7 +168,7 @@ def frozen_plan() -> FrozenPlan:
     )
     other_call = PlannedCall(
         position=1,
-        context_indices=(2,),
+        context_indices=(1, 3),
         model="model-a",
         effort="low",
         prompt_sha256=sha256(prompt_bytes).hexdigest(),
@@ -171,7 +179,7 @@ def frozen_plan() -> FrozenPlan:
         configuration=configuration,
         repository_root=Path("/repo"),
         head_commit="commit",
-        snapshots=(source, second_source, other_source),
+        snapshots=(source, second_source, other_source, second_other_source),
         boundary_bytes=(b"\n",),
         instructions_file=instructions,
         calls=(call, other_call),
@@ -522,16 +530,16 @@ def test_frozen_plan_rejects_mutation_of_nested_models() -> None:
 @pytest.mark.parametrize(
     ("changed_call", "instructions_file", "expected"),
     [
-        ({"context_indices": (3,)}, "keep", "outside snapshots"),
-        ({"context_indices": (0, 2)}, "keep", "one directory"),
+        ({"context_indices": (4, 2)}, "keep", "outside snapshots"),
+        ({"context_indices": (0,)}, "keep", "one context per directory"),
         ({"context_indices": (0, 0)}, "keep", "must be unique"),
-        ({"context_indices": (0, 1)}, None, "requires an instructions snapshot"),
+        ({"context_indices": (2, 0)}, "keep", "configured directory order"),
+        ({"context_indices": (0, 2)}, None, "requires an instructions snapshot"),
         (
-            {"context_indices": (0, 1)},
+            {"context_indices": (0, 2)},
             "clear-config",
             "requires a configured instructions file",
         ),
-        ({"context_indices": (1,)}, "keep", "every snapshot"),
     ],
 )
 def test_frozen_plan_rejects_inconsistent_input_relationships(
@@ -558,13 +566,13 @@ def test_frozen_plan_rejects_inconsistent_input_relationships(
         FrozenPlan.model_validate(values)
 
 
-def test_frozen_plan_requires_calls_to_cover_every_directory() -> None:
+def test_frozen_plan_requires_at_least_one_call() -> None:
     # Given
     values = frozen_plan().model_dump()
-    values["calls"] = values["calls"][:1]
+    values["calls"] = ()
 
     # When
-    with pytest.raises(ValidationError, match="cover every configured directory"):
+    with pytest.raises(ValidationError, match="planned calls must not be empty"):
         FrozenPlan.model_validate(values)
 
 
@@ -582,7 +590,7 @@ def test_frozen_plan_requires_snapshots_in_directory_order() -> None:
         FrozenPlan.model_validate(values)
 
 
-def test_attempt_metadata_rejects_non_utc_or_unordered_timestamps() -> None:
+def test_attempt_metadata_rejects_non_utc_timestamps() -> None:
     # Given
     values = attempt_values() | {
         "ended_at_utc": "2026-10-25T00:00:01Z",
@@ -592,10 +600,25 @@ def test_attempt_metadata_rejects_non_utc_or_unordered_timestamps() -> None:
     for changes in (
         {"started_at_utc": "2026-10-25T00:00:00"},
         {"started_at_utc": "2026-10-25T01:00:00+01:00"},
-        {"ended_at_utc": "2026-10-24T23:59:59Z"},
     ):
         with pytest.raises(ValidationError):
             AttemptRecord.model_validate(values | changes)
+
+
+def test_attempt_metadata_allows_wall_clock_adjustment() -> None:
+    # Given
+    values = attempt_values() | {
+        "ended_at_utc": "2026-10-24T23:59:59Z",
+        "elapsed_seconds": 0.25,
+        "elapsed_basis": "supervisor_observation",
+    }
+
+    # When
+    record = AttemptRecord.model_validate(values)
+
+    # Then
+    assert record.elapsed_seconds is not None
+    assert abs(record.elapsed_seconds - 0.25) < 1e-9
 
 
 @pytest.mark.parametrize(
@@ -639,9 +662,15 @@ def test_run_record_checks_child_call_identity_and_positions() -> None:
     duplicate_position = CallRecord.model_validate(
         call_record_values() | {"call_id": "another-call"}
     )
+    repeated_effective_call = CallRecord.model_validate(
+        call_record_values() | {"position": 1}
+    )
 
     # When / Then
     assert RunRecord.model_validate(run_record_values((call,))).calls == (call,)
+    assert RunRecord.model_validate(
+        run_record_values((call, repeated_effective_call))
+    ).calls == (call, repeated_effective_call)
     with pytest.raises(ValidationError, match="must match its run record"):
         RunRecord.model_validate(
             run_record_values((CallRecord.model_validate(other_run_call),))

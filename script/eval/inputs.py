@@ -309,7 +309,7 @@ class GitRepositoryReader:
         )
 
     def _repository_root(self, path: Path) -> Path:
-        """Find the canonical worktree root containing a path, rejecting nesting.
+        """Find the canonical worktree root containing a path.
 
         Returns:
             The canonical repository root.

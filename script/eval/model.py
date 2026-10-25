@@ -218,13 +218,11 @@ class FrozenPlan(StrictModel):
 
     @model_validator(mode="after")
     def validate_plan_relationships(self) -> FrozenPlan:
-        """Bind calls to configured context groups and instruction choice.
+        """Bind calls to configured contexts and instruction choice.
 
         Returns:
             The validated plan.
 
-        Raises:
-            ValueError: Calls, snapshots, and input configuration disagree.
         """
         directory_positions = tuple(
             option.position
@@ -232,11 +230,7 @@ class FrozenPlan(StrictModel):
             if isinstance(option, DirectoryOption)
         )
         self._validate_snapshot_coverage(directory_positions)
-        planned_positions = self._validate_call_contexts()
-        if planned_positions != set(directory_positions):
-            raise ValueError(
-                "planned calls must cover every configured directory position"
-            )
+        self._validate_call_contexts(directory_positions)
         self._validate_instruction_choice()
         return self
 
@@ -251,49 +245,40 @@ class FrozenPlan(StrictModel):
         if positions != tuple(sorted(positions)) or groups != directory_positions:
             raise ValueError("snapshots must cover every configured directory position")
 
-    def _validate_call_contexts(self) -> set[int]:
-        """Validate each call's indices and return its selected directories.
+    def _validate_call_contexts(self, directory_positions: tuple[int, ...]) -> None:
+        """Require every planned call to select one source per directory.
 
-        Returns:
-            The directory positions represented by planned calls.
+        Raises:
+            ValueError: There are no calls or a call context is invalid.
         """
-        return {
-            self._validate_call_context(call, self.snapshots) for call in self.calls
-        }
+        if not self.calls:
+            raise ValueError("planned calls must not be empty")
+        for call in self.calls:
+            self._validate_call_context(call, self.snapshots, directory_positions)
 
     @staticmethod
     def _validate_call_context(
-        call: PlannedCall, snapshots: tuple[SourceSnapshot, ...]
-    ) -> int:
-        """Validate one call's snapshot indices and return its directory position.
-
-        Returns:
-            The configured directory position selected by the call.
+        call: PlannedCall,
+        snapshots: tuple[SourceSnapshot, ...],
+        directory_positions: tuple[int, ...],
+    ) -> None:
+        """Validate one call's ordered source selection across directories.
 
         Raises:
-            ValueError: Indices are invalid, mixed, or incomplete for the directory.
+            ValueError: Indices are invalid or omit/reorder a configured directory.
         """
         indices = call.context_indices
-        if not indices:
-            raise ValueError("planned calls must select at least one context snapshot")
+        if len(indices) != len(directory_positions):
+            raise ValueError("planned calls must select one context per directory")
         if any(index >= len(snapshots) for index in indices):
             raise ValueError("planned call context index is outside snapshots")
         if len(set(indices)) != len(indices):
             raise ValueError("planned call context indices must be unique")
-        positions = {snapshots[index].directory_position for index in indices}
-        if len(positions) != 1:
-            raise ValueError("planned call context indices must select one directory")
-        position = next(iter(positions))
-        expected_indices = tuple(
-            index
-            for index, snapshot in enumerate(snapshots)
-            if snapshot.directory_position == position
-        )
-        if indices != expected_indices:
+        positions = tuple(snapshots[index].directory_position for index in indices)
+        if positions != directory_positions:
             raise ValueError(
-                "planned call must select every snapshot for its directory"
+                "planned call contexts must follow configured directory order"
             )
-        return position
 
     def _validate_instruction_choice(self) -> None:
         """Keep configured instruction selection and its snapshot in agreement.
@@ -434,14 +419,9 @@ class AttemptRecord(StrictModel):
         """
         if self.grace_seconds >= self.cleanup_timeout_seconds:
             raise ValueError("grace_seconds must be less than cleanup_timeout_seconds")
-        started = _parse_utc_timestamp(self.started_at_utc, "started_at_utc")
-        ended = (
+        _parse_utc_timestamp(self.started_at_utc, "started_at_utc")
+        if self.ended_at_utc is not None:
             _parse_utc_timestamp(self.ended_at_utc, "ended_at_utc")
-            if self.ended_at_utc is not None
-            else None
-        )
-        if ended is not None and ended < started:
-            raise ValueError("ended_at_utc must not precede started_at_utc")
         flow_outcomes = {
             "cancelled": "cancelled",
             "raised": "unexpected_exception",
@@ -513,22 +493,20 @@ class RunRecord(StrictModel):
 
     @model_validator(mode="after")
     def validate_run_relationships(self) -> RunRecord:
-        """Require child calls to belong uniquely to this run.
+        """Require child calls to belong to this run at unique positions.
 
         Returns:
             The validated run record.
 
         Raises:
-            ValueError: A child call belongs to another run or duplicates identity.
+            ValueError: A child call belongs to another run or duplicates a position.
         """
-        call_ids: set[str] = set()
         positions: set[int] = set()
         for call in self.calls:
             if call.run_id != self.run_id:
                 raise ValueError("call run_id must match its run record")
-            if call.call_id in call_ids or call.position in positions:
-                raise ValueError("run call IDs and positions must be unique")
-            call_ids.add(call.call_id)
+            if call.position in positions:
+                raise ValueError("run call positions must be unique")
             positions.add(call.position)
         return self
 
