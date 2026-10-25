@@ -44,6 +44,10 @@ class AttemptRequest:
     ``output_limit_bytes`` must be nonnegative: zero disables the byte cap while
     retaining captured output, and a positive value caps combined stdout and
     stderr bytes. Deadlines still apply when capture is uncapped.
+    ``grace_seconds`` defaults to zero, disabling TERM and grace. It excludes
+    ``bool`` and must be finite, nonnegative, and less than the cleanup timeout;
+    zero is valid. It bounds the optional TERM response period; execution and
+    cleanup time budgets remain distinct, and grace consumes the cleanup budget.
     """
 
     argv: tuple[str, ...]
@@ -95,7 +99,13 @@ class AttemptRequest:
 
 @dataclass(frozen=True)
 class SignalAttempt:
-    """One ordered process-group signal observation."""
+    """One ordered process-group signal observation.
+
+    ``signal`` identifies the attempted signal, ``outcome`` records whether it
+    was sent, had no target, failed, or is unknown, and ``diagnostic`` retains
+    the corresponding failure detail. Ordered attempts form cleanup evidence;
+    ``no_target`` does not prove that no group member exists.
+    """
 
     signal: Literal["SIGTERM", "SIGKILL"]
     outcome: Literal["sent", "no_target", "failed", "unknown"]
@@ -402,7 +412,10 @@ class ProcessEffects(Protocol):
 
         The adapter enforces the positive finite timeout and converts expected
         OS failures into evidence. Composition keeps awaiting a retained task;
-        it cannot impose a hard bound on a cancellation-resistant adapter.
+        it cannot impose a hard bound on a cancellation-resistant adapter. A
+        positive grace consumes this same timeout budget. Raw coroutine closure
+        does not await OS cleanup; the supported lifecycle is cancellation
+        followed by awaiting cleanup.
         """
         ...
 
@@ -552,7 +565,11 @@ def _send_group_signal(pgid: int, sig: signal.Signals) -> SignalAttempt:
 async def _cleanup_native(
     handle: _NativeHandle, timeout_seconds: float, grace_seconds: float
 ) -> CleanupOutcome:
-    """Own the complete native termination sequence under one deadline.
+    """Own the native termination sequence under one deadline.
+
+    A grace read failure proceeds promptly to final signaling and settlement.
+    GeneratorExit propagates without awaited cleanup; raw coroutine closure
+    cannot provide the supported cancellation-and-await lifecycle.
 
     Returns:
         Signal and direct-child wait evidence when cleanup completes normally.
@@ -560,6 +577,7 @@ async def _cleanup_native(
     Raises:
         The original unexpected grace-drain error after final signaling,
         pipe closure and bounded direct-child settlement.
+        GeneratorExit: Raw coroutine closure interrupts cleanup without awaits.
     """
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout_seconds
@@ -571,6 +589,8 @@ async def _cleanup_native(
         if term.outcome == "sent":
             try:
                 await _grace_drain(handle, min(loop.time() + grace_seconds, deadline))
+            except GeneratorExit:
+                raise
             except BaseException as exc:
                 drain_error = exc
     attempts.append(_send_group_signal(handle.process_group_id, signal.SIGKILL))
@@ -609,27 +629,53 @@ async def _wait_direct_child(
 
 
 async def _grace_drain(handle: _NativeHandle, deadline: float) -> None:
-    """Drain streams and hold the TERM grace until its deadline, including EOF."""
+    """Drain streams through grace or EOF, but stop promptly on read failure.
+
+    Raw coroutine closure cancels the drain tasks synchronously and performs no
+    awaited finalization.
+
+    Raises:
+        GeneratorExit: The coroutine is closed during its grace wait.
+    """
     loop = asyncio.get_running_loop()
     timeout = max(0.0, deadline - loop.time())
     drains = [
         asyncio.create_task(_discard_stream(handle.process.stdout)),
         asyncio.create_task(_discard_stream(handle.process.stderr)),
     ]
+    closing = False
+    reader_failed = False
     try:
         completed, _pending = await asyncio.wait(
             drains, timeout=timeout, return_when=asyncio.FIRST_EXCEPTION
         )
         for task in completed:
             task.result()
+    except GeneratorExit:
+        closing = True
+        raise
+    except BaseException:
+        reader_failed = True
+        raise
     finally:
         for task in drains:
             if not task.done():
                 task.cancel()
-        await asyncio.gather(*drains, return_exceptions=True)
-        remaining = deadline - loop.time()
-        if remaining > 0:
-            await asyncio.sleep(remaining)
+        if not closing:
+            await _settle_grace_readers(drains, deadline, loop, not reader_failed)
+
+
+async def _settle_grace_readers(
+    drains: list[asyncio.Task[None]],
+    deadline: float,
+    loop: asyncio.AbstractEventLoop,
+    hold_grace: bool,
+) -> None:
+    """Settle drain tasks and retain the grace only after normal reader exit."""
+    await asyncio.gather(*drains, return_exceptions=True)
+    remaining = deadline - loop.time()
+    if hold_grace and remaining > 0:
+        await asyncio.sleep(remaining)
 
 
 class _OutputCapture:

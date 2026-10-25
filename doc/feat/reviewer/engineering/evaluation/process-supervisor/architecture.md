@@ -325,9 +325,13 @@ Capture and cleanup retain distinct resource ownership:
 - Cleanup drains and discards during grace and settles its drain operations
   within the same lifecycle as AC-4's pipe closure.
 - EOF does not end the configured grace early. An unexpected drain read error
-  is propagated only after final KILL, explicit pipe closure and the bounded
-  direct-child wait have settled.
+  settles the readers, skips the remaining grace delay, and is propagated only
+  after final KILL, explicit pipe closure and the remaining-budget direct-child
+  wait have settled. The exact original exception retains cleanup evidence.
 - Exact private reader mechanics remain implementation choices.
+- Raw coroutine closure does not await OS cleanup. The finalizers avoid async
+  work during GeneratorExit; normal Task cancellation followed by awaiting
+  retains the cleanup guarantee.
 
 `CleanupEvidence.dispatch_permitted` applies these rules:
 

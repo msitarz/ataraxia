@@ -71,6 +71,56 @@ def capture_subprocesses(
     return created
 
 
+class ReadyNativeAcquisition(NativeProcessEffects):
+    """Return an acquired child only after its fixture installed handlers."""
+
+    def __init__(
+        self,
+        ready: Path,
+        created: list[asyncio.subprocess.Process],
+        readiness_timeout_seconds: float = 3.0,
+    ) -> None:
+        self.ready = ready
+        self.created = created
+        self.readiness_timeout_seconds = readiness_timeout_seconds
+
+    @override
+    async def acquire(self, attempt: AttemptRequest, /) -> ProcessHandle | NotLaunched:
+        acquired = await super().acquire(attempt)
+        if isinstance(acquired, NotLaunched):
+            return acquired
+        try:
+            deadline = monotonic() + self.readiness_timeout_seconds
+            while not self.ready.exists() and monotonic() < deadline:
+                await asyncio.sleep(0.005)
+            assert self.ready.exists(), "child did not install its TERM handler"
+        except BaseException:
+            await _emergency_stop_process(self.created[-1])
+            raise
+        return acquired
+
+
+def test_readiness_timeout_stops_child_before_acquisition_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: a real child that never creates the readiness file.
+    ready = tmp_path / "missing-ready"
+    created = capture_subprocesses(monkeypatch)
+    attempt = request(tmp_path, 100, "sleep")
+    effects = ReadyNativeAcquisition(ready, created, readiness_timeout_seconds=0.01)
+
+    async def acquire_without_readiness() -> None:
+        await effects.acquire(attempt)
+
+    # When
+    with pytest.raises(AssertionError, match="did not install its TERM handler"):
+        asyncio.run(acquire_without_readiness())
+
+    # Then
+    assert len(created) == 1
+    assert created[0].returncode is not None
+
+
 @pytest.mark.parametrize(
     ("term_mode", "burst_stream"),
     [
@@ -80,11 +130,16 @@ def capture_subprocesses(
     ],
 )
 def test_positive_grace_escalates_and_freezes_captured_prefix(
-    tmp_path: Path, term_mode: str, burst_stream: str
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    term_mode: str,
+    burst_stream: str,
 ) -> None:
     """TERM is honored or escalated, while cleanup drains without retaining."""
     # Given: a long-running child and a bounded output prefix.
+    ready = tmp_path / "ready"
     marker = tmp_path / "term-handler-finished"
+    created = capture_subprocesses(monkeypatch)
     attempt = request(
         tmp_path,
         8,
@@ -95,16 +150,18 @@ def test_positive_grace_escalates_and_freezes_captured_prefix(
         burst_stream,
         "--term-marker",
         str(marker),
+        "--ready-file",
+        str(ready),
         grace=0.5,
     )
 
     # When
-    result = asyncio.run(run_attempt(attempt))
+    result = asyncio.run(run_attempt(attempt, ReadyNativeAcquisition(ready, created)))
 
     # Then
     assert isinstance(result, TimedOut)
     assert result.observation.output == process_supervisor.CapturedOutput(b"", b"")
-    assert marker.exists() is (term_mode == "burst")
+    assert ready.exists() and marker.exists() is (term_mode == "burst")
     assert tuple(item.signal for item in result.observation.cleanup.signals) == (
         "SIGTERM",
         "SIGKILL",
@@ -120,6 +177,7 @@ def test_eof_during_grace_does_not_shorten_term_wait(
     # Given: TERM closes both output streams but leaves the child alive.
     ready = tmp_path / "ready"
     marker = tmp_path / "term-received"
+    created = capture_subprocesses(monkeypatch)
     attempt = request(
         tmp_path,
         0,
@@ -143,7 +201,7 @@ def test_eof_during_grace_does_not_shorten_term_wait(
     monkeypatch.setattr(process_supervisor.os, "killpg", observe_signals)
 
     # When
-    result = asyncio.run(run_attempt(attempt))
+    result = asyncio.run(run_attempt(attempt, ReadyNativeAcquisition(ready, created)))
 
     # Then
     assert ready.exists() and marker.exists()
@@ -153,14 +211,20 @@ def test_eof_during_grace_does_not_shorten_term_wait(
     assert result.observation.cleanup.direct_wait == "reaped"
 
 
-def test_grace_expiry_retrieves_all_reader_failures(tmp_path: Path) -> None:
+def test_grace_expiry_retrieves_all_reader_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     # Given: an ignored TERM and a loop handler observing unhandled failures.
+    ready = tmp_path / "ready"
+    created = capture_subprocesses(monkeypatch)
     attempt = request(
         tmp_path,
         100,
         "sleep",
         "--term-mode",
         "ignore",
+        "--ready-file",
+        str(ready),
         timeout=0.1,
         grace=0.2,
     )
@@ -171,7 +235,7 @@ def test_grace_expiry_retrieves_all_reader_failures(tmp_path: Path) -> None:
         loop.set_exception_handler(lambda _loop, context: loop_contexts.append(context))
 
         # When
-        result = await run_attempt(attempt)
+        result = await run_attempt(attempt, ReadyNativeAcquisition(ready, created))
         await asyncio.sleep(0)
         assert isinstance(result, TimedOut)
         return result
@@ -1024,10 +1088,18 @@ def test_grace_read_failure_still_kills_closes_and_settles_child(
 ) -> None:
     # Given: a real child and a grace reader failure injected at asyncio's read.
     ready = tmp_path / "ready"
-    marker = tmp_path / "term-received"
     created = capture_subprocesses(monkeypatch)
     failure = failure_type("injected grace stream read failure")
     injected = _inject_grace_reader_error(monkeypatch, failure)
+    grace_delays: list[float] = []
+    original_sleep = asyncio.sleep
+
+    async def observe_sleep(delay: float, result: Any = None) -> Any:
+        if injected() and delay > 0:
+            grace_delays.append(delay)
+        return await original_sleep(delay, result)
+
+    monkeypatch.setattr(asyncio, "sleep", observe_sleep)
     attempt = request(
         tmp_path,
         0,
@@ -1036,20 +1108,18 @@ def test_grace_read_failure_still_kills_closes_and_settles_child(
         "close-streams",
         "--ready-file",
         str(ready),
-        "--term-marker",
-        str(marker),
-        timeout=1.0,
-        grace=0.25,
+        timeout=0.1,
+        grace=0.8,
     )
 
     # When
     with pytest.raises(
         failure_type, match="injected grace stream read failure"
     ) as raised:
-        asyncio.run(run_attempt(attempt))
+        asyncio.run(run_attempt(attempt, ReadyNativeAcquisition(ready, created)))
 
     # Then
-    assert ready.exists() and marker.exists()
+    assert ready.exists()
     assert injected()
     assert raised.value is failure
     assert len(created) == 1 and created[0].returncode is not None
@@ -1062,6 +1132,7 @@ def test_grace_read_failure_still_kills_closes_and_settles_child(
         "SIGKILL",
     )
     assert evidence.observation.cleanup.direct_wait == "reaped"
+    assert not grace_delays
 
 
 def test_term_no_target_skips_grace_and_still_records_kill(
@@ -1165,7 +1236,9 @@ def test_repeated_owner_cancellation_during_grace_finishes_cleanup(
             timeout=0.5,
             grace=0.25,
         )
-        task = asyncio.create_task(run_attempt(attempt))
+        task = asyncio.create_task(
+            run_attempt(attempt, ReadyNativeAcquisition(ready, created))
+        )
         deadline = monotonic() + 3.0
         while not term_marker.exists() and monotonic() < deadline:
             await asyncio.sleep(0.005)
@@ -1195,6 +1268,50 @@ def test_repeated_owner_cancellation_during_grace_finishes_cleanup(
     assert len(created) == 1 and created[0].returncode is not None
     stdout_pipe, stderr_pipe = _process_output_pipes(created[0])
     assert stdout_pipe.is_closing() and stderr_pipe.is_closing()
+
+
+def test_raw_cleanup_coroutine_close_does_not_await_finalization(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given: a real process with an installed TERM handler and public native adapter.
+    ready = tmp_path / "ready"
+    attempt = request(
+        tmp_path,
+        100,
+        "sleep",
+        "--term-mode",
+        "hold",
+        "--ready-file",
+        str(ready),
+        grace=0.8,
+    )
+    created = capture_subprocesses(monkeypatch)
+
+    async def close_during_grace() -> None:
+        effects = NativeProcessEffects()
+        acquired = await effects.acquire(attempt)
+        assert not isinstance(acquired, NotLaunched)
+        cleanup: Coroutine[Any, Any, CleanupOutcome] | None = None
+        try:
+            deadline = monotonic() + 3.0
+            while not ready.exists() and monotonic() < deadline:
+                await asyncio.sleep(0.005)
+            assert ready.exists()
+            cleanup = effects.cleanup(acquired, attempt.cleanup_timeout_seconds, 0.8)
+
+            # When: close the suspended public cleanup coroutine during its grace await.
+            cleanup.send(None)
+            cleanup.close()
+            await asyncio.sleep(0)
+        finally:
+            if cleanup is not None:
+                cleanup.close()
+            await _emergency_stop_process(created[0])
+
+    # When
+    asyncio.run(close_during_grace())
+
+    # Then: close completed without "coroutine ignored GeneratorExit".
 
 
 class DelayedNativeAcquisition:

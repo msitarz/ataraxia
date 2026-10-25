@@ -160,9 +160,11 @@ The optional grace path is implemented and accepted under this criterion.
   cooperative process can progress without blocked pipes; the captured output
   prefixes are already final and do not grow during cleanup.
 - Reaching EOF on both streams does not shorten the requested grace; draining
-  continues until the grace or shared cleanup deadline. If a grace read fails,
-  cleanup still requests final SIGKILL, closes both pipes, and settles the
-  direct-child wait within the remaining budget before propagating that error.
+  continues until the grace or shared cleanup deadline. An unexpected read
+  failure settles both readers and proceeds promptly to final SIGKILL, pipe
+  closure and the remaining-budget direct-child wait before propagating the
+  exact original error with cleanup evidence attached. Cancellation precedence
+  remains in force.
 - SIGKILL is requested for the owned group after grace, even if the leader has
   exited or the streams reached EOF; leader exit never proves group absence.
 - Cleanup computes one absolute deadline using `loop.time()` at cleanup entry;
@@ -186,6 +188,9 @@ The optional grace path is implemented and accepted under this criterion.
 - Repeated owner cancellation during grace or later cleanup cannot interrupt
   the retained cleanup task; the original cancellation propagates afterwards
   with the final evidence and partial capture, and cannot authorize retry.
+- Raw coroutine closure does not run awaited OS cleanup; closure is handled
+  without attempting asynchronous finalization, and normal Task cancellation
+  followed by awaiting remains the supported cleanup lifecycle.
 - Grace changes neither tagged termination reasons nor raw integer exit-status
   semantics, including negative signal returncodes; unavailable output remains
   `None`, and zero output limit continues to mean unbounded active capture.
