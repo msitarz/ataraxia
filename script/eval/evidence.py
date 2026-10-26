@@ -6,10 +6,10 @@ and artifact-writing leaves remain explicit injection points until implemented.
 """
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from functools import partial
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from script.eval.model import (
     AttemptEvidence,
@@ -98,66 +98,69 @@ type AppendQuotaTelemetry = Callable[[PreparedEvidence, QuotaTelemetryEvent], No
 type FinalizeEvidence = Callable[[PreparedEvidence, RunRecord], None]
 
 
+def _retain_operation[**P, R](
+    operation: Callable[P, Coroutine[Any, Any, R]],
+) -> Callable[P, Coroutine[Any, Any, R]]:
+    """Keep lock waiting and every effect owned after public submission.
+
+    Returns:
+        A coroutine preserving the decorated operation's parameters and result.
+    """
+
+    async def run(*args: P.args, **kwargs: P.kwargs) -> R:
+        task = asyncio.create_task(operation(*args, **kwargs))
+        try:
+            return await asyncio.shield(task)
+        except asyncio.CancelledError as cancellation:
+            await _settle_started_task(task)
+            failure = _task_exception(task)
+            if failure is not None:
+                cancellation.add_note(f"Evidence operation also failed: {failure!r}")
+                raise cancellation from failure
+            raise cancellation
+
+    return run
+
+
 class EvidenceStoreAdapter:
     """Compose ordered evidence operations around unfinished typed leaves.
 
-    Every operation is serialized. Injected synchronous leaves run in worker
-    threads; a started leaf settles before cancellation releases the operation.
+    Every submitted operation is serialized and retained through settlement
+    under cooperative caller cancellation. Injected synchronous leaves run in
+    worker threads.
 
     Example:
-        ``EvidenceStoreAdapter(project_attempt=fake_project, ...)`` can be
+        ``create_evidence_store(project_attempt=fake_project)`` can be
         exercised without files by supplying typed in-memory leaves.
     """
 
     def __init__(
         self,
-        create_evidence: CreateEvidence | None = None,
-        project_attempt: ProjectAttempt | None = None,
-        append_attempt: AppendAttempt | None = None,
-        append_wait_event: AppendWaitEvent | None = None,
-        append_probe_event: AppendProbeEvent | None = None,
-        project_settled_probe: ProjectSettledProbe | None = None,
-        append_settled_probe: AppendSettledProbe | None = None,
-        append_quota_telemetry: AppendQuotaTelemetry | None = None,
-        finalize_evidence: FinalizeEvidence | None = None,
+        *,
+        create_evidence: CreateEvidence,
+        project_attempt: ProjectAttempt,
+        append_attempt: AppendAttempt,
+        append_wait_event: AppendWaitEvent,
+        append_probe_event: AppendProbeEvent,
+        project_settled_probe: ProjectSettledProbe,
+        append_settled_probe: AppendSettledProbe,
+        append_quota_telemetry: AppendQuotaTelemetry,
+        finalize_evidence: FinalizeEvidence,
     ) -> None:
         """Store synchronous leaves used by this async boundary."""
-        self._create_evidence = (
-            _create_evidence if create_evidence is None else create_evidence
-        )
-        self._project_attempt = (
-            _project_attempt if project_attempt is None else project_attempt
-        )
-        self._append_attempt = (
-            _append_attempt if append_attempt is None else append_attempt
-        )
-        self._append_wait_event = (
-            _append_wait_event if append_wait_event is None else append_wait_event
-        )
-        self._append_probe_event = (
-            _append_probe_event if append_probe_event is None else append_probe_event
-        )
-        self._project_settled_probe = (
-            _project_settled_probe
-            if project_settled_probe is None
-            else project_settled_probe
-        )
-        self._append_settled_probe = (
-            _append_settled_probe
-            if append_settled_probe is None
-            else append_settled_probe
-        )
-        self._append_quota_telemetry = (
-            _append_quota_telemetry
-            if append_quota_telemetry is None
-            else append_quota_telemetry
-        )
-        self._finalize_evidence = (
-            _finalize_evidence if finalize_evidence is None else finalize_evidence
-        )
+        self._create_evidence = create_evidence
+        self._project_attempt = project_attempt
+        self._append_attempt = append_attempt
+        self._append_wait_event = append_wait_event
+        self._append_probe_event = append_probe_event
+        self._project_settled_probe = project_settled_probe
+        self._append_settled_probe = append_settled_probe
+        self._append_quota_telemetry = append_quota_telemetry
+        self._finalize_evidence = finalize_evidence
         self._prepared: PreparedEvidence | None = None
         self._lock = asyncio.Lock()
 
+    @_retain_operation
     async def create(
         self, output_directory: Path, plan: FrozenPlan, /
     ) -> PreparedEvidence:
@@ -181,6 +184,7 @@ class EvidenceStoreAdapter:
         """Bind the prepared handle before releasing create-operation ownership."""
         self._prepared = prepared
 
+    @_retain_operation
     async def record_attempt(
         self,
         run_id: RunId,
@@ -216,6 +220,7 @@ class EvidenceStoreAdapter:
             await _invoke_leaf(partial(self._append_attempt, prepared, record))
             return record
 
+    @_retain_operation
     async def record_wait_event(self, event: WaitEvent, /) -> None:
         """Append each wait transition before policy advances."""
         async with self._lock:
@@ -223,6 +228,7 @@ class EvidenceStoreAdapter:
                 partial(self._append_wait_event, self._require_prepared(), event)
             )
 
+    @_retain_operation
     async def record_quota_probe_event(
         self, event: QuotaProbeLifecycleInput, /
     ) -> None:
@@ -232,6 +238,7 @@ class EvidenceStoreAdapter:
                 partial(self._append_probe_event, self._require_prepared(), event)
             )
 
+    @_retain_operation
     async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
@@ -248,6 +255,7 @@ class EvidenceStoreAdapter:
             await _invoke_leaf(partial(self._append_settled_probe, prepared, settled))
             return settled
 
+    @_retain_operation
     async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Append passive telemetry as a separate associated observation."""
         async with self._lock:
@@ -255,6 +263,7 @@ class EvidenceStoreAdapter:
                 partial(self._append_quota_telemetry, self._require_prepared(), event)
             )
 
+    @_retain_operation
     async def finalize(self, record: RunRecord, /) -> None:
         """Persist truthful final accounting through the supplied leaf."""
         async with self._lock:
@@ -271,6 +280,58 @@ class EvidenceStoreAdapter:
         if self._prepared is None:
             raise RuntimeError("evidence storage must be prepared before recording")
         return self._prepared
+
+
+def create_evidence_store(
+    *,
+    create_evidence: CreateEvidence | None = None,
+    project_attempt: ProjectAttempt | None = None,
+    append_attempt: AppendAttempt | None = None,
+    append_wait_event: AppendWaitEvent | None = None,
+    append_probe_event: AppendProbeEvent | None = None,
+    project_settled_probe: ProjectSettledProbe | None = None,
+    append_settled_probe: AppendSettledProbe | None = None,
+    append_quota_telemetry: AppendQuotaTelemetry | None = None,
+    finalize_evidence: FinalizeEvidence | None = None,
+) -> EvidenceStoreAdapter:
+    """Compose the adapter with unfinished default leaves or supplied test ports.
+
+    Returns:
+        An adapter with all nine leaf dependencies explicitly bound.
+    """
+    return EvidenceStoreAdapter(
+        create_evidence=_create_evidence
+        if create_evidence is None
+        else create_evidence,
+        project_attempt=_project_attempt
+        if project_attempt is None
+        else project_attempt,
+        append_attempt=_append_attempt if append_attempt is None else append_attempt,
+        append_wait_event=_append_wait_event
+        if append_wait_event is None
+        else append_wait_event,
+        append_probe_event=_append_probe_event
+        if append_probe_event is None
+        else append_probe_event,
+        project_settled_probe=(
+            _project_settled_probe
+            if project_settled_probe is None
+            else project_settled_probe
+        ),
+        append_settled_probe=(
+            _append_settled_probe
+            if append_settled_probe is None
+            else append_settled_probe
+        ),
+        append_quota_telemetry=(
+            _append_quota_telemetry
+            if append_quota_telemetry is None
+            else append_quota_telemetry
+        ),
+        finalize_evidence=(
+            _finalize_evidence if finalize_evidence is None else finalize_evidence
+        ),
+    )
 
 
 async def _invoke_leaf[Result](

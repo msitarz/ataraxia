@@ -2,16 +2,15 @@
 """Typed evidence adapter ordering and identity forwarding."""
 
 import asyncio
-from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from functools import partial, wraps
+from functools import partial
 from pathlib import Path
 import threading
 from typing import Literal
 
 import pytest
 
-from script.eval.evidence import EvidenceStoreAdapter
+from script.eval.evidence import EvidenceStoreAdapter, create_evidence_store
 from script.eval.model import (
     AttemptEvidence,
     AttemptNumber,
@@ -47,16 +46,6 @@ from script.process_supervisor import (
     CleanupEvidence,
     Completed,
 )
-
-
-def run_async(test: Callable[[], Awaitable[None]]) -> Callable[[], None]:
-    """Run async adapter scenarios without a pytest asyncio plugin."""
-
-    @wraps(test)
-    def run() -> None:
-        asyncio.run(test())
-
-    return run
 
 
 def projected_attempt(
@@ -101,7 +90,7 @@ def blocked_append_store() -> tuple[
         assert release.wait(5)
         order.append("append")
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_attempt=projected_attempt,
         append_attempt=append,
@@ -372,7 +361,6 @@ class EvidenceWrites:
         self.runs.append(value)
 
 
-@run_async
 async def test_create_forwards_plan_and_returns_prepared_paths() -> None:
     """Pre-dispatch setup uses the exact caller destination and frozen plan."""
     # Given
@@ -384,7 +372,7 @@ async def test_create_forwards_plan_and_returns_prepared_paths() -> None:
         observed.append((output_directory, value))
         return prepared
 
-    store = EvidenceStoreAdapter(create_evidence=create)
+    store = create_evidence_store(create_evidence=create)
 
     # When
     result = await store.create(Path("results"), plan)
@@ -394,7 +382,6 @@ async def test_create_forwards_plan_and_returns_prepared_paths() -> None:
     assert observed == [(Path("results"), plan)]
 
 
-@run_async
 async def test_record_attempt_projects_then_appends_with_supplied_identity() -> None:
     """Forward runner-owned classification and persist before returning."""
     # Given
@@ -435,7 +422,7 @@ async def test_record_attempt_projects_then_appends_with_supplied_identity() -> 
         assert context is prepared
         assert value is record
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_attempt=project,
         append_attempt=append,
@@ -454,7 +441,6 @@ async def test_record_attempt_projects_then_appends_with_supplied_identity() -> 
     assert observed == [("run-1", "call-2", 3, 2, evidence, classification)]
 
 
-@run_async
 async def test_attempt_append_failure_propagates_after_projection() -> None:
     """A failed required evidence write reaches the coordinator unchanged."""
     # Given
@@ -479,7 +465,7 @@ async def test_attempt_append_failure_propagates_after_projection() -> None:
         order.append("append")
         raise failure
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_attempt=project,
         append_attempt=append,
@@ -495,7 +481,6 @@ async def test_attempt_append_failure_propagates_after_projection() -> None:
     assert order == ["project", "append"]
 
 
-@run_async
 async def test_attempt_projection_failure_prevents_append() -> None:
     """A failed projection cannot write a contradictory or partial record."""
     # Given
@@ -514,7 +499,7 @@ async def test_attempt_projection_failure_prevents_append() -> None:
         raise failure
 
     prepared = prepared_evidence()
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_attempt=project,
         append_attempt=lambda _context, record: appended.append(record),
@@ -530,7 +515,6 @@ async def test_attempt_projection_failure_prevents_append() -> None:
     assert appended == []
 
 
-@run_async
 async def test_failed_creation_does_not_enable_recording() -> None:
     """A failed create leaves no context and blocks writes before projection."""
     # Given
@@ -553,7 +537,7 @@ async def test_failed_creation_does_not_enable_recording() -> None:
     def create(_directory: Path, _plan: FrozenPlan) -> PreparedEvidence:
         raise failure
 
-    store = EvidenceStoreAdapter(create_evidence=create, project_attempt=project)
+    store = create_evidence_store(create_evidence=create, project_attempt=project)
 
     # When
     with pytest.raises(OSError) as create_error:
@@ -566,7 +550,6 @@ async def test_failed_creation_does_not_enable_recording() -> None:
     assert projected == []
 
 
-@run_async
 async def test_successful_creation_can_bind_only_once() -> None:
     """A second destination cannot replace the context for this run."""
     # Given
@@ -578,7 +561,7 @@ async def test_successful_creation_can_bind_only_once() -> None:
         attempts += 1
         return prepared
 
-    store = EvidenceStoreAdapter(create_evidence=create)
+    store = create_evidence_store(create_evidence=create)
 
     # When
     assert await store.create(Path("results"), frozen_plan()) is prepared
@@ -589,7 +572,6 @@ async def test_successful_creation_can_bind_only_once() -> None:
     assert attempts == 1
 
 
-@run_async
 async def test_settled_probe_is_projected_then_appended_and_returned() -> None:
     """Probe assessment and process projection settle before caller resumes."""
     # Given
@@ -617,7 +599,7 @@ async def test_settled_probe_is_projected_then_appended_and_returned() -> None:
         assert context is prepared
         assert value is settled
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_settled_probe=project,
         append_settled_probe=append,
@@ -632,7 +614,6 @@ async def test_settled_probe_is_projected_then_appended_and_returned() -> None:
     assert order == ["project", "append"]
 
 
-@run_async
 async def test_probe_projection_failure_prevents_settled_append() -> None:
     """No settled record is appended when process projection fails."""
     # Given
@@ -646,7 +627,7 @@ async def test_probe_projection_failure_prevents_settled_append() -> None:
         raise failure
 
     prepared = prepared_evidence()
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_settled_probe=project,
         append_settled_probe=lambda _context, event: appended.append(event),
@@ -669,7 +650,6 @@ async def test_probe_projection_failure_prevents_settled_append() -> None:
     assert appended == []
 
 
-@run_async
 async def test_probe_append_failure_propagates_without_returning_settled_record() -> (
     None
 ):
@@ -687,7 +667,7 @@ async def test_probe_append_failure_propagates_without_returning_settled_record(
         raise failure
 
     prepared = prepared_evidence()
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_settled_probe=project,
         append_settled_probe=append,
@@ -709,7 +689,6 @@ async def test_probe_append_failure_propagates_without_returning_settled_record(
     assert captured.value is failure
 
 
-@run_async
 async def test_lifecycle_telemetry_and_final_records_use_separate_ports() -> None:
     """Forward append-only values intact through their distinct store ports."""
     # Given
@@ -726,7 +705,7 @@ async def test_lifecycle_telemetry_and_final_records_use_separate_ports() -> Non
     run = run_record()
     prepared = prepared_evidence()
     writes = EvidenceWrites(prepared)
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         append_wait_event=writes.append_wait,
         append_probe_event=writes.append_probe,
@@ -854,11 +833,10 @@ def test_probe_and_wait_records_round_trip_without_filling_unknowns() -> None:
     )
 
 
-@run_async
 async def test_unfinished_default_storage_leaf_fails_visibly() -> None:
     """Default composition never implies persistence before leaf implementation."""
     # Given
-    store = EvidenceStoreAdapter()
+    store = create_evidence_store()
 
     # When
     with pytest.raises(NotImplementedError) as captured:
@@ -868,7 +846,6 @@ async def test_unfinished_default_storage_leaf_fails_visibly() -> None:
     assert "exclusive evidence creation" in str(captured.value)
 
 
-@run_async
 async def test_blocked_leaf_does_not_block_loop_and_serializes_following_write() -> (
     None
 ):
@@ -896,7 +873,6 @@ async def test_blocked_leaf_does_not_block_loop_and_serializes_following_write()
     assert order == ["append", "finalize"]
 
 
-@run_async
 async def test_owner_cancellation_waits_for_leaf_even_after_repeated_cancel() -> None:
     """Hold the lock through worker settlement after owner cancellation."""
     # Given
@@ -927,7 +903,6 @@ async def test_owner_cancellation_waits_for_leaf_even_after_repeated_cancel() ->
     assert order == ["append", "finalize"]
 
 
-@run_async
 async def test_cancelled_successful_create_binds_context_before_next_create() -> None:
     """Bind a create that succeeds during cancellation before releasing the lock."""
     # Given
@@ -942,7 +917,7 @@ async def test_cancelled_successful_create_binds_context_before_next_create() ->
         assert release.wait(5)
         return prepared
 
-    store = EvidenceStoreAdapter(create_evidence=create)
+    store = create_evidence_store(create_evidence=create)
     owner = asyncio.create_task(store.create(Path("results"), frozen_plan()))
     await wait_for_leaf_start(started, release)
     # When
@@ -959,9 +934,53 @@ async def test_cancelled_successful_create_binds_context_before_next_create() ->
     assert destinations == [Path("results")]
 
 
-@run_async
-async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
-    """A cancelled lock waiter never starts its evidence operation."""
+async def test_cancellation_during_projection_waits_for_append() -> None:
+    """Keep a projected record's required append inside cancellation ownership."""
+    # Given
+    started = threading.Event()
+    release = threading.Event()
+    order: list[str] = []
+    prepared = prepared_evidence()
+
+    def project(
+        _context: PreparedEvidence,
+        _run_id: RunId,
+        _call_id: CallId,
+        _position: int,
+        _attempt_number: int,
+        _evidence: AttemptEvidence,
+        _assessment: RetryAssessment | None,
+    ) -> AttemptRecord:
+        started.set()
+        assert release.wait(5)
+        order.append("project")
+        return attempt_record()
+
+    store = create_evidence_store(
+        create_evidence=lambda _directory, _plan: prepared,
+        project_attempt=project,
+        append_attempt=lambda _context, _record: order.append("append"),
+    )
+    await store.create(Path("results"), frozen_plan())
+    owner = asyncio.create_task(
+        store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
+    )
+    await wait_for_leaf_start(started, release)
+
+    # When
+    try:
+        owner.cancel()
+    finally:
+        release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await owner
+
+    # Then
+    assert order == ["project", "append"]
+
+
+async def test_cancelled_lock_waiter_still_persists_after_prior_write() -> None:
+    """A submitted operation remains queued and persists after owner cancellation."""
     # Given
     started = threading.Event()
     release = threading.Event()
@@ -973,7 +992,7 @@ async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
         started.set()
         assert release.wait(5)
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         append_wait_event=append,
         append_quota_telemetry=partial(append_telemetry, calls),
@@ -997,16 +1016,15 @@ async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
     # When
     try:
         queued.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await queued
     finally:
         release.set()
     await owner
+    with pytest.raises(asyncio.CancelledError):
+        await queued
     # Then
-    assert calls == ["append"]
+    assert calls == ["append", "telemetry"]
 
 
-@run_async
 async def test_cancellation_preserves_concurrent_leaf_failure_as_cause_and_note() -> (
     None
 ):
@@ -1022,7 +1040,7 @@ async def test_cancellation_preserves_concurrent_leaf_failure_as_cause_and_note(
         assert release.wait(5)
         raise failure
 
-    store = EvidenceStoreAdapter(
+    store = create_evidence_store(
         create_evidence=lambda _directory, _plan: prepared,
         project_attempt=projected_attempt,
         append_attempt=append,

@@ -22,7 +22,14 @@ from .model import (
 )
 
 class EvidenceStore(Protocol):
-    """Exclusive, append-only run evidence boundary."""
+    """Exclusive, append-only run evidence boundary.
+
+    The active adapter retains every submitted operation through lock waiting,
+    projection, and append under cooperative cancellation. The runner must
+    retain and await submitted evidence operations during shutdown; a coroutine
+    not yet started is not submitted. Its lock is in-memory and adapter-local.
+    These rules do not claim crash or SIGKILL recovery.
+    """
 
     async def create(
         self, output_directory: Path, plan: FrozenPlan, /
@@ -44,7 +51,11 @@ class EvidenceStore(Protocol):
         retry_assessment: RetryAssessment | None,
         /,
     ) -> AttemptRecord:
-        """Project and append shared process evidence with supplied classification."""
+        """Project and append shared process evidence with supplied classification.
+
+        Projection may write multiple raw output artifacts before the record
+        append; both projection and append are part of one retained operation.
+        """
         ...
 
     async def record_wait_event(self, event: WaitEvent, /) -> None:
@@ -72,8 +83,8 @@ class EvidenceStore(Protocol):
     ) -> QuotaProbeSettled:
         """Project live process evidence and append the settled event.
 
-        Store raw streams as artifacts and project exceptions to type and
-        diagnostic. Return the shared process projection with probe identity
+        Store raw streams as separate artifacts and project exceptions to type
+        and diagnostic. Return the shared process projection with probe identity
         and quota assessment. This effect is separate from scalar lifecycle
         appends and consumes no evaluation attempt number.
         """

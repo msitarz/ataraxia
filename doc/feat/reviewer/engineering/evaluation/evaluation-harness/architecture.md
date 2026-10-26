@@ -697,12 +697,21 @@ snapshot, not an active typing interface. The evidence-facing quota scope,
 window and observation, retry assessment, wait and probe lifecycle, and shared
 `ProcessRecord` values have migrated into `script/eval/model.py`. The active
 `script/eval/evidence.py` binds the prepared run context for one adapter
-lifecycle and composes typed identity forwarding with asynchronous
-projection/write ordering. Each operation is serialized, synchronous injected
-leaves run off the event loop, and cancellation waits for a started leaf to
-settle before releasing ownership. Its storage and process-projection leaves
-still raise `NotImplementedError`; durability, exclusivity, and raw artifact
-semantics remain unimplemented leaf obligations.
+lifecycle. `EvidenceStoreAdapter` requires all injected leaf dependencies;
+`create_evidence_store()` composes the unfinished default leaves. The adapter
+composes typed identity forwarding with asynchronous
+projection/write ordering. Each submitted operation, including lock waiting,
+projection (which may write multiple raw output artifacts), and append are
+serialized and retained through settlement when its caller is cooperatively
+cancelled. Synchronous injected leaves run off the event loop. A coroutine that
+has not started and submitted its retained task is not yet an operation owned by
+the adapter. The runner must retain and await submitted evidence operations
+during shutdown. The lock is in-memory and serializes only this adapter on its
+event loop; it provides no cross-process coordination. Its storage and
+process-projection leaves still raise
+`NotImplementedError`; durability, exclusivity, and raw artifact semantics
+remain unimplemented leaf obligations. This lifecycle does not claim recovery
+after process termination, `SIGKILL`, or machine failure.
 Runner policy/configuration and AC-9 progress proposals remain design-only.
 The shared base preserves flat attempt fields while permitting probes to reuse
 the process projection.
