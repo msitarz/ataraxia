@@ -35,25 +35,31 @@ type ProgressFinalStatus = Literal[
 class ProgressCounts:
     """Disjoint planned-call states and dispatched-work outcome counts.
 
-    Queued means not yet dispatched while active; it may be gated by
-    concurrency or quota. Stopped-not-started means the stop latch prevents
+    Queued means not yet dispatched while the run is active; it may be gated
+    by concurrency or quota. Stopped-not-started means the stop latch prevents
     dispatch. Evidence-pending means an outcome is known in memory but its
     required durable write failed, so no terminal outcome is claimed. Attempt
     and probe evidence-pending counts follow the same rule. ``attempts_started``
     counts invocations dispatched through ``AttemptCall``; it does not imply
-    supervisor acquisition or OS process launch. Probes use the same meaning.
+    supervisor acquisition or launch of an OS process. ``probes_started`` has
+    the same dispatched-invocation meaning.
 
     For a plan of ``N`` calls,
     ``N == calls_queued + calls_stopped_not_started + calls_active +
     calls_retry_wait + calls_evidence_pending + calls_succeeded +
     calls_failed + calls_cancelled``.
-    Dispatched attempts partition into active, evidence-pending, succeeded,
-    failed, and cancelled invocations; ``retries_started`` is a subset of
-    ``attempts_started`` and retries add attempts, never calls. Success means
-    safe zero-exit process completion, not reviewer approval. Probe completion
-    means a safe, conclusive operational check, including recognized
-    exhaustion; unknown or malformed state is a failure. Cancellation and
-    evidence-pending remain separate from terminal outcomes.
+    Attempt outcome counts are disjoint: success means zero exit with safe
+    process completion, not reviewer approval; failure means a settled
+    non-cancelled unsuccessful attempt; cancellation has its own count. Probe
+    counts are likewise disjoint: completed means a safely settled operational
+    check with a conclusive available or exhausted quota state, including a
+    recognized provider rate-limit response mapped to exhausted; failed means
+    unknown or malformed state, timeout, overflow, infrastructure failure, or
+    unsafe process outcome; cancellation is separate. Evidence-pending belongs
+    to none of these terminal outcome counts. Dispatched attempt counts
+    partition across active, evidence-pending, and terminal outcomes.
+    ``retries_started`` is a subset of ``attempts_started``; retries add
+    attempts, never calls.
     """
 
     calls_queued: int
@@ -92,7 +98,7 @@ class CallWait:
 
 @dataclass(frozen=True)
 class ProgressSnapshot:
-    """Immutable projection of coordinator state and existing observations.
+    """Immutable consumer projection of coordinator state and observations.
 
     ``final_status`` is set only when ``phase`` is ``final``. Failed and
     cancelled calls are settled outcomes, not successful completions. Quota
@@ -185,23 +191,32 @@ class AttemptCall(Protocol):
 
 
 class OutcomeClassifier(Protocol):
-    """Classify settled evidence without reading semantic answers."""
+    """Classify settled evidence without reading semantic answers.
+
+    A nonzero exit or capacity-like text alone does not establish retry
+    eligibility; return unknown until explicit signals and no-result evidence
+    have been verified.
+    """
 
     def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
-        """Return unknown without verified category and confident no-result.
+        """Return unknown when category or confident no-result is absent.
 
-        Never parse answer content or infer absence from nonzero exit or
-        capacity text alone.
+        Never parse answer content. A nonzero exit or capacity text alone does
+        not establish that no semantic result was produced.
         """
         ...
 
 
 class QuotaStatusReader(Protocol):
-    """Expose passive ingestion and separate supervised active polling.
+    """Separate passive ingestion from supervised active polling.
 
-    The provider adapter owns required-window completeness and freshness,
-    represents missing or malformed required windows explicitly, and does not
-    infer reset times. Core policy never interprets provider window IDs.
+    Provider adapters correlate settled-attempt telemetry with their source and
+    return observations; active polling is a separate supervised invocation
+    with its own ephemeral probe evidence. Both paths produce provider-neutral
+    observations through this single port. The provider adapter owns
+    required-window completeness and freshness, represents missing or malformed
+    required windows explicitly, and does not infer reset times. Core policy
+    never interprets provider window IDs.
     """
 
     @property

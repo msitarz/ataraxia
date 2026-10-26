@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Consumer-owned values and ports used by dispatch and its adapters."""
+"""Historical design sketch; the runtime API lives in ``script.eval.runner.ports``.
+
+The reviewed declarations below record the proposed consumer-owned runner
+boundary. Implemented values and protocols in ``script/eval/runner/ports.py``
+are authoritative for current runtime behavior.
+"""
 
 from dataclasses import dataclass
 from pathlib import Path

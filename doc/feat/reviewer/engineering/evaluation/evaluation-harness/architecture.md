@@ -9,8 +9,8 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. The token estimator and dry-run report builder are implemented; CLI
-integration, dispatch, and persistence remain planned. Shared consumer-owned
+expansion. The token estimator, dry-run report builder, and evidence storage are
+implemented. CLI integration and dispatch remain planned. Shared consumer-owned
 runner ports and accepted runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
@@ -696,8 +696,10 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. `model.pyi` is a historical
-snapshot, not an active typing interface. The evidence-facing quota scope,
+boundary from which implementation proceeds. `model.pyi`, `runner/ports.pyi`,
+and `runner/__init__.pyi` are historical references, not active typing
+interfaces. The `Coordinator` declaration in the `__init__.pyi` sketch is
+planned and is not exported by the runtime package. Evidence-facing quota scope,
 window and observation, retry assessment, wait and probe lifecycle, and shared
 `ProcessRecord` values have migrated into `script/eval/model.py`. The active
 `script/eval/evidence.py` binds the prepared run context for one adapter

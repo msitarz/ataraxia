@@ -11,6 +11,11 @@ from script.eval.model import DirectoryOption, HarnessConfig
 from script.eval.runner import CliBinding, ProgressCounts
 
 
+def set_field(value: object, field: str, replacement: object) -> None:
+    """Attempt an attribute mutation without static-assignment type ignores."""
+    setattr(value, field, replacement)
+
+
 def configuration(**overrides: object) -> HarnessConfig:
     """Build a minimal valid harness configuration for boundary cases."""
     values: dict[str, object] = {
@@ -27,12 +32,16 @@ def configuration(**overrides: object) -> HarnessConfig:
         "instructions_file_path": None,
     }
     values.update(overrides)
-    return HarnessConfig(**values)  # type: ignore[arg-type]
+    return HarnessConfig.model_validate(values)
 
 
 def test_runner_configuration_defaults_are_stable_and_serialized() -> None:
     # Given
     config = configuration()
+
+    # When
+    serialized = config.model_dump_json()
+    restored = HarnessConfig.model_validate_json(serialized)
 
     # Then
     assert config.quiet is False
@@ -46,11 +55,60 @@ def test_runner_configuration_defaults_are_stable_and_serialized() -> None:
     assert config.capacity_retry_limit == 0
     assert config.capacity_backoff_base_seconds is None
     assert config.capacity_backoff_cap_seconds is None
-    serialized = config.model_dump()
-    assert serialized["progress_interval_seconds"] == pytest.approx(1.0)
-    assert serialized["quota_probe_budget"] is None
-    assert serialized["capacity_retry_limit"] == 0
-    assert HarnessConfig.model_validate_json(config.model_dump_json()) == config
+    assert restored == config
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"quota_wait_enabled": True, "quota_probe_budget": None},
+        {"quota_wait_enabled": True, "quota_probe_budget": 3},
+        {"quota_wait_enabled": False, "quota_probe_budget": 0},
+        {
+            "capacity_retry_limit": 1,
+            "capacity_backoff_base_seconds": 2.0,
+            "capacity_backoff_cap_seconds": 2.0,
+        },
+    ],
+    ids=[
+        "enabled-quota-uncapped",
+        "enabled-quota-positive-cap",
+        "disabled-quota-zero-cap",
+        "capacity-retry-equal-backoff-bounds",
+    ],
+)
+def test_valid_runner_configurations_round_trip(overrides: dict[str, object]) -> None:
+    # Given
+    config = configuration(**overrides)
+
+    # When
+    restored = HarnessConfig.model_validate_json(config.model_dump_json())
+
+    # Then
+    assert restored == config
+
+
+def test_nondefault_runner_configuration_round_trips() -> None:
+    # Given
+    config = configuration(
+        quiet=True,
+        progress_interval_seconds=2.5,
+        retry_limit=2,
+        retry_nonzero_exit=True,
+        quota_wait_enabled=True,
+        quota_wait_limit_seconds=120.0,
+        quota_poll_interval_seconds=7.5,
+        quota_probe_budget=4,
+        capacity_retry_limit=2,
+        capacity_backoff_base_seconds=0.5,
+        capacity_backoff_cap_seconds=4.0,
+    )
+
+    # When
+    restored = HarnessConfig.model_validate_json(config.model_dump_json())
+
+    # Then
+    assert restored == config
 
 
 @pytest.mark.parametrize(
@@ -79,8 +137,15 @@ def test_runner_configuration_defaults_are_stable_and_serialized() -> None:
 def test_runner_configuration_rejects_invalid_scalar_bounds(
     field: str, value: object
 ) -> None:
-    with pytest.raises(ValidationError):
-        configuration(**{field: value})
+    # Given
+    invalid_value = {field: value}
+
+    # When
+    with pytest.raises(ValidationError) as error:
+        configuration(**invalid_value)
+
+    # Then
+    assert error.value.errors()[0]["loc"] == (field,)
 
 
 @pytest.mark.parametrize(
@@ -91,7 +156,17 @@ def test_runner_configuration_rejects_invalid_scalar_bounds(
             "enabled quota waiting requires a positive probe budget",
         ),
         (
-            {"capacity_retry_limit": 1},
+            {
+                "capacity_retry_limit": 1,
+                "capacity_backoff_base_seconds": 1.0,
+            },
+            "capacity retries require backoff base and cap durations",
+        ),
+        (
+            {
+                "capacity_retry_limit": 1,
+                "capacity_backoff_cap_seconds": 1.0,
+            },
             "capacity retries require backoff base and cap durations",
         ),
         (
@@ -102,22 +177,66 @@ def test_runner_configuration_rejects_invalid_scalar_bounds(
             "capacity backoff cap must be at least its base",
         ),
     ],
-    ids=["quota-budget-zero", "capacity-backoff-required", "cap-below-base"],
+    ids=[
+        "quota-budget-zero",
+        "capacity-cap-required",
+        "capacity-base-required",
+        "cap-below-base",
+    ],
 )
 def test_runner_configuration_enforces_cross_field_contracts(
     overrides: dict[str, object], message: str
 ) -> None:
-    with pytest.raises(ValidationError, match=message):
-        configuration(**overrides)
+    # Given
+    invalid_settings = overrides
+
+    # When
+    with pytest.raises(ValidationError, match=message) as error:
+        configuration(**invalid_settings)
+
+    # Then
+    assert error.value.errors()[0]["loc"] == ()
 
 
 def test_shared_runner_values_are_frozen() -> None:
     # Given
-    binding = CliBinding(Path("/usr/bin/codex"), None, "1", (), None)
-    counts = ProgressCounts(*([0] * 21))
+    binding = CliBinding(
+        executable_path=Path("/usr/bin/codex"),
+        cli_version=None,
+        runner_version="1",
+        effective_settings=(),
+        quota_scope=None,
+    )
+    counts = ProgressCounts(
+        calls_queued=1,
+        calls_stopped_not_started=0,
+        calls_active=0,
+        calls_retry_wait=0,
+        calls_evidence_pending=0,
+        calls_succeeded=0,
+        calls_failed=0,
+        calls_cancelled=0,
+        attempts_started=0,
+        retries_started=0,
+        attempts_active=0,
+        attempts_evidence_pending=0,
+        attempts_succeeded=0,
+        attempts_failed=0,
+        attempts_cancelled=0,
+        probes_started=0,
+        probes_active=0,
+        probes_evidence_pending=0,
+        probes_completed=0,
+        probes_failed=0,
+        probes_cancelled=0,
+    )
+
+    # When
+    with pytest.raises(FrozenInstanceError):
+        set_field(binding, "runner_version", "2")
+    with pytest.raises(FrozenInstanceError):
+        set_field(counts, "calls_queued", 0)
 
     # Then
-    with pytest.raises(FrozenInstanceError):
-        binding.runner_version = "2"  # type: ignore[misc]
-    with pytest.raises(FrozenInstanceError):
-        counts.calls_queued = 1  # type: ignore[misc]
+    assert binding.runner_version == "1"
+    assert counts.calls_queued == 1
