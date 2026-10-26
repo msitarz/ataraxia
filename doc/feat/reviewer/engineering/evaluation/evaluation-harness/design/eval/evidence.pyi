@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exclusive run-artifact creation and append-only evidence persistence port."""
+"""Historical evidence port snapshot; runtime contract lives in evidence.py."""
 
 from pathlib import Path
 from typing import Protocol
@@ -15,15 +15,25 @@ from .model import (
     QuotaProbeLifecycleInput,
     QuotaProbeSettled,
     QuotaTelemetryEvent,
+    RetryAssessment,
     RunId,
     RunRecord,
     WaitEvent,
 )
 
 class EvidenceStore(Protocol):
-    """Exclusive, append-only run evidence boundary."""
+    """Exclusive, append-only run evidence boundary.
 
-    def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
+    The active adapter retains every submitted operation through lock waiting,
+    projection, and append under cooperative cancellation. The runner must
+    retain and await submitted evidence operations during shutdown; a coroutine
+    not yet started is not submitted. Its lock is in-memory and adapter-local.
+    These rules do not claim crash or SIGKILL recovery.
+    """
+
+    async def create(
+        self, output_directory: Path, plan: FrozenPlan, /
+    ) -> PreparedEvidence:
         """Exclusively create storage and persist plan/instructions pre-dispatch.
 
         Returns paths to the durable plan and staged model instruction file.
@@ -31,19 +41,24 @@ class EvidenceStore(Protocol):
         """
         ...
 
-    def record_attempt(
+    async def record_attempt(
         self,
         run_id: RunId,
         call_id: CallId,
         position: int,
         attempt_number: AttemptNumber,
         evidence: AttemptEvidence,
+        retry_assessment: RetryAssessment | None,
         /,
     ) -> AttemptRecord:
-        """Project shared process evidence with call and attempt identity."""
+        """Project and append shared process evidence with supplied classification.
+
+        Projection may write multiple raw output artifacts before the record
+        append; both projection and append are part of one retained operation.
+        """
         ...
 
-    def record_wait_event(self, event: WaitEvent, /) -> None:
+    async def record_wait_event(self, event: WaitEvent, /) -> None:
         """Durably append wait start, quota recheck, and end events.
 
         The quota start carries its scoped provider-neutral window observation
@@ -52,7 +67,9 @@ class EvidenceStore(Protocol):
         """
         ...
 
-    def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
+    async def record_quota_probe_event(
+        self, event: QuotaProbeLifecycleInput, /
+    ) -> None:
         """Append one scalar lifecycle transition before its effect.
 
         This handles scheduled, actual-start, and prelaunch-cancellation events.
@@ -61,22 +78,22 @@ class EvidenceStore(Protocol):
         """
         ...
 
-    def record_quota_probe_settled(
+    async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
         """Project live process evidence and append the settled event.
 
-        Store raw streams as artifacts and project exceptions to type and
-        diagnostic. Return the shared process projection with probe identity
+        Store raw streams as separate artifacts and project exceptions to type
+        and diagnostic. Return the shared process projection with probe identity
         and quota assessment. This effect is separate from scalar lifecycle
         appends and consumes no evaluation attempt number.
         """
         ...
 
-    def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Append a provider-neutral observation under call/attempt identity."""
         ...
 
-    def finalize(self, record: RunRecord, /) -> None:
+    async def finalize(self, record: RunRecord, /) -> None:
         """Persist truthful final accounting; failure leaves the run incomplete."""
         ...

@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Literal, NewType
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -22,11 +22,34 @@ type EstimateBasis = Literal["supplied_context", "instructions_file"]
 type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
+type AttemptOutcomeKind = Literal[
+    "completed",
+    "timed_out",
+    "output_limit_exceeded",
+    "infrastructure_failure",
+    "cancelled",
+    "unexpected_exception",
+    "no_observation",
+]
 type SettingValue = str | int | float | bool | None
 type PositiveSeconds = Annotated[float, Field(gt=0, allow_inf_nan=False)]
 type NonnegativeSeconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 type NonnegativeBytes = Annotated[int, Field(ge=0)]
 type NonnegativeIndex = Annotated[int, Field(ge=0)]
+type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unknown"]
+type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
+type QuotaState = Literal["available", "exhausted", "unknown", "unavailable"]
+type WaitEnd = Literal[
+    "quota_available", "delay_elapsed", "bound", "cancelled", "stop", "unknown"
+]
+type WaitEventKind = Literal["started", "recheck", "finished"]
+type WaitId = str
+QuotaProviderId = NewType("QuotaProviderId", str)
+QuotaAllowanceId = NewType("QuotaAllowanceId", str)
+QuotaWindowId = NewType("QuotaWindowId", str)
+QuotaProbeId = NewType("QuotaProbeId", str)
+type QuotaProbeReason = Literal["periodic", "reset_hint"]
+type QuotaProbeCancelCause = Literal["cancelled", "stop", "superseded"]
 
 
 class StrictModel(BaseModel):
@@ -215,6 +238,96 @@ class PreparedEvidence:
     model_instructions_file: Path | None
 
 
+class QuotaScope(StrictModel):
+    """Opaque provider and allowance identity safe to retain in evidence."""
+
+    provider_id: QuotaProviderId
+    allowance_id: QuotaAllowanceId
+
+
+class QuotaWindowObservation(StrictModel):
+    """One provider-specific window with source provenance and optional usage."""
+
+    window_id: QuotaWindowId
+    state: QuotaState
+    usage_percent: float | None
+    reset_at_utc: str | None
+    source_observed_at_utc: str | None
+    source_sequence: int | None
+    source: str | None
+    diagnostic: str | None
+
+
+class QuotaObservation(StrictModel):
+    """Provider-neutral windows from one source snapshot and verified scope."""
+
+    scope: QuotaScope | None
+    read_at_utc: str
+    source_coordinate: str | None
+    windows: tuple[QuotaWindowObservation, ...]
+    diagnostic: str | None
+
+
+class RetryAssessment(StrictModel):
+    """Runner-owned classification and explicit no-result basis."""
+
+    retry_class: RetryClass
+    classification_basis: str | None
+    no_result_basis: NoResultBasis
+    diagnostic: str | None
+
+
+class QuotaWaitContext(StrictModel):
+    """One global quota pause and its scoped provider observation."""
+
+    kind: Literal["quota"]
+    trigger_call_id: CallId
+    trigger_attempt_number: AttemptNumber
+    cumulative_waited_before_seconds: NonnegativeSeconds
+    wait_limit_seconds: PositiveSeconds | None
+    quota_observation: QuotaObservation
+    selected_reset_at_utc: str | None
+
+
+class CapacityWaitContext(StrictModel):
+    """One call-local capacity retry delay and its sampled bounds."""
+
+    kind: Literal["capacity"]
+    call_id: CallId
+    failed_attempt_number: AttemptNumber
+    retry_index: int
+    base_seconds: PositiveSeconds
+    cap_seconds: PositiveSeconds
+    jitter_bound_seconds: NonnegativeSeconds
+    sampled_seconds: NonnegativeSeconds
+
+
+type WaitContext = QuotaWaitContext | CapacityWaitContext
+
+
+class QuotaProbeSchedule(StrictModel):
+    """Durable cadence decision before a quota check becomes due."""
+
+    run_id: RunId
+    probe_id: QuotaProbeId
+    scope: QuotaScope
+    reason: QuotaProbeReason
+    created_at_utc: str
+    due_at_utc: str
+    interval_seconds: PositiveSeconds
+    reset_hint_at_utc: str | None
+
+
+class QuotaProbeRequest(StrictModel):
+    """One dispatched quota check associated with its current pause."""
+
+    schedule: QuotaProbeSchedule
+    pause_wait_id: WaitId | None
+    poll_started_at_utc: str
+    scheduled_wait_seconds: NonnegativeSeconds
+    scheduled_wait_elapsed_basis: Literal["monotonic"]
+
+
 @dataclass(frozen=True)
 class AttemptEvidence:
     """In-memory supervisor outcome associated with its planned call."""
@@ -227,6 +340,45 @@ class AttemptEvidence:
     started_at_utc: str
     ended_at_utc: str | None
     usage_telemetry: bytes | None
+
+
+type ProcessEvidence = AttemptEvidence
+
+
+@dataclass(frozen=True)
+class QuotaProbeEvidence:
+    """Quota assessment composed with ephemeral supervisor process evidence."""
+
+    request: QuotaProbeRequest
+    process: ProcessEvidence
+    quota_state: QuotaState
+    observation: QuotaObservation | None
+    classification_basis: str | None
+
+
+class QuotaProbeScheduled(StrictModel):
+    """Append-only cadence decision; it represents no launched process."""
+
+    kind: Literal["scheduled"]
+    schedule: QuotaProbeSchedule
+
+
+class QuotaProbeStarted(StrictModel):
+    """Actual dispatch event written before supervisor invocation."""
+
+    kind: Literal["started"]
+    request: QuotaProbeRequest
+
+
+class QuotaProbeCancelled(StrictModel):
+    """Scheduled wait ended before dispatch, without a process record."""
+
+    kind: Literal["cancelled"]
+    schedule: QuotaProbeSchedule
+    cause: QuotaProbeCancelCause
+    ended_at_utc: str
+    elapsed_seconds: NonnegativeSeconds
+    elapsed_basis: Literal["monotonic"]
 
 
 class SignalRecord(StrictModel):
@@ -246,13 +398,9 @@ class CleanupRecord(StrictModel):
     wait_diagnostic: str | None
 
 
-class AttemptRecord(StrictModel):
-    """Persisted projection of one supervisor observation."""
+class ProcessRecord(StrictModel):
+    """Serializable projection shared by evaluation attempts and quota probes."""
 
-    run_id: RunId
-    call_id: CallId
-    position: int = Field(ge=0)
-    attempt_number: AttemptNumber = Field(ge=1)
     control_flow: ControlFlow
     outcome_kind: Literal[
         "completed",
@@ -262,6 +410,7 @@ class AttemptRecord(StrictModel):
         "cancelled",
         "unexpected_exception",
         "no_observation",
+        "not_started",
     ]
     started_at_utc: str
     ended_at_utc: str | None
@@ -280,6 +429,74 @@ class AttemptRecord(StrictModel):
     stderr_artifact: str | None
     usage_telemetry: bytes | None
     error_type: str | None
+    diagnostic: str | None
+
+
+class AttemptRecord(ProcessRecord):
+    """Shared process projection with evaluation identity and classification."""
+
+    run_id: RunId
+    call_id: CallId
+    position: int = Field(ge=0)
+    attempt_number: AttemptNumber = Field(ge=1)
+    outcome_kind: AttemptOutcomeKind
+    retry_assessment: RetryAssessment | None = None
+
+
+class QuotaProbeRecord(ProcessRecord):
+    """Shared process projection with quota probe identity and assessment."""
+
+    request: QuotaProbeRequest
+    quota_state: QuotaState
+    observation: QuotaObservation | None
+    classification_basis: str | None
+
+
+class QuotaProbeSettled(StrictModel):
+    """Persisted process projection written before quota resumption."""
+
+    kind: Literal["settled"]
+    record: QuotaProbeRecord
+
+
+type QuotaProbeLifecycleInput = (
+    QuotaProbeScheduled | QuotaProbeStarted | QuotaProbeCancelled
+)
+type QuotaProbeEvent = QuotaProbeLifecycleInput | QuotaProbeSettled
+
+
+class QuotaTelemetryEvent(StrictModel):
+    """Provider-neutral observation associated with a settled evaluation attempt."""
+
+    run_id: RunId
+    call_id: CallId
+    attempt_number: AttemptNumber
+    observation: QuotaObservation
+
+
+class WaitRecord(StrictModel):
+    """Final wait summary joined to live events through a stable ID."""
+
+    wait_id: WaitId
+    context: WaitContext
+    started_at_utc: str
+    ended_at_utc: str | None
+    elapsed_seconds: NonnegativeSeconds | None
+    end: WaitEnd
+    diagnostic: str | None
+
+
+class WaitEvent(StrictModel):
+    """Append-only event persisted as a wait starts and proceeds."""
+
+    run_id: RunId
+    wait_id: WaitId
+    context: WaitContext
+    kind: WaitEventKind
+    observed_at_utc: str
+    elapsed_seconds: NonnegativeSeconds
+    quota_observation: QuotaObservation | None
+    end: WaitEnd | None
     diagnostic: str | None
 
 
@@ -312,6 +529,7 @@ class RunRecord(StrictModel):
     cli_version: str | None
     effective_settings: tuple[tuple[str, SettingValue], ...]
     calls: tuple[CallRecord, ...]
+    waits: tuple[WaitRecord, ...] = ()
 
 
 def _validate_separator_escapes(value: str) -> None:
