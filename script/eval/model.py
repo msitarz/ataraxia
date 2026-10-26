@@ -174,7 +174,7 @@ class FrozenPlan(StrictModel):
 
 @dataclass(frozen=True)
 class TokenEstimate:
-    """Estimate with a separately labeled input basis and compatibility."""
+    """Estimate with input basis, compatibility, and any approximation diagnostic."""
 
     model: str
     token_count: int | None

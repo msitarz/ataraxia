@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Literal
 
 import pytest
+import tiktoken
+from tiktoken import model as tiktoken_model
 
 from script.eval.model import (
     CallEstimate,
@@ -23,6 +25,7 @@ from script.eval.tokens import (
     TiktokenEstimator,
     TokenEstimator,
     TokenizerSelection,
+    _select_tiktoken_encoding,
     build_dry_run_report,
     tiktoken_estimator,
 )
@@ -367,13 +370,203 @@ def test_report_propagates_estimator_failure_without_processing_later_calls() ->
     assert received == [(b"same prompt", "model-a", "supplied_context")]
 
 
-def test_default_tiktoken_adapter_exposes_unfinished_package_leaf() -> None:
+def test_default_adapter_counts_plain_utf8_text_with_real_encoding_offline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # Given
+    encoding = tiktoken.Encoding(
+        name="test-byte-encoding",
+        pat_str=r"[\s\S]",
+        mergeable_ranks={bytes((value,)): value for value in range(256)},
+        special_tokens={},
+    )
+
+    def get_encoding(name: str) -> tiktoken.Encoding:
+        assert name == "o200k_base"
+        return encoding
+
+    monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)
     estimator = tiktoken_estimator()
+    content = "literal <|endoftext|> café e\u0301 🧪".encode("utf-8")
 
     # When
-    with pytest.raises(NotImplementedError) as raised:
-        estimator.estimate(b"context", "model-a", "supplied_context")
+    result = estimator.estimate(content, "gpt-4o", "supplied_context")
 
     # Then
-    assert str(raised.value) == "tiktoken encoding selection is not implemented"
+    assert result.token_count == len(content)
+    assert result.method == "tiktoken:o200k_base"
+    assert result.library_version == tiktoken.__version__
+    assert result.tokenizer_version is None
+    assert result.compatibility == "exact"
+    assert result.diagnostic is not None
+    assert "framing" in result.diagnostic
+
+
+def test_default_adapter_counts_empty_text_as_zero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    encoding = tiktoken.Encoding(
+        name="test-byte-encoding",
+        pat_str=r"[\s\S]",
+        mergeable_ranks={bytes((value,)): value for value in range(256)},
+        special_tokens={},
+    )
+
+    def get_encoding(name: str) -> tiktoken.Encoding:
+        assert name == "o200k_base"
+        return encoding
+
+    monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)
+
+    # When
+    result = tiktoken_estimator().estimate(b"", "gpt-4o", "supplied_context")
+
+    # Then
+    assert result.token_count == 0
+
+
+def test_tiktoken_model_mapping_labels_exact_and_prefix_matches() -> None:
+    # Given / When
+    exact = _select_tiktoken_encoding("gpt-4o")
+    prefix = _select_tiktoken_encoding("gpt-4o-2024-05-13")
+
+    # Then
+    assert exact.encoding_name == "o200k_base"
+    assert exact.compatibility == "exact"
+    assert exact.tokenizer_version is None
+    assert prefix.encoding_name == "o200k_base"
+    assert prefix.compatibility == "approximate"
+    assert prefix.diagnostic is not None
+    assert "nonexistent" in prefix.diagnostic
+
+
+@pytest.mark.parametrize(
+    "model",
+    ["gpt-6", "gpt-6-mini", "gpt-6.1", "gpt-6.1-sol", "gpt-6.12-preview"],
+    ids=[
+        "base",
+        "hyphen-family",
+        "numeric-minor",
+        "minor-variant",
+        "multi-digit-minor",
+    ],
+)
+def test_gpt_6_family_uses_approximate_gpt_5_6_mapping(model: str) -> None:
+    # Given / When
+    selection = _select_tiktoken_encoding(model)
+
+    # Then
+    assert selection.encoding_name == tiktoken_model.encoding_name_for_model("gpt-5.6")
+    assert selection.compatibility == "approximate"
+    assert selection.diagnostic is not None
+    assert model in selection.diagnostic
+    assert "gpt-5.6" in selection.diagnostic
+    assert "framing" in selection.diagnostic
+    assert "billing" in selection.diagnostic
+
+
+@pytest.mark.parametrize(
+    "model",
+    ["gpt-60", "gpt-600", "gpt-6future-model", "gpt-6.", "gpt-7-future-model"],
+    ids=[
+        "gpt-sixty",
+        "gpt-six-hundred",
+        "missing-separator",
+        "incomplete-minor",
+        "other-family",
+    ],
+)
+def test_unrelated_or_malformed_model_names_stay_unknown(model: str) -> None:
+    # Given / When
+    selection = _select_tiktoken_encoding(model)
+
+    # Then
+    assert selection.encoding_name is None
+    assert selection.compatibility == "unknown"
+    assert selection.diagnostic is not None
+    assert "no encoding mapping" in selection.diagnostic
+
+
+def test_gpt_6_estimate_preserves_requested_model_and_counts_surrogate_offline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    encoding = tiktoken.Encoding(
+        name="test-byte-encoding",
+        pat_str=r"[\s\S]",
+        mergeable_ranks={bytes((value,)): value for value in range(256)},
+        special_tokens={},
+    )
+    selected_names: list[str] = []
+
+    def get_encoding(name: str) -> tiktoken.Encoding:
+        selected_names.append(name)
+        return encoding
+
+    monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)
+
+    # When
+    result = tiktoken_estimator().estimate(b"gpt 6", "gpt-6.1-sol", "supplied_context")
+
+    # Then
+    assert selected_names == ["o200k_base"]
+    assert result.model == "gpt-6.1-sol"
+    assert result.token_count == 5
+    assert result.method == "tiktoken:o200k_base"
+    assert result.compatibility == "approximate"
+    assert result.diagnostic is not None
+    assert "gpt-6.1-sol" in result.diagnostic
+    assert "gpt-5.6" in result.diagnostic
+
+
+def test_missing_gpt_5_6_surrogate_mapping_is_explicit_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    def missing_mapping(model: str) -> str:
+        assert model == "gpt-5.6"
+        raise KeyError(model)
+
+    monkeypatch.setattr(tiktoken_model, "encoding_name_for_model", missing_mapping)
+
+    # When
+    selection = _select_tiktoken_encoding("gpt-6.1-sol")
+
+    # Then
+    assert selection.encoding_name is None
+    assert selection.compatibility == "unknown"
+    assert selection.diagnostic is not None
+    assert "gpt-6.1-sol" in selection.diagnostic
+    assert "gpt-5.6" in selection.diagnostic
+
+
+def test_default_adapter_returns_unknown_with_library_metadata() -> None:
+    # Given / When
+    result = tiktoken_estimator().estimate(
+        b"context", "gpt-7-future-model", "supplied_context"
+    )
+
+    # Then
+    assert result.token_count is None
+    assert result.method == "tiktoken"
+    assert result.library_version == tiktoken.__version__
+    assert result.tokenizer_version is None
+    assert result.compatibility == "unknown"
+    assert result.diagnostic is not None
+
+
+def test_known_model_mapping_to_missing_encoding_is_explicit_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    monkeypatch.setitem(tiktoken_model.MODEL_TO_ENCODING, "known-model", "missing")
+
+    # When
+    selection = _select_tiktoken_encoding("known-model")
+
+    # Then
+    assert selection.encoding_name is None
+    assert selection.compatibility == "unknown"
+    assert selection.diagnostic is not None
+    assert "unavailable encoding 'missing'" in selection.diagnostic

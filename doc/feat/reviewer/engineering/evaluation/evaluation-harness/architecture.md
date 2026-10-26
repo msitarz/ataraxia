@@ -173,21 +173,28 @@ reference; the runtime module is authoritative.
 
 **TL;DR:** Keep estimation separate from planning and execution.
 
-- **Typed wiring implemented:** `script/eval/tokens.py` defines the
-  consumer-owned `TokenEstimator` port, a `TiktokenEstimator` adapter seam,
-  and a pure report builder. The report uses each scheduled call's exact frozen
-  prompt bytes and model, retains repeated positions, and estimates configured
-  instruction bytes separately. Omitted instructions produce no estimate for
-  unavailable automatic system bytes. CLI binding and effective call
-  identities remain explicitly unknown in the dry-run record.
-- The adapter accepts provider-neutral tokenizer-selection and counting
-  functions. Its package leaves currently raise `NotImplementedError`; no
-  `tiktoken` dependency, encoding mapping, token count, or fallback policy is
-  implemented. Injected estimates preserve method, library and tokenizer
-  versions, compatibility, and diagnostic metadata. An explicit unknown
-  selection skips counting and returns `token_count=None`; known selections
-  include the encoding identifier in the method label. Adapter errors
-  propagate.
+- **Implemented:** `script/eval/tokens.py` defines the consumer-owned
+  `TokenEstimator` port, the `tiktoken` adapter, and a pure report builder. The
+  report uses each scheduled call's exact frozen prompt bytes and model,
+  retains repeated positions, and estimates configured instruction bytes
+  separately. Omitted instructions produce no estimate for unavailable
+  automatic system bytes. CLI binding and effective call identities remain
+  explicitly unknown in the dry-run record.
+- The adapter uses tiktoken's declared exact model table and prefix table. Exact
+  table matches are labeled exact for encoding selection; prefix matches are
+  approximate because the library notes they can match nonexistent model
+  names. Unknown models and known mappings to unavailable encodings return
+  `token_count=None` with diagnostics. The method records the encoding name and
+  library version; tiktoken exposes no independent vocabulary version, so
+  `tokenizer_version` remains unknown. Counts use ordinary-text encoding, so
+  strings resembling special tokens remain literal text. Counts exclude model
+  message framing and other request overhead and do not claim billing accuracy.
+- GPT-6 family names (`gpt-6`, `gpt-6-*`, and numeric minor forms such as
+  `gpt-6.1-sol`) explicitly use the canonical `gpt-5.6` tiktoken mapping as an
+  approximate surrogate, even if tiktoken later adds a GPT-6 mapping. The
+  estimate retains the requested model name and diagnoses the surrogate and
+  the absence of framing or billing guarantees. This is a practical estimate,
+  not an authoritative GPT-6 tokenizer mapping.
 - A dry-run report contains one estimate for every scheduled call. Unsupported
   model compatibility is explicit unknown or approximate, never an omitted
   estimate or billing precision.
@@ -198,9 +205,11 @@ reference; the runtime module is authoritative.
 - A configured instructions file receives its own separately labeled estimate;
   it is never folded into the supplied-context count without its basis being
   disclosed.
-- Effects: local computation only. The port cannot call the model CLI or change
-  the frozen prompt. This wiring does not establish actual `tiktoken` counts or
-  dry-run CLI behavior.
+- Effects: local computation plus tiktoken's native vocabulary bootstrap. A
+  cache miss can download tokenizer data and write it to tiktoken's cache; this
+  effect is documented and does not call the model API or CLI or write harness
+  output or evidence. The adapter cannot change the frozen prompt. This wiring
+  does not establish dry-run CLI behavior.
 
 ### CLI binding and request construction
 
@@ -358,11 +367,10 @@ historical design references; the active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling, and
-token-estimation wiring are implemented. CLI integration, token-counting
-adapter implementation, dispatch, persistence, and the remaining harness
-behavior are planned. Private helpers and concrete
-persistence formats remain flexible; supervisor outcomes and requests continue
-to use the existing public types.
+token-estimation adapter are implemented. CLI integration, dispatch,
+persistence, and the remaining harness behavior are planned. Private helpers and
+concrete persistence formats remain flexible; supervisor outcomes and requests
+continue to use the existing public types.
 
 | Proposed module | Responsibility |
 | --- | --- |
@@ -370,7 +378,7 @@ to use the existing public types.
 | `script/eval/model.py` | Shared validated configuration, plan values, observations, and persisted records. |
 | `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
-| `script/eval/tokens.py` | Consumer-owned token-estimation port, selected `tiktoken` adapter seam, and pure dry-run report assembly. |
+| `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
 | `script/eval/__main__.py` | Thin entry point delegating to the CLI composition. |
