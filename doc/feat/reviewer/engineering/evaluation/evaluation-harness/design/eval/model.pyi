@@ -37,7 +37,13 @@ QuotaProviderId = NewType("QuotaProviderId", str)
 QuotaAllowanceId = NewType("QuotaAllowanceId", str)
 QuotaWindowId = NewType("QuotaWindowId", str)
 type WaitEnd = Literal[
-    "reset_reached", "delay_elapsed", "bound", "cancelled", "stop", "unknown"
+    "reset_reached",
+    "quota_available",
+    "delay_elapsed",
+    "bound",
+    "cancelled",
+    "stop",
+    "unknown",
 ]
 type WaitEventKind = Literal["started", "recheck", "finished"]
 type WaitId = str
@@ -45,7 +51,8 @@ QuotaProbeId = NewType("QuotaProbeId", str)
 type QuotaProbeReason = Literal["periodic", "reset_hint"]
 type QuotaProbeOutcome = Literal[
     "available",
-    "unavailable",
+    "quota_exhausted",
+    "output_limit_exceeded",
     "unknown",
     "infrastructure_failure",
     "unsafe_cleanup",
@@ -79,8 +86,11 @@ class HarnessConfig(StrictModel):
     backoff durations, a cap not below its base, and nonnegative retry
     allowances before dispatch. The capacity allowance defaults to zero and
     quota waiting defaults off; its wait limit is optional. The poll interval
-    is finite and positive, while ``quota_probe_budget`` is a nonnegative finite
-    authorization cap; absent or zero budget permits no active probe.
+    is finite and positive, while ``quota_probe_budget`` is an optional finite
+    operational cap. Enabling quota waiting explicitly authorizes polling;
+    ``None`` adds no harness probe-count cap, a positive value caps probes, and
+    zero refuses enabled polling. With quota waiting disabled, the budget may
+    be absent and no probe or session read occurs.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -157,10 +167,11 @@ class RetryAssessment(StrictModel):
     diagnostic: str | None
 
 class QuotaWaitContext(StrictModel):
-    """Quota trigger and cumulative accounting with its scoped observations.
+    """One global pause and cumulative accounting with scoped observations.
 
     The nested observation scope must match the triggering call's bound CLI
-    scope; its generic window IDs and source evidence support the chosen reset.
+    scope. ``selected_reset_at_utc`` is an optional scheduling hint only; its
+    arrival never establishes availability or ends the pause successfully.
     """
 
     kind: Literal["quota"]
@@ -169,7 +180,7 @@ class QuotaWaitContext(StrictModel):
     cumulative_waited_before_seconds: float
     wait_limit_seconds: float | None
     quota_observation: QuotaObservation
-    selected_reset_at_utc: str
+    selected_reset_at_utc: str | None
 
 class QuotaProbeRequest(StrictModel):
     """One authorized active check, independent of evaluation numbering."""
@@ -182,12 +193,13 @@ class QuotaProbeRequest(StrictModel):
     scheduled_at_utc: str
     started_at_utc: str
 
-class QuotaProbeResult(StrictModel):
-    """Settled supervised probe evidence, separate from evaluation attempts.
+@dataclass(frozen=True)
+class QuotaProbeEvidence:
+    """In-memory supervisor outcome passed to the evidence projection boundary.
 
-    ``outcome`` retains the supervisor's captured stdout/stderr, termination,
-    and cleanup evidence. A zero exit or old session snapshot is not positive
-    availability; the scoped observation must also be fresh and source-backed.
+    The supervisor objects and exceptions remain ephemeral here. A successful
+    exit or old session snapshot is not positive availability; the scoped
+    observation must also be fresh and source-backed.
     """
 
     request: QuotaProbeRequest
@@ -196,7 +208,39 @@ class QuotaProbeResult(StrictModel):
     control_flow: ControlFlow
     outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
     elapsed_seconds: float | None
+    elapsed_basis: Literal["supervisor_observation", "unavailable"]
     ended_at_utc: str | None
+    thread_id: str | None
+    observation: QuotaObservation | None
+    classification_basis: str | None
+    usage_telemetry: bytes | None
+    diagnostic: str | None
+
+class QuotaProbeRecord(StrictModel):
+    """Persisted scalar projection with stream artifacts and safe cleanup data.
+
+    This record contains no live supervisor object or exception. The evidence
+    store projects those into artifact references, scalars, and the existing
+    cleanup/signal records before persistence.
+    """
+
+    request: QuotaProbeRequest
+    outcome_kind: QuotaProbeOutcome
+    control_flow: ControlFlow
+    ended_at_utc: str | None
+    argv: tuple[str, ...]
+    cwd: str
+    timeout_seconds: float
+    cleanup_timeout_seconds: float
+    grace_seconds: float
+    output_limit_bytes: int
+    elapsed_seconds: float | None
+    elapsed_basis: Literal["supervisor_observation", "unavailable"]
+    exit_status: int | None
+    termination_reason: str | None
+    cleanup: CleanupRecord | None
+    stdout_artifact: str | None
+    stderr_artifact: str | None
     thread_id: str | None
     observation: QuotaObservation | None
     classification_basis: str | None
@@ -213,10 +257,7 @@ class QuotaProbeSettled(StrictModel):
     """Durable settled probe evidence written before any resumption."""
 
     kind: Literal["settled"]
-    request: QuotaProbeRequest
-    result: QuotaProbeResult
-
-type QuotaProbeEvent = QuotaProbeStarted | QuotaProbeSettled
+    record: QuotaProbeRecord
 
 class QuotaTelemetrySnapshot(StrictModel):
     """Passive source association retained alongside its normalized windows."""

@@ -292,20 +292,22 @@ def test_default_off_and_dry_run_do_not_probe_or_read_session_telemetry() -> Non
 @pytest.mark.xfail(
     run=False,
     strict=True,
-    reason="not implemented: AC-6 active quota monitoring needs an authorized budget",
+    reason="not implemented: AC-6 active quota monitoring and optional probe cap",
 )
 def test_quota_probe_budget_authorizes_and_caps_every_active_check() -> None:
     """Count active probes independently of evaluation retry allowances."""
     # Given
-    # Quota waiting is enabled with no budget, a zero budget, or a finite budget.
+    # Quota waiting is explicitly enabled with no count cap, a zero cap, or a
+    # positive finite cap; default-off config may omit the cap.
 
     # When
-    # The periodic monitor reaches its next due check and then exhausts the limit.
+    # Configuration validation accepts or refuses the option combination, then
+    # the periodic monitor reaches its next due check and exhausts the limit.
 
     # Then
-    # No absent or zero budget launches a probe; every authorized probe consumes
-    # one unit, and exhaustion leaves calls blocked/not-started without retrying
-    # under an evaluation allowance.
+    # Enabled waiting without a count cap remains authorized, zero refuses
+    # dispatch, and a positive cap counts every probe. Exhaustion leaves calls
+    # blocked/not-started without retrying under an evaluation allowance.
     pass
 
 
@@ -322,11 +324,73 @@ def test_quota_monitor_polls_periodically_and_wakes_early_for_a_reset_hint() -> 
     # latest relevant exhausted window.
 
     # When
-    # The injected clock reaches the hint and the monitor starts a poll.
+    # The injected clock reaches the hint before the periodic deadline and the
+    # single monitor starts a poll instead of running a second reset timer.
 
     # Then
-    # It checks early, still rechecks periodically, and dispatch remains gated
-    # until a fresh positive observation confirms the same quota scope.
+    # It checks early but remains paused after continued quota exhaustion, then
+    # rechecks periodically; only fresh positive evidence for the same scope ends
+    # the pause as `quota_available`.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 fresh availability can resume before a reset hint",
+)
+def test_fresh_positive_quota_check_ends_pause_before_reset_hint() -> None:
+    """Do not wait for a stale expected reset after availability is confirmed."""
+    # Given
+    # An exhausted quota observation with a future reset hint and a paused run.
+
+    # When
+    # A periodic probe before that hint returns fresh positive availability for
+    # the same provider/allowance scope.
+
+    # Then
+    # The pause ends as `quota_available` and dispatch may resume; hint arrival
+    # itself is not recorded as successful resumption.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 periodic quota checks without a reset hint",
+)
+def test_quota_wait_without_reset_hint_uses_only_periodic_monitor_sleep() -> None:
+    """Support known exhaustion when the source supplies no reset timestamp."""
+    # Given
+    # A scoped, conclusive exhausted observation with no numeric reset hint.
+
+    # When
+    # The coordinator pauses dispatch and schedules its next quota check.
+
+    # Then
+    # The wait context retains no selected reset, one cadence wait is persisted,
+    # and no parallel reset timer or invented timestamp is used.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 known quota exhaustion continues polling normally",
+)
+def test_known_quota_exhaustion_keeps_polling_until_fresh_availability() -> None:
+    """Treat continued exhaustion as paused progress rather than probe failure."""
+    # Given
+    # A valid probe that confirms quota exhaustion, followed by another exhausted
+    # observation and eventually a fresh positive observation for the same scope.
+
+    # When
+    # The monitor processes each result at its cadence.
+
+    # Then
+    # Exhaustion leaves the run paused and schedules the next check without
+    # marking it incomplete; only the final positive result ends the pause as
+    # `quota_available`.
     pass
 
 
@@ -435,6 +499,26 @@ def test_unknown_probe_or_probe_event_write_failure_stops_before_resumption() ->
 @pytest.mark.xfail(
     run=False,
     strict=True,
+    reason="not implemented: AC-6 probe output overflow remains a stop outcome",
+)
+def test_probe_output_limit_exceeded_is_preserved_and_never_reopens_dispatch() -> None:
+    """Keep supervisor overflow distinct from a normal exhausted quota check."""
+    # Given
+    # A quota probe that exceeds its finite output allowance while the runner is
+    # paused and a later evaluation call is waiting to dispatch.
+
+    # When
+    # The supervisor settles the probe with its output-limit evidence and cleanup.
+
+    # Then
+    # Persist `output_limit_exceeded` and the bounded raw stream/cleanup evidence,
+    # latch stop, and do not retry, reinterpret it as quota exhaustion, or resume.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
     reason="not implemented: AC-6 probes and evaluations share one verified scope",
 )
 def test_probe_scope_must_match_cli_binding_and_passive_session_scope() -> None:
@@ -523,7 +607,7 @@ def test_quota_wait_bound_accumulates_and_requires_complete_codex_windows() -> N
     # Given
     # Successive Codex five-hour and weekly resets, a finite cumulative wait
     # limit, and raw status payloads that omit or malformedly encode either
-    # required Codex window, report unknown status, omit a reset, or have an
+    # required Codex window, report unknown status, omit a reset hint, or have an
     # unverified or mismatched provider/account allowance identity.
 
     # When
@@ -532,9 +616,11 @@ def test_quota_wait_bound_accumulates_and_requires_complete_codex_windows() -> N
     # Then
     # Prior monotonic wait is charged against the same bound. The Codex adapter
     # emits both required windows as generic window records and marks missing or
-    # malformed data unknown/unavailable; only complete, conclusive observations
-    # with matching scope can select a wait. Unknown windows, scope, or reset
-    # fail closed. Generic policy does not interpret Codex window IDs.
+    # malformed window data unknown/unavailable; only complete, conclusive
+    # observations with matching scope establish exhaustion. A missing reset is
+    # retained as no scheduling hint, so the monitor uses periodic checks without
+    # guessing a timestamp. Unknown windows or scope fail closed. Generic policy
+    # does not interpret Codex window IDs.
     pass
 
 

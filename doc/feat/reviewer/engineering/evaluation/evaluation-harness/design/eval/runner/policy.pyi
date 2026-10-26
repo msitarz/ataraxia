@@ -42,7 +42,11 @@ def quota_wait_remaining(
     ...
 
 def quota_probe_allowed(config: HarnessConfig, probes_used: int, /) -> bool:
-    """Require explicit quota opt-in and an unspent positive probe budget."""
+    """Require quota opt-in and an unspent optional operational probe cap.
+
+    An absent cap means no additional harness count limit; a configured zero
+    refuses dispatch. Caller operational limits still apply.
+    """
     ...
 
 def quota_poll_delay(

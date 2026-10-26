@@ -275,20 +275,22 @@ gating retries and stopping globally on unsafe outcomes.
   message alone as retry eligibility. Unknown recognition fails closed.
 - The current harness resolves one Codex CLI binding shared by every planned
   call, so verified Codex quota exhaustion stops new dispatch globally, settles
-  active attempts through bounded cleanup, persists their evidence, releases
-  all slots, then consults the quota-status port. An observation carries an
-  opaque provider/account-allowance scope and provider-neutral window IDs,
-  states, reset times, and sources. The Codex adapter owns completeness for its
-  required five-hour and weekly windows; a missing or malformed one is emitted
-  as unknown or unavailable, never omitted or guessed. The core does not
-  interpret window IDs: absent or mismatched scope, empty observations, unknown
-  or unavailable states, or a missing reset for an exhausted window cannot
-  trigger a wait. The latest relevant reset is awaited and then rechecked; a
-  reset never promises renewed capacity. An optional finite cumulative wait
-  bound includes earlier quota waits across reset cycles. Without it, an
-  explicitly enabled run may continue through successive known resets while
-  rechecks remain conclusive; the default remains no quota waiting. Every retry
-  is gated again on current quota state.
+  active attempts through bounded cleanup, persists their evidence, releases all
+  slots, then consults the quota-status port. An observation carries an opaque
+  provider/account-allowance scope and provider-neutral window IDs, states,
+  reset times, and sources. The Codex adapter owns completeness for its required
+  five-hour and weekly windows; a missing or malformed one is emitted as unknown
+  or unavailable, never omitted or guessed. The core does not interpret window
+  IDs: absent or mismatched scope, empty observations, and unknown or
+  unavailable states cannot establish exhaustion or availability. A known
+  exhausted window without a numeric reset still pauses dispatch and uses
+  periodic checks; it simply has no earlier reset hint. The latest relevant
+  exhausted-window reset is a scheduling hint, not a timer that authorizes
+  resume. A finite cumulative wait bound includes earlier paused intervals
+  across checks, including checks performed while paused, but not active-period
+  monitoring. Without a configured bound, an explicitly enabled run may remain
+  paused through successive periodic checks. Every retry is gated again on
+  current quota state.
 - The composition pairs the Codex request path and settled-output classifier
   with a quota reader configured for the same CLI binding scope. The external
   binding adapter creates a `QuotaScope` only from verified provider and
@@ -308,14 +310,16 @@ gating retries and stopping globally on unsafe outcomes.
   polling task. A finite positive interval controls periodic checks; an earlier
   numeric hint from the latest relevant exhausted-window reset may schedule a
   check sooner, but never authorizes dispatch. Missing, stale, or past hints
-  fall back to the interval. A supplied positive
-  probe budget authorizes and caps active checks; no budget means no active
-  probe. Default-off execution and dry run perform neither probes nor session
-  reads. The monitor runs during active and paused periods, allows one probe in
-  flight, and uses no evaluation semaphore slot. Quota exhaustion first pauses
-  dispatch whether first observed in an evaluation or poll, then settles active
-  attempts; no new probe starts until their evidence is durable, while an
-  already-running supervised probe must settle.
+  fall back to the interval. Enabling quota waiting explicitly authorizes
+  checks; an absent count cap adds no harness probe-count limit, a positive cap
+  is enforced, and zero refuses probe dispatch. Default-off execution and dry
+  run perform neither probes nor session reads. One monitor task owns one
+  sleep/check cycle at a time: hints shorten the next cycle instead of creating
+  a parallel reset timer. The monitor runs during active and paused periods,
+  allows one probe in flight, and uses no evaluation semaphore slot. Quota
+  exhaustion first pauses dispatch whether first observed in an evaluation or
+  poll, then settles active attempts; no new probe starts until their evidence
+  is durable, while an already-running supervised probe must settle.
 - The consumer-owned quota port separates passive settled-attempt ingestion
   from active polling. Passive ingestion correlates captured `thread.started`
   evidence to its session snapshot; `poll` performs one separate supervised
@@ -328,15 +332,17 @@ gating retries and stopping globally on unsafe outcomes.
   mismatched scope, missing windows, stale source, or malformed data fails
   closed. This ordering and freshness boundary awaits verified source rules.
 - Each active check has a separate `QuotaProbeId` and append-only start and
-  settled evidence with the supervisor result (including raw stdout/stderr and
-  cleanup), request settings, timestamps, thread/source association, normalized
-  observation, and available usage. Passive evaluation telemetry is also
-  appended separately with its call and attempt identity. Neither is an
-  evaluation attempt record; probes consume no evaluation attempt number,
-  measurement, or semaphore slot. Probe budget counts every active check. Probe
-  or evidence failure and unsafe cleanup latch stop. Cancellation and normal
-  completion both cancel/join the monitor after any in-flight probe safely
-  settles and persists.
+  settled evidence with a scalar supervisor projection (including raw stream
+  artifact references and cleanup), request settings, timestamps, thread/source
+  association, normalized observation, and available usage. Passive evaluation
+  telemetry is also appended separately with its call and attempt identity.
+  Neither is an evaluation attempt record; probes consume no evaluation attempt
+  number, measurement, or semaphore slot. A configured probe-count cap counts
+  every active check. A known exhausted observation is a normal paused result
+  and schedules another cadence check. Unknown or unavailable data,
+  infrastructure failure, output overflow, evidence failure, unsafe cleanup, or
+  uncertain acquisition latches stop. Cancellation and normal completion both
+  cancel/join the monitor after any in-flight probe safely settles and persists.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
   injected async clock/sleeper and random-source ports. Release the attempt slot
@@ -349,8 +355,8 @@ gating retries and stopping globally on unsafe outcomes.
   policy context. Capacity context includes the failed call and attempt, retry
   index, base, cap, computed bound, and sampled delay; quota context includes
   the triggering call and attempt, the scoped generic window observations,
-  selected reset, optional cumulative limit, and elapsed wait from earlier
-  reset cycles.
+  optional selected reset hint, optional cumulative limit, and elapsed wait from
+  earlier reset cycles.
 - Both retry types require confident no-semantic-result evidence, safe cleanup,
   and successful persistence before waiting or retrying. They retain every
   attempt and count toward caller-owned attempt limits. A quota pause gates
@@ -481,25 +487,26 @@ evidence.
   and output-byte allowance, which are supervisor settings rather than CLI
   arguments.
 - Wait events are appended durably when a quota or capacity wait starts (the
-  quota start event includes the selected reset), when quota status is
-  rechecked, and when the wait ends. The same event stream records quota-poll
-  cadence waits with their scheduled check and optional reset hint; probe-start
-  and settled events separately record actual check timing and source evidence.
-  Every
-  event carries the same stable wait ID and policy context as its `WaitRecord`
-  summary, so concurrent waits remain distinguishable. The event ledger is
-  persisted as it grows rather than duplicated in the final `RunRecord`; a
-  final summary alone is not evidence for a live wait. A failed event write
-  latches stop and forbids resumption or retry.
-- A quota wait normally ends as `reset_reached`: the selected reset time has
-  arrived, and a source recheck event is required before dispatch. If a window
-  remains exhausted, every exhausted window must have a known reset before the
-  coordinator starts another separately identified wait. Unknown or
-  unavailable window data fails closed. A bound or stop may end the wait
-  earlier. A recheck event is an observation, not a wait-end reason.
-  `delay_elapsed` is the normal end of capacity backoff or a quota-monitor
-  cadence wait; a quota reset wait still ends as `reset_reached` only after its
-  selected reset time arrives.
+  quota start event includes the optional selected reset hint), when quota
+  status is rechecked, and when the wait ends. The same event stream records
+  quota-poll cadence waits with their scheduled check and optional reset hint;
+  probe-start and settled events separately record actual check timing and
+  source evidence. Every event carries the same stable wait ID and policy
+  context as its `WaitRecord` summary, so concurrent waits remain
+  distinguishable. The event ledger is persisted as it grows rather than
+  duplicated in the final `RunRecord`; a final summary alone is not evidence for
+  a live wait. A failed event write latches stop and forbids resumption or
+  retry.
+- A quota pause ends successfully only as `quota_available`, after a fresh
+  positive observation for the same scope. This can happen before a reset hint
+  or when no hint exists. Reaching a reset hint ends only that cadence wait as
+  `reset_reached` and schedules an immediate recheck; it never ends the pause or
+  reopens dispatch. With no hint, cadence waits end periodically. The single
+  monitor task owns all these sleeps, so the coordinator does not run a second
+  reset timer alongside polling. Unknown or unavailable data fails closed; a
+  bound, cancellation, or stop can end the pause without resumption.
+  `delay_elapsed` is the normal end of capacity backoff and ordinary
+  quota-monitor cadence.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.

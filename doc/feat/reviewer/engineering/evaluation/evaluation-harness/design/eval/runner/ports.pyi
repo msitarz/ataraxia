@@ -15,8 +15,8 @@ from ..model import (  # ruff: ignore[relative-imports]
     HarnessConfig,
     PlannedCall,
     PreparedEvidence,
+    QuotaProbeEvidence,
     QuotaProbeRequest,
-    QuotaProbeResult,
     QuotaScope,
     QuotaTelemetrySnapshot,
     RetryAssessment,
@@ -100,14 +100,13 @@ class OutcomeClassifier(Protocol):
 class QuotaStatusReader(Protocol):
     """Separate passive ingestion from supervised active polling.
 
-    The Codex adapter correlates settled-attempt telemetry using its captured
-    ``thread.started`` ID, then reads the associated session snapshot. Active
-    polling is a separate supervised invocation and returns its own probe
-    evidence. Both paths produce provider-neutral observations through this
-    single port. The provider adapter owns required-window completeness and
-    freshness; it represents missing or malformed required windows explicitly
-    and does not infer reset times. Core policy never interprets provider window
-    IDs.
+    Provider adapters correlate settled-attempt telemetry with their source and
+    return source-associated snapshots; active polling is a separate supervised
+    invocation with its own ephemeral probe evidence. Both paths produce
+    provider-neutral observations through this single port. The provider
+    adapter owns required-window completeness and freshness, represents missing
+    or malformed required windows explicitly, and does not infer reset times.
+    Core policy never interprets provider window IDs.
     """
 
     @property
@@ -125,14 +124,14 @@ class QuotaStatusReader(Protocol):
     ) -> QuotaTelemetrySnapshot:
         """Return source association and windows for this attempt, else unknown.
 
-        Preserve the captured thread ID and sanitized source coordinate so the
-        coordinator can persist exactly which session supplied the observation.
+        Preserve the provider's invocation/source association so the coordinator
+        can persist which snapshot supplied the observation.
         """
         ...
 
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
-    ) -> QuotaProbeResult:
+    ) -> QuotaProbeEvidence:
         """Run one separately supervised probe; never reuse an evaluation call."""
         ...
 

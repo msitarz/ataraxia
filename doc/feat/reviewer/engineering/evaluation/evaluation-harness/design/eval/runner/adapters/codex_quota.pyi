@@ -12,8 +12,8 @@ from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
     AttemptNumber,
     CallId,
+    QuotaProbeEvidence,
     QuotaProbeRequest,
-    QuotaProbeResult,
     QuotaScope,
     QuotaTelemetrySnapshot,
     QuotaWindowId,
@@ -89,7 +89,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     ) -> QuotaTelemetrySnapshot: ...
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
-    ) -> QuotaProbeResult:
+    ) -> QuotaProbeEvidence:
         """Build fixed probe request, call supervisor, then correlate its session."""
         ...
 

@@ -33,8 +33,8 @@ class Coordinator:
 
         Own stop latching, task and signal cancellation, active cleanup waits,
         event persistence, semaphore lifetime, and truthful not-started status.
-        When quota waiting is enabled and a positive authorized probe budget is
-        supplied, start one async monitor task that polls during active and
+        When quota waiting is enabled, it explicitly authorizes polling and
+        starts one async monitor task that polls during active and
         paused periods at the configured cadence. Polling is single-flight,
         outside evaluation semaphore slots, and uses an earlier reset hint only
         to schedule a check. No probe or session read occurs in default-off or
@@ -56,19 +56,31 @@ class Coordinator:
         new probe; an already-running supervised probe still settles and records
         before resumption or shutdown.
 
-        Append a probe-start event before calling the port and a settled event
-        with raw output, request settings, cleanup, source/thread association,
-        timestamps, observation and available usage afterward. Probe IDs are
-        independent of evaluation attempt numbers. The monitor stops launching
-        probes at budget exhaustion, latches stop on probe/evidence/unsafe
-        cleanup failure, and is cancelled and joined on both normal completion
-        and shutdown after any in-flight probe safely settles.
+        Append a probe-start event before calling the port. The port returns an
+        ephemeral ``QuotaProbeEvidence`` containing supervisor objects; pass it
+        to the evidence store, which writes raw streams as artifacts and returns
+        a scalar ``QuotaProbeSettled`` projection with request settings, cleanup,
+        source association, timestamps, observation, and available usage. Never
+        serialize supervisor exceptions or arbitrary runtime objects. Probe IDs
+        are independent of evaluation attempt numbers. The monitor stops launching
+        probes at an explicit operational budget limit. With no configured
+        count cap, caller-owned operational limits still govern use. A valid
+        probe reporting continued quota
+        exhaustion remains paused and schedules the next check; unknown,
+        infrastructure failure, output overflow, event-write failure, unsafe
+        cleanup, or uncertain acquisition latches stop. The monitor is cancelled
+        and joined on both normal completion and shutdown after any in-flight
+        probe safely settles.
 
-        Persist each cadence wait's start and completion through the wait-event
-        port, linked by probe/wait ID and retaining the scheduled check and reset
-        hint. Record poll start and settlement as separate probe events so wait,
-        check, source observation, and shutdown evidence are durable as they
-        occur rather than only in final run metadata.
+        Use a single monitor sleep per check cycle; reset hints shorten that
+        cycle, and no parallel reset timer is started. Persist each cadence
+        wait's start and completion through the wait-event port, linked by
+        probe/wait ID and retaining the scheduled check and reset hint. Record
+        poll start and settlement as separate probe events so wait, check, source
+        observation, and shutdown evidence are durable as they occur rather than
+        only in final run metadata. A pause ends successfully only with a fresh
+        positive observation, recorded as ``quota_available``; hint arrival
+        merely schedules a check.
 
         Before using quota data, require the bound CLI scope, reader's expected
         scope, passive snapshot scope, active probe request scope, and returned

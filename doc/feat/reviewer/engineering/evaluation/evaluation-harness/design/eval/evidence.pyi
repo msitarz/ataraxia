@@ -11,7 +11,9 @@ from .model import (
     CallId,
     FrozenPlan,
     PreparedEvidence,
-    QuotaProbeEvent,
+    QuotaProbeEvidence,
+    QuotaProbeSettled,
+    QuotaProbeStarted,
     QuotaTelemetryEvent,
     RunId,
     RunRecord,
@@ -50,12 +52,18 @@ class EvidenceStore(Protocol):
         """
         ...
 
-    def record_quota_probe_event(self, event: QuotaProbeEvent, /) -> None:
-        """Append probe start and settled evidence independently of attempts.
+    def record_quota_probe_started(self, event: QuotaProbeStarted, /) -> None:
+        """Append the scalar probe identity and schedule before invocation."""
+        ...
 
-        The settled event retains the supervisor outcome, raw streams, request
-        settings, cleanup, source/thread association, timestamps, observation,
-        and available usage. Probe IDs never consume evaluation attempt numbers.
+    def record_quota_probe_settled(
+        self, evidence: QuotaProbeEvidence, /
+    ) -> QuotaProbeSettled:
+        """Persist a scalar projection and raw stream artifacts after settlement.
+
+        Do not serialize supervisor exceptions or arbitrary runtime objects. The
+        returned event contains only persisted fields and artifact references;
+        probe IDs never consume evaluation attempt numbers.
         """
         ...
 
