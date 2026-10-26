@@ -70,9 +70,12 @@ context skips the linked-worktree `.git` administrative file. Read bytes must
 exactly match pinned commit blobs; filter or line-ending transformations are
 reported as mismatches. Empty files are preserved. Instructions remain a
 distinct snapshot. Git commands have a finite timeout, use a deterministic
-locale, disable replacement objects, ambient global/system config, fsmonitor,
-and optional index locks; the freezer performs no writes or model calls. The
-reviewed
+locale, clear all inherited `GIT_*` variables before setting owned Git
+environment, and disable replacement objects, ambient global/system config,
+fsmonitor, optional index locks, and promisor lazy-fetches. The explicit global
+`--no-lazy-fetch` option makes unsupported Git versions fail rather than
+silently allowing missing-object fetches. The freezer performs no writes or
+model calls. The reviewed
 [`inputs.pyi`](design/eval/inputs.pyi) remains the historical port definition.
 
 **TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to

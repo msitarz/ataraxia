@@ -534,34 +534,13 @@ class GitRepositoryReader:
             ValueError: Git cannot start or its command times out.
             GitCommandError: Git exits with a nonzero status.
         """
-        environment = os.environ.copy()
-        environment["GIT_OPTIONAL_LOCKS"] = "0"
-        for name in (
-            "GIT_DIR",
-            "GIT_WORK_TREE",
-            "GIT_INDEX_FILE",
-            "GIT_COMMON_DIR",
-            "GIT_OBJECT_DIRECTORY",
-            "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-            "GIT_SHALLOW_FILE",
-            "GIT_REPLACE_REF_BASE",
-            "GIT_NAMESPACE",
-            "GIT_CONFIG_PARAMETERS",
-            "GIT_CONFIG_SYSTEM",
-            "GIT_CEILING_DIRECTORIES",
-            "GIT_DISCOVERY_ACROSS_FILESYSTEM",
-            "GIT_LITERAL_PATHSPECS",
-            "GIT_GLOB_PATHSPECS",
-            "GIT_NOGLOB_PATHSPECS",
-            "GIT_ICASE_PATHSPECS",
-        ):
-            environment.pop(name, None)
-        for name in tuple(environment):
-            if name.startswith("GIT_CONFIG_KEY_") or name.startswith(
-                "GIT_CONFIG_VALUE_"
-            ):
-                environment.pop(name, None)
+        environment = {
+            name: value
+            for name, value in os.environ.items()
+            if not name.startswith("GIT_")
+        }
         environment.update({
+            "GIT_OPTIONAL_LOCKS": "0",
             "GIT_NO_REPLACE_OBJECTS": "1",
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_CONFIG_GLOBAL": os.devnull,
@@ -573,7 +552,7 @@ class GitRepositoryReader:
         })
         try:
             result = subprocess.run(
-                ["git", "-C", os.fspath(cwd), *args],
+                ["git", "--no-lazy-fetch", "-C", os.fspath(cwd), *args],
                 input=input_bytes,
                 capture_output=True,
                 check=False,

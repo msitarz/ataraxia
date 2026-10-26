@@ -186,6 +186,66 @@ def test_fixture_git_commands_ignore_ambient_repository_and_config_redirects(
     assert status == b"A  input.txt\0"
 
 
+def test_freezing_clears_all_ambient_git_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "target")
+    other_repository = make_repository(tmp_path / "redirected")
+    external_index = tmp_path / "ambient-index"
+    external_config = tmp_path / "ambient-config"
+    external_config.write_text("[user]\n\tname = preserved\n", encoding="utf-8")
+    original_config = external_config.read_bytes()
+    trace_file = tmp_path / "ambient-trace"
+    monkeypatch.setenv("GIT_DIR", str(other_repository / ".git"))
+    monkeypatch.setenv("GIT_WORK_TREE", str(other_repository))
+    monkeypatch.setenv("GIT_INDEX_FILE", str(external_index))
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(external_config))
+    monkeypatch.setenv("GIT_CONFIG_COUNT", "1")
+    monkeypatch.setenv("GIT_CONFIG_KEY_0", "core.fsmonitor")
+    monkeypatch.setenv("GIT_CONFIG_VALUE_0", "ambient-command-that-does-not-exist")
+    monkeypatch.setenv("GIT_TRACE", str(trace_file))
+
+    # When
+    frozen = GitRepositoryReader().freeze(config(context))
+
+    # Then
+    assert frozen.repository_root == repository
+    assert frozen.sources[0].repository_path == "context/tracked.txt"
+    assert not external_index.exists()
+    assert external_config.read_bytes() == original_config
+    assert not trace_file.exists()
+
+
+def test_missing_promisor_blob_is_not_fetched(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository, context = repository_with_context(tmp_path / "repo")
+    blob = git(repository, "rev-parse", "HEAD:context/tracked.txt").decode().strip()
+    loose_blob = repository / ".git" / "objects" / blob[:2] / blob[2:]
+    assert loose_blob.is_file()
+    loose_blob.unlink()
+
+    marker = tmp_path / "promisor-fetch-attempted"
+    uploadpack = tmp_path / "fake-upload-pack"
+    uploadpack.write_text(
+        f"#!/bin/sh\n: > {shlex.quote(str(marker))}\nexit 1\n",
+        encoding="utf-8",
+    )
+    uploadpack.chmod(0o755)
+    git(repository, "config", "extensions.partialClone", "origin")
+    git(repository, "config", "remote.origin.promisor", "true")
+    git(repository, "config", "remote.origin.url", "file:///missing-promisor")
+    git(repository, "config", "remote.origin.uploadpack", str(uploadpack))
+
+    # When / Then
+    with pytest.raises(ValueError, match="invalid blob record"):
+        GitRepositoryReader().freeze(config(context))
+
+    assert not marker.exists()
+
+
 def test_freezing_preserves_order_repetitions_and_commit_verified_bytes(
     tmp_path: Path,
 ) -> None:
@@ -822,7 +882,8 @@ def test_git_query_count_does_not_grow_with_selected_file_count(
     assert len(large.sources) == 12
     assert len(commands) == small_query_count
     assert len(commands) <= 6
-    assert sum(command[3] == "cat-file" for command in commands) == 1
+    assert all(command[1] == "--no-lazy-fetch" for command in commands)
+    assert sum("cat-file" in command for command in commands) == 1
 
 
 def test_git_missing_executable_preserves_the_os_error_cause(
