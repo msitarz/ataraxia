@@ -189,8 +189,12 @@ Every scheduled call and launched attempt has inspectable evidence.
 
 - Exclusive creation rejects any existing output directory before model calls,
   including when another process creates it concurrently.
-- The output directory must be outside the context repository or ignored by
-  Git so creating run artifacts does not dirty that checkout.
+- A new output directory may be inside the context repository without being
+  ignored by Git; creation and evidence writes follow the clean-repository
+  check and input freeze.
+- Run artifacts may dirty that checkout and later be reviewed and committed as
+  evidence; the next normal run still requires a clean repository under AC-1.
+- The runner does not edit Git ignore rules or the index to accommodate output.
 - Per-call and per-attempt records are immutable once finalized and preserve
   separate exact raw stdout and stderr bytes apart from metadata.
 - Records retain UTC start and end times, monotonic elapsed time, observed exit
