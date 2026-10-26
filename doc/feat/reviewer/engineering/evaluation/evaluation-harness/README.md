@@ -327,8 +327,10 @@ restarting the runner or repeating completed calls.
   safe cleanup, preserved frozen inputs, and applicable caller budgets; probes
   never turn failed evaluations into success or replace the selected model.
 - After exhaustion, active evaluations settle and their evidence is persisted
-  before any probe or evaluation resumption; monitoring cannot overlap unsafe
-  evaluation cleanup. Probe output and event persistence also gate resumption.
+  before any new probe or evaluation resumption; no probe launches during this
+  settlement. An already-running probe remains supervised and must safely
+  settle and persist its evidence. Unsafe cleanup globally stops dispatch, and
+  probe output and event persistence also gate resumption.
 - A supplied cumulative quota-wait bound or probe-budget limit stops further
   waiting or probing when exhausted and reports blocked and not-started calls
   truthfully; default-off quota waiting causes no extra probes or session reads,
