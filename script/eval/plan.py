@@ -30,7 +30,7 @@ class InputGrouper(Protocol):
 
 
 class ContextComposer(Protocol):
-    """Compose each source selection into exact prompt bytes."""
+    """Compose selected context sources, excluding the instructions snapshot."""
 
     def compose(
         self,
