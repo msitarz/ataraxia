@@ -3,12 +3,13 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Literal, Protocol
 
 from script.process_supervisor import AttemptRequest, AttemptResult, DispatchStop
 
 from ..model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
+    AttemptNumber,
     CallId,
     FrozenPlan,
     HarnessConfig,
@@ -18,10 +19,104 @@ from ..model import (  # ruff: ignore[relative-imports]
     QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
+    QuotaWindowId,
     RetryAssessment,
+    RetryClass,
     RunId,
     SettingValue,
 )
+
+type ProgressRunPhase = Literal["running", "quota_paused", "stopping", "final"]
+type ProgressFinalStatus = Literal[
+    "success", "failure", "cancelled", "incomplete_evidence"
+]
+
+@dataclass(frozen=True)
+class ProgressCounts:
+    """Disjoint frozen-plan call states and dispatched-work outcome counts.
+
+    Queued means not yet dispatched while the run is active; it may be gated
+    by concurrency or quota. Stopped-not-started means the stop latch prevents
+    dispatch. Evidence-pending means an outcome is known in
+    memory but its required durable write failed, so no terminal outcome is
+    claimed. Attempt and probe evidence-pending counts follow the same rule.
+    ``attempts_started`` counts invocations dispatched through ``AttemptCall``;
+    it does not imply supervisor acquisition or launch of an OS process.
+    ``probes_started`` has the same dispatched-invocation meaning.
+
+    Attempt outcome counts are disjoint: success means zero exit with safe
+    process completion, not reviewer approval; failure means a settled
+    non-cancelled unsuccessful attempt; cancellation has its own count. Probe
+    counts are likewise disjoint: completed means a safely settled operational
+    check with a conclusive available or exhausted quota state, including a
+    recognized provider rate-limit response mapped to exhausted; failed means
+    unknown or malformed
+    state, timeout, overflow, infrastructure failure, or unsafe process
+    outcome; cancellation is separate. Evidence-pending belongs to none of
+    these terminal outcome counts.
+    """
+
+    calls_queued: int
+    calls_stopped_not_started: int
+    calls_active: int
+    calls_retry_wait: int
+    calls_evidence_pending: int
+    calls_succeeded: int
+    calls_failed: int
+    calls_cancelled: int
+    attempts_started: int
+    retries_started: int
+    attempts_active: int
+    attempts_evidence_pending: int
+    attempts_succeeded: int
+    attempts_failed: int
+    attempts_cancelled: int
+    probes_started: int
+    probes_active: int
+    probes_evidence_pending: int
+    probes_completed: int
+    probes_failed: int
+    probes_cancelled: int
+
+@dataclass(frozen=True)
+class CallWait:
+    """One call-local retry wait; concurrent calls may remain active."""
+
+    call_id: CallId
+    reason: Literal["infrastructure", "capacity"]
+    attempt_number: AttemptNumber
+    elapsed_seconds: float
+    remaining_seconds: float | None
+
+@dataclass(frozen=True)
+class ProgressSnapshot:
+    """Immutable consumer projection of coordinator state and observations.
+
+    ``final_status`` is set only when ``phase`` is ``final``. Failed and
+    cancelled calls are settled outcomes, not successful completions.
+    """
+
+    run_id: RunId
+    phase: ProgressRunPhase
+    final_status: ProgressFinalStatus | None
+    counts: ProgressCounts
+    retry_reasons: tuple[tuple[RetryClass, int], ...]
+    call_waits: tuple[CallWait, ...]
+    quota_observation: QuotaObservation | None
+    quota_window_ages_seconds: tuple[tuple[QuotaWindowId, float | None], ...]
+
+class ProgressSink(Protocol):
+    """Present snapshots without delaying evaluation or cancellation."""
+
+    def publish(self, snapshot: ProgressSnapshot, /) -> None:
+        """Present an immutable snapshot without changing run outcomes.
+
+        This synchronous presentation boundary must return promptly and must
+        not perform blocking I/O. Implementations handle expected presentation
+        errors locally. They must not suppress cancellation,
+        KeyboardInterrupt, or SystemExit.
+        """
+        ...
 
 @dataclass(frozen=True)
 class CliBinding:

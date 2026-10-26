@@ -43,6 +43,8 @@ fails closed. All ACs remain TODO.
   persistence failure stops dispatch and leaves the run incomplete.
 - Configuration and persisted records use strict, immutable Pydantic models at
   their boundaries; domain decisions and effects stay outside validators.
+- A consumer-owned progress sink presents immutable coordinator snapshots on
+  stderr; durable evidence writes remain authoritative for reported facts.
 - Call identity describes effective inputs. Run identity and scheduled
   positions preserve repeated entries and manually selected reruns.
 - This boundary stores observations and generic usage telemetry only. The
@@ -57,7 +59,10 @@ fails closed. All ACs remain TODO.
 
 - The CLI owns repeated directory, model, effort, and separator arguments,
   positive concurrency, output destination, dry-run mode, and optional
-  `-i FILE` / `--instructions-file FILE`.
+  `-i FILE` / `--instructions-file FILE`, plus `--quiet` for presentation only.
+- `HarnessConfig.progress_interval_seconds` defaults to 1.0 seconds and is
+  validated as finite and positive. It configures only the terminal adapter's
+  routine refresh throttle; callers do not need another clock or CLI option.
 - CLI help states that the flag freezes the selected file and passes its staged
   path to Codex using `-c model_instructions_file=PATH`. It replaces Codex's
   native system instructions for that call; it does not add the file to generic
@@ -259,6 +264,12 @@ gating retries and stopping globally on unsafe outcomes.
 - The coordinator schedules calls in plan order under one concurrency limit.
   Distinct planned calls may execute concurrently; completion order does not
   change their identity or evidence association.
+- Progress is a projection of the frozen plan and coordinator lifecycle, not a
+  second accounting ledger. Disjoint call, attempt, and probe totals and the
+  definition of remaining work are specified under
+  [runner ports](#runner-policy-ports-and-adapters). One snapshot can show the
+  run-wide quota pause alongside particular calls in capacity backoff and other
+  active calls.
 - A retry belongs to its call and starts only after that call's previous
   attempt cleanup permits dispatch. Cancellation, overflow, uncertain
   acquisition, unsafe cleanup, or recording failure latches a global stop and
@@ -394,6 +405,15 @@ gating retries and stopping globally on unsafe outcomes.
 - The stop hook latches stop before any fallible recording. The coordinator
   checks the latch before each call and attempt. Cancellation stops new work
   and waits for bounded supervisor cleanup.
+- After each relevant lifecycle transition, the coordinator publishes one
+  immutable progress snapshot to its injected `ProgressSink`. A result or
+  control fact that requires evidence is published only after the matching
+  `EvidenceStore` write succeeds. If that write fails, the stop latch and
+  incomplete-evidence outcome remain authoritative; progress may describe the
+  incomplete run diagnostically but cannot claim the unwritten record exists.
+  Sink output errors disable or degrade presentation and do not alter retries,
+  outcomes, or the original exception. The sink handles expected stream errors;
+  cancellation, `KeyboardInterrupt`, and `SystemExit` are never suppressed.
 - It owns process signal handlers and truthful not-started accounting.
   Concurrency, each retry allowance, backoff and wait bounds, deadlines, grace,
   and output allowance have one source: validated run configuration.
@@ -423,6 +443,62 @@ Codex, quota, and runtime adapters.
   supervisor, settled-outcome, combined passive/active quota-reader, and
   injected-runtime contracts without importing concrete adapters. The one quota
   port exposes separate settled-attempt ingestion and supervised-poll calls.
+- `runner.ports` also owns the immutable `ProgressSnapshot`, disjoint
+  `ProgressCounts`, per-call retry-wait views, and the synchronous
+  `ProgressSink` port. The coordinator derives queued, active, retry-wait,
+  stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
+  counts from its live call states; attempt and probe counters remain separate.
+  A queued call is runnable but not dispatched. A stopped-not-started call is
+  unexecuted and cannot resume after the final report. Evidence-pending means a
+  result is known in memory but its required durable write failed, so the
+  report does not claim a persisted success or failure.
+- For `N` planned calls, `N` equals queued + stopped-not-started + active +
+  retry-wait + evidence-pending + succeeded + failed + cancelled. Remaining
+  calls equal queued + stopped-not-started + active + retry-wait +
+  evidence-pending; failed and cancelled calls are settled separately, and
+  completed means succeeded. For example, two successes, one failure, one
+  cancellation, and one stopped-not-started call out of five report completed
+  2, remaining 1, failed 1, and cancelled 1. A final cancellation or incomplete
+  evidence result keeps stopped calls visible as unexecuted remaining work.
+- The dispatched attempt count equals the sum of active, evidence-pending,
+  succeeded, failed, and cancelled invocations. Here “started” means the
+  invocation was dispatched through `AttemptCall`; it does not claim that the
+  supervisor acquired or launched an OS process. These terminal outcomes are
+  disjoint: success means a zero exit with safe process completion, never a
+  reviewer approval; failure means a settled non-cancelled unsuccessful attempt;
+  cancellation has its own count. The dispatched probe count equals the sum of
+  active, evidence-pending, completed, failed, and cancelled probes. Probe
+  outcomes are disjoint: completed means a safely settled operational check with
+  a conclusive available or exhausted quota state, including a recognized
+  provider rate-limit response mapped to exhausted. Failed means an unknown or
+  malformed observation, timeout, overflow, infrastructure failure, or unsafe
+  process outcome; cancellation has its own count. Evidence-pending is separate
+  from all terminal outcome counts. Retries have their own count and add
+  attempts, never calls. The current retry reason is preserved per call, so a
+  local backoff never masks active work on other calls. The snapshot carries
+  existing scoped quota observations and producer-based per-window ages; it
+  performs no quota reads, model calls, or input reads.
+- `runner.adapters.progress` supplies silent and terminal sinks. Composition
+  selects one sink from the explicit quiet setting and stderr TTY state, then
+  injects it once into the coordinator. Terminal output leaves stdout untouched,
+  uses compact refresh on a TTY and plain transition lines when redirected, and
+  throttles routine updates using `Runtime.monotonic()` and finite positive
+  `HarnessConfig.progress_interval_seconds` (default 1.0). Retry, pause, resume,
+  stop, error, and final transitions bypass that interval. Routine snapshots
+  coalesce to the latest state without a queue. Composition injects the same
+  `Runtime` instance used by the coordinator.
+- The terminal adapter accepts a narrow synchronous try-write callback. Each
+  call must promptly accept one complete short message or report would-block or
+  unavailable; it cannot wait for writable stderr. Routine output can be skipped
+  or coalesced when output would block; expected `OSError` or unavailable output
+  disables presentation without changing run state. Meaningful transitions
+  bypass the throttle and receive an immediate try-write attempt. If that
+  attempt cannot write, the sink degrades instead of delaying the run. The
+  callback must not wrap blocking `TextIO.write`, mutate caller stream flags,
+  create a background renderer, or use a timed worker thread. Its platform
+  mechanism remains an implementation prerequisite to verify before use; if no
+  prompt try-write mechanism is available, composition selects the silent sink.
+  `publish` never catches cancellation, `KeyboardInterrupt`, or `SystemExit`.
 - `runner.adapters.codex` resolves the CLI binding, builds each fresh request
   from frozen inputs, and classifies only settled captured stdout JSONL and raw
   stderr. It makes no streaming promise and returns unknown for unsupported or
@@ -432,12 +508,23 @@ Codex, quota, and runtime adapters.
   supervised probe request construction/invocation through the injected public
   supervisor adapter, then correlates each `thread.started` ID to a session. It
   maps the required five-hour and weekly windows into generic window records
-  with producer time/sequence and read time. The supplied sample is only a
-  candidate format: source lookup, session association, scope identity,
-  freshness, request flags, and exec output schema remain unverified. No
-  endpoint or app-server schema is assumed; until prerequisites are verified,
-  the adapter returns unknown and cannot resume work. Persisted source
-  coordinates are sanitized and contain no account PII.
+  with producer time/sequence and read time. The generic window has one optional
+  normalized used-percentage value; the adapter carries it from supplied
+  `used_percent` or calculates it as `100 - remaining_percent`; missing values
+  stay unknown. The percentage says nothing about cost or availability.
+  Observation age derives from each window's producer timestamp through the
+  injected runtime clock, never from read time or elapsed attempt counts.
+  Missing, invalid, or future producer timestamps leave age unknown; valid old
+  timestamps yield a known positive age even when freshness policy marks the
+  quota state unknown. Rereading does not reset age, and reset timestamps remain
+  scheduling hints rather than guarantees. Progress reuses normalized
+  observations without reparsing or revalidating them and performs no additional
+  quota lookup or probe. The supplied sample is only a candidate format: source
+  lookup, session association, scope identity, freshness, request flags, and
+  exec output schema remain unverified. No endpoint or app-server schema is
+  assumed; until prerequisites are verified, the adapter returns unknown and
+  cannot resume work. Persisted source coordinates are sanitized and contain no
+  account PII.
 - `runner.adapters.runtime` supplies UTC and monotonic clocks, cancellable
   `asyncio` waits, and uniform jitter sampling through the runtime port.
 - The adapter package exports these planned adapters. The CLI composition root
@@ -469,6 +556,11 @@ Codex, quota, and runtime adapters.
 - The exit status distinguishes complete success, run failure, cancellation,
   and incomplete evidence. Exact numeric values belong to the CLI contract and
   must agree with the standalone acceptance scenario.
+- Progress is rendered on stderr, so normal output and dry-run reporting on
+  stdout remain usable. `--quiet` selects a silent sink and changes no dispatch,
+  evidence, outcome, retry, or quota behavior. The standalone acceptance
+  scenario checks terminal and redirected output modes and their progress
+  promises without model calls.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or background daemon.
 
@@ -561,6 +653,12 @@ evidence.
 - The composition root owns concrete adapters; domain modules depend on their
   consumer-facing ports. No generic plugin registry or scheduler framework is
   proposed.
+- The composition root creates exactly one silent or terminal progress sink and
+  supplies it to the coordinator. `Coordinator.run` does not accept a second
+  sink argument, preventing conflicting injections. The terminal adapter gets
+  the injected `Runtime`, the finite interval from configuration, and a
+  try-write callback for stderr; it does not write run evidence or mutate the
+  caller's stderr settings.
 - Effects: connects the effects listed above and exposes the CLI entry point.
 
 ## Proposed flow
@@ -578,6 +676,7 @@ flowchart LR
     REQUEST --> COORD[Async dispatch coordinator]
     COORD --> STORE[Evidence store]
     COORD --> SUP[Existing process supervisor]
+    COORD --> PROGRESS[Injected ProgressSink port]
     SUP --> OS[CLI process, capture, cleanup]
     STORE --> RUN[Immutable run evidence]
 ```
@@ -600,8 +699,10 @@ adds proposal-only quota, classification, wait, probe-lifecycle, and shared
 `script/eval/model.py`. The shared base is intended to preserve attempt-record
 fields while allowing probes to reuse the supervisor projection; current
 runtime attempt records have not migrated to it, and no quota lifecycle record
-is implemented. These proposals are not runtime types or a competing active
-contract.
+is implemented. AC-9 adds a normalized optional quota usage percentage to the
+sketched generic window and places progress snapshot and sink types in the
+consumer-owned runner ports; these remain design types, not runtime types or a
+competing active contract.
 `plan.pyi` remains a historical planner
 reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
@@ -629,6 +730,7 @@ machine-readable sources are verified.
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/adapters/codex.py` | CLI binding, fresh evaluation request construction, and conservative settled-output classification. |
 | `script/eval/runner/adapters/codex_quota.py` | Passive session ingestion and separately supervised Codex probes, mapped to generic scoped windows; source and identity remain unverified. |
+| `script/eval/runner/adapters/progress.py` | Silent and stderr terminal implementations of the consumer-owned progress sink. |
 | `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |
 | `script/eval/runner/adapters/__init__.py` | Concrete planned adapters exported for composition. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
@@ -647,6 +749,7 @@ flowchart LR
     CLI --> TOKENS[tokens.py]
     CLI --> RUNNER[runner package]
     CLI --> QUOTA[runner/adapters/codex_quota.py]
+    CLI --> PROGRESS_ADAPTER[runner/adapters/progress.py]
     CLI --> EVIDENCE[evidence.py]
     RUNNER --> COORD[runner/coordinator.py]
     RUNNER --> CODEX[runner/adapters/codex.py]
@@ -656,6 +759,7 @@ flowchart LR
     CODEX --> PORTS
     QUOTA --> PORTS
     RUNTIME --> PORTS
+    PROGRESS_ADAPTER --> PORTS
     QUOTA -->|injected AttemptCall| SUP[Existing process supervisor]
     CODEX --> MODEL
     QUOTA --> MODEL

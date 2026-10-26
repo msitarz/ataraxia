@@ -97,6 +97,9 @@ class HarnessConfig(StrictModel):
     ``None`` adds no harness probe-count cap, a positive value caps probes, and
     zero refuses enabled polling. With quota waiting disabled, the budget may
     be absent and no probe or session read occurs.
+
+    ``progress_interval_seconds`` is finite and positive; it throttles routine
+    terminal refreshes, while meaningful transitions bypass the throttle.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -109,6 +112,8 @@ class HarnessConfig(StrictModel):
     cleanup_timeout_seconds: float
     grace_seconds: float
     output_limit_bytes: int
+    quiet: bool = False
+    progress_interval_seconds: float = 1.0
     retry_limit: int = 0
     retry_nonzero_exit: bool = False
     quota_wait_enabled: bool = False
@@ -134,12 +139,15 @@ class QuotaScope(StrictModel):
 class QuotaWindowObservation(StrictModel):
     """One provider-specific blocking window with explicit source evidence.
 
+    ``usage_percent`` is normalized to used percent in [0, 100] only when the
+    source supplies used or remaining percentage; otherwise it stays unknown.
     ``source`` and ``diagnostic`` are sanitized descriptors, never raw account
     identity or credentials.
     """
 
     window_id: QuotaWindowId
     state: QuotaState
+    usage_percent: float | None
     reset_at_utc: str | None
     source_observed_at_utc: str | None
     source_sequence: int | None

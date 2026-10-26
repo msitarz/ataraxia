@@ -22,6 +22,8 @@ component split; this Work contract remains authoritative.
   allowances and bounded backoff with jitter.
 - Optionally pause an active run for recognized Codex quota exhaustion while
   preserving frozen inputs, completed outcomes, and caller experiment limits.
+- Report execution progress and observed quota state in terminal and redirected
+  output without changing retained evidence or experiment ownership.
 
 ## Non-Goals
 
@@ -437,6 +439,56 @@ job without keeping an agent conversation alive.
   behavior and exit meanings without model calls; usage guidance distinguishes
   checked behavior from live CLI and availability prerequisites.
 
+### **AC-9 TODO** Progress reports evidence-backed execution state
+
+A caller can follow a standalone run's progress from a terminal or redirected
+text without keeping an agent conversation alive.
+
+- A consumer-owned `ProgressSink` port presents progress separately from the
+  durable `EvidenceStore`; persistence remains authoritative, and facts that
+  require evidence are published only after their corresponding durable writes
+  succeed.
+- Reports identify the run and show completed, remaining, and failed scheduled
+  calls separately from launched, completed, and failed evaluation attempts and
+  quota probes; retries never increase the frozen plan's scheduled call count.
+- Call accounting makes clear whether failed calls are included in completed
+  totals, and distinguishes queued, running, and retry-wait calls without
+  double counting or summing calls, attempts, and probes into one total.
+- Reports expose active attempts, retries and their reason, global quota
+  pauses, per-call capacity backoff, stopping, and final status, preserving the
+  dispatch and stop precedence in AC-4, AC-6, and AC-7.
+- The final report distinguishes execution success, failure, cancellation, and
+  incomplete evidence, retains not-started calls, and never labels a successful
+  process exit as a reviewer verdict `PASS` or scored answer quality; the
+  harness does not interpret or score answers.
+- Quota reporting consumes existing validated observations and the AC-6 monitor
+  without launching additional model calls or probes, rereading input files,
+  or acquiring personal data solely to produce a report.
+- Where validated sources supply them, quota reports show per-window usage
+  percentages, identified windows and quota scope, reset hints, and observation
+  age; unavailable values stay explicitly unknown rather than inferred from
+  elapsed time, attempt counts, or an unrelated quota window.
+- Observation age uses the producer timestamp and preserves stale or unknown
+  status when a snapshot is read again; reset times remain hints and never
+  promise availability or reopen dispatch.
+- Progress uses stderr, leaving stdout available for normal CLI and dry-run
+  results and future structured consumers; compact refresh is permitted on a
+  TTY, while redirected output uses useful plain status lines without ANSI
+  control sequences, bounded and throttled to avoid per-poll or per-refresh
+  floods while retaining meaningful transitions and final status.
+- An explicit quiet mode suppresses progress without changing evidence,
+  outcomes, dispatch, retries, or quota monitoring; precise option spelling,
+  rendering layout, and refresh interval remain architecture choices.
+- Presentation failures disable or degrade reporting without changing
+  evaluation outcomes or retry eligibility, concealing a recording failure,
+  or converting incomplete evidence into success; cancellation and interrupts
+  still propagate through the runner's stop and cleanup semantics.
+- Controlled checks with fake presentation, evidence, quota, and process
+  collaborators verify write-before-report ordering, accounting, quota age and
+  unknown handling, waits and stopping, output modes, and presentation failure
+  isolation without model calls; these checks verify the local reporting
+  guarantee and establish no scored experiment result.
+
 ## Dependencies
 
 - DONE [Experimental CLI process supervisor](../process-supervisor/README.md):
@@ -478,3 +530,11 @@ architecture records consumer-owned classifier and quota-status ports with
 explicit unknown outcomes; their concrete recognition and reset adapters remain
 undefined until evidence verifies their sources. No runner implementation or
 model calls are authorized by this contract amendment.
+
+Progress reporting remains in this generic harness Work rather than a separate
+child Work. Its bounded amendment defines AC-9 before evidence persistence is
+implemented; the delivery stage covers this contract, a separately reviewed
+typed design, and intent-only BDD scenarios, not runtime implementation. The
+contract alone establishes no reporting behavior. It adds no logger, event bus,
+adapter framework, monitoring service, scheduler integration, or dependency on
+an agent session. All acceptance criteria remain TODO.

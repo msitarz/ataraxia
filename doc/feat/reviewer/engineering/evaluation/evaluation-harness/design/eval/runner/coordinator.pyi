@@ -9,6 +9,7 @@ from .ports import (
     AttemptCall,
     BoundRun,
     OutcomeClassifier,
+    ProgressSink,
     QuotaStatusReader,
     Runtime,
 )
@@ -21,6 +22,7 @@ class Coordinator:
     classifier: OutcomeClassifier
     quota_status: QuotaStatusReader
     runtime: Runtime
+    progress: ProgressSink
 
     async def run(
         self,
@@ -53,5 +55,10 @@ class Coordinator:
         Cancellation joins the monitor and waits for supervised cleanup. See
         ``architecture.md#async-dispatch-coordinator`` for scheduling and gate
         sequencing.
+
+        Progress is projected from these same lifecycle states. Durable evidence
+        writes precede snapshots that claim persisted facts; ordinary sink I/O
+        errors do not change the run. Final progress distinguishes successful,
+        failed, cancelled, and incomplete-evidence outcomes.
         """
         ...
