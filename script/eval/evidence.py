@@ -138,7 +138,27 @@ class EvidenceStoreAdapter:
 
     Every submitted operation is serialized and retained through settlement
     under cooperative caller cancellation. Injected synchronous leaves run in
-    worker threads.
+    worker threads. The leaves define the storage and projection boundary, so
+    their responsibilities do not depend on a particular storage backend.
+
+    Args:
+        create_evidence: Exclusively set up a run's evidence area and persist
+            its frozen plan and staged instructions before dispatch.
+        project_attempt: Write artifacts for one process attempt and build its
+            serializable ``AttemptRecord``; it does not append that record.
+        append_attempt: Durably persist a projected attempt record.
+        append_wait_event: Persist one scalar wait lifecycle transition.
+        append_probe_event: Persist one scalar probe lifecycle transition.
+        project_settled_probe: Write settled probe artifacts and build its
+            serializable process projection and quota assessment.
+        append_settled_probe: Durably persist a projected settled probe.
+        append_quota_telemetry: Durably persist one passive telemetry event.
+        finalize_evidence: Persist final run accounting.
+
+    Each leaf is responsible for fulfilling its described setup, artifact,
+    projection, or persistence obligation. This boundary permits storage
+    implementations such as object storage without promising that any such
+    backend is implemented here.
 
     Example:
         ``create_evidence_store(project_attempt=fake_project)`` can be
