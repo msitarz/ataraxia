@@ -1,9 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 """Terminal and silent implementations of the progress sink port."""
 
-from typing import TextIO
+from typing import Literal, Protocol
 
-from ..ports import ProgressSnapshot  # ruff: ignore[relative-imports]
+from ..ports import ProgressSnapshot, Runtime  # ruff: ignore[relative-imports]
+
+type TryWriteResult = Literal["written", "would_block", "unavailable"]
+
+class TryWrite(Protocol):
+    """Nonblocking one-message stderr write supplied by composition.
+
+    Return ``written`` only when the complete short message was accepted;
+    return ``would_block`` or ``unavailable`` without waiting. An expected
+    ``OSError`` may be raised. Never mutate caller stream flags or queue output.
+    """
+
+    def __call__(self, text: str, /) -> TryWriteResult: ...
 
 class SilentProgressSink:
     """Discard progress snapshots without touching the run or evidence."""
@@ -11,17 +23,27 @@ class SilentProgressSink:
     def publish(self, snapshot: ProgressSnapshot, /) -> None: ...
 
 class TerminalProgressSink:
-    """Render compact progress to stderr, using plain lines when redirected."""
+    """Use a prompt try-write adapter for terminal or redirected stderr."""
 
-    stream: TextIO
+    try_write: TryWrite
     is_tty: bool
+    runtime: Runtime
+    interval_seconds: float
 
-    def __init__(self, stream: TextIO, is_tty: bool, /) -> None: ...
+    def __init__(
+        self,
+        try_write: TryWrite,
+        is_tty: bool,
+        runtime: Runtime,
+        interval_seconds: float,
+        /,
+    ) -> None: ...
     def publish(self, snapshot: ProgressSnapshot, /) -> None:
-        """Write one throttled update; disable on ordinary stream write failure.
+        """Try one update and return promptly when output would block.
 
-        The synchronous write is small and transition-driven, with no queued
-        renderer task. A blocked stderr write can delay coordinator progress;
-        cancellation is delivered when control returns to the event loop.
+        Routine updates use the injected runtime's monotonic clock and finite
+        interval. Meaningful transitions bypass throttling. Would-block,
+        unavailable output, or OSError skips or disables presentation; no
+        blocking stream write, thread, or renderer queue is used.
         """
         ...

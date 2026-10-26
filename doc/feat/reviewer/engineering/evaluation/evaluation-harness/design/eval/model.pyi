@@ -97,6 +97,9 @@ class HarnessConfig(StrictModel):
     ``None`` adds no harness probe-count cap, a positive value caps probes, and
     zero refuses enabled polling. With quota waiting disabled, the budget may
     be absent and no probe or session read occurs.
+
+    ``progress_interval_seconds`` is finite and positive; it throttles routine
+    terminal refreshes, while meaningful transitions bypass the throttle.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -110,6 +113,7 @@ class HarnessConfig(StrictModel):
     grace_seconds: float
     output_limit_bytes: int
     quiet: bool = False
+    progress_interval_seconds: float = 1.0
     retry_limit: int = 0
     retry_nonzero_exit: bool = False
     quota_wait_enabled: bool = False

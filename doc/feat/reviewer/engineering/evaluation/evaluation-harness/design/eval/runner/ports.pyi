@@ -33,22 +33,36 @@ type ProgressFinalStatus = Literal[
 
 @dataclass(frozen=True)
 class ProgressCounts:
-    """Disjoint frozen-plan calls and cumulative launched work counts."""
+    """Disjoint frozen-plan call states and dispatched-work outcome counts.
+
+    Queued means not yet dispatched while the run is active; it may be gated
+    by concurrency or quota. Stopped-not-started means the stop latch prevents
+    dispatch. Evidence-pending means an outcome is known in
+    memory but its required durable write failed, so no terminal outcome is
+    claimed. Attempt and probe evidence-pending counts follow the same rule.
+    ``attempts_started`` counts invocations dispatched through ``AttemptCall``;
+    it does not imply supervisor acquisition or launch of an OS process.
+    ``probes_started`` has the same dispatched-invocation meaning.
+    """
 
     calls_queued: int
     calls_stopped_not_started: int
     calls_active: int
     calls_retry_wait: int
+    calls_evidence_pending: int
     calls_succeeded: int
     calls_failed: int
+    calls_cancelled: int
     attempts_started: int
     retries_started: int
     attempts_active: int
+    attempts_evidence_pending: int
     attempts_succeeded: int
     attempts_failed: int
     attempts_cancelled: int
     probes_started: int
     probes_active: int
+    probes_evidence_pending: int
     probes_completed: int
     probes_failed: int
     probes_cancelled: int
@@ -65,7 +79,11 @@ class CallWait:
 
 @dataclass(frozen=True)
 class ProgressSnapshot:
-    """Immutable consumer projection of coordinator state and observations."""
+    """Immutable consumer projection of coordinator state and observations.
+
+    ``final_status`` is set only when ``phase`` is ``final``. Failed and
+    cancelled calls are settled outcomes, not successful completions.
+    """
 
     run_id: RunId
     phase: ProgressRunPhase
@@ -77,13 +95,15 @@ class ProgressSnapshot:
     quota_window_ages_seconds: tuple[tuple[QuotaWindowId, float | None], ...]
 
 class ProgressSink(Protocol):
-    """Present snapshots only; expected output failure disables the sink."""
+    """Present snapshots without delaying evaluation or cancellation."""
 
     def publish(self, snapshot: ProgressSnapshot, /) -> None:
         """Present an immutable snapshot without changing run outcomes.
 
-        Implementations handle ordinary presentation errors locally. They must
-        not suppress cancellation, KeyboardInterrupt, or SystemExit.
+        This synchronous presentation boundary must return promptly and must
+        not perform blocking I/O. Implementations handle expected presentation
+        errors locally. They must not suppress cancellation,
+        KeyboardInterrupt, or SystemExit.
         """
         ...
 

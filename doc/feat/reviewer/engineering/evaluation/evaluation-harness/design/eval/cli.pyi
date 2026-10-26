@@ -3,6 +3,7 @@
 
 Help explains that ``--instructions-file`` maps to the native Codex setting
 ``-c model_instructions_file=PATH``. ``--quiet`` suppresses progress only.
+The finite progress refresh interval is supplied through run configuration.
 """
 
 from collections.abc import Sequence
