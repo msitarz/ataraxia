@@ -697,10 +697,12 @@ snapshot, not an active typing interface. The evidence-facing quota scope,
 window and observation, retry assessment, wait and probe lifecycle, and shared
 `ProcessRecord` values have migrated into `script/eval/model.py`. The active
 `script/eval/evidence.py` binds the prepared run context for one adapter
-lifecycle and composes typed identity forwarding with synchronous
-projection/write ordering. Its storage and process-projection leaves still
-raise `NotImplementedError`; synchrony establishes ordering, while durability,
-exclusivity, and raw artifact semantics remain unimplemented leaf obligations.
+lifecycle and composes typed identity forwarding with asynchronous
+projection/write ordering. Each operation is serialized, synchronous injected
+leaves run off the event loop, and cancellation waits for a started leaf to
+settle before releasing ownership. Its storage and process-projection leaves
+still raise `NotImplementedError`; durability, exclusivity, and raw artifact
+semantics remain unimplemented leaf obligations.
 Runner policy/configuration and AC-9 progress proposals remain design-only.
 The shared base preserves flat attempt fields while permitting probes to reuse
 the process projection.

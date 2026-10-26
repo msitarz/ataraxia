@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Typed evidence persistence port and synchronous composition adapter.
+"""Typed asynchronous evidence persistence port and composition adapter.
 
 The adapter owns event ordering and identity forwarding. Storage, projection,
 and artifact-writing leaves remain explicit injection points until implemented.
 """
 
+import asyncio
 from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
@@ -35,10 +36,12 @@ class EvidenceStore(Protocol):
     second successful preparation attempt.
     """
 
-    def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
+    async def create(
+        self, output_directory: Path, plan: FrozenPlan, /
+    ) -> PreparedEvidence:
         """Create exclusive evidence storage before any process can launch."""
 
-    def record_attempt(
+    async def record_attempt(
         self,
         run_id: RunId,
         call_id: CallId,
@@ -50,21 +53,23 @@ class EvidenceStore(Protocol):
     ) -> AttemptRecord:
         """Project and append one classified process outcome."""
 
-    def record_wait_event(self, event: WaitEvent, /) -> None:
+    async def record_wait_event(self, event: WaitEvent, /) -> None:
         """Append one wait lifecycle observation."""
 
-    def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
+    async def record_quota_probe_event(
+        self, event: QuotaProbeLifecycleInput, /
+    ) -> None:
         """Append a scheduled, started, or prelaunch-cancelled probe event."""
 
-    def record_quota_probe_settled(
+    async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
         """Project process evidence and append its settled probe record."""
 
-    def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Append passive provider-neutral quota telemetry."""
 
-    def finalize(self, record: RunRecord, /) -> None:
+    async def finalize(self, record: RunRecord, /) -> None:
         """Persist final accounting; a failure leaves evidence incomplete."""
 
 
@@ -92,13 +97,48 @@ type AppendQuotaTelemetry = Callable[[PreparedEvidence, QuotaTelemetryEvent], No
 type FinalizeEvidence = Callable[[PreparedEvidence, RunRecord], None]
 
 
+async def _invoke_leaf[Result](
+    leaf: Callable[..., Result],
+    arguments: tuple[object, ...],
+    *,
+    on_success: Callable[[Result], None] | None = None,
+) -> Result:
+    """Run a blocking leaf off-loop and retain ownership through cancellation.
+
+    Returns:
+        The leaf result after successful settlement.
+    """
+    task = asyncio.create_task(asyncio.to_thread(leaf, *arguments))
+    try:
+        result = await asyncio.shield(task)
+    except asyncio.CancelledError as cancellation:
+        # Shielding protects the leaf task; repeated owner cancellation must
+        # also be consumed until that task settles before its lock is released.
+        while not task.done():
+            try:
+                await asyncio.shield(task)
+            except asyncio.CancelledError:
+                continue
+            except BaseException:
+                break
+        try:
+            result = task.result()
+        except BaseException as failure:
+            cancellation.add_note(f"Evidence leaf also failed: {failure!r}")
+            raise cancellation from failure
+        if on_success is not None:
+            on_success(result)
+        raise cancellation
+    if on_success is not None:
+        on_success(result)
+    return result
+
+
 class EvidenceStoreAdapter:
     """Compose ordered evidence operations around unfinished typed leaves.
 
-    Projection receives live supervisor evidence, while records contain only
-    serializable scalars and artifact references. Synchronous calls ensure the
-    next coordinator step waits for each leaf to return; durability and
-    exclusivity remain obligations of the unfinished storage leaves.
+    Every operation is serialized. Injected synchronous leaves run in worker
+    threads; a started leaf settles before cancellation releases the operation.
 
     Example:
         ``EvidenceStoreAdapter(project_attempt=fake_project, ...)`` can be
@@ -117,7 +157,7 @@ class EvidenceStoreAdapter:
         append_quota_telemetry: AppendQuotaTelemetry | None = None,
         finalize_evidence: FinalizeEvidence | None = None,
     ) -> None:
-        """Store leaf operations used by this synchronous evidence boundary."""
+        """Store synchronous leaves used by this async boundary."""
         self._create_evidence = (
             _create_evidence if create_evidence is None else create_evidence
         )
@@ -152,8 +192,11 @@ class EvidenceStoreAdapter:
             _finalize_evidence if finalize_evidence is None else finalize_evidence
         )
         self._prepared: PreparedEvidence | None = None
+        self._lock = asyncio.Lock()
 
-    def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
+    async def create(
+        self, output_directory: Path, plan: FrozenPlan, /
+    ) -> PreparedEvidence:
         """Exclusively prepare evidence before dispatch by delegating the leaf.
 
         Returns:
@@ -162,13 +205,19 @@ class EvidenceStoreAdapter:
         Raises:
             RuntimeError: Evidence storage has already been bound for this run.
         """
-        if self._prepared is not None:
-            raise RuntimeError("evidence storage is already prepared for this run")
-        prepared = self._create_evidence(output_directory, plan)
-        self._prepared = prepared
-        return prepared
+        async with self._lock:
+            if self._prepared is not None:
+                raise RuntimeError("evidence storage is already prepared for this run")
+            return await _invoke_leaf(
+                self._create_evidence,
+                (output_directory, plan),
+                on_success=self._bind_prepared,
+            )
 
-    def record_attempt(
+    def _bind_prepared(self, prepared: PreparedEvidence) -> None:
+        self._prepared = prepared
+
+    async def record_attempt(
         self,
         run_id: RunId,
         call_id: CallId,
@@ -186,28 +235,40 @@ class EvidenceStoreAdapter:
         Returns:
             The projected record after its append operation succeeds.
         """
-        prepared = self._require_prepared()
-        record = self._project_attempt(
-            prepared,
-            run_id,
-            call_id,
-            position,
-            attempt_number,
-            evidence,
-            retry_assessment,
-        )
-        self._append_attempt(prepared, record)
-        return record
+        async with self._lock:
+            prepared = self._require_prepared()
+            record = await _invoke_leaf(
+                self._project_attempt,
+                (
+                    prepared,
+                    run_id,
+                    call_id,
+                    position,
+                    attempt_number,
+                    evidence,
+                    retry_assessment,
+                ),
+            )
+            await _invoke_leaf(self._append_attempt, (prepared, record))
+            return record
 
-    def record_wait_event(self, event: WaitEvent, /) -> None:
-        """Append each wait transition synchronously before policy advances."""
-        self._append_wait_event(self._require_prepared(), event)
+    async def record_wait_event(self, event: WaitEvent, /) -> None:
+        """Append each wait transition before policy advances."""
+        async with self._lock:
+            await _invoke_leaf(
+                self._append_wait_event, (self._require_prepared(), event)
+            )
 
-    def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
+    async def record_quota_probe_event(
+        self, event: QuotaProbeLifecycleInput, /
+    ) -> None:
         """Append a scalar probe transition without inventing process evidence."""
-        self._append_probe_event(self._require_prepared(), event)
+        async with self._lock:
+            await _invoke_leaf(
+                self._append_probe_event, (self._require_prepared(), event)
+            )
 
-    def record_quota_probe_settled(
+    async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
         """Project and append settled probe evidence before quota resumption.
@@ -215,18 +276,27 @@ class EvidenceStoreAdapter:
         Returns:
             The shared process projection and quota assessment after append.
         """
-        prepared = self._require_prepared()
-        settled = self._project_settled_probe(prepared, evidence)
-        self._append_settled_probe(prepared, settled)
-        return settled
+        async with self._lock:
+            prepared = self._require_prepared()
+            settled = await _invoke_leaf(
+                self._project_settled_probe, (prepared, evidence)
+            )
+            await _invoke_leaf(self._append_settled_probe, (prepared, settled))
+            return settled
 
-    def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Append passive telemetry as a separate associated observation."""
-        self._append_quota_telemetry(self._require_prepared(), event)
+        async with self._lock:
+            await _invoke_leaf(
+                self._append_quota_telemetry, (self._require_prepared(), event)
+            )
 
-    def finalize(self, record: RunRecord, /) -> None:
+    async def finalize(self, record: RunRecord, /) -> None:
         """Persist truthful final accounting through the supplied leaf."""
-        self._finalize_evidence(self._require_prepared(), record)
+        async with self._lock:
+            await _invoke_leaf(
+                self._finalize_evidence, (self._require_prepared(), record)
+            )
 
     def _require_prepared(self) -> PreparedEvidence:
         """Return this run's storage handle or reject pre-setup evidence calls.
