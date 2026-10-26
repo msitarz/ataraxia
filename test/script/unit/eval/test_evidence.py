@@ -10,7 +10,12 @@ from typing import Literal
 
 import pytest
 
-from script.eval.evidence import EvidenceStoreAdapter, create_evidence_store
+from script.eval.evidence import (
+    AppendAttempt,
+    EvidenceStoreAdapter,
+    ProjectAttempt,
+    create_evidence_store,
+)
 from script.eval.model import (
     AttemptEvidence,
     AttemptNumber,
@@ -76,6 +81,38 @@ def append_telemetry(
     calls.append("telemetry")
 
 
+def attempt_store(
+    project: ProjectAttempt, append: AppendAttempt
+) -> EvidenceStoreAdapter:
+    """Build a prepared-evidence adapter around attempt projection and append."""
+    return create_evidence_store(
+        create_evidence=lambda _directory, _plan: prepared_evidence(),
+        project_attempt=project,
+        append_attempt=append,
+    )
+
+
+def blocked_wait_store() -> tuple[
+    EvidenceStoreAdapter, threading.Event, threading.Event, list[str]
+]:
+    """Provide a blocked wait append and telemetry recorder for queue tests."""
+    started = threading.Event()
+    release = threading.Event()
+    calls: list[str] = []
+
+    def append(_context: PreparedEvidence, _event: WaitEvent) -> None:
+        calls.append("append")
+        started.set()
+        assert release.wait(5)
+
+    store = create_evidence_store(
+        create_evidence=lambda _directory, _plan: prepared_evidence(),
+        append_wait_event=append,
+        append_quota_telemetry=partial(append_telemetry, calls),
+    )
+    return store, started, release, calls
+
+
 def blocked_append_store() -> tuple[
     EvidenceStoreAdapter, threading.Event, threading.Event, list[str]
 ]:
@@ -107,6 +144,27 @@ async def wait_for_leaf_start(
     if not did_start:
         release.set()
     assert did_start
+
+
+async def start_attempt_after_preparation(
+    store: EvidenceStoreAdapter,
+    started: threading.Event,
+    release: threading.Event,
+) -> asyncio.Task[AttemptRecord]:
+    """Prepare the adapter and start an attempt until its worker blocks."""
+    await store.create(Path("results"), frozen_plan())
+    owner = asyncio.create_task(
+        store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
+    )
+    await wait_for_leaf_start(started, release)
+    return owner
+
+
+async def cancel_and_confirm_pending[Result](task: asyncio.Task[Result]) -> None:
+    """Deliver cancellation to the caller while its retained operation is blocked."""
+    task.cancel()
+    await asyncio.sleep(0)
+    assert not task.done()
 
 
 def attempt_evidence() -> AttemptEvidence:
@@ -940,7 +998,7 @@ async def test_cancellation_during_projection_waits_for_append() -> None:
     started = threading.Event()
     release = threading.Event()
     order: list[str] = []
-    prepared = prepared_evidence()
+    appended: list[AttemptRecord] = []
 
     def project(
         _context: PreparedEvidence,
@@ -954,22 +1012,27 @@ async def test_cancellation_during_projection_waits_for_append() -> None:
         started.set()
         assert release.wait(5)
         order.append("project")
-        return attempt_record()
+        return projected_attempt(
+            _context,
+            _run_id,
+            _call_id,
+            _position,
+            _attempt_number,
+            _evidence,
+            _assessment,
+        )
 
-    store = create_evidence_store(
-        create_evidence=lambda _directory, _plan: prepared,
-        project_attempt=project,
-        append_attempt=lambda _context, _record: order.append("append"),
-    )
-    await store.create(Path("results"), frozen_plan())
-    owner = asyncio.create_task(
-        store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
-    )
-    await wait_for_leaf_start(started, release)
+    def append(_context: PreparedEvidence, record: AttemptRecord) -> None:
+        order.append("append")
+        appended.append(record)
+
+    store = attempt_store(project, append)
+    owner = await start_attempt_after_preparation(store, started, release)
 
     # When
     try:
-        owner.cancel()
+        await cancel_and_confirm_pending(owner)
+        assert order == []
     finally:
         release.set()
     with pytest.raises(asyncio.CancelledError):
@@ -977,26 +1040,53 @@ async def test_cancellation_during_projection_waits_for_append() -> None:
 
     # Then
     assert order == ["project", "append"]
+    assert [
+        (record.call_id, record.position, record.attempt_number) for record in appended
+    ] == [("call-1", 0, 1)]
+
+
+async def test_cancellation_during_failed_projection_preserves_cause() -> None:
+    """Do not append after a failed projection that settles during cancellation."""
+    # Given
+    started = threading.Event()
+    release = threading.Event()
+    failure = ValueError("projection failed")
+    appended: list[AttemptRecord] = []
+
+    def project(
+        _context: PreparedEvidence,
+        _run_id: RunId,
+        _call_id: CallId,
+        _position: int,
+        _attempt_number: int,
+        _evidence: AttemptEvidence,
+        _assessment: RetryAssessment | None,
+    ) -> AttemptRecord:
+        started.set()
+        assert release.wait(5)
+        raise failure
+
+    store = attempt_store(project, lambda _context, record: appended.append(record))
+    owner = await start_attempt_after_preparation(store, started, release)
+
+    # When
+    try:
+        await cancel_and_confirm_pending(owner)
+        assert appended == []
+    finally:
+        release.set()
+    with pytest.raises(asyncio.CancelledError) as captured:
+        await owner
+
+    # Then
+    assert captured.value.__cause__ is failure
+    assert appended == []
 
 
 async def test_cancelled_lock_waiter_still_persists_after_prior_write() -> None:
     """A submitted operation remains queued and persists after owner cancellation."""
     # Given
-    started = threading.Event()
-    release = threading.Event()
-    calls: list[str] = []
-    prepared = prepared_evidence()
-
-    def append(_context: PreparedEvidence, _event: WaitEvent) -> None:
-        calls.append("append")
-        started.set()
-        assert release.wait(5)
-
-    store = create_evidence_store(
-        create_evidence=lambda _directory, _plan: prepared,
-        append_wait_event=append,
-        append_quota_telemetry=partial(append_telemetry, calls),
-    )
+    store, started, release, calls = blocked_wait_store()
     await store.create(Path("results"), frozen_plan())
     owner = asyncio.create_task(
         store.record_wait_event(quota_wait_event(empty_quota_observation()))
@@ -1016,6 +1106,11 @@ async def test_cancelled_lock_waiter_still_persists_after_prior_write() -> None:
     # When
     try:
         queued.cancel()
+        await asyncio.sleep(0)
+        queued.cancel()
+        await asyncio.sleep(0)
+        assert not queued.done()
+        assert calls == ["append"]
     finally:
         release.set()
     await owner

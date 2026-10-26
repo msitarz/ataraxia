@@ -7,9 +7,9 @@ and artifact-writing leaves remain explicit injection points until implemented.
 
 import asyncio
 from collections.abc import Callable, Coroutine
-from functools import partial
+from functools import partial, wraps
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol
 
 from script.eval.model import (
     AttemptEvidence,
@@ -34,7 +34,17 @@ class EvidenceStore(Protocol):
 
     Callers must complete one successful ``create`` before recording. The
     adapter rejects evidence operations before preparation and rejects a
-    second successful preparation attempt.
+    second successful preparation attempt. Each submitted operation remains
+    owned through lock waiting, projection, and append under cooperative caller
+    cancellation. The caller receives ``CancelledError`` only after the whole
+    operation settles; a concurrent operation failure remains its cause.
+
+    The adapter uses an in-memory lock for this instance on its event loop.
+    It provides no coordination with another adapter or process. A coroutine
+    that has not started is not submitted. The runner must retain and await all
+    submitted evidence operations during shutdown. The public
+    ``create_evidence_store`` factory binds unfinished default leaves; the
+    adapter constructor requires every leaf explicitly.
     """
 
     async def create(
@@ -99,14 +109,15 @@ type FinalizeEvidence = Callable[[PreparedEvidence, RunRecord], None]
 
 
 def _retain_operation[**P, R](
-    operation: Callable[P, Coroutine[Any, Any, R]],
-) -> Callable[P, Coroutine[Any, Any, R]]:
+    operation: Callable[P, Coroutine[None, None, R]],
+) -> Callable[P, Coroutine[None, None, R]]:
     """Keep lock waiting and every effect owned after public submission.
 
     Returns:
         A coroutine preserving the decorated operation's parameters and result.
     """
 
+    @wraps(operation)
     async def run(*args: P.args, **kwargs: P.kwargs) -> R:
         task = asyncio.create_task(operation(*args, **kwargs))
         try:
@@ -175,14 +186,11 @@ class EvidenceStoreAdapter:
         async with self._lock:
             if self._prepared is not None:
                 raise RuntimeError("evidence storage is already prepared for this run")
-            return await _invoke_leaf(
-                partial(self._create_evidence, output_directory, plan),
-                on_success=self._bind_prepared,
+            prepared = await _invoke_leaf(
+                partial(self._create_evidence, output_directory, plan)
             )
-
-    def _bind_prepared(self, prepared: PreparedEvidence) -> None:
-        """Bind the prepared handle before releasing create-operation ownership."""
-        self._prepared = prepared
+            self._bind_prepared(prepared)
+            return prepared
 
     @_retain_operation
     async def record_attempt(
@@ -281,6 +289,10 @@ class EvidenceStoreAdapter:
             raise RuntimeError("evidence storage must be prepared before recording")
         return self._prepared
 
+    def _bind_prepared(self, prepared: PreparedEvidence) -> None:
+        """Bind the prepared handle before releasing create-operation ownership."""
+        self._prepared = prepared
+
 
 def create_evidence_store(
     *,
@@ -336,33 +348,13 @@ def create_evidence_store(
 
 async def _invoke_leaf[Result](
     leaf: Callable[[], Result],
-    *,
-    on_success: Callable[[Result], None] | None = None,
 ) -> Result:
-    """Run a bound leaf off-loop and retain ownership through cancellation.
+    """Run one synchronous leaf off-loop within its owned operation.
 
     Returns:
-        The leaf result after successful settlement.
-
-    Raises:
-        asyncio.CancelledError: After a started leaf settles.
+        The leaf result.
     """
-    task = asyncio.create_task(asyncio.to_thread(leaf))
-    try:
-        result = await asyncio.shield(task)
-    except asyncio.CancelledError as cancellation:
-        await _settle_started_task(task)
-        failure = _task_exception(task)
-        if failure is not None:
-            cancellation.add_note(f"Evidence leaf also failed: {failure!r}")
-            raise cancellation from failure
-        result = _task_result(task)
-        if on_success is not None:
-            on_success(result)
-        raise cancellation
-    if on_success is not None:
-        on_success(result)
-    return result
+    return await asyncio.to_thread(leaf)
 
 
 async def _settle_started_task[Result](
@@ -378,17 +370,12 @@ async def _settle_started_task[Result](
             break
 
 
-def _task_exception(task: asyncio.Task[object]) -> BaseException | None:
+def _task_exception[Result](task: asyncio.Task[Result]) -> BaseException | None:
     """Return a settled task's exception without raising it."""
     try:
         return task.exception()
     except BaseException as failure:
         return failure
-
-
-def _task_result[Result](task: asyncio.Task[Result]) -> Result:
-    """Return the result of a task already confirmed to have succeeded."""
-    return task.result()
 
 
 def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
