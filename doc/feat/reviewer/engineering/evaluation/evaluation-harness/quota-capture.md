@@ -54,3 +54,49 @@ subsequent design investigation can examine a machine-readable status or reset
 source, including how it covers both exhausted windows and unknown data. The
 capture does not authorize parsing reviewer answers, substituting an app-server
 schema for the exec schema, typed implementation, or further empirical calls.
+
+## Supplied session telemetry excerpt
+
+The maintainer later supplied the following excerpt and source coordinates. The
+session file was not read or independently verified. The supplied path was
+`~/.codex/sessions/2026/10/26/rollout-2026-10-26T15-16-14-01a17891-a93e-7071-ad37-21b587fd4bf3.jsonl`.
+The envelope timestamp was `2026-10-26T14:16:19.536Z`, ordinal `16`, with
+`type=event_msg` and `payload.type=token_count`.
+
+This is only the supplied `payload.rate_limits` object, not a verbatim full row;
+token-usage fields and other envelope or payload content are omitted.
+
+```json
+{"limit_id":"codex","limit_name":null,"primary":{"used_percent":35.0,"window_minutes":300,"resets_at":1793035268},"secondary":{"used_percent":21.0,"window_minutes":10080,"resets_at":1793603901},"credits":{"has_credits":false,"unlimited":false,"balance":"0"},"individual_limit":null,"spend_control_reached":null,"plan_type":"plus","rate_limit_reached_type":null}
+```
+
+The maintainer reports that sessions, including `exec --json` invocations,
+create such files and that the `thread.started` ID correlates with session
+lookup; the supplied filename contains
+`01a17891-a93e-7071-ad37-21b587fd4bf3`. This is a reported correlation, not a
+verified universal file-discovery rule or schema guarantee across CLI versions.
+
+This sample identifies a candidate machine-readable format, but account and
+allowance scope association, file correlation, freshness, and error handling
+still require review. It is a timestamped snapshot rather than a live query;
+rereading it cannot refresh its observation age. Other local sessions may
+supply newer observations of external usage, while remote usage or early resets
+may remain invisible without a new event. This non-exhausted sample does not
+establish weekly-exhaustion behavior or permission to retry a blocked call.
+
+## Authorized future polling condition
+
+The maintainer subsequently chose a dedicated asynchronous quota poller using
+`codex exec --json`, separate from evaluation attempts. The specified condition
+is `gpt-6-luna` with effort `none`, minimal nonempty instructions and prompt,
+plugins, tools, and MCP disabled, and a read-only empty working directory.
+This records the requested future condition, not an observed probe, a verified
+pricing comparison, or a validated CLI flag recipe. No additional calls were
+made for this record.
+
+The poller must positively confirm fresh availability for the evaluation's quota
+scope before restarting eligible evaluation attempts; Luna availability does not
+establish capacity for another model. Numeric session reset hints support
+scheduling, while rereading old telemetry cannot establish availability. The
+[quota-monitoring contract](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run)
+owns polling, budgets, cleanup, evidence, and failure requirements.
