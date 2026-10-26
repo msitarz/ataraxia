@@ -9,8 +9,8 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. The remaining unimplemented components below are planned. No
-implementation authorizes model calls. The sibling
+expansion. CLI integration, complete token counting, dispatch, and persistence
+remain planned. No implementation authorizes model calls. The sibling
 [process supervisor](../process-supervisor/README.md) is
 implemented and owns one attempt's process lifecycle; this harness owns plans,
 dispatch policy, and run evidence around that boundary.
@@ -19,8 +19,9 @@ dispatch policy, and run evidence around that boundary.
 
 - The CLI turns ordered options into one validated, frozen plan before any
   Codex process can start.
-- The harness composes exact tracked source bytes and keeps token estimation as
-  a replaceable library port until implementation selects a package.
+- The harness composes exact tracked source bytes and estimates them through a
+  provider-neutral port with a selected, not-yet-implemented ``tiktoken``
+  adapter.
 - An async coordinator owns run order, concurrency, stop latching, retries, and
   not-started accounting while calling the existing supervisor once per
   attempt.
@@ -172,13 +173,23 @@ reference; the runtime module is authoritative.
 
 **TL;DR:** Keep estimation separate from planning and execution.
 
-- A small consumer-owned port accepts exact composed bytes and the requested
-  model and returns an estimate with method, library and tokenizer versions,
-  and compatibility status.
-- The concrete token library is deferred to implementation. A dry-run report
-  contains one estimate for every scheduled call; unsupported model
-  compatibility is an explicit unknown or approximate estimate, never an
-  omitted estimate or billing precision.
+- **Typed wiring implemented:** `script/eval/tokens.py` defines the
+  consumer-owned `TokenEstimator` port, a `TiktokenEstimator` adapter seam,
+  and a pure report builder. The report uses each scheduled call's exact frozen
+  prompt bytes and model, retains repeated positions, and estimates configured
+  instruction bytes separately. Omitted instructions produce no estimate for
+  unavailable automatic system bytes. CLI binding and effective call
+  identities remain explicitly unknown in the dry-run record.
+- The adapter accepts provider-neutral tokenizer-selection and counting
+  functions. Its package leaves currently raise `NotImplementedError`; no
+  `tiktoken` dependency, encoding mapping, token count, or fallback policy is
+  implemented. Injected estimates preserve method, library and tokenizer
+  versions, compatibility, and diagnostic metadata. An explicit unknown
+  selection skips counting and returns `token_count=None`; adapter errors
+  propagate.
+- A dry-run report contains one estimate for every scheduled call. Unsupported
+  model compatibility is explicit unknown or approximate, never an omitted
+  estimate or billing precision.
 - Estimates cover supplied composed context only; unavailable automatic CLI or
   system context is excluded and labeled. If no instructions file is
   configured, the report says Codex defaults are preserved and their automatic
@@ -187,7 +198,8 @@ reference; the runtime module is authoritative.
   it is never folded into the supplied-context count without its basis being
   disclosed.
 - Effects: local computation only. The port cannot call the model CLI or change
-  the frozen prompt.
+  the frozen prompt. This wiring does not establish actual `tiktoken` counts or
+  dry-run CLI behavior.
 
 ### CLI binding and request construction
 
@@ -330,11 +342,12 @@ flowchart LR
 ```
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
-freezer, and pure planner are implemented; the other boxes remain planned. The
-input freezer performs read-only Git and filesystem effects; composition and
-planning are pure. Estimation returns one explicit value for each planned call,
-including an unknown value when compatibility is not known. The dry-run branch
-never resolves or probes the CLI.
+freezer, pure planner, and token-estimation wiring are implemented; CLI
+integration, actual token counting, dispatch, and persistence remain planned.
+The input freezer performs read-only Git and filesystem effects; composition,
+planning, and report assembly are pure. Estimation returns one explicit value
+for each planned call, including an unknown value when compatibility is not
+known. The dry-run branch never resolves or probes the CLI.
 
 ## Type boundary
 
@@ -343,9 +356,10 @@ boundary from which implementation proceeds. Its `model.pyi` and `plan.pyi` are
 historical design references; the active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
-values, persisted record shapes, and pure context composition and scheduling
-are implemented. CLI integration, token estimation, dispatch, persistence, and
-the remaining harness behavior are planned. Private helpers and concrete
+values, persisted record shapes, pure context composition, scheduling, and
+token-estimation wiring are implemented. CLI integration, token-counting
+adapter implementation, dispatch, persistence, and the remaining harness
+behavior are planned. Private helpers and concrete
 persistence formats remain flexible; supervisor outcomes and requests continue
 to use the existing public types.
 
@@ -355,7 +369,7 @@ to use the existing public types.
 | `script/eval/model.py` | Shared validated configuration, plan values, observations, and persisted records. |
 | `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
-| `script/eval/tokens.py` | Local token-estimation port. |
+| `script/eval/tokens.py` | Consumer-owned token-estimation port, selected `tiktoken` adapter seam, and pure dry-run report assembly. |
 | `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
 | `script/eval/__main__.py` | Thin entry point delegating to the CLI composition. |

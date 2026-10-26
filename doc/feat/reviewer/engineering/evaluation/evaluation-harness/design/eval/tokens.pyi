@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Consumer-owned local token-estimation port."""
+"""Historical reviewed port sketch; runtime wiring is in script/eval/tokens.py."""
 
 from typing import Protocol
 
