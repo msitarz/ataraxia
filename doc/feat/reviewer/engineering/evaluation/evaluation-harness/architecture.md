@@ -698,30 +698,37 @@ window and observation, retry assessment, wait and probe lifecycle, and shared
 `ProcessRecord` values have migrated into `script/eval/model.py`. The active
 `script/eval/evidence.py` binds the prepared run context for one adapter
 lifecycle. `EvidenceStoreAdapter` requires all injected leaf dependencies;
-`create_evidence_store()` composes the unfinished default leaves. The adapter
-composes typed identity forwarding with asynchronous
-projection/write ordering. Each submitted operation, including lock waiting,
-projection (which may write multiple raw output artifacts), and append are
-serialized and retained through settlement when its caller is cooperatively
-cancelled. Synchronous injected leaves run off the event loop. A coroutine that
-has not started and submitted its retained task is not yet an operation owned by
-the adapter. The runner must retain and await submitted evidence operations
-during shutdown. The lock is in-memory and serializes only this adapter on its
-event loop; it provides no cross-process coordination. Its storage and
-process-projection leaves still raise
-`NotImplementedError`; durability, exclusivity, and raw artifact semantics
-remain unimplemented leaf obligations. This lifecycle does not claim recovery
-after process termination, `SIGKILL`, or machine failure.
-Runner policy/configuration and AC-9 progress proposals remain design-only.
-The shared base preserves flat attempt fields while permitting probes to reuse
-the process projection.
-`plan.pyi` remains a historical planner
+`create_evidence_store()` supplies the filesystem leaves. The adapter composes
+typed identity forwarding with asynchronous projection/write ordering. Each
+submitted operation, including lock waiting, projection (which may write
+multiple raw output artifacts), and append are serialized and retained through
+settlement when its caller is cooperatively cancelled. Synchronous injected
+leaves run off the event loop. A coroutine that has not started and submitted
+its retained task is not yet an operation owned by the adapter. The runner must
+retain and await submitted evidence operations during shutdown. The lock is
+in-memory and serializes only this adapter on its event loop; it provides no
+cross-process coordination. The filesystem store creates a new output directory,
+accepts destinations outside the context repository or ignored by Git, and
+writes `plan.json` plus optional `instructions.bin` before dispatch. Attempt
+metadata lives in `attempts/<call-id>/attempt-<number>.json`; separate `.stdout`
+and `.stderr` files contain exact observed prefixes, including empty streams.
+Probe lifecycle and settled records, wait transitions, and passive quota
+telemetry append to `events.jsonl`; final accounting is `run.json`. Metadata and
+stream files are published through same-directory temporary files and exclusive
+hard links, then file and directory entries are fsynced. Event appends are
+fsynced. These promises cover ordinary filesystem operation failures, not
+recovery after process termination, `SIGKILL`, machine failure, or concurrent
+writes from a second store/process. This storage layer raises recording errors;
+stopping dispatch and preserving not-started accounting remain runner
+responsibilities. Runner policy/configuration and AC-9 progress proposals remain
+design-only. The shared base preserves flat attempt fields while permitting
+probes to reuse the process projection. `plan.pyi` remains a historical planner
 reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
-token-estimation adapter, and evidence adapter wiring are implemented. CLI
-integration, dispatch, evidence storage/projection leaves, and the remaining
+token-estimation adapter, evidence adapter wiring, and filesystem evidence
+storage/projection are implemented. CLI integration, dispatch, and the remaining
 harness behavior are planned. Do not add a parallel runtime model or change
 supervisor types. Private helpers and concrete persistence formats remain
 flexible; supervisor outcomes and requests continue to use the existing public

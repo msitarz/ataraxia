@@ -1,89 +1,233 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Intent placeholders for exclusive and truthful run evidence."""
+"""Real-filesystem checks for immutable evidence publication."""
+
+from dataclasses import replace
+import json
+from pathlib import Path
+import subprocess
 
 import pytest
 
-
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-3 exclusive output and frozen run evidence",
+from script.eval.evidence import create_evidence_store
+from script.eval.model import (
+    FrozenPlan,
+    InstructionsSnapshot,
+    QuotaProbeEvidence,
+    QuotaProbeStarted,
 )
-def test_run_setup_is_exclusive_and_persists_configuration_before_dispatch() -> None:
+from script.process_supervisor import (
+    AttemptObservation,
+    AttemptRequest,
+    CapturedOutput,
+    Completed,
+)
+from test.script.unit.eval.test_evidence import (
+    attempt_evidence,
+    empty_quota_observation,
+    frozen_plan,
+    quota_probe_request,
+)
+
+
+async def test_run_setup_is_exclusive_and_persists_configuration_before_dispatch(
+    tmp_path: Path,
+) -> None:
     """Observe directory exclusion and durable pre-dispatch plan artifacts."""
     # Given
-    # An existing destination and a separate new destination for a planned run.
+    repository = tmp_path / "context"
+    repository.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.invalid"],
+        cwd=repository,
+        check=True,
+    )
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repository, check=True)
+    (repository / "input.txt").write_text("context")
+    subprocess.run(["git", "add", "input.txt"], cwd=repository, check=True)
+    subprocess.run(["git", "commit", "-qm", "input"], cwd=repository, check=True)
+    plan = FrozenPlan.model_validate(
+        frozen_plan().model_dump() | {"repository_root": repository}
+    )
+    existing = tmp_path / "existing"
+    existing.mkdir()
+    destination = tmp_path / "run"
 
     # When
-    # The evidence store creates the run area before the first supervisor attempt.
+    with pytest.raises(FileExistsError):
+        await create_evidence_store().create(existing, plan)
+    prepared = await create_evidence_store().create(destination, plan)
 
     # Then
-    # Existing output is refused and the new area retains the frozen plan/settings.
-    pass
+    assert prepared.plan_artifact.is_file()
+    assert (
+        json.loads(prepared.plan_artifact.read_text())["head_commit"]
+        == plan.head_commit
+    )
+    with pytest.raises(FileExistsError):
+        await create_evidence_store().create(destination, plan)
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-3 exact output, provenance, and partial evidence",
-)
-def test_attempt_records_preserve_raw_streams_and_missing_observations() -> None:
+async def test_run_setup_stages_exact_instruction_bytes(tmp_path: Path) -> None:
+    """Retain optional instructions as an exact binary artifact."""
+    # Given
+    original = tmp_path / "instructions.md"
+    content = b"rules\x00\xff\n"
+    original.write_bytes(content)
+    plan = frozen_plan()
+    config = plan.configuration.model_copy(update={"instructions_file_path": original})
+    plan = plan.model_copy(
+        update={
+            "configuration": config,
+            "instructions_file": InstructionsSnapshot(
+                repository_path="instructions.md",
+                commit_blob_sha="blob-id",
+                content_sha256="content-hash",
+                content=content,
+            ),
+        }
+    )
+
+    # When
+    prepared = await create_evidence_store().create(tmp_path / "run", plan)
+    original.write_bytes(b"changed")
+
+    # Then
+    assert prepared.model_instructions_file is not None
+    assert prepared.model_instructions_file.read_bytes() == content
+
+
+async def test_attempt_records_preserve_raw_streams_and_missing_observations(
+    tmp_path: Path,
+) -> None:
     """Keep empty, absent, partial, and failed evidence distinct and immutable."""
     # Given
-    # Controlled attempts produce empty, partial, unavailable, or exact raw streams.
+    store = create_evidence_store()
+    await store.create(tmp_path / "run", frozen_plan())
+    source = attempt_evidence()
 
     # When
-    # The evidence store finalizes attempt records and their stream artifacts.
+    record = await store.record_attempt("run-1", "call-1", 0, 1, source, None)
 
     # Then
-    # Provenance, settings, cleanup, timestamps, and available telemetry stay truthful.
-    pass
+    assert record.elapsed_basis == "supervisor_observation"
+    assert record.argv == source.request.argv
+    assert record.stdout_artifact is not None
+    assert Path(record.stdout_artifact).read_bytes() == b"out"
+    assert record.stderr_artifact is not None
+    assert Path(record.stderr_artifact).read_bytes() == b"err"
+    persisted = tmp_path / "run" / "attempts" / "call-1" / "attempt-1.json"
+    assert json.loads(persisted.read_text())["retry_assessment"] is None
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason=(
-        "not implemented: AC-3 attempt and probe artifacts retain shared "
-        "process evidence"
-    ),
-)
-def test_attempt_and_probe_records_preserve_shared_process_artifacts() -> None:
+async def test_empty_and_unavailable_streams_remain_distinct(tmp_path: Path) -> None:
+    """Observed empty streams get artifacts while absent output stays absent."""
+    # Given
+    store = create_evidence_store()
+    await store.create(tmp_path / "run", frozen_plan())
+    original = attempt_evidence()
+    assert isinstance(original.outcome, Completed)
+    cleanup = original.outcome.observation.cleanup
+    empty = replace(
+        original,
+        outcome=Completed(
+            AttemptObservation(CapturedOutput(b"", b""), 1.0, cleanup), 0
+        ),
+    )
+    unavailable = replace(
+        original,
+        outcome=Completed(AttemptObservation(None, 1.0, cleanup), 0),
+    )
+
+    # When
+    empty_record = await store.record_attempt("run-1", "call-empty", 0, 1, empty, None)
+    absent_record = await store.record_attempt(
+        "run-1", "call-absent", 1, 1, unavailable, None
+    )
+
+    # Then
+    assert empty_record.stdout_artifact is not None
+    assert Path(empty_record.stdout_artifact).read_bytes() == b""
+    assert empty_record.stderr_artifact is not None
+    assert Path(empty_record.stderr_artifact).read_bytes() == b""
+    assert absent_record.stdout_artifact is None
+    assert absent_record.stderr_artifact is None
+
+
+async def test_attempt_and_probe_records_preserve_shared_process_artifacts(
+    tmp_path: Path,
+) -> None:
     """Verify both persisted record types expose the supervised outcomes."""
     # Given
-    # A settled evaluation attempt and separately supervised quota probe, each
-    # with its own request, timing, termination, cleanup, captured streams,
-    # usage telemetry, and diagnostic evidence.
+    store = create_evidence_store()
+    await store.create(tmp_path / "run", frozen_plan())
+    process = attempt_evidence()
+    request = quota_probe_request()
+    await store.record_quota_probe_event(
+        QuotaProbeStarted(kind="started", request=request)
+    )
 
     # When
-    # The evidence store persists the attempt and projects settled probe
-    # evidence, then the caller reads their persisted records and raw artifacts.
+    settled = await store.record_quota_probe_settled(
+        QuotaProbeEvidence(
+            request=request,
+            process=process,
+            quota_state="unknown",
+            observation=empty_quota_observation(),
+            classification_basis="source unavailable",
+        )
+    )
 
     # Then
-    # Both records preserve process outcome, request settings, timing and
-    # termination, cleanup, usage, error type/diagnostic, and independently
-    # retrievable stdout/stderr. The attempt retains its call/position/attempt
-    # identity; the probe retains its probe identity and quota assessment
-    # without taking an attempt number.
-    pass
+    assert settled.record.request == request
+    assert settled.record.quota_state == "unknown"
+    assert settled.record.argv == process.request.argv
+    assert settled.record.stdout_artifact is not None
+    assert Path(settled.record.stdout_artifact).read_bytes() == b"out"
+    assert settled.record.stderr_artifact is not None
+    assert Path(settled.record.stderr_artifact).read_bytes() == b"err"
+    events = (tmp_path / "run" / "events.jsonl").read_text().splitlines()
+    assert [json.loads(line)["event"]["kind"] for line in events] == [
+        "started",
+        "settled",
+    ]
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-2 attempted supervisor limits remain in evidence",
-)
-def test_attempt_record_retains_effective_deadline_grace_and_output_limit() -> None:
+async def test_attempt_record_retains_effective_deadline_grace_and_output_limit(
+    tmp_path: Path,
+) -> None:
     """Trace request policy even for limits that are not CLI arguments."""
     # Given
-    # A planned run with explicit execution, cleanup, grace, and output limits.
+    store = create_evidence_store()
+    await store.create(tmp_path / "run", frozen_plan())
+    original = attempt_evidence()
+    request = AttemptRequest(
+        argv=("/usr/bin/codex", "exec"),
+        cwd=tmp_path,
+        timeout_seconds=9.0,
+        cleanup_timeout_seconds=3.0,
+        grace_seconds=1.0,
+        output_limit_bytes=128,
+        stdin="devnull",
+    )
+    evidence = replace(original, request=request)
 
     # When
-    # The actual AttemptRequest runs and its evidence is persisted.
+    record = await store.record_attempt("run-1", "call-1", 0, 1, evidence, None)
 
     # Then
-    # The record retains the limits used for that attempt, not later config values.
-    pass
+    assert record.argv == request.argv
+    assert record.cwd == str(tmp_path)
+    assert (
+        record.timeout_seconds,
+        record.cleanup_timeout_seconds,
+        record.grace_seconds,
+    ) == (
+        request.timeout_seconds,
+        request.cleanup_timeout_seconds,
+        request.grace_seconds,
+    )
+    assert record.output_limit_bytes == 128
 
 
 @pytest.mark.xfail(
@@ -105,25 +249,40 @@ def test_request_uses_staged_instructions_after_original_file_changes() -> None:
     pass
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-3 output destination containment and exclusivity",
-)
-def test_new_output_requires_external_or_ignored_location_before_any_launch() -> None:
+async def test_new_output_requires_external_or_ignored_location_before_any_launch(
+    tmp_path: Path,
+) -> None:
     """Check destination policy before any artifacts or model process can exist."""
     # Given
-    # New destinations inside the input repository (ignored and nonignored) and
-    # outside it, plus already-existing destinations.
+    repository = tmp_path / "context"
+    repository.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repository, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.invalid"],
+        cwd=repository,
+        check=True,
+    )
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=repository, check=True)
+    (repository / ".gitignore").write_text("ignored/\n")
+    (repository / "input.txt").write_text("context")
+    subprocess.run(
+        ["git", "add", ".gitignore", "input.txt"], cwd=repository, check=True
+    )
+    subprocess.run(["git", "commit", "-qm", "input"], cwd=repository, check=True)
+    plan = FrozenPlan.model_validate(
+        frozen_plan().model_dump() | {"repository_root": repository}
+    )
 
     # When
-    # The evidence store prepares a run directory before supervisor dispatch.
+    with pytest.raises(ValueError, match="Git-ignored"):
+        await create_evidence_store().create(repository / "unignored", plan)
+    ignored = await create_evidence_store().create(repository / "ignored" / "run", plan)
+    external = await create_evidence_store().create(tmp_path / "external", plan)
 
     # Then
-    # A new nonignored in-repository path is refused before writes or launch;
-    # new ignored in-repository and external paths are accepted; existing paths
-    # remain rejected without replacement.
-    pass
+    assert ignored.output_directory.is_dir()
+    assert external.output_directory.is_dir()
+    assert not (repository / "unignored").exists()
 
 
 @pytest.mark.xfail(
