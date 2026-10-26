@@ -15,6 +15,17 @@ remain planned. No implementation authorizes model calls. The sibling
 implemented and owns one attempt's process lifecycle; this harness owns plans,
 dispatch policy, and run evidence around that boundary.
 
+The planned optional quota-wait and model-capacity retry amendments are owned by
+[AC-6](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run) and
+[AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff).
+The coordinator and typed sketch below predate it: default-zero retries refer to
+ordinary infrastructure retries, and the no-resume rule excludes restart
+recovery, not explicitly enabled continuation in the live runner. Detection and
+reset-source interfaces remain unresolved pending the prerequisite captures
+named in the Work contract; capacity recognition also remains unresolved. Typed
+architecture must be reassessed against both amendments before further runner
+modules. This document does not define their interfaces.
+
 ## TL;DR
 
 - The CLI turns ordered options into one validated, frozen plan before any
