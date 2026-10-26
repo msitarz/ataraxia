@@ -2,8 +2,6 @@
 """Shared immutable values and persisted boundary records."""
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from hashlib import sha256
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -28,6 +26,7 @@ type SettingValue = str | int | float | bool | None
 type PositiveSeconds = Annotated[float, Field(gt=0, allow_inf_nan=False)]
 type NonnegativeSeconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 type NonnegativeBytes = Annotated[int, Field(ge=0)]
+type NonnegativeIndex = Annotated[int, Field(ge=0)]
 
 
 class StrictModel(BaseModel):
@@ -125,20 +124,6 @@ class SourceSnapshot(StrictModel):
     content_sha256: str
     content: bytes
 
-    @model_validator(mode="after")
-    def content_digest_matches(self) -> SourceSnapshot:
-        """Bind source provenance to its exact bytes.
-
-        Returns:
-            The validated source snapshot.
-
-        Raises:
-            ValueError: The recorded digest does not match the content.
-        """
-        if self.content_sha256 != sha256(self.content).hexdigest():
-            raise ValueError("content_sha256 must match content")
-        return self
-
 
 class InstructionsSnapshot(StrictModel):
     """Tracked instruction input, separate from generic context files."""
@@ -147,20 +132,6 @@ class InstructionsSnapshot(StrictModel):
     commit_blob_sha: str
     content_sha256: str
     content: bytes
-
-    @model_validator(mode="after")
-    def content_digest_matches(self) -> InstructionsSnapshot:
-        """Bind instruction provenance to its exact bytes.
-
-        Returns:
-            The validated instruction snapshot.
-
-        Raises:
-            ValueError: The recorded digest does not match the content.
-        """
-        if self.content_sha256 != sha256(self.content).hexdigest():
-            raise ValueError("content_sha256 must match content")
-        return self
 
 
 @dataclass(frozen=True)
@@ -177,27 +148,11 @@ class PlannedCall(StrictModel):
     """One ordered matrix position; identity awaits runtime binding."""
 
     position: int = Field(ge=0)
-    context_indices: tuple[int, ...]
+    context_indices: tuple[NonnegativeIndex, ...]
     model: str
     effort: str
     prompt_sha256: str
     prompt: bytes
-
-    @model_validator(mode="after")
-    def prompt_digest_matches(self) -> PlannedCall:
-        """Bind the stored prompt digest to the exact composed bytes.
-
-        Returns:
-            The validated planned call.
-
-        Raises:
-            ValueError: The digest does not match or an index is negative.
-        """
-        if self.prompt_sha256 != sha256(self.prompt).hexdigest():
-            raise ValueError("prompt_sha256 must match prompt")
-        if any(index < 0 for index in self.context_indices):
-            raise ValueError("context_indices must be nonnegative")
-        return self
 
 
 class FrozenPlan(StrictModel):
@@ -215,92 +170,6 @@ class FrozenPlan(StrictModel):
     boundary_bytes: tuple[bytes, ...]
     instructions_file: InstructionsSnapshot | None
     calls: tuple[PlannedCall, ...]
-
-    @model_validator(mode="after")
-    def validate_plan_relationships(self) -> FrozenPlan:
-        """Bind calls to configured contexts and instruction choice.
-
-        Returns:
-            The validated plan.
-
-        Raises:
-            ValueError: The plan's configured contexts or boundaries are inconsistent.
-        """
-        directory_positions = tuple(
-            option.position
-            for option in self.configuration.ordered_options
-            if isinstance(option, DirectoryOption)
-        )
-        self._validate_snapshot_coverage(directory_positions)
-        if len(self.boundary_bytes) != len(directory_positions) - 1:
-            raise ValueError(
-                "boundary_bytes must contain one value between each directory"
-            )
-        self._validate_call_contexts(directory_positions)
-        self._validate_instruction_choice()
-        return self
-
-    def _validate_snapshot_coverage(self, directory_positions: tuple[int, ...]) -> None:
-        """Require at least one source snapshot for each configured directory.
-
-        Raises:
-            ValueError: A configured directory has no snapshots or vice versa.
-        """
-        positions = tuple(snapshot.directory_position for snapshot in self.snapshots)
-        groups = tuple(dict.fromkeys(positions))
-        if positions != tuple(sorted(positions)) or groups != directory_positions:
-            raise ValueError("snapshots must cover every configured directory position")
-
-    def _validate_call_contexts(self, directory_positions: tuple[int, ...]) -> None:
-        """Require every planned call to select one source per directory.
-
-        Raises:
-            ValueError: There are no calls or a call context is invalid.
-        """
-        if not self.calls:
-            raise ValueError("planned calls must not be empty")
-        for call in self.calls:
-            self._validate_call_context(call, self.snapshots, directory_positions)
-
-    @staticmethod
-    def _validate_call_context(
-        call: PlannedCall,
-        snapshots: tuple[SourceSnapshot, ...],
-        directory_positions: tuple[int, ...],
-    ) -> None:
-        """Validate one call's ordered source selection across directories.
-
-        Raises:
-            ValueError: Indices are invalid or omit/reorder a configured directory.
-        """
-        indices = call.context_indices
-        if len(indices) != len(directory_positions):
-            raise ValueError("planned calls must select one context per directory")
-        if any(index >= len(snapshots) for index in indices):
-            raise ValueError("planned call context index is outside snapshots")
-        if len(set(indices)) != len(indices):
-            raise ValueError("planned call context indices must be unique")
-        positions = tuple(snapshots[index].directory_position for index in indices)
-        if positions != directory_positions:
-            raise ValueError(
-                "planned call contexts must follow configured directory order"
-            )
-
-    def _validate_instruction_choice(self) -> None:
-        """Keep configured instruction selection and its snapshot in agreement.
-
-        Raises:
-            ValueError: Configured instructions are missing or unexpectedly present.
-        """
-        if self.configuration.instructions_file_path is None:
-            if self.instructions_file is not None:
-                raise ValueError(
-                    "instructions snapshot requires a configured instructions file"
-                )
-        elif self.instructions_file is None:
-            raise ValueError(
-                "configured instructions file requires an instructions snapshot"
-            )
 
 
 @dataclass(frozen=True)
@@ -413,38 +282,6 @@ class AttemptRecord(StrictModel):
     error_type: str | None
     diagnostic: str | None
 
-    @model_validator(mode="after")
-    def validate_observation(self) -> AttemptRecord:
-        """Keep saved execution bounds and elapsed-time basis consistent.
-
-        Returns:
-            The validated attempt record.
-
-        Raises:
-            ValueError: Grace exceeds cleanup or elapsed data contradicts its basis.
-        """
-        if self.grace_seconds >= self.cleanup_timeout_seconds:
-            raise ValueError("grace_seconds must be less than cleanup_timeout_seconds")
-        _parse_utc_timestamp(self.started_at_utc, "started_at_utc")
-        if self.ended_at_utc is not None:
-            _parse_utc_timestamp(self.ended_at_utc, "ended_at_utc")
-        flow_outcomes = {
-            "cancelled": "cancelled",
-            "raised": "unexpected_exception",
-        }
-        expected_outcome = flow_outcomes.get(self.control_flow)
-        if expected_outcome is not None and self.outcome_kind != expected_outcome:
-            raise ValueError("outcome_kind must agree with control_flow")
-        if self.control_flow == "returned" and self.outcome_kind in set(
-            flow_outcomes.values()
-        ):
-            raise ValueError("outcome_kind must agree with control_flow")
-        elapsed_was_observed = self.elapsed_seconds is not None
-        basis_has_observation = self.elapsed_basis == "supervisor_observation"
-        if elapsed_was_observed != basis_has_observation:
-            raise ValueError("elapsed_seconds must match elapsed_basis")
-        return self
-
 
 class CallRecord(StrictModel):
     """Persisted state and source identity for one scheduled call."""
@@ -462,27 +299,6 @@ class CallRecord(StrictModel):
     effective_settings_sha256: str
     attempts: tuple[AttemptRecord, ...]
 
-    @model_validator(mode="after")
-    def validate_call_relationships(self) -> CallRecord:
-        """Bind source identities and attempts to this scheduled call.
-
-        Returns:
-            The validated call record.
-
-        Raises:
-            ValueError: Source identities or attempt ownership disagree.
-        """
-        if len(self.source_paths) != len(self.source_sha256):
-            raise ValueError("source_paths and source_sha256 must have equal lengths")
-        for attempt in self.attempts:
-            if (
-                attempt.run_id != self.run_id
-                or attempt.call_id != self.call_id
-                or attempt.position != self.position
-            ):
-                raise ValueError("attempt run, call, and position must match its call")
-        return self
-
 
 class RunRecord(StrictModel):
     """Persisted summary of one harness run."""
@@ -496,25 +312,6 @@ class RunRecord(StrictModel):
     cli_version: str | None
     effective_settings: tuple[tuple[str, SettingValue], ...]
     calls: tuple[CallRecord, ...]
-
-    @model_validator(mode="after")
-    def validate_run_relationships(self) -> RunRecord:
-        """Require child calls to belong to this run at unique positions.
-
-        Returns:
-            The validated run record.
-
-        Raises:
-            ValueError: A child call belongs to another run or duplicates a position.
-        """
-        positions: set[int] = set()
-        for call in self.calls:
-            if call.run_id != self.run_id:
-                raise ValueError("call run_id must match its run record")
-            if call.position in positions:
-                raise ValueError("run call positions must be unique")
-            positions.add(call.position)
-        return self
 
 
 def _validate_separator_escapes(value: str) -> None:
@@ -532,21 +329,3 @@ def _validate_separator_escapes(value: str) -> None:
         if index + 1 == len(value) or value[index + 1] not in supported:
             raise ValueError("separator contains an unknown or dangling escape")
         index += 2
-
-
-def _parse_utc_timestamp(value: str, field: str) -> datetime:
-    """Parse a timezone-aware ISO timestamp whose offset is exactly UTC.
-
-    Returns:
-        The parsed UTC datetime.
-
-    Raises:
-        ValueError: The value is malformed, naive, or has a non-UTC offset.
-    """
-    try:
-        timestamp = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ValueError(f"{field} must be an ISO UTC timestamp") from exc
-    if timestamp.utcoffset() != timedelta(0):
-        raise ValueError(f"{field} must have a UTC offset")
-    return timestamp

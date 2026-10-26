@@ -118,15 +118,17 @@ the pure planner.
   `ConfigDict(extra="forbid", strict=True, frozen=True)`; nested settings are
   tuples and immutable scalar or byte values rather than mutable mappings.
 - Configuration validation enforces unique increasing option positions,
-  separator placement and supported escapes, and numeric bounds. Frozen plans
-  bind each call to one in-range snapshot from every configured directory, in
-  directory order, and require instruction configuration and snapshots to
-  agree. Persisted records bind calls and attempts by run, call, and position;
-  source paths and digests remain parallel. Timestamps must be UTC ISO values,
-  while monotonic elapsed time owns duration because wall-clock timestamps can
-  move backwards.
-- Validators check value constraints only. Git checks, file reads, estimates,
-  directory creation, and process execution belong to explicit operations.
+  separator placement and supported escapes, required matrix and output
+  settings, and numeric bounds. Typed immutable plan and record schemas retain
+  their declared field shapes and serialize the producer's values losslessly;
+  they do not recheck producer relationships or recompute producer digests.
+  Attempt timestamps and outcome fields preserve raw observations, while
+  monotonic elapsed time remains the duration source because wall-clock time
+  can move backwards.
+- The external input operation owns Git checks, selected-file checks, and
+  snapshot digest calculation. Filesystem effects, estimates, directory
+  creation, and process execution also belong to explicit operations rather
+  than model validators.
 - A scheduled position has no effective-call identity until execution resolves
   its CLI binding and invocation settings. The effective identity then includes
   ordered content, exact instruction bytes, model, effort, executable/version,
