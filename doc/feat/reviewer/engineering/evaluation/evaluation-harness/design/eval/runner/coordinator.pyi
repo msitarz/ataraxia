@@ -63,11 +63,13 @@ class Coordinator:
         availability after the active-evaluation settlement barrier.
 
         Append a probe-start event before calling the port. The port returns an
-        ephemeral ``QuotaProbeEvidence`` containing supervisor objects; pass it
-        to the evidence store, which writes raw streams as artifacts and returns
-        a scalar ``QuotaProbeSettled`` projection with request settings, cleanup,
-        source association, timestamps, observation, and available usage. Never
-        serialize supervisor exceptions or arbitrary runtime objects. Probe IDs
+        ephemeral ``QuotaProbeEvidence`` containing shared ``ProcessEvidence``
+        and a separate quota assessment; pass it to the evidence store, which
+        writes raw streams as artifacts and returns a ``QuotaProbeSettled`` with
+        shared ``ProcessRecord`` fields and logical probe/quota metadata. Process
+        outcome (including timeout, overflow, cancellation, error, or no launch)
+        never implies quota availability. Never serialize supervisor exceptions
+        or arbitrary runtime objects. Probe IDs
         are independent of evaluation attempt numbers. The monitor stops launching
         probes at an explicit operational budget limit. With no configured
         count cap, caller-owned operational limits still govern use. A valid

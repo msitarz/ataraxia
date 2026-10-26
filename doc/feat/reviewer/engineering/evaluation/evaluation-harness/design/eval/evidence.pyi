@@ -40,7 +40,7 @@ class EvidenceStore(Protocol):
         evidence: AttemptEvidence,
         /,
     ) -> AttemptRecord:
-        """Persist an explicitly associated attempt without replacing evidence."""
+        """Project shared process evidence with call and attempt identity."""
         ...
 
     def record_wait_event(self, event: WaitEvent, /) -> None:
@@ -59,11 +59,11 @@ class EvidenceStore(Protocol):
     def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
-        """Persist a scalar projection and raw stream artifacts after settlement.
+        """Persist a shared process projection plus quota assessment.
 
-        Do not serialize supervisor exceptions or arbitrary runtime objects. The
-        returned event contains only persisted fields and artifact references;
-        probe IDs never consume evaluation attempt numbers.
+        Store raw streams as artifacts; project exceptions to type and
+        diagnostic. The returned record combines common process fields with
+        probe identity and quota state, without consuming attempt numbers.
         """
         ...
 

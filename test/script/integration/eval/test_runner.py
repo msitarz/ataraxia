@@ -507,16 +507,17 @@ def test_pre_pause_available_probe_cannot_reopen_new_quota_pause() -> None:
 def test_unknown_probe_or_probe_event_write_failure_stops_before_resumption() -> None:
     """Require positive fresh evidence and durable poll lifecycle records."""
     # Given
-    # A malformed, stale, unscoped, mismatched, or infrastructure-failed probe,
-    # an absent required Codex window, or a failure appending its start or
-    # settled event.
+    # A malformed, stale, unscoped, mismatched, timed-out, cancelled,
+    # infrastructure-failed, or not-launched probe, an absent required Codex
+    # window, or a failure appending its start or settled event.
 
     # When
     # The monitor receives the result while calls are paused or ready to dispatch.
 
     # Then
     # It latches stop, marks the run incomplete, preserves captured probe and
-    # cleanup evidence when available, and never treats exit zero as availability.
+    # cleanup and process diagnostics when available, and never treats exit zero
+    # as availability.
     pass
 
 
@@ -535,8 +536,8 @@ def test_probe_output_limit_exceeded_is_preserved_and_never_reopens_dispatch() -
     # The supervisor settles the probe with its output-limit evidence and cleanup.
 
     # Then
-    # Persist `output_limit_exceeded` and the bounded raw stream/cleanup evidence,
-    # latch stop, and do not retry, reinterpret it as quota exhaustion, or resume.
+    # Persist process `output_limit_exceeded`, cleanup, and bounded raw streams
+    # with quota state unknown; latch stop without retrying or resuming.
     pass
 
 

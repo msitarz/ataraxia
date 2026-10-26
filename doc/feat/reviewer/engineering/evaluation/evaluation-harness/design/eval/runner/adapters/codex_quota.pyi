@@ -78,5 +78,5 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
     ) -> QuotaProbeEvidence:
-        """Build fixed probe request, call supervisor, then correlate its session."""
+        """Return shared process evidence and a separately classified observation."""
         ...

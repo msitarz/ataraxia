@@ -340,11 +340,15 @@ gating retries and stopping globally on unsafe outcomes.
   or malformed data fails closed. This ordering and freshness boundary awaits
   verified source rules.
 - Each active check has a separate `QuotaProbeId` and append-only start and
-  settled evidence with a scalar supervisor projection (including raw stream
-  artifact references and cleanup), request settings, timestamps, sanitized
-  source coordinate, normalized observation, and available usage. Passive
-  evaluation telemetry is also appended separately with its call and attempt
-  identity. Neither is an evaluation attempt record; probes consume no
+  settled evidence. The settled record combines shared `ProcessRecord` fields
+  (request settings, process start/end, timing basis, exit/termination, cleanup,
+  raw-stream artifact references, usage, and error type/diagnostic) with probe
+  identity, quota state, and observation. `ProcessRecord.outcome_kind` keeps
+  timeout, overflow, cancellation, errors, no observation, and no launch
+  distinct; none implies availability. The probe's coordinator
+  `poll_started_at_utc` remains distinct from supervisor process start time.
+  Passive evaluation telemetry is also appended separately with its call and
+  attempt identity. Neither is an evaluation attempt record; probes consume no
   evaluation attempt number, measurement, or semaphore slot. A configured
   probe-count cap counts every active check. A known exhausted observation is a
   normal paused result and schedules another cadence check. Unknown or
@@ -580,9 +584,12 @@ known. The dry-run branch never resolves or probes the CLI.
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
 boundary from which implementation proceeds. The pre-existing declarations in
 `model.pyi` are a historical snapshot of the current value boundary; its new
-quota, classification, and wait declarations are proposals awaiting review and
-migration into `script/eval/model.py`. They are not implemented runtime types
-or a competing active contract. `plan.pyi` remains a historical planner
+quota, classification, wait, and shared `ProcessRecord` declarations are
+proposals awaiting review and migration into `script/eval/model.py`. The shared
+base preserves current attempt-record fields while allowing probes to reuse the
+supervisor projection; it does not change the runtime record yet. These
+proposals are not implemented runtime types or a competing active contract.
+`plan.pyi` remains a historical planner
 reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated

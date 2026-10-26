@@ -5,7 +5,10 @@ The pre-existing value declarations correspond to the current
 ``script/eval/model.py`` runtime contract. Quota, classification, and wait
 declarations are proposals only: they are not runtime types or an active
 shadowing interface. Review and migrate accepted fields into that one runtime
-module before implementation.
+module before implementation. ``AttemptEvidence`` retains its current field
+shape and is aliased as process-neutral ``ProcessEvidence`` for probe
+composition. ``ProcessRecord`` is a proposed shared base for persisted attempt
+and probe projections; the runtime model remains unchanged until migration.
 """
 
 from dataclasses import dataclass
@@ -29,6 +32,16 @@ type EstimateBasis = Literal["supplied_context", "instructions_file"]
 type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
+type ProcessOutcomeKind = Literal[
+    "completed",
+    "timed_out",
+    "output_limit_exceeded",
+    "infrastructure_failure",
+    "cancelled",
+    "unexpected_exception",
+    "no_observation",
+    "not_started",
+]
 type SettingValue = str | int | float | bool | None
 type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unknown"]
 type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
@@ -49,16 +62,6 @@ type WaitEventKind = Literal["started", "recheck", "finished"]
 type WaitId = str
 QuotaProbeId = NewType("QuotaProbeId", str)
 type QuotaProbeReason = Literal["periodic", "reset_hint"]
-type QuotaProbeOutcome = Literal[
-    "available",
-    "quota_exhausted",
-    "output_limit_exceeded",
-    "unknown",
-    "infrastructure_failure",
-    "unsafe_cleanup",
-    "uncertain_acquisition",
-    "cancelled",
-]
 
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
@@ -188,6 +191,8 @@ class QuotaProbeRequest(StrictModel):
     ``pause_wait_id`` is absent for active-period monitoring. Such a probe may
     be durably recorded after a pause begins, but cannot end that newer pause;
     only a probe started for its current pause ID can confirm resumption.
+    ``poll_started_at_utc`` is coordinator time; the paired ``ProcessEvidence`` has a
+    distinct supervisor-start timestamp, projected as ``ProcessRecord.started_at_utc``.
     """
 
     run_id: RunId
@@ -197,41 +202,55 @@ class QuotaProbeRequest(StrictModel):
     pause_wait_id: WaitId | None
     reason: QuotaProbeReason
     scheduled_at_utc: str
+    poll_started_at_utc: str
+
+@dataclass(frozen=True)
+class AttemptEvidence:
+    """Process-level supervisor evidence; evaluation identity is associated later."""
+
+    control_flow: ControlFlow
+    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
+    error_type: str | None
+    diagnostic: str | None
+    request: AttemptRequest
     started_at_utc: str
+    ended_at_utc: str | None
+    usage_telemetry: bytes | None
+
+type ProcessEvidence = AttemptEvidence
 
 @dataclass(frozen=True)
 class QuotaProbeEvidence:
-    """In-memory supervisor outcome passed to the evidence projection boundary.
+    """Probe assessment composed with shared ephemeral process evidence.
 
-    The supervisor objects and exceptions remain ephemeral here. A successful
-    exit or old source record is not positive availability; the scoped
-    observation must also be fresh and source-backed.
+    Supervisor objects and exceptions stay inside ``process``. A completed
+    process does not imply quota availability; the scoped observation must also
+    be fresh and source-backed. Non-successful process kinds leave quota state
+    unknown or unavailable while retaining their original process outcome.
     """
 
     request: QuotaProbeRequest
-    outcome_kind: QuotaProbeOutcome
-    supervisor_request: AttemptRequest
-    control_flow: ControlFlow
-    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
-    elapsed_seconds: float | None
-    elapsed_basis: Literal["supervisor_observation", "unavailable"]
-    ended_at_utc: str | None
+    process: ProcessEvidence
+    quota_state: QuotaState
     observation: QuotaObservation | None
     classification_basis: str | None
-    usage_telemetry: bytes | None
-    diagnostic: str | None
 
-class QuotaProbeRecord(StrictModel):
-    """Persisted scalar projection with stream artifacts and safe cleanup data.
+class ProcessRecord(StrictModel):
+    """Shared serializable projection of one supervised process outcome.
 
-    This record contains no live supervisor object or exception. The evidence
-    store projects those into artifact references, scalars, and the existing
-    cleanup/signal records before persistence.
+    It carries no run/call/attempt or probe identity. The evidence boundary
+    projects live supervisor objects into scalar outcomes, cleanup records, and
+    stream artifact references; exceptions remain represented by type and
+    diagnostic rather than serialized objects. ``started_at_utc`` is when the
+    supervisor process attempt starts, distinct from a probe's coordinator-side
+    ``poll_started_at_utc``. ``no_observation`` and ``not_started`` remain
+    distinct process outcomes; quota ``unknown`` and ``unavailable`` are stored
+    separately on ``QuotaProbeRecord.quota_state``.
     """
 
-    request: QuotaProbeRequest
-    outcome_kind: QuotaProbeOutcome
+    outcome_kind: ProcessOutcomeKind
     control_flow: ControlFlow
+    started_at_utc: str
     ended_at_utc: str | None
     argv: tuple[str, ...]
     cwd: str
@@ -246,10 +265,21 @@ class QuotaProbeRecord(StrictModel):
     cleanup: CleanupRecord | None
     stdout_artifact: str | None
     stderr_artifact: str | None
+    usage_telemetry: bytes | None
+    error_type: str | None
+    diagnostic: str | None
+
+class QuotaProbeRecord(ProcessRecord):
+    """Process projection plus logical probe identity and quota assessment.
+
+    Unsafe cleanup and uncertain acquisition are determined from the shared
+    cleanup/process fields; they never replace the quota state.
+    """
+
+    request: QuotaProbeRequest
+    quota_state: QuotaState
     observation: QuotaObservation | None
     classification_basis: str | None
-    usage_telemetry: bytes | None
-    diagnostic: str | None
 
 class QuotaProbeStarted(StrictModel):
     """Durable probe-start event written before supervisor dispatch."""
@@ -410,19 +440,6 @@ class PreparedEvidence:
     plan_artifact: Path
     model_instructions_file: Path | None
 
-@dataclass(frozen=True)
-class AttemptEvidence:
-    """In-memory supervisor outcome associated with its planned call."""
-
-    control_flow: ControlFlow
-    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
-    error_type: str | None
-    diagnostic: str | None
-    request: AttemptRequest
-    started_at_utc: str
-    ended_at_utc: str | None
-    usage_telemetry: bytes | None
-
 class RunRecord(StrictModel):
     run_id: RunId
     repository_root: str
@@ -449,39 +466,13 @@ class CallRecord(StrictModel):
     effective_settings_sha256: str
     attempts: tuple[AttemptRecord, ...]
 
-class AttemptRecord(StrictModel):
+class AttemptRecord(ProcessRecord):
+    """Shared process projection plus evaluation identity and retry assessment."""
+
     run_id: RunId
     call_id: CallId
     position: int
     attempt_number: AttemptNumber
-    control_flow: ControlFlow
-    outcome_kind: Literal[
-        "completed",
-        "timed_out",
-        "output_limit_exceeded",
-        "infrastructure_failure",
-        "cancelled",
-        "unexpected_exception",
-        "no_observation",
-    ]
-    started_at_utc: str
-    ended_at_utc: str | None
-    argv: tuple[str, ...]
-    cwd: str
-    timeout_seconds: float
-    cleanup_timeout_seconds: float
-    grace_seconds: float
-    output_limit_bytes: int
-    elapsed_seconds: float | None
-    elapsed_basis: Literal["supervisor_observation", "unavailable"]
-    exit_status: int | None
-    termination_reason: str | None
-    cleanup: CleanupRecord | None
-    stdout_artifact: str | None
-    stderr_artifact: str | None
-    usage_telemetry: bytes | None
-    error_type: str | None
-    diagnostic: str | None
     retry_assessment: RetryAssessment | None
 
 class SignalRecord(StrictModel):
