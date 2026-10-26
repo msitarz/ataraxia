@@ -10,6 +10,7 @@ from script.eval.model import (
     DirectoryOption,
     FrozenInputs,
     HarnessConfig,
+    InstructionsSnapshot,
     PlannedCall,
     SourceSnapshot,
 )
@@ -23,7 +24,7 @@ from script.eval.plan import (
 )
 
 
-def _configuration() -> HarnessConfig:
+def _configuration(*, instructions_path: Path | None = None) -> HarnessConfig:
     return HarnessConfig(
         ordered_options=(DirectoryOption(position=0, path=Path("context")),),
         models=("model-a",),
@@ -35,7 +36,7 @@ def _configuration() -> HarnessConfig:
         cleanup_timeout_seconds=1.0,
         grace_seconds=0.0,
         output_limit_bytes=0,
-        instructions_file_path=None,
+        instructions_file_path=instructions_path,
     )
 
 
@@ -48,7 +49,14 @@ def _inputs() -> FrozenInputs:
         content_sha256=sha256(content).hexdigest(),
         content=content,
     )
-    return FrozenInputs(Path("/repo"), "commit-sha", (source,), None)
+    instruction_content = b"instruction bytes\x00"
+    instructions = InstructionsSnapshot(
+        repository_path="context/instructions.txt",
+        commit_blob_sha="instructions-blob",
+        content_sha256=sha256(instruction_content).hexdigest(),
+        content=instruction_content,
+    )
+    return FrozenInputs(Path("/repo"), "commit-sha", (source,), instructions)
 
 
 class _RecordingGrouper(InputGrouper):
@@ -67,13 +75,17 @@ class _RecordingComposer(ContextComposer):
     def __init__(self, events: list[str], result: ComposedContexts) -> None:
         self.events = events
         self.result = result
-        self.received: tuple[GroupedInputs, HarnessConfig] | None = None
+        self.received: tuple[FrozenInputs, GroupedInputs, HarnessConfig] | None = None
 
     def compose(
-        self, grouped: GroupedInputs, config: HarnessConfig, /
+        self,
+        inputs: FrozenInputs,
+        grouped: GroupedInputs,
+        config: HarnessConfig,
+        /,
     ) -> ComposedContexts:
         self.events.append("compose")
-        self.received = (grouped, config)
+        self.received = (inputs, grouped, config)
         return self.result
 
 
@@ -94,7 +106,7 @@ class _RecordingScheduler(CallScheduler):
 def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
     # Given
     inputs = _inputs()
-    config = _configuration()
+    config = _configuration(instructions_path=Path("context/instructions.txt"))
     events: list[str] = []
     grouped = GroupedInputs(snapshots=((0, (0,)),))
     composed = ComposedContexts(boundary_bytes=(), prompts=(((0,), b"source"),))
@@ -122,16 +134,29 @@ def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
     # Then
     assert events == ["group", "compose", "schedule"]
     assert grouper.received == (inputs, config)
-    assert composer.received == (grouped, config)
+    assert composer.received == (inputs, grouped, config)
+    assert composer.received is not None and composer.received[0] is inputs
+    assert composer.received[0].sources[0].content == b"source"
+    assert composer.received[0].instructions_file is inputs.instructions_file
+    assert composer.received[0].instructions_file is not None
+    assert composer.received[0].instructions_file.content == b"instruction bytes\x00"
     assert scheduler.received == (composed, config)
     assert plan.run_id == "caller-run-id"
     assert plan.configuration is config
-    assert plan.repository_root == inputs.repository_root
-    assert plan.head_commit == inputs.head_commit
-    assert plan.snapshots == inputs.sources
-    assert plan.boundary_bytes == composed.boundary_bytes
     assert plan.instructions_file is inputs.instructions_file
-    assert plan.calls == (call,)
+    assert (
+        plan.repository_root,
+        plan.head_commit,
+        plan.snapshots,
+        plan.boundary_bytes,
+        plan.calls,
+    ) == (
+        inputs.repository_root,
+        inputs.head_commit,
+        inputs.sources,
+        composed.boundary_bytes,
+        (call,),
+    )
 
 
 def test_plan_propagates_leaf_failure_without_running_later_steps() -> None:
@@ -140,7 +165,11 @@ def test_plan_propagates_leaf_failure_without_running_later_steps() -> None:
 
     class FailingComposer(ContextComposer):
         def compose(
-            self, grouped: GroupedInputs, config: HarnessConfig, /
+            self,
+            inputs: FrozenInputs,
+            grouped: GroupedInputs,
+            config: HarnessConfig,
+            /,
         ) -> ComposedContexts:
             events.append("compose")
             raise ValueError("composition failed")
@@ -152,19 +181,25 @@ def test_plan_propagates_leaf_failure_without_running_later_steps() -> None:
         scheduler=_RecordingScheduler(events, ()),
     )
 
-    # When / Then
-    with pytest.raises(ValueError, match="composition failed"):
+    # When
+    with pytest.raises(ValueError) as error:
         builder.plan(_inputs(), _configuration())
+
+    # Then
     assert events == ["group", "compose"]
+    assert str(error.value) == "composition failed"
 
 
 def test_default_plan_leaf_fails_visibly_until_implemented() -> None:
     # Given
     builder = PurePlanBuilder("run")
 
-    # When / Then
-    with pytest.raises(NotImplementedError, match="source grouping is not implemented"):
+    # When
+    with pytest.raises(NotImplementedError) as error:
         builder.plan(_inputs(), _configuration())
+
+    # Then
+    assert str(error.value) == "source grouping is not implemented yet"
 
 
 @pytest.mark.xfail(

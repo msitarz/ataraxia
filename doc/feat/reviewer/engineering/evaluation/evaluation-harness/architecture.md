@@ -109,9 +109,12 @@ the pure planner.
 
 **Wired skeleton:**
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py) composes typed
-grouping, context-composition, and call-scheduling ports in order, then
-assembles a `FrozenPlan` while forwarding the validated configuration and
-frozen input provenance. Its public `PlanBuilder.plan(FrozenInputs,
+grouping, context-composition, and call-scheduling ports in order. The context
+composer receives both the grouped source indices and the complete
+`FrozenInputs`, so it can read the exact frozen source and instruction bytes
+without hidden state or I/O. The builder then assembles a `FrozenPlan` while
+forwarding the validated configuration and frozen input provenance. Its public
+`PlanBuilder.plan(FrozenInputs,
 HarnessConfig)` boundary is pure. A caller supplies `run_id` to the concrete
 builder, so identity creation remains caller-owned and planning does not read a
 clock, generate randomness, or perform I/O. Default leaf implementations raise

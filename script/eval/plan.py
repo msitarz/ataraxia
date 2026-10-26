@@ -33,9 +33,13 @@ class ContextComposer(Protocol):
     """Compose each source selection into exact prompt bytes."""
 
     def compose(
-        self, grouped: GroupedInputs, config: HarnessConfig, /
+        self,
+        inputs: FrozenInputs,
+        grouped: GroupedInputs,
+        config: HarnessConfig,
+        /,
     ) -> ComposedContexts:
-        """Return boundary bytes and composed contexts in stable order."""
+        """Compose from frozen source bytes and return contexts in stable order."""
 
 
 class CallScheduler(Protocol):
@@ -61,7 +65,11 @@ class _UnimplementedInputGrouper:
 
 class _UnimplementedContextComposer:
     def compose(
-        self, grouped: GroupedInputs, config: HarnessConfig, /
+        self,
+        inputs: FrozenInputs,
+        grouped: GroupedInputs,
+        config: HarnessConfig,
+        /,
     ) -> ComposedContexts:
         raise NotImplementedError(
             "separator decoding and prompt composition are not implemented yet"
@@ -106,7 +114,7 @@ class PurePlanBuilder(PlanBuilder):
             The plan assembled from caller-supplied identities and collaborators.
         """
         grouped = self._grouper.group(inputs, config)
-        composed = self._composer.compose(grouped, config)
+        composed = self._composer.compose(inputs, grouped, config)
         calls = self._scheduler.schedule(composed, config)
         return FrozenPlan(
             run_id=self._run_id,
