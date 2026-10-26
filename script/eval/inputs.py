@@ -212,15 +212,27 @@ class GitRepositoryReader:
             Whether the entry is a regular file selected as input.
 
         Raises:
-            ValueError: The entry is a symlink or is not a regular file/directory.
+            ValueError: The entry is unsafe, not regular, or classification failed.
         """
-        if entry.is_symlink():
-            if entry.is_dir():
+        try:
+            is_symlink = entry.is_symlink()
+            is_directory = (
+                entry.is_dir() if is_symlink else entry.is_dir(follow_symlinks=False)
+            )
+            is_file = (
+                not is_symlink
+                and not is_directory
+                and entry.is_file(follow_symlinks=False)
+            )
+        except OSError as exc:
+            raise ValueError(f"cannot classify context entry {path}: {exc}") from exc
+        if is_symlink:
+            if is_directory:
                 return False
             raise ValueError(f"symbolic-link input is not allowed: {path}")
-        if entry.is_dir(follow_symlinks=False):
+        if is_directory:
             return False
-        if not entry.is_file(follow_symlinks=False):
+        if not is_file:
             raise ValueError(f"context entries must be regular files: {path}")
         return True
 

@@ -736,6 +736,27 @@ def test_freezing_refuses_symbolic_link_entries(tmp_path: Path) -> None:
     assert worktree_status(repository) == before
 
 
+def test_freezing_reports_filesystem_error_classifying_loop_symlink(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repository = make_repository(tmp_path / "repo")
+    context = repository / "context"
+    context.mkdir()
+    (context / "tracked.txt").write_bytes(b"tracked\n")
+    loop = context / "self-loop"
+    loop.symlink_to(loop.name)
+    commit(repository)
+
+    # When / Then
+    with pytest.raises(
+        ValueError, match=r"cannot classify context entry .*self-loop"
+    ) as error:
+        GitRepositoryReader().freeze(config(context))
+
+    assert isinstance(error.value.__cause__, OSError)
+
+
 def test_freezing_accepts_symlinked_directory_and_parent_alias(
     tmp_path: Path,
 ) -> None:
