@@ -22,3 +22,24 @@ def test_effective_identity_tracks_effective_inputs_not_caching() -> None:
     # Identical effective inputs keep identity; changed inputs change it. Run and
     # position association preserves duplicates; no cache reuse is implied.
     pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-9 progress projection and disjoint accounting",
+)
+def test_progress_projection_partitions_calls_attempts_and_probes() -> None:
+    """Derive one truthful snapshot without combining different work units."""
+    # Given
+    # Queued and stopped calls, concurrent active calls, per-call capacity
+    # waits, successful and failed calls, retries, and quota probes.
+
+    # When
+    # The coordinator projects its plan and lifecycle into one progress snapshot.
+
+    # Then
+    # Call states partition the frozen plan; attempt and probe counts remain
+    # separate; one backoff does not hide other active calls; retries do not add
+    # calls; and a successful process is never a reviewer PASS claim.
+    pass

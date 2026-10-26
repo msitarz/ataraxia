@@ -109,6 +109,7 @@ class HarnessConfig(StrictModel):
     cleanup_timeout_seconds: float
     grace_seconds: float
     output_limit_bytes: int
+    quiet: bool = False
     retry_limit: int = 0
     retry_nonzero_exit: bool = False
     quota_wait_enabled: bool = False
@@ -134,12 +135,15 @@ class QuotaScope(StrictModel):
 class QuotaWindowObservation(StrictModel):
     """One provider-specific blocking window with explicit source evidence.
 
+    ``usage_percent`` is normalized to used percent in [0, 100] only when the
+    source supplies used or remaining percentage; otherwise it stays unknown.
     ``source`` and ``diagnostic`` are sanitized descriptors, never raw account
     identity or credentials.
     """
 
     window_id: QuotaWindowId
     state: QuotaState
+    usage_percent: float | None
     reset_at_utc: str | None
     source_observed_at_utc: str | None
     source_sequence: int | None

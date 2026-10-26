@@ -3,12 +3,13 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Literal, Protocol
 
 from script.process_supervisor import AttemptRequest, AttemptResult, DispatchStop
 
 from ..model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
+    AttemptNumber,
     CallId,
     FrozenPlan,
     HarnessConfig,
@@ -18,10 +19,73 @@ from ..model import (  # ruff: ignore[relative-imports]
     QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
+    QuotaWindowId,
     RetryAssessment,
+    RetryClass,
     RunId,
     SettingValue,
 )
+
+type ProgressRunPhase = Literal["running", "quota_paused", "stopping", "final"]
+type ProgressFinalStatus = Literal[
+    "success", "failure", "cancelled", "incomplete_evidence"
+]
+
+@dataclass(frozen=True)
+class ProgressCounts:
+    """Disjoint frozen-plan calls and cumulative launched work counts."""
+
+    calls_queued: int
+    calls_stopped_not_started: int
+    calls_active: int
+    calls_retry_wait: int
+    calls_succeeded: int
+    calls_failed: int
+    attempts_started: int
+    retries_started: int
+    attempts_active: int
+    attempts_succeeded: int
+    attempts_failed: int
+    attempts_cancelled: int
+    probes_started: int
+    probes_active: int
+    probes_completed: int
+    probes_failed: int
+    probes_cancelled: int
+
+@dataclass(frozen=True)
+class CallWait:
+    """One call-local retry wait; concurrent calls may remain active."""
+
+    call_id: CallId
+    reason: Literal["infrastructure", "capacity"]
+    attempt_number: AttemptNumber
+    elapsed_seconds: float
+    remaining_seconds: float | None
+
+@dataclass(frozen=True)
+class ProgressSnapshot:
+    """Immutable consumer projection of coordinator state and observations."""
+
+    run_id: RunId
+    phase: ProgressRunPhase
+    final_status: ProgressFinalStatus | None
+    counts: ProgressCounts
+    retry_reasons: tuple[tuple[RetryClass, int], ...]
+    call_waits: tuple[CallWait, ...]
+    quota_observation: QuotaObservation | None
+    quota_window_ages_seconds: tuple[tuple[QuotaWindowId, float | None], ...]
+
+class ProgressSink(Protocol):
+    """Present snapshots only; expected output failure disables the sink."""
+
+    def publish(self, snapshot: ProgressSnapshot, /) -> None:
+        """Present an immutable snapshot without changing run outcomes.
+
+        Implementations handle ordinary presentation errors locally. They must
+        not suppress cancellation, KeyboardInterrupt, or SystemExit.
+        """
+        ...
 
 @dataclass(frozen=True)
 class CliBinding:

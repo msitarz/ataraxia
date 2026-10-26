@@ -10,6 +10,7 @@ from .ports import (
     CliBindingResolver,
     EffectiveCall,
     OutcomeClassifier,
+    ProgressSink,
     QuotaStatusReader,
     Runtime,
 )
@@ -23,6 +24,7 @@ __all__ = (
     "Coordinator",
     "EffectiveCall",
     "OutcomeClassifier",
+    "ProgressSink",
     "QuotaStatusReader",
     "Runtime",
 )

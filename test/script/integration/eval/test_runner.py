@@ -233,6 +233,30 @@ def test_capacity_retry_uses_saturated_full_jitter_and_rechecks_quota_gate() -> 
     run=False,
     strict=True,
     reason=(
+        "not implemented: AC-9 evidence writes precede progress facts and "
+        "presentation errors are isolated"
+    ),
+)
+def test_progress_waits_for_durable_facts_and_sink_failure_isolated() -> None:
+    """Keep durable evidence authoritative while presentation is best effort."""
+    # Given
+    # Fake evidence, progress, quota, and process collaborators with an evidence
+    # writer that can fail and a sink that can reject output.
+
+    # When
+    # A call settles, a retry or quota wait begins, and a later evidence write fails.
+
+    # Then
+    # Evidence-required facts publish only after successful writes; sink failure
+    # changes no result or retry; persistence failure stays fatal and incomplete;
+    # the original exception and cancellation semantics are preserved.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
         "not implemented: AC-6/AC-7 cancellation takes precedence over quota "
         "and capacity waits"
     ),
