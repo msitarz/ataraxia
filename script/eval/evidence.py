@@ -528,7 +528,12 @@ def _project_attempt(
         The immutable metadata projection for this attempt.
     """
     projection = _project_process(evidence)
-    base = prepared.output_directory / "attempts" / _identity_segment(call_id)
+    base = (
+        prepared.output_directory
+        / "attempts"
+        / f"position-{position}"
+        / _identity_segment(call_id)
+    )
     stdout, stderr = _publish_streams(
         base / f"attempt-{attempt_number}", projection.observation
     )
@@ -551,6 +556,7 @@ def _append_attempt(prepared: PreparedEvidence, record: AttemptRecord, /) -> Non
     _write_new_file(
         prepared.output_directory
         / "attempts"
+        / f"position-{record.position}"
         / _identity_segment(record.call_id)
         / f"attempt-{record.attempt_number}.json",
         _json_bytes(record),

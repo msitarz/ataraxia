@@ -711,23 +711,23 @@ cross-process coordination. The filesystem store creates a new output directory,
 accepts destinations outside the context repository or ignored by Git, and
 writes `plan.json` plus optional `instructions.bin` before dispatch. Attempt
 metadata lives in
-`attempts/<sha256-call-id>/attempt-<number>.json`; probe artifacts use a
-`sha256-probe-id` directory. Stream suffixes are appended to the complete
-identity-based stem, so dots in an identity cannot change the suffix. Original
-identities remain in metadata. Separate `.stdout` and `.stderr` files contain
-exact observed prefixes, including empty streams.
-Probe lifecycle and settled records, wait transitions, and passive quota
-telemetry append to `events.jsonl`; final accounting is `run.json`. Metadata and
-stream files are published through same-directory temporary files and exclusive
-hard links, then file and directory entries are fsynced. Event appends are
-fsynced. These promises cover ordinary filesystem operation failures, not
-recovery after process termination, `SIGKILL`, machine failure, or concurrent
-writes from a second store/process. This storage layer raises recording errors;
-stopping dispatch and preserving not-started accounting remain runner
-responsibilities. Runner policy/configuration and AC-9 progress proposals remain
-design-only. The shared base preserves flat attempt fields while permitting
-probes to reuse the process projection. `plan.pyi` remains a historical planner
-reference. The active implementations are
+`attempts/position-<position>/<sha256-call-id>/attempt-<number>.json`; probe
+artifacts use a `sha256-probe-id` directory. Stream suffixes are appended to the
+complete identity-based stem, so dots in an identity cannot change the suffix.
+Original identities remain in metadata. Separate `.stdout` and `.stderr` files
+contain exact observed prefixes, including empty streams. Probe lifecycle and
+settled records, wait transitions, and passive quota telemetry append to
+`events.jsonl`; final accounting is `run.json`. Metadata and stream files are
+published through same-directory temporary files and exclusive hard links, then
+file and directory entries are fsynced. Event appends are fsynced. These
+promises cover ordinary filesystem operation failures, not recovery after
+process termination, `SIGKILL`, machine failure, or concurrent writes from a
+second store/process. This storage layer raises recording errors; stopping
+dispatch and preserving not-started accounting remain runner responsibilities.
+Runner policy/configuration and AC-9 progress proposals remain design-only. The
+shared base preserves flat attempt fields while permitting probes to reuse the
+process projection. `plan.pyi` remains a historical planner reference. The
+active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,

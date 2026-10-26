@@ -2,6 +2,7 @@
 """Real-filesystem checks for immutable evidence publication."""
 
 from dataclasses import replace
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -236,10 +237,10 @@ async def test_supervisor_outcomes_keep_their_observed_evidence(
         assert record.ended_at_utc is None
 
 
-async def test_attempt_and_probe_records_preserve_shared_process_artifacts(
+async def test_probe_records_preserve_process_artifacts(
     tmp_path: Path,
 ) -> None:
-    """Verify both persisted record types expose the supervised outcomes."""
+    """Verify persisted probe records expose the supervised outcomes."""
     # Given
     store = create_evidence_store()
     await store.create(tmp_path / "run", frozen_plan())
@@ -396,6 +397,62 @@ async def test_opaque_call_ids_cannot_escape_or_alias_artifact_paths(
     assert dotted_path.resolve().is_relative_to(prepared.output_directory)
     assert first_path != dotted_path
     assert first_path.read_bytes() == dotted_path.read_bytes() == b"out"
+
+
+async def test_repeated_call_id_at_distinct_positions_has_separate_attempts(
+    tmp_path: Path,
+) -> None:
+    """Persist repeated effective call IDs in their scheduled positions."""
+    # Given
+    store = create_evidence_store()
+    prepared = await store.create(tmp_path / "run", frozen_plan())
+    evidence = attempt_evidence()
+
+    # When
+    first = await store.record_attempt("run-1", "same-call", 0, 1, evidence, None)
+    second = await store.record_attempt("run-1", "same-call", 1, 1, evidence, None)
+
+    # Then
+    assert first.position == 0
+    assert second.position == 1
+    assert first.stdout_artifact != second.stdout_artifact
+    for record in (first, second):
+        assert record.stdout_artifact is not None
+        metadata = Path(record.stdout_artifact).parent / "attempt-1.json"
+        assert json.loads(metadata.read_text())["position"] == record.position
+        assert Path(record.stdout_artifact).is_relative_to(prepared.output_directory)
+
+
+async def test_partial_attempt_publication_preserves_conflict_and_reports_orphan(
+    tmp_path: Path,
+) -> None:
+    """Keep a conflicting stream intact and expose partial publication honestly."""
+    # Given
+    store = create_evidence_store()
+    prepared = await store.create(tmp_path / "run", frozen_plan())
+    call_id = "partial-write"
+    position = 4
+    stem = (
+        prepared.output_directory
+        / "attempts"
+        / f"position-{position}"
+        / hashlib.sha256(call_id.encode()).hexdigest()
+        / "attempt-1"
+    )
+    stderr = Path(f"{stem}.stderr")
+    stderr.parent.mkdir(parents=True)
+    stderr.write_bytes(b"existing stderr")
+
+    # When
+    with pytest.raises(FileExistsError):
+        await store.record_attempt(
+            "run-1", call_id, position, 1, attempt_evidence(), None
+        )
+
+    # Then
+    assert stderr.read_bytes() == b"existing stderr"
+    assert Path(f"{stem}.stdout").read_bytes() == b"out"
+    assert not Path(f"{stem}.json").exists()
 
 
 async def test_finalization_and_attempt_collision_preserve_original_artifacts(
