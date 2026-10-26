@@ -11,8 +11,13 @@ from .model import (
     CallId,
     FrozenPlan,
     PreparedEvidence,
+    QuotaProbeEvidence,
+    QuotaProbeLifecycleInput,
+    QuotaProbeSettled,
+    QuotaTelemetryEvent,
     RunId,
     RunRecord,
+    WaitEvent,
 )
 
 class EvidenceStore(Protocol):
@@ -35,7 +40,41 @@ class EvidenceStore(Protocol):
         evidence: AttemptEvidence,
         /,
     ) -> AttemptRecord:
-        """Persist an explicitly associated attempt without replacing evidence."""
+        """Project shared process evidence with call and attempt identity."""
+        ...
+
+    def record_wait_event(self, event: WaitEvent, /) -> None:
+        """Durably append wait start, quota recheck, and end events.
+
+        The quota start carries its scoped provider-neutral window observation
+        and selected reset; the coordinator records each event as it happens.
+        A final run summary alone is not sufficient evidence of a live wait.
+        """
+        ...
+
+    def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
+        """Append one scalar lifecycle transition before its effect.
+
+        This handles scheduled, actual-start, and prelaunch-cancellation events.
+        It does not accept settled process evidence or perform artifact
+        projection.
+        """
+        ...
+
+    def record_quota_probe_settled(
+        self, evidence: QuotaProbeEvidence, /
+    ) -> QuotaProbeSettled:
+        """Project live process evidence and append the settled event.
+
+        Store raw streams as artifacts and project exceptions to type and
+        diagnostic. Return the shared process projection with probe identity
+        and quota assessment. This effect is separate from scalar lifecycle
+        appends and consumes no evaluation attempt number.
+        """
+        ...
+
+    def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+        """Append a provider-neutral observation under call/attempt identity."""
         ...
 
     def finalize(self, record: RunRecord, /) -> None:

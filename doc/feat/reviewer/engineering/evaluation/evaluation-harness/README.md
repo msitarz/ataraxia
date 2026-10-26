@@ -277,27 +277,88 @@ restarting the runner or repeating completed calls.
   finite ordinary infrastructure retry allowance, including when that allowance
   is zero; every attempt still counts toward any applicable finite caller-owned
   experiment budget or attempt cap.
-- Available reset information and rechecks account for both exhausted five-hour
-  and weekly windows; waiting uses the latest relevant exhausted-window reset
-  before rechecking, without assuming a reset guarantees renewed availability.
-- Unknown or malformed quota observations, unavailable reset information, or an
-  inconclusive recheck must fail or report an explicit inability to continue
-  safely rather than silently causing unbounded waiting or blanket retry.
-- A supplied cumulative wait bound stops further quota waiting when exhausted;
-  the run reports the remaining blocked and not-started calls truthfully.
-- Raw evidence for every attempt is retained, together with quota recognition
-  reasons, available reset information and its source, wait and resume UTC
-  timestamps, monotonic wait durations, recheck observations, and the reason
-  waiting ended, including cancellation or a reached bound.
-- `SIGINT`, `SIGTERM`, or task cancellation during waiting stops the run without
-  retry, using AC-4's stop latch and cleanup guarantees; unsafe cleanup,
-  uncertain acquisition, overflow, or recording failure also forbids resumption.
-- The runner never switches models or accounts, purchases capacity, or requests
-  quota resets to continue, and never scans prior output or recovers across a
-  runner restart.
-- Controlled checks verify global dispatch pausing, cleanup and slot release,
-  both-window reset handling, eligible retry preservation, finite wait bounds,
-  malformed or unknown observations, and cancellation without model calls.
+- With quota waiting enabled, a lifecycle-managed `asyncio` task polls quota
+  availability while execution is active or paused, using a configurable finite
+  positive interval and at most one probe in flight.
+- A consumer-owned asynchronous quota-polling port exposes provider-neutral
+  availability observations to the coordinator, which owns cadence, task
+  lifecycle, cancellation, and dispatch gates without importing a Codex adapter.
+- The Codex adapter owns separate supervised `codex exec --json` probes, never
+  blocked evaluations repurposed as probes; its fixed probe condition is
+  `gpt-6-luna`, effort `none`, minimal nonempty instructions and prompt,
+  disabled plugins, tools, and MCP, and a read-only empty working directory.
+- The exact unattended CLI recipe and effective restrictions must be validated
+  before implementation claims them; the model choice is user-specified, not a
+  verified pricing claim, and this contract authorizes no live calls now.
+- The adapter binds probe and telemetry sources to the same Codex quota scope
+  as evaluation requests; generic orchestration launches no CLI directly.
+- Each probe uses the existing supervisor's finite execution and cleanup
+  deadlines and output limit, outside evaluation semaphore slots but bounded
+  by the single-probe limit, stop latch, and caller operational budget.
+- Probe dispatch and failures follow this explicit polling policy rather than
+  consuming evaluation infrastructure retry allowances; unknown observations,
+  malformed data, scope mismatch, or infrastructure errors stop new dispatch,
+  end monitoring, and mark the run incomplete with inability to continue, never
+  availability or an invented reset.
+- Probes are explicit potentially billable operations: configuration and usage
+  guidance disclose their consumption, and every probe counts separately toward
+  the caller's authorized operational budget. Enabling `--wait-for-quota`
+  authorizes quota probes; an optional finite nonnegative integer probe budget
+  caps them when supplied, with zero permitting no probes and omission adding
+  no harness probe-count cap. Caller operational limits still apply.
+- The Codex adapter ingests session telemetry after each evaluation attempt and
+  probe, correlating the source with its `thread.started` ID; concrete file
+  lookup, quota-scope association, interpretation, and source validation must be
+  reviewed before use; the core receives provider-neutral observations only.
+- Telemetry retains producer timestamps and source coordinates; reading a
+  snapshot again never refreshes its age, and stale, unknown, or missing data
+  cannot fabricate availability.
+- Numeric reset hints cover both exhausted five-hour and weekly windows, using
+  the latest relevant exhausted reset as a hint; periodic checks can detect
+  earlier availability, while a future hint can wake a check before the next
+  interval. Past or repeated hints cannot create an immediate polling loop.
+- A hint reaching its time never authorizes evaluation dispatch. Only a fresh
+  positive availability confirmation for the same quota scope reopens dispatch;
+  the source association and freshness rules remain implementation
+  prerequisites.
+- A probe's Luna availability establishes no other model's capacity; AC-7
+  governs model-capacity failures separately. Usage between checks can exhaust
+  quota again, so later attempt failures still follow this policy.
+- Evaluation retry eligibility still requires confidently no semantic result,
+  safe cleanup, preserved frozen inputs, and applicable caller budgets; probes
+  never turn failed evaluations into success or replace the selected model.
+- After exhaustion, active evaluations settle and their evidence is persisted
+  before any new probe or evaluation resumption; no probe launches during this
+  settlement. An already-running probe remains supervised and must safely
+  settle and persist its evidence. Unsafe cleanup globally stops dispatch, and
+  probe output and event persistence also gate resumption.
+- A supplied cumulative quota-wait bound or probe-budget limit stops further
+  waiting or probing when exhausted and reports blocked and not-started calls
+  truthfully; default-off quota waiting causes no extra probes or session reads,
+  and dry run performs neither CLI probes nor session-log reads.
+- Raw probe stdout and stderr, request settings, start and end timestamps,
+  termination and cleanup, classification basis, thread/source association,
+  producer observation age, numeric reset hints, scheduled and actual check
+  times, wait durations and reasons, and available usage and cost are retained
+  separately from evaluation measurements; unknown usage or cost stays unknown.
+- Wait, poll, observation, and end events are durably appended as they occur;
+  a final summary alone does not account for monitoring, and recording failure
+  stops dispatch and forbids resumption.
+- `SIGINT`, `SIGTERM`, task cancellation, or a latched stop cancels active
+  probes, awaits bounded cleanup, and joins the monitoring task without retry;
+  unsafe probe cleanup or uncertain acquisition stops the entire run under AC-4.
+- Normal run completion also ends and joins monitoring after settling any probe
+  and persisting its evidence; no background task survives the runner.
+- Async core ports and filesystem adapters must not block the event loop while
+  reading telemetry; waits hold no evaluation slot or sleeping CLI subprocess.
+- The runner never switches evaluation models or accounts, purchases capacity,
+  or requests quota resets; its explicitly configured probe model does not
+  substitute for an evaluation model, and restart recovery remains excluded.
+- Controlled checks verify active and paused polling, after-attempt ingestion,
+  single-probe bounds, reset and periodic wake scheduling, stale and unknown
+  refusal, scope association, budgets, persistence gates, slot release, probe
+  cleanup and monitor joining, and fresh-confirmation-only resumption without
+  making model calls.
 
 ### **AC-7 TODO** Optional model-capacity retries use bounded backoff
 
@@ -341,6 +402,8 @@ failures while preserving the original call and its evidence.
 - Evidence retains classification basis, retry index, base, cap, computed jitter
   bound, sampled wait, actual monotonic wait duration, and wait-end reason and
   attempt outcome, without replacing previous attempts.
+- Capacity wait start and end events are persisted as they occur; a failed wait
+  event write forbids retry.
 - Controlled checks verify classification refusal, no-result eligibility,
   default-zero and finite allowances, caller limits, saturated exponential
   bounds and jitter sampling, zero-delay yielding, slot release, independent
@@ -397,19 +460,21 @@ other runner components, corpus preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.
 
-Quota waiting is a contract amendment only. Its detection and reset-information
-source interface remains unresolved and is an implementation prerequisite. The
-maintainer supplied an [exhausted five-hour quota capture](quota-capture.md)
-with exec JSONL, separate stderr, exit status, CLI version, and a separate
-interactive `/status` observation. It does not resolve the machine-readable
-detection and reset source; that source still needs investigation before its
-interface is defined. An app-server schema does not establish the exec schema.
-This amendment authorizes no probe calls, typed-boundary changes, BDD wiring, or
-quota-wait implementation.
+Quota monitoring is a contract amendment only. The maintainer supplied an
+[exhausted five-hour quota capture and session telemetry excerpt](quota-capture.md).
+The excerpt identifies a candidate numeric reset source, but file correlation,
+account and allowance association, freshness, and failure handling still require
+review. The authorized future probe condition is recorded there; its unattended
+recipe and positive availability evidence also remain prerequisites. An
+app-server schema does not establish the exec schema. The architecture, proposed
+typed boundaries, and intent-only BDD scenarios now describe this polling
+amendment; they establish no runtime behavior. No live probes, quota
+implementation, or model calls are authorized by this amendment.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for
 AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
-recognition also remains an unresolved implementation prerequisite. The quota
-and capacity amendments require typed-architecture reassessment before further
-runner modules; this contract change defines no typed boundaries or
-implementation.
+recognition also remains an unresolved implementation prerequisite. The
+architecture records consumer-owned classifier and quota-status ports with
+explicit unknown outcomes; their concrete recognition and reset adapters remain
+undefined until evidence verifies their sources. No runner implementation or
+model calls are authorized by this contract amendment.

@@ -5,9 +5,11 @@ Read this file when writing, changing, or reviewing an acceptance test, after
 
 ## What an acceptance test covers
 
-An acceptance test checks the promise the shipped command makes to a user. It
+An acceptance test checks the promise a shipped command makes to a user. It
 runs in a separate process and observes exit status, stdout, stderr, and files
-left behind. Acceptance tests live in `test/ataraxia/acceptance`.
+left behind. Product-command acceptance tests live in
+`test/ataraxia/acceptance`; script-command acceptance tests live in
+`test/script/acceptance`.
 
 Keep them focused on distinct user-visible flows.
 

@@ -20,7 +20,7 @@ process. Keep higher-level tests for behavior that lower levels cannot prove.
 | --- | --- | --- | --- |
 | Unit | `test/ataraxia/unit`, `test/script/unit`, `example` | one function, class, or node through its public interface | [Unit tests](testing-unit.md) |
 | Integration | `test/ataraxia/integration`, `test/script/integration`, `test/make/integration` | real components or external tools across a boundary | [Integration tests](testing-integration.md) |
-| Acceptance | `test/ataraxia/acceptance` | the shipped command as a user runs it | [Acceptance tests](testing-acceptance.md) |
+| Acceptance | `test/ataraxia/acceptance`, `test/script/acceptance` | a shipped product or script command as a user runs it | [Acceptance tests](testing-acceptance.md) |
 
 - Choose tests from the changed behavior and existing coverage.
 - Reuse suitable existing tests; an acceptance criterion does not automatically
