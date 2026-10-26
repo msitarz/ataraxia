@@ -33,33 +33,54 @@ type ProgressFinalStatus = Literal[
 
 @dataclass(frozen=True)
 class ProgressCounts:
-    """Disjoint planned-call states and dispatched-work outcome counts.
+    """Disjoint call states and separate attempt and probe counts.
 
-    Queued means not yet dispatched while the run is active; it may be gated
-    by concurrency or quota. Stopped-not-started means the stop latch prevents
-    dispatch. Evidence-pending means an outcome is known in memory but its
-    required durable write failed, so no terminal outcome is claimed. Attempt
-    and probe evidence-pending counts follow the same rule. ``attempts_started``
-    counts invocations dispatched through ``AttemptCall``; it does not imply
-    supervisor acquisition or launch of an OS process. ``probes_started`` has
-    the same dispatched-invocation meaning.
+    Attributes:
+        calls_queued: Planned calls awaiting dispatch while the run is active.
+            A call may be waiting for concurrency or quota.
+        calls_stopped_not_started: Calls never dispatched because stopping
+            prevents further dispatch.
+        calls_active: Calls with work currently in progress.
+        calls_retry_wait: Calls waiting for a retry.
+        calls_evidence_pending: Calls whose outcome is known in memory, but
+            whose required durable evidence write failed.
+        calls_succeeded: Calls with a successfully settled attempt.
+        calls_failed: Calls with a settled unsuccessful outcome.
+        calls_cancelled: Calls ended by cancellation.
+        attempts_started: Attempt invocations dispatched through ``AttemptCall``.
+            This does not mean the supervisor acquired or launched an OS process.
+        retries_started: Dispatched retry invocations, included in
+            ``attempts_started``.
+        attempts_active: Dispatched attempts still in progress.
+        attempts_evidence_pending: Attempt outcomes known in memory, but with
+            a failed required durable evidence write.
+        attempts_succeeded: Attempts with zero exit and safe process completion;
+            this does not mean reviewer approval.
+        attempts_failed: Settled, unsuccessful, non-cancelled attempts.
+        attempts_cancelled: Attempts ended by cancellation.
+        probes_started: Probe invocations dispatched; this does not imply OS
+            process launch.
+        probes_active: Dispatched probes still in progress.
+        probes_evidence_pending: Probe outcomes known in memory, but with a
+            failed required durable evidence write.
+        probes_completed: Safely settled operational checks with a conclusive
+            available or exhausted quota state. A recognized provider rate-limit
+            response mapped to exhausted is conclusive.
+        probes_failed: Probes with unknown or malformed state, timeout,
+            overflow, infrastructure failure, or an unsafe process outcome.
+        probes_cancelled: Probes ended by cancellation.
 
-    For a plan of ``N`` calls,
-    ``N == calls_queued + calls_stopped_not_started + calls_active +
-    calls_retry_wait + calls_evidence_pending + calls_succeeded +
-    calls_failed + calls_cancelled``.
-    Attempt outcome counts are disjoint: success means zero exit with safe
-    process completion, not reviewer approval; failure means a settled
-    non-cancelled unsuccessful attempt; cancellation has its own count. Probe
-    counts are likewise disjoint: completed means a safely settled operational
-    check with a conclusive available or exhausted quota state, including a
-    recognized provider rate-limit response mapped to exhausted; failed means
-    unknown or malformed state, timeout, overflow, infrastructure failure, or
-    unsafe process outcome; cancellation is separate. Evidence-pending belongs
-    to none of these terminal outcome counts. Dispatched attempt counts
-    partition across active, evidence-pending, and terminal outcomes.
-    ``retries_started`` is a subset of ``attempts_started``; retries add
-    attempts, never calls.
+    Counting rules:
+        * Call states partition planned calls: queued, stopped-not-started,
+          active, retry-wait, evidence-pending, succeeded, failed, or cancelled.
+        * Evidence-pending is not a terminal outcome; it records a failed write
+          of required durable evidence.
+        * Attempt and probe outcome counts are disjoint. Evidence-pending is
+          separate from active and terminal outcomes.
+        * Each dispatched attempt is active, evidence-pending, succeeded,
+          failed, or cancelled. Probe counts use the same partition, with
+          completed in place of succeeded.
+        * Retries add attempts, never calls.
     """
 
     calls_queued: int
