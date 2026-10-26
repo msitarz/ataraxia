@@ -9,33 +9,36 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. CLI integration, complete token counting, dispatch, and persistence
-remain planned. No implementation authorizes model calls. The sibling
+expansion. The token estimator and dry-run report builder are implemented; CLI
+integration, dispatch, and persistence remain planned. No implementation
+authorizes model calls. The sibling
 [process supervisor](../process-supervisor/README.md) is
 implemented and owns one attempt's process lifecycle; this harness owns plans,
 dispatch policy, and run evidence around that boundary.
 
-The planned optional quota-wait and model-capacity retry amendments are owned by
-[AC-6](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run) and
-[AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff).
-The coordinator and typed sketch below predate it: default-zero retries refer to
-ordinary infrastructure retries, and the no-resume rule excludes restart
-recovery, not explicitly enabled continuation in the live runner. Detection and
-reset-source interfaces remain unresolved pending the prerequisite captures
-named in the Work contract; capacity recognition also remains unresolved. Typed
-architecture must be reassessed against both amendments before further runner
-modules. This document does not define their interfaces.
+The planned quota wait, model-capacity retry, and standalone-invocation
+amendments are owned by
+[AC-6](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run),
+[AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff),
+and
+[AC-8](README.md#ac-8-todo-standalone-invocation-supports-external-execution).
+The typed sketches below describe the proposed policy boundary for those
+amendments; they do not establish recognition rules, a Codex reset API, or
+implemented behavior. The captured exec quota observation does not identify a
+machine-readable source for reset times, and the capacity report does not
+establish a CLI recognition signal. Until investigation verifies those sources,
+adapters return explicit unknown or unavailable results and the coordinator
+fails closed. All ACs remain TODO.
 
 ## TL;DR
 
 - The CLI turns ordered options into one validated, frozen plan before any
   Codex process can start.
-- The harness composes exact tracked source bytes and estimates them through a
-  provider-neutral port with a selected, not-yet-implemented ``tiktoken``
-  adapter.
-- An async coordinator owns run order, concurrency, stop latching, retries, and
-  not-started accounting while calling the existing supervisor once per
-  attempt.
+- The harness composes exact tracked source bytes and estimates them through an
+  implemented provider-neutral port and `tiktoken` adapter.
+- An async coordinator owns run order, concurrency, stop latching, separate
+  infrastructure, quota, and capacity policies, and not-started accounting
+  while calling the existing supervisor once per attempt.
 - An exclusive evidence store writes immutable run, call, and attempt records;
   persistence failure stops dispatch and leaves the run incomplete.
 - Configuration and persisted records use strict, immutable Pydantic models at
@@ -258,21 +261,72 @@ globally on unsafe outcomes.
   attempt cleanup permits dispatch. Cancellation, overflow, uncertain
   acquisition, unsafe cleanup, or recording failure latches a global stop and
   prevents any later dispatch.
-- The default retry count is zero. Only declared infrastructure outcomes can
-  be eligible; a completed zero-exit result is never retried based on output
-  content. Nonzero exits require explicit caller opt-in and are still not
-  evidence that no semantic result exists.
+- Ordinary infrastructure, quota, and model-capacity retry allowances are
+  separate finite policies; each defaults to zero/off. A recognized category
+  cannot bypass its own allowance through another retry category.
+- A classifier consumes structured supervisor observations and only explicitly
+  verified CLI evidence. It returns infrastructure, quota, capacity, other,
+  or unknown with its evidence basis. It never interprets answer content,
+  treats a nonzero exit as proof of no semantic result, or treats a capacity
+  message alone as retry eligibility. Unknown recognition fails closed.
+- Quota exhaustion is global: stop new dispatch, settle active attempts through
+  bounded cleanup, persist their evidence, release all slots, then consult a
+  quota-status port. The port represents five-hour and weekly windows and
+  their sources separately; missing or malformed status and unavailable reset
+  times are explicit outcomes that cannot trigger a guessed wait. Wait until
+  the latest relevant known reset, subject to the finite cumulative wait bound,
+  then recheck; a reset never promises renewed capacity. Every retry is gated
+  again on current quota state.
+- Capacity backoff is local to its call. For retry index `k`, sample full
+  jitter in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await
+  through injected async clock/sleeper and random-source ports. Release the
+  attempt slot before quota or capacity waiting. Even zero jitter yields to
+  the event loop. A capacity retry is a fresh invocation of the same model,
+  frozen inputs, and invocation settings, with no probe or substitution.
+- Both retry types require confident no-semantic-result evidence, safe cleanup,
+  and successful persistence before waiting or retrying. They retain every
+  attempt and count toward caller-owned attempt limits. A quota pause gates
+  every dispatch, including capacity retries whose backoff elapsed earlier.
+- Cancellation and the latched stop take precedence over any wait or quota
+  resumption. Cancellation, overflow, uncertain acquisition, unsafe cleanup,
+  and recording failure forbid retries. Active attempts settle and record
+  before quota waiting; evidence records observations throughout waits (start,
+  reset source, rechecks, elapsed monotonic duration, cancellation or bound),
+  not merely the eventual run summary.
 - The stop hook latches stop before any fallible recording. The coordinator
   checks the latch before each call and attempt. Cancellation stops new work
   and waits for bounded supervisor cleanup.
-- It owns process signal handlers and not-started accounting. Concurrency,
-  retry count, deadlines, grace, and output allowance have one source: the
-  validated run configuration.
+- It owns process signal handlers and truthful not-started accounting.
+  Concurrency, each retry allowance, backoff and wait bounds, deadlines, grace,
+  and output allowance have one source: validated run configuration.
 - Stop reasons and partial observations remain associated with the original
   control flow. The coordinator does not parse reviewer answers or assign
   semantic meaning to output.
 - Effects: async tasks, semaphore, signal registration, and calls to the
   existing supervisor. It does not own subprocess creation or cleanup.
+
+### Standalone invocation
+
+**TL;DR:** The harness owns a live run; the caller owns how it is launched.
+
+- `python -m script.eval` is the documented external entry point and delegates
+  to the same CLI composition as the Make target. It does not require a live
+  agent conversation.
+- Usage documents the repository working directory, locked dependency setup,
+  Python and CLI version expectations, authentication and unattended Codex
+  configuration, environment prerequisites, output directory, and exit
+  meanings. Missing prerequisites fail explicitly; execution never waits for a
+  human approval response.
+- While the process is alive, the harness owns children, dispatch, bounded
+  cleanup, evidence, quota waits, capacity backoff, and cancellation through
+  AC-1–AC-7. The invoking shell or external scheduler owns launch and liveness.
+  Scheduler installation, restart recovery, and model-call authorization remain
+  outside this boundary.
+- The exit status distinguishes complete success, run failure, cancellation,
+  and incomplete evidence. Exact numeric values belong to the CLI contract and
+  must agree with the standalone acceptance scenario.
+- Effects: an external process invocation and the same effects as CLI execution;
+  there is no scheduler service or background daemon.
 
 ### Evidence store
 
@@ -312,6 +366,10 @@ evidence.
   record also stores the request's execution timeout, cleanup timeout, grace,
   and output-byte allowance, which are supervisor settings rather than CLI
   arguments.
+- Wait events are appended durably when a quota or capacity wait starts, when
+  a reset is selected or status is rechecked, and when the wait ends. The final
+  run summary alone is not evidence for a live wait. A failed event write
+  latches stop and forbids resumption or retry.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -364,7 +422,7 @@ flowchart LR
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented; CLI
-integration, actual token counting, dispatch, and persistence remain planned.
+integration, dispatch, and persistence remain planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -373,15 +431,20 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. Its `model.pyi` and `plan.pyi` are
-historical design references; the active implementations are
+boundary from which implementation proceeds. Its `model.pyi` is a historical
+snapshot of the current value boundary, while `plan.pyi` remains a historical
+planner reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling, and
 token-estimation adapter are implemented. CLI integration, dispatch,
-persistence, and the remaining harness behavior are planned. Private helpers and
-concrete persistence formats remain flexible; supervisor outcomes and requests
-continue to use the existing public types.
+persistence, and the remaining harness behavior are planned. Before runner
+implementation, migrate accepted fields from sketches into the single
+authoritative `script/eval/model.py`; do not add a parallel runtime model or
+change supervisor types. Private helpers and concrete persistence formats
+remain flexible; supervisor outcomes and requests continue to use the existing
+public types. Recognition and quota-status adapters must wait until their
+machine-readable sources are verified.
 
 | Proposed module | Responsibility |
 | --- | --- |

@@ -13,6 +13,7 @@ from .model import (
     PreparedEvidence,
     RunId,
     RunRecord,
+    WaitEvent,
 )
 
 class EvidenceStore(Protocol):
@@ -36,6 +37,14 @@ class EvidenceStore(Protocol):
         /,
     ) -> AttemptRecord:
         """Persist an explicitly associated attempt without replacing evidence."""
+        ...
+
+    def record_wait_event(self, event: WaitEvent, /) -> None:
+        """Durably append wait start, selected reset, recheck, and end events.
+
+        The coordinator records each event as it happens; a final run summary
+        alone is not sufficient evidence of a live wait.
+        """
         ...
 
     def finalize(self, record: RunRecord, /) -> None:

@@ -175,3 +175,73 @@ def test_retries_require_eligible_failure_and_never_reinterpret_zero_exit_conten
     # Then
     # Zero-exit content is never retried semantically; unsafe stop reasons never retry.
     pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-6 quota exhaustion pauses globally, records active "
+        "cleanup, and waits only on known resets"
+    ),
+)
+def test_quota_pause_settles_and_records_active_attempts_before_reset_wait() -> None:
+    """Exercise quota coordination with injected status and async time ports."""
+    # Given
+    # Multiple active calls, a quota-blocked call, and source-backed five-hour
+    # and weekly observations with different reset times.
+
+    # When
+    # The coordinator recognizes quota exhaustion, observes active cleanup, and
+    # waits until the latest relevant reset before an explicit recheck.
+
+    # Then
+    # No new dispatch occurs during the global pause, evidence is persisted before
+    # waiting, no slot is held, and unknown or missing reset data fails closed.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-7 capacity retries use separate bounded full jitter "
+        "and obey quota gating"
+    ),
+)
+def test_capacity_retry_uses_saturated_full_jitter_and_rechecks_quota_gate() -> None:
+    """Use controlled attempts, injected randomness, clock, and quota status."""
+    # Given
+    # A confidently no-result capacity failure, finite capacity allowance, and
+    # deterministic random and async-wait ports alongside another runnable call.
+
+    # When
+    # Capacity retry backoff elapses while a global quota pause begins and ends.
+
+    # Then
+    # The bound saturates at cap, the call waits without a slot, unaffected calls
+    # may proceed before quota exhaustion, and retry dispatch rechecks the gate;
+    # the retry uses the same frozen inputs, model, and settings.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-6/AC-7 cancellation takes precedence over quota "
+        "and capacity waits"
+    ),
+)
+def test_cancellation_during_either_wait_stops_without_retry_and_records_wait() -> None:
+    """Assert persisted wait duration and cancellation reason at interruption."""
+    # Given
+    # A quota reset wait and a separate capacity backoff using cancellable waiters.
+
+    # When
+    # Task cancellation or the latched stop arrives during each wait.
+
+    # Then
+    # No retry or later dispatch occurs, prior attempt evidence remains intact,
+    # and each wait retains its start, elapsed monotonic duration, and end reason.
+    pass

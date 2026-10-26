@@ -23,6 +23,14 @@ type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
 type SettingValue = str | int | float | bool | None
+type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unknown"]
+type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
+type WindowName = Literal["five_hour", "weekly"]
+type QuotaState = Literal["available", "exhausted", "unknown", "unavailable"]
+type WaitEnd = Literal[
+    "reset_reached", "recheck", "bound", "cancelled", "stop", "unknown"
+]
+type WaitEventKind = Literal["started", "reset_selected", "recheck", "finished"]
 
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
@@ -44,7 +52,12 @@ class SeparatorOption(StrictModel):
 type OrderedOption = DirectoryOption | SeparatorOption
 
 class HarnessConfig(StrictModel):
-    """CLI settings; validation does not perform I/O or dispatch."""
+    """CLI settings; validation does not perform I/O or dispatch.
+
+    AC-6/AC-7 settings validate finite positive wait/backoff durations, a cap
+    not below its base, and nonnegative retry allowances before dispatch. The
+    two retry allowances remain separate and both default to disabled.
+    """
 
     ordered_options: tuple[OrderedOption, ...]
     models: tuple[str, ...]
@@ -58,7 +71,67 @@ class HarnessConfig(StrictModel):
     output_limit_bytes: int
     retry_limit: int = 0
     retry_nonzero_exit: bool = False
+    quota_wait_enabled: bool = False
+    quota_wait_limit_seconds: float | None = None
+    capacity_retry_limit: int = 0
+    capacity_backoff_base_seconds: float | None = None
+    capacity_backoff_cap_seconds: float | None = None
     instructions_file_path: Path | None
+
+class QuotaWindowObservation(StrictModel):
+    """One source-backed account window; unavailable data stays explicit."""
+
+    window: WindowName
+    state: QuotaState
+    reset_at_utc: str | None
+    source: str | None
+    diagnostic: str | None
+
+class QuotaObservation(StrictModel):
+    """Five-hour and weekly observations from one verified status source."""
+
+    observed_at_utc: str
+    windows: tuple[QuotaWindowObservation, ...]
+    source: str | None
+    diagnostic: str | None
+
+class RetryAssessment(StrictModel):
+    """Classification and no-result evidence; never inferred from answers."""
+
+    retry_class: RetryClass
+    classification_basis: str | None
+    no_result_basis: NoResultBasis
+    diagnostic: str | None
+
+class WaitRecord(StrictModel):
+    """Persisted wait observations, including events before the run ends."""
+
+    kind: Literal["quota", "capacity"]
+    call_id: CallId | None
+    retry_index: int | None
+    started_at_utc: str
+    ended_at_utc: str | None
+    elapsed_seconds: float | None
+    bound_seconds: float | None
+    jitter_bound_seconds: float | None
+    sampled_seconds: float | None
+    quota_observation: QuotaObservation | None
+    rechecks: tuple[QuotaObservation, ...]
+    end: WaitEnd
+    diagnostic: str | None
+
+class WaitEvent(StrictModel):
+    """Append-only event persisted when a wait starts and while it proceeds."""
+
+    run_id: RunId
+    wait_id: str
+    kind: WaitEventKind
+    observed_at_utc: str
+    elapsed_seconds: float
+    quota_observation: QuotaObservation | None
+    selected_reset_at_utc: str | None
+    end: WaitEnd | None
+    diagnostic: str | None
 
 class SourceSnapshot(StrictModel):
     """One tracked regular context input and its exact frozen bytes."""
@@ -174,6 +247,8 @@ class RunRecord(StrictModel):
     cli_version: str | None
     effective_settings: tuple[tuple[str, SettingValue], ...]
     calls: tuple[CallRecord, ...]
+    waits: tuple[WaitRecord, ...]
+    wait_events: tuple[WaitEvent, ...]
 
 class CallRecord(StrictModel):
     run_id: RunId
@@ -222,6 +297,7 @@ class AttemptRecord(StrictModel):
     usage_telemetry: bytes | None
     error_type: str | None
     diagnostic: str | None
+    retry_assessment: RetryAssessment | None
 
 class SignalRecord(StrictModel):
     """Serialized OS signal observation retained by the supervisor."""

@@ -9,11 +9,14 @@ from script.process_supervisor import AttemptRequest, AttemptResult, DispatchSto
 
 from .evidence import EvidenceStore
 from .model import (
+    AttemptEvidence,
     CallId,
     FrozenPlan,
     HarnessConfig,
     PlannedCall,
     PreparedEvidence,
+    QuotaObservation,
+    RetryAssessment,
     RunId,
     RunRecord,
     SettingValue,
@@ -71,6 +74,46 @@ class AttemptCall(Protocol):
         """Run exactly one attempt through call_supervisor."""
         ...
 
+class OutcomeClassifier(Protocol):
+    """Classify only structured supervisor and verified CLI observations."""
+
+    def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
+        """Return unknown when category or confident no-result basis is absent.
+
+        Never parse answer content. A nonzero exit or capacity text alone does
+        not establish that no semantic result was produced.
+        """
+        ...
+
+class QuotaStatusReader(Protocol):
+    """Read source-backed five-hour and weekly status or explicit unknown."""
+
+    async def read(self) -> QuotaObservation:
+        """Return unavailable/unknown fields rather than guessed reset values."""
+        ...
+
+class AsyncWaiter(Protocol):
+    """Inject clocks and cancellable waits for deterministic policy checks."""
+
+    def utc_now(self) -> str:
+        """Return a timezone-aware UTC timestamp in the persisted format."""
+        ...
+
+    def monotonic(self) -> float:
+        """Return monotonic seconds."""
+        ...
+
+    async def sleep(self, seconds: float, /) -> None:
+        """Wait asynchronously; cancellation must interrupt the wait."""
+        ...
+
+class RandomSource(Protocol):
+    """Inject full-jitter sampling without coupling policy to global randomness."""
+
+    def uniform(self, lower: float, upper: float, /) -> float:
+        """Sample inclusively within the supplied finite bounds."""
+        ...
+
 @dataclass(frozen=True)
 class BoundRun:
     """Plan, resolved CLI, staged evidence paths, and built effective calls."""
@@ -85,6 +128,10 @@ class Coordinator:
     """Own run concurrency, global stop, retries, and not-started accounting."""
 
     attempt: AttemptCall
+    classifier: OutcomeClassifier
+    quota_status: QuotaStatusReader
+    waiter: AsyncWaiter
+    random_source: RandomSource
 
     async def run(
         self,

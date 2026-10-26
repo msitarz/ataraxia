@@ -40,5 +40,10 @@ class Composition:
         ...
 
 async def main(argv: Sequence[str] | None = None, /) -> int:
-    """Parse arguments, assemble adapters once, and execute the CLI request."""
+    """Parse, assemble, and execute once without interactive approval prompts.
+
+    The public command documents a stable mapping for complete success, run
+    failure, cancellation, and incomplete evidence. Missing unattended CLI
+    prerequisites fail explicitly. The invoking shell owns launch and liveness.
+    """
     ...

@@ -289,6 +289,9 @@ restarting the runner or repeating completed calls.
   reasons, available reset information and its source, wait and resume UTC
   timestamps, monotonic wait durations, recheck observations, and the reason
   waiting ended, including cancellation or a reached bound.
+- Wait start, reset selection, recheck, and end events are durably appended as
+  they occur; a final run summary alone does not account for a live wait. An
+  event persistence failure stops the run and forbids resumption.
 - `SIGINT`, `SIGTERM`, or task cancellation during waiting stops the run without
   retry, using AC-4's stop latch and cleanup guarantees; unsafe cleanup,
   uncertain acquisition, overflow, or recording failure also forbids resumption.
@@ -341,6 +344,8 @@ failures while preserving the original call and its evidence.
 - Evidence retains classification basis, retry index, base, cap, computed jitter
   bound, sampled wait, actual monotonic wait duration, and wait-end reason and
   attempt outcome, without replacing previous attempts.
+- Capacity wait start and end events are persisted as they occur; a failed wait
+  event write forbids retry.
 - Controlled checks verify classification refusal, no-result eligibility,
   default-zero and finite allowances, caller limits, saturated exponential
   bounds and jitter sampling, zero-delay yielding, slot release, independent
@@ -404,12 +409,14 @@ with exec JSONL, separate stderr, exit status, CLI version, and a separate
 interactive `/status` observation. It does not resolve the machine-readable
 detection and reset source; that source still needs investigation before its
 interface is defined. An app-server schema does not establish the exec schema.
-This amendment authorizes no probe calls, typed-boundary changes, BDD wiring, or
-quota-wait implementation.
+The architecture and intent-only BDD scenarios now describe a proposed policy
+boundary; they do not authorize probes, quota-wait implementation, or model
+calls. The reset-status source remains an implementation prerequisite.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for
 AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
-recognition also remains an unresolved implementation prerequisite. The quota
-and capacity amendments require typed-architecture reassessment before further
-runner modules; this contract change defines no typed boundaries or
-implementation.
+recognition also remains an unresolved implementation prerequisite. The
+architecture records consumer-owned classifier and quota-status ports with
+explicit unknown outcomes; their concrete recognition and reset adapters remain
+undefined until evidence verifies their sources. No runner implementation or
+model calls are authorized by this contract amendment.
