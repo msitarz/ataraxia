@@ -9,13 +9,16 @@ from script.process_supervisor import AttemptRequest, AttemptResult, DispatchSto
 
 from ..model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
+    AttemptNumber,
     CallId,
     FrozenPlan,
     HarnessConfig,
     PlannedCall,
     PreparedEvidence,
-    QuotaObservation,
+    QuotaProbeRequest,
+    QuotaProbeResult,
     QuotaScope,
+    QuotaTelemetrySnapshot,
     RetryAssessment,
     RunId,
     SettingValue,
@@ -95,12 +98,15 @@ class OutcomeClassifier(Protocol):
         ...
 
 class QuotaStatusReader(Protocol):
-    """Return source-backed generic windows or explicit unknown observations.
+    """Separate passive ingestion from supervised active polling.
 
-    The provider adapter owns required-window completeness. It represents every
-    required window even when data is missing or malformed, and does not infer
-    reset times. Core policy treats absent scope, empty windows, unknown status,
-    or a scope mismatch as inconclusive; it does not interpret provider window
+    The Codex adapter correlates settled-attempt telemetry using its captured
+    ``thread.started`` ID, then reads the associated session snapshot. Active
+    polling is a separate supervised invocation and returns its own probe
+    evidence. Both paths produce provider-neutral observations through this
+    single port. The provider adapter owns required-window completeness and
+    freshness; it represents missing or malformed required windows explicitly
+    and does not infer reset times. Core policy never interprets provider window
     IDs.
     """
 
@@ -109,8 +115,25 @@ class QuotaStatusReader(Protocol):
         """Verified scope paired with this reader, if known."""
         ...
 
-    async def read(self) -> QuotaObservation:
-        """Return observations only for the expected scope, else unknown."""
+    async def observe_settled_attempt(
+        self,
+        call_id: CallId,
+        attempt_number: AttemptNumber,
+        evidence: AttemptEvidence,
+        expected_scope: QuotaScope,
+        /,
+    ) -> QuotaTelemetrySnapshot:
+        """Return source association and windows for this attempt, else unknown.
+
+        Preserve the captured thread ID and sanitized source coordinate so the
+        coordinator can persist exactly which session supplied the observation.
+        """
+        ...
+
+    async def poll(
+        self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
+    ) -> QuotaProbeResult:
+        """Run one separately supervised probe; never reuse an evaluation call."""
         ...
 
 class AsyncWaiter(Protocol):

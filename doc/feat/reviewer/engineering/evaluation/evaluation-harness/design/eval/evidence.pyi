@@ -11,6 +11,8 @@ from .model import (
     CallId,
     FrozenPlan,
     PreparedEvidence,
+    QuotaProbeEvent,
+    QuotaTelemetryEvent,
     RunId,
     RunRecord,
     WaitEvent,
@@ -46,6 +48,19 @@ class EvidenceStore(Protocol):
         and selected reset; the coordinator records each event as it happens.
         A final run summary alone is not sufficient evidence of a live wait.
         """
+        ...
+
+    def record_quota_probe_event(self, event: QuotaProbeEvent, /) -> None:
+        """Append probe start and settled evidence independently of attempts.
+
+        The settled event retains the supervisor outcome, raw streams, request
+        settings, cleanup, source/thread association, timestamps, observation,
+        and available usage. Probe IDs never consume evaluation attempt numbers.
+        """
+        ...
+
+    def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+        """Append passive session telemetry after a settled evaluation attempt."""
         ...
 
     def finalize(self, record: RunRecord, /) -> None:

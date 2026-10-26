@@ -40,3 +40,21 @@ def quota_wait_remaining(
     duration bound; it does not mean reset information may be guessed.
     """
     ...
+
+def quota_probe_allowed(config: HarnessConfig, probes_used: int, /) -> bool:
+    """Require explicit quota opt-in and an unspent positive probe budget."""
+    ...
+
+def quota_poll_delay(
+    interval_seconds: float,
+    now_utc: str,
+    reset_hint_utc: str | None,
+    /,
+) -> float:
+    """Schedule the earlier positive reset hint or periodic interval.
+
+    A missing, stale, or past hint falls back to the configured interval; a
+    hint schedules a check only and never authorizes dispatch. Zero-delay hint
+    loops are excluded.
+    """
+    ...

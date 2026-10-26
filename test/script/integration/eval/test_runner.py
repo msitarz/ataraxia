@@ -274,6 +274,206 @@ def test_quota_wait_and_capacity_retry_are_disabled_by_default() -> None:
 @pytest.mark.xfail(
     run=False,
     strict=True,
+    reason="not implemented: AC-6 default-off and dry-run avoid quota source effects",
+)
+def test_default_off_and_dry_run_do_not_probe_or_read_session_telemetry() -> None:
+    """Keep optional quota monitoring free of implicit external reads."""
+    # Given
+    # A normal run with omitted quota options, plus a dry-run plan.
+
+    # When
+    # Both paths compose the runner and process their available inputs.
+
+    # Then
+    # Neither launches an active probe nor reads a Codex session snapshot.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 active quota monitoring needs an authorized budget",
+)
+def test_quota_probe_budget_authorizes_and_caps_every_active_check() -> None:
+    """Count active probes independently of evaluation retry allowances."""
+    # Given
+    # Quota waiting is enabled with no budget, a zero budget, or a finite budget.
+
+    # When
+    # The periodic monitor reaches its next due check and then exhausts the limit.
+
+    # Then
+    # No absent or zero budget launches a probe; every authorized probe consumes
+    # one unit, and exhaustion leaves calls blocked/not-started without retrying
+    # under an evaluation allowance.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 lifecycle-managed periodic checks and reset hints",
+)
+def test_quota_monitor_polls_periodically_and_wakes_early_for_a_reset_hint() -> None:
+    """Schedule an earlier check without treating reset time as availability."""
+    # Given
+    # A positive poll interval during both active execution and quota pause, a
+    # later periodic deadline, and a fresh future numeric reset hint for the
+    # latest relevant exhausted window.
+
+    # When
+    # The injected clock reaches the hint and the monitor starts a poll.
+
+    # Then
+    # It checks early, still rechecks periodically, and dispatch remains gated
+    # until a fresh positive observation confirms the same quota scope.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 stale or out-of-order quota telemetry fails closed",
+)
+def test_old_available_session_snapshot_cannot_replace_newer_exhaustion() -> None:
+    """Keep producer order and source age distinct from harness read time."""
+    # Given
+    # A newer exhausted source record followed by a delayed older available
+    # record for the same scope and window.
+
+    # When
+    # Passive session ingestion or a probe returns them in delayed arrival order.
+
+    # Then
+    # The source adapter retains producer timestamps and sequence, the old read
+    # does not refresh age or supersede exhaustion, and no stale data resumes work.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 evaluation telemetry is ingested after settlement",
+)
+def test_settled_attempt_session_telemetry_is_passive_and_separately_recorded() -> None:
+    """Correlate session evidence without converting it into an evaluation retry."""
+    # Given
+    # A settled evaluation result with captured thread.started output and a
+    # matching source session snapshot.
+
+    # When
+    # The Codex quota adapter ingests passive telemetry after safe cleanup.
+
+    # Then
+    # It records source coordinate, producer time and scope separately under
+    # the call/attempt identity; it neither adds an attempt nor changes its result.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 probe runs outside evaluation slots and singly",
+)
+def test_probe_is_single_flight_and_not_an_experiment_measurement() -> None:
+    """Keep quota checks distinct from the evaluation call matrix."""
+    # Given
+    # Active evaluation calls using all configured semaphore slots while one
+    # periodic quota check becomes due.
+
+    # When
+    # The monitor begins its separately supervised check and another tick occurs.
+
+    # Then
+    # At most one probe is in flight, it holds no evaluation slot, receives its
+    # own probe ID and evidence events, and appears in no evaluation metrics.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 exhaustion settles active calls before new probes",
+)
+def test_quota_exhaustion_settles_calls_before_starting_another_probe() -> None:
+    """Preserve the settlement barrier while allowing an existing probe to finish."""
+    # Given
+    # A quota failure, active evaluation calls, and either no probe or an already
+    # running supervised probe.
+
+    # When
+    # The coordinator globally pauses dispatch on quota exhaustion.
+
+    # Then
+    # It durably records active call evidence before a new probe starts; an
+    # already-running probe settles and persists under supervision before any
+    # resumption or shutdown.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 probe failure and evidence failure stop safely",
+)
+def test_unknown_probe_or_probe_event_write_failure_stops_before_resumption() -> None:
+    """Require positive fresh evidence and durable poll lifecycle records."""
+    # Given
+    # A malformed, stale, unscoped, mismatched, or infrastructure-failed probe,
+    # an absent required Codex window, or a failure appending its start or
+    # settled event.
+
+    # When
+    # The monitor receives the result while calls are paused or ready to dispatch.
+
+    # Then
+    # It latches stop, marks the run incomplete, preserves captured probe and
+    # cleanup evidence when available, and never treats exit zero as availability.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 probes and evaluations share one verified scope",
+)
+def test_probe_scope_must_match_cli_binding_and_passive_session_scope() -> None:
+    """Do not let a different account's quota observation reopen dispatch."""
+    # Given
+    # An evaluation binding, passive telemetry reader, and active probe request
+    # configured with either the same or a different provider/allowance scope.
+
+    # When
+    # The monitor reconciles passive and active observations for a paused run.
+
+    # Then
+    # Only same-scope fresh positive evidence can reopen dispatch; mismatched or
+    # unknown external identity fails closed without persisting account PII.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 active probes settle and monitor joins on every exit",
+)
+def test_monitor_joins_after_probe_settlement_on_every_exit() -> None:
+    """Prevent a background monitor or child probe from outliving the run."""
+    # Given
+    # A monitor with a sleeping cadence or an in-flight supervised probe.
+
+    # When
+    # The run completes normally or cancellation/latched stop arrives.
+
+    # Then
+    # No new probe launches, active probe cleanup is awaited and persisted within
+    # bounds, and the monitor task is joined before final run evidence is written.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
     reason=(
         "not implemented: AC-7 exhausted capacity allowance cannot be bypassed "
         "via infrastructure retries"

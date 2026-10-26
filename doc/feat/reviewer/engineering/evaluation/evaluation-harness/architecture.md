@@ -304,6 +304,39 @@ gating retries and stopping globally on unsafe outcomes.
   scope. That is not the current AC-6 behavior: the single Codex binding keeps
   the pause global, and this design adds no provider registry or CLI provider
   selection.
+- With quota waiting enabled, the coordinator owns one lifecycle-managed async
+  polling task. A finite positive interval controls periodic checks; an earlier
+  numeric hint from the latest relevant exhausted-window reset may schedule a
+  check sooner, but never authorizes dispatch. Missing, stale, or past hints
+  fall back to the interval. A supplied positive
+  probe budget authorizes and caps active checks; no budget means no active
+  probe. Default-off execution and dry run perform neither probes nor session
+  reads. The monitor runs during active and paused periods, allows one probe in
+  flight, and uses no evaluation semaphore slot. Quota exhaustion first pauses
+  dispatch whether first observed in an evaluation or poll, then settles active
+  attempts; no new probe starts until their evidence is durable, while an
+  already-running supervised probe must settle.
+- The consumer-owned quota port separates passive settled-attempt ingestion
+  from active polling. Passive ingestion correlates captured `thread.started`
+  evidence to its session snapshot; `poll` performs one separate supervised
+  invocation. The Codex adapter owns request construction, the existing public
+  supervisor call, thread/session correlation, and normalization. Both paths
+  produce generic scoped observations, and the core never parses CLI output or
+  session files. Producer timestamps and source sequence remain distinct from
+  harness read time. The source adapter orders evidence before returning it, so
+  delayed older availability cannot replace newer exhaustion; unknown or
+  mismatched scope, missing windows, stale source, or malformed data fails
+  closed. This ordering and freshness boundary awaits verified source rules.
+- Each active check has a separate `QuotaProbeId` and append-only start and
+  settled evidence with the supervisor result (including raw stdout/stderr and
+  cleanup), request settings, timestamps, thread/source association, normalized
+  observation, and available usage. Passive evaluation telemetry is also
+  appended separately with its call and attempt identity. Neither is an
+  evaluation attempt record; probes consume no evaluation attempt number,
+  measurement, or semaphore slot. Probe budget counts every active check. Probe
+  or evidence failure and unsafe cleanup latch stop. Cancellation and normal
+  completion both cancel/join the monitor after any in-flight probe safely
+  settles and persists.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
   injected async clock/sleeper and random-source ports. Release the attempt slot
@@ -352,28 +385,34 @@ Codex, quota, and runtime adapters.
   concrete adapters.
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
-  bounds, and cumulative quota-wait limits. Inputs include the observations and
-  configuration; these functions read no clocks, randomness, files, or
-  processes.
+  bounds, cumulative quota-wait limits, probe authorization, and reset-hint
+  scheduling. Inputs include typed observations and configuration; these
+  functions read no clocks, randomness, files, or processes.
 - `runner.ports` owns consumer interfaces and shared values: the frozen
   `CliBinding`, `BoundRun`, and `EffectiveCall`. It defines one-attempt
-  supervisor, settled-outcome, quota-reader, and injected-runtime contracts
-  without importing concrete adapters.
+  supervisor, settled-outcome, combined passive/active quota-reader, and
+  injected-runtime contracts without importing concrete adapters. The one quota
+  port exposes separate settled-attempt ingestion and supervised-poll calls.
 - `runner.adapters.codex` resolves the CLI binding, builds each fresh request
   from frozen inputs, and classifies only settled captured stdout JSONL and raw
   stderr. It makes no streaming promise and returns unknown for unsupported or
   unverified classification signals; it never parses answer content.
 - `runner.adapters.codex_quota` implements the provider-neutral quota-reader
-  port for a Codex binding scope. It owns recognition and completeness for the
-  Codex five-hour and weekly windows, returning generic window records; its
-  source format and identity evidence remain unverified. No endpoint, exec
-  schema, or app-server schema is assumed, and missing scope or window data
-  fails closed.
+  port for a Codex binding scope. It owns passive session lookup and separate
+  supervised probe request construction/invocation through the injected public
+  supervisor adapter, then correlates each `thread.started` ID to a session. It
+  maps the required five-hour and weekly windows into generic window records
+  with producer time/sequence and read time. The supplied sample is only a
+  candidate format: source lookup, session association, scope identity,
+  freshness, request flags, and exec output schema remain unverified. No
+  endpoint or app-server schema is assumed; until prerequisites are verified,
+  the adapter returns unknown and cannot resume work. Persisted source
+  coordinates are sanitized and contain no account PII.
 - `runner.adapters.runtime` supplies UTC and monotonic clocks, cancellable
   `asyncio` waits, and uniform jitter sampling through the runtime port.
 - The adapter package exports these planned adapters. The CLI composition root
-  wires the Codex request and classifier adapters and a quota reader configured
-  for the same single binding scope, along with the runtime and supervisor
+  wires the Codex request and classifier adapters and one quota adapter
+  configured for the same binding scope, along with the runtime and supervisor
   adapter, into one coordinator. These are design stubs only; no runner
   implementation is present.
 - Effects: the coordinator owns async scheduling and effect ordering. The
@@ -443,7 +482,10 @@ evidence.
   arguments.
 - Wait events are appended durably when a quota or capacity wait starts (the
   quota start event includes the selected reset), when quota status is
-  rechecked, and when the wait ends. Every
+  rechecked, and when the wait ends. The same event stream records quota-poll
+  cadence waits with their scheduled check and optional reset hint; probe-start
+  and settled events separately record actual check timing and source evidence.
+  Every
   event carries the same stable wait ID and policy context as its `WaitRecord`
   summary, so concurrent waits remain distinguishable. The event ledger is
   persisted as it grows rather than duplicated in the final `RunRecord`; a
@@ -455,7 +497,9 @@ evidence.
   coordinator starts another separately identified wait. Unknown or
   unavailable window data fails closed. A bound or stop may end the wait
   earlier. A recheck event is an observation, not a wait-end reason.
-  `delay_elapsed` is reserved for the normal end of capacity backoff.
+  `delay_elapsed` is the normal end of capacity backoff or a quota-monitor
+  cadence wait; a quota reset wait still ends as `reset_reached` only after its
+  selected reset time arrives.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -543,11 +587,11 @@ machine-readable sources are verified.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator.py` | Async call scheduling, concurrency, stop gates, cleanup ordering, and attempt accounting. |
-| `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait bound, and saturated jitter calculations. |
-| `script/eval/runner/ports.py` | Consumer-owned protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
-| `script/eval/runner/adapters/codex.py` | CLI binding, fresh request construction, and conservative settled-output classification. |
-| `script/eval/runner/adapters/codex_quota.py` | Codex five-hour/weekly mapping to generic scoped windows; source and identity remain unverified. |
+| `script/eval/runner/coordinator.py` | Async call scheduling, quota monitor lifecycle, concurrency, stop gates, cleanup ordering, and attempt accounting. |
+| `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
+| `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
+| `script/eval/runner/adapters/codex.py` | CLI binding, fresh evaluation request construction, and conservative settled-output classification. |
+| `script/eval/runner/adapters/codex_quota.py` | Passive session ingestion and separately supervised Codex probes, mapped to generic scoped windows; source and identity remain unverified. |
 | `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |
 | `script/eval/runner/adapters/__init__.py` | Concrete planned adapters exported for composition. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
@@ -565,16 +609,17 @@ flowchart LR
     CLI --> PLAN[plan.py]
     CLI --> TOKENS[tokens.py]
     CLI --> RUNNER[runner package]
+    CLI --> QUOTA[runner/adapters/codex_quota.py]
     CLI --> EVIDENCE[evidence.py]
     RUNNER --> COORD[runner/coordinator.py]
     RUNNER --> CODEX[runner/adapters/codex.py]
-    RUNNER --> QUOTA[runner/adapters/codex_quota.py]
     RUNNER --> RUNTIME[runner/adapters/runtime.py]
     COORD --> POLICY[runner/policy.py]
     COORD --> PORTS[runner/ports.py]
     CODEX --> PORTS
     QUOTA --> PORTS
     RUNTIME --> PORTS
+    QUOTA -->|injected AttemptCall| SUP[Existing process supervisor]
     CODEX --> MODEL
     QUOTA --> MODEL
     INPUTS --> MODEL

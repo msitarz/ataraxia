@@ -41,6 +41,17 @@ type WaitEnd = Literal[
 ]
 type WaitEventKind = Literal["started", "recheck", "finished"]
 type WaitId = str
+QuotaProbeId = NewType("QuotaProbeId", str)
+type QuotaProbeReason = Literal["periodic", "reset_hint"]
+type QuotaProbeOutcome = Literal[
+    "available",
+    "unavailable",
+    "unknown",
+    "infrastructure_failure",
+    "unsafe_cleanup",
+    "uncertain_acquisition",
+    "cancelled",
+]
 
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
@@ -67,7 +78,9 @@ class HarnessConfig(StrictModel):
     Proposed AC-6/AC-7 fields below require finite positive supplied wait and
     backoff durations, a cap not below its base, and nonnegative retry
     allowances before dispatch. The capacity allowance defaults to zero and
-    quota waiting defaults off; a quota wait limit is optional.
+    quota waiting defaults off; its wait limit is optional. The poll interval
+    is finite and positive, while ``quota_probe_budget`` is a nonnegative finite
+    authorization cap; absent or zero budget permits no active probe.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -84,6 +97,8 @@ class HarnessConfig(StrictModel):
     retry_nonzero_exit: bool = False
     quota_wait_enabled: bool = False
     quota_wait_limit_seconds: float | None = None
+    quota_poll_interval_seconds: float = 60.0
+    quota_probe_budget: int | None = None
     capacity_retry_limit: int = 0
     capacity_backoff_base_seconds: float | None = None
     capacity_backoff_cap_seconds: float | None = None
@@ -110,19 +125,26 @@ class QuotaWindowObservation(StrictModel):
     window_id: QuotaWindowId
     state: QuotaState
     reset_at_utc: str | None
+    source_observed_at_utc: str | None
+    source_sequence: int | None
     source: str | None
     diagnostic: str | None
 
 class QuotaObservation(StrictModel):
-    """Provider-neutral window observations for one verified quota scope.
+    """Provider-neutral windows for one source snapshot and verified scope.
 
     A missing scope is inconclusive and cannot authorize a wait. Required
-    window completeness is defined by the provider adapter. Diagnostics are
-    sanitized and contain no account identity or credentials.
+    window completeness and freshness are defined by the provider adapter.
+    ``read_at_utc`` is harness read time; source coordinate, producer timestamp,
+    and within-source sequence retain provenance and order evidence. A delayed
+    older snapshot cannot supersede a newer observation. Rereading never
+    refreshes source age.
+    Diagnostics are sanitized and contain no account identity or credentials.
     """
 
     scope: QuotaScope | None
-    observed_at_utc: str
+    read_at_utc: str
+    source_coordinate: str | None
     windows: tuple[QuotaWindowObservation, ...]
     diagnostic: str | None
 
@@ -149,6 +171,68 @@ class QuotaWaitContext(StrictModel):
     quota_observation: QuotaObservation
     selected_reset_at_utc: str
 
+class QuotaProbeRequest(StrictModel):
+    """One authorized active check, independent of evaluation numbering."""
+
+    run_id: RunId
+    probe_id: QuotaProbeId
+    scope: QuotaScope
+    wait_id: WaitId
+    reason: QuotaProbeReason
+    scheduled_at_utc: str
+    started_at_utc: str
+
+class QuotaProbeResult(StrictModel):
+    """Settled supervised probe evidence, separate from evaluation attempts.
+
+    ``outcome`` retains the supervisor's captured stdout/stderr, termination,
+    and cleanup evidence. A zero exit or old session snapshot is not positive
+    availability; the scoped observation must also be fresh and source-backed.
+    """
+
+    request: QuotaProbeRequest
+    outcome_kind: QuotaProbeOutcome
+    supervisor_request: AttemptRequest
+    control_flow: ControlFlow
+    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None
+    elapsed_seconds: float | None
+    ended_at_utc: str | None
+    thread_id: str | None
+    observation: QuotaObservation | None
+    classification_basis: str | None
+    usage_telemetry: bytes | None
+    diagnostic: str | None
+
+class QuotaProbeStarted(StrictModel):
+    """Durable probe-start event written before supervisor dispatch."""
+
+    kind: Literal["started"]
+    request: QuotaProbeRequest
+
+class QuotaProbeSettled(StrictModel):
+    """Durable settled probe evidence written before any resumption."""
+
+    kind: Literal["settled"]
+    request: QuotaProbeRequest
+    result: QuotaProbeResult
+
+type QuotaProbeEvent = QuotaProbeStarted | QuotaProbeSettled
+
+class QuotaTelemetrySnapshot(StrictModel):
+    """Passive source association retained alongside its normalized windows."""
+
+    thread_id: str | None
+    observation: QuotaObservation
+    diagnostic: str | None
+
+class QuotaTelemetryEvent(StrictModel):
+    """Passive quota snapshot correlated to one settled evaluation attempt."""
+
+    run_id: RunId
+    call_id: CallId
+    attempt_number: AttemptNumber
+    snapshot: QuotaTelemetrySnapshot
+
 class CapacityWaitContext(StrictModel):
     """Call and retry parameters persisted before a capacity sleep begins."""
 
@@ -161,7 +245,17 @@ class CapacityWaitContext(StrictModel):
     jitter_bound_seconds: float
     sampled_seconds: float
 
-type WaitContext = QuotaWaitContext | CapacityWaitContext
+class QuotaPollWaitContext(StrictModel):
+    """One cadence wait before a periodic or reset-hint quota check."""
+
+    kind: Literal["quota_poll"]
+    probe_id: QuotaProbeId
+    interval_seconds: float
+    scheduled_at_utc: str
+    reset_hint_at_utc: str | None
+    quota_paused: bool
+
+type WaitContext = QuotaWaitContext | CapacityWaitContext | QuotaPollWaitContext
 
 class WaitRecord(StrictModel):
     """One final summary joined to its live events through stable context ID."""

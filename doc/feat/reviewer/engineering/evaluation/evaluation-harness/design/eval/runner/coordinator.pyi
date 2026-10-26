@@ -15,7 +15,7 @@ from .ports import (
 
 @dataclass(frozen=True)
 class Coordinator:
-    """Dispatch calls and retries through the existing supervisor boundary."""
+    """Dispatch calls and own the optional lifecycle-managed quota monitor."""
 
     attempt: AttemptCall
     classifier: OutcomeClassifier
@@ -29,14 +29,54 @@ class Coordinator:
         config: HarnessConfig,
         /,
     ) -> RunRecord:
-        """Run the frozen calls with global quota and call-local retry gates.
+        """Run frozen calls with global quota, polling, and call-local retry gates.
 
         Own stop latching, task and signal cancellation, active cleanup waits,
         event persistence, semaphore lifetime, and truthful not-started status.
-        Before using quota observations, require the bound CLI scope, reader's
-        expected scope, and observation scope to be present and equal. The
-        current run has one binding shared by every call, so a verified quota
-        pause remains global. It delegates one attempt to the supplied
-        AttemptCall and never creates or cleans up a subprocess itself.
+        When quota waiting is enabled and a positive authorized probe budget is
+        supplied, start one async monitor task that polls during active and
+        paused periods at the configured cadence. Polling is single-flight,
+        outside evaluation semaphore slots, and uses an earlier reset hint only
+        to schedule a check. No probe or session read occurs in default-off or
+        dry-run execution.
+
+        A conclusive exhausted observation from either a settled evaluation or
+        an active poll closes the same global dispatch gate. Let active calls
+        settle and persist before starting another poll; an already-running
+        probe may finish under supervision.
+
+        After each settled evaluation attempt, pass its call and attempt identity
+        and captured evidence to the same quota port for passive session
+        ingestion. Persist that observation separately; keep its producer
+        timestamp and source sequence distinct from read time. The source
+        adapter orders evidence before returning it so delayed older available
+        snapshots cannot supersede newer exhaustion. Unknown/mismatched scope or
+        inconclusive freshness fails closed. Once a quota failure pauses global
+        dispatch, let active evaluations settle and persist before starting any
+        new probe; an already-running supervised probe still settles and records
+        before resumption or shutdown.
+
+        Append a probe-start event before calling the port and a settled event
+        with raw output, request settings, cleanup, source/thread association,
+        timestamps, observation and available usage afterward. Probe IDs are
+        independent of evaluation attempt numbers. The monitor stops launching
+        probes at budget exhaustion, latches stop on probe/evidence/unsafe
+        cleanup failure, and is cancelled and joined on both normal completion
+        and shutdown after any in-flight probe safely settles.
+
+        Persist each cadence wait's start and completion through the wait-event
+        port, linked by probe/wait ID and retaining the scheduled check and reset
+        hint. Record poll start and settlement as separate probe events so wait,
+        check, source observation, and shutdown evidence are durable as they
+        occur rather than only in final run metadata.
+
+        Before using quota data, require the bound CLI scope, reader's expected
+        scope, passive snapshot scope, active probe request scope, and returned
+        observation scope to be present and equal. The current run has one
+        binding shared by every call, so a verified quota pause remains global.
+        It delegates one evaluation attempt to the supplied
+        AttemptCall and never creates or cleans up a subprocess itself. The
+        quota port alone owns construction and supervision of its separate
+        fixed-condition Codex probe; the coordinator does not invoke a CLI.
         """
         ...
