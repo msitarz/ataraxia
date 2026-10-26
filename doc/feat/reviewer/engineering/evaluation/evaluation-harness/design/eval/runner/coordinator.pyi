@@ -62,11 +62,29 @@ class Coordinator:
         same-scope result from a probe started for the current pause can confirm
         availability after the active-evaluation settlement barrier.
 
-        Append a probe-start event before calling the port. The port returns an
+        Persist each scheduled-check event with creation time, due time,
+        interval, and optional reset hint. Do not perform that scheduled
+        probe's source read or launch its model before the due time; passive
+        observation of settled evaluation evidence may continue during the
+        cadence wait. If a pending check is cancelled or
+        superseded before dispatch, append a cancellation event with its actual
+        monotonic wait duration and end cause; it has no process record and
+        consumes no probe budget. A schedule ID ties these transitions together
+        without adding cadence waits to the wait ledger.
+
+        After due time, gate on stop and quota budget. While quota is paused,
+        also wait for active evaluations to settle and persist, then associate
+        the probe with the current pause generation. During active-period
+        monitoring, do not wait for unrelated evaluation calls to settle. At
+        actual dispatch, create the start event with the then-current pause ID
+        (or none) and coordinator dispatch time, and persist it before calling
+        the port. The port returns an
         ephemeral ``QuotaProbeEvidence`` containing shared ``ProcessEvidence``
         and a separate quota assessment; pass it to the evidence store, which
-        writes raw streams as artifacts and returns a ``QuotaProbeSettled`` with
-        shared ``ProcessRecord`` fields and logical probe/quota metadata. Process
+        writes one settled lifecycle event and raw streams as artifacts. Only
+        actual dispatch consumes the optional probe budget. A cancellation
+        after process launch settles as a probe record with the supervisor's
+        cancellation outcome; it is not a prelaunch-cancel event. Process
         outcome (including timeout, overflow, cancellation, error, or no launch)
         never implies quota availability. Never serialize supervisor exceptions
         or arbitrary runtime objects. Probe IDs
@@ -81,12 +99,11 @@ class Coordinator:
         probe safely settles.
 
         Use a single monitor sleep per check cycle; reset hints shorten that
-        cycle, and no parallel reset timer is started. Persist each cadence
-        wait's start and completion through the wait-event port, linked by
-        probe/wait ID and retaining the scheduled check and reset hint. Record
-        poll start and settlement as separate probe events so wait, check, source
-        observation, and shutdown evidence are durable as they occur rather than
-        only in final run metadata. A pause ends successfully only with a fresh
+        cycle, and no parallel reset timer is started. A scheduled lifecycle
+        event records the cadence decision; start, settlement, and prelaunch
+        cancellation record actual progress. The separate quota-pause and
+        capacity-backoff waits remain in the wait ledger. A pause ends
+        successfully only with a fresh
         positive observation, recorded as ``quota_available``; hint arrival
         merely schedules a check. Compare the probe's captured pause ID with the
         current pause ID before accepting availability, not completion or read

@@ -368,8 +368,8 @@ def test_quota_wait_without_reset_hint_uses_only_periodic_monitor_sleep() -> Non
     # The coordinator pauses dispatch and schedules its next quota check.
 
     # Then
-    # The wait context retains no selected reset, one cadence wait is persisted,
-    # and no parallel reset timer or invented timestamp is used.
+    # A scheduled lifecycle event retains no reset hint and records the due
+    # check and interval; no cadence wait ID or parallel reset timer is created.
     pass
 
 
@@ -385,7 +385,8 @@ def test_known_quota_exhaustion_keeps_polling_until_fresh_availability() -> None
     # observation and eventually a fresh positive observation for the same scope.
 
     # When
-    # The monitor processes each result at its cadence.
+    # Each result settles under its probe ID, then the monitor durably schedules
+    # the next due check without a cadence wait record.
 
     # Then
     # Exhaustion leaves the run paused and schedules the next check without
@@ -452,7 +453,9 @@ def test_probe_is_single_flight_and_not_an_experiment_measurement() -> None:
 
     # Then
     # At most one probe is in flight, it holds no evaluation slot, receives its
-    # own probe ID and evidence events, and appears in no evaluation metrics.
+    # own probe ID, and creates no probe-process evidence before due time. At
+    # actual dispatch it captures the then-current pause ID and appears in no
+    # evaluation metrics.
     pass
 
 
@@ -471,9 +474,10 @@ def test_quota_exhaustion_settles_calls_before_starting_another_probe() -> None:
     # The coordinator globally pauses dispatch on quota exhaustion.
 
     # Then
-    # It durably records active call evidence before a new probe starts; an
-    # already-running probe settles and persists under supervision before any
-    # resumption or shutdown.
+    # It durably records active call evidence before a new probe starts. The
+    # start event captures the pause ID current after that barrier; an older
+    # already-running probe settles and persists under supervision but cannot
+    # reopen the pause.
     pass
 
 
@@ -569,7 +573,7 @@ def test_probe_scope_must_match_cli_binding_and_passive_session_scope() -> None:
 def test_monitor_joins_after_probe_settlement_on_every_exit() -> None:
     """Prevent a background monitor or child probe from outliving the run."""
     # Given
-    # A monitor with a sleeping cadence or an in-flight supervised probe.
+    # A monitor with a scheduled check or an in-flight supervised probe.
 
     # When
     # The run completes normally or cancellation/latched stop arrives.
@@ -577,6 +581,30 @@ def test_monitor_joins_after_probe_settlement_on_every_exit() -> None:
     # Then
     # No new probe launches, active probe cleanup is awaited and persisted within
     # bounds, and the monitor task is joined before final run evidence is written.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-6 probe lifecycle records due checks and "
+        "prelaunch cancellation"
+    ),
+)
+def test_scheduled_probe_cancellation_has_wait_evidence_but_no_process() -> None:
+    """Keep cancelled cadence waits truthful without counting unlaunched probes."""
+    # Given
+    # A durable scheduled event whose due time has not arrived, and quota
+    # polling is cancelled or the reset hint supersedes the schedule.
+
+    # When
+    # The coordinator cancels the scheduled wait before actual dispatch.
+
+    # Then
+    # A cancelled lifecycle event records monotonic wait duration and cause;
+    # it has no ProcessRecord and spends no probe budget. A later schedule uses
+    # its own probe ID, and only an actual start consumes budget.
     pass
 
 

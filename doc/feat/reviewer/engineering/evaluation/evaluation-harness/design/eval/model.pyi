@@ -62,6 +62,7 @@ type WaitEventKind = Literal["started", "recheck", "finished"]
 type WaitId = str
 QuotaProbeId = NewType("QuotaProbeId", str)
 type QuotaProbeReason = Literal["periodic", "reset_hint"]
+type QuotaProbeCancelCause = Literal["cancelled", "stop", "superseded"]
 
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
@@ -185,24 +186,39 @@ class QuotaWaitContext(StrictModel):
     quota_observation: QuotaObservation
     selected_reset_at_utc: str | None
 
-class QuotaProbeRequest(StrictModel):
-    """One authorized check associated with the pause it may confirm.
+class QuotaProbeSchedule(StrictModel):
+    """Durable cadence decision made before the check becomes due.
 
-    ``pause_wait_id`` is absent for active-period monitoring. Such a probe may
-    be durably recorded after a pause begins, but cannot end that newer pause;
-    only a probe started for its current pause ID can confirm resumption.
-    ``poll_started_at_utc`` is coordinator time; the paired ``ProcessEvidence`` has a
-    distinct supervisor-start timestamp, projected as ``ProcessRecord.started_at_utc``.
+    One probe ID joins schedule, start, and settlement. The stored due time,
+    interval, and optional reset hint explain cadence without a wait ID. This
+    schedule makes no call for its own probe until the due time; passive
+    observation of a settled evaluation may continue during the wait.
     """
 
     run_id: RunId
     probe_id: QuotaProbeId
     scope: QuotaScope
-    wait_id: WaitId
-    pause_wait_id: WaitId | None
     reason: QuotaProbeReason
-    scheduled_at_utc: str
+    created_at_utc: str
+    due_at_utc: str
+    interval_seconds: float
+    reset_hint_at_utc: str | None
+
+class QuotaProbeRequest(StrictModel):
+    """One dispatched check associated with the pause it may confirm.
+
+    The current pause ID is captured at actual dispatch, after active
+    evaluations settle and persist. A probe launched earlier may settle but
+    cannot reopen this newer pause. Coordinator start time differs from the
+    paired process supervisor start time. The request retains the monotonic
+    duration from schedule creation to actual dispatch.
+    """
+
+    schedule: QuotaProbeSchedule
+    pause_wait_id: WaitId | None
     poll_started_at_utc: str
+    scheduled_wait_seconds: float
+    scheduled_wait_elapsed_basis: Literal["monotonic"]
 
 @dataclass(frozen=True)
 class AttemptEvidence:
@@ -282,7 +298,7 @@ class QuotaProbeRecord(ProcessRecord):
     classification_basis: str | None
 
 class QuotaProbeStarted(StrictModel):
-    """Durable probe-start event written before supervisor dispatch."""
+    """Durable actual-dispatch event written before supervisor invocation."""
 
     kind: Literal["started"]
     request: QuotaProbeRequest
@@ -292,6 +308,29 @@ class QuotaProbeSettled(StrictModel):
 
     kind: Literal["settled"]
     record: QuotaProbeRecord
+
+class QuotaProbeScheduled(StrictModel):
+    """Durable cadence decision; it represents no launched process."""
+
+    kind: Literal["scheduled"]
+    schedule: QuotaProbeSchedule
+
+class QuotaProbeCancelled(StrictModel):
+    """Scheduled wait ended before dispatch, with no process record."""
+
+    kind: Literal["cancelled"]
+    schedule: QuotaProbeSchedule
+    cause: QuotaProbeCancelCause
+    ended_at_utc: str
+    elapsed_seconds: float
+    elapsed_basis: Literal["monotonic"]
+
+type QuotaProbeEvent = (
+    QuotaProbeScheduled | QuotaProbeStarted | QuotaProbeSettled | QuotaProbeCancelled
+)
+type QuotaProbeLifecycleInput = (
+    QuotaProbeScheduled | QuotaProbeStarted | QuotaProbeCancelled
+)
 
 class QuotaTelemetryEvent(StrictModel):
     """Provider-neutral observation correlated to one settled attempt."""
@@ -313,17 +352,7 @@ class CapacityWaitContext(StrictModel):
     jitter_bound_seconds: float
     sampled_seconds: float
 
-class QuotaPollWaitContext(StrictModel):
-    """One cadence wait before a periodic or reset-hint quota check."""
-
-    kind: Literal["quota_poll"]
-    probe_id: QuotaProbeId
-    interval_seconds: float
-    scheduled_at_utc: str
-    reset_hint_at_utc: str | None
-    quota_paused: bool
-
-type WaitContext = QuotaWaitContext | CapacityWaitContext | QuotaPollWaitContext
+type WaitContext = QuotaWaitContext | CapacityWaitContext
 
 class WaitRecord(StrictModel):
     """One final summary joined to its live events through stable context ID."""

@@ -12,8 +12,8 @@ from .model import (
     FrozenPlan,
     PreparedEvidence,
     QuotaProbeEvidence,
+    QuotaProbeLifecycleInput,
     QuotaProbeSettled,
-    QuotaProbeStarted,
     QuotaTelemetryEvent,
     RunId,
     RunRecord,
@@ -52,18 +52,24 @@ class EvidenceStore(Protocol):
         """
         ...
 
-    def record_quota_probe_started(self, event: QuotaProbeStarted, /) -> None:
-        """Append the scalar probe identity and schedule before invocation."""
+    def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
+        """Append one scalar lifecycle transition before its effect.
+
+        This handles scheduled, actual-start, and prelaunch-cancellation events.
+        It does not accept settled process evidence or perform artifact
+        projection.
+        """
         ...
 
     def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
-        """Persist a shared process projection plus quota assessment.
+        """Project live process evidence and append the settled event.
 
-        Store raw streams as artifacts; project exceptions to type and
-        diagnostic. The returned record combines common process fields with
-        probe identity and quota state, without consuming attempt numbers.
+        Store raw streams as artifacts and project exceptions to type and
+        diagnostic. Return the shared process projection with probe identity
+        and quota assessment. This effect is separate from scalar lifecycle
+        appends and consumes no evaluation attempt number.
         """
         ...
 

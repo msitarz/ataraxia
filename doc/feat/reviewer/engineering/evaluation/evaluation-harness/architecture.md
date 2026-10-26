@@ -339,23 +339,34 @@ gating retries and stopping globally on unsafe outcomes.
   newer exhaustion; unknown or mismatched scope, missing windows, stale source,
   or malformed data fails closed. This ordering and freshness boundary awaits
   verified source rules.
-- Each active check has a separate `QuotaProbeId` and append-only start and
-  settled evidence. The settled record combines shared `ProcessRecord` fields
-  (request settings, process start/end, timing basis, exit/termination, cleanup,
-  raw-stream artifact references, usage, and error type/diagnostic) with probe
-  identity, quota state, and observation. `ProcessRecord.outcome_kind` keeps
+- Each check has a separate `QuotaProbeId` and append-only scheduled, started,
+  and settled-or-cancelled lifecycle. A scheduled event retains its creation
+  time, due time, interval, reason, and optional reset hint; it represents no
+  launched process and that scheduled probe performs no model or session read
+  before its due time. Passive observation of settled attempt evidence may
+  continue during cadence waits. A started event is written immediately before
+  actual dispatch and captures the then-current pause ID. When quota is paused,
+  active evaluations settle and persist before a new probe starts; active-period
+  probes may run while evaluation calls are active. A prelaunch
+  cancellation records its end cause and actual monotonic wait duration, creates
+  no process record, and consumes no probe budget. A launched probe that is
+  cancelled settles with its supervised process outcome. The settled record
+  combines shared `ProcessRecord` fields (request settings, process start/end,
+  timing basis, exit/termination, cleanup, raw-stream artifact references,
+  usage, and error type/diagnostic) with probe identity, quota state, and
+  observation. The configured probe-count cap counts actual starts only, never
+  schedules or prelaunch cancellations. `ProcessRecord.outcome_kind` keeps
   timeout, overflow, cancellation, errors, no observation, and no launch
   distinct; none implies availability. The probe's coordinator
   `poll_started_at_utc` remains distinct from supervisor process start time.
   Passive evaluation telemetry is also appended separately with its call and
   attempt identity. Neither is an evaluation attempt record; probes consume no
-  evaluation attempt number, measurement, or semaphore slot. A configured
-  probe-count cap counts every active check. A known exhausted observation is a
-  normal paused result and schedules another cadence check. Unknown or
-  unavailable data, infrastructure failure, output overflow, evidence failure,
-  unsafe cleanup, or uncertain acquisition latches stop. Cancellation and normal
-  completion both cancel/join the monitor after any in-flight probe safely
-  settles and persists.
+  evaluation attempt number, measurement, or semaphore slot. A known exhausted
+  observation is a normal paused result and schedules another cadence check.
+  Unknown or unavailable data, infrastructure failure, output overflow, evidence
+  failure, unsafe cleanup, or uncertain acquisition latches stop. Cancellation
+  and normal completion both cancel/join the monitor after any in-flight probe
+  safely settles and persists.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await and
   sample through the injected `Runtime` port. Release the attempt slot
@@ -501,11 +512,11 @@ evidence.
   arguments.
 - Wait events are appended durably when a quota or capacity wait starts (the
   quota start event includes the optional selected reset hint), when quota
-  status is rechecked, and when the wait ends. The same event stream records
-  quota-poll cadence waits with their scheduled check and optional reset hint;
-  probe-start and settled events separately record actual check timing and
-  source evidence. Every event carries the same stable wait ID and policy
-  context as its `WaitRecord` summary, so concurrent waits remain
+  status is rechecked, and when the wait ends. Quota-poll cadence is represented
+  by the probe lifecycle rather than a second wait record. Schedule, start,
+  settlement, and prelaunch cancellation events are persisted as they occur;
+  the probe ID joins them. Quota-pause and capacity-backoff waits retain their
+  own stable wait IDs and policy contexts, so concurrent waits remain
   distinguishable. The event ledger is persisted as it grows rather than
   duplicated in the final `RunRecord`; a final summary alone is not evidence for
   a live wait. A failed event write latches stop and forbids resumption or
@@ -513,14 +524,14 @@ evidence.
 - A quota pause ends successfully only as `quota_available`, after a fresh
   positive observation for the same scope. This can happen before a reset hint
   or when no hint exists, but only from a probe started for the current pause
-  after active evaluations settle. Reaching a reset hint ends only that cadence
-  wait as `reset_reached` and schedules an immediate recheck; it never ends the
-  pause or reopens dispatch. With no hint, cadence waits end periodically. The
-  single monitor task owns all these sleeps, so the coordinator does not run a
+  after active evaluations settle. Reaching a reset hint makes the scheduled
+  check due sooner; it never ends the pause or reopens dispatch. Without a
+  hint, checks become due at the configured interval. The single monitor task
+  owns all these sleeps, so the coordinator does not run a
   second reset timer alongside polling. Unknown or unavailable data fails
   closed; a bound, cancellation, or stop can end the pause without resumption.
-  `delay_elapsed` is the normal end of capacity backoff and ordinary
-  quota-monitor cadence.
+  `delay_elapsed` is the normal end of capacity backoff; quota-monitor cadence
+  is captured as scheduled and started probe lifecycle evidence.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
