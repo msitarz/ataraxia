@@ -508,11 +508,13 @@ authorized the architecture proposal and typed boundary, shared model records,
 the input boundary, and the pure planning wiring. A subsequent bounded
 implementation assignment delivered grouping, exact-byte context composition,
 and deterministic call-matrix expansion through the public pure planner. The
-current bounded assignment implements local `tiktoken` token counting and
+Another bounded assignment implemented local `tiktoken` token counting and
 its development dependency behind the provider-neutral port. Its approved
 first-use vocabulary download and native cache write are documented in the
-current architecture. These assignments do not establish CLI integration,
-other runner components, corpus preparation, or model calls.
+current architecture. The shared runner values, ports, and accepted runtime
+configuration are also implemented. The coordinator, policy, concrete
+adapters, and CLI integration remain planned. These assignments do not include
+corpus preparation or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.
 
@@ -524,21 +526,24 @@ review. The authorized future probe condition is recorded there; its unattended
 recipe and positive availability evidence also remain prerequisites. An
 app-server schema does not establish the exec schema. The architecture, proposed
 typed boundaries, and intent-only BDD scenarios now describe this polling
-amendment; they establish no runtime behavior. No live probes, quota
-implementation, or model calls are authorized by this amendment.
+amendment; they establish no quota polling runtime behavior. No live probes,
+quota adapters, or model calls are authorized by this amendment.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for
 AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
 recognition also remains an unresolved implementation prerequisite. The
 architecture records consumer-owned classifier and quota-status ports with
 explicit unknown outcomes; their concrete recognition and reset adapters remain
-undefined until evidence verifies their sources. No runner implementation or
-model calls are authorized by this contract amendment.
+undefined until evidence verifies their sources. No classifier or quota adapter
+implementation, coordinator, or model calls are authorized by this contract
+amendment.
 
 Progress reporting remains in this generic harness Work rather than a separate
-child Work. Its bounded amendment defines AC-9 before evidence persistence is
-implemented; the delivery stage covers this contract, a separately reviewed
-typed design, and intent-only BDD scenarios, not runtime implementation. The
-contract alone establishes no reporting behavior. It adds no logger, event bus,
-adapter framework, monitoring service, scheduler integration, or dependency on
-an agent session. All acceptance criteria remain TODO.
+child Work. Its bounded amendment defined AC-9 before the evidence adapter and
+filesystem store were delivered. Shared immutable progress values and the
+consumer-owned sink port are now implemented. The delivery stage covers this
+contract, a separately reviewed typed design, and intent-only BDD scenarios.
+Terminal rendering and coordinator reporting remain planned, so this contract
+establishes no reporting behavior. It adds no logger, event bus, adapter
+framework, monitoring service, scheduler integration, or dependency on an agent
+session. All acceptance criteria remain TODO.
