@@ -441,9 +441,45 @@ def test_tiktoken_model_mapping_labels_exact_and_prefix_matches() -> None:
     assert "nonexistent" in prefix.diagnostic
 
 
-def test_tiktoken_unknown_model_stays_unknown_without_guessing() -> None:
+@pytest.mark.parametrize(
+    "model",
+    ["gpt-6", "gpt-6-mini", "gpt-6.1", "gpt-6.1-sol", "gpt-6.12-preview"],
+    ids=[
+        "base",
+        "hyphen-family",
+        "numeric-minor",
+        "minor-variant",
+        "multi-digit-minor",
+    ],
+)
+def test_gpt_6_family_uses_approximate_gpt_5_6_mapping(model: str) -> None:
     # Given / When
-    selection = _select_tiktoken_encoding("gpt-6-future-model")
+    selection = _select_tiktoken_encoding(model)
+
+    # Then
+    assert selection.encoding_name == tiktoken_model.encoding_name_for_model("gpt-5.6")
+    assert selection.compatibility == "approximate"
+    assert selection.diagnostic is not None
+    assert model in selection.diagnostic
+    assert "gpt-5.6" in selection.diagnostic
+    assert "framing" in selection.diagnostic
+    assert "billing" in selection.diagnostic
+
+
+@pytest.mark.parametrize(
+    "model",
+    ["gpt-60", "gpt-600", "gpt-6future-model", "gpt-6.", "gpt-7-future-model"],
+    ids=[
+        "gpt-sixty",
+        "gpt-six-hundred",
+        "missing-separator",
+        "incomplete-minor",
+        "other-family",
+    ],
+)
+def test_unrelated_or_malformed_model_names_stay_unknown(model: str) -> None:
+    # Given / When
+    selection = _select_tiktoken_encoding(model)
 
     # Then
     assert selection.encoding_name is None
@@ -452,10 +488,63 @@ def test_tiktoken_unknown_model_stays_unknown_without_guessing() -> None:
     assert "no encoding mapping" in selection.diagnostic
 
 
+def test_gpt_6_estimate_preserves_requested_model_and_counts_surrogate_offline(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    encoding = tiktoken.Encoding(
+        name="test-byte-encoding",
+        pat_str=r"[\s\S]",
+        mergeable_ranks={bytes((value,)): value for value in range(256)},
+        special_tokens={},
+    )
+    selected_names: list[str] = []
+
+    def get_encoding(name: str) -> tiktoken.Encoding:
+        selected_names.append(name)
+        return encoding
+
+    monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)
+
+    # When
+    result = tiktoken_estimator().estimate(b"gpt 6", "gpt-6.1-sol", "supplied_context")
+
+    # Then
+    assert selected_names == ["o200k_base"]
+    assert result.model == "gpt-6.1-sol"
+    assert result.token_count == 5
+    assert result.method == "tiktoken:o200k_base"
+    assert result.compatibility == "approximate"
+    assert result.diagnostic is not None
+    assert "gpt-6.1-sol" in result.diagnostic
+    assert "gpt-5.6" in result.diagnostic
+
+
+def test_missing_gpt_5_6_surrogate_mapping_is_explicit_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    def missing_mapping(model: str) -> str:
+        assert model == "gpt-5.6"
+        raise KeyError(model)
+
+    monkeypatch.setattr(tiktoken_model, "encoding_name_for_model", missing_mapping)
+
+    # When
+    selection = _select_tiktoken_encoding("gpt-6.1-sol")
+
+    # Then
+    assert selection.encoding_name is None
+    assert selection.compatibility == "unknown"
+    assert selection.diagnostic is not None
+    assert "gpt-6.1-sol" in selection.diagnostic
+    assert "gpt-5.6" in selection.diagnostic
+
+
 def test_default_adapter_returns_unknown_with_library_metadata() -> None:
     # Given / When
     result = tiktoken_estimator().estimate(
-        b"context", "gpt-6-future-model", "supplied_context"
+        b"context", "gpt-7-future-model", "supplied_context"
     )
 
     # Then

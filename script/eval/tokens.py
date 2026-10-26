@@ -2,12 +2,15 @@
 """Provider-neutral token estimates for frozen evaluation plans.
 
 The default adapter uses the model and encoding tables declared by ``tiktoken``.
+For GPT-6 family names it explicitly uses the GPT-5.6 mapping as an approximate
+surrogate and records that choice in the estimate diagnostic.
 On a cache miss, tiktoken may download and cache its vocabulary data. It never
 dispatches the model CLI or writes harness output or evidence.
 """
 
 from collections.abc import Callable
 from dataclasses import dataclass
+import re
 from typing import Protocol
 
 import tiktoken
@@ -27,7 +30,7 @@ class TokenEstimator(Protocol):
     """Estimate supplied bytes without dispatching a model call.
 
     Implementations return explicit unknown results when they cannot establish
-    an estimate. They must not silently substitute another model's tokenizer.
+    an estimate. Any tokenizer substitution must be labeled approximate.
     """
 
     def estimate(
@@ -178,22 +181,33 @@ def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
 
     Exact entries use the library's model table. Prefix entries are labeled
     approximate because tiktoken documents that they can match nonexistent
-    model names. Unknown models and mappings to unavailable encodings produce
-    explicit unknown selections; unrelated library errors propagate.
+    model names. GPT-6 names use the GPT-5.6 family as an explicitly approximate
+    surrogate while the library has no GPT-6-specific tokenizer mapping.
+    Unknown models and mappings to unavailable encodings produce explicit
+    unknown selections; unrelated library errors propagate.
 
     Returns:
         The selected encoding metadata, or an explicit unknown selection.
     """
+    surrogate = _gpt_6_surrogate(model)
+    lookup_model = surrogate or model
     try:
-        encoding_name = tiktoken_model.encoding_name_for_model(model)
+        encoding_name = tiktoken_model.encoding_name_for_model(lookup_model)
     except KeyError:
+        detail = (
+            f"GPT-6 model {model!r} has no gpt-5.6 surrogate mapping"
+            if surrogate is not None
+            else (
+                f"tiktoken {tiktoken.__version__} has no encoding mapping for "
+                f"model {model!r}"
+            )
+        )
         return TokenizerSelection(
             None,
             tiktoken.__version__,
             None,
             "unknown",
-            "tiktoken "
-            f"{tiktoken.__version__} has no encoding mapping for model {model!r}",
+            detail,
         )
 
     if encoding_name not in tiktoken.list_encoding_names():
@@ -202,11 +216,14 @@ def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
             tiktoken.__version__,
             None,
             "unknown",
-            f"tiktoken maps model {model!r} to unavailable encoding {encoding_name!r}",
+            f"tiktoken maps model {lookup_model!r} to unavailable encoding "
+            f"{encoding_name!r}",
         )
 
-    exact_mapping = model in tiktoken_model.MODEL_TO_ENCODING
-    compatibility: EstimateCompatibility = "exact" if exact_mapping else "approximate"
+    exact_mapping = lookup_model in tiktoken_model.MODEL_TO_ENCODING
+    compatibility: EstimateCompatibility = (
+        "exact" if exact_mapping and surrogate is None else "approximate"
+    )
     diagnostic = (
         "Counts supplied plain text with the selected encoding; model framing and "
         "other request overhead are excluded."
@@ -217,6 +234,13 @@ def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
             "nonexistent model names; model framing and other request overhead "
             "are excluded."
         )
+    if surrogate is not None:
+        diagnostic = (
+            f"GPT-6 model {model!r} uses GPT-5.6 tokenizer mapping {surrogate!r} "
+            "as an approximate surrogate; this is not an authoritative GPT-6 "
+            "tokenizer. Counts exclude model framing, other request overhead, "
+            "and billing guarantees."
+        )
     return TokenizerSelection(
         encoding_name,
         tiktoken.__version__,
@@ -224,6 +248,17 @@ def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
         compatibility,
         diagnostic,
     )
+
+
+def _gpt_6_surrogate(model: str, /) -> str | None:
+    """Return the canonical GPT-5.6 lookup name for the GPT-6 family."""
+    if re.fullmatch(
+        r"gpt-6(?:\.\d+(?:-[a-zA-Z0-9][a-zA-Z0-9._-]*)?|"
+        r"-[a-zA-Z0-9][a-zA-Z0-9._-]*)?",
+        model,
+    ):
+        return "gpt-5.6"
+    return None
 
 
 def _count_tiktoken_tokens(content: bytes, selection: TokenizerSelection, /) -> int:

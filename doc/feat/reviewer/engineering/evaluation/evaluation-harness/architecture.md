@@ -189,6 +189,12 @@ reference; the runtime module is authoritative.
   `tokenizer_version` remains unknown. Counts use ordinary-text encoding, so
   strings resembling special tokens remain literal text. Counts exclude model
   message framing and other request overhead and do not claim billing accuracy.
+- GPT-6 family names (`gpt-6`, `gpt-6-*`, and numeric minor forms such as
+  `gpt-6.1-sol`) explicitly use the canonical `gpt-5.6` tiktoken mapping as an
+  approximate surrogate, even if tiktoken later adds a GPT-6 mapping. The
+  estimate retains the requested model name and diagnoses the surrogate and
+  the absence of framing or billing guarantees. This is a practical estimate,
+  not an authoritative GPT-6 tokenizer mapping.
 - A dry-run report contains one estimate for every scheduled call. Unsupported
   model compatibility is explicit unknown or approximate, never an omitted
   estimate or billing precision.
