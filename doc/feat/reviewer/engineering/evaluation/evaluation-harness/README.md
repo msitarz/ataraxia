@@ -16,6 +16,8 @@ component split; this Work contract remains authoritative.
 - Reuse the existing async process supervisor for bounded concurrent execution
   and inspectable, immutable evidence.
 - Let callers run a manual subset again without overwriting earlier evidence.
+- Optionally retry eligible transient model-capacity failures with finite
+  allowances and bounded backoff with jitter.
 - Optionally pause an active run for recognized Codex quota exhaustion while
   preserving frozen inputs, completed outcomes, and caller experiment limits.
 
@@ -203,7 +205,8 @@ Concurrency never permits a later attempt to bypass required cleanup.
 
 - Execution and cleanup deadlines are positive and finite, retries have an
   explicit finite ordinary infrastructure retry limit defaulting to zero, and
-  no hidden retry occurs; optional quota waiting follows AC-6 separately.
+  no hidden retry occurs; optional quota waiting and model-capacity retries
+  follow AC-6 and AC-7 separately.
 - Ordinary infrastructure retries apply only to explicitly declared process or
   infrastructure outcomes,
   such as launch failure, timeout, or caller-authorized nonzero exit status,
@@ -292,6 +295,54 @@ restarting the runner or repeating completed calls.
   both-window reset handling, eligible retry preservation, finite wait bounds,
   malformed or unknown observations, and cancellation without model calls.
 
+### **AC-7 TODO** Optional model-capacity retries use bounded backoff
+
+A caller can opt into finite retries for recognized transient model-capacity
+failures while preserving the original call and its evidence.
+
+- A capacity-specific nonnegative integer retry allowance defaults to zero and
+  is separate from ordinary infrastructure retries and quota waiting; a
+  recognized capacity failure cannot bypass this allowance through another
+  retry category.
+- Capacity classification distinguishes transient model availability from quota
+  exhaustion; unknown observations fail explicitly without arbitrary answer
+  parsing, and no shared or account-wide capacity limit is inferred.
+- Retry eligibility requires evidence confidently establishing that no semantic
+  result was produced, followed by safe cleanup and successful evidence
+  persistence; a nonzero exit or capacity message alone is insufficient.
+- Each retry is a fresh independent invocation of the same model with the same
+  frozen prompt, instructions, and invocation configuration, never same-thread
+  continuation, model or account switching, or a separate paid availability
+  probe.
+- Every launched attempt retains raw evidence and counts toward applicable
+  caller-owned experiment budgets and attempt caps, including capacity retries.
+- The caller supplies finite positive backoff base and cap durations, with cap
+  at least base; invalid settings refuse dispatch.
+- For zero-based retry index `k`, full jitter samples uniformly from zero
+  through `min(cap, base * 2**k)`; the bound is computed with saturation at the
+  cap so large indexes cannot overflow.
+- The sampled delay is an asynchronous, cancellable wait holding no attempt
+  semaphore slot or CLI subprocess; even a sampled zero delay yields control
+  before reconsidering dispatch, and the finite allowance prevents a hot loop.
+- Backoff affects the blocked call rather than globally pausing unaffected
+  calls; any future model-scoped coordination requires an explicit design.
+- AC-6's global quota pause gates every capacity retry dispatch, including a
+  retry whose backoff has already elapsed.
+- Cancellation or a latched stop takes precedence over backoff completion and
+  quota resumption; cancellation, overflow, unsafe cleanup, uncertain
+  acquisition, or recording failure never permits a capacity retry.
+- Exhausting the capacity allowance or caller budget leaves the call truthfully
+  failed rather than successful, with remaining planned calls accounted for
+  under AC-4.
+- Evidence retains classification basis, retry index, base, cap, computed jitter
+  bound, sampled wait, actual monotonic wait duration, and wait-end reason and
+  attempt outcome, without replacing previous attempts.
+- Controlled checks verify classification refusal, no-result eligibility,
+  default-zero and finite allowances, caller limits, saturated exponential
+  bounds and jitter sampling, zero-delay yielding, slot release, independent
+  invocations, quota gating, and cancellation without model calls; the eventual
+  design exposes time and randomness dependencies for deterministic checks.
+
 ## Dependencies
 
 - DONE [Experimental CLI process supervisor](../process-supervisor/README.md):
@@ -324,3 +375,10 @@ detection and reset source; that source still needs investigation before its
 interface is defined. An app-server schema does not establish the exec schema.
 This amendment authorizes no probe calls, typed-boundary changes, BDD wiring, or
 quota-wait implementation.
+
+The [third-party capacity report](capacity-report.md) supplies motivation for
+AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
+recognition also remains an unresolved implementation prerequisite. The quota
+and capacity amendments require typed-architecture reassessment before further
+runner modules; this contract change defines no typed boundaries or
+implementation.
