@@ -561,19 +561,30 @@ class _ProcessProjection:
     observation: AttemptObservation | None
 
 
+@dataclass(frozen=True)
+class _OutcomeProjection:
+    """Named outcome fields used to build persisted process evidence."""
+
+    observation: AttemptObservation | None
+    exit_status: int | None
+    outcome_kind: AttemptOutcomeKind
+    termination_reason: str | None
+    error_type: str | None
+    diagnostic: str | None
+
+
 def _project_process(evidence: AttemptEvidence, /) -> _ProcessProjection:
     """Project supervisor facts once for metadata and raw stream publication.
 
     Returns:
         The typed process record and matching captured observation.
     """
-    observation, exit_status, kind, termination, error_type, diagnostic = (
-        _outcome_projection(evidence.outcome, evidence)
-    )
+    outcome = _outcome_projection(evidence.outcome, evidence)
+    observation = outcome.observation
     request = evidence.request
     record = ProcessRecord(
         control_flow=evidence.control_flow,
-        outcome_kind=kind,
+        outcome_kind=outcome.outcome_kind,
         started_at_utc=evidence.started_at_utc,
         ended_at_utc=evidence.ended_at_utc,
         argv=request.argv,
@@ -586,14 +597,14 @@ def _project_process(evidence: AttemptEvidence, /) -> _ProcessProjection:
         elapsed_basis="unavailable"
         if observation is None
         else "supervisor_observation",
-        exit_status=exit_status,
-        termination_reason=termination,
+        exit_status=outcome.exit_status,
+        termination_reason=outcome.termination_reason,
         cleanup=_cleanup_record(observation),
         stdout_artifact=None,
         stderr_artifact=None,
         usage_telemetry=evidence.usage_telemetry,
-        error_type=error_type,
-        diagnostic=diagnostic,
+        error_type=outcome.error_type,
+        diagnostic=outcome.diagnostic,
     )
     return _ProcessProjection(record, observation)
 
@@ -625,71 +636,64 @@ def _cleanup_record(observation: AttemptObservation | None) -> CleanupRecord | N
 def _outcome_projection(
     outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None,
     evidence: AttemptEvidence,
-) -> tuple[
-    AttemptObservation | None,
-    int | None,
-    AttemptOutcomeKind,
-    str | None,
-    str | None,
-    str | None,
-]:
+) -> _OutcomeProjection:
     """Return observation, status, outcome kind, and termination label."""
     match outcome:
         case AttemptCancelled() as cancelled:
-            return (
-                cancelled.observation,
-                cancelled.exit_status,
-                "cancelled",
-                "cancelled",
-                evidence.error_type,
-                evidence.diagnostic,
+            return _OutcomeProjection(
+                observation=cancelled.observation,
+                exit_status=cancelled.exit_status,
+                outcome_kind="cancelled",
+                termination_reason="cancelled",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
             )
         case AttemptFailureEvidence() as failure:
-            return (
-                failure.observation,
-                failure.exit_status,
-                "unexpected_exception",
-                "exception",
-                evidence.error_type,
-                _join_diagnostics(
+            return _OutcomeProjection(
+                observation=failure.observation,
+                exit_status=failure.exit_status,
+                outcome_kind="unexpected_exception",
+                termination_reason="exception",
+                error_type=evidence.error_type,
+                diagnostic=_join_diagnostics(
                     evidence.diagnostic, failure.stop_dispatch_diagnostic
                 ),
             )
         case Completed() as completed:
-            return (
-                completed.observation,
-                completed.exit_status,
-                "completed",
-                "exited",
-                evidence.error_type,
-                evidence.diagnostic,
+            return _OutcomeProjection(
+                observation=completed.observation,
+                exit_status=completed.exit_status,
+                outcome_kind="completed",
+                termination_reason="exited",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
             )
         case TimedOut() as timeout:
-            return (
-                timeout.observation,
-                timeout.exit_status,
-                "timed_out",
-                "timed_out",
-                evidence.error_type,
-                evidence.diagnostic,
+            return _OutcomeProjection(
+                observation=timeout.observation,
+                exit_status=timeout.exit_status,
+                outcome_kind="timed_out",
+                termination_reason="timed_out",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
             )
         case OutputLimitExceeded() as overflow:
-            return (
-                overflow.observation,
-                overflow.exit_status,
-                "output_limit_exceeded",
-                "output_limit_exceeded",
-                evidence.error_type,
-                evidence.diagnostic,
+            return _OutcomeProjection(
+                observation=overflow.observation,
+                exit_status=overflow.exit_status,
+                outcome_kind="output_limit_exceeded",
+                termination_reason="output_limit_exceeded",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
             )
         case InfrastructureFailure() as failure:
-            return (
-                failure.observation,
-                failure.exit_status,
-                "infrastructure_failure",
-                "infrastructure_failure",
-                failure.error_type,
-                _join_diagnostics(evidence.diagnostic, failure.diagnostic),
+            return _OutcomeProjection(
+                observation=failure.observation,
+                exit_status=failure.exit_status,
+                outcome_kind="infrastructure_failure",
+                termination_reason="infrastructure_failure",
+                error_type=failure.error_type,
+                diagnostic=_join_diagnostics(evidence.diagnostic, failure.diagnostic),
             )
         case None:
             kind = (
@@ -698,13 +702,13 @@ def _outcome_projection(
                 else "no_observation"
             )
             termination = "exception" if evidence.control_flow == "raised" else None
-            return (
-                None,
-                None,
-                kind,
-                termination,
-                evidence.error_type,
-                evidence.diagnostic,
+            return _OutcomeProjection(
+                observation=None,
+                exit_status=None,
+                outcome_kind=kind,
+                termination_reason=termination,
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
             )
         case _ as impossible:
             assert_never(impossible)
