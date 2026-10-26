@@ -12,6 +12,7 @@ from script.eval.model import (
     HarnessConfig,
     InstructionsSnapshot,
     PlannedCall,
+    SeparatorOption,
     SourceSnapshot,
 )
 from script.eval.plan import (
@@ -24,11 +25,19 @@ from script.eval.plan import (
 )
 
 
-def _configuration(*, instructions_path: Path | None = None) -> HarnessConfig:
+def _configuration(
+    *,
+    instructions_path: Path | None = None,
+    ordered_options: tuple[DirectoryOption | SeparatorOption, ...] | None = None,
+    models: tuple[str, ...] = ("model-a",),
+    efforts: tuple[str, ...] = ("low",),
+) -> HarnessConfig:
     return HarnessConfig(
-        ordered_options=(DirectoryOption(position=0, path=Path("context")),),
-        models=("model-a",),
-        efforts=("low",),
+        ordered_options=ordered_options
+        if ordered_options is not None
+        else (DirectoryOption(position=0, path=Path("context")),),
+        models=models,
+        efforts=efforts,
         concurrency=1,
         output_directory=None,
         dry_run=True,
@@ -190,27 +199,146 @@ def test_default_plan_leaf_fails_visibly_until_implemented() -> None:
     builder = PurePlanBuilder("run")
 
     # When
-    with pytest.raises(NotImplementedError) as error:
-        builder.plan(_inputs(), _configuration())
+    plan = builder.plan(_inputs(), _configuration())
 
     # Then
-    assert str(error.value) == "source grouping is not implemented yet"
+    assert plan.run_id == "run"
+    assert plan.calls[0].prompt == b"source"
+    assert plan.instructions_file is not None
+    assert plan.instructions_file.content == b"instruction bytes\x00"
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-1 deterministic Cartesian matrix composition",
-)
 def test_plan_orders_context_model_and_effort_products_deterministically() -> None:
-    """Keep the full matrix behavior unclaimed until its leaf work is delivered."""
     # Given
-    # Ordered contexts with default and explicit separators plus repeated flags.
+    options = (
+        DirectoryOption(position=0, path=Path("first")),
+        SeparatorOption(position=1, value="|"),
+        DirectoryOption(position=2, path=Path("second")),
+    )
+    sources = (
+        _source(0, "first/a.txt", b"A"),
+        _source(0, "first/b.txt", b"B"),
+        _source(2, "second/a.txt", b"1"),
+        _source(2, "second/b.txt", b"2"),
+    )
+    instructions = _inputs().instructions_file
+    inputs = FrozenInputs(Path("/repo"), "head", sources, instructions)
+    config = _configuration(
+        ordered_options=options,
+        models=("m", "m"),
+        efforts=("low", "high"),
+    )
+    builder = PurePlanBuilder("repeat-one")
 
     # When
-    # The pure planner composes every context, model, and effort combination.
+    plan = builder.plan(inputs, config)
 
     # Then
-    # The full product has last-context-fastest order before model and effort
-    # order; exact separator bytes and duplicate scheduled positions are retained.
-    pass
+    assert plan.boundary_bytes == (b"|",)
+    assert tuple(
+        (call.position, call.context_indices, call.model, call.effort, call.prompt)
+        for call in plan.calls
+    ) == (
+        (0, (0, 2), "m", "low", b"A|1"),
+        (1, (0, 2), "m", "high", b"A|1"),
+        (2, (0, 2), "m", "low", b"A|1"),
+        (3, (0, 2), "m", "high", b"A|1"),
+        (4, (0, 3), "m", "low", b"A|2"),
+        (5, (0, 3), "m", "high", b"A|2"),
+        (6, (0, 3), "m", "low", b"A|2"),
+        (7, (0, 3), "m", "high", b"A|2"),
+        (8, (1, 2), "m", "low", b"B|1"),
+        (9, (1, 2), "m", "high", b"B|1"),
+        (10, (1, 2), "m", "low", b"B|1"),
+        (11, (1, 2), "m", "high", b"B|1"),
+        (12, (1, 3), "m", "low", b"B|2"),
+        (13, (1, 3), "m", "high", b"B|2"),
+        (14, (1, 3), "m", "low", b"B|2"),
+        (15, (1, 3), "m", "high", b"B|2"),
+    )
+    assert tuple(call.prompt_sha256 for call in plan.calls[::4]) == (
+        sha256(b"A|1").hexdigest(),
+        sha256(b"A|2").hexdigest(),
+        sha256(b"B|1").hexdigest(),
+        sha256(b"B|2").hexdigest(),
+    )
+    assert plan.instructions_file is instructions
+    assert all(b"instruction bytes" not in call.prompt for call in plan.calls)
+
+    # A caller-owned run ID changes independently of deterministic plan parts.
+    # Given
+    second_builder = PurePlanBuilder("repeat-two")
+
+    # When
+    second_plan = second_builder.plan(inputs, config)
+
+    # Then
+    assert second_plan.run_id == "repeat-two"
+    assert second_plan.calls == plan.calls
+    assert second_plan.boundary_bytes == plan.boundary_bytes
+
+
+def _source(position: int, path: str, content: bytes) -> SourceSnapshot:
+    return SourceSnapshot(
+        directory_position=position,
+        repository_path=path,
+        commit_blob_sha="trusted-input",
+        content_sha256=sha256(content).hexdigest(),
+        content=content,
+    )
+
+
+@pytest.mark.parametrize(
+    ("separator", "expected"),
+    [(None, b"\n\n"), ("", b""), (r"\n\r\t\\é", "\n\r\t\\é".encode())],
+    ids=["default-double-lf", "empty-override", "controls-backslash-unicode"],
+)
+def test_default_plan_composes_exact_boundary_bytes(
+    separator: str | None, expected: bytes
+) -> None:
+    # Given
+    options: tuple[DirectoryOption | SeparatorOption, ...] = (
+        DirectoryOption(position=3, path=Path("one")),
+        *(
+            (SeparatorOption(position=4, value=separator),)
+            if separator is not None
+            else ()
+        ),
+        DirectoryOption(position=5, path=Path("two")),
+    )
+    inputs = FrozenInputs(
+        Path("/repo"),
+        "head",
+        (_source(3, "one/empty", b""), _source(5, "two/text", "é".encode())),
+        None,
+    )
+
+    # When
+    plan = PurePlanBuilder("run").plan(inputs, _configuration(ordered_options=options))
+
+    # Then
+    assert plan.boundary_bytes == (expected,)
+    assert plan.calls[0].prompt == expected + "é".encode()
+    assert plan.calls[0].prompt_sha256 == sha256(expected + "é".encode()).hexdigest()
+
+
+def test_repeated_directory_options_keep_distinct_groups_and_indices() -> None:
+    # Given
+    options = (
+        DirectoryOption(position=0, path=Path("same")),
+        DirectoryOption(position=1, path=Path("same")),
+    )
+    inputs = FrozenInputs(
+        Path("/repo"),
+        "head",
+        (_source(0, "same/a", b"a"), _source(1, "same/a", b"a")),
+        None,
+    )
+
+    # When
+    plan = PurePlanBuilder("run").plan(inputs, _configuration(ordered_options=options))
+
+    # Then
+    assert plan.calls[0].context_indices == (0, 1)
+    assert plan.boundary_bytes == (b"\n\n",)
+    assert plan.calls[0].prompt == b"a\n\na"

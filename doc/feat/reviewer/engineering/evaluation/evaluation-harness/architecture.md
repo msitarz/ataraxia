@@ -7,9 +7,9 @@ are implemented in
 freezer is implemented in
 [`script/eval/inputs.py`](../../../../../../script/eval/inputs.py). Pure
 orchestration wiring is implemented in
-[`script/eval/plan.py`](../../../../../../script/eval/plan.py), while grouping,
-separator decoding and composition, and matrix expansion remain explicit
-unfinished leaves. The remaining components below are planned. No
+[`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
+grouping, separator decoding, exact-byte composition, and deterministic matrix
+expansion. The remaining components below are planned. No
 implementation authorizes model calls. The sibling
 [process supervisor](../process-supervisor/README.md) is
 implemented and owns one attempt's process lifecycle; this harness owns plans,
@@ -107,7 +107,7 @@ the pure planner.
 
 ### Plan and boundary records
 
-**Wired skeleton:**
+**Implemented pure planner:**
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py) invokes typed
 grouping, context-composition, and call-scheduling functions in order. The
 context composer receives grouped source indices and `FrozenInputs`, so it can
@@ -118,10 +118,15 @@ forwarding the validated configuration and frozen input provenance. Its public
 `PlanBuilder.plan(FrozenInputs,
 HarnessConfig)` boundary is pure. A caller supplies `run_id` to the concrete
 builder, so identity creation remains caller-owned and planning does not read a
-clock, generate randomness, or perform I/O. Default leaf implementations raise
-`NotImplementedError`; this wiring establishes sequencing and forwarding only,
-not separator, prompt-composition, or Cartesian-matrix correctness. Those
-behaviors remain planned. The reviewed type sketch in
+clock, generate randomness, or perform I/O. Grouping preserves configured
+directory positions and frozen source order, including repeated directory
+options. Composition selects one source per directory in Cartesian order,
+uses default two-LF or decoded explicit separator bytes, and hashes scheduled
+prompt bytes. Scheduling expands each context over models and efforts in
+argument order, preserving repeated entries as distinct zero-based positions.
+No implicit headers or instruction bytes enter prompts. This planner behavior
+does not establish the CLI matrix, estimate, dispatch, or evidence criteria.
+The reviewed type sketch in
 [`design/eval/plan.pyi`](design/eval/plan.pyi) is retained as historical
 reference; the runtime module is authoritative.
 
