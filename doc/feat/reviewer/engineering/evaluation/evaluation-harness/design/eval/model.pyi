@@ -1,19 +1,20 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical core model sketch with proposed AC-6/AC-7 extensions.
+"""Historical core snapshot with proposal-only runner model extensions.
 
 The pre-existing value declarations correspond to the current
 ``script/eval/model.py`` runtime contract. Quota, classification, and wait
-declarations are proposals only: they are not runtime types or an active
+and probe-lifecycle declarations, plus the shared ``ProcessRecord`` base, are
+proposals for AC-6 through AC-8: they are not runtime types or an active
 shadowing interface. Review and migrate accepted fields into that one runtime
 module before implementation. ``AttemptEvidence`` retains its current field
 shape and is aliased as process-neutral ``ProcessEvidence`` for probe
-composition. ``ProcessRecord`` is a proposed shared base for persisted attempt
-and probe projections; the runtime model remains unchanged until migration.
+composition. Runtime attempt records are not yet projected through the proposed
+shared base, and the runtime model has no quota lifecycle record yet.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, NewType
+from typing import ClassVar, Literal, NewType
 
 from pydantic import BaseModel, ConfigDict
 
@@ -50,7 +51,6 @@ QuotaProviderId = NewType("QuotaProviderId", str)
 QuotaAllowanceId = NewType("QuotaAllowanceId", str)
 QuotaWindowId = NewType("QuotaWindowId", str)
 type WaitEnd = Literal[
-    "reset_reached",
     "quota_available",
     "delay_elapsed",
     "bound",
@@ -67,7 +67,9 @@ type QuotaProbeCancelCause = Literal["cancelled", "stop", "superseded"]
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
 
-    model_config: ConfigDict = ConfigDict(extra="forbid", strict=True, frozen=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        extra="forbid", strict=True, frozen=True
+    )
 
 class DirectoryOption(StrictModel):
     """Directory argument at its original command-line position."""

@@ -593,13 +593,15 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. The pre-existing declarations in
-`model.pyi` are a historical snapshot of the current value boundary; its new
-quota, classification, wait, and shared `ProcessRecord` declarations are
-proposals awaiting review and migration into `script/eval/model.py`. The shared
-base preserves current attempt-record fields while allowing probes to reuse the
-supervisor projection; it does not change the runtime record yet. These
-proposals are not implemented runtime types or a competing active contract.
+boundary from which implementation proceeds. `model.pyi` retains a historical
+snapshot of the current value boundary and
+adds proposal-only quota, classification, wait, probe-lifecycle, and shared
+`ProcessRecord` declarations awaiting review and migration into
+`script/eval/model.py`. The shared base is intended to preserve attempt-record
+fields while allowing probes to reuse the supervisor projection; current
+runtime attempt records have not migrated to it, and no quota lifecycle record
+is implemented. These proposals are not runtime types or a competing active
+contract.
 `plan.pyi` remains a historical planner
 reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and

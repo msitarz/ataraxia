@@ -43,6 +43,34 @@ def test_attempt_records_preserve_raw_streams_and_missing_observations() -> None
 @pytest.mark.xfail(
     run=False,
     strict=True,
+    reason=(
+        "not implemented: AC-3 attempt and probe artifacts retain shared "
+        "process evidence"
+    ),
+)
+def test_attempt_and_probe_records_preserve_shared_process_artifacts() -> None:
+    """Verify both persisted record types expose the supervised outcomes."""
+    # Given
+    # A settled evaluation attempt and separately supervised quota probe, each
+    # with its own request, timing, termination, cleanup, captured streams,
+    # usage telemetry, and diagnostic evidence.
+
+    # When
+    # The evidence store persists the attempt and projects settled probe
+    # evidence, then the caller reads their persisted records and raw artifacts.
+
+    # Then
+    # Both records preserve process outcome, request settings, timing and
+    # termination, cleanup, usage, error type/diagnostic, and independently
+    # retrievable stdout/stderr. The attempt retains its call/position/attempt
+    # identity; the probe retains its probe identity and quota assessment
+    # without taking an attempt number.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
     reason="not implemented: AC-2 attempted supervisor limits remain in evidence",
 )
 def test_attempt_record_retains_effective_deadline_grace_and_output_limit() -> None:
