@@ -35,8 +35,10 @@ component split; this Work contract remains authoritative.
   development dependency with version and model design deferred to
   implementation.
 - `tiktoken` supplies the first token-estimation adapter behind the
-  consumer-owned, provider-neutral `TokenEstimator` port, with development
-  dependency installation deferred to full adapter implementation.
+  consumer-owned, provider-neutral `TokenEstimator` port as a development
+  dependency. A first encoding lookup may download and cache vocabulary data
+  through tiktoken's native cache; estimates do not call a model API or CLI and
+  do not write harness output or evidence.
 - [The existing supervisor](../../../../../../script/process_supervisor.py)
   executes each attempt and owns its process acquisition, capture, and cleanup.
 - An `asyncio` semaphore limits active attempts until their cleanup settles.
@@ -254,10 +256,10 @@ authorized the architecture proposal and typed boundary, shared model records,
 the input boundary, and the pure planning wiring. A subsequent bounded
 implementation assignment delivered grouping, exact-byte context composition,
 and deterministic call-matrix expansion through the public pure planner. The
-next bounded assignment authorizes token-estimation typed wiring with
-`tiktoken` selected as the first adapter, without library token counting or
-dependency installation; its architecture update belongs to that assignment.
-These assignments do not establish CLI integration, other runner components,
-corpus preparation, or model calls.
+the current bounded assignment implements local `tiktoken` token counting and
+its development dependency behind the provider-neutral port. Its approved
+first-use vocabulary download and native cache write are documented in the
+current architecture. These assignments do not establish CLI integration,
+other runner components, corpus preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.

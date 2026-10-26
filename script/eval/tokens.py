@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Provider-neutral token-estimation wiring for frozen evaluation plans.
+"""Provider-neutral token estimates for frozen evaluation plans.
 
-The port consumes exact prompt bytes and a requested model. The selected
-``tiktoken`` adapter is kept behind that port; its package integration and
-model-to-encoding policy are deliberately unfinished in this wiring increment.
+The default adapter uses the model and encoding tables declared by ``tiktoken``.
+On a cache miss, tiktoken may download and cache its vocabulary data. It never
+dispatches the model CLI or writes harness output or evidence.
 """
 
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
+
+import tiktoken
+from tiktoken import model as tiktoken_model
 
 from script.eval.model import (
     CallEstimate,
@@ -60,7 +63,7 @@ type CountTokens = Callable[[bytes, TokenizerSelection], int]
 
 
 class TiktokenEstimator:
-    """Adapter seam for a future ``tiktoken`` backed estimator.
+    """Provider-neutral adapter using a selected tiktoken encoding.
 
     Tokenizer selection and counting are injected leaf operations so wiring can
     be reviewed before the dependency, model mapping, or library behavior is
@@ -112,11 +115,11 @@ class TiktokenEstimator:
 
 
 def tiktoken_estimator() -> TiktokenEstimator:
-    """Compose the planned adapter with its unfinished package leaves.
+    """Build the default adapter using the installed tiktoken model tables.
 
-    The returned value establishes the future composition boundary. Calling
-    ``estimate`` currently raises from the private selection leaf until the
-    concrete library implementation is delivered.
+    Tiktoken downloads missing vocabulary data and stores it in its native cache
+    when an encoding is first used. This local download does not call a model or
+    create harness output/evidence.
 
     Returns:
         An adapter connected to the unfinished default package leaves.
@@ -170,18 +173,71 @@ def build_dry_run_report(
 
 
 def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
-    """Unfinished package leaf; model compatibility policy is unimplemented.
+    """Select an encoding only when tiktoken declares a model mapping.
 
-    Raises:
-        NotImplementedError: The concrete tiktoken adapter is not implemented.
+    Exact entries use the library's model table. Prefix entries are labeled
+    approximate because tiktoken documents that they can match nonexistent
+    model names. Unknown models and mappings to unavailable encodings produce
+    explicit unknown selections; unrelated library errors propagate.
+
+    Returns:
+        The selected encoding metadata, or an explicit unknown selection.
     """
-    raise NotImplementedError("tiktoken encoding selection is not implemented")
+    try:
+        encoding_name = tiktoken_model.encoding_name_for_model(model)
+    except KeyError:
+        return TokenizerSelection(
+            None,
+            tiktoken.__version__,
+            None,
+            "unknown",
+            "tiktoken "
+            f"{tiktoken.__version__} has no encoding mapping for model {model!r}",
+        )
+
+    if encoding_name not in tiktoken.list_encoding_names():
+        return TokenizerSelection(
+            None,
+            tiktoken.__version__,
+            None,
+            "unknown",
+            f"tiktoken maps model {model!r} to unavailable encoding {encoding_name!r}",
+        )
+
+    exact_mapping = model in tiktoken_model.MODEL_TO_ENCODING
+    compatibility: EstimateCompatibility = "exact" if exact_mapping else "approximate"
+    diagnostic = (
+        "Counts supplied plain text with the selected encoding; model framing and "
+        "other request overhead are excluded."
+    )
+    if not exact_mapping:
+        diagnostic = (
+            "Encoding inferred from a tiktoken model prefix, which can match "
+            "nonexistent model names; model framing and other request overhead "
+            "are excluded."
+        )
+    return TokenizerSelection(
+        encoding_name,
+        tiktoken.__version__,
+        None,
+        compatibility,
+        diagnostic,
+    )
 
 
 def _count_tiktoken_tokens(content: bytes, selection: TokenizerSelection, /) -> int:
-    """Unfinished package leaf; actual token counting is unimplemented.
+    """Count exact UTF-8 text bytes as ordinary text using the chosen encoding.
+
+    Special-token-looking strings are treated as literal text. No prompt
+    wrappers, message framing, or Unicode normalization are added.
+
+    Returns:
+        The number of ordinary-text tokens.
 
     Raises:
-        NotImplementedError: The concrete tiktoken adapter is not implemented.
+        ValueError: The selection has no encoding name.
     """
-    raise NotImplementedError("tiktoken token counting is not implemented")
+    if selection.encoding_name is None:
+        raise ValueError("cannot count tokens without a selected encoding")
+    encoding = tiktoken.get_encoding(selection.encoding_name)
+    return len(encoding.encode_ordinary(content.decode("utf-8")))
