@@ -16,6 +16,8 @@ component split; this Work contract remains authoritative.
 - Reuse the existing async process supervisor for bounded concurrent execution
   and inspectable, immutable evidence.
 - Let callers run a manual subset again without overwriting earlier evidence.
+- Optionally pause an active run for recognized Codex quota exhaustion while
+  preserving frozen inputs, completed outcomes, and caller experiment limits.
 
 ## Non-Goals
 
@@ -200,8 +202,10 @@ Every scheduled call and launched attempt has inspectable evidence.
 Concurrency never permits a later attempt to bypass required cleanup.
 
 - Execution and cleanup deadlines are positive and finite, retries have an
-  explicit finite limit defaulting to zero, and no hidden retry occurs.
-- Retries apply only to explicitly declared process or infrastructure outcomes,
+  explicit finite ordinary infrastructure retry limit defaulting to zero, and
+  no hidden retry occurs; optional quota waiting follows AC-6 separately.
+- Ordinary infrastructure retries apply only to explicitly declared process or
+  infrastructure outcomes,
   such as launch failure, timeout, or caller-authorized nonzero exit status,
   after safe settlement, without assuming a nonzero exit produced no semantic
   result.
@@ -232,7 +236,8 @@ Concurrency never permits a later attempt to bypass required cleanup.
 A caller can rerun a manually selected subset as a new run.
 
 - A caller selects directories containing the desired files, models, and efforts
-  explicitly, with no automatic scanning of prior output or hidden resume.
+  explicitly, with no automatic scanning of prior output or restart recovery;
+  AC-6 permits only explicit continuation within the same live runner process.
 - A sparse subset that cannot be expressed as one Cartesian product uses
   separate invocations with distinct output directories.
 - A new output directory preserves earlier raw evidence and frozen identities,
@@ -240,6 +245,52 @@ A caller can rerun a manually selected subset as a new run.
 - Usage guidance explains that the caller must reconcile prior attempts against
   experiment retry and budget limits and must not count reruns or cached answers
   as independent trials without its declared protocol.
+
+### **AC-6 TODO** Optional quota waiting preserves the active run
+
+A caller can opt into waiting for recognized Codex quota exhaustion without
+restarting the runner or repeating completed calls.
+
+- `--wait-for-quota` defaults off; without it, quota exhaustion receives no
+  automatic quota wait or quota retry.
+- An optional maximum cumulative quota-wait duration is finite and positive
+  when supplied; its precise CLI spelling remains an implementation detail.
+- On explicitly recognized Codex quota exhaustion, the coordinator pauses all
+  new dispatch globally, lets active attempts settle through bounded cleanup,
+  and persists their evidence before waiting or resuming.
+- Waiting holds no attempt semaphore slot and leaves no CLI subprocess asleep;
+  the live runner uses asynchronous, cancellable waits.
+- Waiting preserves the original frozen plan, inputs, invocation settings, and
+  completed outcomes; it neither rereads sources nor repeats completed calls.
+- A quota-blocked call is eligible for a later attempt only when the recognized
+  evidence confidently establishes that it produced no semantic result; a
+  nonzero exit alone never establishes eligibility, and reviewer answers are
+  not parsed to infer it.
+- Quota waits and eligible quota retries are accounted separately from the
+  finite ordinary infrastructure retry allowance, including when that allowance
+  is zero; every attempt still counts toward any applicable finite caller-owned
+  experiment budget or attempt cap.
+- Available reset information and rechecks account for both exhausted five-hour
+  and weekly windows; waiting uses the latest relevant exhausted-window reset
+  before rechecking, without assuming a reset guarantees renewed availability.
+- Unknown or malformed quota observations, unavailable reset information, or an
+  inconclusive recheck must fail or report an explicit inability to continue
+  safely rather than silently causing unbounded waiting or blanket retry.
+- A supplied cumulative wait bound stops further quota waiting when exhausted;
+  the run reports the remaining blocked and not-started calls truthfully.
+- Raw evidence for every attempt is retained, together with quota recognition
+  reasons, available reset information and its source, wait and resume UTC
+  timestamps, monotonic wait durations, recheck observations, and the reason
+  waiting ended, including cancellation or a reached bound.
+- `SIGINT`, `SIGTERM`, or task cancellation during waiting stops the run without
+  retry, using AC-4's stop latch and cleanup guarantees; unsafe cleanup,
+  uncertain acquisition, overflow, or recording failure also forbids resumption.
+- The runner never switches models or accounts, purchases capacity, or requests
+  quota resets to continue, and never scans prior output or recovers across a
+  runner restart.
+- Controlled checks verify global dispatch pausing, cleanup and slot release,
+  both-window reset handling, eligible retry preservation, finite wait bounds,
+  malformed or unknown observations, and cancellation without model calls.
 
 ## Dependencies
 
@@ -263,3 +314,11 @@ current architecture. These assignments do not establish CLI integration,
 other runner components, corpus preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.
+
+Quota waiting is a contract amendment only. Its detection and reset-information
+source interface remains unresolved and is an implementation prerequisite. The
+maintainer will supply a real exhausted-quota `codex exec --json` capture with
+separate stderr, exit status, CLI version, and corresponding `/status` output
+before that interface is defined. An app-server schema does not establish the
+exec schema. This amendment authorizes no probe calls, typed-boundary changes,
+BDD wiring, or quota-wait implementation.
