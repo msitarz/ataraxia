@@ -45,12 +45,13 @@ class Coordinator:
         settle and persist before starting another poll; an already-running
         probe may finish under supervision.
 
-        After each settled evaluation attempt, pass its call and attempt identity
-        and captured evidence to the same quota port for passive session
-        ingestion. Persist that observation separately; keep its producer
-        timestamp and source sequence distinct from read time. The source
-        adapter orders evidence before returning it so delayed older available
-        observations cannot supersede newer exhaustion. Unknown/mismatched scope or
+        After each settled evaluation attempt, pass its captured evidence to the
+        same quota port for passive ingestion. The coordinator associates its
+        returned observation with call and attempt identity in the telemetry
+        event, and compares its scope with the bound run. Keep producer timestamp
+        and source sequence distinct from read time. The source adapter orders
+        evidence before returning it so delayed older available observations
+        cannot supersede newer exhaustion. Unknown/mismatched scope or
         inconclusive freshness fails closed. Once a quota failure pauses global
         dispatch, let active evaluations settle and persist before starting any
         new probe; an already-running supervised probe still settles and records

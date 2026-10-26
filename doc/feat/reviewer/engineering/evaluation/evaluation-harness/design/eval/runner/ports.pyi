@@ -9,7 +9,6 @@ from script.process_supervisor import AttemptRequest, AttemptResult, DispatchSto
 
 from ..model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
-    AttemptNumber,
     CallId,
     FrozenPlan,
     HarnessConfig,
@@ -116,16 +115,14 @@ class QuotaStatusReader(Protocol):
 
     async def observe_settled_attempt(
         self,
-        call_id: CallId,
-        attempt_number: AttemptNumber,
         evidence: AttemptEvidence,
-        expected_scope: QuotaScope,
         /,
     ) -> QuotaObservation:
-        """Return source-backed windows for this attempt, else unknown.
+        """Return source-backed windows from settled attempt evidence, else unknown.
 
         Preserve sanitized source coordinates and producer provenance on the
-        observation; provider-specific invocation identifiers stay in adapters.
+        observation. The coordinator retains call/attempt association and checks
+        observation scope against its binding.
         """
         ...
 

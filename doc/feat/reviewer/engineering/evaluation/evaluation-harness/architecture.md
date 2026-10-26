@@ -332,7 +332,9 @@ gating retries and stopping globally on unsafe outcomes.
   identifiers stay inside that adapter; the port and evidence events retain the
   generic observation with sanitized source coordinate, producer timestamps,
   and source sequence. Both paths produce generic scoped observations, and the
-  core never parses CLI output or session files. The source adapter orders
+  coordinator stores passive observations with their call/attempt identity and
+  checks scope against the bound run. The core never parses CLI output or
+  session files. The source adapter orders
   evidence before returning it, so delayed older availability cannot replace
   newer exhaustion; unknown or mismatched scope, missing windows, stale source,
   or malformed data fails closed. This ordering and freshness boundary awaits

@@ -426,7 +426,8 @@ def test_settled_attempt_session_telemetry_is_passive_and_separately_recorded() 
     # and a matching source session snapshot.
 
     # When
-    # The Codex quota adapter ingests passive telemetry after safe cleanup.
+    # The Codex adapter ingests the settled evidence after safe cleanup and the
+    # coordinator associates the returned observation with the call and attempt.
 
     # Then
     # Only the Codex adapter sees the thread ID; the generic event records the

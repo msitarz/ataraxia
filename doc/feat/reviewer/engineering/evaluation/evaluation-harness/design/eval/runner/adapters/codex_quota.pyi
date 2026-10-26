@@ -9,8 +9,6 @@ from script.process_supervisor import DispatchStop
 
 from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
-    AttemptNumber,
-    CallId,
     QuotaObservation,
     QuotaProbeEvidence,
     QuotaProbeRequest,
@@ -74,10 +72,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
 
     async def observe_settled_attempt(
         self,
-        call_id: CallId,
-        attempt_number: AttemptNumber,
         evidence: AttemptEvidence,
-        expected_scope: QuotaScope,
         /,
     ) -> QuotaObservation: ...
     async def poll(
