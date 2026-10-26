@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Pure retry eligibility, allowance, and backoff calculations."""
 
-from script.eval.model import HarnessConfig, RetryAssessment
+from ..model import HarnessConfig, RetryAssessment  # ruff: ignore[relative-imports]
 
 def confident_no_result(assessment: RetryAssessment, /) -> bool:
     """Return whether supplied evidence establishes semantic-result absence."""

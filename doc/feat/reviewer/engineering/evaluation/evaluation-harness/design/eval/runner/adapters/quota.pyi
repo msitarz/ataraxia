@@ -4,9 +4,8 @@
 from dataclasses import dataclass
 from typing import Protocol
 
-from script.eval.runner.ports import QuotaStatusReader
-
-from script.eval.model import QuotaObservation
+from ...model import QuotaObservation  # ruff: ignore[relative-imports]
+from ..ports import QuotaStatusReader  # ruff: ignore[relative-imports]
 
 class RawQuotaStatusSource(Protocol):
     """Injected capture source; this is not a claim about a Codex API."""

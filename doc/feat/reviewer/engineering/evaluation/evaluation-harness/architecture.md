@@ -337,10 +337,10 @@ Codex, quota, and runtime adapters.
   bounds, and cumulative quota-wait limits. Inputs include the observations and
   configuration; these functions read no clocks, randomness, files, or
   processes.
-- `runner.ports` owns structural interfaces and transient dispatch values such
-  as `BoundRun` and `EffectiveCall`. It defines the CLI binding, one-attempt
-  supervisor call, settled-outcome classifier, quota reader, and injected
-  runtime contracts without importing concrete adapters.
+- `runner.ports` owns consumer interfaces and shared values: the frozen
+  `CliBinding`, `BoundRun`, and `EffectiveCall`. It defines one-attempt
+  supervisor, settled-outcome, quota-reader, and injected-runtime contracts
+  without importing concrete adapters.
 - `runner.adapters.codex` resolves the CLI binding, builds each fresh request
   from frozen inputs, and classifies only settled captured stdout JSONL and raw
   stderr. It makes no streaming promise and returns unknown for unsupported or
@@ -524,7 +524,7 @@ machine-readable sources are verified.
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
 | `script/eval/runner/coordinator.py` | Async call scheduling, concurrency, stop gates, cleanup ordering, and attempt accounting. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait bound, and saturated jitter calculations. |
-| `script/eval/runner/ports.py` | Consumer-owned protocols plus `BoundRun` and `EffectiveCall` values. |
+| `script/eval/runner/ports.py` | Consumer-owned protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/adapters/codex.py` | CLI binding, fresh request construction, and conservative settled-output classification. |
 | `script/eval/runner/adapters/quota.py` | Fail-closed quota reader over an injected, still-unverified status source. |
 | `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |

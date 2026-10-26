@@ -3,10 +3,8 @@
 
 from dataclasses import dataclass
 
-from script.eval.evidence import EvidenceStore
-
-from script.eval.model import HarnessConfig, RunRecord
-
+from ..evidence import EvidenceStore  # ruff: ignore[relative-imports]
+from ..model import HarnessConfig, RunRecord  # ruff: ignore[relative-imports]
 from .ports import (
     AttemptCall,
     BoundRun,

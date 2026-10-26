@@ -3,7 +3,6 @@
 
 from .codex import (
     CodexAttemptRequestBuilder,
-    CodexCliBinding,
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
 )
@@ -12,7 +11,6 @@ from .runtime import SystemRuntime
 
 __all__ = (
     "CodexAttemptRequestBuilder",
-    "CodexCliBinding",
     "CodexCliBindingResolver",
     "CodexOutcomeClassifier",
     "CodexQuotaStatusReader",
