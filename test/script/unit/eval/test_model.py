@@ -9,6 +9,7 @@ import pytest
 
 from script.eval.model import (
     AttemptRecord,
+    CallRecord,
     DirectoryOption,
     FrozenPlan,
     HarnessConfig,
@@ -66,6 +67,26 @@ def attempt_values() -> dict[str, object]:
     }
 
 
+def call_record_values(
+    *, attempts: tuple[dict[str, object], ...] = ()
+) -> dict[str, object]:
+    """Return a persisted call record consistent with its attempt fixtures."""
+    return {
+        "run_id": "run",
+        "call_id": "call",
+        "position": 0,
+        "state": "complete",
+        "source_paths": ("context/source.txt",),
+        "source_sha256": ("source-digest",),
+        "boundary_bytes_hex": (),
+        "prompt_sha256": "prompt-digest",
+        "model": "model-a",
+        "effort": "low",
+        "effective_settings_sha256": "settings-digest",
+        "attempts": attempts,
+    }
+
+
 def frozen_plan() -> FrozenPlan:
     """Build a full plan with paths, ordered options, and binary snapshots."""
     source_bytes = b"source\xff"
@@ -79,6 +100,7 @@ def frozen_plan() -> FrozenPlan:
                 SeparatorOption(position=1, value="\\n"),
                 DirectoryOption(position=2, path=Path("more-context")),
             ),
+            "instructions_file_path": Path("context/instructions.bin"),
             "output_directory": None,
             "dry_run": True,
         }
@@ -90,6 +112,30 @@ def frozen_plan() -> FrozenPlan:
         content_sha256=sha256(source_bytes).hexdigest(),
         content=source_bytes,
     )
+    other_source_bytes = b"other source"
+    other_source = SourceSnapshot(
+        directory_position=2,
+        repository_path="more-context/other.bin",
+        commit_blob_sha="other-source-blob",
+        content_sha256=sha256(other_source_bytes).hexdigest(),
+        content=other_source_bytes,
+    )
+    second_other_bytes = b"second other context source"
+    second_other_source = SourceSnapshot(
+        directory_position=2,
+        repository_path="more-context/second-other.bin",
+        commit_blob_sha="second-other-source-blob",
+        content_sha256=sha256(second_other_bytes).hexdigest(),
+        content=second_other_bytes,
+    )
+    second_source_bytes = b"second context source"
+    second_source = SourceSnapshot(
+        directory_position=0,
+        repository_path="context/second.bin",
+        commit_blob_sha="second-source-blob",
+        content_sha256=sha256(second_source_bytes).hexdigest(),
+        content=second_source_bytes,
+    )
     instructions = InstructionsSnapshot(
         repository_path="context/instructions.bin",
         commit_blob_sha="instructions-blob",
@@ -98,7 +144,15 @@ def frozen_plan() -> FrozenPlan:
     )
     call = PlannedCall(
         position=0,
-        context_indices=(0,),
+        context_indices=(0, 2),
+        model="model-a",
+        effort="low",
+        prompt_sha256=sha256(prompt_bytes).hexdigest(),
+        prompt=prompt_bytes,
+    )
+    other_call = PlannedCall(
+        position=1,
+        context_indices=(1, 3),
         model="model-a",
         effort="low",
         prompt_sha256=sha256(prompt_bytes).hexdigest(),
@@ -109,10 +163,10 @@ def frozen_plan() -> FrozenPlan:
         configuration=configuration,
         repository_root=Path("/repo"),
         head_commit="commit",
-        snapshots=(source,),
+        snapshots=(source, second_source, other_source, second_other_source),
         boundary_bytes=(b"\n",),
         instructions_file=instructions,
-        calls=(call,),
+        calls=(call, other_call),
     )
 
 
@@ -189,6 +243,97 @@ def test_configuration_rejects_missing_matrix_inputs_or_execution_output(
     assert reason in str(error.value)
 
 
+@pytest.mark.parametrize(
+    "options",
+    [
+        (
+            DirectoryOption(position=1, path=Path("a")),
+            SeparatorOption(position=1, value="\n"),
+            DirectoryOption(position=2, path=Path("b")),
+        ),
+        (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=2, value="\n"),
+            DirectoryOption(position=1, path=Path("b")),
+        ),
+        (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=1, value="\n"),
+            SeparatorOption(position=2, value="\t"),
+            DirectoryOption(position=3, path=Path("b")),
+        ),
+        (
+            SeparatorOption(position=0, value="\n"),
+            DirectoryOption(position=1, path=Path("a")),
+        ),
+        (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=1, value="\n"),
+        ),
+        (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=1, value=r"\q"),
+            DirectoryOption(position=2, path=Path("b")),
+        ),
+        (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=1, value="dangling\\"),
+            DirectoryOption(position=2, path=Path("b")),
+        ),
+    ],
+    ids=[
+        "duplicate-position",
+        "unordered-positions",
+        "multiple-separators",
+        "leading",
+        "trailing",
+        "unknown-escape",
+        "dangling-escape",
+    ],
+)
+def test_configuration_rejects_malformed_ordered_options(
+    options: tuple[DirectoryOption | SeparatorOption, ...],
+) -> None:
+    # Given
+    values = config_values() | {"ordered_options": options}
+
+    # When
+    with pytest.raises(ValidationError):
+        HarnessConfig.model_validate(values)
+
+
+def test_configuration_accepts_all_supported_separator_escapes() -> None:
+    # Given
+    values = config_values() | {
+        "ordered_options": (
+            DirectoryOption(position=0, path=Path("a")),
+            SeparatorOption(position=1, value=r"\n\r\t\\"),
+            DirectoryOption(position=2, path=Path("b")),
+        )
+    }
+
+    # When
+    configuration = HarnessConfig.model_validate(values)
+
+    # Then
+    separator = configuration.ordered_options[1]
+    assert isinstance(separator, SeparatorOption)
+    assert separator.value == r"\n\r\t\\"
+
+
+def test_option_and_call_positions_must_be_nonnegative() -> None:
+    # Given
+    call_values = call_record_values() | {"position": -1}
+
+    # When / Then
+    with pytest.raises(ValidationError):
+        DirectoryOption.model_validate({"position": -1, "path": Path("context")})
+    with pytest.raises(ValidationError):
+        SeparatorOption.model_validate({"position": -1, "value": "\n"})
+    with pytest.raises(ValidationError):
+        CallRecord.model_validate(call_values)
+
+
 def test_dry_run_allows_the_output_destination_to_be_omitted() -> None:
     # Given
     values = config_values() | {"dry_run": True, "output_directory": None}
@@ -219,24 +364,6 @@ def test_snapshot_json_round_trip_preserves_arbitrary_output_bytes() -> None:
     assert restored.content == b"\xff\x00\x80"
 
 
-def test_snapshot_rejects_a_digest_that_does_not_identify_its_bytes() -> None:
-    # Given
-    content = b"captured bytes"
-
-    # When
-    with pytest.raises(ValidationError) as error:
-        SourceSnapshot(
-            directory_position=0,
-            repository_path="context/data.bin",
-            commit_blob_sha="blob",
-            content_sha256=sha256(b"different bytes").hexdigest(),
-            content=content,
-        )
-
-    # Then
-    assert "content_sha256 must match content" in str(error.value)
-
-
 def test_attempt_metadata_json_round_trip_keeps_arbitrary_telemetry_bytes() -> None:
     # Given
     record = AttemptRecord.model_validate(attempt_values())
@@ -257,30 +384,18 @@ def test_attempt_metadata_json_round_trip_keeps_arbitrary_telemetry_bytes() -> N
         ({"timeout_seconds": float("inf")}, "timeout_seconds"),
         ({"cleanup_timeout_seconds": 0.0}, "cleanup_timeout_seconds"),
         ({"grace_seconds": -0.1}, "grace_seconds"),
-        ({"grace_seconds": 1.0}, "grace_seconds must be less"),
         ({"output_limit_bytes": -1}, "output_limit_bytes"),
         ({"elapsed_seconds": -0.1}, "elapsed_seconds"),
         ({"elapsed_seconds": float("inf")}, "elapsed_seconds"),
-        (
-            {"elapsed_basis": "supervisor_observation"},
-            "elapsed_seconds must match elapsed_basis",
-        ),
-        (
-            {"elapsed_seconds": 0.0},
-            "elapsed_seconds must match elapsed_basis",
-        ),
     ],
     ids=[
         "timeout-positive",
         "timeout-finite",
         "cleanup-positive",
         "grace-nonnegative",
-        "grace-below-cleanup",
         "output-nonnegative",
         "elapsed-nonnegative",
         "elapsed-finite",
-        "observed-needs-value",
-        "unavailable-needs-none",
     ],
 )
 def test_attempt_metadata_rejects_invalid_limits_and_elapsed_basis(
@@ -312,6 +427,23 @@ def test_attempt_metadata_accepts_zero_cap_and_observed_zero_elapsed() -> None:
     # Then
     assert record.output_limit_bytes == 0
     assert record.elapsed_seconds == pytest.approx(0.0)
+
+
+def test_attempt_metadata_preserves_negative_exit_status_and_unknown_evidence() -> None:
+    # Given
+    values = attempt_values() | {
+        "control_flow": "raised",
+        "outcome_kind": "unexpected_exception",
+        "exit_status": -9,
+    }
+
+    # When
+    record = AttemptRecord.model_validate(values)
+
+    # Then
+    assert record.exit_status == -9
+    assert record.cleanup is None
+    assert record.elapsed_seconds is None
 
 
 def test_frozen_plan_json_round_trip_preserves_nested_binary_and_path_values() -> None:
@@ -349,40 +481,20 @@ def test_frozen_plan_rejects_mutation_of_nested_models() -> None:
     assert plan.calls[0].prompt == b"prompt\x80"
 
 
-def test_instructions_snapshot_rejects_mismatched_content_digest() -> None:
+def test_attempt_metadata_allows_wall_clock_adjustment() -> None:
     # Given
-    content = b"instructions"
+    values = attempt_values() | {
+        "ended_at_utc": "2026-10-24T23:59:59Z",
+        "elapsed_seconds": 0.25,
+        "elapsed_basis": "supervisor_observation",
+    }
 
     # When
-    with pytest.raises(ValidationError) as error:
-        InstructionsSnapshot(
-            repository_path="instructions.md",
-            commit_blob_sha="blob",
-            content_sha256=sha256(b"different").hexdigest(),
-            content=content,
-        )
+    record = AttemptRecord.model_validate(values)
 
     # Then
-    assert "content_sha256 must match content" in str(error.value)
-
-
-def test_planned_call_rejects_mismatched_prompt_digest() -> None:
-    # Given
-    prompt = b"frozen prompt"
-
-    # When
-    with pytest.raises(ValidationError) as error:
-        PlannedCall(
-            position=0,
-            context_indices=(0,),
-            model="model-a",
-            effort="low",
-            prompt_sha256=sha256(b"different").hexdigest(),
-            prompt=prompt,
-        )
-
-    # Then
-    assert "prompt_sha256 must match prompt" in str(error.value)
+    assert record.elapsed_seconds is not None
+    assert abs(record.elapsed_seconds - 0.25) < 1e-9
 
 
 def test_configuration_rejects_extra_fields() -> None:

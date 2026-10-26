@@ -2,7 +2,6 @@
 """Shared immutable values and persisted boundary records."""
 
 from dataclasses import dataclass
-from hashlib import sha256
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -27,6 +26,7 @@ type SettingValue = str | int | float | bool | None
 type PositiveSeconds = Annotated[float, Field(gt=0, allow_inf_nan=False)]
 type NonnegativeSeconds = Annotated[float, Field(ge=0, allow_inf_nan=False)]
 type NonnegativeBytes = Annotated[int, Field(ge=0)]
+type NonnegativeIndex = Annotated[int, Field(ge=0)]
 
 
 class StrictModel(BaseModel):
@@ -44,14 +44,14 @@ class StrictModel(BaseModel):
 class DirectoryOption(StrictModel):
     """Directory argument at its original command-line position."""
 
-    position: int
+    position: int = Field(ge=0)
     path: Path
 
 
 class SeparatorOption(StrictModel):
     """Separator argument at its original command-line position."""
 
-    position: int
+    position: int = Field(ge=0)
     value: str
 
 
@@ -85,6 +85,20 @@ class HarnessConfig(StrictModel):
         Raises:
             ValueError: A matrix dimension, output destination, or deadline is invalid.
         """
+        positions = tuple(option.position for option in self.ordered_options)
+        if positions != tuple(sorted(set(positions))):
+            raise ValueError("ordered option positions must be unique and increasing")
+        for index, option in enumerate(self.ordered_options):
+            if not isinstance(option, SeparatorOption):
+                continue
+            if (
+                index == 0
+                or index == len(self.ordered_options) - 1
+                or not isinstance(self.ordered_options[index - 1], DirectoryOption)
+                or not isinstance(self.ordered_options[index + 1], DirectoryOption)
+            ):
+                raise ValueError("separators must occur singly between directories")
+            _validate_separator_escapes(option.value)
         has_directory = any(
             isinstance(option, DirectoryOption) for option in self.ordered_options
         )
@@ -110,20 +124,6 @@ class SourceSnapshot(StrictModel):
     content_sha256: str
     content: bytes
 
-    @model_validator(mode="after")
-    def content_digest_matches(self) -> SourceSnapshot:
-        """Bind source provenance to its exact bytes.
-
-        Returns:
-            The validated source snapshot.
-
-        Raises:
-            ValueError: The recorded digest does not match the content.
-        """
-        if self.content_sha256 != sha256(self.content).hexdigest():
-            raise ValueError("content_sha256 must match content")
-        return self
-
 
 class InstructionsSnapshot(StrictModel):
     """Tracked instruction input, separate from generic context files."""
@@ -132,20 +132,6 @@ class InstructionsSnapshot(StrictModel):
     commit_blob_sha: str
     content_sha256: str
     content: bytes
-
-    @model_validator(mode="after")
-    def content_digest_matches(self) -> InstructionsSnapshot:
-        """Bind instruction provenance to its exact bytes.
-
-        Returns:
-            The validated instruction snapshot.
-
-        Raises:
-            ValueError: The recorded digest does not match the content.
-        """
-        if self.content_sha256 != sha256(self.content).hexdigest():
-            raise ValueError("content_sha256 must match content")
-        return self
 
 
 @dataclass(frozen=True)
@@ -162,27 +148,11 @@ class PlannedCall(StrictModel):
     """One ordered matrix position; identity awaits runtime binding."""
 
     position: int = Field(ge=0)
-    context_indices: tuple[int, ...]
+    context_indices: tuple[NonnegativeIndex, ...]
     model: str
     effort: str
     prompt_sha256: str
     prompt: bytes
-
-    @model_validator(mode="after")
-    def prompt_digest_matches(self) -> PlannedCall:
-        """Bind the stored prompt digest to the exact composed bytes.
-
-        Returns:
-            The validated planned call.
-
-        Raises:
-            ValueError: The digest does not match or an index is negative.
-        """
-        if self.prompt_sha256 != sha256(self.prompt).hexdigest():
-            raise ValueError("prompt_sha256 must match prompt")
-        if any(index < 0 for index in self.context_indices):
-            raise ValueError("context_indices must be nonnegative")
-        return self
 
 
 class FrozenPlan(StrictModel):
@@ -312,31 +282,13 @@ class AttemptRecord(StrictModel):
     error_type: str | None
     diagnostic: str | None
 
-    @model_validator(mode="after")
-    def validate_observation(self) -> AttemptRecord:
-        """Keep saved execution bounds and elapsed-time basis consistent.
-
-        Returns:
-            The validated attempt record.
-
-        Raises:
-            ValueError: Grace exceeds cleanup or elapsed data contradicts its basis.
-        """
-        if self.grace_seconds >= self.cleanup_timeout_seconds:
-            raise ValueError("grace_seconds must be less than cleanup_timeout_seconds")
-        elapsed_was_observed = self.elapsed_seconds is not None
-        basis_has_observation = self.elapsed_basis == "supervisor_observation"
-        if elapsed_was_observed != basis_has_observation:
-            raise ValueError("elapsed_seconds must match elapsed_basis")
-        return self
-
 
 class CallRecord(StrictModel):
     """Persisted state and source identity for one scheduled call."""
 
     run_id: RunId
     call_id: CallId
-    position: int
+    position: int = Field(ge=0)
     state: CallState
     source_paths: tuple[str, ...]
     source_sha256: tuple[str, ...]
@@ -360,3 +312,20 @@ class RunRecord(StrictModel):
     cli_version: str | None
     effective_settings: tuple[tuple[str, SettingValue], ...]
     calls: tuple[CallRecord, ...]
+
+
+def _validate_separator_escapes(value: str) -> None:
+    """Reject unsupported escapes without decoding the separator value.
+
+    Raises:
+        ValueError: The separator includes an unknown or incomplete escape.
+    """
+    supported = {"n", "r", "t", "\\"}
+    index = 0
+    while index < len(value):
+        if value[index] != "\\":
+            index += 1
+            continue
+        if index + 1 == len(value) or value[index + 1] not in supported:
+            raise ValueError("separator contains an unknown or dangling escape")
+        index += 2

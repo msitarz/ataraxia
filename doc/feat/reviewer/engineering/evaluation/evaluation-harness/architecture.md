@@ -3,11 +3,13 @@
 **Status: current view for the generic harness Work.** The Work contract in
 [README.md](README.md) owns behavior and acceptance. The shared model records
 are implemented in
-[`script/eval/model.py`](../../../../../../script/eval/model.py); the remaining
-components below are planned. No implementation authorizes model calls. The
-sibling [process supervisor](../process-supervisor/README.md) is implemented and
-owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
-and run evidence around that boundary.
+[`script/eval/model.py`](../../../../../../script/eval/model.py), and the input
+freezer is implemented in
+[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py); the
+remaining components below are planned. No implementation authorizes model
+calls. The sibling [process supervisor](../process-supervisor/README.md) is
+implemented and owns one attempt's process lifecycle; this harness owns plans,
+dispatch policy, and run evidence around that boundary.
 
 ## TL;DR
 
@@ -53,15 +55,38 @@ and run evidence around that boundary.
 
 ### Input freezer
 
+**Implemented:**
+[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py) provides the
+`RepositoryReader` port and `GitRepositoryReader` adapter. It requires all
+inputs to resolve to one non-bare worktree, checks the whole checkout for
+staged, unstaged, and untracked changes, and batches tracked-file and
+commit-blob queries. It selects immediate regular files in lexical order
+without recursion, requires each context directory to contain an immediate
+regular file, and strictly decodes selected bytes as UTF-8. Symlink aliases and
+parent components in context-directory paths are resolved normally; selected
+file entries and the final instructions-file entry must be regular
+nonsymlinks, while symlinked directory entries are skipped. A root-directory
+context skips the linked-worktree `.git` administrative file. Read bytes must
+exactly match pinned commit blobs; filter or line-ending transformations are
+reported as mismatches. Empty files are preserved. Instructions remain a
+distinct snapshot. Git commands have a finite timeout, use a deterministic
+locale, clear all inherited `GIT_*` variables before setting owned Git
+environment, and disable replacement objects, ambient global/system config,
+fsmonitor, optional index locks, and promisor lazy-fetches. The explicit global
+`--no-lazy-fetch` option makes unsupported Git versions fail rather than
+silently allowing missing-object fetches. The freezer performs no writes or
+model calls. The reviewed
+[`inputs.pyi`](design/eval/inputs.pyi) remains the historical port definition.
+
 **TL;DR:** Resolve and freeze exact tracked source bytes; leave composition to
 the pure planner.
 
 - This component resolves one repository root and HEAD for all inputs, checks
   the checkout and tracked-file membership in batches, and rejects paths that
-  escape the repository or traverse symbolic links.
+  escape the repository.
 - It selects immediate regular files in lexical order, strictly decodes UTF-8,
-  and compares each selected snapshot with the corresponding commit blob before
-  dispatch.
+  skips symlinked directory entries, and compares exact selected bytes with
+  their corresponding commit blobs before dispatch.
 - A configured instructions file passes the same repository containment,
   clean-checkout, tracked-file, strict UTF-8, and commit-blob checks. Its bytes,
   repository path, blob SHA, and content digest form a separate
@@ -95,8 +120,18 @@ the pure planner.
   snapshots, planned calls, the frozen plan, and persisted records. They use
   `ConfigDict(extra="forbid", strict=True, frozen=True)`; nested settings are
   tuples and immutable scalar or byte values rather than mutable mappings.
-- Validators check value constraints only. Git checks, file reads, estimates,
-  directory creation, and process execution belong to explicit operations.
+- Configuration validation enforces unique increasing option positions,
+  separator placement and supported escapes, required matrix and output
+  settings, and numeric bounds. Typed immutable plan and record schemas retain
+  their declared field shapes and serialize the producer's values losslessly;
+  they do not recheck producer relationships or recompute producer digests.
+  Attempt timestamps and outcome fields preserve raw observations, while
+  monotonic elapsed time remains the duration source because wall-clock time
+  can move backwards.
+- The external input operation owns Git checks, selected-file checks, and
+  snapshot digest calculation. Filesystem effects, estimates, directory
+  creation, and process execution also belong to explicit operations rather
+  than model validators.
 - A scheduled position has no effective-call identity until execution resolves
   its CLI binding and invocation settings. The effective identity then includes
   ordered content, exact instruction bytes, model, effort, executable/version,

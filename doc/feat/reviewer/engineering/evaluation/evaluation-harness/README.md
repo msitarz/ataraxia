@@ -85,8 +85,10 @@ A caller can inspect the complete scheduled matrix before any model call.
   confirm every discovered input file is tracked, rejecting ignored or
   untracked inputs without a Git subprocess per file.
 - Each directory contributes its immediate regular files in lexical filename
-  order, with no recursion and with symbolic-link directories or entries
-  rejected rather than followed.
+  order without recursion, and selected context files must be regular files
+  rather than symbolic links.
+- Directory aliases and symbolic links in parent paths resolve normally when
+  determining membership in the single context repository.
 - Files must decode as strict UTF-8, and invalid encoding or unreadable files
   refuse all model calls before dispatch.
 - Each call selects one file from every directory and joins their unchanged
@@ -142,6 +144,8 @@ Retained evidence identifies the exact supplied bytes and execution settings.
 - Batched comparison of selected source snapshots against that commit's blobs
   rejects any byte differences before dispatch or dry-run reporting, so
   concurrent edits cannot falsely attribute snapshot bytes to the commit.
+- The pinned HEAD must contain every selected input, without requiring those
+  files to have been committed together.
 - Dispatch uses those frozen bytes rather than rereading mutable source files.
 - Stable call identity includes ordered selected inputs, separator settings and
   bytes, composed bytes, model, effort, and relevant invocation settings, while
@@ -150,9 +154,10 @@ Retained evidence identifies the exact supplied bytes and execution settings.
   requested model and effort, argv, cwd, explicit configuration, and observable
   effective settings, with unavailable runtime bindings or context marked
   unknown.
-- A configured instructions file passes the same repository containment,
-  clean-checkout, tracked-file, strict UTF-8, and frozen snapshot-to-commit-blob
-  checks as context inputs, including in dry run.
+- A configured instructions file must itself be a regular nonsymlink file and
+  passes the same repository containment, clean-checkout, tracked-file, strict
+  UTF-8, and frozen snapshot-to-commit-blob checks as context inputs, including
+  in dry run.
 - Its repository-relative path, exact bytes, and digest are retained separately
   in execution metadata, and execution stages those frozen bytes for the CLI
   rather than rereading the original file.
@@ -240,7 +245,8 @@ A caller can rerun a manually selected subset as a new run.
 The original Work definition authorized no runner implementation, typed
 architecture, corpus preparation, or model calls. A later bounded assignment
 authorized the architecture proposal and typed boundary. The current
-incremental assignment implements the shared model records only; it does not
-authorize runner implementation, wiring, corpus preparation, or model calls.
+incremental assignment covers shared model records and the input boundary
+only; it does not authorize the remaining runner implementation, wiring,
+corpus preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.
