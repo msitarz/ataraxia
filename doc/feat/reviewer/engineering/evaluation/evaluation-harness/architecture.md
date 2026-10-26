@@ -351,8 +351,8 @@ gating retries and stopping globally on unsafe outcomes.
   completion both cancel/join the monitor after any in-flight probe safely
   settles and persists.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
-  in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
-  injected async clock/sleeper and random-source ports. Release the attempt slot
+  in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await and
+  sample through the injected `Runtime` port. Release the attempt slot
   before quota or capacity waiting. Even zero jitter yields to the event loop. A
   capacity retry is a fresh invocation of the same model, frozen inputs, and
   invocation settings, with no probe or substitution. Its normal wait end is

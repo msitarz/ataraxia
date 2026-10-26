@@ -135,8 +135,8 @@ class QuotaStatusReader(Protocol):
         """Run one separately supervised probe; never reuse an evaluation call."""
         ...
 
-class AsyncWaiter(Protocol):
-    """Inject clocks and cancellable waits for deterministic policy checks."""
+class Runtime(Protocol):
+    """Inject clocks, cancellable waits, and jitter for deterministic policy."""
 
     def utc_now(self) -> str:
         """Return a timezone-aware UTC timestamp in the persisted format."""
@@ -147,18 +147,16 @@ class AsyncWaiter(Protocol):
         ...
 
     async def sleep(self, seconds: float, /) -> None:
-        """Wait asynchronously; cancellation interrupts and zero waits yield."""
-        ...
+        """Wait asynchronously; cancellation interrupts and zero waits yield.
 
-class RandomSource(Protocol):
-    """Inject full-jitter sampling without coupling policy to global randomness."""
+        Capacity and quota waits use the same cancellable runtime; a zero
+        capacity-jitter sample still yields to the event loop.
+        """
+        ...
 
     def uniform(self, lower: float, upper: float, /) -> float:
-        """Sample inclusively within the supplied finite bounds."""
+        """Sample full jitter inclusively within supplied finite bounds."""
         ...
-
-class Runtime(AsyncWaiter, RandomSource, Protocol):
-    """Combined runtime dependency used by the coordinator."""
 
 @dataclass(frozen=True)
 class BoundRun:

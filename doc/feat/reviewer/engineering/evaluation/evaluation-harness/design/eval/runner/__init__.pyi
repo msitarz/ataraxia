@@ -3,7 +3,6 @@
 
 from .coordinator import Coordinator
 from .ports import (
-    AsyncWaiter,
     AttemptCall,
     AttemptRequestBuilder,
     BoundRun,
@@ -12,12 +11,10 @@ from .ports import (
     EffectiveCall,
     OutcomeClassifier,
     QuotaStatusReader,
-    RandomSource,
     Runtime,
 )
 
 __all__ = (
-    "AsyncWaiter",
     "AttemptCall",
     "AttemptRequestBuilder",
     "BoundRun",
@@ -27,6 +24,5 @@ __all__ = (
     "EffectiveCall",
     "OutcomeClassifier",
     "QuotaStatusReader",
-    "RandomSource",
     "Runtime",
 )
