@@ -68,7 +68,7 @@ class EvidenceStore(Protocol):
         ...
 
     def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
-        """Append passive session telemetry after a settled evaluation attempt."""
+        """Append a provider-neutral observation under call/attempt identity."""
         ...
 
     def finalize(self, record: RunRecord, /) -> None:

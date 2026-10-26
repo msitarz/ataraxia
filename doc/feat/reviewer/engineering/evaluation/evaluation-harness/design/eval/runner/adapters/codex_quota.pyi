@@ -12,10 +12,10 @@ from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
     AttemptNumber,
     CallId,
+    QuotaObservation,
     QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
-    QuotaTelemetrySnapshot,
     QuotaWindowId,
     QuotaWindowObservation,
     RunId,
@@ -27,7 +27,7 @@ from ..ports import (  # ruff: ignore[relative-imports]
 )
 
 class RawCodexQuotaStatusSource(Protocol):
-    """Injected local-session lookup; schema and discovery remain unverified."""
+    """Codex-only local-session lookup; schema and discovery remain unverified."""
 
     async def read_session_for_thread(
         self, thread_id: str, /
@@ -59,7 +59,8 @@ class CodexQuotaStatusReader(QuotaStatusReader):
 
     It owns fixed Luna/none probe request construction, invocation through the
     injected existing supervisor call, thread-ID extraction and local-session
-    correlation, and mapping of both required five-hour and weekly windows. If
+    correlation privately, and mapping of both required five-hour and weekly
+    windows to generic observations. Thread IDs never leave this adapter. If
     either window, identity, producer time, or freshness is missing, malformed,
     stale, or unrecognized, the observation is unknown/unavailable and cannot
     authorize resumption. No endpoint or exec schema is assumed: file discovery,
@@ -86,7 +87,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         evidence: AttemptEvidence,
         expected_scope: QuotaScope,
         /,
-    ) -> QuotaTelemetrySnapshot: ...
+    ) -> QuotaObservation: ...
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
     ) -> QuotaProbeEvidence:
@@ -107,7 +108,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         scope: QuotaScope,
         thread_id: str | None,
         /,
-    ) -> QuotaTelemetrySnapshot:
+    ) -> QuotaObservation:
         """Normalize schema and source age, order typed windows, and fail closed.
 
         Compare producer time first; use a sequence only within the same source

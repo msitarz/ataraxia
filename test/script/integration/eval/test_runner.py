@@ -422,15 +422,16 @@ def test_old_available_session_snapshot_cannot_replace_newer_exhaustion() -> Non
 def test_settled_attempt_session_telemetry_is_passive_and_separately_recorded() -> None:
     """Correlate session evidence without converting it into an evaluation retry."""
     # Given
-    # A settled evaluation result with captured thread.started output and a
-    # matching source session snapshot.
+    # A settled Codex evaluation result with captured `thread.started` output
+    # and a matching source session snapshot.
 
     # When
     # The Codex quota adapter ingests passive telemetry after safe cleanup.
 
     # Then
-    # It records source coordinate, producer time and scope separately under
-    # the call/attempt identity; it neither adds an attempt nor changes its result.
+    # Only the Codex adapter sees the thread ID; the generic event records the
+    # source coordinate, producer time, and scope under call/attempt identity.
+    # It neither adds an attempt nor changes its result.
     pass
 
 

@@ -50,7 +50,7 @@ class Coordinator:
         ingestion. Persist that observation separately; keep its producer
         timestamp and source sequence distinct from read time. The source
         adapter orders evidence before returning it so delayed older available
-        snapshots cannot supersede newer exhaustion. Unknown/mismatched scope or
+        observations cannot supersede newer exhaustion. Unknown/mismatched scope or
         inconclusive freshness fails closed. Once a quota failure pauses global
         dispatch, let active evaluations settle and persist before starting any
         new probe; an already-running supervised probe still settles and records
@@ -90,7 +90,7 @@ class Coordinator:
         time alone.
 
         Before using quota data, require the bound CLI scope, reader's expected
-        scope, passive snapshot scope, active probe request scope, and returned
+        scope, passive observation scope, active probe request scope, and returned
         observation scope to be present and equal. The current run has one
         binding shared by every call, so a verified quota pause remains global.
         It delegates one evaluation attempt to the supplied

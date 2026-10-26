@@ -325,28 +325,31 @@ gating retries and stopping globally on unsafe outcomes.
   but cannot reopen the newer pause; completion time or a later source read does
   not make its result eligible.
 - The consumer-owned quota port separates passive settled-attempt ingestion
-  from active polling. Passive ingestion correlates captured `thread.started`
-  evidence to its session snapshot; `poll` performs one separate supervised
-  invocation. The Codex adapter owns request construction, the existing public
-  supervisor call, thread/session correlation, and normalization. Both paths
-  produce generic scoped observations, and the core never parses CLI output or
-  session files. Producer timestamps and source sequence remain distinct from
-  harness read time. The source adapter orders evidence before returning it, so
-  delayed older availability cannot replace newer exhaustion; unknown or
-  mismatched scope, missing windows, stale source, or malformed data fails
-  closed. This ordering and freshness boundary awaits verified source rules.
+  from active polling. Passive ingestion returns an observation; `poll` performs
+  one separate supervised invocation. The Codex adapter privately correlates
+  captured `thread.started` evidence to its session and owns request
+  construction, the existing public supervisor call, and normalization. Thread
+  identifiers stay inside that adapter; the port and evidence events retain the
+  generic observation with sanitized source coordinate, producer timestamps,
+  and source sequence. Both paths produce generic scoped observations, and the
+  core never parses CLI output or session files. The source adapter orders
+  evidence before returning it, so delayed older availability cannot replace
+  newer exhaustion; unknown or mismatched scope, missing windows, stale source,
+  or malformed data fails closed. This ordering and freshness boundary awaits
+  verified source rules.
 - Each active check has a separate `QuotaProbeId` and append-only start and
   settled evidence with a scalar supervisor projection (including raw stream
-  artifact references and cleanup), request settings, timestamps, thread/source
-  association, normalized observation, and available usage. Passive evaluation
-  telemetry is also appended separately with its call and attempt identity.
-  Neither is an evaluation attempt record; probes consume no evaluation attempt
-  number, measurement, or semaphore slot. A configured probe-count cap counts
-  every active check. A known exhausted observation is a normal paused result
-  and schedules another cadence check. Unknown or unavailable data,
-  infrastructure failure, output overflow, evidence failure, unsafe cleanup, or
-  uncertain acquisition latches stop. Cancellation and normal completion both
-  cancel/join the monitor after any in-flight probe safely settles and persists.
+  artifact references and cleanup), request settings, timestamps, sanitized
+  source coordinate, normalized observation, and available usage. Passive
+  evaluation telemetry is also appended separately with its call and attempt
+  identity. Neither is an evaluation attempt record; probes consume no
+  evaluation attempt number, measurement, or semaphore slot. A configured
+  probe-count cap counts every active check. A known exhausted observation is a
+  normal paused result and schedules another cadence check. Unknown or
+  unavailable data, infrastructure failure, output overflow, evidence failure,
+  unsafe cleanup, or uncertain acquisition latches stop. Cancellation and normal
+  completion both cancel/join the monitor after any in-flight probe safely
+  settles and persists.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
   injected async clock/sleeper and random-source ports. Release the attempt slot

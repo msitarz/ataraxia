@@ -204,7 +204,7 @@ class QuotaProbeEvidence:
     """In-memory supervisor outcome passed to the evidence projection boundary.
 
     The supervisor objects and exceptions remain ephemeral here. A successful
-    exit or old session snapshot is not positive availability; the scoped
+    exit or old source record is not positive availability; the scoped
     observation must also be fresh and source-backed.
     """
 
@@ -216,7 +216,6 @@ class QuotaProbeEvidence:
     elapsed_seconds: float | None
     elapsed_basis: Literal["supervisor_observation", "unavailable"]
     ended_at_utc: str | None
-    thread_id: str | None
     observation: QuotaObservation | None
     classification_basis: str | None
     usage_telemetry: bytes | None
@@ -247,7 +246,6 @@ class QuotaProbeRecord(StrictModel):
     cleanup: CleanupRecord | None
     stdout_artifact: str | None
     stderr_artifact: str | None
-    thread_id: str | None
     observation: QuotaObservation | None
     classification_basis: str | None
     usage_telemetry: bytes | None
@@ -265,20 +263,13 @@ class QuotaProbeSettled(StrictModel):
     kind: Literal["settled"]
     record: QuotaProbeRecord
 
-class QuotaTelemetrySnapshot(StrictModel):
-    """Passive source association retained alongside its normalized windows."""
-
-    thread_id: str | None
-    observation: QuotaObservation
-    diagnostic: str | None
-
 class QuotaTelemetryEvent(StrictModel):
-    """Passive quota snapshot correlated to one settled evaluation attempt."""
+    """Provider-neutral observation correlated to one settled attempt."""
 
     run_id: RunId
     call_id: CallId
     attempt_number: AttemptNumber
-    snapshot: QuotaTelemetrySnapshot
+    observation: QuotaObservation
 
 class CapacityWaitContext(StrictModel):
     """Call and retry parameters persisted before a capacity sleep begins."""

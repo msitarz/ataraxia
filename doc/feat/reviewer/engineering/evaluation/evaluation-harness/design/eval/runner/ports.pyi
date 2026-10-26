@@ -15,10 +15,10 @@ from ..model import (  # ruff: ignore[relative-imports]
     HarnessConfig,
     PlannedCall,
     PreparedEvidence,
+    QuotaObservation,
     QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
-    QuotaTelemetrySnapshot,
     RetryAssessment,
     RunId,
     SettingValue,
@@ -101,8 +101,8 @@ class QuotaStatusReader(Protocol):
     """Separate passive ingestion from supervised active polling.
 
     Provider adapters correlate settled-attempt telemetry with their source and
-    return source-associated snapshots; active polling is a separate supervised
-    invocation with its own ephemeral probe evidence. Both paths produce
+    return observations; active polling is a separate supervised invocation
+    with its own ephemeral probe evidence. Both paths produce
     provider-neutral observations through this single port. The provider
     adapter owns required-window completeness and freshness, represents missing
     or malformed required windows explicitly, and does not infer reset times.
@@ -121,11 +121,11 @@ class QuotaStatusReader(Protocol):
         evidence: AttemptEvidence,
         expected_scope: QuotaScope,
         /,
-    ) -> QuotaTelemetrySnapshot:
-        """Return source association and windows for this attempt, else unknown.
+    ) -> QuotaObservation:
+        """Return source-backed windows for this attempt, else unknown.
 
-        Preserve the provider's invocation/source association so the coordinator
-        can persist which snapshot supplied the observation.
+        Preserve sanitized source coordinates and producer provenance on the
+        observation; provider-specific invocation identifiers stay in adapters.
         """
         ...
 
