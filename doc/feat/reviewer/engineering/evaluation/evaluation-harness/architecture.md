@@ -261,9 +261,11 @@ globally on unsafe outcomes.
   attempt cleanup permits dispatch. Cancellation, overflow, uncertain
   acquisition, unsafe cleanup, or recording failure latches a global stop and
   prevents any later dispatch.
-- Ordinary infrastructure, quota, and model-capacity retry allowances are
-  separate finite policies; each defaults to zero/off. A recognized category
-  cannot bypass its own allowance through another retry category.
+- Ordinary infrastructure and model-capacity retry allowances are separate
+  finite policies and both default to zero. Quota waiting defaults off; its
+  cumulative duration bound is optional and finite positive when supplied. A
+  recognized retry category cannot bypass its own allowance through another
+  retry category.
 - A classifier consumes structured supervisor observations and only explicitly
   verified CLI evidence. It returns infrastructure, quota, capacity, other,
   or unknown with its evidence basis. It never interprets answer content,
@@ -271,18 +273,29 @@ globally on unsafe outcomes.
   message alone as retry eligibility. Unknown recognition fails closed.
 - Quota exhaustion is global: stop new dispatch, settle active attempts through
   bounded cleanup, persist their evidence, release all slots, then consult a
-  quota-status port. The port represents five-hour and weekly windows and
-  their sources separately; missing or malformed status and unavailable reset
-  times are explicit outcomes that cannot trigger a guessed wait. Wait until
-  the latest relevant known reset, subject to the finite cumulative wait bound,
-  then recheck; a reset never promises renewed capacity. Every retry is gated
-  again on current quota state.
+  quota-status port. Every observation contains both the five-hour and weekly
+  windows, each with its source. An omitted, malformed, unknown, or unavailable
+  window and an unavailable reset time cannot trigger a guessed wait. Wait
+  until the latest relevant known reset, then recheck; a reset never promises
+  renewed capacity. When an optional finite cumulative wait bound is supplied,
+  it includes prior quota waits across reset cycles. Without that bound, an
+  explicitly enabled run may continue through successive known resets while
+  rechecks remain conclusive; the default remains no quota waiting. Every retry
+  is gated again on current quota state. The reader maps missing or malformed
+  source fields to explicit unknown or unavailable observations in both window
+  positions; this is the adapter contract, not additional coordinator-side
+  defensive validation.
 - Capacity backoff is local to its call. For retry index `k`, sample full
   jitter in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await
   through injected async clock/sleeper and random-source ports. Release the
   attempt slot before quota or capacity waiting. Even zero jitter yields to
   the event loop. A capacity retry is a fresh invocation of the same model,
   frozen inputs, and invocation settings, with no probe or substitution.
+- Before a wait begins, persist a start event with a stable wait ID and its
+  policy context. Capacity context includes the failed call and attempt, retry
+  index, base, cap, computed bound, and sampled delay; quota context includes
+  the triggering call and attempt, both window observations, selected reset,
+  optional cumulative limit, and elapsed wait from earlier reset cycles.
 - Both retry types require confident no-semantic-result evidence, safe cleanup,
   and successful persistence before waiting or retrying. They retain every
   attempt and count toward caller-owned attempt limits. A quota pause gates
@@ -366,9 +379,13 @@ evidence.
   record also stores the request's execution timeout, cleanup timeout, grace,
   and output-byte allowance, which are supervisor settings rather than CLI
   arguments.
-- Wait events are appended durably when a quota or capacity wait starts, when
-  a reset is selected or status is rechecked, and when the wait ends. The final
-  run summary alone is not evidence for a live wait. A failed event write
+- Wait events are appended durably when a quota or capacity wait starts (the
+  quota start event includes the selected reset), when quota status is
+  rechecked, and when the wait ends. Every
+  event carries the same stable wait ID and policy context as its `WaitRecord`
+  summary, so concurrent waits remain distinguishable. The event ledger is
+  persisted as it grows rather than duplicated in the final `RunRecord`; a
+  final summary alone is not evidence for a live wait. A failed event write
   latches stop and forbids resumption or retry.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
@@ -431,9 +448,12 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. Its `model.pyi` is a historical
-snapshot of the current value boundary, while `plan.pyi` remains a historical
-planner reference. The active implementations are
+boundary from which implementation proceeds. The pre-existing declarations in
+`model.pyi` are a historical snapshot of the current value boundary; its new
+quota, classification, and wait declarations are proposals awaiting review and
+migration into `script/eval/model.py`. They are not implemented runtime types
+or a competing active contract. `plan.pyi` remains a historical planner
+reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling, and

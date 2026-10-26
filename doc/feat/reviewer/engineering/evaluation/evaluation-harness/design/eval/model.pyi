@@ -1,5 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical reviewed boundary, now implemented in script/eval/model.py."""
+"""Historical core model sketch with proposed AC-6/AC-7 extensions.
+
+The pre-existing value declarations correspond to the current
+``script/eval/model.py`` runtime contract. Quota, classification, and wait
+declarations are proposals only: they are not runtime types or an active
+shadowing interface. Review and migrate accepted fields into that one runtime
+module before implementation.
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -25,12 +32,12 @@ type ControlFlow = Literal["returned", "cancelled", "raised"]
 type SettingValue = str | int | float | bool | None
 type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unknown"]
 type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
-type WindowName = Literal["five_hour", "weekly"]
 type QuotaState = Literal["available", "exhausted", "unknown", "unavailable"]
 type WaitEnd = Literal[
     "reset_reached", "recheck", "bound", "cancelled", "stop", "unknown"
 ]
-type WaitEventKind = Literal["started", "reset_selected", "recheck", "finished"]
+type WaitEventKind = Literal["started", "recheck", "finished"]
+type WaitId = str
 
 class StrictModel(BaseModel):
     """Raw configuration and persisted records reject extras and coercion."""
@@ -54,9 +61,10 @@ type OrderedOption = DirectoryOption | SeparatorOption
 class HarnessConfig(StrictModel):
     """CLI settings; validation does not perform I/O or dispatch.
 
-    AC-6/AC-7 settings validate finite positive wait/backoff durations, a cap
-    not below its base, and nonnegative retry allowances before dispatch. The
-    two retry allowances remain separate and both default to disabled.
+    Proposed AC-6/AC-7 fields below require finite positive supplied wait and
+    backoff durations, a cap not below its base, and nonnegative retry
+    allowances before dispatch. The capacity allowance defaults to zero and
+    quota waiting defaults off; a quota wait limit is optional.
     """
 
     ordered_options: tuple[OrderedOption, ...]
@@ -79,20 +87,19 @@ class HarnessConfig(StrictModel):
     instructions_file_path: Path | None
 
 class QuotaWindowObservation(StrictModel):
-    """One source-backed account window; unavailable data stays explicit."""
+    """One window's source-backed result; unknown or unavailable stays explicit."""
 
-    window: WindowName
     state: QuotaState
     reset_at_utc: str | None
     source: str | None
     diagnostic: str | None
 
 class QuotaObservation(StrictModel):
-    """Five-hour and weekly observations from one verified status source."""
+    """Both windows are always represented, even when either is unavailable."""
 
     observed_at_utc: str
-    windows: tuple[QuotaWindowObservation, ...]
-    source: str | None
+    five_hour: QuotaWindowObservation
+    weekly: QuotaWindowObservation
     diagnostic: str | None
 
 class RetryAssessment(StrictModel):
@@ -103,20 +110,39 @@ class RetryAssessment(StrictModel):
     no_result_basis: NoResultBasis
     diagnostic: str | None
 
-class WaitRecord(StrictModel):
-    """Persisted wait observations, including events before the run ends."""
+class QuotaWaitContext(StrictModel):
+    """Quota trigger and cumulative bound accounting, known at wait start."""
 
-    kind: Literal["quota", "capacity"]
-    call_id: CallId | None
-    retry_index: int | None
+    kind: Literal["quota"]
+    trigger_call_id: CallId
+    trigger_attempt_number: AttemptNumber
+    cumulative_waited_before_seconds: float
+    wait_limit_seconds: float | None
+    quota_observation: QuotaObservation
+    selected_reset_at_utc: str
+
+class CapacityWaitContext(StrictModel):
+    """Call and retry parameters persisted before a capacity sleep begins."""
+
+    kind: Literal["capacity"]
+    call_id: CallId
+    failed_attempt_number: AttemptNumber
+    retry_index: int
+    base_seconds: float
+    cap_seconds: float
+    jitter_bound_seconds: float
+    sampled_seconds: float
+
+type WaitContext = QuotaWaitContext | CapacityWaitContext
+
+class WaitRecord(StrictModel):
+    """One final summary joined to its live events through stable context ID."""
+
+    wait_id: WaitId
+    context: WaitContext
     started_at_utc: str
     ended_at_utc: str | None
     elapsed_seconds: float | None
-    bound_seconds: float | None
-    jitter_bound_seconds: float | None
-    sampled_seconds: float | None
-    quota_observation: QuotaObservation | None
-    rechecks: tuple[QuotaObservation, ...]
     end: WaitEnd
     diagnostic: str | None
 
@@ -124,12 +150,12 @@ class WaitEvent(StrictModel):
     """Append-only event persisted when a wait starts and while it proceeds."""
 
     run_id: RunId
-    wait_id: str
+    wait_id: WaitId
+    context: WaitContext
     kind: WaitEventKind
     observed_at_utc: str
     elapsed_seconds: float
     quota_observation: QuotaObservation | None
-    selected_reset_at_utc: str | None
     end: WaitEnd | None
     diagnostic: str | None
 
@@ -248,7 +274,6 @@ class RunRecord(StrictModel):
     effective_settings: tuple[tuple[str, SettingValue], ...]
     calls: tuple[CallRecord, ...]
     waits: tuple[WaitRecord, ...]
-    wait_events: tuple[WaitEvent, ...]
 
 class CallRecord(StrictModel):
     run_id: RunId

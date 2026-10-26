@@ -40,10 +40,11 @@ class EvidenceStore(Protocol):
         ...
 
     def record_wait_event(self, event: WaitEvent, /) -> None:
-        """Durably append wait start, selected reset, recheck, and end events.
+        """Durably append wait start, quota recheck, and end events.
 
-        The coordinator records each event as it happens; a final run summary
-        alone is not sufficient evidence of a live wait.
+        The quota start carries the selected reset; the coordinator records
+        each event as it happens. A final run summary alone is not sufficient
+        evidence of a live wait.
         """
         ...
 

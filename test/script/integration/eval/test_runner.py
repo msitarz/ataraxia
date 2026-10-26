@@ -197,7 +197,8 @@ def test_quota_pause_settles_and_records_active_attempts_before_reset_wait() -> 
 
     # Then
     # No new dispatch occurs during the global pause, evidence is persisted before
-    # waiting, no slot is held, and unknown or missing reset data fails closed.
+    # waiting, no slot is held, completed calls are not repeated, and unknown or
+    # missing reset data fails closed.
     pass
 
 
@@ -221,7 +222,8 @@ def test_capacity_retry_uses_saturated_full_jitter_and_rechecks_quota_gate() -> 
     # Then
     # The bound saturates at cap, the call waits without a slot, unaffected calls
     # may proceed before quota exhaustion, and retry dispatch rechecks the gate;
-    # the retry uses the same frozen inputs, model, and settings.
+    # the retry uses the same frozen inputs, model, and settings, and completed
+    # calls are never redispatched.
     pass
 
 
@@ -244,4 +246,128 @@ def test_cancellation_during_either_wait_stops_without_retry_and_records_wait() 
     # Then
     # No retry or later dispatch occurs, prior attempt evidence remains intact,
     # and each wait retains its start, elapsed monotonic duration, and end reason.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-6/AC-7 automatic waits and capacity retries default off"
+    ),
+)
+def test_quota_wait_and_capacity_retry_are_disabled_by_default() -> None:
+    """Keep opt-in behavior out of an ordinary harness invocation."""
+    # Given
+    # A quota observation and capacity failure under omitted policy options.
+
+    # When
+    # The coordinator processes the attempt with its default configuration.
+
+    # Then
+    # It performs no quota wait or capacity retry and retains both outcomes.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-7 exhausted capacity allowance cannot be bypassed "
+        "via infrastructure retries"
+    ),
+)
+def test_exhausted_capacity_allowance_cannot_retry_as_infrastructure() -> None:
+    """Keep retry categories separate when one allowance is exhausted."""
+    # Given
+    # A confident capacity classification, exhausted capacity allowance, and
+    # remaining ordinary infrastructure retries.
+
+    # When
+    # The coordinator assesses another capacity failure.
+
+    # Then
+    # It dispatches no retry through the infrastructure allowance.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6/AC-7 retries require confident no-result evidence",
+)
+def test_retry_eligibility_requires_confident_absence_of_semantic_result() -> None:
+    """Distinguish reliable no-result evidence from suggestive output."""
+    # Given
+    # A recognized capacity or quota failure with absent, present, or inconclusive
+    # semantic-result evidence, including nonzero exit and capacity text alone.
+
+    # When
+    # The classifier supplies each evidence variant to retry policy.
+
+    # Then
+    # Only confident absence can be eligible; present or unknown evidence never
+    # retries, and answer content is not parsed to decide.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-6 cumulative wait bound covers successive reset cycles",
+)
+def test_quota_wait_bound_accumulates_and_requires_both_source_backed_windows() -> None:
+    """Fail closed on missing or inconclusive data for either quota window."""
+    # Given
+    # Successive five-hour and weekly resets, a finite cumulative wait limit,
+    # and raw status payloads that omit or malformedly encode a window, report
+    # unknown status, or omit reset time.
+
+    # When
+    # The quota reader and coordinator wait across reset cycles and recheck.
+
+    # Then
+    # Prior monotonic wait is charged against the same bound; only complete,
+    # conclusive observations of both windows can select a wait. Any unknown,
+    # malformed, or unavailable window or reset fails closed.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason=(
+        "not implemented: AC-3/AC-6/AC-7 wait-event persistence failure latches stop"
+    ),
+)
+def test_wait_event_write_failure_stops_before_resumption_or_later_dispatch() -> None:
+    """Verify durable wait journal failures take effect before policy continues."""
+    # Given
+    # A quota or capacity wait whose start, recheck, or finish event cannot persist.
+
+    # When
+    # The evidence store fails that append while another call is ready to dispatch.
+
+    # Then
+    # Stop latches immediately, no retry or later call starts, and the run remains
+    # incomplete without claiming an unrecorded wait outcome.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
+    reason="not implemented: AC-7 large retry indexes saturate and zero jitter yields",
+)
+def test_capacity_backoff_saturates_for_large_index_and_zero_delay_yields() -> None:
+    """Exercise overflow-safe bound calculation and the zero-delay event-loop yield."""
+    # Given
+    # A very large retry index and deterministic samples at both jitter endpoints.
+
+    # When
+    # The call-local full-jitter delay is calculated and awaited.
+
+    # Then
+    # The bound remains the finite cap without arithmetic overflow, zero delay
+    # still yields to other tasks, and no attempt slot is held while waiting.
     pass
