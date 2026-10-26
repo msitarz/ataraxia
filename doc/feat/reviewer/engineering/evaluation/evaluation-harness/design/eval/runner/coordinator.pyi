@@ -33,7 +33,10 @@ class Coordinator:
 
         Own stop latching, task and signal cancellation, active cleanup waits,
         event persistence, semaphore lifetime, and truthful not-started status.
-        It delegates one attempt to the supplied AttemptCall and never creates
-        or cleans up a subprocess itself.
+        Before using quota observations, require the bound CLI scope, reader's
+        expected scope, and observation scope to be present and equal. The
+        current run has one binding shared by every call, so a verified quota
+        pause remains global. It delegates one attempt to the supplied
+        AttemptCall and never creates or cleans up a subprocess itself.
         """
         ...

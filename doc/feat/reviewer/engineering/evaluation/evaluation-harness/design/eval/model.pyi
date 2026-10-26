@@ -10,7 +10,7 @@ module before implementation.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, NewType
 
 from pydantic import BaseModel, ConfigDict
 
@@ -33,6 +33,9 @@ type SettingValue = str | int | float | bool | None
 type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unknown"]
 type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
 type QuotaState = Literal["available", "exhausted", "unknown", "unavailable"]
+QuotaProviderId = NewType("QuotaProviderId", str)
+QuotaAllowanceId = NewType("QuotaAllowanceId", str)
+QuotaWindowId = NewType("QuotaWindowId", str)
 type WaitEnd = Literal[
     "reset_reached", "delay_elapsed", "bound", "cancelled", "stop", "unknown"
 ]
@@ -86,20 +89,41 @@ class HarnessConfig(StrictModel):
     capacity_backoff_cap_seconds: float | None = None
     instructions_file_path: Path | None
 
-class QuotaWindowObservation(StrictModel):
-    """One window's source-backed result; unknown or unavailable stays explicit."""
+class QuotaScope(StrictModel):
+    """Opaque provider and allowance identity safe to retain in run evidence.
 
+    ``allowance_id`` is a stable, nonsecret identifier for one account/allowance
+    combination within the provider; it is not a raw account name, credential,
+    or token.
+    """
+
+    provider_id: QuotaProviderId
+    allowance_id: QuotaAllowanceId
+
+class QuotaWindowObservation(StrictModel):
+    """One provider-specific blocking window with explicit source evidence.
+
+    ``source`` and ``diagnostic`` are sanitized descriptors, never raw account
+    identity or credentials.
+    """
+
+    window_id: QuotaWindowId
     state: QuotaState
     reset_at_utc: str | None
     source: str | None
     diagnostic: str | None
 
 class QuotaObservation(StrictModel):
-    """Both windows are always represented, even when either is unavailable."""
+    """Provider-neutral window observations for one verified quota scope.
 
+    A missing scope is inconclusive and cannot authorize a wait. Required
+    window completeness is defined by the provider adapter. Diagnostics are
+    sanitized and contain no account identity or credentials.
+    """
+
+    scope: QuotaScope | None
     observed_at_utc: str
-    five_hour: QuotaWindowObservation
-    weekly: QuotaWindowObservation
+    windows: tuple[QuotaWindowObservation, ...]
     diagnostic: str | None
 
 class RetryAssessment(StrictModel):
@@ -111,7 +135,11 @@ class RetryAssessment(StrictModel):
     diagnostic: str | None
 
 class QuotaWaitContext(StrictModel):
-    """Quota trigger and cumulative bound accounting, known at wait start."""
+    """Quota trigger and cumulative accounting with its scoped observations.
+
+    The nested observation scope must match the triggering call's bound CLI
+    scope; its generic window IDs and source evidence support the chosen reset.
+    """
 
     kind: Literal["quota"]
     trigger_call_id: CallId

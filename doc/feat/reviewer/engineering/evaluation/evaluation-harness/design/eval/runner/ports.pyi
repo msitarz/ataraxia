@@ -15,6 +15,7 @@ from ..model import (  # ruff: ignore[relative-imports]
     PlannedCall,
     PreparedEvidence,
     QuotaObservation,
+    QuotaScope,
     RetryAssessment,
     RunId,
     SettingValue,
@@ -22,18 +23,26 @@ from ..model import (  # ruff: ignore[relative-imports]
 
 @dataclass(frozen=True)
 class CliBinding:
-    """Immutable CLI identity; dry run deliberately has no binding."""
+    """Immutable CLI identity; dry run deliberately has no binding.
+
+    ``quota_scope`` is absent until the provider/account allowance identity is
+    verified; no raw account or credential data belongs in this value.
+    """
 
     executable_path: Path
     cli_version: str | None
     runner_version: str
     effective_settings: tuple[tuple[str, SettingValue], ...]
+    quota_scope: QuotaScope | None
 
 class CliBindingResolver(Protocol):
     """Resolve CLI identity only on the execution branch."""
 
     def resolve(self, config: HarnessConfig, /) -> CliBinding:
-        """Resolve the absolute executable path, version, and effective settings."""
+        """Resolve CLI identity and only a verified provider/allowance scope.
+
+        Return ``quota_scope=None`` when that identity cannot be verified.
+        """
         ...
 
 @dataclass(frozen=True)
@@ -86,15 +95,22 @@ class OutcomeClassifier(Protocol):
         ...
 
 class QuotaStatusReader(Protocol):
-    """Return both source-backed windows or explicit unknown observations.
+    """Return source-backed generic windows or explicit unknown observations.
 
-    Always represent five-hour and weekly windows. Map missing or malformed
-    source fields to unknown or unavailable observations in their window
-    positions; never omit a window or infer reset times.
+    The provider adapter owns required-window completeness. It represents every
+    required window even when data is missing or malformed, and does not infer
+    reset times. Core policy treats absent scope, empty windows, unknown status,
+    or a scope mismatch as inconclusive; it does not interpret provider window
+    IDs.
     """
 
+    @property
+    def expected_scope(self) -> QuotaScope | None:
+        """Verified scope paired with this reader, if known."""
+        ...
+
     async def read(self) -> QuotaObservation:
-        """Return unavailable or unknown fields rather than guessed reset values."""
+        """Return observations only for the expected scope, else unknown."""
         ...
 
 class AsyncWaiter(Protocol):
@@ -124,7 +140,7 @@ class Runtime(AsyncWaiter, RandomSource, Protocol):
 
 @dataclass(frozen=True)
 class BoundRun:
-    """Plan, resolved CLI, staged evidence paths, and built effective calls."""
+    """Plan and calls sharing one resolved CLI and its optional quota scope."""
 
     plan: FrozenPlan
     binding: CliBinding

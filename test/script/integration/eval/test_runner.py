@@ -188,17 +188,18 @@ def test_retries_require_eligible_failure_and_never_reinterpret_zero_exit_conten
 def test_quota_pause_settles_and_records_active_attempts_before_reset_wait() -> None:
     """Exercise quota coordination with injected status and async time ports."""
     # Given
-    # Multiple active calls, a quota-blocked call, and source-backed five-hour
-    # and weekly observations with different reset times.
+    # Multiple active calls sharing one Codex CLI binding and quota scope, plus
+    # complete source-backed five-hour and weekly windows with different resets.
 
     # When
     # The coordinator recognizes quota exhaustion, observes active cleanup, and
     # waits until the latest relevant reset before an explicit recheck.
 
     # Then
-    # No new dispatch occurs during the global pause, evidence is persisted before
-    # waiting, no slot is held, completed calls are not repeated, and unknown or
-    # missing reset data fails closed.
+    # No new dispatch occurs during the current global pause, evidence is
+    # persisted before waiting, no slot is held, and completed calls are not
+    # repeated. Missing or mismatched binding, reader, or observation scope
+    # fails closed instead of pausing calls for another account or allowance.
     pass
 
 
@@ -317,20 +318,23 @@ def test_retry_eligibility_requires_confident_absence_of_semantic_result() -> No
     strict=True,
     reason="not implemented: AC-6 cumulative wait bound covers successive reset cycles",
 )
-def test_quota_wait_bound_accumulates_and_requires_both_source_backed_windows() -> None:
-    """Fail closed on missing or inconclusive data for either quota window."""
+def test_quota_wait_bound_accumulates_and_requires_complete_codex_windows() -> None:
+    """Fail closed when either required Codex window or scope is inconclusive."""
     # Given
-    # Successive five-hour and weekly resets, a finite cumulative wait limit,
-    # and raw status payloads that omit or malformedly encode a window, report
-    # unknown status, or omit reset time.
+    # Successive Codex five-hour and weekly resets, a finite cumulative wait
+    # limit, and raw status payloads that omit or malformedly encode either
+    # required Codex window, report unknown status, omit a reset, or have an
+    # unverified or mismatched provider/account allowance identity.
 
     # When
     # The quota reader and coordinator wait across reset cycles and recheck.
 
     # Then
-    # Prior monotonic wait is charged against the same bound; only complete,
-    # conclusive observations of both windows can select a wait. Any unknown,
-    # malformed, or unavailable window or reset fails closed.
+    # Prior monotonic wait is charged against the same bound. The Codex adapter
+    # emits both required windows as generic window records and marks missing or
+    # malformed data unknown/unavailable; only complete, conclusive observations
+    # with matching scope can select a wait. Unknown windows, scope, or reset
+    # fail closed. Generic policy does not interpret Codex window IDs.
     pass
 
 

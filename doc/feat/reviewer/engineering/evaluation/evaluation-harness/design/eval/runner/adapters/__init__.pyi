@@ -6,7 +6,7 @@ from .codex import (
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
 )
-from .quota import CodexQuotaStatusReader, RawQuotaStatusSource
+from .codex_quota import CodexQuotaStatusReader, RawCodexQuotaStatusSource
 from .runtime import SystemRuntime
 
 __all__ = (
@@ -14,6 +14,6 @@ __all__ = (
     "CodexCliBindingResolver",
     "CodexOutcomeClassifier",
     "CodexQuotaStatusReader",
-    "RawQuotaStatusSource",
+    "RawCodexQuotaStatusSource",
     "SystemRuntime",
 )

@@ -18,7 +18,7 @@ from ..ports import (  # ruff: ignore[relative-imports]
 )
 
 class CodexCliBindingResolver(CliBindingResolver):
-    """Resolve executable, CLI version, and observable effective settings."""
+    """Resolve CLI identity and a quota scope only when its identity is verified."""
 
     def resolve(self, config: HarnessConfig, /) -> CliBinding: ...
 

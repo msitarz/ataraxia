@@ -273,20 +273,37 @@ gating retries and stopping globally on unsafe outcomes.
   or unknown with its evidence basis. It never interprets answer content,
   treats a nonzero exit as proof of no semantic result, or treats a capacity
   message alone as retry eligibility. Unknown recognition fails closed.
-- Quota exhaustion is global: stop new dispatch, settle active attempts through
-  bounded cleanup, persist their evidence, release all slots, then consult a
-  quota-status port. Every observation contains both the five-hour and weekly
-  windows, each with its source. An omitted, malformed, unknown, or unavailable
-  window and an unavailable reset time cannot trigger a guessed wait. Wait
-  until the latest relevant known reset, then recheck; a reset never promises
-  renewed capacity. When an optional finite cumulative wait bound is supplied,
-  it includes prior quota waits across reset cycles. Without that bound, an
+- The current harness resolves one Codex CLI binding shared by every planned
+  call, so verified Codex quota exhaustion stops new dispatch globally, settles
+  active attempts through bounded cleanup, persists their evidence, releases
+  all slots, then consults the quota-status port. An observation carries an
+  opaque provider/account-allowance scope and provider-neutral window IDs,
+  states, reset times, and sources. The Codex adapter owns completeness for its
+  required five-hour and weekly windows; a missing or malformed one is emitted
+  as unknown or unavailable, never omitted or guessed. The core does not
+  interpret window IDs: absent or mismatched scope, empty observations, unknown
+  or unavailable states, or a missing reset for an exhausted window cannot
+  trigger a wait. The latest relevant reset is awaited and then rechecked; a
+  reset never promises renewed capacity. An optional finite cumulative wait
+  bound includes earlier quota waits across reset cycles. Without it, an
   explicitly enabled run may continue through successive known resets while
   rechecks remain conclusive; the default remains no quota waiting. Every retry
-  is gated again on current quota state. The reader maps missing or malformed
-  source fields to explicit unknown or unavailable observations in both window
-  positions; this is the adapter contract, not additional coordinator-side
-  defensive validation.
+  is gated again on current quota state.
+- The composition pairs the Codex request path and settled-output classifier
+  with a quota reader configured for the same CLI binding scope. The external
+  binding adapter creates a `QuotaScope` only from verified provider and
+  allowance identity; otherwise the binding scope is absent. Once a source is
+  verified, the Codex quota adapter validates its reported identity against
+  that expected scope; missing or mismatched identity yields an unscoped,
+  inconclusive observation. The coordinator trusts these internal typed values
+  and compares scope equality; it does not parse account identifiers. Persisted
+  scope identifiers are opaque and nonsecret, never raw account names,
+  credentials, or tokens. The current source format and identity evidence are
+  unresolved, so these validation boundaries remain planned and fail closed.
+- A later mixed-provider runner could pause only calls sharing a blocked quota
+  scope. That is not the current AC-6 behavior: the single Codex binding keeps
+  the pause global, and this design adds no provider registry or CLI provider
+  selection.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
   injected async clock/sleeper and random-source ports. Release the attempt slot
@@ -298,8 +315,9 @@ gating retries and stopping globally on unsafe outcomes.
 - Before a wait begins, persist a start event with a stable wait ID and its
   policy context. Capacity context includes the failed call and attempt, retry
   index, base, cap, computed bound, and sampled delay; quota context includes
-  the triggering call and attempt, both window observations, selected reset,
-  optional cumulative limit, and elapsed wait from earlier reset cycles.
+  the triggering call and attempt, the scoped generic window observations,
+  selected reset, optional cumulative limit, and elapsed wait from earlier
+  reset cycles.
 - Both retry types require confident no-semantic-result evidence, safe cleanup,
   and successful persistence before waiting or retrying. They retain every
   attempt and count toward caller-owned attempt limits. A quota pause gates
@@ -345,16 +363,19 @@ Codex, quota, and runtime adapters.
   from frozen inputs, and classifies only settled captured stdout JSONL and raw
   stderr. It makes no streaming promise and returns unknown for unsupported or
   unverified classification signals; it never parses answer content.
-- `runner.adapters.quota` implements the quota-reader port over an injected raw
-  status capture. Its source and wire format remain unverified: no endpoint,
-  exec schema, or app-server schema is assumed, and missing or unrecognized
-  data yields both windows as unknown or unavailable.
+- `runner.adapters.codex_quota` implements the provider-neutral quota-reader
+  port for a Codex binding scope. It owns recognition and completeness for the
+  Codex five-hour and weekly windows, returning generic window records; its
+  source format and identity evidence remain unverified. No endpoint, exec
+  schema, or app-server schema is assumed, and missing scope or window data
+  fails closed.
 - `runner.adapters.runtime` supplies UTC and monotonic clocks, cancellable
   `asyncio` waits, and uniform jitter sampling through the runtime port.
 - The adapter package exports these planned adapters. The CLI composition root
-  wires the Codex classifier, quota reader, runtime, and supervisor adapter
-  into one coordinator. These are design stubs only; no runner implementation
-  is present.
+  wires the Codex request and classifier adapters and a quota reader configured
+  for the same single binding scope, along with the runtime and supervisor
+  adapter, into one coordinator. These are design stubs only; no runner
+  implementation is present.
 - Effects: the coordinator owns async scheduling and effect ordering. The
   Codex and quota adapters own their stated external reads; the runtime adapter
   owns clock, wait, and random effects.
@@ -526,7 +547,7 @@ machine-readable sources are verified.
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait bound, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/adapters/codex.py` | CLI binding, fresh request construction, and conservative settled-output classification. |
-| `script/eval/runner/adapters/quota.py` | Fail-closed quota reader over an injected, still-unverified status source. |
+| `script/eval/runner/adapters/codex_quota.py` | Codex five-hour/weekly mapping to generic scoped windows; source and identity remain unverified. |
 | `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |
 | `script/eval/runner/adapters/__init__.py` | Concrete planned adapters exported for composition. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
@@ -547,7 +568,7 @@ flowchart LR
     CLI --> EVIDENCE[evidence.py]
     RUNNER --> COORD[runner/coordinator.py]
     RUNNER --> CODEX[runner/adapters/codex.py]
-    RUNNER --> QUOTA[runner/adapters/quota.py]
+    RUNNER --> QUOTA[runner/adapters/codex_quota.py]
     RUNNER --> RUNTIME[runner/adapters/runtime.py]
     COORD --> POLICY[runner/policy.py]
     COORD --> PORTS[runner/ports.py]
