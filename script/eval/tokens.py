@@ -65,10 +65,11 @@ type CountTokens = Callable[[bytes, TokenizerSelection], int]
 class TiktokenEstimator:
     """Provider-neutral adapter using a selected tiktoken encoding.
 
-    Tokenizer selection and counting are injected leaf operations so wiring can
-    be reviewed before the dependency, model mapping, or library behavior is
-    added. A selection without an encoding returns a labeled unknown estimate.
-    Exceptions from either leaf operation propagate to the caller.
+    Tokenizer selection and counting are injected leaf operations so callers
+    can provide alternate implementations. The default composition uses the
+    installed tiktoken model mapping and tokenizer. A selection without an
+    encoding returns a labeled unknown estimate. Exceptions from either leaf
+    operation propagate to the caller.
     """
 
     def __init__(
@@ -122,7 +123,7 @@ def tiktoken_estimator() -> TiktokenEstimator:
     create harness output/evidence.
 
     Returns:
-        An adapter connected to the unfinished default package leaves.
+        An adapter using tiktoken's declared model mappings and encoding API.
     """
     return TiktokenEstimator(_select_tiktoken_encoding, _count_tiktoken_tokens)
 

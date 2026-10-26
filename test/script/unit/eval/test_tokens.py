@@ -382,6 +382,7 @@ def test_default_adapter_counts_plain_utf8_text_with_real_encoding_offline(
     )
 
     def get_encoding(name: str) -> tiktoken.Encoding:
+        assert name == "o200k_base"
         return encoding
 
     monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)
@@ -392,7 +393,7 @@ def test_default_adapter_counts_plain_utf8_text_with_real_encoding_offline(
     result = estimator.estimate(content, "gpt-4o", "supplied_context")
 
     # Then
-    assert result.token_count == len(encoding.encode_ordinary(content.decode("utf-8")))
+    assert result.token_count == len(content)
     assert result.method == "tiktoken:o200k_base"
     assert result.library_version == tiktoken.__version__
     assert result.tokenizer_version is None
@@ -413,6 +414,7 @@ def test_default_adapter_counts_empty_text_as_zero(
     )
 
     def get_encoding(name: str) -> tiktoken.Encoding:
+        assert name == "o200k_base"
         return encoding
 
     monkeypatch.setattr(tiktoken, "get_encoding", get_encoding)

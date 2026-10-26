@@ -256,7 +256,7 @@ authorized the architecture proposal and typed boundary, shared model records,
 the input boundary, and the pure planning wiring. A subsequent bounded
 implementation assignment delivered grouping, exact-byte context composition,
 and deterministic call-matrix expansion through the public pure planner. The
-the current bounded assignment implements local `tiktoken` token counting and
+current bounded assignment implements local `tiktoken` token counting and
 its development dependency behind the provider-neutral port. Its approved
 first-use vocabulary download and native cache write are documented in the
 current architecture. These assignments do not establish CLI integration,
