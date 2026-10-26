@@ -569,8 +569,9 @@ Codex, quota, and runtime adapters.
 **TL;DR:** Preserve each run, planned call, and attempt without replacing prior
 evidence.
 
-- The store exclusively creates a new output directory, after confirming its
-  location is outside the input repository or ignored there.
+- The store exclusively creates a new output directory. It accepts destinations
+  inside or outside the input repository; an unignored in-repository output can
+  make the checkout dirty for the next input freeze.
 - Before any supervisor process can launch, `create` writes the frozen plan to
   that new area and materializes configured instructions-file bytes as the
   artifact referenced by `model_instructions_file`. It returns that artifact
@@ -707,9 +708,9 @@ leaves run off the event loop. A coroutine that has not started and submitted
 its retained task is not yet an operation owned by the adapter. The runner must
 retain and await submitted evidence operations during shutdown. The lock is
 in-memory and serializes only this adapter on its event loop; it provides no
-cross-process coordination. The filesystem store creates a new output directory,
-accepts destinations outside the context repository or ignored by Git, and
-writes `plan.json` plus optional `instructions.bin` before dispatch. Attempt
+cross-process coordination. The filesystem store creates a new output directory
+inside or outside the context repository and writes `plan.json` plus optional
+`instructions.bin` before dispatch. Attempt
 metadata lives in
 `attempts/position-<position>/<sha256-call-id>/attempt-<number>.json`; probe
 artifacts use a `sha256-probe-id` directory. Stream suffixes are appended to the

@@ -4,14 +4,16 @@
 from dataclasses import replace
 import hashlib
 import json
-import os
 from pathlib import Path
 
 import pytest
 
 from script.eval.evidence import create_evidence_store
+from script.eval.inputs import GitRepositoryReader
 from script.eval.model import (
     AttemptEvidence,
+    DirectoryOption,
+    HarnessConfig,
     InstructionsSnapshot,
     QuotaProbeCancelled,
     QuotaProbeEvidence,
@@ -21,6 +23,7 @@ from script.eval.model import (
     RunRecord,
     WaitEvent,
 )
+from script.eval.plan import PurePlanBuilder
 from script.process_supervisor import (
     AttemptObservation,
     AttemptRequest,
@@ -345,30 +348,49 @@ def test_request_uses_staged_instructions_after_original_file_changes() -> None:
     pass
 
 
-async def test_new_output_requires_external_or_ignored_location_before_any_launch(
+async def test_unignored_in_repository_output_is_written_and_makes_next_freeze_dirty(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Check destination policy before any artifacts or model process can exist."""
+    """Write evidence into an unignored checkout without changing Git metadata."""
     # Given
     repository = make_repository(tmp_path / "context")
-    (repository / ".gitignore").write_text("ignored/\n")
-    git(repository, "add", ".gitignore")
-    git(repository, "commit", "-qm", "ignore")
-    plan = frozen_plan(repository)
+    output = repository / "evidence" / "run"
+    configuration = HarnessConfig(
+        ordered_options=(DirectoryOption(position=0, path=repository / "context"),),
+        models=("model-a",),
+        efforts=("low",),
+        concurrency=1,
+        output_directory=output,
+        dry_run=False,
+        timeout_seconds=5.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=0,
+        instructions_file_path=None,
+    )
+    reader = GitRepositoryReader()
+    inputs = reader.freeze(configuration)
+    plan = PurePlanBuilder("run-1").plan(inputs, configuration)
+    index_before = (repository / ".git" / "index").read_bytes()
+    tracked_before = git(repository, "ls-files", "--stage", "-z")
 
     # When
-    monkeypatch.setenv("GIT_DIR", os.fspath(tmp_path / "wrong-git-dir"))
-    monkeypatch.setenv("GIT_INDEX_FILE", os.fspath(tmp_path / "wrong-index"))
-    with pytest.raises(ValueError, match="Git-ignored"):
-        await create_evidence_store().create(repository / "unignored", plan)
-    ignored = await create_evidence_store().create(repository / "ignored" / "run", plan)
-    external = await create_evidence_store().create(tmp_path / "external", plan)
+    prepared = await create_evidence_store().create(output, plan)
+    artifact_names = {path.name for path in output.iterdir()}
+    status_after_write = git(repository, "status", "--porcelain=v1", "-z")
+    with pytest.raises(ValueError, match="worktree must be clean"):
+        reader.freeze(configuration)
 
     # Then
-    assert ignored.output_directory.is_dir()
-    assert external.output_directory.is_dir()
-    assert not (repository / "unignored").exists()
+    assert prepared.output_directory == output.resolve()
+    assert artifact_names == {"plan.json"}
+    assert json.loads(prepared.plan_artifact.read_text()) == plan.model_dump(
+        mode="json"
+    )
+    assert b"?? evidence/" in status_after_write
+    assert (repository / ".git" / "index").read_bytes() == index_before
+    assert git(repository, "ls-files", "--stage", "-z") == tracked_before
+    assert not (repository / ".gitignore").exists()
 
 
 async def test_opaque_call_ids_cannot_escape_or_alias_artifact_paths(

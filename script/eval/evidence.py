@@ -13,7 +13,6 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
-import subprocess
 import tempfile
 from typing import Protocol, assert_never
 
@@ -429,29 +428,10 @@ def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvi
 
     Raises:
         FileExistsError: The requested destination already exists.
-        OSError: The ignore status or filesystem operation cannot be established.
-        ValueError: An in-repository destination is not Git-ignored.
     """
     if os.path.lexists(output_directory):
         raise FileExistsError(f"evidence output already exists: {output_directory}")
     destination = output_directory.expanduser().resolve()
-    repository = plan.repository_root.resolve()
-    try:
-        relative = destination.relative_to(repository)
-    except ValueError:
-        relative = None
-    if relative is not None:
-        result = _check_ignored(repository, relative)
-        if result.returncode == 1:
-            raise ValueError(
-                "evidence output inside the context repository must be Git-ignored"
-            )
-        if result.returncode != 0:
-            diagnostic = result.stderr.decode("utf-8", errors="replace").strip()
-            raise OSError(
-                "could not verify output ignore status: "
-                f"{diagnostic or f'git exited {result.returncode}'}"
-            )
     destination.mkdir(parents=True, exist_ok=False)
     _fsync_directory(destination.parent)
     plan_path = destination / "plan.json"
@@ -461,55 +441,6 @@ def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvi
         instruction_path = destination / "instructions.bin"
         _write_new_file(instruction_path, plan.instructions_file.content)
     return PreparedEvidence(destination, plan_path, instruction_path)
-
-
-def _check_ignored(
-    repository: Path, relative: Path, /
-) -> subprocess.CompletedProcess[bytes]:
-    """Run a bounded, isolated read-only ignore check.
-
-    Returns:
-        The completed Git process, including its ignore result status.
-
-    Raises:
-        OSError: Git cannot run or the bounded check expires.
-    """
-    environment = {
-        name: value for name, value in os.environ.items() if not name.startswith("GIT_")
-    }
-    environment.update({
-        "GIT_OPTIONAL_LOCKS": "0",
-        "GIT_NO_REPLACE_OBJECTS": "1",
-        "GIT_CONFIG_NOSYSTEM": "1",
-        "GIT_CONFIG_GLOBAL": os.devnull,
-        "GIT_CONFIG_COUNT": "1",
-        "GIT_CONFIG_KEY_0": "core.fsmonitor",
-        "GIT_CONFIG_VALUE_0": "false",
-        "LC_ALL": "C",
-        "LANG": "C",
-    })
-    try:
-        return subprocess.run(
-            [
-                "git",
-                "--no-lazy-fetch",
-                "-C",
-                os.fspath(repository),
-                "check-ignore",
-                "--quiet",
-                "--no-index",
-                "--",
-                relative.as_posix(),
-            ],
-            capture_output=True,
-            check=False,
-            env=environment,
-            timeout=10,
-        )
-    except subprocess.TimeoutExpired as failure:
-        raise OSError("Git ignore check timed out after 10 seconds") from failure
-    except OSError as failure:
-        raise OSError(f"could not run Git ignore check: {failure}") from failure
 
 
 def _project_attempt(
