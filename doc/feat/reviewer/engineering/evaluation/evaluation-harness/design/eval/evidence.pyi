@@ -15,6 +15,7 @@ from .model import (
     QuotaProbeLifecycleInput,
     QuotaProbeSettled,
     QuotaTelemetryEvent,
+    RetryAssessment,
     RunId,
     RunRecord,
     WaitEvent,
@@ -38,9 +39,10 @@ class EvidenceStore(Protocol):
         position: int,
         attempt_number: AttemptNumber,
         evidence: AttemptEvidence,
+        retry_assessment: RetryAssessment | None,
         /,
     ) -> AttemptRecord:
-        """Project shared process evidence with call and attempt identity."""
+        """Project and append shared process evidence with supplied classification."""
         ...
 
     def record_wait_event(self, event: WaitEvent, /) -> None:

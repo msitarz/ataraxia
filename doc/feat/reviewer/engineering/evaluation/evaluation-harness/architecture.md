@@ -692,29 +692,27 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. `model.pyi` retains a historical
-snapshot of the current value boundary and
-adds proposal-only quota, classification, wait, probe-lifecycle, and shared
-`ProcessRecord` declarations awaiting review and migration into
-`script/eval/model.py`. The shared base is intended to preserve attempt-record
-fields while allowing probes to reuse the supervisor projection; current
-runtime attempt records have not migrated to it, and no quota lifecycle record
-is implemented. AC-9 adds a normalized optional quota usage percentage to the
-sketched generic window and places progress snapshot and sink types in the
-consumer-owned runner ports; these remain design types, not runtime types or a
-competing active contract.
+boundary from which implementation proceeds. `model.pyi` is a historical
+snapshot, not an active typing interface. The evidence-facing quota scope,
+window and observation, retry assessment, wait and probe lifecycle, and shared
+`ProcessRecord` values have migrated into `script/eval/model.py`. The active
+`script/eval/evidence.py` composes typed identity forwarding and synchronous
+projection/write ordering; its storage and process-projection leaves still
+raise `NotImplementedError`, so it does not provide filesystem persistence or
+claim acceptance criteria. Runner policy/configuration and AC-9 progress
+proposals remain design-only. The shared base preserves flat attempt fields
+while permitting probes to reuse the process projection.
 `plan.pyi` remains a historical planner
 reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
-values, persisted record shapes, pure context composition, scheduling, and
-token-estimation adapter are implemented. CLI integration, dispatch,
-persistence, and the remaining harness behavior are planned. Before runner
-implementation, migrate accepted fields from sketches into the single
-authoritative `script/eval/model.py`; do not add a parallel runtime model or
-change supervisor types. Private helpers and concrete persistence formats
-remain flexible; supervisor outcomes and requests continue to use the existing
-public types. Recognition and quota-status adapters must wait until their
+values, persisted record shapes, pure context composition, scheduling,
+token-estimation adapter, and evidence adapter wiring are implemented. CLI
+integration, dispatch, evidence storage/projection leaves, and the remaining
+harness behavior are planned. Do not add a parallel runtime model or change
+supervisor types. Private helpers and concrete persistence formats remain
+flexible; supervisor outcomes and requests continue to use the existing public
+types. Recognition and quota-status adapters must wait until their
 machine-readable sources are verified.
 
 | Proposed module | Responsibility |

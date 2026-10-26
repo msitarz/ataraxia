@@ -1,15 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical core snapshot with proposal-only runner model extensions.
+"""Historical design snapshot; active shared values live in model.py.
 
-The pre-existing value declarations correspond to the current
-``script/eval/model.py`` runtime contract. Quota, classification, and wait
-and probe-lifecycle declarations, plus the shared ``ProcessRecord`` base, are
-proposals for AC-6 through AC-8: they are not runtime types or an active
-shadowing interface. Review and migrate accepted fields into that one runtime
-module before implementation. ``AttemptEvidence`` retains its current field
-shape and is aliased as process-neutral ``ProcessEvidence`` for probe
-composition. Runtime attempt records are not yet projected through the proposed
-shared base, and the runtime model has no quota lifecycle record yet.
+This sketch is not an active typing interface. The evidence-facing quota,
+classification, wait, probe-lifecycle, and shared ``ProcessRecord`` values
+have migrated into ``script/eval/model.py`` for typed evidence wiring. Runner
+policy/configuration and progress proposals remain unimplemented here; do not
+use this historical sketch to shadow the runtime module.
 """
 
 from dataclasses import dataclass
@@ -33,6 +29,15 @@ type EstimateBasis = Literal["supplied_context", "instructions_file"]
 type CallState = Literal["not_started", "running", "complete", "failed"]
 type RunState = Literal["complete", "incomplete"]
 type ControlFlow = Literal["returned", "cancelled", "raised"]
+type AttemptOutcomeKind = Literal[
+    "completed",
+    "timed_out",
+    "output_limit_exceeded",
+    "infrastructure_failure",
+    "cancelled",
+    "unexpected_exception",
+    "no_observation",
+]
 type ProcessOutcomeKind = Literal[
     "completed",
     "timed_out",
@@ -512,6 +517,7 @@ class AttemptRecord(ProcessRecord):
     call_id: CallId
     position: int
     attempt_number: AttemptNumber
+    outcome_kind: AttemptOutcomeKind
     retry_assessment: RetryAssessment | None
 
 class SignalRecord(StrictModel):
