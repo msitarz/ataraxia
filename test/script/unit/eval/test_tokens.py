@@ -28,11 +28,17 @@ from script.eval.tokens import (
 )
 
 
-def _plan(instructions: bytes | None = None) -> FrozenPlan:
+def _plan(
+    instructions: bytes | None = None,
+    *,
+    models: tuple[str, ...] = ("model-a", "model-a"),
+    prompts: tuple[bytes, ...] = (b"same prompt", b"same prompt"),
+    context_indices: tuple[int, ...] | None = None,
+) -> FrozenPlan:
     instruction_path = Path("instructions.md") if instructions is not None else None
     configuration = HarnessConfig(
         ordered_options=(DirectoryOption(position=0, path=Path("context")),),
-        models=("model-a", "model-a"),
+        models=models,
         efforts=("low",),
         concurrency=1,
         output_directory=None,
@@ -43,24 +49,29 @@ def _plan(instructions: bytes | None = None) -> FrozenPlan:
         output_limit_bytes=0,
         instructions_file_path=instruction_path,
     )
-    prompt = b"same prompt"
+    selected_indices = (
+        context_indices if context_indices is not None else tuple(range(len(prompts)))
+    )
     calls = tuple(
         PlannedCall(
             position=position,
-            context_indices=(0,),
+            context_indices=(selected_indices[position],),
             model=model,
             effort="low",
-            prompt_sha256=sha256(prompt).hexdigest(),
-            prompt=prompt,
+            prompt_sha256=sha256(prompts[position]).hexdigest(),
+            prompt=prompts[position],
         )
         for position, model in enumerate(configuration.models)
     )
-    source = SourceSnapshot(
-        directory_position=0,
-        repository_path="context/source.md",
-        commit_blob_sha="source-blob",
-        content_sha256=sha256(prompt).hexdigest(),
-        content=prompt,
+    sources = tuple(
+        SourceSnapshot(
+            directory_position=0,
+            repository_path=f"context/source-{index}.md",
+            commit_blob_sha=f"source-blob-{index}",
+            content_sha256=sha256(prompt).hexdigest(),
+            content=prompt,
+        )
+        for index, prompt in enumerate(prompts)
     )
     instruction_snapshot = (
         InstructionsSnapshot(
@@ -77,7 +88,7 @@ def _plan(instructions: bytes | None = None) -> FrozenPlan:
         configuration=configuration,
         repository_root=Path("/repo"),
         head_commit="head",
-        snapshots=(source,),
+        snapshots=sources,
         boundary_bytes=(),
         instructions_file=instruction_snapshot,
         calls=calls,
@@ -250,11 +261,58 @@ def test_report_estimates_frozen_instructions_separately_for_each_call() -> None
     assert report.effective_call_identities_known is False
 
 
+def test_report_forwards_each_calls_model_and_frozen_prompt_in_order() -> None:
+    # Given
+    plan = _plan(
+        instructions=b"shared instruction",
+        models=("model-a", "model-b"),
+        prompts=(b"first context", b"second context"),
+        context_indices=(0, 1),
+    )
+    first_context = _estimate(
+        "model-a", None, "supplied_context", "unknown", "first context unknown"
+    )
+    first_instruction = _estimate("model-a", 3, "instructions_file", "approximate")
+    second_context = _estimate("model-b", 17, "supplied_context", "exact")
+    second_instruction = _estimate("model-b", 5, "instructions_file", "exact")
+    outputs = (
+        first_context,
+        first_instruction,
+        second_context,
+        second_instruction,
+    )
+    received: list[tuple[bytes, str, EstimateBasis]] = []
+
+    class RecordingEstimator:
+        def estimate(
+            self, content: bytes, model: str, basis: EstimateBasis, /
+        ) -> TokenEstimate:
+            received.append((content, model, basis))
+            return outputs[len(received) - 1]
+
+    # When
+    report = build_dry_run_report(plan, RecordingEstimator())
+
+    # Then
+    assert received == [
+        (b"first context", "model-a", "supplied_context"),
+        (b"shared instruction", "model-a", "instructions_file"),
+        (b"second context", "model-b", "supplied_context"),
+        (b"shared instruction", "model-b", "instructions_file"),
+    ]
+    assert report.estimates == (
+        CallEstimate(0, first_context, first_instruction),
+        CallEstimate(1, second_context, second_instruction),
+    )
+
+
 @pytest.mark.parametrize(
-    "failure_site", ["selection", "count"], ids=["selection", "count"]
+    ("failure_site", "expected_count"),
+    [("selection", 0), ("count", 1)],
+    ids=["selection", "count"],
 )
 def test_estimator_failure_propagates_from_adapter_and_stops_following_leaf(
-    failure_site: Literal["selection", "count"],
+    failure_site: Literal["selection", "count"], expected_count: int
 ) -> None:
     # Given
     failure = RuntimeError(f"{failure_site} failed")
@@ -284,10 +342,7 @@ def test_estimator_failure_propagates_from_adapter_and_stops_following_leaf(
 
     # Then
     assert raised.value is failure
-    if failure_site == "selection":
-        assert counted == []
-    else:
-        assert len(counted) == 1
+    assert len(counted) == expected_count
 
 
 def test_report_propagates_estimator_failure_without_processing_later_calls() -> None:
