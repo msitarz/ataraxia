@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pure prompt composition and ordered matrix planning boundary."""
+"""Historical reviewed design sketch; runtime contract lives in script/eval/plan.py."""
 
 from typing import Protocol
 

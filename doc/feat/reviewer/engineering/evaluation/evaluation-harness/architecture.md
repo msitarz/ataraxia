@@ -5,9 +5,13 @@
 are implemented in
 [`script/eval/model.py`](../../../../../../script/eval/model.py), and the input
 freezer is implemented in
-[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py); the
-remaining components below are planned. No implementation authorizes model
-calls. The sibling [process supervisor](../process-supervisor/README.md) is
+[`script/eval/inputs.py`](../../../../../../script/eval/inputs.py). Pure
+orchestration wiring is implemented in
+[`script/eval/plan.py`](../../../../../../script/eval/plan.py), while grouping,
+separator decoding and composition, and matrix expansion remain explicit
+unfinished leaves. The remaining components below are planned. No
+implementation authorizes model calls. The sibling
+[process supervisor](../process-supervisor/README.md) is
 implemented and owns one attempt's process lifecycle; this harness owns plans,
 dispatch policy, and run evidence around that boundary.
 
@@ -102,6 +106,24 @@ the pure planner.
   preparation.
 
 ### Plan and boundary records
+
+**Wired skeleton:**
+[`script/eval/plan.py`](../../../../../../script/eval/plan.py) invokes typed
+grouping, context-composition, and call-scheduling functions in order. The
+context composer receives grouped source indices and `FrozenInputs`, so it can
+read exact frozen context bytes without hidden state or I/O. It does not
+compose the optional instructions-file snapshot; the builder forwards that
+snapshot separately into `FrozenPlan`. The builder assembles the plan while
+forwarding the validated configuration and frozen input provenance. Its public
+`PlanBuilder.plan(FrozenInputs,
+HarnessConfig)` boundary is pure. A caller supplies `run_id` to the concrete
+builder, so identity creation remains caller-owned and planning does not read a
+clock, generate randomness, or perform I/O. Default leaf implementations raise
+`NotImplementedError`; this wiring establishes sequencing and forwarding only,
+not separator, prompt-composition, or Cartesian-matrix correctness. Those
+behaviors remain planned. The reviewed type sketch in
+[`design/eval/plan.pyi`](design/eval/plan.pyi) is retained as historical
+reference; the runtime module is authoritative.
 
 **TL;DR:** Represent validated settings and frozen work as immutable values.
 
@@ -325,7 +347,7 @@ and requests continue to use the existing public types.
 | `script/eval/cli.py` | Ordered arguments, help text, and one-time composition root. |
 | `script/eval/model.py` | Shared validated configuration, plan values, observations, and persisted records. |
 | `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
-| `script/eval/plan.py` | Pure composition and deterministic matrix planning port. |
+| `script/eval/plan.py` | Pure wired orchestration; leaf behavior remains planned. |
 | `script/eval/tokens.py` | Local token-estimation port. |
 | `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |

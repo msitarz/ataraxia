@@ -243,10 +243,12 @@ A caller can rerun a manually selected subset as a new run.
 ## Additional context
 
 The original Work definition authorized no runner implementation, typed
-architecture, corpus preparation, or model calls. A later bounded assignment
-authorized the architecture proposal and typed boundary. The current
-incremental assignment covers shared model records and the input boundary
-only; it does not authorize the remaining runner implementation, wiring,
-corpus preparation, or model calls.
+architecture, corpus preparation, or model calls. Later bounded assignments
+authorized the architecture proposal and typed boundary, shared model records,
+the input boundary, and the current pure planning wiring skeleton. The current
+plan increment establishes only typed sequencing, forwarding, and frozen-plan
+assembly; composition and matrix leaf behavior remain unfinished. It does not
+authorize full planner implementation, other runner components, corpus
+preparation, or model calls.
 All acceptance criteria remain TODO, and completion of this generic runner
 cannot establish the parent experiment's integrated protections or results.
