@@ -115,7 +115,9 @@ class GitRepositoryReader:
         selected = tuple(relative for _, relative, _ in discovered) + (
             (instruction_relative,) if instruction_relative is not None else ()
         )
-        blobs = self._commit_blobs(root, head, selected)
+        blobs = self._commit_blobs(
+            root, head, selected, relative_directories, instruction_relative
+        )
         sources = self._source_snapshots(discovered, blobs)
         instructions = self._instruction_snapshot(
             instruction_relative, instruction_path, blobs
@@ -419,15 +421,30 @@ class GitRepositoryReader:
         return {os.fsdecode(path) for path in output.split(b"\0") if path}
 
     def _commit_blobs(
-        self, root: Path, commit: str, paths: tuple[str, ...]
+        self,
+        root: Path,
+        commit: str,
+        paths: tuple[str, ...],
+        directories: tuple[str, ...],
+        instruction: str | None,
     ) -> dict[str, tuple[str, bytes]]:
-        """Read selected commit blobs in one batched Git object query.
+        """Read selected commit blobs from directory-scoped tree queries.
 
         Returns:
             A mapping from repository path to blob ID and exact blob bytes.
         """
         unique_paths = tuple(dict.fromkeys(paths))
-        pathspecs = tuple(f":(literal){path}" for path in unique_paths)
+        unique_directories = tuple(dict.fromkeys(directories))
+        pathspecs = tuple(
+            ":(top)" if directory == "." else f":(top,literal){directory.rstrip('/')}/"
+            for directory in unique_directories
+        )
+        instruction_is_scoped = instruction is not None and any(
+            directory == "." or instruction.startswith(f"{directory.rstrip('/')}/")
+            for directory in unique_directories
+        )
+        if instruction is not None and not instruction_is_scoped:
+            pathspecs += (f":(top,literal){instruction}",)
         output = self._git(
             root, "ls-tree", "-r", "-z", "--full-tree", commit, "--", *pathspecs
         )

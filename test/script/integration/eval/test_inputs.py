@@ -154,6 +154,18 @@ def worktree_status(repository: Path, *, include_submodules: bool = False) -> by
     return git(repository, *arguments)
 
 
+def assert_tree_queries_are_directory_scoped(
+    small: tuple[str, ...], large: tuple[str, ...], long_name: str
+) -> None:
+    """Require selected filename count and length not to expand tree argv."""
+    assert len(small) == len(large)
+    assert sum(map(len, small)) == sum(map(len, large))
+    for query, directory in ((small, "one"), (large, "two")):
+        pathspecs = query[query.index("--") + 1 :]
+        assert pathspecs == (f":(top,literal){directory}/",)
+        assert long_name not in query
+
+
 def test_fixture_git_commands_ignore_ambient_repository_and_config_redirects(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -840,12 +852,14 @@ def test_git_query_count_does_not_grow_with_selected_file_count(
     # Given
     repository = make_repository(tmp_path / "repo")
     one = repository / "one"
-    many = repository / "many"
+    many = repository / "two"
     one.mkdir()
     many.mkdir()
     (one / "single.txt").write_bytes(b"one\n")
+    long_name = f"{'x' * 180}.txt"
     for index in range(12):
-        (many / f"file-{index:02}.txt").write_bytes(f"{index}\n".encode())
+        filename = long_name if index == 0 else f"file-{index:02}.txt"
+        (many / filename).write_bytes(f"{index}\n".encode())
     commit(repository)
     original_run = subprocess.run
     commands: list[tuple[str, ...]] = []
@@ -874,16 +888,21 @@ def test_git_query_count_does_not_grow_with_selected_file_count(
     # When
     small = GitRepositoryReader().freeze(config(one))
     small_query_count = len(commands)
+    small_tree_query = next(command for command in commands if "ls-tree" in command)
     commands.clear()
     large = GitRepositoryReader().freeze(config(many))
+    large_tree_query = next(command for command in commands if "ls-tree" in command)
 
     # Then
-    assert len(small.sources) == 1
-    assert len(large.sources) == 12
-    assert len(commands) == small_query_count
-    assert len(commands) <= 6
-    assert all(command[1] == "--no-lazy-fetch" for command in commands)
-    assert sum("cat-file" in command for command in commands) == 1
+    assert (len(small.sources), len(large.sources)) == (1, 12)
+    assert len(commands) == small_query_count <= 6
+    assert (
+        all(command[1] == "--no-lazy-fetch" for command in commands)
+        and sum("cat-file" in command for command in commands) == 1
+    )
+    assert_tree_queries_are_directory_scoped(
+        small_tree_query, large_tree_query, long_name
+    )
 
 
 def test_git_missing_executable_preserves_the_os_error_cause(
