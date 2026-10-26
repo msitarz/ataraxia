@@ -4,6 +4,7 @@
 import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
+from functools import partial, wraps
 from pathlib import Path
 import threading
 from typing import Literal
@@ -13,6 +14,7 @@ import pytest
 from script.eval.evidence import EvidenceStoreAdapter
 from script.eval.model import (
     AttemptEvidence,
+    AttemptNumber,
     AttemptRecord,
     CallId,
     DirectoryOption,
@@ -50,10 +52,72 @@ from script.process_supervisor import (
 def run_async(test: Callable[[], Awaitable[None]]) -> Callable[[], None]:
     """Run async adapter scenarios without a pytest asyncio plugin."""
 
+    @wraps(test)
     def run() -> None:
         asyncio.run(test())
 
     return run
+
+
+def projected_attempt(
+    _context: PreparedEvidence,
+    run_id: RunId,
+    call_id: CallId,
+    position: int,
+    attempt_number: AttemptNumber,
+    _evidence: AttemptEvidence,
+    _retry_assessment: RetryAssessment | None,
+) -> AttemptRecord:
+    """Return a scalar attempt record retaining the supplied identity."""
+    return AttemptRecord.model_validate(
+        attempt_record().model_dump()
+        | {
+            "run_id": run_id,
+            "call_id": call_id,
+            "position": position,
+            "attempt_number": attempt_number,
+        }
+    )
+
+
+def append_telemetry(
+    calls: list[str], _context: PreparedEvidence, _event: QuotaTelemetryEvent
+) -> None:
+    """Record whether a queued telemetry leaf ran."""
+    calls.append("telemetry")
+
+
+def blocked_append_store() -> tuple[
+    EvidenceStoreAdapter, threading.Event, threading.Event, list[str]
+]:
+    """Provide a store with a barrier-controlled attempt append and finalizer."""
+    started = threading.Event()
+    release = threading.Event()
+    order: list[str] = []
+    prepared = prepared_evidence()
+
+    def append(_context: PreparedEvidence, _record: AttemptRecord) -> None:
+        started.set()
+        assert release.wait(5)
+        order.append("append")
+
+    store = EvidenceStoreAdapter(
+        create_evidence=lambda _directory, _plan: prepared,
+        project_attempt=projected_attempt,
+        append_attempt=append,
+        finalize_evidence=lambda _context, _record: order.append("finalize"),
+    )
+    return store, started, release, order
+
+
+async def wait_for_leaf_start(
+    started: threading.Event, release: threading.Event
+) -> None:
+    """Wait for a blocking leaf, releasing it if the bounded wait fails."""
+    did_start = await asyncio.to_thread(started.wait, 5)
+    if not did_start:
+        release.set()
+    assert did_start
 
 
 def attempt_evidence() -> AttemptEvidence:
@@ -809,80 +873,64 @@ async def test_blocked_leaf_does_not_block_loop_and_serializes_following_write()
     None
 ):
     """Given a blocked append, keep the loop responsive and finalization queued."""
-    started = threading.Event()
-    release = threading.Event()
-    order: list[str] = []
-    prepared = prepared_evidence()
-
-    def append(_context: PreparedEvidence, _record: AttemptRecord) -> None:
-        started.set()
-        assert release.wait(5)
-        order.append("append")
-
-    store = EvidenceStoreAdapter(
-        create_evidence=lambda _directory, _plan: prepared,
-        project_attempt=lambda *_args: attempt_record(),
-        append_attempt=append,
-        finalize_evidence=lambda _context, _record: order.append("finalize"),
-    )
+    # Given
+    store, started, release, order = blocked_append_store()
     await store.create(Path("results"), frozen_plan())
 
     async def exercise() -> None:
+        # When
         attempt = asyncio.create_task(
             store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
         )
-        await asyncio.to_thread(started.wait, 5)
+        await wait_for_leaf_start(started, release)
         finalize = asyncio.create_task(store.finalize(run_record()))
         await asyncio.sleep(0)
-        assert order == []
-        release.set()
+        try:
+            assert order == []
+        finally:
+            release.set()
         await asyncio.gather(attempt, finalize)
 
     await asyncio.wait_for(exercise(), timeout=5)
+    # Then
     assert order == ["append", "finalize"]
 
 
 @run_async
 async def test_owner_cancellation_waits_for_leaf_even_after_repeated_cancel() -> None:
     """Hold the lock through worker settlement after owner cancellation."""
-    started = threading.Event()
-    release = threading.Event()
-    order: list[str] = []
-    prepared = prepared_evidence()
-
-    def append(_context: PreparedEvidence, _record: AttemptRecord) -> None:
-        started.set()
-        assert release.wait(5)
-        order.append("append")
-
-    store = EvidenceStoreAdapter(
-        create_evidence=lambda _directory, _plan: prepared,
-        project_attempt=lambda *_args: attempt_record(),
-        append_attempt=append,
-        finalize_evidence=lambda _context, _record: order.append("finalize"),
-    )
+    # Given
+    store, started, release, order = blocked_append_store()
     await store.create(Path("results"), frozen_plan())
     attempt = asyncio.create_task(
         store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
     )
-    await asyncio.to_thread(started.wait, 5)
+    await wait_for_leaf_start(started, release)
     finalize = asyncio.create_task(store.finalize(run_record()))
     await asyncio.sleep(0)
-    attempt.cancel()
-    await asyncio.sleep(0)
-    attempt.cancel()
-    await asyncio.sleep(0)
-    assert order == []
-    release.set()
+
+    # When
+    try:
+        attempt.cancel()
+        await asyncio.sleep(0)
+        attempt.cancel()
+        await asyncio.sleep(0)
+        assert not attempt.done()
+        assert not finalize.done()
+    finally:
+        release.set()
     with pytest.raises(asyncio.CancelledError):
         await attempt
     await finalize
+
+    # Then
     assert order == ["append", "finalize"]
 
 
 @run_async
 async def test_cancelled_successful_create_binds_context_before_next_create() -> None:
     """Bind a create that succeeds during cancellation before releasing the lock."""
+    # Given
     started = threading.Event()
     release = threading.Event()
     prepared = prepared_evidence()
@@ -896,20 +944,25 @@ async def test_cancelled_successful_create_binds_context_before_next_create() ->
 
     store = EvidenceStoreAdapter(create_evidence=create)
     owner = asyncio.create_task(store.create(Path("results"), frozen_plan()))
-    await asyncio.to_thread(started.wait, 5)
-    owner.cancel()
-    await asyncio.sleep(0)
-    release.set()
+    await wait_for_leaf_start(started, release)
+    # When
+    try:
+        owner.cancel()
+        await asyncio.sleep(0)
+    finally:
+        release.set()
     with pytest.raises(asyncio.CancelledError):
         await owner
     with pytest.raises(RuntimeError, match="already prepared"):
         await store.create(Path("other"), frozen_plan())
+    # Then
     assert destinations == [Path("results")]
 
 
 @run_async
 async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
     """A cancelled lock waiter never starts its evidence operation."""
+    # Given
     started = threading.Event()
     release = threading.Event()
     calls: list[str] = []
@@ -923,13 +976,13 @@ async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
     store = EvidenceStoreAdapter(
         create_evidence=lambda _directory, _plan: prepared,
         append_wait_event=append,
-        append_quota_telemetry=lambda *_args: calls.append("telemetry"),
+        append_quota_telemetry=partial(append_telemetry, calls),
     )
     await store.create(Path("results"), frozen_plan())
     owner = asyncio.create_task(
         store.record_wait_event(quota_wait_event(empty_quota_observation()))
     )
-    await asyncio.to_thread(started.wait, 5)
+    await wait_for_leaf_start(started, release)
     queued = asyncio.create_task(
         store.record_quota_telemetry(
             QuotaTelemetryEvent(
@@ -941,11 +994,15 @@ async def test_cancellation_while_queued_for_lock_starts_no_leaf() -> None:
         )
     )
     await asyncio.sleep(0)
-    queued.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await queued
-    release.set()
+    # When
+    try:
+        queued.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await queued
+    finally:
+        release.set()
     await owner
+    # Then
     assert calls == ["append"]
 
 
@@ -954,6 +1011,7 @@ async def test_cancellation_preserves_concurrent_leaf_failure_as_cause_and_note(
     None
 ):
     """Cancellation remains primary while a failed started write stays observable."""
+    # Given
     started = threading.Event()
     release = threading.Event()
     failure = OSError("disk full")
@@ -966,18 +1024,22 @@ async def test_cancellation_preserves_concurrent_leaf_failure_as_cause_and_note(
 
     store = EvidenceStoreAdapter(
         create_evidence=lambda _directory, _plan: prepared,
-        project_attempt=lambda *_args: attempt_record(),
+        project_attempt=projected_attempt,
         append_attempt=append,
     )
     await store.create(Path("results"), frozen_plan())
     owner = asyncio.create_task(
         store.record_attempt("run-1", "call-1", 0, 1, attempt_evidence(), None)
     )
-    await asyncio.to_thread(started.wait, 5)
-    owner.cancel()
-    await asyncio.sleep(0)
-    release.set()
+    await wait_for_leaf_start(started, release)
+    # When
+    try:
+        owner.cancel()
+        await asyncio.sleep(0)
+    finally:
+        release.set()
     with pytest.raises(asyncio.CancelledError) as captured:
         await owner
+    # Then
     assert captured.value.__cause__ is failure
     assert any("disk full" in note for note in captured.value.__notes__)
