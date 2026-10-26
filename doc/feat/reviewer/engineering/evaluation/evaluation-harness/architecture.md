@@ -9,7 +9,7 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. The remaining components below are planned. No
+expansion. The remaining unimplemented components below are planned. No
 implementation authorizes model calls. The sibling
 [process supervisor](../process-supervisor/README.md) is
 implemented and owns one attempt's process lifecycle; this harness owns plans,
@@ -329,30 +329,32 @@ flowchart LR
     STORE --> RUN[Immutable run evidence]
 ```
 
-The diagram shows proposed harness boundaries. The existing supervisor and its
-OS adapter are the only implemented service shown; the remaining boxes are
-exploratory. The input freezer performs read-only Git and filesystem effects;
-composition and planning are pure. Estimation returns one explicit value for
-each planned call, including an unknown value when compatibility is not known.
-The dry-run branch never resolves or probes the CLI.
+The diagram shows proposed harness boundaries. The existing supervisor, input
+freezer, and pure planner are implemented; the other boxes remain planned. The
+input freezer performs read-only Git and filesystem effects; composition and
+planning are pure. Estimation returns one explicit value for each planned call,
+including an unknown value when compatibility is not known. The dry-run branch
+never resolves or probes the CLI.
 
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. Its `model.pyi` is historical
-design reference; the active implementation is
-[`script/eval/model.py`](../../../../../../script/eval/model.py). The model
-increment implements shared validated values and persisted record shapes;
-composition, effects, and delivered harness behavior remain planned. Private
-helpers and concrete persistence formats remain flexible; supervisor outcomes
-and requests continue to use the existing public types.
+boundary from which implementation proceeds. Its `model.pyi` and `plan.pyi` are
+historical design references; the active implementations are
+[`script/eval/model.py`](../../../../../../script/eval/model.py) and
+[`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
+values, persisted record shapes, and pure context composition and scheduling
+are implemented. CLI integration, token estimation, dispatch, persistence, and
+the remaining harness behavior are planned. Private helpers and concrete
+persistence formats remain flexible; supervisor outcomes and requests continue
+to use the existing public types.
 
 | Proposed module | Responsibility |
 | --- | --- |
 | `script/eval/cli.py` | Ordered arguments, help text, and one-time composition root. |
 | `script/eval/model.py` | Shared validated configuration, plan values, observations, and persisted records. |
 | `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
-| `script/eval/plan.py` | Pure wired orchestration; leaf behavior remains planned. |
+| `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Local token-estimation port. |
 | `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |

@@ -194,12 +194,14 @@ def test_plan_propagates_leaf_failure_without_running_later_steps() -> None:
     assert str(error.value) == "composition failed"
 
 
-def test_default_plan_leaf_fails_visibly_until_implemented() -> None:
+def test_default_plan_composes_one_directory_and_preserves_instructions() -> None:
     # Given
     builder = PurePlanBuilder("run")
+    inputs = _inputs()
+    config = _configuration(instructions_path=Path("context/instructions.txt"))
 
     # When
-    plan = builder.plan(_inputs(), _configuration())
+    plan = builder.plan(inputs, config)
 
     # Then
     assert plan.run_id == "run"
@@ -224,6 +226,7 @@ def test_plan_orders_context_model_and_effort_products_deterministically() -> No
     instructions = _inputs().instructions_file
     inputs = FrozenInputs(Path("/repo"), "head", sources, instructions)
     config = _configuration(
+        instructions_path=Path("context/instructions.txt"),
         ordered_options=options,
         models=("m", "m"),
         efforts=("low", "high"),
@@ -265,17 +268,65 @@ def test_plan_orders_context_model_and_effort_products_deterministically() -> No
     assert plan.instructions_file is instructions
     assert all(b"instruction bytes" not in call.prompt for call in plan.calls)
 
-    # A caller-owned run ID changes independently of deterministic plan parts.
+
+def test_caller_run_id_changes_without_changing_deterministic_plan_parts() -> None:
     # Given
+    inputs = _inputs()
+    config = _configuration(instructions_path=Path("context/instructions.txt"))
+    first_builder = PurePlanBuilder("repeat-one")
     second_builder = PurePlanBuilder("repeat-two")
 
     # When
+    first_plan = first_builder.plan(inputs, config)
     second_plan = second_builder.plan(inputs, config)
 
     # Then
+    assert first_plan.run_id == "repeat-one"
     assert second_plan.run_id == "repeat-two"
-    assert second_plan.calls == plan.calls
-    assert second_plan.boundary_bytes == plan.boundary_bytes
+    assert first_plan.calls == second_plan.calls
+    assert first_plan.boundary_bytes == second_plan.boundary_bytes
+
+
+def test_three_directory_boundaries_and_model_effort_order_are_preserved() -> None:
+    # Given
+    options = (
+        DirectoryOption(position=1, path=Path("first")),
+        SeparatorOption(position=3, value="|"),
+        DirectoryOption(position=5, path=Path("second")),
+        DirectoryOption(position=9, path=Path("third")),
+    )
+    inputs = FrozenInputs(
+        Path("/repo"),
+        "head",
+        (
+            _source(1, "first/a.txt", b"A"),
+            _source(5, "second/b.txt", b"B"),
+            _source(9, "third/c.txt", b"C"),
+        ),
+        None,
+    )
+    config = _configuration(
+        ordered_options=options,
+        models=("model-z", "model-a"),
+        efforts=("high", "low", "high"),
+    )
+
+    # When
+    plan = PurePlanBuilder("run").plan(inputs, config)
+
+    # Then
+    assert plan.boundary_bytes == (b"|", b"\n\n")
+    assert tuple(
+        (call.position, call.context_indices, call.model, call.effort, call.prompt)
+        for call in plan.calls
+    ) == (
+        (0, (0, 1, 2), "model-z", "high", b"A|B\n\nC"),
+        (1, (0, 1, 2), "model-z", "low", b"A|B\n\nC"),
+        (2, (0, 1, 2), "model-z", "high", b"A|B\n\nC"),
+        (3, (0, 1, 2), "model-a", "high", b"A|B\n\nC"),
+        (4, (0, 1, 2), "model-a", "low", b"A|B\n\nC"),
+        (5, (0, 1, 2), "model-a", "high", b"A|B\n\nC"),
+    )
 
 
 def _source(position: int, path: str, content: bytes) -> SourceSnapshot:

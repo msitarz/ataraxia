@@ -26,8 +26,6 @@ class GroupedInputs:
     value is ``((0, (0, 1)), (2, (2, 3)))``. Choosing one index per group
     yields ``(0, 2)``, ``(0, 3)``, ``(1, 2)``, and ``(1, 3)``. These are
     indices, not copied bytes; the composer receives ``FrozenInputs`` too.
-    Grouping is an unfinished leaf and this record does not claim it is valid
-    or complete for arbitrary inputs.
     """
 
     snapshots: tuple[tuple[int, tuple[int, ...]], ...]
@@ -62,8 +60,8 @@ class PlanBuilder(Protocol):
     def plan(self, inputs: FrozenInputs, config: HarnessConfig, /) -> FrozenPlan:
         """Return a plan over the supplied frozen inputs and validated config.
 
-        Leaf implementations may raise ``NotImplementedError`` while planning
-        behavior remains unfinished; an empty plan is not a valid substitute.
+        Returns:
+            A frozen plan assembled from the supplied values.
         """
 
 
@@ -86,9 +84,9 @@ class PurePlanBuilder(PlanBuilder):
 
         Args:
             run_id: Identity created and owned by the caller.
-            grouper: Source-grouping operation, or the unfinished default.
-            composer: Context-composition operation, or the unfinished default.
-            scheduler: Matrix-expansion operation, or the unfinished default.
+            grouper: Source-grouping operation, or the pure default.
+            composer: Context-composition operation, or the pure default.
+            scheduler: Matrix-expansion operation, or the pure default.
         """
         self._run_id = run_id
         self._grouper = grouper if grouper is not None else _group_inputs
@@ -100,8 +98,7 @@ class PurePlanBuilder(PlanBuilder):
 
         Composition receives frozen sources; the instruction snapshot is
         forwarded separately into the plan.
-        Errors from leaf operations propagate; unfinished defaults do not
-        fabricate an empty plan.
+        Errors from supplied collaborators propagate.
 
         Returns:
             A plan assembled from caller-supplied identity and collaborators.
