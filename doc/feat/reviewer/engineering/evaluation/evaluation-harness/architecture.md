@@ -231,10 +231,12 @@ reference; the runtime module is authoritative.
 supervisor request.
 
 - Execution resolves the absolute Codex path and observable CLI version and
-  settings after the dry-run branch, without probing the CLI during dry run.
-- A small request builder consumes the frozen plan and scheduled call, the
-  resolved binding, and the staged instruction path returned by evidence
-  preparation. When configured, it passes that path to Codex as
+  settings after the dry-run branch through `runner.adapters.codex`, without
+  probing the CLI during dry run.
+- The Codex adapter implements the consumer-owned `AttemptRequestBuilder` port.
+  Its builder consumes the frozen plan and scheduled call, the resolved
+  binding, and the staged instruction path returned by evidence preparation.
+  When configured, it passes that path to Codex as
   `-c model_instructions_file=PATH`; when omitted, it adds no override and
   leaves Codex's native system instructions in place. It then returns an
   effective-call identity and `AttemptRequest`.
@@ -251,8 +253,8 @@ supervisor request.
 
 ### Async dispatch coordinator
 
-**TL;DR:** Run independent calls concurrently while gating retries and stopping
-globally on unsafe outcomes.
+**TL;DR:** `runner.coordinator` runs independent calls concurrently while
+gating retries and stopping globally on unsafe outcomes.
 
 - The coordinator schedules calls in plan order under one concurrency limit.
   Distinct planned calls may execute concurrently; completion order does not
@@ -319,6 +321,43 @@ globally on unsafe outcomes.
   semantic meaning to output.
 - Effects: async tasks, semaphore, signal registration, and calls to the
   existing supervisor. It does not own subprocess creation or cleanup.
+
+### Runner policy, ports, and adapters
+
+**TL;DR:** Keep dispatch mechanics separate from retry decisions and concrete
+Codex, quota, and runtime adapters.
+
+- `runner.__init__` re-exports the package's consumer-facing runner API.
+- `runner.coordinator` owns task scheduling, semaphore lifetime, dispatch
+  stop-latching, cleanup sequencing, wait-event persistence, and not-started
+  accounting. It depends on consumer ports and pure policy functions, not on
+  concrete adapters.
+- `runner.policy` contains pure functions for confident no-result eligibility,
+  separate infrastructure and capacity allowance checks, saturated jitter
+  bounds, and cumulative quota-wait limits. Inputs include the observations and
+  configuration; these functions read no clocks, randomness, files, or
+  processes.
+- `runner.ports` owns structural interfaces and transient dispatch values such
+  as `BoundRun` and `EffectiveCall`. It defines the CLI binding, one-attempt
+  supervisor call, settled-outcome classifier, quota reader, and injected
+  runtime contracts without importing concrete adapters.
+- `runner.adapters.codex` resolves the CLI binding, builds each fresh request
+  from frozen inputs, and classifies only settled captured stdout JSONL and raw
+  stderr. It makes no streaming promise and returns unknown for unsupported or
+  unverified classification signals; it never parses answer content.
+- `runner.adapters.quota` implements the quota-reader port over an injected raw
+  status capture. Its source and wire format remain unverified: no endpoint,
+  exec schema, or app-server schema is assumed, and missing or unrecognized
+  data yields both windows as unknown or unavailable.
+- `runner.adapters.runtime` supplies UTC and monotonic clocks, cancellable
+  `asyncio` waits, and uniform jitter sampling through the runtime port.
+- The adapter package exports these planned adapters. The CLI composition root
+  wires the Codex classifier, quota reader, runtime, and supervisor adapter
+  into one coordinator. These are design stubs only; no runner implementation
+  is present.
+- Effects: the coordinator owns async scheduling and effect ordering. The
+  Codex and quota adapters own their stated external reads; the runtime adapter
+  owns clock, wait, and random effects.
 
 ### Standalone invocation
 
@@ -482,7 +521,14 @@ machine-readable sources are verified.
 | `script/eval/inputs.py` | Consumer-owned Git and filesystem snapshot port. |
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
-| `script/eval/runner.py` | CLI binding, request construction, async scheduling, retry, cancellation, and stop policy. |
+| `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
+| `script/eval/runner/coordinator.py` | Async call scheduling, concurrency, stop gates, cleanup ordering, and attempt accounting. |
+| `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait bound, and saturated jitter calculations. |
+| `script/eval/runner/ports.py` | Consumer-owned protocols plus `BoundRun` and `EffectiveCall` values. |
+| `script/eval/runner/adapters/codex.py` | CLI binding, fresh request construction, and conservative settled-output classification. |
+| `script/eval/runner/adapters/quota.py` | Fail-closed quota reader over an injected, still-unverified status source. |
+| `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |
+| `script/eval/runner/adapters/__init__.py` | Concrete planned adapters exported for composition. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
 | `script/eval/__main__.py` | Thin entry point delegating to the CLI composition. |
 
@@ -497,16 +543,27 @@ flowchart LR
     CLI --> INPUTS[inputs.py]
     CLI --> PLAN[plan.py]
     CLI --> TOKENS[tokens.py]
-    CLI --> RUNNER[runner.py]
+    CLI --> RUNNER[runner package]
     CLI --> EVIDENCE[evidence.py]
+    RUNNER --> COORD[runner/coordinator.py]
+    RUNNER --> CODEX[runner/adapters/codex.py]
+    RUNNER --> QUOTA[runner/adapters/quota.py]
+    RUNNER --> RUNTIME[runner/adapters/runtime.py]
+    COORD --> POLICY[runner/policy.py]
+    COORD --> PORTS[runner/ports.py]
+    CODEX --> PORTS
+    QUOTA --> PORTS
+    RUNTIME --> PORTS
+    CODEX --> MODEL
+    QUOTA --> MODEL
     INPUTS --> MODEL
     PLAN --> MODEL
     TOKENS --> MODEL
-    RUNNER --> MODEL
-    RUNNER --> EVIDENCE
+    COORD --> EVIDENCE
     EVIDENCE --> MODEL
     MODEL --> SUP[Existing process_supervisor.py public types]
-    RUNNER --> SUP
+    COORD --> SUP
+    CODEX --> SUP
     MAIN[__main__.py] --> CLI
 ```
 
