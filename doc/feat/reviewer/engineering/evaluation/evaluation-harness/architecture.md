@@ -185,7 +185,8 @@ reference; the runtime module is authoritative.
   `tiktoken` dependency, encoding mapping, token count, or fallback policy is
   implemented. Injected estimates preserve method, library and tokenizer
   versions, compatibility, and diagnostic metadata. An explicit unknown
-  selection skips counting and returns `token_count=None`; adapter errors
+  selection skips counting and returns `token_count=None`; known selections
+  include the encoding identifier in the method label. Adapter errors
   propagate.
 - A dry-run report contains one estimate for every scheduled call. Unsupported
   model compatibility is explicit unknown or approximate, never an omitted

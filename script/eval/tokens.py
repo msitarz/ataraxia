@@ -7,6 +7,7 @@ model-to-encoding policy are deliberately unfinished in this wiring increment.
 """
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Protocol
 
 from script.eval.model import (
@@ -32,37 +33,26 @@ class TokenEstimator(Protocol):
         """Return an estimate labeled with its input basis and method."""
 
 
-class TokenizerSelection(Protocol):
-    """Provider-neutral details selected for one requested model.
+@dataclass(frozen=True)
+class TokenizerSelection:
+    """Immutable metadata selected before token counting.
 
-    A future concrete adapter may resolve these details with ``tiktoken``.
-    ``encoding_name=None`` represents an explicit unknown selection.
+    The value is generic to the adapter boundary; it does not define how a
+    provider maps model names to tokenizers. ``encoding_name=None`` means the
+    adapter cannot provide a count.
+
+    Example:
+        ``TokenizerSelection("encoding-a", "4.x", "a-1", "approximate",
+        None)`` identifies the selected encoding independently of the library
+        and tokenizer versions. A provider-neutral estimator can use a
+        different identifier such as ``"vocab-b"``.
     """
 
-    @property
-    def encoding_name(self) -> str | None:
-        """Selected encoding name, or ``None`` when unknown."""
-        ...
-
-    @property
-    def library_version(self) -> str | None:
-        """Token library version when known."""
-        ...
-
-    @property
-    def tokenizer_version(self) -> str | None:
-        """Selected tokenizer version when known."""
-        ...
-
-    @property
-    def compatibility(self) -> EstimateCompatibility:
-        """Compatibility of the selection with the requested model."""
-        ...
-
-    @property
-    def diagnostic(self) -> str | None:
-        """Explanatory context for unknown or approximate selection."""
-        ...
+    encoding_name: str | None
+    library_version: str | None
+    tokenizer_version: str | None
+    compatibility: EstimateCompatibility
+    diagnostic: str | None
 
 
 type SelectTokenizer = Callable[[str], TokenizerSelection]
@@ -108,7 +98,11 @@ class TiktokenEstimator:
         return TokenEstimate(
             model=model,
             token_count=token_count,
-            method="tiktoken",
+            method=(
+                f"tiktoken:{selection.encoding_name}"
+                if selection.encoding_name is not None
+                else "tiktoken"
+            ),
             library_version=selection.library_version,
             tokenizer_version=selection.tokenizer_version,
             basis=basis,
@@ -181,7 +175,6 @@ def _select_tiktoken_encoding(model: str, /) -> TokenizerSelection:
     Raises:
         NotImplementedError: The concrete tiktoken adapter is not implemented.
     """
-    del model
     raise NotImplementedError("tiktoken encoding selection is not implemented")
 
 
@@ -191,5 +184,4 @@ def _count_tiktoken_tokens(content: bytes, selection: TokenizerSelection, /) -> 
     Raises:
         NotImplementedError: The concrete tiktoken adapter is not implemented.
     """
-    del content, selection
     raise NotImplementedError("tiktoken token counting is not implemented")
