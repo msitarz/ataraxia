@@ -223,7 +223,8 @@ def test_capacity_retry_uses_saturated_full_jitter_and_rechecks_quota_gate() -> 
     # The bound saturates at cap, the call waits without a slot, unaffected calls
     # may proceed before quota exhaustion, and retry dispatch rechecks the gate;
     # the retry uses the same frozen inputs, model, and settings, and completed
-    # calls are never redispatched.
+    # calls are never redispatched. The capacity WaitRecord ends as
+    # `delay_elapsed` before the fresh attempt is dispatched.
     pass
 
 
@@ -370,4 +371,5 @@ def test_capacity_backoff_saturates_for_large_index_and_zero_delay_yields() -> N
     # Then
     # The bound remains the finite cap without arithmetic overflow, zero delay
     # still yields to other tasks, and no attempt slot is held while waiting.
+    # Its WaitRecord ends as `delay_elapsed` before fresh dispatch.
     pass

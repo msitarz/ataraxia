@@ -285,12 +285,14 @@ globally on unsafe outcomes.
   source fields to explicit unknown or unavailable observations in both window
   positions; this is the adapter contract, not additional coordinator-side
   defensive validation.
-- Capacity backoff is local to its call. For retry index `k`, sample full
-  jitter in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await
-  through injected async clock/sleeper and random-source ports. Release the
-  attempt slot before quota or capacity waiting. Even zero jitter yields to
-  the event loop. A capacity retry is a fresh invocation of the same model,
-  frozen inputs, and invocation settings, with no probe or substitution.
+- Capacity backoff is local to its call. For retry index `k`, sample full jitter
+  in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await through
+  injected async clock/sleeper and random-source ports. Release the attempt slot
+  before quota or capacity waiting. Even zero jitter yields to the event loop. A
+  capacity retry is a fresh invocation of the same model, frozen inputs, and
+  invocation settings, with no probe or substitution. Its normal wait end is
+  `delay_elapsed`, persisted before a fresh attempt can start; dispatch then
+  checks both the stop latch and quota gate.
 - Before a wait begins, persist a start event with a stable wait ID and its
   policy context. Capacity context includes the failed call and attempt, retry
   index, base, cap, computed bound, and sampled delay; quota context includes
@@ -387,6 +389,13 @@ evidence.
   persisted as it grows rather than duplicated in the final `RunRecord`; a
   final summary alone is not evidence for a live wait. A failed event write
   latches stop and forbids resumption or retry.
+- A quota wait normally ends as `reset_reached`: the selected reset time has
+  arrived, and a source recheck event is required before dispatch. If a window
+  remains exhausted, every exhausted window must have a known reset before the
+  coordinator starts another separately identified wait. Unknown or
+  unavailable window data fails closed. A bound or stop may end the wait
+  earlier. A recheck event is an observation, not a wait-end reason.
+  `delay_elapsed` is reserved for the normal end of capacity backoff.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.

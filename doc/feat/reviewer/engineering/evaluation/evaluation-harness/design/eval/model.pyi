@@ -34,7 +34,7 @@ type RetryClass = Literal["infrastructure", "quota", "capacity", "other", "unkno
 type NoResultBasis = Literal["confident_absence", "present_or_unknown"]
 type QuotaState = Literal["available", "exhausted", "unknown", "unavailable"]
 type WaitEnd = Literal[
-    "reset_reached", "recheck", "bound", "cancelled", "stop", "unknown"
+    "reset_reached", "delay_elapsed", "bound", "cancelled", "stop", "unknown"
 ]
 type WaitEventKind = Literal["started", "recheck", "finished"]
 type WaitId = str
