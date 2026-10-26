@@ -28,7 +28,12 @@ from script.eval.model import (
 
 
 class EvidenceStore(Protocol):
-    """Exclusive run setup and append-only evidence boundary."""
+    """Exclusive run setup and append-only evidence boundary.
+
+    Callers must complete one successful ``create`` before recording. The
+    adapter rejects evidence operations before preparation and rejects a
+    second successful preparation attempt.
+    """
 
     def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
         """Create exclusive evidence storage before any process can launch."""
@@ -65,24 +70,35 @@ class EvidenceStore(Protocol):
 
 type CreateEvidence = Callable[[Path, FrozenPlan], PreparedEvidence]
 type ProjectAttempt = Callable[
-    [RunId, CallId, int, AttemptNumber, AttemptEvidence, RetryAssessment | None],
+    [
+        PreparedEvidence,
+        RunId,
+        CallId,
+        int,
+        AttemptNumber,
+        AttemptEvidence,
+        RetryAssessment | None,
+    ],
     AttemptRecord,
 ]
-type AppendAttempt = Callable[[AttemptRecord], None]
-type AppendWaitEvent = Callable[[WaitEvent], None]
-type AppendProbeEvent = Callable[[QuotaProbeLifecycleInput], None]
-type ProjectSettledProbe = Callable[[QuotaProbeEvidence], QuotaProbeSettled]
-type AppendSettledProbe = Callable[[QuotaProbeSettled], None]
-type AppendQuotaTelemetry = Callable[[QuotaTelemetryEvent], None]
-type FinalizeEvidence = Callable[[RunRecord], None]
+type AppendAttempt = Callable[[PreparedEvidence, AttemptRecord], None]
+type AppendWaitEvent = Callable[[PreparedEvidence, WaitEvent], None]
+type AppendProbeEvent = Callable[[PreparedEvidence, QuotaProbeLifecycleInput], None]
+type ProjectSettledProbe = Callable[
+    [PreparedEvidence, QuotaProbeEvidence], QuotaProbeSettled
+]
+type AppendSettledProbe = Callable[[PreparedEvidence, QuotaProbeSettled], None]
+type AppendQuotaTelemetry = Callable[[PreparedEvidence, QuotaTelemetryEvent], None]
+type FinalizeEvidence = Callable[[PreparedEvidence, RunRecord], None]
 
 
 class EvidenceStoreAdapter:
     """Compose ordered evidence operations around unfinished typed leaves.
 
     Projection receives live supervisor evidence, while records contain only
-    serializable scalars and artifact references. Every persistence leaf is
-    synchronous so dispatch cannot proceed before its outcome is durable.
+    serializable scalars and artifact references. Synchronous calls ensure the
+    next coordinator step waits for each leaf to return; durability and
+    exclusivity remain obligations of the unfinished storage leaves.
 
     Example:
         ``EvidenceStoreAdapter(project_attempt=fake_project, ...)`` can be
@@ -135,14 +151,22 @@ class EvidenceStoreAdapter:
         self._finalize_evidence = (
             _finalize_evidence if finalize_evidence is None else finalize_evidence
         )
+        self._prepared: PreparedEvidence | None = None
 
     def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
         """Exclusively prepare evidence before dispatch by delegating the leaf.
 
         Returns:
             The paths to the prepared evidence area and staged instructions.
+
+        Raises:
+            RuntimeError: Evidence storage has already been bound for this run.
         """
-        return self._create_evidence(output_directory, plan)
+        if self._prepared is not None:
+            raise RuntimeError("evidence storage is already prepared for this run")
+        prepared = self._create_evidence(output_directory, plan)
+        self._prepared = prepared
+        return prepared
 
     def record_attempt(
         self,
@@ -162,7 +186,9 @@ class EvidenceStoreAdapter:
         Returns:
             The projected record after its append operation succeeds.
         """
+        prepared = self._require_prepared()
         record = self._project_attempt(
+            prepared,
             run_id,
             call_id,
             position,
@@ -170,16 +196,16 @@ class EvidenceStoreAdapter:
             evidence,
             retry_assessment,
         )
-        self._append_attempt(record)
+        self._append_attempt(prepared, record)
         return record
 
     def record_wait_event(self, event: WaitEvent, /) -> None:
         """Append each wait transition synchronously before policy advances."""
-        self._append_wait_event(event)
+        self._append_wait_event(self._require_prepared(), event)
 
     def record_quota_probe_event(self, event: QuotaProbeLifecycleInput, /) -> None:
         """Append a scalar probe transition without inventing process evidence."""
-        self._append_probe_event(event)
+        self._append_probe_event(self._require_prepared(), event)
 
     def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
@@ -189,17 +215,28 @@ class EvidenceStoreAdapter:
         Returns:
             The shared process projection and quota assessment after append.
         """
-        settled = self._project_settled_probe(evidence)
-        self._append_settled_probe(settled)
+        prepared = self._require_prepared()
+        settled = self._project_settled_probe(prepared, evidence)
+        self._append_settled_probe(prepared, settled)
         return settled
 
     def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Append passive telemetry as a separate associated observation."""
-        self._append_quota_telemetry(event)
+        self._append_quota_telemetry(self._require_prepared(), event)
 
     def finalize(self, record: RunRecord, /) -> None:
         """Persist truthful final accounting through the supplied leaf."""
-        self._finalize_evidence(record)
+        self._finalize_evidence(self._require_prepared(), record)
+
+    def _require_prepared(self) -> PreparedEvidence:
+        """Return this run's storage handle or reject pre-setup evidence calls.
+
+        Raises:
+            RuntimeError: Successful run preparation has not completed.
+        """
+        if self._prepared is None:
+            raise RuntimeError("evidence storage must be prepared before recording")
+        return self._prepared
 
 
 def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
@@ -208,6 +245,7 @@ def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvi
 
 
 def _project_attempt(
+    prepared: PreparedEvidence,
     run_id: RunId,
     call_id: CallId,
     position: int,
@@ -220,36 +258,44 @@ def _project_attempt(
     raise NotImplementedError("attempt evidence projection is not implemented")
 
 
-def _append_attempt(record: AttemptRecord, /) -> None:
+def _append_attempt(prepared: PreparedEvidence, record: AttemptRecord, /) -> None:
     """Append-only attempt record persistence is unfinished."""
     raise NotImplementedError("attempt record persistence is not implemented")
 
 
-def _append_wait_event(event: WaitEvent, /) -> None:
+def _append_wait_event(prepared: PreparedEvidence, event: WaitEvent, /) -> None:
     """Append-only wait event persistence is unfinished."""
     raise NotImplementedError("wait event persistence is not implemented")
 
 
-def _append_probe_event(event: QuotaProbeLifecycleInput, /) -> None:
+def _append_probe_event(
+    prepared: PreparedEvidence, event: QuotaProbeLifecycleInput, /
+) -> None:
     """Append-only probe lifecycle persistence is unfinished."""
     raise NotImplementedError("probe event persistence is not implemented")
 
 
-def _project_settled_probe(evidence: QuotaProbeEvidence, /) -> QuotaProbeSettled:
+def _project_settled_probe(
+    prepared: PreparedEvidence, evidence: QuotaProbeEvidence, /
+) -> QuotaProbeSettled:
     """Probe artifact writing and process projection are unfinished."""
     raise NotImplementedError("settled probe projection is not implemented")
 
 
-def _append_settled_probe(event: QuotaProbeSettled, /) -> None:
+def _append_settled_probe(
+    prepared: PreparedEvidence, event: QuotaProbeSettled, /
+) -> None:
     """Append-only settled probe persistence is unfinished."""
     raise NotImplementedError("settled probe persistence is not implemented")
 
 
-def _append_quota_telemetry(event: QuotaTelemetryEvent, /) -> None:
+def _append_quota_telemetry(
+    prepared: PreparedEvidence, event: QuotaTelemetryEvent, /
+) -> None:
     """Append-only passive telemetry persistence is unfinished."""
     raise NotImplementedError("quota telemetry persistence is not implemented")
 
 
-def _finalize_evidence(record: RunRecord, /) -> None:
+def _finalize_evidence(prepared: PreparedEvidence, record: RunRecord, /) -> None:
     """Final run accounting persistence is unfinished."""
     raise NotImplementedError("final evidence persistence is not implemented")

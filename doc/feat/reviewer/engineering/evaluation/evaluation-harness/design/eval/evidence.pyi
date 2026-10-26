@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exclusive run-artifact creation and append-only evidence persistence port."""
+"""Historical evidence port snapshot; runtime contract lives in evidence.py."""
 
 from pathlib import Path
 from typing import Protocol
