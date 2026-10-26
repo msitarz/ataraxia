@@ -1,31 +1,53 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Typed asynchronous evidence persistence port and composition adapter.
+"""Typed asynchronous evidence persistence port and filesystem adapter.
 
-The adapter owns event ordering and identity forwarding. Storage, projection,
-and artifact-writing leaves remain explicit injection points until implemented.
+The adapter owns event ordering and identity forwarding. Filesystem leaves
+publish immutable artifacts and append durable lifecycle observations.
 """
 
 import asyncio
 from collections.abc import Callable, Coroutine
+from dataclasses import dataclass
 from functools import partial, wraps
+from hashlib import sha256
+import json
+import os
 from pathlib import Path
-from typing import Protocol
+import tempfile
+from typing import Protocol, assert_never
+
+from pydantic import BaseModel
 
 from script.eval.model import (
     AttemptEvidence,
     AttemptNumber,
+    AttemptOutcomeKind,
     AttemptRecord,
+    AttemptResult,
     CallId,
+    CleanupRecord,
     FrozenPlan,
     PreparedEvidence,
+    ProcessRecord,
     QuotaProbeEvidence,
     QuotaProbeLifecycleInput,
+    QuotaProbeRecord,
     QuotaProbeSettled,
     QuotaTelemetryEvent,
     RetryAssessment,
     RunId,
     RunRecord,
+    SignalRecord,
     WaitEvent,
+)
+from script.process_supervisor import (
+    AttemptCancelled,
+    AttemptFailureEvidence,
+    AttemptObservation,
+    Completed,
+    InfrastructureFailure,
+    OutputLimitExceeded,
+    TimedOut,
 )
 
 
@@ -43,7 +65,7 @@ class EvidenceStore(Protocol):
     It provides no coordination with another adapter or process. A coroutine
     that has not started is not submitted. The runner must retain and await all
     submitted evidence operations during shutdown. The public
-    ``create_evidence_store`` factory binds unfinished default leaves; the
+    ``create_evidence_store`` factory binds filesystem default leaves; the
     adapter constructor requires every leaf explicitly.
     """
 
@@ -134,7 +156,7 @@ def _retain_operation[**P, R](
 
 
 class EvidenceStoreAdapter:
-    """Compose ordered evidence operations around unfinished typed leaves.
+    """Compose ordered evidence operations around typed persistence leaves.
 
     Every submitted operation is serialized and retained through settlement
     under cooperative caller cancellation. Injected synchronous leaves run in
@@ -326,7 +348,7 @@ def create_evidence_store(
     append_quota_telemetry: AppendQuotaTelemetry | None = None,
     finalize_evidence: FinalizeEvidence | None = None,
 ) -> EvidenceStoreAdapter:
-    """Compose the adapter with unfinished default leaves or supplied test ports.
+    """Compose the adapter with filesystem defaults or supplied test ports.
 
     Returns:
         An adapter with all nine leaf dependencies explicitly bound.
@@ -399,8 +421,26 @@ def _task_exception[Result](task: asyncio.Task[Result]) -> BaseException | None:
 
 
 def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
-    """Exclusive creation and pre-dispatch plan persistence are unfinished."""
-    raise NotImplementedError("exclusive evidence creation is not implemented")
+    """Create a fresh run area and persist frozen inputs.
+
+    Returns:
+        Absolute paths to the run area, plan, and optional instructions.
+
+    Raises:
+        FileExistsError: The requested destination already exists.
+    """
+    if os.path.lexists(output_directory):
+        raise FileExistsError(f"evidence output already exists: {output_directory}")
+    destination = output_directory.expanduser().resolve()
+    destination.mkdir(parents=True, exist_ok=False)
+    _fsync_directory(destination.parent)
+    plan_path = destination / "plan.json"
+    _write_new_file(plan_path, _json_bytes(plan))
+    instruction_path = None
+    if plan.instructions_file is not None:
+        instruction_path = destination / "instructions.bin"
+        _write_new_file(instruction_path, plan.instructions_file.content)
+    return PreparedEvidence(destination, plan_path, instruction_path)
 
 
 def _project_attempt(
@@ -413,48 +453,357 @@ def _project_attempt(
     retry_assessment: RetryAssessment | None,
     /,
 ) -> AttemptRecord:
-    """Artifact writing and shared process projection are unfinished."""
-    raise NotImplementedError("attempt evidence projection is not implemented")
+    """Publish raw stream prefixes and project the supervisor facts.
+
+    Returns:
+        The immutable metadata projection for this attempt.
+    """
+    projection = _project_process(evidence)
+    base = (
+        prepared.output_directory
+        / "attempts"
+        / f"position-{position}"
+        / _identity_segment(call_id)
+    )
+    stdout, stderr = _publish_streams(
+        base / f"attempt-{attempt_number}", projection.observation
+    )
+    return AttemptRecord.model_validate(
+        projection.record.model_dump()
+        | {
+            "run_id": run_id,
+            "call_id": call_id,
+            "position": position,
+            "attempt_number": attempt_number,
+            "stdout_artifact": stdout,
+            "stderr_artifact": stderr,
+            "retry_assessment": retry_assessment,
+        }
+    )
 
 
 def _append_attempt(prepared: PreparedEvidence, record: AttemptRecord, /) -> None:
-    """Append-only attempt record persistence is unfinished."""
-    raise NotImplementedError("attempt record persistence is not implemented")
+    """Atomically publish one immutable attempt record."""
+    _write_new_file(
+        prepared.output_directory
+        / "attempts"
+        / f"position-{record.position}"
+        / _identity_segment(record.call_id)
+        / f"attempt-{record.attempt_number}.json",
+        _json_bytes(record),
+    )
 
 
 def _append_wait_event(prepared: PreparedEvidence, event: WaitEvent, /) -> None:
-    """Append-only wait event persistence is unfinished."""
-    raise NotImplementedError("wait event persistence is not implemented")
+    """Append a durable wait event."""
+    _append_event(prepared, "wait", event)
 
 
 def _append_probe_event(
     prepared: PreparedEvidence, event: QuotaProbeLifecycleInput, /
 ) -> None:
-    """Append-only probe lifecycle persistence is unfinished."""
-    raise NotImplementedError("probe event persistence is not implemented")
+    """Append a durable probe lifecycle event."""
+    _append_event(prepared, "probe", event)
 
 
 def _project_settled_probe(
     prepared: PreparedEvidence, evidence: QuotaProbeEvidence, /
 ) -> QuotaProbeSettled:
-    """Probe artifact writing and process projection are unfinished."""
-    raise NotImplementedError("settled probe projection is not implemented")
+    """Project probe process facts through the shared outcome projection.
+
+    Returns:
+        The settled quota probe with raw process artifact references.
+    """
+    probe_id = str(evidence.request.schedule.probe_id)
+    projection = _project_process(evidence.process)
+    stdout, stderr = _publish_streams(
+        prepared.output_directory / "probes" / _identity_segment(probe_id),
+        projection.observation,
+    )
+    record = QuotaProbeRecord.model_validate(
+        projection.record.model_dump()
+        | {
+            "stdout_artifact": stdout,
+            "stderr_artifact": stderr,
+            "request": evidence.request,
+            "quota_state": evidence.quota_state,
+            "observation": evidence.observation,
+            "classification_basis": evidence.classification_basis,
+        }
+    )
+    return QuotaProbeSettled(kind="settled", record=record)
 
 
 def _append_settled_probe(
     prepared: PreparedEvidence, event: QuotaProbeSettled, /
 ) -> None:
-    """Append-only settled probe persistence is unfinished."""
-    raise NotImplementedError("settled probe persistence is not implemented")
+    """Append the settled probe record to the event ledger."""
+    _append_event(prepared, "probe", event)
 
 
 def _append_quota_telemetry(
     prepared: PreparedEvidence, event: QuotaTelemetryEvent, /
 ) -> None:
-    """Append-only passive telemetry persistence is unfinished."""
-    raise NotImplementedError("quota telemetry persistence is not implemented")
+    """Append passive quota telemetry to the event ledger."""
+    _append_event(prepared, "quota_telemetry", event)
 
 
 def _finalize_evidence(prepared: PreparedEvidence, record: RunRecord, /) -> None:
-    """Final run accounting persistence is unfinished."""
-    raise NotImplementedError("final evidence persistence is not implemented")
+    """Write final accounting without replacing the original plan."""
+    _write_new_file(prepared.output_directory / "run.json", _json_bytes(record))
+
+
+@dataclass(frozen=True)
+class _ProcessProjection:
+    """One typed metadata projection and the observation used for stream writes."""
+
+    record: ProcessRecord
+    observation: AttemptObservation | None
+
+
+@dataclass(frozen=True)
+class _OutcomeProjection:
+    """Named outcome fields used to build persisted process evidence."""
+
+    observation: AttemptObservation | None
+    exit_status: int | None
+    outcome_kind: AttemptOutcomeKind
+    termination_reason: str | None
+    error_type: str | None
+    diagnostic: str | None
+
+
+def _project_process(evidence: AttemptEvidence, /) -> _ProcessProjection:
+    """Project supervisor facts once for metadata and raw stream publication.
+
+    Returns:
+        The typed process record and matching captured observation.
+    """
+    outcome = _outcome_projection(evidence.outcome, evidence)
+    observation = outcome.observation
+    request = evidence.request
+    record = ProcessRecord(
+        control_flow=evidence.control_flow,
+        outcome_kind=outcome.outcome_kind,
+        started_at_utc=evidence.started_at_utc,
+        ended_at_utc=evidence.ended_at_utc,
+        argv=request.argv,
+        cwd=os.fspath(request.cwd),
+        timeout_seconds=request.timeout_seconds,
+        cleanup_timeout_seconds=request.cleanup_timeout_seconds,
+        grace_seconds=request.grace_seconds,
+        output_limit_bytes=request.output_limit_bytes,
+        elapsed_seconds=None if observation is None else observation.elapsed_seconds,
+        elapsed_basis="unavailable"
+        if observation is None
+        else "supervisor_observation",
+        exit_status=outcome.exit_status,
+        termination_reason=outcome.termination_reason,
+        cleanup=_cleanup_record(observation),
+        stdout_artifact=None,
+        stderr_artifact=None,
+        usage_telemetry=evidence.usage_telemetry,
+        error_type=outcome.error_type,
+        diagnostic=outcome.diagnostic,
+    )
+    return _ProcessProjection(record, observation)
+
+
+def _cleanup_record(observation: AttemptObservation | None) -> CleanupRecord | None:
+    """Project cleanup observations into persisted evidence.
+
+    Returns:
+        Structured cleanup evidence, or ``None`` when no observation exists.
+    """
+    if observation is None:
+        return None
+    cleanup = observation.cleanup
+    return CleanupRecord(
+        process=cleanup.process,
+        signals=tuple(
+            SignalRecord(
+                signal=item.signal,
+                outcome=item.outcome,
+                diagnostic=item.diagnostic,
+            )
+            for item in cleanup.signals
+        ),
+        direct_wait=cleanup.direct_wait,
+        wait_diagnostic=cleanup.wait_diagnostic,
+    )
+
+
+def _outcome_projection(
+    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None,
+    evidence: AttemptEvidence,
+) -> _OutcomeProjection:
+    """Return observation, status, outcome kind, and termination label."""
+    match outcome:
+        case AttemptCancelled() as cancelled:
+            return _OutcomeProjection(
+                observation=cancelled.observation,
+                exit_status=cancelled.exit_status,
+                outcome_kind="cancelled",
+                termination_reason="cancelled",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
+            )
+        case AttemptFailureEvidence() as failure:
+            return _OutcomeProjection(
+                observation=failure.observation,
+                exit_status=failure.exit_status,
+                outcome_kind="unexpected_exception",
+                termination_reason="exception",
+                error_type=evidence.error_type,
+                diagnostic=_join_diagnostics(
+                    evidence.diagnostic, failure.stop_dispatch_diagnostic
+                ),
+            )
+        case Completed() as completed:
+            return _OutcomeProjection(
+                observation=completed.observation,
+                exit_status=completed.exit_status,
+                outcome_kind="completed",
+                termination_reason="exited",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
+            )
+        case TimedOut() as timeout:
+            return _OutcomeProjection(
+                observation=timeout.observation,
+                exit_status=timeout.exit_status,
+                outcome_kind="timed_out",
+                termination_reason="timed_out",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
+            )
+        case OutputLimitExceeded() as overflow:
+            return _OutcomeProjection(
+                observation=overflow.observation,
+                exit_status=overflow.exit_status,
+                outcome_kind="output_limit_exceeded",
+                termination_reason="output_limit_exceeded",
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
+            )
+        case InfrastructureFailure() as failure:
+            return _OutcomeProjection(
+                observation=failure.observation,
+                exit_status=failure.exit_status,
+                outcome_kind="infrastructure_failure",
+                termination_reason="infrastructure_failure",
+                error_type=failure.error_type,
+                diagnostic=_join_diagnostics(evidence.diagnostic, failure.diagnostic),
+            )
+        case None:
+            kind = (
+                "unexpected_exception"
+                if evidence.control_flow == "raised"
+                else "no_observation"
+            )
+            termination = "exception" if evidence.control_flow == "raised" else None
+            return _OutcomeProjection(
+                observation=None,
+                exit_status=None,
+                outcome_kind=kind,
+                termination_reason=termination,
+                error_type=evidence.error_type,
+                diagnostic=evidence.diagnostic,
+            )
+        case _ as impossible:
+            assert_never(impossible)
+
+
+def _join_diagnostics(primary: str | None, additional: str | None) -> str | None:
+    """Keep both independent supervisor and adapter diagnostics.
+
+    Returns:
+        Joined diagnostics or the one available diagnostic.
+    """
+    if primary is None:
+        return additional
+    if additional is None:
+        return primary
+    return f"{primary}; supervisor: {additional}"
+
+
+def _publish_streams(
+    base: Path, observation: AttemptObservation | None, /
+) -> tuple[str | None, str | None]:
+    """Publish exact observed streams, including empty byte strings.
+
+    Returns:
+        Absolute artifact paths, or ``None`` for unavailable output.
+    """
+    if observation is None or observation.output is None:
+        return None, None
+    stdout, stderr = Path(f"{base}.stdout"), Path(f"{base}.stderr")
+    _write_new_file(stdout, observation.output.stdout)
+    _write_new_file(stderr, observation.output.stderr)
+    return str(stdout.resolve()), str(stderr.resolve())
+
+
+def _identity_segment(identity: str, /) -> str:
+    """Map opaque identity text to one fixed safe path segment.
+
+    Returns:
+        A fixed-length hexadecimal SHA-256 path component.
+    """
+    return sha256(identity.encode("utf-8")).hexdigest()
+
+
+def _json_bytes(value: BaseModel) -> bytes:
+    """Encode validated metadata as UTF-8 JSON.
+
+    Returns:
+        A newline-terminated JSON document.
+    """
+    return (value.model_dump_json(indent=2) + "\n").encode("utf-8")
+
+
+def _write_new_file(path: Path, content: bytes, /) -> None:
+    """Fsync a temporary file and atomically publish without replacement."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary_name = tempfile.mkstemp(prefix=".evidence-", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(temporary, path)
+        temporary.unlink()
+        _fsync_directory(path.parent)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def _append_event(prepared: PreparedEvidence, kind: str, event: BaseModel, /) -> None:
+    """Append one fsynced JSON Lines event."""
+    path = prepared.output_directory / "events.jsonl"
+    encoded = (
+        json.dumps(
+            {"kind": kind, "event": json.loads(_json_bytes(event))},
+            separators=(",", ":"),
+        ).encode()
+        + b"\n"
+    )
+    fd = os.open(path, os.O_CREAT | os.O_APPEND | os.O_WRONLY, 0o600)
+    try:
+        remaining = memoryview(encoded)
+        while remaining:
+            written = os.write(fd, remaining)
+            remaining = remaining[written:]
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    _fsync_directory(path.parent)
+
+
+def _fsync_directory(path: Path, /) -> None:
+    """Persist directory-entry updates where directory fsync is available."""
+    fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)

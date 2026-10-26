@@ -891,17 +891,23 @@ def test_probe_and_wait_records_round_trip_without_filling_unknowns() -> None:
     )
 
 
-async def test_unfinished_default_storage_leaf_fails_visibly() -> None:
-    """Default composition never implies persistence before leaf implementation."""
+async def test_default_store_freezes_plan_into_a_new_output_directory(
+    tmp_path: Path,
+) -> None:
+    """Prepare a real run directory before any process can be dispatched."""
     # Given
+    destination = tmp_path / "run"
+    plan = frozen_plan()
     store = create_evidence_store()
 
     # When
-    with pytest.raises(NotImplementedError) as captured:
-        await store.create(Path("results"), frozen_plan())
+    prepared = await store.create(destination, plan)
 
     # Then
-    assert "exclusive evidence creation" in str(captured.value)
+    assert prepared.output_directory == destination
+    assert prepared.plan_artifact == destination / "plan.json"
+    assert prepared.model_instructions_file is None
+    assert prepared.plan_artifact.read_text() == plan.model_dump_json(indent=2) + "\n"
 
 
 async def test_blocked_leaf_does_not_block_loop_and_serializes_following_write() -> (
