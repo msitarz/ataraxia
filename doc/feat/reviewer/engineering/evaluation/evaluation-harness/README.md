@@ -301,10 +301,11 @@ restarting the runner or repeating completed calls.
   end monitoring, and mark the run incomplete with inability to continue, never
   availability or an invented reset.
 - Probes are explicit potentially billable operations: configuration and usage
-  guidance disclose their consumption, every probe counts toward the caller's
-  authorized operational budget, and a finite caller-supplied probe budget is
-  enforced when supplied; no probe dispatch is permitted without that budget's
-  authorization or after its limit is reached.
+  guidance disclose their consumption, and every probe counts separately toward
+  the caller's authorized operational budget. Enabling `--wait-for-quota`
+  authorizes quota probes; an optional finite nonnegative integer probe budget
+  caps them when supplied, with zero permitting no probes and omission adding
+  no harness probe-count cap. Caller operational limits still apply.
 - The Codex adapter ingests session telemetry after each evaluation attempt and
   probe, correlating the source with its `thread.started` ID; concrete file
   lookup, quota-scope association, interpretation, and source validation must be
@@ -465,10 +466,10 @@ The excerpt identifies a candidate numeric reset source, but file correlation,
 account and allowance association, freshness, and failure handling still require
 review. The authorized future probe condition is recorded there; its unattended
 recipe and positive availability evidence also remain prerequisites. An
-app-server schema does not establish the exec schema. Architecture, typed
-boundaries, and intent-only BDD scenarios predate this polling amendment and
-must be reassessed before implementation. No live probes, quota implementation,
-or model calls are authorized by this amendment.
+app-server schema does not establish the exec schema. The architecture, proposed
+typed boundaries, and intent-only BDD scenarios now describe this polling
+amendment; they establish no runtime behavior. No live probes, quota
+implementation, or model calls are authorized by this amendment.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for
 AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
