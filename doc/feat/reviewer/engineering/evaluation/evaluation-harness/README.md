@@ -16,6 +16,8 @@ component split; this Work contract remains authoritative.
 - Reuse the existing async process supervisor for bounded concurrent execution
   and inspectable, immutable evidence.
 - Let callers run a manual subset again without overwriting earlier evidence.
+- Provide a reproducible standalone invocation that can run without a live
+  agent conversation.
 - Optionally retry eligible transient model-capacity failures with finite
   allowances and bounded backoff with jitter.
 - Optionally pause an active run for recognized Codex quota exhaustion while
@@ -30,6 +32,8 @@ component split; this Work contract remains authoritative.
 - Add a plugin framework, generic scheduler library, production reviewer, or
   replacement process supervisor.
 - Rewrite the existing supervisor's dataclasses.
+- Integrate schedulers, install services, maintain launcher liveness, or recover
+  a runner after restart.
 
 ## Mechanisms
 
@@ -342,6 +346,33 @@ failures while preserving the original call and its evidence.
   bounds and jitter sampling, zero-delay yielding, slot release, independent
   invocations, quota gating, and cancellation without model calls; the eventual
   design exposes time and randomness dependencies for deterministic checks.
+
+### **AC-8 TODO** Standalone invocation supports external execution
+
+A caller can launch the harness from a terminal or external cron or launchd
+job without keeping an agent conversation alive.
+
+- Usage guidance supplies a reproducible command and identifies its working
+  directory, dependency setup and versions, authentication and environment
+  prerequisites, unattended CLI configuration, output destination, and exit
+  meanings for success, failure, cancellation, and incomplete evidence.
+- The documented invocation runs without interactive approval requests when its
+  declared authentication, permission, availability, and environment
+  prerequisites hold; missing prerequisites fail explicitly rather than require
+  an agent to answer prompts or silently broaden permissions.
+- While alive, the harness owns its child processes, dispatch, retry and wait
+  policies, cleanup, and evidence under AC-1 through AC-7, regardless of who
+  launched it.
+- The maintainer or external service owns launch and liveness; scheduler
+  integration, service installation, and restart recovery remain outside this
+  Work, and no cron or launchd implementation is required.
+- The parent Evaluation owns protocol and fixture preparation, authorized
+  budgets, the execution handoff, and later analysis against its declared
+  metrics and thresholds; harness invocation readiness establishes neither
+  Evaluation completion nor authorization to execute.
+- Controlled checks exercise the documented standalone entry point's unattended
+  behavior and exit meanings without model calls; usage guidance distinguishes
+  checked behavior from live CLI and availability prerequisites.
 
 ## Dependencies
 

@@ -104,6 +104,6 @@ declared protocol. It can stand alone or support an Investigation; a small
 comparison may stay inline without a separate Work. Its completion does not
 adopt a recommendation as policy.
 
-[Empirical evaluation guidance](evaluation.md) owns protocol, observations, and
-interpretation requirements. An Evaluation does not require nesting or agents
-merely because of its kind.
+[Empirical evaluation guidance](evaluation.md) owns the two delivery stages,
+protocol, observations, and interpretation requirements. An Evaluation does not
+require nesting or agents merely because of its kind.

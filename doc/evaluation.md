@@ -6,6 +6,34 @@ comparison kept inline. [Work definition](work-definition.md#evaluations) owns
 Evaluation contract requirements; [Work workflow](workflow.md) owns lifecycle; a
 specific Work README and linked protocol own the experiment.
 
+## Evaluation Work delivery stages
+
+An Evaluation Work delivers knowledge about its bounded question through two
+stages within the same coherent outcome:
+
+1. Prepare protocol-aligned inputs and a reproducible invocation with the
+   prerequisites, execution conditions, authorized budget, and evidence
+   destination needed for an execution handoff.
+2. Analyze the observed results against the frozen protocol's predeclared
+   metrics and thresholds, reporting the supported knowledge, inconclusive
+   outcomes, deviations, and limits.
+
+Prepared inputs and invocation readiness establish the first stage only; they
+do not establish measured results or Evaluation completion. Completion requires
+actual inspectable observations and their interpretation under the protocol.
+Preserve both stages' supporting artifacts, including prepared input revisions,
+invocation, frozen protocol, raw-result provenance, deviations, and analysis.
+
+Execution may occur between these stages through the maintainer or an external
+scheduler or service, without an agent remaining alive or owning that process.
+The execution handoff identifies who launches and maintains execution and how
+results return for analysis. Preparation, readiness, or a merge does not itself
+authorize execution or additional budget.
+
+These stages are delivery checkpoints, not a second lifecycle or mandatory
+child Works. They apply to Evaluation Works; small inline comparisons need no
+additional ceremony merely to follow this pattern.
+
 ## Declare the protocol before execution
 
 - State the bounded question, conditions, budget, common quality and
