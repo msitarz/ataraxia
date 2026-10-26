@@ -9,12 +9,14 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. The token estimator and dry-run report builder are implemented; CLI
-integration, dispatch, and persistence remain planned. No implementation
-authorizes model calls. The sibling
-[process supervisor](../process-supervisor/README.md) is
-implemented and owns one attempt's process lifecycle; this harness owns plans,
-dispatch policy, and run evidence around that boundary.
+expansion. The token estimator, dry-run report builder, and evidence storage are
+implemented. CLI integration and dispatch remain planned. Shared consumer-owned
+runner ports and accepted runtime configuration are implemented in
+[`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
+and `script/eval/model.py`. No implementation authorizes model calls. The
+sibling [process supervisor](../process-supervisor/README.md) is implemented and
+owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
+and run evidence around that boundary.
 
 The planned quota wait, model-capacity retry, and standalone-invocation
 amendments are owned by
@@ -530,8 +532,9 @@ Codex, quota, and runtime adapters.
 - The adapter package exports these planned adapters. The CLI composition root
   wires the Codex request and classifier adapters and one quota adapter
   configured for the same binding scope, along with the runtime and supervisor
-  adapter, into one coordinator. These are design stubs only; no runner
-  implementation is present.
+  adapter, into one coordinator. The coordinator, policy, adapters, and CLI
+  composition remain design stubs; the shared runner values and ports are
+  implemented.
 - Effects: the coordinator owns async scheduling and effect ordering. The
   Codex and quota adapters own their stated external reads; the runtime adapter
   owns clock, wait, and random effects.
@@ -693,8 +696,10 @@ known. The dry-run branch never resolves or probes the CLI.
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) records the reviewed
-boundary from which implementation proceeds. `model.pyi` is a historical
-snapshot, not an active typing interface. The evidence-facing quota scope,
+boundary from which implementation proceeds. `model.pyi`, `runner/ports.pyi`,
+and `runner/__init__.pyi` are historical references, not active typing
+interfaces. The `Coordinator` declaration in the `__init__.pyi` sketch is
+planned and is not exported by the runtime package. Evidence-facing quota scope,
 window and observation, retry assessment, wait and probe lifecycle, and shared
 `ProcessRecord` values have migrated into `script/eval/model.py`. The active
 `script/eval/evidence.py` binds the prepared run context for one adapter
@@ -725,7 +730,8 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-Runner policy/configuration and AC-9 progress proposals remain design-only. The
+Runner policy and AC-9 progress behavior remain design-only; accepted shared
+runner configuration and consumer-owned runtime ports are implemented. The
 shared base preserves flat attempt fields while permitting probes to reuse the
 process projection. `plan.pyi` remains a historical planner reference. The
 active implementations are

@@ -3,9 +3,11 @@
 
 This sketch is not an active typing interface. The evidence-facing quota,
 classification, wait, probe-lifecycle, and shared ``ProcessRecord`` values
-have migrated into ``script/eval/model.py`` for typed evidence wiring. Runner
-policy/configuration and progress proposals remain unimplemented here; do not
-use this historical sketch to shadow the runtime module.
+have migrated into ``script/eval/model.py`` for typed evidence wiring. The
+accepted runner configuration fields below have also migrated into the runtime
+``HarnessConfig``; their presence here records proposal history only.
+Runner policy and progress behavior remain unimplemented; do not use this
+historical sketch to shadow the runtime module.
 """
 
 from dataclasses import dataclass

@@ -82,7 +82,15 @@ type OrderedOption = DirectoryOption | SeparatorOption
 
 
 class HarnessConfig(StrictModel):
-    """CLI settings; validation does not perform I/O or dispatch."""
+    """CLI settings; validation does not perform I/O or dispatch.
+
+    Quota waiting and capacity retries default off. Enabled quota waiting
+    rejects a zero probe budget; ``None`` leaves the harness probe count
+    uncapped. Positive capacity retry allowances require finite positive
+    backoff base and cap values, with the cap at least as large as the base.
+    Progress refresh interval and any supplied wait/backoff durations are
+    finite and positive.
+    """
 
     ordered_options: tuple[OrderedOption, ...]
     models: tuple[str, ...]
@@ -94,8 +102,17 @@ class HarnessConfig(StrictModel):
     cleanup_timeout_seconds: PositiveSeconds
     grace_seconds: NonnegativeSeconds
     output_limit_bytes: NonnegativeBytes
+    quiet: bool = False
+    progress_interval_seconds: PositiveSeconds = 1.0
     retry_limit: int = Field(default=0, ge=0)
     retry_nonzero_exit: bool = False
+    quota_wait_enabled: bool = False
+    quota_wait_limit_seconds: PositiveSeconds | None = None
+    quota_poll_interval_seconds: PositiveSeconds = 60.0
+    quota_probe_budget: NonnegativeIndex | None = None
+    capacity_retry_limit: int = Field(default=0, ge=0)
+    capacity_backoff_base_seconds: PositiveSeconds | None = None
+    capacity_backoff_cap_seconds: PositiveSeconds | None = None
     instructions_file_path: Path | None
 
     @model_validator(mode="after")
@@ -135,6 +152,31 @@ class HarnessConfig(StrictModel):
             raise ValueError("execution requires an output directory")
         if self.grace_seconds >= self.cleanup_timeout_seconds:
             raise ValueError("grace_seconds must be less than cleanup_timeout_seconds")
+        return self
+
+    @model_validator(mode="after")
+    def validate_runner_relationships(self) -> HarnessConfig:
+        """Enforce quota and capacity relationships before dispatch.
+
+        Returns:
+            The validated configuration.
+
+        Raises:
+            ValueError: A quota budget or capacity retry relationship is invalid.
+        """
+        if self.quota_wait_enabled and self.quota_probe_budget == 0:
+            raise ValueError("enabled quota waiting requires a positive probe budget")
+        if self.capacity_retry_limit > 0 and (
+            self.capacity_backoff_base_seconds is None
+            or self.capacity_backoff_cap_seconds is None
+        ):
+            raise ValueError("capacity retries require backoff base and cap durations")
+        if (
+            self.capacity_backoff_base_seconds is not None
+            and self.capacity_backoff_cap_seconds is not None
+            and self.capacity_backoff_cap_seconds < self.capacity_backoff_base_seconds
+        ):
+            raise ValueError("capacity backoff cap must be at least its base")
         return self
 
 
