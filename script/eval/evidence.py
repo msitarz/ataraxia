@@ -7,13 +7,15 @@ publish immutable artifacts and append durable lifecycle observations.
 
 import asyncio
 from collections.abc import Callable, Coroutine
+from dataclasses import dataclass
 from functools import partial, wraps
+from hashlib import sha256
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Protocol
+from typing import Protocol, assert_never
 
 from pydantic import BaseModel
 
@@ -22,10 +24,12 @@ from script.eval.model import (
     AttemptNumber,
     AttemptOutcomeKind,
     AttemptRecord,
+    AttemptResult,
     CallId,
-    ControlFlow,
+    CleanupRecord,
     FrozenPlan,
     PreparedEvidence,
+    ProcessRecord,
     QuotaProbeEvidence,
     QuotaProbeLifecycleInput,
     QuotaProbeRecord,
@@ -34,6 +38,7 @@ from script.eval.model import (
     RetryAssessment,
     RunId,
     RunRecord,
+    SignalRecord,
     WaitEvent,
 )
 from script.process_supervisor import (
@@ -61,7 +66,7 @@ class EvidenceStore(Protocol):
     It provides no coordination with another adapter or process. A coroutine
     that has not started is not submitted. The runner must retain and await all
     submitted evidence operations during shutdown. The public
-    ``create_evidence_store`` factory binds unfinished default leaves; the
+    ``create_evidence_store`` factory binds filesystem default leaves; the
     adapter constructor requires every leaf explicitly.
     """
 
@@ -152,7 +157,7 @@ def _retain_operation[**P, R](
 
 
 class EvidenceStoreAdapter:
-    """Compose ordered evidence operations around unfinished typed leaves.
+    """Compose ordered evidence operations around typed persistence leaves.
 
     Every submitted operation is serialized and retained through settlement
     under cooperative caller cancellation. Injected synchronous leaves run in
@@ -344,7 +349,7 @@ def create_evidence_store(
     append_quota_telemetry: AppendQuotaTelemetry | None = None,
     finalize_evidence: FinalizeEvidence | None = None,
 ) -> EvidenceStoreAdapter:
-    """Compose the adapter with unfinished default leaves or supplied test ports.
+    """Compose the adapter with filesystem defaults or supplied test ports.
 
     Returns:
         An adapter with all nine leaf dependencies explicitly bound.
@@ -436,19 +441,16 @@ def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvi
     except ValueError:
         relative = None
     if relative is not None:
-        result = subprocess.run(
-            ["git", "check-ignore", "--quiet", "--no-index", "--", relative.as_posix()],
-            cwd=repository,
-            capture_output=True,
-            check=False,
-        )
+        result = _check_ignored(repository, relative)
         if result.returncode == 1:
             raise ValueError(
                 "evidence output inside the context repository must be Git-ignored"
             )
         if result.returncode != 0:
+            diagnostic = result.stderr.decode("utf-8", errors="replace").strip()
             raise OSError(
-                f"could not verify output ignore status (git exit {result.returncode})"
+                "could not verify output ignore status: "
+                f"{diagnostic or f'git exited {result.returncode}'}"
             )
     destination.mkdir(parents=True, exist_ok=False)
     _fsync_directory(destination.parent)
@@ -459,6 +461,55 @@ def _create_evidence(output_directory: Path, plan: FrozenPlan, /) -> PreparedEvi
         instruction_path = destination / "instructions.bin"
         _write_new_file(instruction_path, plan.instructions_file.content)
     return PreparedEvidence(destination, plan_path, instruction_path)
+
+
+def _check_ignored(
+    repository: Path, relative: Path, /
+) -> subprocess.CompletedProcess[bytes]:
+    """Run a bounded, isolated read-only ignore check.
+
+    Returns:
+        The completed Git process, including its ignore result status.
+
+    Raises:
+        OSError: Git cannot run or the bounded check expires.
+    """
+    environment = {
+        name: value for name, value in os.environ.items() if not name.startswith("GIT_")
+    }
+    environment.update({
+        "GIT_OPTIONAL_LOCKS": "0",
+        "GIT_NO_REPLACE_OBJECTS": "1",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "core.fsmonitor",
+        "GIT_CONFIG_VALUE_0": "false",
+        "LC_ALL": "C",
+        "LANG": "C",
+    })
+    try:
+        return subprocess.run(
+            [
+                "git",
+                "--no-lazy-fetch",
+                "-C",
+                os.fspath(repository),
+                "check-ignore",
+                "--quiet",
+                "--no-index",
+                "--",
+                relative.as_posix(),
+            ],
+            capture_output=True,
+            check=False,
+            env=environment,
+            timeout=10,
+        )
+    except subprocess.TimeoutExpired as failure:
+        raise OSError("Git ignore check timed out after 10 seconds") from failure
+    except OSError as failure:
+        raise OSError(f"could not run Git ignore check: {failure}") from failure
 
 
 def _project_attempt(
@@ -476,12 +527,13 @@ def _project_attempt(
     Returns:
         The immutable metadata projection for this attempt.
     """
-    base = (
-        prepared.output_directory / "attempts" / call_id / f"attempt-{attempt_number}"
+    projection = _project_process(evidence)
+    base = prepared.output_directory / "attempts" / _identity_segment(call_id)
+    stdout, stderr = _publish_streams(
+        base / f"attempt-{attempt_number}", projection.observation
     )
-    stdout, stderr = _publish_streams(base, evidence)
     return AttemptRecord.model_validate(
-        _process_record(evidence)
+        projection.record.model_dump()
         | {
             "run_id": run_id,
             "call_id": call_id,
@@ -499,7 +551,7 @@ def _append_attempt(prepared: PreparedEvidence, record: AttemptRecord, /) -> Non
     _write_new_file(
         prepared.output_directory
         / "attempts"
-        / record.call_id
+        / _identity_segment(record.call_id)
         / f"attempt-{record.attempt_number}.json",
         _json_bytes(record),
     )
@@ -525,12 +577,14 @@ def _project_settled_probe(
     Returns:
         The settled quota probe with raw process artifact references.
     """
-    probe_id = evidence.request.schedule.probe_id
+    probe_id = str(evidence.request.schedule.probe_id)
+    projection = _project_process(evidence.process)
     stdout, stderr = _publish_streams(
-        prepared.output_directory / "probes" / str(probe_id), evidence.process
+        prepared.output_directory / "probes" / _identity_segment(probe_id),
+        projection.observation,
     )
     record = QuotaProbeRecord.model_validate(
-        _process_record(evidence.process)
+        projection.record.model_dump()
         | {
             "stdout_artifact": stdout,
             "stderr_artifact": stderr,
@@ -562,68 +616,87 @@ def _finalize_evidence(prepared: PreparedEvidence, record: RunRecord, /) -> None
     _write_new_file(prepared.output_directory / "run.json", _json_bytes(record))
 
 
-def _process_record(evidence: AttemptEvidence, /) -> dict[str, object]:
-    """Project all supervisor outcomes without classifying captured content.
+@dataclass(frozen=True)
+class _ProcessProjection:
+    """One typed metadata projection and the observation used for stream writes."""
+
+    record: ProcessRecord
+    observation: AttemptObservation | None
+
+
+def _project_process(evidence: AttemptEvidence, /) -> _ProcessProjection:
+    """Project supervisor facts once for metadata and raw stream publication.
 
     Returns:
-        Fields accepted by the shared persisted process record.
+        The typed process record and matching captured observation.
     """
-    outcome = evidence.outcome
-    observation, exit_status, kind, termination = _outcome_projection(
-        outcome, evidence.control_flow
-    )
-    cleanup = (
-        None
-        if observation is None
-        else {
-            "process": observation.cleanup.process,
-            "signals": tuple(
-                {
-                    "signal": item.signal,
-                    "outcome": item.outcome,
-                    "diagnostic": item.diagnostic,
-                }
-                for item in observation.cleanup.signals
-            ),
-            "direct_wait": observation.cleanup.direct_wait,
-            "wait_diagnostic": observation.cleanup.wait_diagnostic,
-        }
+    observation, exit_status, kind, termination, error_type, diagnostic = (
+        _outcome_projection(evidence.outcome, evidence)
     )
     request = evidence.request
-    return {
-        "control_flow": evidence.control_flow,
-        "outcome_kind": kind,
-        "started_at_utc": evidence.started_at_utc,
-        "ended_at_utc": evidence.ended_at_utc,
-        "argv": request.argv,
-        "cwd": str(request.cwd),
-        "timeout_seconds": request.timeout_seconds,
-        "cleanup_timeout_seconds": request.cleanup_timeout_seconds,
-        "grace_seconds": request.grace_seconds,
-        "output_limit_bytes": request.output_limit_bytes,
-        "elapsed_seconds": None if observation is None else observation.elapsed_seconds,
-        "elapsed_basis": "unavailable"
+    record = ProcessRecord(
+        control_flow=evidence.control_flow,
+        outcome_kind=kind,
+        started_at_utc=evidence.started_at_utc,
+        ended_at_utc=evidence.ended_at_utc,
+        argv=request.argv,
+        cwd=os.fspath(request.cwd),
+        timeout_seconds=request.timeout_seconds,
+        cleanup_timeout_seconds=request.cleanup_timeout_seconds,
+        grace_seconds=request.grace_seconds,
+        output_limit_bytes=request.output_limit_bytes,
+        elapsed_seconds=None if observation is None else observation.elapsed_seconds,
+        elapsed_basis="unavailable"
         if observation is None
         else "supervisor_observation",
-        "exit_status": exit_status,
-        "termination_reason": termination,
-        "cleanup": cleanup,
-        "stdout_artifact": None,
-        "stderr_artifact": None,
-        "usage_telemetry": evidence.usage_telemetry,
-        "error_type": evidence.error_type,
-        "diagnostic": evidence.diagnostic,
-    }
+        exit_status=exit_status,
+        termination_reason=termination,
+        cleanup=_cleanup_record(observation),
+        stdout_artifact=None,
+        stderr_artifact=None,
+        usage_telemetry=evidence.usage_telemetry,
+        error_type=error_type,
+        diagnostic=diagnostic,
+    )
+    return _ProcessProjection(record, observation)
+
+
+def _cleanup_record(observation: AttemptObservation | None) -> CleanupRecord | None:
+    """Project cleanup observations into persisted evidence.
+
+    Returns:
+        Structured cleanup evidence, or ``None`` when no observation exists.
+    """
+    if observation is None:
+        return None
+    cleanup = observation.cleanup
+    return CleanupRecord(
+        process=cleanup.process,
+        signals=tuple(
+            SignalRecord(
+                signal=item.signal,
+                outcome=item.outcome,
+                diagnostic=item.diagnostic,
+            )
+            for item in cleanup.signals
+        ),
+        direct_wait=cleanup.direct_wait,
+        wait_diagnostic=cleanup.wait_diagnostic,
+    )
 
 
 def _outcome_projection(
-    outcome: object, control_flow: ControlFlow
-) -> tuple[AttemptObservation | None, int | None, AttemptOutcomeKind, str | None]:
-    """Return observation, status, outcome kind, and termination label.
-
-    Raises:
-        TypeError: The supervisor returned an unsupported outcome value.
-    """
+    outcome: AttemptResult | AttemptCancelled | AttemptFailureEvidence | None,
+    evidence: AttemptEvidence,
+) -> tuple[
+    AttemptObservation | None,
+    int | None,
+    AttemptOutcomeKind,
+    str | None,
+    str | None,
+    str | None,
+]:
+    """Return observation, status, outcome kind, and termination label."""
     match outcome:
         case AttemptCancelled() as cancelled:
             return (
@@ -631,6 +704,8 @@ def _outcome_projection(
                 cancelled.exit_status,
                 "cancelled",
                 "cancelled",
+                evidence.error_type,
+                evidence.diagnostic,
             )
         case AttemptFailureEvidence() as failure:
             return (
@@ -638,17 +713,37 @@ def _outcome_projection(
                 failure.exit_status,
                 "unexpected_exception",
                 "exception",
+                evidence.error_type,
+                _join_diagnostics(
+                    evidence.diagnostic, failure.stop_dispatch_diagnostic
+                ),
             )
         case Completed() as completed:
-            return completed.observation, completed.exit_status, "completed", "exited"
+            return (
+                completed.observation,
+                completed.exit_status,
+                "completed",
+                "exited",
+                evidence.error_type,
+                evidence.diagnostic,
+            )
         case TimedOut() as timeout:
-            return timeout.observation, timeout.exit_status, "timed_out", "timed_out"
+            return (
+                timeout.observation,
+                timeout.exit_status,
+                "timed_out",
+                "timed_out",
+                evidence.error_type,
+                evidence.diagnostic,
+            )
         case OutputLimitExceeded() as overflow:
             return (
                 overflow.observation,
                 overflow.exit_status,
                 "output_limit_exceeded",
                 "output_limit_exceeded",
+                evidence.error_type,
+                evidence.diagnostic,
             )
         case InfrastructureFailure() as failure:
             return (
@@ -656,47 +751,64 @@ def _outcome_projection(
                 failure.exit_status,
                 "infrastructure_failure",
                 "infrastructure_failure",
+                failure.error_type,
+                _join_diagnostics(evidence.diagnostic, failure.diagnostic),
             )
         case None:
             kind = (
-                "unexpected_exception" if control_flow == "raised" else "no_observation"
+                "unexpected_exception"
+                if evidence.control_flow == "raised"
+                else "no_observation"
             )
-            termination = "exception" if control_flow == "raised" else None
-            return None, None, kind, termination
-        case _:
-            raise TypeError(f"unsupported supervisor outcome: {type(outcome).__name__}")
+            termination = "exception" if evidence.control_flow == "raised" else None
+            return (
+                None,
+                None,
+                kind,
+                termination,
+                evidence.error_type,
+                evidence.diagnostic,
+            )
+        case _ as impossible:
+            assert_never(impossible)
+
+
+def _join_diagnostics(primary: str | None, additional: str | None) -> str | None:
+    """Keep both independent supervisor and adapter diagnostics.
+
+    Returns:
+        Joined diagnostics or the one available diagnostic.
+    """
+    if primary is None:
+        return additional
+    if additional is None:
+        return primary
+    return f"{primary}; supervisor: {additional}"
 
 
 def _publish_streams(
-    base: Path, evidence: AttemptEvidence, /
+    base: Path, observation: AttemptObservation | None, /
 ) -> tuple[str | None, str | None]:
     """Publish exact observed streams, including empty byte strings.
 
     Returns:
         Absolute artifact paths, or ``None`` for unavailable output.
     """
-    outcome = evidence.outcome
-    observation = (
-        outcome.observation
-        if isinstance(
-            outcome,
-            (
-                AttemptCancelled,
-                AttemptFailureEvidence,
-                Completed,
-                TimedOut,
-                OutputLimitExceeded,
-                InfrastructureFailure,
-            ),
-        )
-        else None
-    )
     if observation is None or observation.output is None:
         return None, None
-    stdout, stderr = base.with_suffix(".stdout"), base.with_suffix(".stderr")
+    stdout, stderr = Path(f"{base}.stdout"), Path(f"{base}.stderr")
     _write_new_file(stdout, observation.output.stdout)
     _write_new_file(stderr, observation.output.stderr)
     return str(stdout.resolve()), str(stderr.resolve())
+
+
+def _identity_segment(identity: str, /) -> str:
+    """Map opaque identity text to one fixed safe path segment.
+
+    Returns:
+        A fixed-length hexadecimal SHA-256 path component.
+    """
+    return sha256(identity.encode("utf-8")).hexdigest()
 
 
 def _json_bytes(value: BaseModel) -> bytes:

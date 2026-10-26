@@ -710,8 +710,12 @@ in-memory and serializes only this adapter on its event loop; it provides no
 cross-process coordination. The filesystem store creates a new output directory,
 accepts destinations outside the context repository or ignored by Git, and
 writes `plan.json` plus optional `instructions.bin` before dispatch. Attempt
-metadata lives in `attempts/<call-id>/attempt-<number>.json`; separate `.stdout`
-and `.stderr` files contain exact observed prefixes, including empty streams.
+metadata lives in
+`attempts/<sha256-call-id>/attempt-<number>.json`; probe artifacts use a
+`sha256-probe-id` directory. Stream suffixes are appended to the complete
+identity-based stem, so dots in an identity cannot change the suffix. Original
+identities remain in metadata. Separate `.stdout` and `.stderr` files contain
+exact observed prefixes, including empty streams.
 Probe lifecycle and settled records, wait transitions, and passive quota
 telemetry append to `events.jsonl`; final accounting is `run.json`. Metadata and
 stream files are published through same-directory temporary files and exclusive
