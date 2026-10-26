@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Fail-closed adapter boundary for source-backed Codex quota observations."""
 
-import asyncio
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
-from script.process_supervisor import AttemptRequest, DispatchStop
+from script.process_supervisor import DispatchStop
 
 from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
@@ -16,9 +15,6 @@ from ...model import (  # ruff: ignore[relative-imports]
     QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
-    QuotaWindowId,
-    QuotaWindowObservation,
-    RunId,
 )
 from ..ports import (  # ruff: ignore[relative-imports]
     AttemptCall,
@@ -63,9 +59,11 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     windows to generic observations. Thread IDs never leave this adapter. If
     either window, identity, producer time, or freshness is missing, malformed,
     stale, or unrecognized, the observation is unknown/unavailable and cannot
-    authorize resumption. No endpoint or exec schema is assumed: file discovery,
-    source schema, thread correlation, scope association, and freshness rules
-    remain unverified. Persist sanitized coordinates only, never account PII.
+    authorize resumption. It orders producer timestamps and uses source sequence
+    only within a single source coordinate; older evidence remains inconclusive.
+    No endpoint or exec schema is assumed: file discovery, source schema, thread
+    correlation, scope association, and freshness rules remain unverified.
+    Persist sanitized coordinates only, never account PII.
     """
 
     source: RawCodexQuotaStatusSource
@@ -73,12 +71,6 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     settings: CodexQuotaSettings
     attempt_call: AttemptCall
     runtime: Runtime
-    _latest_by_window: dict[QuotaWindowId, tuple[QuotaWindowObservation, str]] = field(
-        init=False, default_factory=dict, repr=False
-    )
-    _order_lock: asyncio.Lock = field(
-        init=False, default_factory=asyncio.Lock, repr=False
-    )
 
     async def observe_settled_attempt(
         self,
@@ -92,27 +84,4 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
     ) -> QuotaProbeEvidence:
         """Build fixed probe request, call supervisor, then correlate its session."""
-        ...
-
-    def _request(self, run_id: RunId, /) -> AttemptRequest:
-        """Build the requested Luna/none, minimal, tool-free empty-cwd request.
-
-        Plugins and MCP are disabled and the directory is read-only. The exact
-        unattended flag recipe remains unverified and must be checked before an
-        implementation claims this effective condition.
-        """
-        ...
-
-    async def _observation(
-        self,
-        scope: QuotaScope,
-        thread_id: str | None,
-        /,
-    ) -> QuotaObservation:
-        """Normalize schema and source age, order typed windows, and fail closed.
-
-        Compare producer time first; use a sequence only within the same source
-        coordinate. An older observation is inconclusive and never replaces a
-        newer cached window or authorizes availability.
-        """
         ...
