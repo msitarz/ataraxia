@@ -317,8 +317,10 @@ cannot establish the parent experiment's integrated protections or results.
 
 Quota waiting is a contract amendment only. Its detection and reset-information
 source interface remains unresolved and is an implementation prerequisite. The
-maintainer will supply a real exhausted-quota `codex exec --json` capture with
-separate stderr, exit status, CLI version, and corresponding `/status` output
-before that interface is defined. An app-server schema does not establish the
-exec schema. This amendment authorizes no probe calls, typed-boundary changes,
-BDD wiring, or quota-wait implementation.
+maintainer supplied an [exhausted five-hour quota capture](quota-capture.md)
+with exec JSONL, separate stderr, exit status, CLI version, and a separate
+interactive `/status` observation. It does not resolve the machine-readable
+detection and reset source; that source still needs investigation before its
+interface is defined. An app-server schema does not establish the exec schema.
+This amendment authorizes no probe calls, typed-boundary changes, BDD wiring, or
+quota-wait implementation.
