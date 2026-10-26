@@ -478,6 +478,28 @@ def test_quota_exhaustion_settles_calls_before_starting_another_probe() -> None:
 @pytest.mark.xfail(
     run=False,
     strict=True,
+    reason="not implemented: AC-6 in-flight pre-pause probes cannot resume",
+)
+def test_pre_pause_available_probe_cannot_reopen_new_quota_pause() -> None:
+    """Require a confirming probe to belong to the current pause generation."""
+    # Given
+    # An active-period probe already in flight when an evaluation reports
+    # conclusive quota exhaustion and settles its evidence.
+
+    # When
+    # That older probe later returns positive availability, then a new probe
+    # starts after the active-evaluation settlement barrier.
+
+    # Then
+    # The older probe is persisted but cannot reopen the pause; only the fresh
+    # probe associated with the current quota wait ID may end it as
+    # `quota_available`.
+    pass
+
+
+@pytest.mark.xfail(
+    run=False,
+    strict=True,
     reason="not implemented: AC-6 probe failure and evidence failure stop safely",
 )
 def test_unknown_probe_or_probe_event_write_failure_stops_before_resumption() -> None:

@@ -319,7 +319,11 @@ gating retries and stopping globally on unsafe outcomes.
   allows one probe in flight, and uses no evaluation semaphore slot. Quota
   exhaustion first pauses dispatch whether first observed in an evaluation or
   poll, then settles active attempts; no new probe starts until their evidence
-  is durable, while an already-running supervised probe must settle.
+  is durable, while an already-running supervised probe must settle. Each pause
+  has a stable wait ID captured by probes started to confirm it. A probe started
+  before that pause, including an active-period probe, may settle and persist
+  but cannot reopen the newer pause; completion time or a later source read does
+  not make its result eligible.
 - The consumer-owned quota port separates passive settled-attempt ingestion
   from active polling. Passive ingestion correlates captured `thread.started`
   evidence to its session snapshot; `poll` performs one separate supervised
@@ -499,12 +503,13 @@ evidence.
   retry.
 - A quota pause ends successfully only as `quota_available`, after a fresh
   positive observation for the same scope. This can happen before a reset hint
-  or when no hint exists. Reaching a reset hint ends only that cadence wait as
-  `reset_reached` and schedules an immediate recheck; it never ends the pause or
-  reopens dispatch. With no hint, cadence waits end periodically. The single
-  monitor task owns all these sleeps, so the coordinator does not run a second
-  reset timer alongside polling. Unknown or unavailable data fails closed; a
-  bound, cancellation, or stop can end the pause without resumption.
+  or when no hint exists, but only from a probe started for the current pause
+  after active evaluations settle. Reaching a reset hint ends only that cadence
+  wait as `reset_reached` and schedules an immediate recheck; it never ends the
+  pause or reopens dispatch. With no hint, cadence waits end periodically. The
+  single monitor task owns all these sleeps, so the coordinator does not run a
+  second reset timer alongside polling. Unknown or unavailable data fails
+  closed; a bound, cancellation, or stop can end the pause without resumption.
   `delay_elapsed` is the normal end of capacity backoff and ordinary
   quota-monitor cadence.
 - A small optional telemetry extractor may preserve generic usage fields while

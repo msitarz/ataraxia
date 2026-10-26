@@ -183,12 +183,18 @@ class QuotaWaitContext(StrictModel):
     selected_reset_at_utc: str | None
 
 class QuotaProbeRequest(StrictModel):
-    """One authorized active check, independent of evaluation numbering."""
+    """One authorized check associated with the pause it may confirm.
+
+    ``pause_wait_id`` is absent for active-period monitoring. Such a probe may
+    be durably recorded after a pause begins, but cannot end that newer pause;
+    only a probe started for its current pause ID can confirm resumption.
+    """
 
     run_id: RunId
     probe_id: QuotaProbeId
     scope: QuotaScope
     wait_id: WaitId
+    pause_wait_id: WaitId | None
     reason: QuotaProbeReason
     scheduled_at_utc: str
     started_at_utc: str

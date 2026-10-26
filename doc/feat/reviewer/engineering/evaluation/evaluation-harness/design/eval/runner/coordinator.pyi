@@ -54,7 +54,12 @@ class Coordinator:
         inconclusive freshness fails closed. Once a quota failure pauses global
         dispatch, let active evaluations settle and persist before starting any
         new probe; an already-running supervised probe still settles and records
-        before resumption or shutdown.
+        before resumption or shutdown. Associate each active pause with its
+        stable quota-wait ID. A probe request captures that ID when it starts;
+        a probe started before the current pause (including active-period polls)
+        may settle and persist but cannot reopen it. Only a fresh, positive
+        same-scope result from a probe started for the current pause can confirm
+        availability after the active-evaluation settlement barrier.
 
         Append a probe-start event before calling the port. The port returns an
         ephemeral ``QuotaProbeEvidence`` containing supervisor objects; pass it
@@ -80,7 +85,9 @@ class Coordinator:
         observation, and shutdown evidence are durable as they occur rather than
         only in final run metadata. A pause ends successfully only with a fresh
         positive observation, recorded as ``quota_available``; hint arrival
-        merely schedules a check.
+        merely schedules a check. Compare the probe's captured pause ID with the
+        current pause ID before accepting availability, not completion or read
+        time alone.
 
         Before using quota data, require the bound CLI scope, reader's expected
         scope, passive snapshot scope, active probe request scope, and returned
