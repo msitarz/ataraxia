@@ -108,11 +108,11 @@ the pure planner.
 ### Plan and boundary records
 
 **Wired skeleton:**
-[`script/eval/plan.py`](../../../../../../script/eval/plan.py) composes typed
-grouping, context-composition, and call-scheduling ports in order. The context
-composer receives the grouped source indices and `FrozenInputs`, so it can read
-the exact frozen context-source bytes without hidden state or I/O. It does not
-compose the optional instructions-file snapshot: the builder forwards that
+[`script/eval/plan.py`](../../../../../../script/eval/plan.py) invokes typed
+grouping, context-composition, and call-scheduling functions in order. The
+context composer receives grouped source indices and `FrozenInputs`, so it can
+read exact frozen context bytes without hidden state or I/O. It does not
+compose the optional instructions-file snapshot; the builder forwards that
 snapshot separately into `FrozenPlan`. The builder assembles the plan while
 forwarding the validated configuration and frozen input provenance. Its public
 `PlanBuilder.plan(FrozenInputs,

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Pure orchestration boundary for ordered evaluation planning."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -37,37 +38,13 @@ class ComposedContexts:
     prompts: tuple[tuple[tuple[int, ...], bytes], ...]
 
 
-class InputGrouper(Protocol):
-    """Group frozen source indices by their configured directory position."""
-
-    def group(self, inputs: FrozenInputs, config: HarnessConfig, /) -> GroupedInputs:
-        """Return ordered source-index groups matching directory option order."""
-
-
-class ContextComposer(Protocol):
-    """Compose selected context sources, excluding the instructions snapshot."""
-
-    def compose(
-        self,
-        inputs: FrozenInputs,
-        grouped: GroupedInputs,
-        config: HarnessConfig,
-        /,
-    ) -> ComposedContexts:
-        """Compose selected source bytes, excluding instructions-file bytes.
-
-        The original frozen inputs provide the bytes for the grouped indices;
-        no file reads or hidden state are needed.
-        """
-
-
-class CallScheduler(Protocol):
-    """Expand contexts over configured models and efforts in option order."""
-
-    def schedule(
-        self, composed: ComposedContexts, config: HarnessConfig, /
-    ) -> tuple[PlannedCall, ...]:
-        """Return calls with zero-based positions in the complete expansion."""
+type GroupInputs = Callable[[FrozenInputs, HarnessConfig], GroupedInputs]
+type ComposeContexts = Callable[
+    [FrozenInputs, GroupedInputs, HarnessConfig], ComposedContexts
+]
+type ScheduleCalls = Callable[
+    [ComposedContexts, HarnessConfig], tuple[PlannedCall, ...]
+]
 
 
 class PlanBuilder(Protocol):
@@ -81,40 +58,6 @@ class PlanBuilder(Protocol):
         """
 
 
-class _UnimplementedInputGrouper:
-    """Phase gate for source grouping until its behavior is implemented."""
-
-    def group(self, inputs: FrozenInputs, config: HarnessConfig, /) -> GroupedInputs:
-        """Raise instead of presenting an empty grouping as a valid result."""
-        raise NotImplementedError("source grouping is not implemented yet")
-
-
-class _UnimplementedContextComposer:
-    """Phase gate for separator decoding and source-byte composition."""
-
-    def compose(
-        self,
-        inputs: FrozenInputs,
-        grouped: GroupedInputs,
-        config: HarnessConfig,
-        /,
-    ) -> ComposedContexts:
-        """Raise until exact context composition has an implementation."""
-        raise NotImplementedError(
-            "separator decoding and prompt composition are not implemented yet"
-        )
-
-
-class _UnimplementedCallScheduler:
-    """Phase gate for ordered context, model, and effort expansion."""
-
-    def schedule(
-        self, composed: ComposedContexts, config: HarnessConfig, /
-    ) -> tuple[PlannedCall, ...]:
-        """Raise until every scheduled position can be constructed."""
-        raise NotImplementedError("scheduled call expansion is not implemented yet")
-
-
 class PurePlanBuilder(PlanBuilder):
     """Wire pure planning steps and assemble a frozen plan.
 
@@ -126,9 +69,9 @@ class PurePlanBuilder(PlanBuilder):
         self,
         run_id: str,
         *,
-        grouper: InputGrouper | None = None,
-        composer: ContextComposer | None = None,
-        scheduler: CallScheduler | None = None,
+        grouper: GroupInputs | None = None,
+        composer: ComposeContexts | None = None,
+        scheduler: ScheduleCalls | None = None,
     ) -> None:
         """Select pure collaborators and retain the caller's run identity.
 
@@ -139,13 +82,9 @@ class PurePlanBuilder(PlanBuilder):
             scheduler: Matrix-expansion operation, or the unfinished default.
         """
         self._run_id = run_id
-        self._grouper = grouper if grouper is not None else _UnimplementedInputGrouper()
-        self._composer = (
-            composer if composer is not None else _UnimplementedContextComposer()
-        )
-        self._scheduler = (
-            scheduler if scheduler is not None else _UnimplementedCallScheduler()
-        )
+        self._grouper = grouper if grouper is not None else _group_inputs
+        self._composer = composer if composer is not None else _compose_contexts
+        self._scheduler = scheduler if scheduler is not None else _schedule_calls
 
     def plan(self, inputs: FrozenInputs, config: HarnessConfig, /) -> FrozenPlan:
         """Wire grouping, composition, and expansion into an immutable plan.
@@ -158,9 +97,9 @@ class PurePlanBuilder(PlanBuilder):
         Returns:
             A plan assembled from caller-supplied identity and collaborators.
         """
-        grouped = self._grouper.group(inputs, config)
-        composed = self._composer.compose(inputs, grouped, config)
-        calls = self._scheduler.schedule(composed, config)
+        grouped = self._grouper(inputs, config)
+        composed = self._composer(inputs, grouped, config)
+        calls = self._scheduler(composed, config)
         return FrozenPlan(
             run_id=self._run_id,
             configuration=config,
@@ -171,3 +110,27 @@ class PurePlanBuilder(PlanBuilder):
             instructions_file=inputs.instructions_file,
             calls=calls,
         )
+
+
+def _group_inputs(inputs: FrozenInputs, config: HarnessConfig, /) -> GroupedInputs:
+    """Phase gate until frozen sources are grouped by directory position."""
+    raise NotImplementedError("source grouping is not implemented yet")
+
+
+def _compose_contexts(
+    inputs: FrozenInputs,
+    grouped: GroupedInputs,
+    config: HarnessConfig,
+    /,
+) -> ComposedContexts:
+    """Phase gate until separators and selected source bytes are composed."""
+    raise NotImplementedError(
+        "separator decoding and prompt composition are not implemented yet"
+    )
+
+
+def _schedule_calls(
+    composed: ComposedContexts, config: HarnessConfig, /
+) -> tuple[PlannedCall, ...]:
+    """Phase gate until ordered context, model, and effort calls are expanded."""
+    raise NotImplementedError("scheduled call expansion is not implemented yet")

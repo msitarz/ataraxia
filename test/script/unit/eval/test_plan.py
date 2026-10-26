@@ -15,12 +15,12 @@ from script.eval.model import (
     SourceSnapshot,
 )
 from script.eval.plan import (
-    CallScheduler,
+    ComposeContexts,
     ComposedContexts,
-    ContextComposer,
     GroupedInputs,
-    InputGrouper,
+    GroupInputs,
     PurePlanBuilder,
+    ScheduleCalls,
 )
 
 
@@ -59,48 +59,47 @@ def _inputs() -> FrozenInputs:
     return FrozenInputs(Path("/repo"), "commit-sha", (source,), instructions)
 
 
-class _RecordingGrouper(InputGrouper):
-    def __init__(self, events: list[str], result: GroupedInputs) -> None:
-        self.events = events
-        self.result = result
-        self.received: tuple[FrozenInputs, HarnessConfig] | None = None
+def _record_grouper(
+    events: list[str],
+    received: list[tuple[FrozenInputs, HarnessConfig]],
+    result: GroupedInputs,
+) -> GroupInputs:
+    def group(inputs: FrozenInputs, config: HarnessConfig) -> GroupedInputs:
+        events.append("group")
+        received.append((inputs, config))
+        return result
 
-    def group(self, inputs: FrozenInputs, config: HarnessConfig, /) -> GroupedInputs:
-        self.events.append("group")
-        self.received = (inputs, config)
-        return self.result
+    return group
 
 
-class _RecordingComposer(ContextComposer):
-    def __init__(self, events: list[str], result: ComposedContexts) -> None:
-        self.events = events
-        self.result = result
-        self.received: tuple[FrozenInputs, GroupedInputs, HarnessConfig] | None = None
-
+def _record_composer(
+    events: list[str],
+    received: list[tuple[FrozenInputs, GroupedInputs, HarnessConfig]],
+    result: ComposedContexts,
+) -> ComposeContexts:
     def compose(
-        self,
-        inputs: FrozenInputs,
-        grouped: GroupedInputs,
-        config: HarnessConfig,
-        /,
+        inputs: FrozenInputs, grouped: GroupedInputs, config: HarnessConfig
     ) -> ComposedContexts:
-        self.events.append("compose")
-        self.received = (inputs, grouped, config)
-        return self.result
+        events.append("compose")
+        received.append((inputs, grouped, config))
+        return result
+
+    return compose
 
 
-class _RecordingScheduler(CallScheduler):
-    def __init__(self, events: list[str], result: tuple[PlannedCall, ...]) -> None:
-        self.events = events
-        self.result = result
-        self.received: tuple[ComposedContexts, HarnessConfig] | None = None
-
+def _record_scheduler(
+    events: list[str],
+    received: list[tuple[ComposedContexts, HarnessConfig]],
+    result: tuple[PlannedCall, ...],
+) -> ScheduleCalls:
     def schedule(
-        self, composed: ComposedContexts, config: HarnessConfig, /
+        composed: ComposedContexts, config: HarnessConfig
     ) -> tuple[PlannedCall, ...]:
-        self.events.append("schedule")
-        self.received = (composed, config)
-        return self.result
+        events.append("schedule")
+        received.append((composed, config))
+        return result
+
+    return schedule
 
 
 def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
@@ -108,6 +107,9 @@ def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
     inputs = _inputs()
     config = _configuration(instructions_path=Path("context/instructions.txt"))
     events: list[str] = []
+    grouped_received: list[tuple[FrozenInputs, HarnessConfig]] = []
+    composed_received: list[tuple[FrozenInputs, GroupedInputs, HarnessConfig]] = []
+    scheduled_received: list[tuple[ComposedContexts, HarnessConfig]] = []
     grouped = GroupedInputs(snapshots=((0, (0,)),))
     composed = ComposedContexts(boundary_bytes=(), prompts=(((0,), b"source"),))
     call = PlannedCall(
@@ -118,14 +120,11 @@ def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
         prompt_sha256=sha256(b"source").hexdigest(),
         prompt=b"source",
     )
-    grouper = _RecordingGrouper(events, grouped)
-    composer = _RecordingComposer(events, composed)
-    scheduler = _RecordingScheduler(events, (call,))
     builder = PurePlanBuilder(
         "caller-run-id",
-        grouper=grouper,
-        composer=composer,
-        scheduler=scheduler,
+        grouper=_record_grouper(events, grouped_received, grouped),
+        composer=_record_composer(events, composed_received, composed),
+        scheduler=_record_scheduler(events, scheduled_received, (call,)),
     )
 
     # When
@@ -133,14 +132,15 @@ def test_plan_wires_pure_steps_in_order_and_preserves_frozen_values() -> None:
 
     # Then
     assert events == ["group", "compose", "schedule"]
-    assert grouper.received == (inputs, config)
-    assert composer.received == (inputs, grouped, config)
-    assert composer.received is not None and composer.received[0] is inputs
-    assert composer.received[0].sources[0].content == b"source"
-    assert composer.received[0].instructions_file is inputs.instructions_file
-    assert composer.received[0].instructions_file is not None
-    assert composer.received[0].instructions_file.content == b"instruction bytes\x00"
-    assert scheduler.received == (composed, config)
+    assert grouped_received == [(inputs, config)]
+    assert composed_received == [(inputs, grouped, config)]
+    composer_inputs = composed_received[0][0]
+    assert composer_inputs is inputs
+    assert composer_inputs.sources[0].content == b"source"
+    assert composer_inputs.instructions_file is inputs.instructions_file
+    assert composer_inputs.instructions_file is not None
+    assert composer_inputs.instructions_file.content == b"instruction bytes\x00"
+    assert scheduled_received == [(composed, config)]
     assert plan.run_id == "caller-run-id"
     assert plan.configuration is config
     assert plan.instructions_file is inputs.instructions_file
@@ -163,22 +163,17 @@ def test_plan_propagates_leaf_failure_without_running_later_steps() -> None:
     # Given
     events: list[str] = []
 
-    class FailingComposer(ContextComposer):
-        def compose(
-            self,
-            inputs: FrozenInputs,
-            grouped: GroupedInputs,
-            config: HarnessConfig,
-            /,
-        ) -> ComposedContexts:
-            events.append("compose")
-            raise ValueError("composition failed")
+    def fail_composition(
+        inputs: FrozenInputs, grouped: GroupedInputs, config: HarnessConfig
+    ) -> ComposedContexts:
+        events.append("compose")
+        raise ValueError("composition failed")
 
     builder = PurePlanBuilder(
         "run",
-        grouper=_RecordingGrouper(events, GroupedInputs(snapshots=())),
-        composer=FailingComposer(),
-        scheduler=_RecordingScheduler(events, ()),
+        grouper=_record_grouper(events, [], GroupedInputs(snapshots=())),
+        composer=fail_composition,
+        scheduler=_record_scheduler(events, [], ()),
     )
 
     # When
