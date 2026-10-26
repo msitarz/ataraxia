@@ -463,15 +463,21 @@ Codex, quota, and runtime adapters.
 - The dispatched attempt count equals the sum of active, evidence-pending,
   succeeded, failed, and cancelled invocations. Here “started” means the
   invocation was dispatched through `AttemptCall`; it does not claim that the
-  supervisor acquired or launched an OS process. The dispatched probe count
-  equals the sum of active, evidence-pending, completed, failed, and cancelled
-  probes. Completed means the supervised probe invocation settled, not that
-  quota is available. Retries
-  have their own count and add attempts, never calls. The current retry reason
-  is preserved per call, so a local backoff never masks active work on other
-  calls. The snapshot carries existing scoped quota observations and
-  producer-based per-window ages; it performs no quota reads, model calls, or
-  input reads.
+  supervisor acquired or launched an OS process. These terminal outcomes are
+  disjoint: success means a zero exit with safe process completion, never a
+  reviewer approval; failure means a settled non-cancelled unsuccessful attempt;
+  cancellation has its own count. The dispatched probe count equals the sum of
+  active, evidence-pending, completed, failed, and cancelled probes. Probe
+  outcomes are disjoint: completed means a safely settled operational check with
+  a conclusive available or exhausted quota state, including a recognized
+  provider rate-limit response mapped to exhausted. Failed means an unknown or
+  malformed observation, timeout, overflow, infrastructure failure, or unsafe
+  process outcome; cancellation has its own count. Evidence-pending is separate
+  from all terminal outcome counts. Retries have their own count and add
+  attempts, never calls. The current retry reason is preserved per call, so a
+  local backoff never masks active work on other calls. The snapshot carries
+  existing scoped quota observations and producer-based per-window ages; it
+  performs no quota reads, model calls, or input reads.
 - `runner.adapters.progress` supplies silent and terminal sinks. Composition
   selects one sink from the explicit quiet setting and stderr TTY state, then
   injects it once into the coordinator. Terminal output leaves stdout untouched,
@@ -508,10 +514,12 @@ Codex, quota, and runtime adapters.
   stay unknown. The percentage says nothing about cost or availability.
   Observation age derives from each window's producer timestamp through the
   injected runtime clock, never from read time or elapsed attempt counts.
-  Missing, invalid, or future producer timestamps leave age unknown; rereading
-  does not reset age, and reset timestamps remain scheduling hints rather than
-  guarantees. Progress reuses these supplied observations without another quota
-  lookup or probe. The supplied sample is only a candidate format: source
+  Missing, invalid, or future producer timestamps leave age unknown; valid old
+  timestamps yield a known positive age even when freshness policy marks the
+  quota state unknown. Rereading does not reset age, and reset timestamps remain
+  scheduling hints rather than guarantees. Progress reuses normalized
+  observations without reparsing or revalidating them and performs no additional
+  quota lookup or probe. The supplied sample is only a candidate format: source
   lookup, session association, scope identity, freshness, request flags, and
   exec output schema remain unverified. No endpoint or app-server schema is
   assumed; until prerequisites are verified, the adapter returns unknown and

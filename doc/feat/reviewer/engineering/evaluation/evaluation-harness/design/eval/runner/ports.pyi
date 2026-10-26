@@ -43,6 +43,17 @@ class ProgressCounts:
     ``attempts_started`` counts invocations dispatched through ``AttemptCall``;
     it does not imply supervisor acquisition or launch of an OS process.
     ``probes_started`` has the same dispatched-invocation meaning.
+
+    Attempt outcome counts are disjoint: success means zero exit with safe
+    process completion, not reviewer approval; failure means a settled
+    non-cancelled unsuccessful attempt; cancellation has its own count. Probe
+    counts are likewise disjoint: completed means a safely settled operational
+    check with a conclusive available or exhausted quota state, including a
+    recognized provider rate-limit response mapped to exhausted; failed means
+    unknown or malformed
+    state, timeout, overflow, infrastructure failure, or unsafe process
+    outcome; cancellation is separate. Evidence-pending belongs to none of
+    these terminal outcome counts.
     """
 
     calls_queued: int
