@@ -375,7 +375,8 @@ def _build_attempt_request(
         The argv request with exact frozen prompt bytes and process limits.
 
     Raises:
-        ValueError: The staged instruction path does not match the frozen plan.
+        ValueError: The staged path mismatches the plan or the argv prompt
+            contains NUL, which cannot be represented as a native argument.
     """
     if (plan.instructions_file is None) != (staged_instructions_path is None):
         raise ValueError("staged instructions must match the frozen plan")

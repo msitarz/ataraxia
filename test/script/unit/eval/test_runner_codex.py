@@ -880,11 +880,17 @@ def test_version_timeout_leaves_version_unknown(
     executable_path = Path("/absolute/codex")
 
     def timed_out(
-        command: tuple[str, ...], **kwargs: object
+        command: tuple[str, ...],
+        *,
+        check: bool,
+        capture_output: bool,
+        timeout: float,
     ) -> subprocess.CompletedProcess[bytes]:
         assert command == (str(executable_path), "--version")
-        assert kwargs.get("timeout") == 5
-        raise subprocess.TimeoutExpired(command, 5.0)
+        assert check is False
+        assert capture_output is True
+        assert timeout == 5
+        raise subprocess.TimeoutExpired(command, timeout)
 
     monkeypatch.setattr(subprocess, "run", timed_out)
     resolver = CodexCliBindingResolver(
