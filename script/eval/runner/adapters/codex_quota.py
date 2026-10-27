@@ -17,8 +17,17 @@ import json
 import math
 import os
 from pathlib import Path
-from typing import BinaryIO, Protocol, cast
+from typing import BinaryIO, Literal, Protocol
 from uuid import UUID
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+)
 
 from script.eval.model import (
     AttemptEvidence,
@@ -75,6 +84,157 @@ class RawCodexSessionSnapshot:
     content: bytes = field(repr=False)
     source_coordinate: str
     requested_thread_id: str | None = field(default=None, repr=False)
+
+
+class _RawModel(BaseModel):
+    """Validate consumed fields while ignoring opaque producer extensions."""
+
+    model_config = ConfigDict(
+        extra="ignore", frozen=True, strict=True, hide_input_in_errors=True
+    )
+
+
+class _RawMetadata(_RawModel):
+    """Identity fields consumed from the session metadata payload."""
+
+    id: str = Field(repr=False, description="Invocation thread identifier.")
+    session_id: str = Field(repr=False, description="Session identifier.")
+    model_provider: str = Field(
+        repr=False, description="Provider associated with the session."
+    )
+    cli_version: str = Field(
+        repr=False, description="CLI version that produced the session."
+    )
+    creator_account_id: str = Field(
+        repr=False, description="Creator account identifier."
+    )
+    creator_user_id: str = Field(repr=False, description="Creator user identifier.")
+
+    @field_validator(
+        "id",
+        "session_id",
+        "model_provider",
+        "cli_version",
+        "creator_account_id",
+        "creator_user_id",
+    )
+    @classmethod
+    def _nonempty(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("identity field is empty")
+        return value
+
+    @field_validator("id", "session_id")
+    @classmethod
+    def _uuid(cls, value: str) -> str:
+        if _canonical_uuid(value) is None:
+            raise ValueError("identity is not a UUID")
+        return value
+
+
+class _RawMetadataRow(_RawModel):
+    """Consumed session metadata envelope."""
+
+    type: Literal["session_meta"] = Field(repr=False, description="Metadata row kind.")
+    payload: _RawMetadata = Field(repr=False, description="Session identity fields.")
+
+
+class _RawWindow(_RawModel):
+    """Required usage and optional reset hint for one quota window."""
+
+    used_percent: float = Field(description="Consumed percentage of the window.")
+    window_minutes: int = Field(description="Duration of the quota window in minutes.")
+    resets_at: str | None = Field(
+        default=None, description="Optional canonical reset hint."
+    )
+
+    @field_validator("used_percent", mode="before")
+    @classmethod
+    def _usage(cls, value: object) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError("usage must be numeric")
+        try:
+            usage = float(value)
+        except OverflowError as error:
+            raise ValueError("usage is out of range") from error
+        if not math.isfinite(usage) or usage < 0:
+            raise ValueError("usage must be finite and nonnegative")
+        return usage
+
+    @field_validator("resets_at", mode="before")
+    @classmethod
+    def _reset(cls, value: object) -> str | None:
+        return _optional_reset_timestamp(value)
+
+
+class _RawCredits(_RawModel):
+    """Consumed credit state for the supported allowance shape."""
+
+    has_credits: bool = Field(description="Whether credits are available.")
+    unlimited: bool = Field(description="Whether credits are unlimited.")
+    balance: str = Field(description="Decimal credit balance.")
+
+    @field_validator("has_credits", "unlimited")
+    @classmethod
+    def _disabled(cls, value: bool) -> bool:
+        if value:
+            raise ValueError("credits are unsupported")
+        return value
+
+    @field_validator("balance")
+    @classmethod
+    def _zero_balance(cls, value: str) -> str:
+        try:
+            balance = Decimal(value)
+        except InvalidOperation as error:
+            raise ValueError("credit balance is invalid") from error
+        if not balance.is_finite() or balance != 0:
+            raise ValueError("credit balance is unsupported")
+        return value
+
+
+class _RawLimits(_RawModel):
+    """Consumed limits for the supported Codex allowance."""
+
+    limit_id: Literal["codex"] = Field(description="Allowance identifier.")
+    credits: _RawCredits = Field(description="Credit balance state.")
+    individual_limit: None = Field(description="Unsupported individual limit.")
+    spend_control_reached: None = Field(description="Unsupported spend control.")
+    rate_limit_reached_type: None = Field(description="Unsupported limit type.")
+    primary: _RawWindow = Field(description="Five-hour usage window.")
+    secondary: _RawWindow = Field(description="Weekly usage window.")
+
+    @field_validator("primary", "secondary")
+    @classmethod
+    def _window_duration(cls, value: _RawWindow, info: ValidationInfo) -> _RawWindow:
+        expected = 300 if info.field_name == "primary" else 10080
+        if value.window_minutes != expected:
+            raise ValueError("unsupported window duration")
+        return value
+
+
+class _RawTokenPayload(_RawModel):
+    """Consumed token-count payload."""
+
+    type: Literal["token_count"] = Field(description="Token event kind.")
+    rate_limits: _RawLimits = Field(description="Observed allowance limits.")
+
+
+class _RawTokenRow(_RawModel):
+    """Consumed token-count row and its producer ordering facts."""
+
+    type: Literal["event_msg"] = Field(description="Event envelope kind.")
+    timestamp: datetime = Field(description="Aware producer timestamp in UTC.")
+    ordinal: int = Field(ge=0, description="Nonnegative producer sequence number.")
+    payload: _RawTokenPayload = Field(description="Token-count quota fields.")
+
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def _timestamp(cls, value: object) -> datetime:
+        timestamp = _parse_timestamp(value)
+        if timestamp is None:
+            raise ValueError("producer timestamp is invalid")
+        return timestamp
 
 
 @dataclass(frozen=True, repr=False)
@@ -1087,45 +1247,23 @@ def _is_token_count_row(row: dict[str, object], /) -> bool:
 
 
 def _parse_session_metadata(row: dict[str, object], /) -> _SessionMetadata | None:
-    """Validate the identity fields needed to bind telemetry to its thread.
+    """Validate consumed identity fields without retaining untrusted extensions.
 
     Returns:
-        The typed identity record, or None for incomplete identity data.
+        The identity, or None when the consumed fields are invalid.
     """
-    payload = row.get("payload")
-    if not isinstance(payload, dict):
-        return None
-    id_value = _nonempty_text(payload.get("id"))
-    session_id = _nonempty_text(payload.get("session_id"))
-    provider = _nonempty_text(payload.get("model_provider"))
-    cli_version = _nonempty_text(payload.get("cli_version"))
-    account_id = _nonempty_text(payload.get("creator_account_id"))
-    user_id = _nonempty_text(payload.get("creator_user_id"))
-    values = (id_value, session_id, provider, cli_version, account_id, user_id)
-    if any(value is None for value in values):
-        return None
-    id_value, session_id, provider, cli_version, account_id, user_id = cast(
-        tuple[str, str, str, str, str, str], values
-    )
-    if _canonical_uuid(id_value) is None or _canonical_uuid(session_id) is None:
+    try:
+        payload = _RawMetadataRow.model_validate(row).payload
+    except ValidationError:
         return None
     return _SessionMetadata(
-        id=id_value,
-        session_id=session_id,
-        model_provider=provider,
-        cli_version=cli_version,
-        creator_account_id=account_id,
-        creator_user_id=user_id,
+        id=payload.id,
+        session_id=payload.session_id,
+        model_provider=payload.model_provider,
+        cli_version=payload.cli_version,
+        creator_account_id=payload.creator_account_id,
+        creator_user_id=payload.creator_user_id,
     )
-
-
-def _nonempty_text(value: object, /) -> str | None:
-    """Narrow required identity strings without retaining raw mapping types.
-
-    Returns:
-        The nonempty string value, or None for other values.
-    """
-    return value if isinstance(value, str) and value.strip() else None
 
 
 def _latest_rate_limit_record(
@@ -1342,88 +1480,19 @@ def _parse_token_count_record(row: dict[str, object], /) -> _TokenCountRecord | 
     """Validate one consumed token-count event into typed quota values.
 
     Returns:
-        One validated quota record, or None when consumed data is invalid.
+        The quota record, or None when the consumed fields are invalid.
     """
-    ordinal = row.get("ordinal")
-    timestamp = _parse_timestamp(row.get("timestamp"))
-    payload = row.get("payload")
-    if isinstance(ordinal, bool) or not isinstance(ordinal, int) or ordinal < 0:
-        return None
-    if timestamp is None or not isinstance(payload, dict):
-        return None
-    if payload.get("type") != "token_count":
-        return None
-    limits = payload.get("rate_limits")
-    if not isinstance(limits, dict) or limits.get("limit_id") != "codex":
-        return None
-    if not _has_supported_allowance_shape(limits):
-        return None
-    primary = _parse_window(limits.get("primary"), 300)
-    secondary = _parse_window(limits.get("secondary"), 10080)
-    if primary is None or secondary is None:
-        return None
-    return _TokenCountRecord(timestamp, ordinal, primary, secondary)
-
-
-def _has_supported_allowance_shape(limits: dict[str, object], /) -> bool:
-    """Reject unsupported additional limits or nonzero credit balances.
-
-    Returns:
-        Whether the allowance matches the currently modeled Codex shape.
-    """
-    required_fields = {
-        "credits",
-        "individual_limit",
-        "spend_control_reached",
-        "rate_limit_reached_type",
-    }
-    if not required_fields.issubset(limits):
-        return False
-    credits = limits.get("credits")
-    if not isinstance(credits, dict):
-        return False
-    balance = credits.get("balance")
-    if not isinstance(balance, str):
-        return False
     try:
-        parsed_balance = Decimal(balance)
-    except InvalidOperation:
-        return False
-    return (
-        credits.get("has_credits") is False
-        and credits.get("unlimited") is False
-        and parsed_balance.is_finite()
-        and parsed_balance == 0
-        and limits.get("individual_limit") is None
-        and limits.get("spend_control_reached") is None
-        and limits.get("rate_limit_reached_type") is None
+        record = _RawTokenRow.model_validate(row)
+    except ValidationError:
+        return None
+    limits = record.payload.rate_limits
+    return _TokenCountRecord(
+        record.timestamp,
+        record.ordinal,
+        _QuotaWindowValues(limits.primary.used_percent, limits.primary.resets_at),
+        _QuotaWindowValues(limits.secondary.used_percent, limits.secondary.resets_at),
     )
-
-
-def _parse_window(value: object, expected_minutes: int, /) -> _QuotaWindowValues | None:
-    """Validate usage strictly while retaining reset time as an optional hint.
-
-    Returns:
-        Typed usage facts, or None when required window data is invalid.
-    """
-    if not isinstance(value, dict):
-        return None
-    used_percent = value.get("used_percent")
-    window_minutes = value.get("window_minutes")
-    if isinstance(used_percent, bool) or not isinstance(used_percent, (int, float)):
-        return None
-    try:
-        usage = float(used_percent)
-    except OverflowError:
-        return None
-    if not math.isfinite(usage) or usage < 0:
-        return None
-    if isinstance(window_minutes, bool) or not isinstance(window_minutes, int):
-        return None
-    if window_minutes != expected_minutes:
-        return None
-    reset_at = _optional_reset_timestamp(value.get("resets_at"))
-    return _QuotaWindowValues(usage, reset_at)
 
 
 def _optional_reset_timestamp(value: object, /) -> str | None:

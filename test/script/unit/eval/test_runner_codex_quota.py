@@ -821,6 +821,60 @@ async def test_local_reader_fails_closed_on_untrusted_session_rows(
         assert observation.windows[0].source_sequence == 17
 
 
+@pytest.mark.parametrize(
+    ("location", "key", "value"),
+    [
+        ("credits", "has_credits", 0),
+        ("credits", "unlimited", 0),
+        ("limits", "individual_limit", False),
+        ("limits", "spend_control_reached", 0),
+        ("limits", "rate_limit_reached_type", False),
+        ("primary", "window_minutes", 300.0),
+        ("row", "ordinal", True),
+        ("row", "ordinal", 17.0),
+    ],
+    ids=[
+        "credits-number",
+        "unlimited-number",
+        "individual-false",
+        "spend-zero",
+        "limit-false",
+        "duration-float",
+        "ordinal-bool",
+        "ordinal-float",
+    ],
+)
+async def test_local_reader_rejects_wrong_consumed_field_types(
+    tmp_path: Path, location: str, key: str, value: object
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    rows = session_rows()
+    row = rows[-1]
+    payload = row["payload"]
+    assert isinstance(payload, dict)
+    limits = payload["rate_limits"]
+    assert isinstance(limits, dict)
+    primary = limits["primary"]
+    credits = limits["credits"]
+    assert isinstance(primary, dict) and isinstance(credits, dict)
+    target = {"row": row, "limits": limits, "primary": primary, "credits": credits}[
+        location
+    ]
+    target[key] = value
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, rows)
+    reader = make_local_reader(sessions, make_identity_scope())
+
+    # When
+    observation = await reader.observe_settled_attempt(
+        make_attempt_evidence(thread_started())
+    )
+
+    # Then
+    assert observation.scope is None
+    assert [window.state for window in observation.windows] == ["unknown", "unknown"]
+
+
 async def test_local_source_rejects_ambiguous_rollout_candidates(
     tmp_path: Path,
 ) -> None:
@@ -1044,7 +1098,7 @@ async def test_past_reset_hint_does_not_override_exhausted_usage(
     assert observation.windows[0].reset_at_utc == "1970-01-01T00:00:00Z"
 
 
-@pytest.mark.parametrize("reset_value", [None, "invalid-synthetic-reset"])
+@pytest.mark.parametrize("reset_value", [None, "invalid-synthetic-reset", True, 10**30])
 async def test_invalid_reset_hint_preserves_known_exhaustion(
     tmp_path: Path, reset_value: object
 ) -> None:
