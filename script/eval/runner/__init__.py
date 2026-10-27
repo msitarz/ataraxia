@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Public runner values and ports for the CLI composition root."""
 
-from .coordinator import Coordinator
 from .ports import (
     AttemptCall,
     AttemptRequestBuilder,
@@ -28,7 +27,6 @@ __all__ = (
     "CallWait",
     "CliBinding",
     "CliBindingResolver",
-    "Coordinator",
     "EffectiveCall",
     "OutcomeClassifier",
     "ProgressCounts",
