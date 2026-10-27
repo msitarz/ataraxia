@@ -12,7 +12,7 @@ from script.eval.runner.ports import (
     Runtime,
 )
 
-from .coordinator import RunControl
+from .control import RunControl
 from .state import CallState, Queued
 
 class CallOwner:

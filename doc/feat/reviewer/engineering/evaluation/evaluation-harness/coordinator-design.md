@@ -45,7 +45,7 @@ with known lifecycle bugs, not a validated alternative.
 
 | State | Allowed next state | Meaning |
 | --- | --- | --- |
-| Queued | Attempting, stopped | No attempt has started. |
+| Queued | Attempting, stopped | No current attempt is dispatched; earlier attempts may be durable. |
 | Attempting | Recording | The supervisor owns the attempt through cleanup. |
 | Recording | Observing quota, retry wait, queued, finished, stopped, evidence pending | The attempt write settles before later effects. |
 | Observing quota | Recording telemetry, stopped | The opt-in adapter ingests the durable attempt evidence. |
@@ -181,8 +181,10 @@ with known lifecycle bugs, not a validated alternative.
 
 - Composition supplies `EvidenceStore`, `AttemptCall`, `OutcomeClassifier`,
   `QuotaStatusReader`, `Runtime`, and `ProgressSink`.
-- The run owner depends on call, quota, settlement, and progress functions and
-  shared typed states.
+- The coordinator composes call, quota, settlement, and progress owners.
+- The call and quota owners depend on shared `control` and state, not on the
+  coordinator.
+- The package exports `Coordinator` for the planned runner composition boundary.
 - Call and quota decisions depend on validated values and pure policy, not
   concrete adapters.
 - Settlement owns retained tasks and evidence effects, while the supervisor owns
@@ -232,12 +234,16 @@ with known lifecycle bugs, not a validated alternative.
   a framework or the final signatures of private helpers.
 - Each call state contains its durable attempt history plus at most one current
   attempt or failed attempt-write obligation.
-- `Recording` counts as active until the write settles, and a failed attempt
-  write moves its captured number, evidence, assessment, and error to
-  `EvidencePending`.
-- Passive observation and telemetry recording also count as active; a failed
-  telemetry write leaves the durable attempt in history rather than inventing
-  an attempt-write failure.
+- Before the attempt write settles, `Recording` counts both the call and the
+  attempt as active.
+- A failed attempt write moves its captured number, evidence, assessment, and
+  error to `EvidencePending`.
+- `ObservingQuota` and `RecordingTelemetry` count the call as active.
+- Their attempt is already durable and counts only in its terminal attempt
+  bucket, not as an active or pending attempt.
+- A failed attempt write counts one evidence-pending attempt.
+- A failed telemetry write counts the call as evidence-pending while its durable
+  attempt remains in its terminal attempt bucket.
 - A capacity retry wait retains its sampled delay, monotonic start, durable
   start phase, context, and pending end record.
 - Infrastructure retries project as queued while awaiting a fresh invocation.

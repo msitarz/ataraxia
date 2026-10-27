@@ -5,7 +5,7 @@ from script.eval.evidence import EvidenceStore
 from script.eval.model import HarnessConfig, QuotaObservation
 from script.eval.runner.ports import QuotaStatusReader, Runtime
 
-from .coordinator import RunControl
+from .control import RunControl
 from .state import Draining, QuotaHistory, QuotaState
 
 class QuotaOwner:
