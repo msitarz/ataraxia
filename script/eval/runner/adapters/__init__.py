@@ -9,8 +9,10 @@ from .codex import (
 from .codex_quota import (
     CodexQuotaSettings,
     CodexQuotaStatusReader,
-    RawCodexQuotaStatusSource,
-    RawCodexSessionSnapshot,
+    CodexQuotaStatusSource,
+    CodexSessionSnapshot,
+    LocalCodexQuotaStatusSource,
+    codex_quota_scope_from_identity,
 )
 from .runtime import SystemRuntime
 
@@ -20,7 +22,9 @@ __all__ = (
     "CodexOutcomeClassifier",
     "CodexQuotaSettings",
     "CodexQuotaStatusReader",
-    "RawCodexQuotaStatusSource",
-    "RawCodexSessionSnapshot",
+    "CodexQuotaStatusSource",
+    "CodexSessionSnapshot",
+    "LocalCodexQuotaStatusSource",
     "SystemRuntime",
+    "codex_quota_scope_from_identity",
 )

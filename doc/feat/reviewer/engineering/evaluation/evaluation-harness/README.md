@@ -296,7 +296,11 @@ restarting the runner or repeating completed calls.
 - The Codex adapter owns separate supervised `codex exec --json` probes, never
   blocked evaluations repurposed as probes; its fixed probe condition is
   `gpt-6-luna`, effort `none`, minimal nonempty instructions and prompt,
-  disabled plugins, tools, and MCP, and a read-only empty working directory.
+  the available CLI controls requesting plugins, tools, and MCP disabled, and
+  a read-only empty working directory. The remaining tool declarations and
+  injected context are the accepted CLI 0.164.0 known issue recorded in the
+  [Step 1 disposition](../preparation.md#combined-step-1-candidate-and-stopping-point);
+  the probe condition does not promise a tool-free or context-free request.
 - The exact unattended CLI recipe and effective restrictions must be validated
   before implementation claims them; the model choice is user-specified, not a
   verified pricing claim, and this contract authorizes no live calls now.
