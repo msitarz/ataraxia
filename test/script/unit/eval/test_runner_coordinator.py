@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Coordinator wiring order and owned-task lifecycle."""
+"""Coordinator decision wiring, evidence order, and paused recovery."""
 
 import asyncio
-from collections.abc import Callable, Coroutine
+from dataclasses import replace
 from pathlib import Path
+from typing import Literal, override
 
 import pytest
 
@@ -17,11 +18,17 @@ from script.eval.model import (
     HarnessConfig,
     PlannedCall,
     PreparedEvidence,
+    QuotaAllowanceId,
     QuotaObservation,
     QuotaProbeEvidence,
+    QuotaProbeId,
     QuotaProbeLifecycleInput,
+    QuotaProbeRecord,
     QuotaProbeRequest,
+    QuotaProbeSchedule,
     QuotaProbeSettled,
+    QuotaProbeStarted,
+    QuotaProviderId,
     QuotaScope,
     QuotaTelemetryEvent,
     RetryAssessment,
@@ -30,8 +37,13 @@ from script.eval.model import (
 )
 from script.eval.runner.coordinator import (
     Coordinator,
-    MonitorQuota,
-    ScheduleCalls,
+    _DispatchAttempt,
+    _DispatchComplete,
+    _DispatchDecision,
+    _QuotaPaused,
+    _RecoveryAction,
+    _SelectDispatch,
+    _SettledAttempt,
 )
 from script.eval.runner.ports import (
     AttemptCall,
@@ -44,6 +56,7 @@ from script.eval.runner.ports import (
     QuotaStatusReader,
     Runtime,
 )
+from script.eval.runner.quota_evidence import attach_quota_probe_evidence
 from script.process_supervisor import (
     AttemptObservation,
     AttemptRequest,
@@ -53,10 +66,6 @@ from script.process_supervisor import (
     Completed,
     DispatchStop,
 )
-
-type ExecuteAttempt = Callable[
-    [EffectiveCall, AttemptNumber], Coroutine[None, None, AttemptRecord]
-]
 
 
 def configuration(
@@ -143,7 +152,7 @@ def bound_run(*, calls_count: int = 1, config: HarnessConfig | None = None) -> B
 
 
 def run_record() -> RunRecord:
-    """Return a valid scheduler-produced run record for finalization checks."""
+    """Return a valid selector-produced run record for finalization checks."""
     return RunRecord(
         run_id="run-1",
         repository_root="/repo",
@@ -184,16 +193,19 @@ class FakeProgress(ProgressSink):
 
 
 class FakeEvidence(EvidenceStore):
-    """Record attempt evidence and all durable lifecycle writes."""
+    """Record exact attempt and quota-probe values with their effect order."""
 
     def __init__(self, order: list[str]) -> None:
         self.events: list[str] = []
+        self.order = order
         self.attempt_inputs: list[
             tuple[str, str, int, AttemptNumber, AttemptEvidence, RetryAssessment | None]
         ] = []
+        self.attempt_records: list[AttemptRecord] = []
         self.telemetry_events: list[QuotaTelemetryEvent] = []
+        self.probe_inputs: list[QuotaProbeEvidence] = []
+        self.probe_events: list[QuotaProbeLifecycleInput] = []
         self.final_records: list[RunRecord] = []
-        self.order = order
 
     async def create(
         self, output_directory: Path, plan: FrozenPlan, /
@@ -205,7 +217,7 @@ class FakeEvidence(EvidenceStore):
         run_id: str,
         call_id: str,
         position: int,
-        attempt_number: int,
+        attempt_number: AttemptNumber,
         evidence: AttemptEvidence,
         retry_assessment: RetryAssessment | None,
         /,
@@ -220,7 +232,7 @@ class FakeEvidence(EvidenceStore):
             evidence,
             retry_assessment,
         ))
-        return AttemptRecord.model_validate({
+        record = AttemptRecord.model_validate({
             "run_id": run_id,
             "call_id": call_id,
             "position": position,
@@ -247,6 +259,8 @@ class FakeEvidence(EvidenceStore):
             "diagnostic": None,
             "retry_assessment": retry_assessment,
         })
+        self.attempt_records.append(record)
+        return record
 
     async def record_wait_event(self, event: WaitEvent, /) -> None:
         self.events.append("wait")
@@ -254,12 +268,56 @@ class FakeEvidence(EvidenceStore):
     async def record_quota_probe_event(
         self, event: QuotaProbeLifecycleInput, /
     ) -> None:
-        self.events.append("probe-event")
+        self.order.append("record_probe_start")
+        self.events.append("probe-start")
+        self.probe_events.append(event)
 
     async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
     ) -> QuotaProbeSettled:
-        raise AssertionError("attempt composition does not settle quota probes")
+        self.order.append("record_probe_settled")
+        self.events.append("probe-settled")
+        self.probe_inputs.append(evidence)
+        process = evidence.process
+        ended_at = process.ended_at_utc
+        outcome_kind = (
+            "completed"
+            if process.control_flow == "returned"
+            else "cancelled"
+            if process.control_flow == "cancelled"
+            else "unexpected_exception"
+        )
+        return QuotaProbeSettled(
+            kind="settled",
+            record=QuotaProbeRecord(
+                request=evidence.request,
+                quota_state=evidence.quota_state,
+                observation=evidence.observation,
+                classification_basis=evidence.classification_basis,
+                control_flow=process.control_flow,
+                outcome_kind=outcome_kind,
+                started_at_utc=process.started_at_utc,
+                ended_at_utc=process.ended_at_utc,
+                argv=process.request.argv,
+                cwd=str(process.request.cwd),
+                timeout_seconds=1.0,
+                cleanup_timeout_seconds=1.0,
+                grace_seconds=0.0,
+                output_limit_bytes=0,
+                elapsed_seconds=0.5 if ended_at is not None else None,
+                elapsed_basis=(
+                    "supervisor_observation" if ended_at is not None else "unavailable"
+                ),
+                exit_status=0 if outcome_kind == "completed" else None,
+                termination_reason=None,
+                cleanup=None,
+                stdout_artifact=None,
+                stderr_artifact=None,
+                usage_telemetry=process.usage_telemetry,
+                error_type=None,
+                diagnostic=None,
+            ),
+        )
 
     async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         self.order.append("record_telemetry")
@@ -272,13 +330,34 @@ class FakeEvidence(EvidenceStore):
         self.final_records.append(record)
 
 
-class FakeQuotaReader(QuotaStatusReader):
-    """Return an unknown but typed passive observation; reject active probes."""
+class BlockingProbeEvidence(FakeEvidence):
+    """Pause probe settlement until the test allows the durable write."""
 
     def __init__(self, order: list[str]) -> None:
+        super().__init__(order)
+        self.write_started = asyncio.Event()
+        self.allow_write = asyncio.Event()
+        self.write_finished = asyncio.Event()
+
+    @override
+    async def record_quota_probe_settled(
+        self, evidence: QuotaProbeEvidence, /
+    ) -> QuotaProbeSettled:
+        self.write_started.set()
+        await self.allow_write.wait()
+        record = await super().record_quota_probe_settled(evidence)
+        self.write_finished.set()
+        return record
+
+
+class FakeQuotaReader(QuotaStatusReader):
+    """Return typed passive observations and an optional controlled probe."""
+
+    def __init__(self, order: list[str]) -> None:
+        self.order = order
         self.observations = 0
         self.probes = 0
-        self.order = order
+        self.requests: list[QuotaProbeRequest] = []
         self.observation = QuotaObservation(
             scope=None,
             read_at_utc="2026-10-27T10:00:00Z",
@@ -286,6 +365,9 @@ class FakeQuotaReader(QuotaStatusReader):
             windows=(),
             diagnostic="source unavailable",
         )
+        self.probe_result: QuotaProbeEvidence | None = None
+        self.probe_error: BaseException | None = None
+        self.stop_reason: AttemptResult | BaseException | None = None
 
     @property
     def expected_scope(self) -> QuotaScope | None:
@@ -302,11 +384,18 @@ class FakeQuotaReader(QuotaStatusReader):
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
     ) -> QuotaProbeEvidence:
         self.probes += 1
-        raise AssertionError("coordinator wiring does not issue active probes")
+        self.requests.append(request)
+        self.order.append("poll")
+        if self.stop_reason is not None:
+            stop_dispatch(self.stop_reason)
+        if self.probe_error is not None:
+            raise self.probe_error
+        assert self.probe_result is not None
+        return self.probe_result
 
 
 class FakeClassifier(OutcomeClassifier):
-    """Retain evidence identity and return one fixed retry assessment."""
+    """Retain exact evidence and return one fixed assessment."""
 
     def __init__(self, order: list[str]) -> None:
         self.order = order
@@ -324,19 +413,113 @@ class FakeClassifier(OutcomeClassifier):
         return self.assessment
 
 
-def make_attempt(
-    order: list[str], outcomes: list[AttemptResult], requests: list[AttemptRequest]
-) -> AttemptCall:
-    """Return a supervisor fake that retains exact requests and outcomes."""
+class AttemptThenPause:
+    """Select one attempt, pause for quota, then stop without another call."""
 
-    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+    def __init__(self, call: EffectiveCall) -> None:
+        self.call = call
+        self.decisions = 0
+
+    async def __call__(
+        self,
+        coordinator: Coordinator,
+        settled: _SettledAttempt | None,
+        stop: DispatchStop,
+        /,
+    ) -> _DispatchDecision:
         await asyncio.sleep(0)
-        order.append("attempt")
-        requests.append(request)
-        return next(outcomes_iterator)
+        self.decisions += 1
+        if self.decisions == 1:
+            return _DispatchAttempt(self.call, 1)
+        if self.decisions == 2 and settled is not None:
+            return _QuotaPaused(settled)
+        return _DispatchComplete(run_record())
 
-    outcomes_iterator = iter(outcomes)
-    return attempt
+
+class FixedProbeRequest:
+    """Return one exact request while retaining pause and cadence inputs."""
+
+    def __init__(self, request: QuotaProbeRequest) -> None:
+        self.request = request
+        self.inputs: list[tuple[_SettledAttempt, QuotaProbeEvidence | None]] = []
+
+    async def __call__(
+        self,
+        coordinator: Coordinator,
+        trigger: _SettledAttempt,
+        prior_probe: QuotaProbeEvidence | None,
+        /,
+    ) -> QuotaProbeRequest:
+        await asyncio.sleep(0)
+        self.inputs.append((trigger, prior_probe))
+        return self.request
+
+
+class PauseThenResume:
+    """Drive two calls with one awaited, durably settled quota probe."""
+
+    def __init__(
+        self,
+        first: EffectiveCall,
+        second: EffectiveCall,
+        request: QuotaProbeRequest,
+        probe: QuotaProbeEvidence,
+        evidence: FakeEvidence,
+        order: list[str],
+    ) -> None:
+        self.first = first
+        self.second = second
+        self.request_provider = FixedProbeRequest(request)
+        self.probe = probe
+        self.evidence = evidence
+        self.order = order
+        self.resumed = False
+        self.seen: list[_SettledAttempt | None] = []
+        self.recovery_inputs: list[tuple[_SettledAttempt, QuotaProbeEvidence]] = []
+
+    async def select(
+        self,
+        coordinator: Coordinator,
+        settled: _SettledAttempt | None,
+        stop: DispatchStop,
+        /,
+    ) -> _DispatchDecision:
+        await asyncio.sleep(0)
+        self.seen.append(settled)
+        if settled is None and len(self.seen) == 1:
+            return _DispatchAttempt(self.first, 1)
+        if settled is not None and not self.resumed:
+            return _QuotaPaused(settled)
+        if settled is None and self.resumed:
+            return _DispatchAttempt(self.second, 1)
+        return _DispatchComplete(run_record())
+
+    async def prepare_probe(
+        self,
+        coordinator: Coordinator,
+        trigger: _SettledAttempt,
+        prior_probe: QuotaProbeEvidence | None,
+        /,
+    ) -> QuotaProbeRequest:
+        self.order.append("prepare_probe")
+        return await self.request_provider(coordinator, trigger, prior_probe)
+
+    async def decide_recovery(
+        self,
+        coordinator: Coordinator,
+        trigger: _SettledAttempt,
+        prior_probe: QuotaProbeEvidence | None,
+        probe: QuotaProbeEvidence,
+        /,
+    ) -> _RecoveryAction:
+        await asyncio.sleep(0)
+        assert prior_probe is None
+        assert self.evidence.probe_inputs[0] is probe
+        assert self.evidence.events[-1] == "probe-settled"
+        self.recovery_inputs.append((trigger, probe))
+        self.order.append("decide_recovery")
+        self.resumed = True
+        return "resume"
 
 
 def successful_outcome() -> AttemptResult:
@@ -351,163 +534,200 @@ def successful_outcome() -> AttemptResult:
     )
 
 
+def make_attempt(
+    order: list[str],
+    outcomes: list[AttemptResult],
+    requests: list[AttemptRequest],
+) -> AttemptCall:
+    """Return a supervisor fake that retains exact requests and outcomes."""
+    outcomes_iterator = iter(outcomes)
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        order.append("attempt")
+        requests.append(request)
+        return next(outcomes_iterator)
+
+    return attempt
+
+
 def stopping_attempt(
     hooks: list[DispatchStop],
     requests: list[AttemptRequest],
-    result: AttemptResult,
+    outcome: AttemptResult,
 ) -> AttemptCall:
-    """Build an attempt fake that calls the coordinator's stop hook."""
+    """Return an attempt fake that latches dispatch stop before settlement."""
 
     async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
         await asyncio.sleep(0)
         hooks.append(stop)
         requests.append(request)
-        stop(result)
-        return result
+        stop(outcome)
+        return outcome
 
     return attempt
 
 
 def capture_attempt(
     call: EffectiveCall,
-    result: AttemptResult,
+    outcome: AttemptResult,
     started_at: str,
     ended_at: str,
     /,
 ) -> AttemptEvidence:
-    """Build the attempt observation for a returned fake supervisor outcome."""
+    """Build attempt evidence with retained request and output telemetry."""
     return AttemptEvidence(
         control_flow="returned",
-        outcome=result,
+        outcome=outcome,
         error_type=None,
         diagnostic=None,
         request=call.request,
         started_at_utc=started_at,
         ended_at_utc=ended_at,
-        usage_telemetry=None,
+        usage_telemetry=b"answer",
+    )
+
+
+def make_probe_request(run: BoundRun, /) -> QuotaProbeRequest:
+    """Build one validated probe request for the supplied run."""
+    return QuotaProbeRequest(
+        schedule=QuotaProbeSchedule(
+            run_id=run.plan.run_id,
+            probe_id=QuotaProbeId("probe-1"),
+            scope=QuotaScope(
+                provider_id=QuotaProviderId("codex"),
+                allowance_id=QuotaAllowanceId("account-a"),
+            ),
+            reason="periodic",
+            created_at_utc="2026-10-27T10:00:00Z",
+            due_at_utc="2026-10-27T10:00:00Z",
+            interval_seconds=7.5,
+            reset_hint_at_utc=None,
+        ),
+        pause_wait_id="pause-1",
+        poll_started_at_utc="2026-10-27T10:00:00Z",
+        scheduled_wait_seconds=0.0,
+        scheduled_wait_elapsed_basis="monotonic",
+    )
+
+
+def make_probe_evidence(
+    request: QuotaProbeRequest,
+    call: EffectiveCall,
+    *,
+    state: Literal["available", "exhausted", "unknown", "unavailable"] = "available",
+    control_flow: Literal["returned", "cancelled", "raised"] = "returned",
+) -> QuotaProbeEvidence:
+    """Compose typed probe evidence from a returned fake attempt."""
+    return QuotaProbeEvidence(
+        request=request,
+        process=AttemptEvidence(
+            control_flow=control_flow,
+            outcome=successful_outcome() if control_flow == "returned" else None,
+            error_type=None if control_flow == "returned" else "test failure",
+            diagnostic=None,
+            request=call.request,
+            started_at_utc="2026-10-27T10:00:00Z",
+            ended_at_utc=(
+                "2026-10-27T10:00:00Z" if control_flow == "returned" else None
+            ),
+            usage_telemetry=None,
+        ),
+        quota_state=state,
+        observation=QuotaObservation(
+            scope=request.schedule.scope,
+            read_at_utc="2026-10-27T10:00:00Z",
+            source_coordinate="session:1",
+            windows=(),
+            diagnostic=None,
+        ),
+        classification_basis="typed test observation",
     )
 
 
 def make_coordinator(
     run: BoundRun,
-    evidence: EvidenceStore,
-    order: list[str],
+    evidence: FakeEvidence,
     quota: FakeQuotaReader,
-    outcomes: list[AttemptResult] | None = None,
-    requests: list[AttemptRequest] | None = None,
+    order: list[str],
     *,
-    monitor: MonitorQuota,
-    scheduler: ScheduleCalls,
+    selector: _SelectDispatch,
 ) -> tuple[Coordinator, FakeClassifier, list[AttemptRequest]]:
-    """Compose exact collaborators and retain the supervisor requests."""
-    actual_outcomes = [successful_outcome()] if outcomes is None else outcomes
-    actual_requests = [] if requests is None else requests
+    """Compose a bound coordinator with exact fake collaborators."""
+    requests: list[AttemptRequest] = []
     classifier = FakeClassifier(order)
-
-    def capture(
-        call: EffectiveCall,
-        outcome: AttemptResult,
-        started_at: str,
-        ended_at: str,
-        /,
-    ) -> AttemptEvidence:
-        return AttemptEvidence(
-            control_flow="returned",
-            outcome=outcome,
-            error_type=None,
-            diagnostic=None,
-            request=call.request,
-            started_at_utc=started_at,
-            ended_at_utc=ended_at,
-            usage_telemetry=b"answer",
-        )
-
     coordinator = Coordinator(
         bound_run=run,
         evidence=evidence,
-        attempt=make_attempt(order, actual_outcomes, actual_requests),
+        attempt=make_attempt(order, [successful_outcome()] * len(run.calls), requests),
         classifier=classifier,
         quota_status=quota,
         runtime=FixedRuntime(),
         progress=FakeProgress(),
-        schedule_calls=scheduler,
-        monitor_quota=monitor,
-        capture_returned_attempt=capture,
+        select_dispatch=selector,
+        capture_returned_attempt=capture_attempt,
     )
-    return coordinator, classifier, actual_requests
+    return coordinator, classifier, requests
 
 
-def assert_coordinator_matches(
-    context: Coordinator,
-    coordinator: Coordinator,
-    run: BoundRun,
-    evidence: EvidenceStore,
-    quota: QuotaStatusReader,
-) -> None:
-    """Check callback identity and configuration from the bound plan."""
-    assert context is coordinator
-    assert coordinator.bound_run is run
-    assert coordinator.evidence is evidence
+def selection_sequence(
+    decisions: list[_DispatchDecision], seen: list[_SettledAttempt | None]
+) -> _SelectDispatch:
+    """Return a selector fake that retains each settled value it receives."""
+
+    async def select(
+        coordinator: Coordinator,
+        settled: _SettledAttempt | None,
+        stop: DispatchStop,
+        /,
+    ) -> _DispatchDecision:
+        await asyncio.sleep(0)
+        seen.append(settled)
+        return decisions.pop(0)
+
+    return select
+
+
+async def test_run_persists_attempt_before_passive_observation() -> None:
+    """Pass the exact durable attempt and passive observation to selection."""
+    # Given
+    order: list[str] = []
+    run = bound_run(
+        config=configuration(quota=True, concurrency=3, quota_poll_interval=8.5)
+    )
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    seen: list[_SettledAttempt | None] = []
+    record = run_record()
+    coordinator, classifier, requests = make_coordinator(
+        run,
+        evidence,
+        quota,
+        order,
+        selector=selection_sequence(
+            [_DispatchAttempt(run.calls[0], 1), _DispatchComplete(record)], seen
+        ),
+    )
+
+    # When
+    actual = await coordinator.run()
+
+    # Then
+    settled = seen[1]
+    assert settled is not None
+    assert seen[0] is None
+    assert actual is record
+    assert evidence.final_records == [record]
     assert coordinator.config is run.plan.configuration
-    assert coordinator.quota_status is quota
-
-
-def cancellation_blocking_monitor(
-    cleanup_started: asyncio.Event,
-    allow_cleanup: asyncio.Event,
-    cleanup_finished: asyncio.Event,
-) -> MonitorQuota:
-    """Build a monitor that waits for explicit cleanup release after cancel."""
-
-    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
-        try:
-            await asyncio.Event().wait()
-        except asyncio.CancelledError:
-            cleanup_started.set()
-            await allow_cleanup.wait()
-            cleanup_finished.set()
-            raise
-
-    return monitor
-
-
-async def completed_scheduler(
-    context: Coordinator,
-    execute: ExecuteAttempt,
-    stop: DispatchStop,
-    is_stopped: Callable[[], bool],
-    /,
-) -> RunRecord:
-    """Return a valid record asynchronously without dispatching calls."""
-    await asyncio.sleep(0)
-    return run_record()
-
-
-def assert_attempt_flow(
-    run: BoundRun,
-    scheduler_record: RunRecord,
-    result: RunRecord,
-    store: FakeEvidence,
-    quota: FakeQuotaReader,
-    classifier: FakeClassifier,
-    requests: list[AttemptRequest],
-    outcome: AttemptResult,
-    order: list[str],
-) -> None:
-    """Check exact attempt identity and the persisted-before-observed sequence."""
-    record_input = store.attempt_inputs[0]
-    attempt_evidence = record_input[4]
-    assert result is scheduler_record
-    assert store.final_records == [scheduler_record]
+    assert coordinator.config.concurrency == 3
+    assert coordinator.config.quota_poll_interval_seconds == pytest.approx(8.5)
     assert requests == [run.calls[0].request]
     assert requests[0] is run.calls[0].request
-    assert attempt_evidence.outcome is outcome
-    assert attempt_evidence.request is requests[0]
-    assert classifier.assessed == [attempt_evidence]
-    assert record_input[:4] == ("run-1", "call-0", 0, 1)
-    assert record_input[5] is classifier.assessment
-    assert quota.observations == 1 and quota.probes == 0
-    assert store.telemetry_events[0].observation is quota.observation
+    assert settled.call is run.calls[0]
+    assert settled.record is evidence.attempt_records[0]
+    assert settled.evidence is classifier.assessed[0]
+    assert settled.observation is quota.observation
+    assert evidence.telemetry_events[0].observation is quota.observation
     assert order == [
         "attempt",
         "classify",
@@ -518,187 +738,64 @@ def assert_attempt_flow(
     ]
 
 
-async def test_bound_run_supplies_exact_settings_and_collaborators() -> None:
-    """Pass original collaborators and nondefault policy settings to both leaves."""
+async def test_default_dispatch_selection_stays_explicitly_pending() -> None:
+    """Do not finalize or launch attempts while dispatch selection is pending."""
     # Given
     order: list[str] = []
-    config = configuration(quota=True, concurrency=3, quota_poll_interval=8.5)
-    run = bound_run(config=config)
+    run = bound_run()
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
-    contexts: list[Coordinator] = []
-    monitor_started = asyncio.Event()
-
-    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
-        contexts.append(context)
-        monitor_started.set()
-        await asyncio.Event().wait()
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        contexts.append(context)
-        await monitor_started.wait()
-        await execute(context.bound_run.calls[0], 1)
-        return run_record()
-
-    coordinator, _, _ = make_coordinator(
-        run, evidence, order, quota, monitor=monitor, scheduler=scheduler
-    )
-
-    # When
-    await coordinator.run()
-
-    # Then
-    assert len(contexts) == 2
-    for context in contexts:
-        assert_coordinator_matches(context, coordinator, run, evidence, quota)
-    assert contexts[0] is contexts[1]
-    assert contexts[0].config.concurrency == 3
-    assert contexts[0].config.quota_poll_interval_seconds == pytest.approx(8.5)
-
-
-async def test_attempt_effects_preserve_identity_and_durable_order() -> None:
-    """Persist the exact classified attempt before reading and recording quota."""
-    # Given
-    order: list[str] = []
-    run = bound_run(config=configuration(quota=True))
-    evidence = FakeEvidence(order)
-    quota = FakeQuotaReader(order)
-    outcomes = [successful_outcome()]
-    scheduler_record = run_record()
-
-    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
-        await asyncio.Event().wait()
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        await execute(context.bound_run.calls[0], 1)
-        return scheduler_record
-
-    coordinator, classifier, requests = make_coordinator(
-        run, evidence, order, quota, outcomes, monitor=monitor, scheduler=scheduler
-    )
-
-    # When
-    result = await coordinator.run()
-
-    # Then
-    assert_attempt_flow(
-        run,
-        scheduler_record,
-        result,
-        evidence,
-        quota,
-        classifier,
-        requests,
-        outcomes[0],
-        order,
-    )
-
-
-async def test_monitor_failure_stops_active_scheduler() -> None:
-    """Fail the run and stop an active scheduler when its monitor exits early."""
-    # Given
-    order: list[str] = []
-    run = bound_run(calls_count=2, config=configuration(quota=True))
-    evidence = FakeEvidence(order)
-    quota = FakeQuotaReader(order)
-    scheduler_started = asyncio.Event()
-    stopped_when_cancelled: list[bool] = []
-
-    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
-        await scheduler_started.wait()
-        raise RuntimeError("monitor failed")
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        await execute(context.bound_run.calls[0], 1)
-        scheduler_started.set()
-        try:
-            await asyncio.Event().wait()
-        except asyncio.CancelledError:
-            stopped_when_cancelled.append(is_stopped())
-            raise
-        return run_record()
-
-    coordinator, _, _ = make_coordinator(
-        run,
-        evidence,
-        order,
-        quota,
-        outcomes=[successful_outcome()],
-        monitor=monitor,
-        scheduler=scheduler,
-    )
-
-    # When
-    with pytest.raises(RuntimeError, match="monitor failed"):
-        await coordinator.run()
-
-    # Then
-    assert len(evidence.attempt_inputs) == 1
-    assert stopped_when_cancelled == [True]
-    assert evidence.final_records == []
-
-
-async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
-    """Share one stop hook and refuse a later call after it is invoked."""
-    # Given
-    order: list[str] = []
-    run = bound_run(calls_count=2, config=configuration(quota=True))
-    evidence = FakeEvidence(order)
-    quota = FakeQuotaReader(order)
-    monitor_started = asyncio.Event()
-    hook_references: list[DispatchStop] = []
-    attempt_requests: list[AttemptRequest] = []
-    outcome = successful_outcome()
-    attempt = stopping_attempt(hook_references, attempt_requests, outcome)
-
-    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
-        hook_references.append(stop)
-        monitor_started.set()
-        await asyncio.Event().wait()
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        hook_references.append(stop)
-        await monitor_started.wait()
-        await execute(context.bound_run.calls[0], 1)
-        assert is_stopped()
-        await execute(context.bound_run.calls[1], 1)
-        return run_record()
-
+    requests: list[AttemptRequest] = []
     coordinator = Coordinator(
         bound_run=run,
         evidence=evidence,
-        attempt=attempt,
+        attempt=make_attempt(order, [successful_outcome()], requests),
         classifier=FakeClassifier(order),
         quota_status=quota,
         runtime=FixedRuntime(),
         progress=FakeProgress(),
-        schedule_calls=scheduler,
-        monitor_quota=monitor,
         capture_returned_attempt=capture_attempt,
+    )
+
+    # When
+    with pytest.raises(NotImplementedError, match="dispatch selection"):
+        await coordinator.run()
+
+    # Then
+    assert requests == []
+    assert evidence.events == []
+    assert quota.observations == 0 and quota.probes == 0
+
+
+async def test_attempt_stop_hook_refuses_a_later_selected_attempt() -> None:
+    """Latch the exact supervisor stop hook before another attempt dispatches."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2)
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    selector_hooks: list[DispatchStop] = []
+    attempt_hooks: list[DispatchStop] = []
+    requests: list[AttemptRequest] = []
+
+    async def select(
+        coordinator: Coordinator,
+        settled: _SettledAttempt | None,
+        stop: DispatchStop,
+        /,
+    ) -> _DispatchDecision:
+        await asyncio.sleep(0)
+        selector_hooks.append(stop)
+        return next(decisions)
+
+    decisions = iter((
+        _DispatchAttempt(run.calls[0], 1),
+        _DispatchAttempt(run.calls[1], 1),
+    ))
+    coordinator, _, _ = make_coordinator(run, evidence, quota, order, selector=select)
+    coordinator = replace(
+        coordinator,
+        attempt=stopping_attempt(attempt_hooks, requests, successful_outcome()),
     )
 
     # When
@@ -706,155 +803,32 @@ async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
         await coordinator.run()
 
     # Then
-    assert_stop_hook_flow(run, evidence, hook_references, attempt_requests)
-
-
-def assert_stop_hook_flow(
-    run: BoundRun,
-    evidence: FakeEvidence,
-    hooks: list[DispatchStop],
-    requests: list[AttemptRequest],
-) -> None:
-    """Check stop-hook identity and rejection of every later request."""
     assert requests == [run.calls[0].request]
-    assert len(hooks) == 3
-    assert hooks[0] is hooks[1] is hooks[2]
+    assert selector_hooks[0] is selector_hooks[1] is attempt_hooks[0]
+    assert len(evidence.attempt_inputs) == 1
     assert evidence.final_records == []
 
 
-async def test_repeated_cancellation_waits_for_monitor_cleanup() -> None:
-    """Retain monitor cleanup through repeated cancellation of the run owner."""
+async def test_default_attempt_conversion_stays_explicitly_pending() -> None:
+    """Keep returned supervisor evidence conversion visible at run boundary."""
     # Given
     order: list[str] = []
-    run = bound_run(config=configuration(quota=True))
+    run = bound_run()
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
-    cleanup_started = asyncio.Event()
-    allow_cleanup = asyncio.Event()
-    cleanup_finished = asyncio.Event()
-
-    coordinator, _, _ = make_coordinator(
-        run,
-        evidence,
-        order,
-        quota,
-        monitor=cancellation_blocking_monitor(
-            cleanup_started, allow_cleanup, cleanup_finished
+    requests: list[AttemptRequest] = []
+    seen: list[_SettledAttempt | None] = []
+    coordinator = Coordinator(
+        bound_run=run,
+        evidence=evidence,
+        attempt=make_attempt(order, [successful_outcome()], requests),
+        classifier=FakeClassifier(order),
+        quota_status=quota,
+        runtime=FixedRuntime(),
+        progress=FakeProgress(),
+        select_dispatch=selection_sequence(
+            [_DispatchAttempt(run.calls[0], 1), _DispatchComplete(run_record())], seen
         ),
-        scheduler=completed_scheduler,
-    )
-
-    # When
-    run_task = asyncio.create_task(coordinator.run())
-    await cleanup_started.wait()
-    run_task.cancel()
-    await asyncio.sleep(0)
-    run_task.cancel()
-    await asyncio.sleep(0)
-    allow_cleanup.set()
-
-    # Then
-    with pytest.raises(asyncio.CancelledError):
-        await run_task
-    assert cleanup_finished.is_set()
-    assert evidence.final_records == []
-
-
-async def test_default_scheduler_and_conversion_leaves_are_pending() -> None:
-    """Keep unfinished default leaves visible through the public run boundary."""
-    # Given
-    order: list[str] = []
-    evidence = FakeEvidence(order)
-    quota = FakeQuotaReader(order)
-    coordinator = Coordinator(
-        bound_run=bound_run(),
-        evidence=evidence,
-        attempt=make_attempt(order, [successful_outcome()], []),
-        classifier=FakeClassifier(order),
-        quota_status=quota,
-        runtime=FixedRuntime(),
-        progress=FakeProgress(),
-    )
-
-    # When
-    with pytest.raises(NotImplementedError, match="scheduling policy"):
-        await coordinator.run()
-
-    # Then
-    assert evidence.final_records == []
-    assert quota.observations == 0 and quota.probes == 0
-
-
-async def test_default_monitor_leaf_fails_closed_and_stops_scheduler() -> None:
-    """Stop active scheduling when the default opted-in monitor is unavailable."""
-    # Given
-    order: list[str] = []
-    quota = FakeQuotaReader(order)
-    scheduler_started = asyncio.Event()
-    stopped_when_cancelled: list[bool] = []
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        scheduler_started.set()
-        try:
-            await asyncio.Event().wait()
-        except asyncio.CancelledError:
-            stopped_when_cancelled.append(is_stopped())
-            raise
-        return run_record()
-
-    coordinator = Coordinator(
-        bound_run=bound_run(config=configuration(quota=True)),
-        evidence=FakeEvidence(order),
-        attempt=make_attempt(order, [successful_outcome()], []),
-        classifier=FakeClassifier(order),
-        quota_status=quota,
-        runtime=FixedRuntime(),
-        progress=FakeProgress(),
-        schedule_calls=scheduler,
-    )
-
-    # When
-    with pytest.raises(NotImplementedError, match="quota monitor cadence"):
-        await coordinator.run()
-
-    # Then
-    assert scheduler_started.is_set()
-    assert stopped_when_cancelled == [True]
-    assert quota.observations == 0 and quota.probes == 0
-
-
-async def test_default_attempt_conversion_leaf_remains_explicitly_pending() -> None:
-    """Surface the unfinished returned-result conversion through public run."""
-    # Given
-    order: list[str] = []
-    quota = FakeQuotaReader(order)
-    evidence = FakeEvidence(order)
-
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        await execute(context.bound_run.calls[0], 1)
-        return run_record()
-
-    coordinator = Coordinator(
-        bound_run=bound_run(),
-        evidence=evidence,
-        attempt=make_attempt(order, [successful_outcome()], []),
-        classifier=FakeClassifier(order),
-        quota_status=quota,
-        runtime=FixedRuntime(),
-        progress=FakeProgress(),
-        schedule_calls=scheduler,
     )
 
     # When
@@ -862,59 +836,362 @@ async def test_default_attempt_conversion_leaf_remains_explicitly_pending() -> N
         await coordinator.run()
 
     # Then
-    assert order == ["attempt"]
+    assert requests == [run.calls[0].request]
     assert evidence.attempt_inputs == []
     assert evidence.final_records == []
 
 
-async def test_monitor_disabled_run_does_not_read_or_probe_quota() -> None:
-    """Keep quota effects absent when quota monitoring is disabled."""
+async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() -> None:
+    """Await recovery only for a settled pause and persist probe before resuming."""
     # Given
     order: list[str] = []
-    run = bound_run()
+    run = bound_run(calls_count=2, config=configuration(quota=True))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
+    probe_request = make_probe_request(run)
+    probe_result = make_probe_evidence(probe_request, run.calls[0])
+    quota.probe_result = probe_result
+    recovery = PauseThenResume(
+        run.calls[0],
+        run.calls[1],
+        probe_request,
+        probe_result,
+        evidence,
+        order,
+    )
 
-    async def scheduler(
-        context: Coordinator,
-        execute: ExecuteAttempt,
-        stop: DispatchStop,
-        is_stopped: Callable[[], bool],
-        /,
-    ) -> RunRecord:
-        await execute(context.bound_run.calls[0], 1)
-        return run_record()
+    coordinator, _, requests = make_coordinator(
+        run, evidence, quota, order, selector=recovery.select
+    )
+    coordinator = replace(
+        coordinator,
+        prepare_quota_probe=recovery.prepare_probe,
+        decide_quota_recovery=recovery.decide_recovery,
+    )
 
+    # When
+    actual = await coordinator.run()
+
+    # Then
+    trigger = recovery.seen[1]
+    assert trigger is not None
+    assert recovery.recovery_inputs == [(trigger, probe_result)]
+    assert recovery.request_provider.inputs == [(trigger, None)]
+    assert quota.requests == [probe_request]
+    assert quota.requests[0] is probe_request
+    assert isinstance(evidence.probe_events[0], QuotaProbeStarted)
+    assert evidence.probe_events[0].request is probe_request
+    assert requests == [run.calls[0].request, run.calls[1].request]
+    assert evidence.probe_inputs == [probe_result]
+    assert evidence.probe_inputs[0] is probe_result
+    assert actual is evidence.final_records[0]
+    assert order == [
+        "attempt",
+        "classify",
+        "record_attempt",
+        "observe_quota",
+        "record_telemetry",
+        "prepare_probe",
+        "record_probe_start",
+        "poll",
+        "record_probe_settled",
+        "decide_recovery",
+        "attempt",
+        "classify",
+        "record_attempt",
+        "observe_quota",
+        "record_telemetry",
+        "finalize",
+    ]
+
+
+async def test_default_probe_request_preparation_stays_pending() -> None:
+    """Do not poll when recovery request policy has not been supplied."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    selection = AttemptThenPause(run.calls[0])
+    coordinator, _, _ = make_coordinator(
+        run, evidence, quota, order, selector=selection
+    )
+
+    # When
+    with pytest.raises(NotImplementedError, match="request preparation"):
+        await coordinator.run()
+
+    # Then
+    assert len(evidence.attempt_inputs) == 1
+    assert quota.probes == 0
+    assert evidence.final_records == []
+
+
+async def test_default_recovery_assessment_stays_pending_after_durable_probe() -> None:
+    """Persist returned probe evidence before the default assessment leaf fails."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    request = make_probe_request(run)
+    probe = make_probe_evidence(request, run.calls[0])
+    quota.probe_result = probe
     coordinator, _, _ = make_coordinator(
         run,
         evidence,
-        order,
         quota,
-        monitor=_monitor_that_must_not_start,
-        scheduler=scheduler,
+        order,
+        selector=AttemptThenPause(run.calls[0]),
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
+
+    # When
+    with pytest.raises(NotImplementedError, match="recovery assessment"):
+        await coordinator.run()
+
+    # Then
+    assert evidence.probe_inputs == [probe]
+    assert evidence.probe_inputs[0] is probe
+    assert evidence.events[-1] == "probe-settled"
+    assert evidence.final_records == []
+
+
+async def test_quota_reader_is_never_probed_without_a_pause_decision() -> None:
+    """Keep enabled quota observation passive when selection never pauses."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    seen: list[_SettledAttempt | None] = []
+    coordinator, _, _ = make_coordinator(
+        run,
+        evidence,
+        quota,
+        order,
+        selector=selection_sequence(
+            [_DispatchAttempt(run.calls[0], 1), _DispatchComplete(run_record())], seen
+        ),
     )
 
     # When
     await coordinator.run()
 
     # Then
-    assert quota.observations == 0 and quota.probes == 0
-    assert evidence.events == ["attempt", "final"]
+    assert quota.observations == 1
+    assert quota.probes == 0
+    assert evidence.probe_inputs == []
 
 
-async def test_dry_run_is_refused_before_any_coordinator_effects() -> None:
-    """Keep dry-run reporting outside the execution coordinator."""
+async def test_disabled_quota_wait_rejects_pause_before_any_probe() -> None:
+    """Refuse a pause decision when quota recovery is disabled in the plan."""
     # Given
     order: list[str] = []
+    run = bound_run(config=configuration(quota=False))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
-    coordinator, _, _ = make_coordinator(
-        bound_run(config=configuration(quota=True, dry_run=True)),
+    settled_values: list[_SettledAttempt | None] = []
+
+    async def select(
+        coordinator: Coordinator,
+        settled: _SettledAttempt | None,
+        stop: DispatchStop,
+        /,
+    ) -> _DispatchDecision:
+        await asyncio.sleep(0)
+        settled_values.append(settled)
+        if settled is None:
+            return _DispatchAttempt(run.calls[0], 1)
+        return _QuotaPaused(settled)
+
+    coordinator, _, _ = make_coordinator(run, evidence, quota, order, selector=select)
+
+    # When
+    with pytest.raises(RuntimeError, match="quota recovery is disabled"):
+        await coordinator.run()
+
+    # Then
+    assert len(settled_values) == 2
+    assert quota.observations == 0
+    assert quota.probes == 0
+    assert evidence.final_records == []
+
+
+async def test_probe_failure_persists_attached_evidence_without_resuming() -> None:
+    """Persist exact attached probe evidence, then retain the primary failure."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    probe_request = make_probe_request(run)
+    probe = make_probe_evidence(
+        probe_request, run.calls[0], state="unknown", control_flow="raised"
+    )
+    error = RuntimeError("probe failed")
+    attach_quota_probe_evidence(error, probe)
+    quota.probe_error = error
+    selection = AttemptThenPause(run.calls[0])
+    request_source = FixedProbeRequest(probe_request)
+    coordinator, _, attempts = make_coordinator(
+        run, evidence, quota, order, selector=selection
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=request_source)
+
+    # When
+    with pytest.raises(RuntimeError, match="probe failed") as raised:
+        await coordinator.run()
+
+    # Then
+    assert raised.value is error
+    assert evidence.probe_inputs == [probe]
+    assert evidence.probe_inputs[0] is probe
+    assert attempts == [run.calls[0].request]
+    assert evidence.final_records == []
+    assert order[-1] == "record_probe_settled"
+
+
+async def test_probe_failure_without_evidence_stays_incomplete() -> None:
+    """Keep missing probe evidence incomplete and prevent another attempt."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2, config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    request = make_probe_request(run)
+    quota.probe_error = RuntimeError("probe evidence unavailable")
+    coordinator, _, requests = make_coordinator(
+        run,
         evidence,
-        order,
         quota,
-        monitor=_monitor_that_must_not_start,
-        scheduler=_scheduler_that_must_not_start,
+        order,
+        selector=AttemptThenPause(run.calls[0]),
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
+
+    # When
+    with pytest.raises(RuntimeError, match="probe evidence unavailable"):
+        await coordinator.run()
+
+    # Then
+    assert requests == [run.calls[0].request]
+    assert evidence.probe_inputs == []
+    assert evidence.final_records == []
+
+
+async def test_cancelled_probe_with_attached_evidence_never_resumes() -> None:
+    """Settle attached cancellation evidence and propagate cancellation."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    probe_request = make_probe_request(run)
+    probe = make_probe_evidence(
+        probe_request, run.calls[0], state="unknown", control_flow="cancelled"
+    )
+    cancellation = asyncio.CancelledError()
+    attach_quota_probe_evidence(cancellation, probe)
+    quota.probe_error = cancellation
+    selection = AttemptThenPause(run.calls[0])
+    request_source = FixedProbeRequest(probe_request)
+    coordinator, _, _ = make_coordinator(
+        run, evidence, quota, order, selector=selection
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=request_source)
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await coordinator.run()
+
+    # Then
+    assert raised.value is cancellation
+    assert evidence.probe_inputs == [probe]
+    assert evidence.final_records == []
+
+
+async def test_probe_stop_latch_blocks_recovery_and_later_attempts() -> None:
+    """Keep a stop raised by the probe adapter latched through settlement."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2, config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    request = make_probe_request(run)
+    probe = make_probe_evidence(request, run.calls[0])
+    quota.probe_result = probe
+    quota.stop_reason = RuntimeError("probe cleanup unsafe")
+    selection = AttemptThenPause(run.calls[0])
+    coordinator, _, requests = make_coordinator(
+        run, evidence, quota, order, selector=selection
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
+
+    # When
+    with pytest.raises(RuntimeError, match="stopped during quota probe"):
+        await coordinator.run()
+
+    # Then
+    assert requests == [run.calls[0].request]
+    assert evidence.probe_inputs == [probe]
+    assert selection.decisions == 2
+    assert evidence.final_records == []
+
+
+async def test_repeated_cancellation_waits_for_attached_probe_evidence() -> None:
+    """Finish the durable evidence write despite repeated owner cancellation."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = BlockingProbeEvidence(order)
+    quota = FakeQuotaReader(order)
+    request = make_probe_request(run)
+    probe = make_probe_evidence(
+        request, run.calls[0], state="unknown", control_flow="cancelled"
+    )
+    cancellation = asyncio.CancelledError()
+    attach_quota_probe_evidence(cancellation, probe)
+    quota.probe_error = cancellation
+    coordinator, _, _ = make_coordinator(
+        run,
+        evidence,
+        quota,
+        order,
+        selector=AttemptThenPause(run.calls[0]),
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
+    run_task = asyncio.create_task(coordinator.run())
+
+    # When
+    await evidence.write_started.wait()
+    run_task.cancel()
+    run_task.cancel()
+    evidence.allow_write.set()
+
+    # Then
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await run_task
+    assert raised.value is cancellation
+    assert evidence.write_finished.is_set()
+    assert evidence.probe_inputs == [probe]
+    assert evidence.final_records == []
+
+
+async def test_dry_run_is_refused_before_dispatch_or_quota_effects() -> None:
+    """Keep dry-run reporting outside coordinator execution and recovery."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True, dry_run=True))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    seen: list[_SettledAttempt | None] = []
+    coordinator, _, _ = make_coordinator(
+        run,
+        evidence,
+        quota,
+        order,
+        selector=selection_sequence([], seen),
     )
 
     # When
@@ -922,25 +1199,6 @@ async def test_dry_run_is_refused_before_any_coordinator_effects() -> None:
         await coordinator.run()
 
     # Then
+    assert seen == []
     assert quota.observations == 0 and quota.probes == 0
     assert evidence.events == []
-
-
-async def _monitor_that_must_not_start(
-    context: Coordinator, stop: DispatchStop, /
-) -> None:
-    """Fail if a disabled or dry-run monitor is launched."""
-    await asyncio.sleep(0)
-    raise AssertionError("quota monitor was unexpectedly started")
-
-
-async def _scheduler_that_must_not_start(
-    context: Coordinator,
-    execute: ExecuteAttempt,
-    stop: DispatchStop,
-    is_stopped: Callable[[], bool],
-    /,
-) -> RunRecord:
-    """Fail if a dry-run plan is scheduled."""
-    await asyncio.sleep(0)
-    raise AssertionError("dry-run calls were unexpectedly scheduled")

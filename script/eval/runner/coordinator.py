@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Compose coordinator run, attempt, quota, and evidence effects.
+"""Compose dispatch decisions, attempt effects, and paused quota recovery.
 
-Scheduling gates, result conversion, and quota policy remain explicit pending
-leaves until their behavior is implemented and reviewed.
+Dispatch selection and quota recovery policy remain explicit pending leaves.
 """
 
 import asyncio
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
+from typing import Literal
 
 from script.eval.evidence import EvidenceStore
 from script.eval.model import (
@@ -15,6 +15,10 @@ from script.eval.model import (
     AttemptNumber,
     AttemptRecord,
     HarnessConfig,
+    QuotaObservation,
+    QuotaProbeEvidence,
+    QuotaProbeRequest,
+    QuotaProbeStarted,
     QuotaTelemetryEvent,
     RunRecord,
 )
@@ -27,15 +31,66 @@ from script.eval.runner.ports import (
     QuotaStatusReader,
     Runtime,
 )
+from script.eval.runner.quota_evidence import quota_probe_evidence
 from script.process_supervisor import AttemptResult, DispatchStop
 
 type CaptureReturnedAttempt = Callable[
     [EffectiveCall, AttemptResult, str, str], AttemptEvidence
 ]
-type ExecuteAttempt = Callable[
-    [EffectiveCall, AttemptNumber], Coroutine[None, None, AttemptRecord]
+type _RecoveryAction = Literal["continue", "resume", "stop"]
+
+
+@dataclass(frozen=True)
+class _SettledAttempt:
+    """One durable attempt and its optional passive quota observation."""
+
+    call: EffectiveCall
+    attempt_number: AttemptNumber
+    evidence: AttemptEvidence
+    record: AttemptRecord
+    observation: QuotaObservation | None
+
+
+@dataclass(frozen=True)
+class _DispatchAttempt:
+    """Select one planned call attempt for coordinator-owned execution."""
+
+    call: EffectiveCall
+    attempt_number: AttemptNumber
+
+
+@dataclass(frozen=True)
+class _QuotaPaused:
+    """Select quota recovery after a settled attempt blocks further dispatch."""
+
+    trigger: _SettledAttempt
+
+
+@dataclass(frozen=True)
+class _DispatchComplete:
+    """Finish dispatch with the run record assembled by its policy owner."""
+
+    record: RunRecord
+
+
+type _DispatchDecision = _DispatchAttempt | _QuotaPaused | _DispatchComplete
+type _SelectDispatch = Callable[
+    ["Coordinator", _SettledAttempt | None, DispatchStop],
+    Coroutine[None, None, _DispatchDecision],
 ]
-type DispatchStopped = Callable[[], bool]
+type _PrepareQuotaProbe = Callable[
+    ["Coordinator", _SettledAttempt, QuotaProbeEvidence | None],
+    Coroutine[None, None, QuotaProbeRequest],
+]
+type _DecideQuotaRecovery = Callable[
+    [
+        "Coordinator",
+        _SettledAttempt,
+        QuotaProbeEvidence | None,
+        QuotaProbeEvidence,
+    ],
+    Coroutine[None, None, _RecoveryAction],
+]
 
 
 @dataclass
@@ -53,27 +108,19 @@ class _DispatchGate:
         """Report whether the run has latched a stop reason.
 
         Returns:
-            Whether dispatch should remain stopped.
+            Whether dispatch remains stopped.
         """
         return self.reason is not None
 
 
-type ScheduleCalls = Callable[
-    ["Coordinator", ExecuteAttempt, DispatchStop, DispatchStopped],
-    Coroutine[None, None, RunRecord],
-]
-type MonitorQuota = Callable[[Coordinator, DispatchStop], Coroutine[None, None, None]]
-
-
 @dataclass(frozen=True)
 class Coordinator:
-    """Own run-task lifecycle and compose one durable attempt at a time.
+    """Own one bound run and order its selected effects.
 
-    This instance is bound to one run and one evidence store. Configuration is
-    always read from the bound frozen plan. The scheduler owns call ordering,
-    semaphore gates, stop policy, retry selection, and accounting; it must
-    await every callback it starts. The monitor leaf owns cadence and probe
-    lifecycle.
+    Dispatch selection supplies one decision at a time. This coordinator owns
+    attempt execution and durability, and directly awaits quota recovery only
+    when selection reports a pause. The selection and recovery policy leaves
+    remain pending.
     """
 
     bound_run: BoundRun
@@ -83,8 +130,13 @@ class Coordinator:
     quota_status: QuotaStatusReader
     runtime: Runtime
     progress: ProgressSink
-    schedule_calls: ScheduleCalls = field(default_factory=lambda: _schedule_calls)
-    monitor_quota: MonitorQuota = field(default_factory=lambda: _monitor_quota)
+    select_dispatch: _SelectDispatch = field(default_factory=lambda: _select_dispatch)
+    prepare_quota_probe: _PrepareQuotaProbe = field(
+        default_factory=lambda: _prepare_quota_probe
+    )
+    decide_quota_recovery: _DecideQuotaRecovery = field(
+        default_factory=lambda: _decide_quota_recovery
+    )
     capture_returned_attempt: CaptureReturnedAttempt = field(
         default_factory=lambda: _capture_returned_attempt
     )
@@ -95,7 +147,7 @@ class Coordinator:
         return self.bound_run.plan.configuration
 
     async def run(self) -> RunRecord:
-        """Run the scheduler seam and finalize the record it returns.
+        """Run selected effects and finalize the record they return.
 
         Returns:
             The finalized run record.
@@ -110,72 +162,65 @@ class Coordinator:
         return record
 
     async def _dispatch(self) -> RunRecord:
-        """Run scheduler and monitor tasks through their owned settlement.
+        """Execute selector decisions and retain durable attempt state.
 
         Returns:
-            The record assembled by the scheduler after its work settles.
+            The completed run record.
+
+        Raises:
+            RuntimeError: A decision conflicts with the stop or pause state.
         """
-        gate = _DispatchGate()
+        stop = _DispatchGate()
+        settled: _SettledAttempt | None = None
+        while True:
+            decision = await self.select_dispatch(self, settled, stop)
+            match decision:
+                case _DispatchAttempt(call, attempt_number):
+                    if stop.stopped():
+                        raise RuntimeError("dispatch was stopped before this attempt")
+                    settled = await self._execute_attempt(call, attempt_number, stop)
+                case _QuotaPaused(trigger):
+                    await self._await_recovery_for_pause(trigger, settled, stop)
+                    settled = None
+                case _DispatchComplete(record):
+                    if stop.stopped():
+                        raise RuntimeError("dispatch was stopped before completion")
+                    return record
 
-        async def execute_attempt(
-            call: EffectiveCall, attempt_number: AttemptNumber, /
-        ) -> AttemptRecord:
-            if gate.stopped():
-                raise RuntimeError("dispatch was stopped before this attempt")
-            return await self._execute_attempt(call, attempt_number, gate)
+    async def _await_recovery_for_pause(
+        self,
+        trigger: _SettledAttempt,
+        settled: _SettledAttempt | None,
+        stop: _DispatchGate,
+        /,
+    ) -> None:
+        """Validate the latest pause decision and await its recovery flow.
 
-        scheduler_task = asyncio.create_task(
-            self.schedule_calls(self, execute_attempt, gate, gate.stopped),
-            name=f"evaluation-scheduler-{self.bound_run.plan.run_id}",
-        )
-        monitor_task = (
-            asyncio.create_task(
-                self.monitor_quota(self, gate),
-                name=f"quota-monitor-{self.bound_run.plan.run_id}",
-            )
-            if self.config.quota_wait_enabled
-            else None
-        )
-
-        try:
-            record = await _settle_scheduler_or_monitor(scheduler_task, monitor_task)
-        except BaseException as error:
-            gate(error)
-            cancellation, failures = await _cancel_and_join(
-                scheduler_task, monitor_task
-            )
-            if cancellation is not None and cancellation is not error:
-                cancellation.add_note(f"Run stopped while settling after: {error!r}")
-                _add_failure_notes(cancellation, failures)
-                raise cancellation from error
-            _add_failure_notes(error, failures)
-            raise
-
-        if monitor_task is not None:
-            cancellation, failures = await _cancel_and_join(
-                scheduler_task, monitor_task
-            )
-            if cancellation is not None:
-                _add_failure_notes(cancellation, failures)
-                raise cancellation
-            if failures:
-                raise failures[0]
-        return record
+        Raises:
+            RuntimeError: Recovery is disabled or the pause is no longer current.
+        """
+        if not self.config.quota_wait_enabled:
+            raise RuntimeError("quota recovery is disabled")
+        if stop.stopped():
+            raise RuntimeError("dispatch was stopped before quota recovery")
+        if trigger is not settled:
+            raise RuntimeError("quota recovery requires the latest settled attempt")
+        await self._wait_for_quota(trigger, stop)
 
     async def _execute_attempt(
         self,
         call: EffectiveCall,
         attempt_number: AttemptNumber,
-        stop_dispatch: DispatchStop,
+        stop: DispatchStop,
         /,
-    ) -> AttemptRecord:
-        """Order one returned invocation, classification, and evidence writes.
+    ) -> _SettledAttempt:
+        """Run and durably record an attempt before passive quota ingestion.
 
         Returns:
-            The durable record for this invocation.
+            The settled attempt and its passive quota observation, if enabled.
         """
         started_at = self.runtime.utc_now()
-        outcome = await self.attempt(call.request, stop_dispatch)
+        outcome = await self.attempt(call.request, stop)
         ended_at = self.runtime.utc_now()
         attempt_evidence = self.capture_returned_attempt(
             call, outcome, started_at, ended_at
@@ -189,6 +234,7 @@ class Coordinator:
             attempt_evidence,
             assessment,
         )
+        observation = None
         if self.config.quota_wait_enabled:
             observation = await self.quota_status.observe_settled_attempt(
                 attempt_evidence
@@ -201,114 +247,128 @@ class Coordinator:
                     observation=observation,
                 )
             )
-        return attempt_record
+        return _SettledAttempt(
+            call=call,
+            attempt_number=attempt_number,
+            evidence=attempt_evidence,
+            record=attempt_record,
+            observation=observation,
+        )
+
+    async def _wait_for_quota(
+        self, trigger: _SettledAttempt, stop: _DispatchGate, /
+    ) -> None:
+        """Poll serially while recovery policy keeps the run paused.
+
+        Raises:
+            RuntimeError: Recovery policy refuses resumption.
+        """
+        prior_probe: QuotaProbeEvidence | None = None
+        while True:
+            if stop.stopped():
+                raise RuntimeError("dispatch was stopped during quota recovery")
+            request = await self.prepare_quota_probe(self, trigger, prior_probe)
+            await self.evidence.record_quota_probe_event(
+                QuotaProbeStarted(kind="started", request=request)
+            )
+            if stop.stopped():
+                raise RuntimeError("dispatch was stopped before quota probe")
+            try:
+                probe = await self.quota_status.poll(request, stop)
+            except BaseException as error:
+                await self._record_probe_after_failure(error, request)
+                stop(error)
+                raise
+            await self.evidence.record_quota_probe_settled(probe)
+            if stop.stopped():
+                raise RuntimeError("dispatch was stopped during quota probe")
+            action = await self.decide_quota_recovery(self, trigger, prior_probe, probe)
+            if action == "resume":
+                return
+            if action == "stop":
+                raise RuntimeError("quota recovery stopped without resumption")
+            prior_probe = probe
+
+    async def _record_probe_after_failure(
+        self, error: BaseException, request: QuotaProbeRequest, /
+    ) -> None:
+        """Persist attached evidence without replacing its primary failure."""
+        probe = quota_probe_evidence(error, request)
+        if probe is None:
+            return
+        settlement = asyncio.create_task(
+            self.evidence.record_quota_probe_settled(probe),
+            name=f"quota-probe-settlement-{request.schedule.probe_id}",
+        )
+        while not settlement.done():
+            try:
+                await asyncio.shield(settlement)
+            except asyncio.CancelledError as cancellation:
+                error.add_note(
+                    "Additional cancellation arrived while settling probe evidence: "
+                    f"{cancellation!r}"
+                )
+            except BaseException as persistence_error:
+                error.add_note(
+                    "Quota probe evidence could not be persisted: "
+                    f"{persistence_error!r}"
+                )
+                return
+        if settlement.cancelled():
+            error.add_note("Quota probe evidence settlement was cancelled")
+        elif (persistence_error := settlement.exception()) is not None:
+            error.add_note(
+                f"Quota probe evidence could not be persisted: {persistence_error!r}"
+            )
 
 
-async def _settle_scheduler_or_monitor(
-    scheduler: asyncio.Task[RunRecord], monitor: asyncio.Task[None] | None, /
-) -> RunRecord:
-    """Fail closed if the monitor exits before scheduling has settled.
-
-    Returns:
-        The scheduler's run record after both tasks have not reported a failure.
-    """
-    if monitor is None:
-        return await scheduler
-    done, _ = await asyncio.wait(
-        (scheduler, monitor), return_when=asyncio.FIRST_COMPLETED
-    )
-    if monitor in done:
-        failure = monitor.exception()
-        if failure is None:
-            failure = RuntimeError("quota monitor exited before scheduling settled")
-        if scheduler.done():
-            await scheduler
-        raise failure
-    return await scheduler
-
-
-async def _cancel_and_join(
-    scheduler: asyncio.Task[RunRecord], monitor: asyncio.Task[None] | None, /
-) -> tuple[asyncio.CancelledError | None, tuple[BaseException, ...]]:
-    """Cancel owned tasks and retain them through repeated owner cancellation.
-
-    Returns:
-        Any cancellation delivered to this owner and failures from settled tasks.
-    """
-    tasks = (scheduler,) if monitor is None else (scheduler, monitor)
-    failures: list[BaseException] = []
-    for task in tasks:
-        if not task.done():
-            task.cancel()
-    owner_cancellation: asyncio.CancelledError | None = None
-    for task in tasks:
-        cancellation, failure = await _join_task(task)
-        if cancellation is not None:
-            owner_cancellation = cancellation
-        if failure is not None:
-            failures.append(failure)
-    return owner_cancellation, tuple(failures)
-
-
-async def _join_task[Result](
-    task: asyncio.Task[Result], /
-) -> tuple[asyncio.CancelledError | None, BaseException | None]:
-    """Join one shielded task and distinguish owner cancellation from its own.
-
-    Returns:
-        Owner cancellation, if received, and the settled task's failure.
-    """
-    owner_cancellation: asyncio.CancelledError | None = None
-    while not task.done():
-        try:
-            await asyncio.shield(task)
-        except asyncio.CancelledError as cancellation:
-            current = asyncio.current_task()
-            if current is not None and current.cancelling():
-                owner_cancellation = cancellation
-            elif task.cancelled():
-                break
-        except BaseException:
-            break
-    failure = None if task.cancelled() else task.exception()
-    return owner_cancellation, failure
-
-
-def _add_failure_notes(
-    owner: BaseException, failures: tuple[BaseException, ...], /
-) -> None:
-    """Retain secondary owned-task failures without replacing the primary."""
-    for failure in failures:
-        if failure is not owner:
-            owner.add_note(f"Owned coordinator task also failed: {failure!r}")
-
-
-async def _schedule_calls(
-    context: Coordinator,
-    execute_attempt: ExecuteAttempt,
-    stop_dispatch: DispatchStop,
-    dispatch_stopped: DispatchStopped,
+async def _select_dispatch(
+    coordinator: Coordinator,
+    settled: _SettledAttempt | None,
+    stop: DispatchStop,
     /,
-) -> RunRecord:
-    """Schedule calls under concurrency and lifecycle gates.
+) -> _DispatchDecision:
+    """Select the next dispatch or completion decision.
 
     Raises:
-        NotImplementedError: Scheduling policy has not been implemented.
+        NotImplementedError: Dispatch selection is not implemented.
     """
-    del context, execute_attempt, stop_dispatch, dispatch_stopped
+    del coordinator, settled, stop
     await asyncio.sleep(0)
-    raise NotImplementedError("coordinator scheduling policy is not implemented")
+    raise NotImplementedError("dispatch selection is not implemented")
 
 
-async def _monitor_quota(context: Coordinator, stop_dispatch: DispatchStop, /) -> None:
-    """Own one cadence and probe cycle for an opted-in run.
+async def _prepare_quota_probe(
+    coordinator: Coordinator,
+    trigger: _SettledAttempt,
+    prior_probe: QuotaProbeEvidence | None,
+    /,
+) -> QuotaProbeRequest:
+    """Prepare one probe request for the current quota pause.
 
     Raises:
-        NotImplementedError: Probe cadence and lifecycle are deferred.
+        NotImplementedError: Probe schedule and request policy are deferred.
     """
-    del context, stop_dispatch
+    del coordinator, trigger, prior_probe
     await asyncio.sleep(0)
-    raise NotImplementedError("quota monitor cadence is not implemented")
+    raise NotImplementedError("quota probe request preparation is not implemented")
+
+
+async def _decide_quota_recovery(
+    coordinator: Coordinator,
+    trigger: _SettledAttempt,
+    prior_probe: QuotaProbeEvidence | None,
+    probe: QuotaProbeEvidence,
+    /,
+) -> _RecoveryAction:
+    """Choose whether a persisted probe continues, resumes, or stops recovery.
+
+    Raises:
+        NotImplementedError: Recovery assessment policy is deferred.
+    """
+    del coordinator, trigger, prior_probe, probe
+    await asyncio.sleep(0)
+    raise NotImplementedError("quota recovery assessment is not implemented")
 
 
 def _capture_returned_attempt(
