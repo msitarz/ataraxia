@@ -38,7 +38,6 @@ def test_monotonic_uses_the_standard_monotonic_clock() -> None:
     assert before <= elapsed_seconds <= after
 
 
-@pytest.mark.asyncio
 async def test_zero_sleep_yields_to_the_event_loop() -> None:
     # Given
     runtime = SystemRuntime()
@@ -53,7 +52,6 @@ async def test_zero_sleep_yields_to_the_event_loop() -> None:
     assert events == ["callback", "sleep_complete"]
 
 
-@pytest.mark.asyncio
 async def test_sleep_propagates_task_cancellation() -> None:
     # Given
     runtime = SystemRuntime()
