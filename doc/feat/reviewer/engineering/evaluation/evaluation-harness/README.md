@@ -283,12 +283,16 @@ restarting the runner or repeating completed calls.
   finite ordinary infrastructure retry allowance, including when that allowance
   is zero; every attempt still counts toward any applicable finite caller-owned
   experiment budget or attempt cap.
-- With quota waiting enabled, a lifecycle-managed `asyncio` task polls quota
-  availability while execution is active or paused, using a configurable finite
-  positive interval and at most one probe in flight.
+- With quota waiting enabled, quota probes run only after recognized quota
+  exhaustion prevents evaluation attempts from continuing. After active attempts
+  settle and their evidence is persisted, the coordinator directly awaits an
+  asynchronous quota-recovery polling flow with a configurable finite positive
+  interval and at most one probe in flight. Active execution has no background
+  quota monitor or periodic probes.
 - A consumer-owned asynchronous quota-polling port exposes provider-neutral
-  availability observations to the coordinator, which owns cadence, task
-  lifecycle, cancellation, and dispatch gates without importing a Codex adapter.
+  availability observations to the coordinator, which owns the awaited recovery
+  flow, cadence, cancellation, and dispatch gates without importing a Codex
+  adapter or requiring a separate monitoring task.
 - The Codex adapter owns separate supervised `codex exec --json` probes, never
   blocked evaluations repurposed as probes; its fixed probe condition is
   `gpt-6-luna`, effort `none`, minimal nonempty instructions and prompt,
@@ -304,25 +308,27 @@ restarting the runner or repeating completed calls.
 - Probe dispatch and failures follow this explicit polling policy rather than
   consuming evaluation infrastructure retry allowances; unknown observations,
   malformed data, scope mismatch, or infrastructure errors stop new dispatch,
-  end monitoring, and mark the run incomplete with inability to continue, never
-  availability or an invented reset.
+  end quota recovery, and mark the run incomplete with inability to continue,
+  never availability or an invented reset.
 - Probes are explicit potentially billable operations: configuration and usage
   guidance disclose their consumption, and every probe counts separately toward
   the caller's authorized operational budget. Enabling `--wait-for-quota`
   authorizes quota probes; an optional finite nonnegative integer probe budget
   caps them when supplied, with zero permitting no probes and omission adding
   no harness probe-count cap. Caller operational limits still apply.
-- The Codex adapter ingests session telemetry after each evaluation attempt and
-  probe, correlating the source with its `thread.started` ID; concrete file
-  lookup, quota-scope association, interpretation, and source validation must be
-  reviewed before use; the core receives provider-neutral observations only.
+- With quota waiting enabled, the Codex adapter passively ingests session
+  telemetry after each evaluation attempt and probe, correlating the source with
+  its `thread.started` ID; concrete file lookup, quota-scope association,
+  interpretation, and source validation must be reviewed before use; the core
+  receives provider-neutral observations only.
 - Telemetry retains producer timestamps and source coordinates; reading a
   snapshot again never refreshes its age, and stale, unknown, or missing data
   cannot fabricate availability.
-- Numeric reset hints cover both exhausted five-hour and weekly windows, using
-  the latest relevant exhausted reset as a hint; periodic checks can detect
-  earlier availability, while a future hint can wake a check before the next
-  interval. Past or repeated hints cannot create an immediate polling loop.
+- During the quota pause only, numeric reset hints cover both exhausted
+  five-hour and weekly windows, using the latest relevant exhausted reset as a
+  hint; periodic checks can detect earlier availability, while a future hint can
+  wake a check before the next interval. Past or repeated hints cannot create an
+  immediate polling loop.
 - A hint reaching its time never authorizes evaluation dispatch. Only a fresh
   positive availability confirmation for the same quota scope reopens dispatch;
   the source association and freshness rules remain implementation
@@ -335,9 +341,8 @@ restarting the runner or repeating completed calls.
   never turn failed evaluations into success or replace the selected model.
 - After exhaustion, active evaluations settle and their evidence is persisted
   before any new probe or evaluation resumption; no probe launches during this
-  settlement. An already-running probe remains supervised and must safely
-  settle and persist its evidence. Unsafe cleanup globally stops dispatch, and
-  probe output and event persistence also gate resumption.
+  settlement. Unsafe cleanup globally stops dispatch, and probe output and
+  event persistence also gate resumption.
 - A supplied cumulative quota-wait bound or probe-budget limit stops further
   waiting or probing when exhausted and reports blocked and not-started calls
   truthfully; default-off quota waiting causes no extra probes or session reads,
@@ -347,24 +352,25 @@ restarting the runner or repeating completed calls.
   producer observation age, numeric reset hints, scheduled and actual check
   times, wait durations and reasons, and available usage and cost are retained
   separately from evaluation measurements; unknown usage or cost stays unknown.
-- Wait, poll, observation, and end events are durably appended as they occur;
-  a final summary alone does not account for monitoring, and recording failure
+- Wait, poll, observation, and end events are durably appended as they occur; a
+  final summary alone does not account for quota recovery, and recording failure
   stops dispatch and forbids resumption.
-- `SIGINT`, `SIGTERM`, task cancellation, or a latched stop cancels active
-  probes, awaits bounded cleanup, and joins the monitoring task without retry;
-  unsafe probe cleanup or uncertain acquisition stops the entire run under AC-4.
-- Normal run completion also ends and joins monitoring after settling any probe
-  and persisting its evidence; no background task survives the runner.
+- `SIGINT`, `SIGTERM`, task cancellation, or a latched stop cancels an active
+  probe, awaits bounded cleanup, persists its evidence, and settles the awaited
+  recovery flow without retry; unsafe probe cleanup or uncertain acquisition
+  stops the entire run under AC-4.
+- Quota recovery returns only after any probe settles and its evidence is
+  persisted; no background quota task survives resumption or runner completion.
 - Async core ports and filesystem adapters must not block the event loop while
   reading telemetry; waits hold no evaluation slot or sleeping CLI subprocess.
 - The runner never switches evaluation models or accounts, purchases capacity,
   or requests quota resets; its explicitly configured probe model does not
   substitute for an evaluation model, and restart recovery remains excluded.
-- Controlled checks verify active and paused polling, after-attempt ingestion,
-  single-probe bounds, reset and periodic wake scheduling, stale and unknown
-  refusal, scope association, budgets, persistence gates, slot release, probe
-  cleanup and monitor joining, and fresh-confirmation-only resumption without
-  making model calls.
+- Controlled checks verify paused-only polling, passive after-attempt ingestion,
+  single-probe bounds, reset and periodic wake scheduling during pauses, stale
+  and unknown refusal, scope association, budgets, persistence gates, slot
+  release, probe cleanup and recovery settlement, and fresh-confirmation-only
+  resumption without making model calls.
 
 ### **AC-7 TODO** Optional model-capacity retries use bounded backoff
 
@@ -431,7 +437,8 @@ job without keeping an agent conversation alive.
   an agent to answer prompts or silently broaden permissions.
 - While alive, the harness owns its child processes, dispatch, retry and wait
   policies, cleanup, and evidence under AC-1 through AC-7, regardless of who
-  launched it.
+  launched it. One coordinator serves one provider for one run; multi-provider
+  CLI configuration and output support remain outside this Work.
 - The maintainer or external service owns launch and liveness; scheduler
   integration, service installation, and restart recovery remain outside this
   Work, and no cron or launchd implementation is required.
@@ -465,9 +472,9 @@ text without keeping an agent conversation alive.
   incomplete evidence, retains not-started calls, and never labels a successful
   process exit as a reviewer verdict `PASS` or scored answer quality; the
   harness does not interpret or score answers.
-- Quota reporting consumes existing validated observations and the AC-6 monitor
-  without launching additional model calls or probes, rereading input files,
-  or acquiring personal data solely to produce a report.
+- Quota reporting consumes existing validated observations and AC-6 quota
+  recovery without launching additional model calls or probes, rereading input
+  files, or acquiring personal data solely to produce a report.
 - Where validated sources supply them, quota reports show per-window usage
   percentages, identified windows and quota scope, reset hints, and observation
   age; unavailable values stay explicitly unknown rather than inferred from
@@ -481,7 +488,7 @@ text without keeping an agent conversation alive.
   control sequences, bounded and throttled to avoid per-poll or per-refresh
   floods while retaining meaningful transitions and final status.
 - An explicit quiet mode suppresses progress without changing evidence,
-  outcomes, dispatch, retries, or quota monitoring; precise option spelling,
+  outcomes, dispatch, retries, or quota recovery; precise option spelling,
   rendering layout, and refresh interval remain architecture choices.
 - Presentation failures disable or degrade reporting without changing
   evaluation outcomes or retry eligibility, concealing a recording failure,
@@ -523,7 +530,7 @@ account and allowance association, freshness, and failure handling still require
 review. The authorized future probe condition is recorded there; its unattended
 recipe and positive availability evidence also remain prerequisites. An
 app-server schema does not establish the exec schema. The architecture, proposed
-typed boundaries, and intent-only BDD scenarios now describe this polling
+typed boundaries, and intent-only BDD scenarios describe the earlier polling
 amendment; they establish no runtime behavior. No live probes, quota
 implementation, or model calls are authorized by this amendment.
 
@@ -542,3 +549,10 @@ typed design, and intent-only BDD scenarios, not runtime implementation. The
 contract alone establishes no reporting behavior. It adds no logger, event bus,
 adapter framework, monitoring service, scheduler integration, or dependency on
 an agent session. All acceptance criteria remain TODO.
+
+The current quota contract limits probes to the awaited recovery flow after
+recognized exhaustion and active-attempt settlement. Passive after-attempt
+telemetry remains enabled by the quota-wait opt-in. Earlier architecture and
+intent-only scenarios describing active-period monitoring require alignment
+before they can support implementation review; this amendment establishes no
+runtime behavior and authorizes no live probes or model calls.
