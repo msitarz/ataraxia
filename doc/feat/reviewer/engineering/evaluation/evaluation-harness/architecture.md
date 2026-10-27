@@ -553,37 +553,46 @@ Codex, quota, and runtime adapters.
   isolation. The classifier returns confident absence only when supervisor
   evidence confirms the process never launched; quota, capacity, nonzero exit,
   and all other outcomes remain unknown. It never parses answer content.
-- `runner.adapters.codex_quota` now provides a typed wiring skeleton for the
-  provider-neutral quota-reader port. Passive observation forwards settled
-  telemetry to an injected thread extractor, performs a source lookup only for
-  the returned opaque thread ID, and forwards the raw immutable snapshot, paired
-  scope, and runtime read time to an injected normalizer. The default extractor
-  and normalizer raise `NotImplementedError`; no session schema, identity,
-  freshness, or availability is inferred. Active polling constructs one
-  `AttemptRequest` through an injected recipe leaf and invokes the existing
-  `AttemptCall` once with the exact request and stop callback. It retains the
-  request, timestamps, supervisor outcome, and captured stdout telemetry in
-  `QuotaProbeEvidence`; assessment remains an injected leaf. If cancellation or
-  another exception escapes after dispatch, the adapter attaches available
-  probe evidence to that same exception and re-raises it. The generic
-  `quota_probe_evidence` accessor matches by the exact original request object,
-  so a coordinator must retain that object; no match means incomplete evidence.
-  The probe recipe, thread extraction, session normalization, and availability
-  assessment all raise `NotImplementedError` by default. This wiring does not
-  establish a usable source, issue a probe, or authorize resumption. The
-  supplied telemetry and quota captures remain candidate evidence only; source
-  lookup, session association, scope identity, freshness, request flags, and
-  exec output schema remain unverified.
-  The intended adapter behavior remains pending source verification: map both
-  required five-hour and weekly windows, normalize usage from a verified
-  ``used_percent`` value or from ``100 - remaining_percent``, and calculate
-  observation age from producer time to read time. Missing, invalid, or
-  future-dated producer times remain unknown; an old but valid time remains a
-  known age rather than being discarded. Reset times are hints only. Progress
-  snapshots reuse existing scoped observations and producer-based ages without
-  additional quota reads or lookups. Any persisted source coordinate must be
-  sanitized and contain no PII. None of these normalization or freshness rules
-  is implemented by the current skeleton.
+- `runner.adapters.codex_quota` implements a version-bounded adapter around the
+  provider-neutral quota-reader port. It extracts exactly one canonical
+  `thread.started.thread_id` from captured `codex exec --json` JSONL. The
+  asynchronous local source uses an explicitly configured sessions directory,
+  enumerates only the three-level date layout and exact UUID-suffix candidate,
+  opens no other rollout files, and offloads lookup and reading with
+  `asyncio.to_thread`. It projects only `session_meta` identity fields and
+  `token_count` quota rows; transcript messages and local paths are not
+  retained. The normalizer accepts only the observed CLI 0.164.0 metadata and
+  `rate_limits` shapes, validates matching session/thread IDs and provider plus
+  account/user identity, requires both 300-minute and 10080-minute windows, and
+  maps their numeric usage and reset hints. It rejects malformed, incomplete,
+  stale, future-dated, out-of-order, or unsupported records as unknown. A
+  60-second positive age limit is configurable on the reader. Per-reader
+  ordering retains the latest producer timestamp globally and the latest ordinal
+  per sanitized source coordinate, so a delayed older snapshot becomes unknown.
+  The domain-separated scope helper hashes provider, account, and user identity
+  without logging or persisting raw identifiers; observations remain unscoped
+  unless their derived identity matches a caller-supplied expected binding
+  scope. The current Codex binding still supplies no scope.
+- Active quota polling builds one fixed Luna/`none` supervised request with a
+  caller-staged nonempty instruction path, minimal argv prompt, JSONL output,
+  read-only empty cwd, and the available explicit CLI feature/config disables.
+  It ignores user config and does not use `--ephemeral`, because the rollout is
+  needed for telemetry. The CLI has no verified global MCP-server clear, and
+  the maintainer accepted the CLI 0.164.0 tool/context limitation: those
+  controls do not prove that the outer `functions.exec` wrapper or injected
+  context is absent. See [quota-capture](quota-capture.md) for the inspection
+  scope and remaining correlation limits. Availability requires a successful
+  probe and complete scoped windows whose producer timestamp falls within that
+  probe; unknown telemetry cannot resume dispatch. The reader invokes the
+  existing `AttemptCall` once with the exact request and stop callback and
+  retains the process outcome, captured output, and normalized observation in
+  `QuotaProbeEvidence`. If cancellation or another exception escapes after
+  dispatch, the adapter attaches available probe evidence to that same exception
+  and re-raises it. This adapter implementation does not wire the CLI
+  composition root or coordinator, issue live probes, or authorize resumption.
+  The generic `quota_probe_evidence` accessor matches by the exact original
+  request object, so a coordinator must retain that object; no match means
+  incomplete evidence.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
 - The adapter package exports `SystemRuntime` and the typed Codex binding,
@@ -598,8 +607,9 @@ Codex, quota, and runtime adapters.
   The CLI composition root and progress adapter remain design stubs. The
   coordinator now has typed per-run effect wiring around explicit pending
   dispatch selection, conversion, probe scheduling and assessment, and
-  accounting leaves. The quota reader has typed wiring around its own explicit
-  pending leaves.
+  accounting leaves. The quota adapter implements its bounded source,
+  normalization, polling request, and assessment behavior, but is not yet wired
+  into CLI composition or coordinator dispatch.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
@@ -803,10 +813,9 @@ second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
 AC-9 progress behavior remains design-only; pure runner policy calculations,
 accepted shared runner configuration, and consumer-owned runtime ports are
-implemented. The
-shared base preserves flat attempt fields while permitting probes to reuse the
-process projection. `plan.pyi` remains a historical planner reference. The
-active implementations are
+implemented. The shared base preserves flat attempt fields while permitting
+probes to reuse the process projection. `plan.pyi` remains a historical
+planner reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
@@ -815,9 +824,10 @@ storage/projection are implemented. CLI integration, dispatch, and the remaining
 harness behavior are planned. Do not add a parallel runtime model or change
 supervisor types. Private helpers and concrete persistence formats remain
 flexible; supervisor outcomes and requests continue to use the existing public
-types. Concrete recognition and quota-source behavior must wait until their
-machine-readable sources are verified. The quota adapter currently contains
-only typed wiring around explicit pending leaves.
+types. Codex quota recognition is implemented against the reviewed CLI 0.164.0
+rollout shape with runtime identity, completeness, and freshness checks; later
+CLI schemas require separate review. The quota binding still does not supply an
+expected identity scope, so the CLI cannot yet enable scoped quota availability.
 
 | Proposed module | Responsibility |
 | --- | --- |
@@ -832,7 +842,7 @@ only typed wiring around explicit pending leaves.
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |
 | `script/eval/runner/adapters/codex.py` | CLI binding, fresh evaluation request construction, and conservative settled-output classification. |
-| `script/eval/runner/adapters/codex_quota.py` | Typed passive and active quota-reader wiring; source lookup, normalization, probe recipe, and assessment remain explicit unimplemented leaves. |
+| `script/eval/runner/adapters/codex_quota.py` | Version-bounded Codex session source, quota normalization and ordering, and supervised probe request/evidence adapter. |
 | `script/eval/runner/adapters/progress.py` | Silent and stderr terminal implementations of the consumer-owned progress sink. |
 | `script/eval/runner/adapters/runtime.py` | Implemented standard-library UTC/monotonic clocks, async sleep, and random sampling. |
 | `script/eval/runner/adapters/__init__.py` | Exports implemented adapters available for composition. |

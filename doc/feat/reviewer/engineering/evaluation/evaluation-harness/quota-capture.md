@@ -101,8 +101,12 @@ Its static candidate render retained `functions.exec`, `functions.wait`, nested
 MCP resource and patch declarations, and injected permission and environment
 context despite the requested disable controls. This is a known limitation of
 the requested probe condition, not a tool-free guarantee or verification of the
-authenticated runtime input. Further wrapper removal is not a prerequisite;
-validation must still record the effective restrictions and remaining context.
+authenticated runtime input. The adapter ignores user config, uses an empty
+working directory, and requests the available plugin and tool disables. No
+verified global override clears configured MCP servers, so the adapter does not
+claim that every MCP server is disabled. Further wrapper removal is not a
+prerequisite; validation must still record the effective restrictions and
+remaining context.
 
 The poller must positively confirm fresh availability for the evaluation's quota
 scope before restarting eligible evaluation attempts; Luna availability does not
@@ -110,3 +114,43 @@ establish capacity for another model. Numeric session reset hints support
 scheduling, while rereading old telemetry cannot establish availability. The
 [quota-monitoring contract](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run)
 owns polling, budgets, cleanup, evidence, and failure requirements.
+
+## Targeted rollout schema verification
+
+On 27 October 2026, the maintainer inspected only the exact rollout path named
+in the supplied session excerpt. The inspection retained field names, JSON
+types, and equality checks; it did not expose account/user identifier values,
+messages, or base instructions. This is version-specific evidence for the
+named Codex CLI 0.164.0 file, not a universal schema guarantee.
+
+- Its `session_meta` envelope has `type`, `timestamp`, `ordinal`, and `payload`;
+  the payload includes string fields `id`, `session_id`, `model_provider`,
+  `cli_version`, `creator_account_id`, and `creator_user_id` among other fields.
+- In that file, `id` and `session_id` match each other and the rollout filename
+  suffix. The file is the separate interactive status session described above;
+  it contains no `thread.started` event and does not prove the exec thread ID
+  maps to that rollout ID. The maintainer's cross-session correlation remains
+  a reported behavior, not an official guarantee.
+- One `event_msg` with `payload.type=token_count` has a string timestamp,
+  integer ordinal, and `payload.rate_limits`. That object includes `limit_id`,
+  `primary`, `secondary`, `credits`, `individual_limit`,
+  `spend_control_reached`, and `rate_limit_reached_type`; the primary and
+  secondary window records include `used_percent`, `window_minutes`, and
+  `resets_at`.
+
+The adapter supports only the observed 0.164.0 shape and checks the requested
+thread UUID against the candidate filename, `session_meta.id`, and
+`session_meta.session_id` before accepting telemetry. It searches only for
+that exact filename suffix under the explicitly configured sessions root; no
+other rollout contents are opened. The selected rollout must fit the adapter's
+128 MiB total and 8 MiB per-line read bounds. Ambiguous, missing, changing,
+malformed, truncated, mismatched, stale, future-dated, or unsupported records
+yield unknown observations. Only selected identity and quota fields enter the
+in-memory adapter snapshot; transcript messages and local paths are not
+retained. Account and user values are reduced to a domain-separated SHA-256
+allowance identifier and are not logged or persisted.
+
+The current `CodexCliBindingResolver` still supplies no quota scope. Until a
+caller pairs the source-derived opaque scope with a verified binding scope,
+observations remain unscoped and cannot establish availability. A future CLI
+version requires separate schema review before it can be accepted.
