@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Historical coordinator type sketch; runtime code is authoritative.
 
-The active API is ``script.eval.runner.coordinator.Coordinator``. This sketch
-records reviewed intent only and does not define the current signature.
+Superseded historical sketch; the proposed package in ``coordinator/`` is
+the current exploratory view. The runtime skeleton remains authoritative for
+implemented behavior. This file does not define the current signature.
 """
 
 from dataclasses import dataclass
@@ -20,7 +21,7 @@ from .ports import (
 
 @dataclass(frozen=True)
 class Coordinator:
-    """Dispatch calls and own the optional lifecycle-managed quota monitor."""
+    """Record the superseded coordinator proposal."""
 
     attempt: AttemptCall
     classifier: OutcomeClassifier
