@@ -10,9 +10,13 @@ orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
-Codex invocation leaves are implemented. CLI integration and dispatch remain
-planned. Shared consumer-owned runner ports and accepted runtime configuration
-are implemented in
+Codex invocation leaves are implemented. The coordinator has typed lifecycle
+wiring for an injected scheduler, one optional monitor task, returned-attempt
+classification and evidence ordering, and finalization. Its scheduler,
+supervisor-evidence conversion, quota cadence, and scheduler accounting remain
+unimplemented; CLI integration and full dispatch remain planned. Shared
+consumer-owned runner ports and accepted runtime configuration are implemented
+in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -286,9 +290,18 @@ supervisor request.
 **TL;DR:** `runner.coordinator` runs independent calls concurrently while
 gating retries and stopping globally on unsafe outcomes.
 
-- The coordinator schedules calls in plan order under one concurrency limit.
-  Distinct planned calls may execute concurrently; completion order does not
-  change their identity or evidence association.
+- The intended coordinator schedules calls in plan order under one concurrency
+  limit. Distinct planned calls may execute concurrently; completion order does
+  not change their identity or evidence association.
+- **Current maturity:** the runtime coordinator composes a typed scheduler
+  callback, creates and joins one opt-in monitor task, and wires a returned
+  attempt through classification, durable attempt recording, and optional
+  passive quota telemetry. The scheduler, supervisor-outcome conversion, monitor
+  cadence/probe lifecycle, retry and wait decisions, transition accounting, and
+  progress projection remain pending leaves. The scheduler must return its run
+  record after all work settles; the coordinator then finalizes it. The current
+  wiring does not establish dispatch gates, concurrency, retries, pause/resume,
+  probe behavior, complete shutdown, or truthful final accounting.
 - Progress is a projection of the frozen plan and coordinator lifecycle, not a
   second accounting ledger. Disjoint call, attempt, and probe totals and the
   definition of remaining work are specified under
@@ -454,10 +467,11 @@ gating retries and stopping globally on unsafe outcomes.
 Codex, quota, and runtime adapters.
 
 - `runner.__init__` re-exports the package's consumer-facing runner API.
-- `runner.coordinator` owns task scheduling, semaphore lifetime, dispatch
-  stop-latching, cleanup sequencing, wait-event persistence, and not-started
-  accounting. It depends on consumer ports and pure policy functions, not on
-  concrete adapters.
+- `runner.coordinator` is being wired around consumer ports and pure policy
+  functions, not concrete adapters. Current code owns the optional monitor
+  task's cancellation/join lifecycle and returned-attempt effect ordering;
+  scheduling, semaphore lifetime, stop gates, retries, waits, and not-started
+  accounting remain pending.
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
   bounds, cumulative quota-wait limits, probe authorization, and reset-hint
@@ -470,9 +484,10 @@ Codex, quota, and runtime adapters.
   port exposes separate settled-attempt ingestion and supervised-poll calls.
 - `runner.ports` also owns the immutable `ProgressSnapshot`, disjoint
   `ProgressCounts`, per-call retry-wait views, and the synchronous
-  `ProgressSink` port. The coordinator derives queued, active, retry-wait,
-  stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
-  counts from its live call states; attempt and probe counters remain separate.
+  `ProgressSink` port. The intended coordinator derives queued, active,
+  retry-wait, stopped-not-started, evidence-pending, succeeded, failed, and
+  cancelled call counts from its live call states; attempt and probe counters
+  remain separate. Runtime progress projection is still pending.
   A queued call is runnable but not dispatched. A stopped-not-started call is
   unexecuted and cannot resume after the final report. Evidence-pending means a
   result is known in memory but its required durable write failed, so the
@@ -579,8 +594,10 @@ Codex, quota, and runtime adapters.
   unsupported because the supplied captures do not establish reliable structured
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
-  The CLI composition root, coordinator, and progress adapter remain design
-  stubs; the quota reader has typed wiring around explicit pending leaves.
+  The CLI composition root and progress adapter remain design stubs. The
+  coordinator now has typed run and returned-attempt wiring around explicit
+  pending scheduling, conversion, monitor, and accounting leaves. The quota
+  reader has typed wiring around its own explicit pending leaves.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
@@ -737,8 +754,9 @@ flowchart LR
 ```
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
-freezer, pure planner, and token-estimation wiring are implemented; CLI
-integration, dispatch, and persistence remain planned.
+freezer, pure planner, and token-estimation wiring are implemented. Coordinator
+run and returned-attempt composition are partially wired; CLI integration and
+full dispatch remain planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -807,7 +825,7 @@ only typed wiring around explicit pending leaves.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator.py` | Async call scheduling, quota monitor lifecycle, concurrency, stop gates, cleanup ordering, and attempt accounting. |
+| `script/eval/runner/coordinator.py` | Typed run and returned-attempt composition; scheduler, monitor cadence, dispatch gates, progress, and accounting remain pending. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |
