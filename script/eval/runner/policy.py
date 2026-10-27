@@ -6,6 +6,9 @@ still owns cleanup, cancellation, overflow, uncertain acquisition, evidence
 publication, and dispatch ordering.
 """
 
+from datetime import datetime
+from math import frexp, ldexp
+
 from script.eval.model import HarnessConfig, RetryAssessment
 
 
@@ -15,7 +18,7 @@ def confident_no_result(assessment: RetryAssessment, /) -> bool:
     ``present_or_unknown`` refuses retry eligibility. This does not establish
     safe cleanup or successful evidence persistence.
     """
-    raise NotImplementedError("confident_no_result policy is pending")
+    return assessment.no_result_basis == "confident_absence"
 
 
 def infrastructure_retry_allowed(
@@ -30,8 +33,15 @@ def infrastructure_retry_allowed(
     absence, and an unspent ``retry_limit``. The coordinator retains cleanup,
     cancellation, overflow, evidence-publication, and caller-budget gates. The
     default limit is zero, so a fresh configuration allows no retry.
+
+    Returns:
+        Whether this category's retry allowance remains unspent.
     """
-    raise NotImplementedError("infrastructure_retry_allowed policy is pending")
+    return (
+        assessment.retry_class == "infrastructure"
+        and confident_no_result(assessment)
+        and retries_used < config.retry_limit
+    )
 
 
 def capacity_retry_allowed(
@@ -46,8 +56,15 @@ def capacity_retry_allowed(
     and an unspent ``capacity_retry_limit``, independently from infrastructure
     retries. The coordinator retains cleanup, cancellation, overflow,
     evidence-publication, and caller-budget gates.
+
+    Returns:
+        Whether this category's retry allowance remains unspent.
     """
-    raise NotImplementedError("capacity_retry_allowed policy is pending")
+    return (
+        assessment.retry_class == "capacity"
+        and confident_no_result(assessment)
+        and retries_used < config.capacity_retry_limit
+    )
 
 
 def capacity_jitter_bound(
@@ -58,7 +75,16 @@ def capacity_jitter_bound(
     For zero-based ``retry_index``, the bound is ``min(cap, base * 2**index)``.
     Saturation must happen before an exponential can overflow.
     """
-    raise NotImplementedError("capacity_jitter_bound policy is pending")
+    # ``frexp`` gives base = mantissa * 2**exponent. Check the exponent first
+    # so even enormous retry indices saturate without constructing 2**index.
+    exponent = frexp(base_seconds)[1] + retry_index
+    if exponent > 1024:
+        return cap_seconds
+    try:
+        bound = ldexp(base_seconds, retry_index)
+    except OverflowError:
+        return cap_seconds
+    return min(cap_seconds, bound)
 
 
 def quota_wait_remaining(
@@ -69,7 +95,14 @@ def quota_wait_remaining(
     Disabled or exhausted waiting returns zero. An absent configured duration
     means unbounded waiting; it does not imply a reset estimate.
     """
-    raise NotImplementedError("quota_wait_remaining policy is pending")
+    if not config.quota_wait_enabled:
+        return 0.0
+    limit = config.quota_wait_limit_seconds
+    if limit is None:
+        return None
+    if cumulative_wait_seconds >= limit:
+        return 0.0
+    return limit - cumulative_wait_seconds
 
 
 def quota_probe_allowed(config: HarnessConfig, probes_used: int, /) -> bool:
@@ -77,8 +110,13 @@ def quota_probe_allowed(config: HarnessConfig, probes_used: int, /) -> bool:
 
     An absent cap adds no harness count limit; caller operational budgets still
     apply. A configured zero cap refuses every probe.
+
+    Returns:
+        Whether a quota probe is authorized by the configured policy.
     """
-    raise NotImplementedError("quota_probe_allowed policy is pending")
+    return config.quota_wait_enabled and (
+        config.quota_probe_budget is None or probes_used < config.quota_probe_budget
+    )
 
 
 def quota_poll_delay(
@@ -95,5 +133,15 @@ def quota_poll_delay(
     valid timezone-aware UTC timestamps from their runtime/provider boundary;
     adapters normalize or refuse malformed source timestamps before this
     function is called.
+
+    Returns:
+        The positive delay until the next check.
     """
-    raise NotImplementedError("quota_poll_delay policy is pending")
+    if reset_hint_utc is None:
+        return interval_seconds
+    now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    hint = datetime.fromisoformat(reset_hint_utc.replace("Z", "+00:00"))
+    seconds_until_hint = (hint - now).total_seconds()
+    if seconds_until_hint <= 0:
+        return interval_seconds
+    return min(interval_seconds, seconds_until_hint)
