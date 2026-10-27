@@ -86,16 +86,24 @@ with known lifecycle bugs, not a validated alternative.
 - The quota adapter owns scope, source ordering, completeness, and freshness.
 - The core neither parses CLI JSONL nor interprets answers.
 - The cumulative wait bound includes persistence and probe time across pauses.
-- The coordinator rereads monotonic time after the awaited probe-start write and
-  immediately before polling.
-- An expired bound forbids a paid probe even if a start event was already
+- The coordinator rereads monotonic time after the awaited probe-preparation
+  write and immediately before polling.
+- An expired bound forbids a paid probe even if preparation was already
   durable.
 - Probe caps count actual dispatches, and a pre-dispatch end retains its
   truthful lifecycle evidence.
-- The existing `QuotaProbeStarted` describes actual dispatch, so a durable
-  pre-dispatch start followed by bound expiry must not claim a process.
-- The event representation needs review before implementation and cannot spend
-  probe budget without an actual dispatch.
+- The proposed `ProbePrepared` input journals intent before the final gate.
+- If the bound, stop, or cancellation wins after preparation, a
+  `ProbeNotDispatched` event closes it without a process record or probe charge.
+- `ProbeDispatched` represents an actual poll invocation and increments the
+  probe count only when the reader is invoked.
+- Its journal write is retained and settled alongside the invoked probe before
+  any result is reported or recovery resumes.
+- The existing runtime `QuotaProbeStarted` describes actual dispatch but is
+  currently written before polling; future wiring replaces that input with
+  preparation and dispatch events and adds the not-dispatched closure.
+- Existing scheduled and settled probe records remain separate from these
+  proposed inputs; this sketch changes no runtime schema or Work contract.
 - A timeout that translates cancellation into `TimeoutError` preserves
   exact-request probe evidence from its exception chain.
 - That evidence includes process, output, and cleanup observations and is
