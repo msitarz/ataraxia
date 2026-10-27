@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Concrete planned adapters for the runner's consumer-owned ports."""
+"""Historical export sketch.
+
+The runtime adapter package is authoritative.
+"""
 
 from .codex import (
     CodexAttemptRequestBuilder,
