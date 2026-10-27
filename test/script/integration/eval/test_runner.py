@@ -301,7 +301,7 @@ def test_quota_wait_and_capacity_retry_are_disabled_by_default() -> None:
     reason="not implemented: AC-6 default-off and dry-run avoid quota source effects",
 )
 def test_default_off_and_dry_run_do_not_probe_or_read_session_telemetry() -> None:
-    """Keep optional quota monitoring free of implicit external reads."""
+    """Keep optional quota recovery free of implicit external reads."""
     # Given
     # A normal run with omitted quota options, plus a dry-run plan.
 
@@ -316,17 +316,17 @@ def test_default_off_and_dry_run_do_not_probe_or_read_session_telemetry() -> Non
 @pytest.mark.xfail(
     run=False,
     strict=True,
-    reason="not implemented: AC-6 active quota monitoring and optional probe cap",
+    reason="not implemented: AC-6 paused quota recovery and optional probe cap",
 )
-def test_quota_probe_budget_authorizes_and_caps_every_active_check() -> None:
-    """Count active probes independently of evaluation retry allowances."""
+def test_quota_probe_budget_authorizes_and_caps_paused_checks() -> None:
+    """Count paused-recovery probes apart from evaluation retry allowances."""
     # Given
     # Quota waiting is explicitly enabled with no count cap, a zero cap, or a
     # positive finite cap; default-off config may omit the cap.
 
     # When
     # Configuration validation accepts or refuses the option combination, then
-    # the periodic monitor reaches its next due check and exhausts the limit.
+    # the awaited recovery flow reaches a due check and exhausts the limit.
 
     # Then
     # Enabled waiting without a count cap remains authorized, zero refuses
@@ -338,23 +338,22 @@ def test_quota_probe_budget_authorizes_and_caps_every_active_check() -> None:
 @pytest.mark.xfail(
     run=False,
     strict=True,
-    reason="not implemented: AC-6 lifecycle-managed periodic checks and reset hints",
+    reason="not implemented: AC-6 paused recovery checks and reset hints",
 )
-def test_quota_monitor_polls_periodically_and_wakes_early_for_a_reset_hint() -> None:
+def test_quota_recovery_polls_during_pause_and_wakes_for_a_reset_hint() -> None:
     """Schedule an earlier check without treating reset time as availability."""
     # Given
-    # A positive poll interval during both active execution and quota pause, a
-    # later periodic deadline, and a fresh future numeric reset hint for the
-    # latest relevant exhausted window.
+    # A positive interval while the run is paused, a later periodic deadline,
+    # and a fresh future numeric reset hint for the latest exhausted window.
 
     # When
-    # The injected clock reaches the hint before the periodic deadline and the
-    # single monitor starts a poll instead of running a second reset timer.
+    # The awaited recovery flow reaches the hint before its periodic deadline
+    # without creating a background poll or second reset timer.
 
     # Then
-    # It checks early but remains paused after continued quota exhaustion, then
-    # rechecks periodically; only fresh positive evidence for the same scope ends
-    # the pause as `quota_available`.
+    # It checks early but remains paused after continued exhaustion, then waits
+    # for its next due check; only fresh positive same-scope evidence ends the
+    # pause as `quota_available`.
     pass
 
 
@@ -383,7 +382,7 @@ def test_fresh_positive_quota_check_ends_pause_before_reset_hint() -> None:
     strict=True,
     reason="not implemented: AC-6 periodic quota checks without a reset hint",
 )
-def test_quota_wait_without_reset_hint_uses_only_periodic_monitor_sleep() -> None:
+def test_quota_wait_without_reset_hint_uses_periodic_recovery_wait() -> None:
     """Support known exhaustion when the source supplies no reset timestamp."""
     # Given
     # A scoped, conclusive exhausted observation with no numeric reset hint.
@@ -409,8 +408,8 @@ def test_known_quota_exhaustion_keeps_polling_until_fresh_availability() -> None
     # observation and eventually a fresh positive observation for the same scope.
 
     # When
-    # Each result settles under its probe ID, then the monitor durably schedules
-    # the next due check without a cadence wait record.
+    # Each result settles under its probe ID, then recovery schedules the next
+    # due check without a cadence wait record.
 
     # Then
     # Exhaustion leaves the run paused and schedules the next check without
@@ -469,11 +468,11 @@ def test_settled_attempt_session_telemetry_is_passive_and_separately_recorded() 
 def test_probe_is_single_flight_and_not_an_experiment_measurement() -> None:
     """Keep quota checks distinct from the evaluation call matrix."""
     # Given
-    # Active evaluation calls using all configured semaphore slots while one
-    # periodic quota check becomes due.
+    # A paused run while its next periodic quota check becomes due.
 
     # When
-    # The monitor begins its separately supervised check and another tick occurs.
+    # The coordinator begins its separately supervised check and remains in the
+    # directly awaited recovery flow until that probe settles.
 
     # Then
     # At most one probe is in flight, it holds no evaluation slot, receives its
@@ -488,41 +487,38 @@ def test_probe_is_single_flight_and_not_an_experiment_measurement() -> None:
     strict=True,
     reason="not implemented: AC-6 exhaustion settles active calls before new probes",
 )
-def test_quota_exhaustion_settles_calls_before_starting_another_probe() -> None:
-    """Preserve the settlement barrier while allowing an existing probe to finish."""
+def test_quota_exhaustion_settles_calls_before_awaiting_recovery() -> None:
+    """Preserve the settlement barrier before the recovery flow starts."""
     # Given
-    # A quota failure, active evaluation calls, and either no probe or an already
-    # running supervised probe.
+    # A quota failure and other active evaluation calls, with no probe underway.
 
     # When
     # The coordinator globally pauses dispatch on quota exhaustion.
 
     # Then
-    # It durably records active call evidence before a new probe starts. The
-    # start event captures the pause ID current after that barrier; an older
-    # already-running probe settles and persists under supervision but cannot
-    # reopen the pause.
+    # It durably records every active call before preparing and starting the
+    # first probe. The start event captures the pause ID current after the
+    # barrier.
     pass
 
 
 @pytest.mark.xfail(
     run=False,
     strict=True,
-    reason="not implemented: AC-6 in-flight pre-pause probes cannot resume",
+    reason="not implemented: AC-6 only the current pause's probe may resume",
 )
-def test_pre_pause_available_probe_cannot_reopen_new_quota_pause() -> None:
+def test_prior_pause_probe_cannot_reopen_a_new_quota_pause() -> None:
     """Require a confirming probe to belong to the current pause generation."""
     # Given
-    # An active-period probe already in flight when an evaluation reports
-    # conclusive quota exhaustion and settles its evidence.
+    # An earlier pause's available probe is settled, then a later evaluation
+    # reports quota exhaustion and durably settles its evidence.
 
     # When
-    # That older probe later returns positive availability, then a new probe
-    # starts after the active-evaluation settlement barrier.
+    # Recovery starts a probe associated with the new pause.
 
     # Then
-    # The older probe is persisted but cannot reopen the pause; only the fresh
-    # probe associated with the current quota wait ID may end it as
+    # The old observation cannot reopen the new pause; only fresh evidence from
+    # the probe associated with the current wait ID may end it as
     # `quota_available`.
     pass
 
@@ -540,7 +536,7 @@ def test_unknown_probe_or_probe_event_write_failure_stops_before_resumption() ->
     # window, or a failure appending its start or settled event.
 
     # When
-    # The monitor receives the result while calls are paused or ready to dispatch.
+    # The awaited recovery flow receives the result while calls remain paused.
 
     # Then
     # It latches stop, marks the run incomplete, preserves captured probe and
@@ -581,7 +577,7 @@ def test_probe_scope_must_match_cli_binding_and_passive_session_scope() -> None:
     # configured with either the same or a different provider/allowance scope.
 
     # When
-    # The monitor reconciles passive and active observations for a paused run.
+    # The recovery flow reconciles passive and active observations while paused.
 
     # Then
     # Only same-scope fresh positive evidence can reopen dispatch; mismatched or
@@ -592,19 +588,19 @@ def test_probe_scope_must_match_cli_binding_and_passive_session_scope() -> None:
 @pytest.mark.xfail(
     run=False,
     strict=True,
-    reason="not implemented: AC-6 active probes settle and monitor joins on every exit",
+    reason="not implemented: AC-6 awaited recovery settles on every exit",
 )
-def test_monitor_joins_after_probe_settlement_on_every_exit() -> None:
-    """Prevent a background monitor or child probe from outliving the run."""
+def test_awaited_recovery_probe_settles_on_every_exit() -> None:
+    """Settle the directly awaited probe before run control returns."""
     # Given
-    # A monitor with a scheduled check or an in-flight supervised probe.
+    # A paused recovery flow with a scheduled check or active supervised probe.
 
     # When
     # The run completes normally or cancellation/latched stop arrives.
 
     # Then
-    # No new probe launches, active probe cleanup is awaited and persisted within
-    # bounds, and the monitor task is joined before final run evidence is written.
+    # No later probe launches, active probe cleanup is awaited and persisted
+    # within bounds, and no quota task remains after run finalization.
     pass
 
 
@@ -695,7 +691,7 @@ def test_quota_wait_bound_accumulates_and_requires_complete_codex_windows() -> N
     # emits both required windows as generic window records and marks missing or
     # malformed window data unknown/unavailable; only complete, conclusive
     # observations with matching scope establish exhaustion. A missing reset is
-    # retained as no scheduling hint, so the monitor uses periodic checks without
+    # retained as no scheduling hint, so recovery uses periodic checks without
     # guessing a timestamp. Unknown windows or scope fail closed. Generic policy
     # does not interpret Codex window IDs.
     pass

@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Own async scheduling, attempt lifecycle gates, cancellation, and accounting."""
+"""Historical coordinator type sketch; runtime code is authoritative.
+
+The active API is ``script.eval.runner.coordinator.Coordinator``. This sketch
+records reviewed intent only and does not define the current signature.
+"""
 
 from dataclasses import dataclass
 

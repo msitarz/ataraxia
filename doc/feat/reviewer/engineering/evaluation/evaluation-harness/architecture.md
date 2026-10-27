@@ -10,9 +10,14 @@ orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
-Codex invocation leaves are implemented. CLI integration and dispatch remain
-planned. Shared consumer-owned runner ports and accepted runtime configuration
-are implemented in
+Codex invocation leaves are implemented. The coordinator is bound to one run
+and evidence store; it owns a typed dispatch-decision loop, attempt evidence
+ordering, and a directly awaited quota-recovery seam. Dispatch selection,
+supervisor-evidence conversion, probe cadence and recovery assessment, retry
+policy, and scheduler accounting remain unimplemented; CLI integration and
+full dispatch remain planned. Shared
+consumer-owned runner ports and accepted runtime configuration are implemented
+in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -286,9 +291,21 @@ supervisor request.
 **TL;DR:** `runner.coordinator` runs independent calls concurrently while
 gating retries and stopping globally on unsafe outcomes.
 
-- The coordinator schedules calls in plan order under one concurrency limit.
-  Distinct planned calls may execute concurrently; completion order does not
-  change their identity or evidence association.
+- The intended coordinator schedules calls in plan order under one concurrency
+  limit. Distinct planned calls may execute concurrently; completion order does
+  not change their identity or evidence association.
+- **Current maturity:** one runtime coordinator is constructed for one bound
+  run and its evidence store; its configuration comes from the frozen plan.
+  It owns a typed dispatch-decision loop, wires attempts through classification,
+  durable attempt recording, and optional passive quota telemetry, and directly
+  awaits recovery only after a quota-pause decision. Returned probe evidence is
+  persisted before the recovery-decision leaf can resume dispatch; attached
+  evidence is persisted before an escaped probe failure is re-raised. Dispatch
+  selection, supervisor-outcome conversion, probe request cadence and recovery
+  assessment, retry and wait decisions, transition accounting, and progress
+  projection remain pending leaves. This stage does not establish concurrency,
+  retries, pause policy, probe scheduling or assessment, complete shutdown, or
+  truthful final accounting.
 - Progress is a projection of the frozen plan and coordinator lifecycle, not a
   second accounting ledger. Disjoint call, attempt, and probe totals and the
   definition of remaining work are specified under
@@ -342,24 +359,18 @@ gating retries and stopping globally on unsafe outcomes.
   scope. That is not the current AC-6 behavior: the single Codex binding keeps
   the pause global, and this design adds no provider registry or CLI provider
   selection.
-- With quota waiting enabled, the coordinator owns one lifecycle-managed async
-  polling task. A finite positive interval controls periodic checks; an earlier
-  numeric hint from the latest relevant exhausted-window reset may schedule a
-  check sooner, but never authorizes dispatch. Missing, stale, or past hints
+- With quota waiting enabled, the coordinator directly awaits recovery only
+  after a recognized exhaustion decision pauses dispatch and active attempts
+  have settled with durable evidence. A finite positive interval controls
+  periodic checks during that pause; an earlier numeric reset hint may schedule
+  a check sooner, but never authorizes dispatch. Missing, stale, or past hints
   fall back to the interval. Enabling quota waiting explicitly authorizes
   checks; an absent count cap adds no harness probe-count limit, a positive cap
   is enforced, and zero refuses probe dispatch. Default-off execution and dry
-  run perform neither probes nor session reads. One monitor task owns one
-  sleep/check cycle at a time: hints shorten the next cycle instead of creating
-  a parallel reset timer. The monitor runs during active and paused periods,
-  allows one probe in flight, and uses no evaluation semaphore slot. Quota
-  exhaustion first pauses dispatch whether first observed in an evaluation or
-  poll, then settles active attempts; no new probe starts until their evidence
-  is durable, while an already-running supervised probe must settle. Each pause
-  has a stable wait ID captured by probes started to confirm it. A probe started
-  before that pause, including an active-period probe, may settle and persist
-  but cannot reopen the newer pause; completion time or a later source read does
-  not make its result eligible.
+  run perform neither probes nor session reads. There is no background monitor
+  or active-period probe; at most one recovery probe is in flight. A probe
+  started for an earlier pause cannot reopen a later pause. Resume requires a
+  fresh positive observation for the current pause and matching scope.
 - The consumer-owned quota port separates passive settled-attempt ingestion
   from active polling. Passive ingestion returns an observation; `poll` performs
   one separate supervised invocation. The Codex adapter privately correlates
@@ -382,8 +393,8 @@ gating retries and stopping globally on unsafe outcomes.
   before its due time. Passive observation of settled attempt evidence may
   continue during cadence waits. A started event is written immediately before
   actual dispatch and captures the then-current pause ID. When quota is paused,
-  active evaluations settle and persist before a new probe starts; active-period
-  probes may run while evaluation calls are active. A prelaunch
+  active evaluations settle and persist before a new probe starts. Probes only
+  run inside the awaited recovery flow for the current pause. A prelaunch
   cancellation records its end cause and actual monotonic wait duration, creates
   no process record, and consumes no probe budget. A launched probe that is
   cancelled settles with its supervised process outcome. The settled record
@@ -401,8 +412,11 @@ gating retries and stopping globally on unsafe outcomes.
   observation is a normal paused result and schedules another cadence check.
   Unknown or unavailable data, infrastructure failure, output overflow, evidence
   failure, unsafe cleanup, or uncertain acquisition latches stop. Cancellation
-  and normal completion both cancel/join the monitor after any in-flight probe
-  safely settles and persists.
+  propagates through the awaited probe; attached probe evidence is persisted
+  before the original cancellation or failure is re-raised. Current typed
+  wiring persists the started event immediately before polling and settlement
+  afterward; schedule and prelaunch-cancellation event synthesis remains
+  pending.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await and
   sample through the injected `Runtime` port. Release the attempt slot
@@ -454,10 +468,11 @@ gating retries and stopping globally on unsafe outcomes.
 Codex, quota, and runtime adapters.
 
 - `runner.__init__` re-exports the package's consumer-facing runner API.
-- `runner.coordinator` owns task scheduling, semaphore lifetime, dispatch
-  stop-latching, cleanup sequencing, wait-event persistence, and not-started
-  accounting. It depends on consumer ports and pure policy functions, not on
-  concrete adapters.
+- `runner.coordinator` is wired around consumer ports and pure policy functions,
+  not concrete adapters. Current code owns one dispatch-decision loop, returned
+  attempt ordering, and direct awaited quota recovery. Dispatch selection,
+  probe scheduling and assessment, retries, waits, progress, and not-started
+  accounting remain pending.
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
   bounds, cumulative quota-wait limits, probe authorization, and reset-hint
@@ -470,9 +485,10 @@ Codex, quota, and runtime adapters.
   port exposes separate settled-attempt ingestion and supervised-poll calls.
 - `runner.ports` also owns the immutable `ProgressSnapshot`, disjoint
   `ProgressCounts`, per-call retry-wait views, and the synchronous
-  `ProgressSink` port. The coordinator derives queued, active, retry-wait,
-  stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
-  counts from its live call states; attempt and probe counters remain separate.
+  `ProgressSink` port. The intended coordinator derives queued, active,
+  retry-wait, stopped-not-started, evidence-pending, succeeded, failed, and
+  cancelled call counts from its live call states; attempt and probe counters
+  remain separate. Runtime progress projection is still pending.
   A queued call is runnable but not dispatched. A stopped-not-started call is
   unexecuted and cannot resume after the final report. Evidence-pending means a
   result is known in memory but its required durable write failed, so the
@@ -579,8 +595,11 @@ Codex, quota, and runtime adapters.
   unsupported because the supplied captures do not establish reliable structured
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
-  The CLI composition root, coordinator, and progress adapter remain design
-  stubs; the quota reader has typed wiring around explicit pending leaves.
+  The CLI composition root and progress adapter remain design stubs. The
+  coordinator now has typed per-run effect wiring around explicit pending
+  dispatch selection, conversion, probe scheduling and assessment, and
+  accounting leaves. The quota reader has typed wiring around its own explicit
+  pending leaves.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
@@ -673,12 +692,12 @@ evidence.
   or when no hint exists, but only from a probe started for the current pause
   after active evaluations settle. Reaching a reset hint makes the scheduled
   check due sooner; it never ends the pause or reopens dispatch. Without a
-  hint, checks become due at the configured interval. The single monitor task
-  owns all these sleeps, so the coordinator does not run a
-  second reset timer alongside polling. Unknown or unavailable data fails
-  closed; a bound, cancellation, or stop can end the pause without resumption.
-  `delay_elapsed` is the normal end of capacity backoff; quota-monitor cadence
-  is captured as scheduled and started probe lifecycle evidence.
+  hint, checks become due at the configured interval. The awaited recovery flow
+  owns these waits; the coordinator does not run a second reset timer alongside
+  polling. Unknown or unavailable data fails closed; a bound, cancellation, or
+  stop can end the pause without resumption. `delay_elapsed` is the normal end
+  of capacity backoff; quota cadence is captured as scheduled and started probe
+  lifecycle evidence.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.
@@ -737,8 +756,9 @@ flowchart LR
 ```
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
-freezer, pure planner, and token-estimation wiring are implemented; CLI
-integration, dispatch, and persistence remain planned.
+freezer, pure planner, and token-estimation wiring are implemented. Coordinator
+run and returned-attempt composition are partially wired; CLI integration and
+full dispatch remain planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -807,7 +827,7 @@ only typed wiring around explicit pending leaves.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator.py` | Async call scheduling, quota monitor lifecycle, concurrency, stop gates, cleanup ordering, and attempt accounting. |
+| `script/eval/runner/coordinator.py` | Typed per-run dispatch and paused-recovery effects; decision, cadence, retry, progress, and accounting policy remain pending. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |
