@@ -527,13 +527,14 @@ Codex, quota, and runtime adapters.
   assumed; until prerequisites are verified, the adapter returns unknown and
   cannot resume work. Persisted source coordinates are sanitized and contain no
   account PII.
-- `runner.adapters.runtime` supplies UTC and monotonic clocks, cancellable
-  `asyncio` waits, and uniform jitter sampling through the runtime port.
-- The adapter package exports these planned adapters. The CLI composition root
-  wires the Codex request and classifier adapters and one quota adapter
+- `runner.adapters.runtime` implements the runtime port with UTC and monotonic
+  clocks, cancellable `asyncio` waits, and uniform jitter sampling.
+- The adapter package currently exports the implemented `SystemRuntime`; other
+  concrete adapter exports await their implementations. The CLI composition
+  root wires the Codex request and classifier adapters and one quota adapter
   configured for the same binding scope, along with the runtime and supervisor
-  adapter, into one coordinator. The coordinator, adapters, and CLI composition
-  remain design stubs. Runtime
+  adapter, into one coordinator. The coordinator, Codex, quota, and progress
+  adapters and CLI composition remain design stubs. Runtime
   [`policy.py`](../../../../../../script/eval/runner/policy.py) implements the
   reviewed pure policy calculations; it does not own effects or coordinator
   gates. The shared runner values and ports are implemented. The neighboring
@@ -765,8 +766,8 @@ machine-readable sources are verified.
 | `script/eval/runner/adapters/codex.py` | CLI binding, fresh evaluation request construction, and conservative settled-output classification. |
 | `script/eval/runner/adapters/codex_quota.py` | Passive session ingestion and separately supervised Codex probes, mapped to generic scoped windows; source and identity remain unverified. |
 | `script/eval/runner/adapters/progress.py` | Silent and stderr terminal implementations of the consumer-owned progress sink. |
-| `script/eval/runner/adapters/runtime.py` | Standard-library UTC/monotonic clocks, async sleep, and random sampling. |
-| `script/eval/runner/adapters/__init__.py` | Concrete planned adapters exported for composition. |
+| `script/eval/runner/adapters/runtime.py` | Implemented standard-library UTC/monotonic clocks, async sleep, and random sampling. |
+| `script/eval/runner/adapters/__init__.py` | Exports implemented adapters available for composition. |
 | `script/eval/evidence.py` | Exclusive output creation and immutable artifact persistence port. |
 | `script/eval/__main__.py` | Thin entry point delegating to the CLI composition. |
 

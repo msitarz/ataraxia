@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Standard-library clock, async wait, and randomness adapter."""
+"""Historical signature sketch.
+
+The runtime module is authoritative.
+"""
 
 from ..ports import Runtime  # ruff: ignore[relative-imports]
 
