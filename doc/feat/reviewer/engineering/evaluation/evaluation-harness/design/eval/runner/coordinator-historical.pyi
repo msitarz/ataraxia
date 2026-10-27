@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical coordinator type sketch; runtime code is authoritative.
+"""Historical coordinator sketch; its former runtime skeleton was removed.
 
-Superseded historical sketch; the proposed package in ``coordinator/`` is
-the current exploratory view. The runtime skeleton remains authoritative for
-implemented behavior. This file does not define the current signature.
+The replacement remains proposed in ``coordinator/``; no runtime coordinator
+implementation currently exists. This file does not define the current
+signature.
 """
 
 from dataclasses import dataclass
