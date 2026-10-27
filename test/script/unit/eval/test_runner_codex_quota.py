@@ -27,9 +27,9 @@ from script.eval.runner import quota_probe_evidence
 from script.eval.runner.adapters import (
     CodexQuotaSettings,
     CodexQuotaStatusReader,
+    CodexQuotaStatusSource,
+    CodexSessionSnapshot,
     LocalCodexQuotaStatusSource,
-    RawCodexQuotaStatusSource,
-    RawCodexSessionSnapshot,
     codex_quota_scope_from_identity,
 )
 from script.eval.runner.ports import AttemptCall
@@ -51,17 +51,17 @@ from script.process_supervisor import (
 )
 
 
-class RecordingSource(RawCodexQuotaStatusSource):
+class RecordingSource(CodexQuotaStatusSource):
     """Return a single configured snapshot and retain the lookup coordinate."""
 
-    def __init__(self, snapshot: RawCodexSessionSnapshot | None) -> None:
+    def __init__(self, snapshot: CodexSessionSnapshot | None) -> None:
         self.snapshot = snapshot
         self.thread_ids: list[str] = []
         self.events: list[str] = []
 
     async def read_session_for_thread(
         self, thread_id: str, /
-    ) -> RawCodexSessionSnapshot | None:
+    ) -> CodexSessionSnapshot | None:
         self.thread_ids.append(thread_id)
         self.events.append("lookup")
         return self.snapshot
@@ -130,7 +130,7 @@ def make_reader(
     scope: QuotaScope | None,
     extract_thread_id: Callable[[bytes | None], str | None] | None,
     normalize_session: Callable[
-        [RawCodexSessionSnapshot | None, QuotaScope | None, str, float],
+        [CodexSessionSnapshot | None, QuotaScope | None, str, float],
         QuotaObservation,
     ]
     | None,
@@ -394,7 +394,7 @@ class RecordingNormalizer:
 
     def __init__(
         self,
-        snapshot: RawCodexSessionSnapshot,
+        snapshot: CodexSessionSnapshot,
         scope: QuotaScope,
         observation: QuotaObservation,
         /,
@@ -402,11 +402,11 @@ class RecordingNormalizer:
         self.snapshot = snapshot
         self.scope = scope
         self.observation = observation
-        self.calls: list[RawCodexSessionSnapshot | None] = []
+        self.calls: list[CodexSessionSnapshot | None] = []
 
     def __call__(
         self,
-        snapshot: RawCodexSessionSnapshot | None,
+        snapshot: CodexSessionSnapshot | None,
         scope: QuotaScope | None,
         read_at_utc: str,
         max_age: float,
@@ -470,19 +470,18 @@ def assert_poll_wiring(
     assert not hasattr(result.process, "attempt_number")
 
 
-async def test_passive_observation_forwards_exact_thread_and_raw_bytes() -> None:
+async def test_passive_observation_forwards_exact_thread_and_snapshot() -> None:
     # Given
-    content = b"opaque session bytes"
-    snapshot = RawCodexSessionSnapshot(content, "source-opaque-7")
+    snapshot = CodexSessionSnapshot("source-opaque-7")
     source = RecordingSource(snapshot)
     scope = make_scope()
     telemetry = b"opaque invocation telemetry"
     normalized_inputs: list[
-        tuple[RawCodexSessionSnapshot | None, QuotaScope | None, str, float]
+        tuple[CodexSessionSnapshot | None, QuotaScope | None, str, float]
     ] = []
 
     def normalize_session(
-        received: RawCodexSessionSnapshot | None,
+        received: CodexSessionSnapshot | None,
         received_scope: QuotaScope | None,
         read_at_utc: str,
         max_age: float,
@@ -512,7 +511,6 @@ async def test_passive_observation_forwards_exact_thread_and_raw_bytes() -> None
     assert source.events == ["lookup", "normalize"]
     assert normalized_inputs == [(snapshot, scope, "2026-10-27T10:00:00Z", 60.0)]
     assert normalized_inputs[0][0] is snapshot
-    assert normalized_inputs[0][0].content is content
     assert observation.scope is scope
     assert observation.source_coordinate == "source-opaque-7"
     assert observation.read_at_utc == "2026-10-27T10:00:00Z"
@@ -520,12 +518,12 @@ async def test_passive_observation_forwards_exact_thread_and_raw_bytes() -> None
 
 async def test_passive_observation_skips_lookup_without_correlated_thread() -> None:
     # Given
-    source = RecordingSource(RawCodexSessionSnapshot(b"opaque", "source-1"))
+    source = RecordingSource(CodexSessionSnapshot("source-1"))
     scope = make_scope()
-    normalized_inputs: list[RawCodexSessionSnapshot | None] = []
+    normalized_inputs: list[CodexSessionSnapshot | None] = []
 
     def normalize_session(
-        snapshot: RawCodexSessionSnapshot | None,
+        snapshot: CodexSessionSnapshot | None,
         received_scope: QuotaScope | None,
         read_at_utc: str,
         max_age: float,
@@ -558,7 +556,7 @@ async def test_passive_lookup_preserves_source_exception() -> None:
         @override
         async def read_session_for_thread(
             self, thread_id: str, /
-        ) -> RawCodexSessionSnapshot | None:
+        ) -> CodexSessionSnapshot | None:
             self.thread_ids.append(thread_id)
             raise source_error
 
@@ -731,6 +729,9 @@ async def test_local_source_projects_one_rollout_through_public_reader(
     # Given
     sessions = tmp_path / "sessions"
     rows = session_rows()
+    payload = rows[-1]["payload"]
+    assert isinstance(payload, dict)
+    payload["opaque_extension"] = {"text": "extension sentinel"}
     rows.insert(1, {"type": "response_item", "payload": {"text": "secret sentinel"}})
     rollout = write_rollout(sessions, SYNTHETIC_THREAD_ID, rows)
     reader = make_local_reader(sessions, make_identity_scope())
@@ -752,10 +753,48 @@ async def test_local_source_projects_one_rollout_through_public_reader(
     assert snapshot is not None
     assert snapshot.requested_thread_id == SYNTHETIC_THREAD_ID
     assert str(rollout) not in snapshot.source_coordinate
-    assert b"secret sentinel" not in snapshot.content
-    assert b"synthetic-account-id" in snapshot.content
+    assert "secret sentinel" not in repr(snapshot)
+    assert snapshot.telemetry is not None
+    projection = repr(snapshot.telemetry.token_counts[0].model_dump())
+    assert "secret sentinel" not in projection
+    assert "extension sentinel" not in projection
     assert "synthetic-account-id" not in repr(snapshot)
     assert SYNTHETIC_THREAD_ID not in repr(snapshot)
+
+
+@pytest.mark.parametrize(
+    ("rows", "source_available"),
+    [
+        ([], False),
+        (session_rows(primary_used=True), True),
+        (session_rows()[:1], True),
+    ],
+    ids=["missing-metadata", "invalid-consumed-field", "missing-token-count"],
+)
+async def test_local_reader_distinguishes_source_and_telemetry_failures(
+    tmp_path: Path, rows: list[dict[str, object]], source_available: bool
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, rows)
+    reader = make_local_reader(sessions, make_identity_scope())
+
+    # When
+    snapshot = await LocalCodexQuotaStatusSource(sessions).read_session_for_thread(
+        SYNTHETIC_THREAD_ID
+    )
+    observation = await reader.observe_settled_attempt(
+        make_attempt_evidence(thread_started())
+    )
+
+    # Then
+    assert (snapshot is not None) is source_available
+    if snapshot is not None:
+        assert snapshot.telemetry is None
+    assert (
+        observation.diagnostic == "quota observation does not match the verified scope"
+    )
+    assert [window.state for window in observation.windows] == ["unknown", "unknown"]
 
 
 @pytest.mark.parametrize(
@@ -935,7 +974,7 @@ async def test_local_source_file_read_does_not_block_event_loop(tmp_path: Path) 
         @override
         def _read_session_for_thread(
             self, thread_id: str, /
-        ) -> RawCodexSessionSnapshot | None:
+        ) -> CodexSessionSnapshot | None:
             del thread_id
             entered.set()
             assert release.wait(2.0)
@@ -1037,29 +1076,39 @@ async def test_older_available_record_cannot_replace_fresh_exhaustion(
     assert older.windows[0].usage_percent == pytest.approx(35.0)
 
 
-async def test_repeated_old_source_cannot_override_newer_other_source() -> None:
+async def test_repeated_old_source_cannot_override_newer_other_source(
+    tmp_path: Path,
+) -> None:
     # Given
     source = RecordingSource(None)
     reader = make_reader(source, make_identity_scope(), None, None)
     attempt = make_attempt_evidence(thread_started())
 
-    def snapshot(
+    async def snapshot(
         coordinate: str, timestamp: str, primary_used: int, ordinal: int
-    ) -> RawCodexSessionSnapshot:
-        rows = session_rows(
-            timestamp=timestamp, primary_used=primary_used, ordinal=ordinal
+    ) -> CodexSessionSnapshot:
+        sessions = tmp_path / coordinate
+        write_rollout(
+            sessions,
+            SYNTHETIC_THREAD_ID,
+            session_rows(
+                timestamp=timestamp, primary_used=primary_used, ordinal=ordinal
+            ),
         )
-        content = b"\n".join(
-            json.dumps(row, separators=(",", ":")).encode() for row in rows
+        result = await LocalCodexQuotaStatusSource(sessions).read_session_for_thread(
+            SYNTHETIC_THREAD_ID
         )
-        return RawCodexSessionSnapshot(content, coordinate, SYNTHETIC_THREAD_ID)
+        assert result is not None
+        return CodexSessionSnapshot(
+            coordinate, result.requested_thread_id, result.telemetry
+        )
 
-    old_record = snapshot("coordinate-old", "2026-10-27T09:59:58Z", 35, 17)
+    old_record = await snapshot("coordinate-old", "2026-10-27T09:59:58Z", 35, 17)
     source.snapshot = old_record
 
     # When
     first = await reader.observe_settled_attempt(attempt)
-    source.snapshot = snapshot("coordinate-new", "2026-10-27T09:59:59Z", 100, 18)
+    source.snapshot = await snapshot("coordinate-new", "2026-10-27T09:59:59Z", 100, 18)
     newer = await reader.observe_settled_attempt(attempt)
     source.snapshot = old_record
     repeated_old = await reader.observe_settled_attempt(attempt)
@@ -1273,7 +1322,7 @@ async def test_poll_forwards_one_exact_request_and_stop_callback() -> None:
     attempt_request = make_probe_attempt_request()
     stdout = b"opaque probe stdout"
     process_result = make_process_result(stdout, b"raw probe stderr")
-    snapshot = RawCodexSessionSnapshot(b"opaque", "source-probe")
+    snapshot = CodexSessionSnapshot("source-probe")
     source = RecordingSource(snapshot)
     observation = QuotaObservation(
         scope=quota_request.schedule.scope,
@@ -1470,7 +1519,7 @@ async def test_postprocessing_error_keeps_returned_process_and_request_facts() -
         return process_result
 
     def fail_normalization(
-        snapshot: RawCodexSessionSnapshot | None,
+        snapshot: CodexSessionSnapshot | None,
         scope: QuotaScope | None,
         read_at_utc: str,
         max_age: float,

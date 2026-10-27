@@ -561,22 +561,23 @@ Codex, quota, and runtime adapters.
   opens no other rollout files, and offloads lookup and reading with
   `asyncio.to_thread`. It projects only `session_meta` identity fields and
   `token_count` quota rows; transcript messages and local paths are not
-  retained. The normalizer accepts only the observed CLI 0.164.0 metadata and
-  `rate_limits` shapes, validates matching session/thread IDs and provider plus
-  account/user identity, requires both 300-minute and 10080-minute windows, and
-  maps their numeric usage and optional reset hints. Missing or malformed reset
-  hints do not invalidate usage state. It rejects malformed, incomplete,
-  stale, future-dated, out-of-order, or unsupported records as unknown while
-  retaining valid usage, producer timestamp, and ordinal facts for stale or
-  future snapshots. A 60-second positive age limit is configurable on the
-  reader. Per-reader ordering retains the latest producer timestamp globally
+  retained. The source validates consumed metadata and `rate_limits` fields
+  during the read and returns a typed projection. The normalizer accepts the
+  observed CLI 0.164.0 metadata, validates matching session/thread IDs and
+  provider plus account/user identity, requires both 300-minute and 10080-minute
+  windows, and maps their numeric usage and optional reset hints. Missing or
+  malformed reset hints do not invalidate usage state. It rejects malformed,
+  incomplete, stale, future-dated, out-of-order, or unsupported records as
+  unknown while retaining valid usage, producer timestamp, and ordinal facts for
+  stale or future snapshots. A 60-second positive age limit is configurable on
+  the reader. Per-reader ordering retains the latest producer timestamp globally
   and the latest record per sanitized source coordinate. An identical repeated
   record is idempotent, changed facts at the same ordinal become unknown, and a
-  delayed older snapshot cannot replace newer state.
-  The domain-separated scope helper hashes provider, account, and user identity
-  without logging or persisting raw identifiers; observations remain unscoped
-  unless their derived identity matches a caller-supplied expected binding
-  scope. The current Codex binding still supplies no scope.
+  delayed older snapshot cannot replace newer state. The domain-separated scope
+  helper hashes provider, account, and user identity without logging or
+  persisting raw identifiers; observations remain unscoped unless their derived
+  identity matches a caller-supplied expected binding scope. The current Codex
+  binding still supplies no scope.
 - Active quota polling builds one fixed Luna/`none` supervised request with a
   caller-staged nonempty instruction path, minimal argv prompt, JSONL output,
   read-only empty cwd, and the available explicit CLI feature/config disables,

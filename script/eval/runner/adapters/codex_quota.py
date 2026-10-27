@@ -62,28 +62,23 @@ from script.process_supervisor import (
 )
 
 
-class RawCodexQuotaStatusSource(Protocol):
+class CodexQuotaStatusSource(Protocol):
     """Read one opaque local session selected by its invocation thread ID."""
 
     async def read_session_for_thread(
         self, thread_id: str, /
-    ) -> RawCodexSessionSnapshot | None:
+    ) -> CodexSessionSnapshot | None:
         """Return only the source snapshot associated with this thread ID."""
         ...
 
 
 @dataclass(frozen=True)
-class RawCodexSessionSnapshot:
-    """Selected metadata and quota rows from one untrusted rollout.
+class CodexSessionSnapshot:
+    """Sanitized validated session telemetry and its opaque source coordinate."""
 
-    ``content`` contains only the consumed ``session_meta`` and
-    ``token_count`` rows, never the transcript's messages. The source
-    coordinate is a stable opaque digest rather than a local path.
-    """
-
-    content: bytes = field(repr=False)
     source_coordinate: str
     requested_thread_id: str | None = field(default=None, repr=False)
+    telemetry: _SessionTelemetry | None = field(default=None, repr=False)
 
 
 class _RawModel(BaseModel):
@@ -238,41 +233,11 @@ class _RawTokenRow(_RawModel):
 
 
 @dataclass(frozen=True, repr=False)
-class _SessionMetadata:
-    """Validated identity fields consumed from one session metadata row."""
-
-    id: str
-    session_id: str
-    model_provider: str
-    cli_version: str
-    creator_account_id: str
-    creator_user_id: str
-
-
-@dataclass(frozen=True)
-class _QuotaWindowValues:
-    """Validated usage with an optional, non-authoritative reset hint."""
-
-    usage_percent: float
-    reset_at_utc: str | None
-
-
-@dataclass(frozen=True)
-class _TokenCountRecord:
-    """Validated quota facts from one ordered token-count event."""
-
-    timestamp: datetime
-    sequence: int
-    primary: _QuotaWindowValues
-    secondary: _QuotaWindowValues
-
-
-@dataclass(frozen=True)
 class _SessionTelemetry:
-    """Small validated projection of one selected CLI rollout."""
+    """Validated consumed fields from one selected CLI rollout."""
 
-    metadata: _SessionMetadata
-    token_counts: tuple[_TokenCountRecord, ...]
+    metadata: _RawMetadata
+    token_counts: tuple[_RawTokenRow, ...]
 
 
 @dataclass(frozen=True)
@@ -287,7 +252,7 @@ class LocalCodexQuotaStatusSource:
 
     async def read_session_for_thread(
         self, thread_id: str, /
-    ) -> RawCodexSessionSnapshot | None:
+    ) -> CodexSessionSnapshot | None:
         """Read selected telemetry without blocking the event loop.
 
         Returns:
@@ -298,7 +263,7 @@ class LocalCodexQuotaStatusSource:
 
     def _read_session_for_thread(
         self, thread_id: str, /
-    ) -> RawCodexSessionSnapshot | None:
+    ) -> CodexSessionSnapshot | None:
         """Perform exact-name lookup and retain only consumed rows.
 
         Returns:
@@ -354,7 +319,7 @@ class CodexQuotaSettings:
 
 type ExtractThreadId = Callable[[bytes | None], str | None]
 type NormalizeSession = Callable[
-    [RawCodexSessionSnapshot | None, QuotaScope | None, str, float], QuotaObservation
+    [CodexSessionSnapshot | None, QuotaScope | None, str, float], QuotaObservation
 ]
 type BuildProbeRequest = Callable[
     [QuotaProbeRequest, CodexQuotaSettings], AttemptRequest
@@ -376,13 +341,13 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     - associate process facts and quota assessment with probe evidence.
 
     Thread IDs remain private to this adapter. The local source opens only the
-    exact UUID-suffixed rollout candidate. The normalizer accepts the observed
-    Codex CLI 0.164.0 schema and fails closed on unrecognized or incomplete
+    exact UUID-suffixed rollout candidate. The source validates consumed fields;
+    the normalizer accepts CLI 0.164.0 and fails closed on unrecognized or incomplete
     input. The probe uses the caller's frozen nonempty instruction file and
     receives a fixed minimal prompt.
     """
 
-    source: RawCodexQuotaStatusSource
+    source: CodexQuotaStatusSource
     quota_scope: QuotaScope | None
     settings: CodexQuotaSettings
     attempt_call: AttemptCall
@@ -744,7 +709,7 @@ def _canonical_uuid(value: object, /) -> str | None:
 
 def _read_candidate(
     root: Path, candidate: Path, thread_id: str, /
-) -> RawCodexSessionSnapshot | None:
+) -> CodexSessionSnapshot | None:
     """Validate and read one candidate without exposing its local path.
 
     Returns:
@@ -765,8 +730,8 @@ def _read_candidate(
         or selected_rows is None
     ):
         return None
-    return RawCodexSessionSnapshot(
-        content=selected_rows,
+    return CodexSessionSnapshot(
+        telemetry=selected_rows[0],
         source_coordinate=_source_coordinate(root, resolved),
         requested_thread_id=thread_id,
     )
@@ -800,11 +765,11 @@ def _source_coordinate(root: Path, path: Path, /) -> str:
     return f"codex-session-sha256:{digest.hexdigest()}"
 
 
-def _read_selected_rows(path: Path, /) -> bytes | None:
-    """Read one stable rollout while retaining only consumed telemetry rows.
+def _read_selected_rows(path: Path, /) -> tuple[_SessionTelemetry | None] | None:
+    """Read a stable rollout, distinguishing malformed telemetry from read failure.
 
     Returns:
-        Projected metadata and quota JSONL, or ``None`` if the read is unsafe.
+        A wrapped validated projection, or None when the source is unsafe.
     """
     maximum_line_bytes = 8 * 1024 * 1024
     maximum_rollout_bytes = 128 * 1024 * 1024
@@ -817,113 +782,112 @@ def _read_selected_rows(path: Path, /) -> bytes | None:
             after = os.fstat(stream.fileno())
     except OSError:
         return None
-    if collected is None:
-        return None
-    selected_rows, metadata_count = collected
-    if metadata_count != 1 or before.st_size != after.st_size:
+    if collected is None or before.st_size != after.st_size:
         return None
     if before.st_mtime_ns != after.st_mtime_ns:
         return None
-    return b"\n".join(selected_rows)
+    return collected
+
+
+@dataclass
+class _RolloutCollector:
+    """Accumulate only validated selected rows and source-envelope facts."""
+
+    metadata: _RawMetadata | None = None
+    token_counts: list[_RawTokenRow] = field(default_factory=list)
+    metadata_count: int = 0
+    selected_count: int = 0
+    invalid: bool = False
+
+    def add(self, row: dict[str, object], row_type: str | None, /) -> bool:
+        """Retain a selected row within source bounds.
+
+        Returns:
+            Whether the source remains safe to read.
+        """
+        if row_type == "session_meta":
+            self.metadata_count += 1
+        self.selected_count += 1
+        if self.metadata_count > 1 or self.selected_count > 4096:
+            return False
+        validated = _validate_selected_row(row, row_type)
+        if isinstance(validated, _RawMetadata):
+            self.metadata = validated
+        elif isinstance(validated, _RawTokenRow):
+            self.token_counts.append(validated)
+        else:
+            self.invalid = True
+        return True
 
 
 def _collect_selected_rows(
     stream: BinaryIO, maximum_line_bytes: int, /
-) -> tuple[list[bytes], int] | None:
-    """Project the metadata and quota rows from one opened rollout.
+) -> tuple[_SessionTelemetry | None] | None:
+    """Validate selected fields while discarding transcript and extension data.
 
     Returns:
-        Selected rows and the metadata count, or ``None`` on malformed input.
+        Wrapped telemetry, or None when the source envelope is unsafe.
     """
-    selected: list[bytes] = []
-    metadata_count = 0
+    collector = _RolloutCollector()
     while line := stream.readline(maximum_line_bytes + 1):
         if len(line) > maximum_line_bytes:
             return None
         try:
-            row = json.loads(line)
-        except UnicodeDecodeError, json.JSONDecodeError:
-            return None
-        if not isinstance(row, dict):
-            return None
-        try:
-            projected, is_metadata = _project_rollout_row(row)
+            row, row_type = _selected_rollout_row(line)
         except ValueError:
             return None
-        if projected is None:
-            continue
-        metadata_count += is_metadata
-        if metadata_count > 1:
+        if row is not None and not collector.add(row, row_type):
             return None
-        selected.append(projected)
-        if len(selected) > 4096:
-            return None
-    return selected, metadata_count
+    if collector.metadata_count != 1:
+        return None
+    metadata = collector.metadata
+    if collector.invalid or metadata is None or not collector.token_counts:
+        return (None,)
+    return (_SessionTelemetry(metadata, tuple(collector.token_counts)),)
 
 
-def _project_rollout_row(row: dict[str, object], /) -> tuple[bytes | None, int]:
-    """Project one consumed row and ignore unrelated well-formed row kinds.
+def _validate_selected_row(
+    row: dict[str, object], row_type: str | None, /
+) -> _RawMetadata | _RawTokenRow | None:
+    """Validate a selected row without exposing its input in diagnostics.
 
     Returns:
-        The encoded consumed row and whether it is session metadata.
+        The validated consumed fields, or None when they are invalid.
+    """
+    try:
+        if row_type == "session_meta":
+            return _RawMetadataRow.model_validate(row).payload
+        return _RawTokenRow.model_validate(row)
+    except ValidationError:
+        return None
+
+
+def _selected_rollout_row(
+    line: bytes, /
+) -> tuple[dict[str, object] | None, str | None]:
+    """Decode and select a consumed row, rejecting unsafe envelopes.
+
+    Returns:
+        A selected row and kind, or a pair of None values for unrelated rows.
 
     Raises:
-        ValueError: A consumed row's envelope cannot be inspected safely.
+        ValueError: The JSON or a consumed event envelope is malformed.
     """
+    try:
+        row = json.loads(line)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("invalid rollout row") from error
+    if not isinstance(row, dict):
+        raise ValueError("rollout row is not an object")
     row_type = row.get("type")
-    if row_type == "session_meta":
-        payload = row.get("payload")
-        if not isinstance(payload, dict):
-            raise ValueError("session metadata payload must be an object")
-        selected = {
-            key: payload.get(key)
-            for key in (
-                "id",
-                "session_id",
-                "model_provider",
-                "cli_version",
-                "creator_account_id",
-                "creator_user_id",
-            )
-        }
-        return _encode_selected_row({"type": "session_meta", "payload": selected}), 1
-    if row_type != "event_msg":
-        return None, 0
+    if row_type != "session_meta" and row_type != "event_msg":
+        return None, None
     payload = row.get("payload")
     if not isinstance(payload, dict):
-        raise ValueError("event message payload must be an object")
-    if payload.get("type") != "token_count":
-        return None, 0
-    return _encode_token_count_row(row, payload), 0
-
-
-def _encode_token_count_row(
-    row: dict[str, object], payload: dict[str, object], /
-) -> bytes:
-    """Encode only a quota event's envelope and quota-limit object.
-
-    Returns:
-        Canonical JSON bytes containing only the selected quota event fields.
-    """
-    limits = payload.get("rate_limits")
-    return _encode_selected_row({
-        "type": "event_msg",
-        "timestamp": row.get("timestamp"),
-        "ordinal": row.get("ordinal"),
-        "payload": {
-            "type": "token_count",
-            "rate_limits": limits if isinstance(limits, dict) else None,
-        },
-    })
-
-
-def _encode_selected_row(row: dict[str, object], /) -> bytes:
-    """Encode a projected telemetry row using deterministic JSON bytes.
-
-    Returns:
-        The encoded row.
-    """
-    return json.dumps(row, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        raise ValueError("rollout payload is not an object")
+    if row_type == "event_msg" and payload.get("type") != "token_count":
+        return None, None
+    return row, row_type
 
 
 def _attempt_evidence(
@@ -1058,13 +1022,13 @@ def _extract_thread_id(usage_telemetry: bytes | None, /) -> str | None:
 
 
 def _normalize_session(
-    snapshot: RawCodexSessionSnapshot | None,
+    snapshot: CodexSessionSnapshot | None,
     scope: QuotaScope | None,
     read_at_utc: str,
     max_observation_age_seconds: float,
     /,
 ) -> QuotaObservation:
-    """Validate the observed 0.164.0 schema and normalize both quota windows.
+    """Check the observed CLI identity and normalize both quota windows.
 
     Returns:
         A scoped observation only when session identity matches the binding.
@@ -1077,11 +1041,11 @@ def _normalize_session(
             else "freshness bound is invalid"
         )
         return _unknown_observation(scope, read_at_utc, None, reason)
-    if snapshot is None or not snapshot.content or not snapshot.source_coordinate:
+    if snapshot is None or not snapshot.source_coordinate:
         return _unknown_observation(
             None, read_at_utc, None, "session telemetry is unavailable"
         )
-    telemetry = _parse_session_telemetry(snapshot.content)
+    telemetry = snapshot.telemetry
     if telemetry is None:
         return _unknown_observation(
             None,
@@ -1149,8 +1113,8 @@ def _valid_age_limit(value: object, /) -> bool:
 
 
 def _session_scope(
-    metadata: _SessionMetadata,
-    snapshot: RawCodexSessionSnapshot,
+    metadata: _RawMetadata,
+    snapshot: CodexSessionSnapshot,
     expected_scope: QuotaScope | None,
     /,
 ) -> tuple[QuotaScope | None, str | None]:
@@ -1181,102 +1145,17 @@ def _session_scope(
     return expected_scope, None
 
 
-def _parse_session_telemetry(content: bytes, /) -> _SessionTelemetry | None:
-    """Validate selected JSONL rows once at the adapter raw-data boundary.
-
-    Returns:
-        Typed consumed fields, or None for malformed or incomplete data.
-    """
-    rows = _decode_selected_rows(content)
-    if rows is None:
-        return None
-    metadata = _parse_metadata_rows(rows)
-    token_counts = _parse_quota_rows(rows)
-    if metadata is None or token_counts is None:
-        return None
-    return _SessionTelemetry(metadata, token_counts)
-
-
-def _parse_metadata_rows(rows: list[dict[str, object]], /) -> _SessionMetadata | None:
-    """Require one valid session identity record from selected rollout rows.
-
-    Returns:
-        The validated identity or None when it is missing, duplicate, or invalid.
-    """
-    metadata: _SessionMetadata | None = None
-    for row in rows:
-        if row.get("type") == "session_meta":
-            if metadata is not None:
-                return None
-            metadata = _parse_session_metadata(row)
-            if metadata is None:
-                return None
-    return metadata
-
-
-def _parse_quota_rows(
-    rows: list[dict[str, object]], /
-) -> tuple[_TokenCountRecord, ...] | None:
-    """Require each consumed token-count event to validate into typed facts.
-
-    Returns:
-        Validated events, or None when they are missing or malformed.
-    """
-    token_counts: list[_TokenCountRecord] = []
-    for row in rows:
-        if _is_token_count_row(row):
-            record = _parse_token_count_record(row)
-            if record is None:
-                return None
-            token_counts.append(record)
-    return tuple(token_counts) if token_counts else None
-
-
-def _is_token_count_row(row: dict[str, object], /) -> bool:
-    """Identify the consumed token-count event envelope.
-
-    Returns:
-        Whether the row is a token-count event.
-    """
-    payload = row.get("payload")
-    return (
-        row.get("type") == "event_msg"
-        and isinstance(payload, dict)
-        and payload.get("type") == "token_count"
-    )
-
-
-def _parse_session_metadata(row: dict[str, object], /) -> _SessionMetadata | None:
-    """Validate consumed identity fields without retaining untrusted extensions.
-
-    Returns:
-        The identity, or None when the consumed fields are invalid.
-    """
-    try:
-        payload = _RawMetadataRow.model_validate(row).payload
-    except ValidationError:
-        return None
-    return _SessionMetadata(
-        id=payload.id,
-        session_id=payload.session_id,
-        model_provider=payload.model_provider,
-        cli_version=payload.cli_version,
-        creator_account_id=payload.creator_account_id,
-        creator_user_id=payload.creator_user_id,
-    )
-
-
 def _latest_rate_limit_record(
-    records: tuple[_TokenCountRecord, ...],
+    records: tuple[_RawTokenRow, ...],
     /,
-) -> tuple[_TokenCountRecord | None, str | None]:
+) -> tuple[_RawTokenRow | None, str | None]:
     """Validate producer order and select its newest typed quota record.
 
     Returns:
         The newest row, or an ordering/incompleteness diagnostic.
     """
     for earlier, later in pairwise(records):
-        if later.sequence <= earlier.sequence or later.timestamp < earlier.timestamp:
+        if later.ordinal <= earlier.ordinal or later.timestamp < earlier.timestamp:
             return None, "rate-limit rows are out of source order"
     return (records[-1], None) if records else (None, "session telemetry is incomplete")
 
@@ -1285,7 +1164,7 @@ def _observation_from_record(
     scope: QuotaScope,
     read_at_utc: str,
     coordinate: str,
-    record: _TokenCountRecord,
+    record: _RawTokenRow,
     state: QuotaState | None,
     diagnostic: str | None,
     /,
@@ -1302,19 +1181,19 @@ def _observation_from_record(
                 "unknown"
                 if state == "unknown"
                 else "exhausted"
-                if values.usage_percent >= 100
+                if values.used_percent >= 100
                 else "available"
             ),
-            usage_percent=values.usage_percent,
-            reset_at_utc=values.reset_at_utc,
+            usage_percent=values.used_percent,
+            reset_at_utc=values.resets_at,
             source_observed_at_utc=_format_timestamp(record.timestamp),
-            source_sequence=record.sequence,
+            source_sequence=record.ordinal,
             source="codex-cli-0.164.0-session",
             diagnostic=diagnostic,
         )
         for window_id, values in (
-            ("codex_primary_300m", record.primary),
-            ("codex_secondary_10080m", record.secondary),
+            ("codex_primary_300m", record.payload.rate_limits.primary),
+            ("codex_secondary_10080m", record.payload.rate_limits.secondary),
         )
     )
     return QuotaObservation(
@@ -1452,47 +1331,6 @@ def _assess_probe(
     if outcome.exit_status != 0:
         return "unknown", "available quota telemetry accompanied a failed probe"
     return "available", "successful probe produced fresh scoped available windows"
-
-
-def _decode_selected_rows(content: bytes, /) -> list[dict[str, object]] | None:
-    """Decode projected JSONL rows while retaining no transcript content.
-
-    Returns:
-        Decoded projected row objects or ``None`` on invalid UTF-8 or JSON.
-    """
-    try:
-        text = content.decode("utf-8", errors="strict")
-    except UnicodeDecodeError:
-        return None
-    rows: list[dict[str, object]] = []
-    for line in text.splitlines():
-        try:
-            row = json.loads(line)
-        except json.JSONDecodeError:
-            return None
-        if not isinstance(row, dict):
-            return None
-        rows.append(row)
-    return rows
-
-
-def _parse_token_count_record(row: dict[str, object], /) -> _TokenCountRecord | None:
-    """Validate one consumed token-count event into typed quota values.
-
-    Returns:
-        The quota record, or None when the consumed fields are invalid.
-    """
-    try:
-        record = _RawTokenRow.model_validate(row)
-    except ValidationError:
-        return None
-    limits = record.payload.rate_limits
-    return _TokenCountRecord(
-        record.timestamp,
-        record.ordinal,
-        _QuotaWindowValues(limits.primary.used_percent, limits.primary.resets_at),
-        _QuotaWindowValues(limits.secondary.used_percent, limits.secondary.resets_at),
-    )
 
 
 def _optional_reset_timestamp(value: object, /) -> str | None:
