@@ -1908,3 +1908,209 @@ async def test_dry_run_is_refused_before_dispatch_or_quota_effects() -> None:
     # Then
     assert quota.observations == 0 and quota.probes == 0
     assert evidence.events == []
+
+
+@pytest.mark.parametrize(
+    ("category", "limit", "expected"),
+    [
+        ("infrastructure", 0, 1),
+        ("infrastructure", 1, 2),
+        ("capacity", 0, 1),
+        ("capacity", 1, 2),
+    ],
+)
+async def test_retry_limits_bound_repeated_failures(
+    category: Literal["infrastructure", "capacity"], limit: int, expected: int
+) -> None:
+    # Given
+    order: list[str] = []
+    run = bound_run(
+        config=configuration(
+            retry_limit=limit if category == "infrastructure" else 0,
+            capacity_retry_limit=limit if category == "capacity" else 0,
+        )
+    )
+    evidence = FakeEvidence(order)
+    coordinator, classifier, requests = make_coordinator(
+        run, evidence, FakeQuotaReader(order), order
+    )
+    classifier.assessment = RetryAssessment(
+        retry_class=category,
+        classification_basis="failure",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+    absent = InfrastructureFailure(
+        AttemptObservation(
+            None, 0.1, CleanupEvidence("not_started", (), "not_started", None)
+        ),
+        None,
+        "failure",
+        "no process launched",
+    )
+    coordinator = replace(
+        coordinator, attempt=make_attempt(order, [absent] * 4, requests)
+    )
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert len(requests) == expected
+    assert len(record.calls[0].attempts) == expected
+    assert record.calls[0].state == "failed"
+
+
+class FailingFinalEvidence(BlockingFinalEvidence):
+    """Fail after the owner has been cancelled while the write is shielded."""
+
+    @override
+    async def finalize(self, record: RunRecord, /) -> None:
+        self.write_started.set()
+        await self.allow_write.wait()
+        raise OSError("final write failed")
+
+
+async def test_cancellation_remains_primary_when_final_write_fails() -> None:
+    # Given
+    order: list[str] = []
+    evidence = FailingFinalEvidence(order)
+    coordinator, _, _ = make_coordinator(
+        bound_run(), evidence, FakeQuotaReader(order), order
+    )
+    task = asyncio.create_task(coordinator.run())
+    await evidence.write_started.wait()
+
+    # When
+    task.cancel("original cancellation")
+    await asyncio.sleep(0)
+    task.cancel("repeated cancellation")
+    evidence.allow_write.set()
+    with pytest.raises(asyncio.CancelledError, match="original cancellation") as raised:
+        await task
+
+    # Then
+    assert isinstance(raised.value.__cause__, OSError)
+    assert str(raised.value.__cause__) == "final write failed"
+    assert not any(
+        t.get_name().startswith("eval-evidence-") for t in asyncio.all_tasks()
+    )
+
+
+async def test_quota_recovery_retries_nonzero_without_ordinary_retry_opt_in() -> None:
+    # Given
+    order: list[str] = []
+    scope = QuotaScope(
+        provider_id=QuotaProviderId("codex"), allowance_id=QuotaAllowanceId("account-a")
+    )
+    run = bound_run(config=configuration(quota=True), quota_scope=scope)
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, classifier, requests = make_coordinator(run, evidence, quota, order)
+    report_exhausted_quota(run, quota, classifier)
+    failed = Completed(
+        AttemptObservation(
+            CapturedOutput(b"", b"quota exhausted"),
+            0.1,
+            CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+            ),
+        ),
+        1,
+    )
+
+    def available_probe(request: QuotaProbeRequest) -> QuotaProbeEvidence:
+        probe = make_probe_evidence(request, run.calls[0])
+        window = QuotaWindowObservation(
+            window_id=QuotaWindowId("primary"),
+            state="available",
+            usage_percent=10.0,
+            reset_at_utc=None,
+            source_observed_at_utc=request.poll_started_at_utc,
+            source_sequence=2,
+            source="test",
+            diagnostic=None,
+        )
+        return replace(
+            probe,
+            observation=QuotaObservation(
+                scope=scope,
+                read_at_utc="2026-10-27T10:00:00Z",
+                source_coordinate="session:2",
+                windows=(window,),
+                diagnostic=None,
+            ),
+        )
+
+    quota.probe_builder = available_probe
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        requests.append(request)
+        if len(requests) == 1:
+            return failed
+        classifier.assessment = RetryAssessment(
+            retry_class="unknown",
+            classification_basis=None,
+            no_result_basis="present_or_unknown",
+            diagnostic=None,
+        )
+        return successful_outcome()
+
+    coordinator = replace(coordinator, attempt=attempt)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert quota.probes == 1
+    assert len(requests) == 2
+    assert requests[0] == requests[1]
+    assert record.calls[0].state == "complete"
+
+
+class BlockingFailingAttemptEvidence(BlockingAttemptEvidence):
+    """Fail the blocked attempt write after cancellation."""
+
+    @override
+    async def record_attempt(
+        self,
+        run_id: str,
+        call_id: str,
+        position: int,
+        attempt_number: AttemptNumber,
+        evidence: AttemptEvidence,
+        retry_assessment: RetryAssessment | None,
+        /,
+    ) -> AttemptRecord:
+        self.write_started.set()
+        await self.allow_write.wait()
+        raise OSError("attempt write failed")
+
+
+async def test_cancellation_retains_failure_of_blocked_attempt_write() -> None:
+    # Given
+    order: list[str] = []
+    evidence = BlockingFailingAttemptEvidence(order)
+    coordinator, _, _ = make_coordinator(
+        bound_run(), evidence, FakeQuotaReader(order), order
+    )
+    task = asyncio.create_task(coordinator.run())
+    await evidence.write_started.wait()
+
+    # When
+    task.cancel("owner cancellation")
+    await asyncio.sleep(0)
+    evidence.allow_write.set()
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await task
+
+    # Then
+    assert "attempt write failed" in str(raised.value.__cause__) or any(
+        "attempt write failed" in note
+        for note in getattr(raised.value, "__notes__", ())
+    )
+    assert len(evidence.final_records) == 1
+    assert not any(
+        t.get_name().startswith("eval-evidence-") for t in asyncio.all_tasks()
+    )

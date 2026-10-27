@@ -505,7 +505,7 @@ class Coordinator:
         self._state.statuses[position] = _call_status(settled)
         if not await self._recover_quota_pause(settled, gate):
             return None
-        if not _quota_retry_eligible(settled, self.config):
+        if not _quota_retry_eligible(settled):
             self._state.statuses[position] = _call_status(settled)
             return None
         return attempt_number + 1
@@ -1258,11 +1258,13 @@ class Coordinator:
                 await asyncio.shield(task)
             except asyncio.CancelledError as error:
                 cancellation = cancellation or error
+            except Exception:
+                break  # Inspect the settled task below to preserve cancellation.
         if task.cancelled():
             raise asyncio.CancelledError(f"{label} persistence task was cancelled")
         if (error := task.exception()) is not None:
-            if cancellation is not None:
-                error.add_note(f"Owner cancellation arrived during {label} persistence")
+            if cancellation is not None and isinstance(error, Exception):
+                raise cancellation from error
             raise error
         return task.result(), cancellation
 
@@ -2056,7 +2058,7 @@ def _latest_reset_hint(observation: QuotaObservation, /) -> str | None:
 
 def _retry_reason(
     assessment: RetryAssessment | None,
-    attempt_number: AttemptNumber,
+    retries_used: int,
     config: HarnessConfig,
     /,
 ) -> _RetryReason | None:
@@ -2067,7 +2069,6 @@ def _retry_reason(
     """
     if assessment is None:
         return None
-    retries_used = attempt_number - 1
     if infrastructure_retry_allowed(assessment, retries_used, config):
         return "infrastructure"
     if capacity_retry_allowed(assessment, retries_used, config):
@@ -2189,7 +2190,7 @@ def _attempt_evidence_dispatch_safe(evidence: AttemptEvidence, /) -> bool:
     )
 
 
-def _quota_retry_eligible(settled: _SettledAttempt, config: HarnessConfig, /) -> bool:
+def _quota_retry_eligible(settled: _SettledAttempt, /) -> bool:
     """Retry only a confidently absent semantic result after quota recovery.
 
     Returns:
@@ -2201,11 +2202,6 @@ def _quota_retry_eligible(settled: _SettledAttempt, config: HarnessConfig, /) ->
         and assessment.retry_class == "quota"
         and assessment.no_result_basis == "confident_absence"
         and not _successful_attempt(settled)
-        and (
-            not isinstance(settled.evidence.outcome, Completed)
-            or settled.evidence.outcome.exit_status == 0
-            or config.retry_nonzero_exit
-        )
     )
 
 
