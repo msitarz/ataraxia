@@ -1220,7 +1220,7 @@ def _build_probe_attempt_request(
         "-c",
         'web_search="disabled"',
         "-c",
-        "features.request_user_input=false",
+        "tools.experimental_request_user_input.enabled=false",
     )
     disabled_features = (
         "plugins",

@@ -651,7 +651,7 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
         "-c",
         'web_search="disabled"',
         "-c",
-        "features.request_user_input=false",
+        "tools.experimental_request_user_input.enabled=false",
         "--disable",
         "plugins",
         "--disable",
@@ -722,7 +722,7 @@ async def test_probe_instructions_path_is_valid_unicode_toml() -> None:
     assert settings["model_instructions_file"] == str(instructions)
     assert settings["web_search"] == "disabled"
     assert settings["approval_policy"] == "never"
-    assert settings["features"]["request_user_input"] is False
+    assert settings["tools"]["experimental_request_user_input"]["enabled"] is False
 
 
 async def test_local_source_projects_one_rollout_through_public_reader(
