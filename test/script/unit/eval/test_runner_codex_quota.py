@@ -819,9 +819,12 @@ async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> N
 
 def test_malformed_preexisting_evidence_is_not_overwritten() -> None:
     # Given
-    error = RuntimeError("malformed evidence")
+    class ErrorWithEvidence(RuntimeError):
+        _ataraxia_quota_probe_evidence: object
+
+    error = ErrorWithEvidence("malformed evidence")
     malformed = ("not quota evidence",)
-    setattr(error, quota_evidence_module._EVIDENCE_ATTRIBUTE, malformed)
+    error._ataraxia_quota_probe_evidence = malformed
     request = make_probe_request()
     evidence = QuotaProbeEvidence(
         request=request,
@@ -844,15 +847,21 @@ def test_malformed_preexisting_evidence_is_not_overwritten() -> None:
     quota_evidence_module.attach_quota_probe_evidence(error, evidence)
 
     # Then
-    assert getattr(error, quota_evidence_module._EVIDENCE_ATTRIBUTE) is malformed
+    assert error._ataraxia_quota_probe_evidence is malformed
     assert quota_probe_evidence(error, request) is None
 
 
-def test_evidence_attachment_failure_does_not_replace_primary_error(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_evidence_attachment_failure_does_not_replace_primary_error() -> None:
     # Given
-    error = RuntimeError("primary error")
+    class UnavailableExceptionAttributes(RuntimeError):
+        """Simulate a raised exception with inaccessible instance storage."""
+
+        def __getattribute__(self, name: str, /) -> object:
+            if name == "__dict__":
+                raise RuntimeError("attribute storage unavailable")
+            return super().__getattribute__(name)
+
+    error = UnavailableExceptionAttributes("primary error")
     request = make_probe_request()
     evidence = QuotaProbeEvidence(
         request=request,
@@ -870,12 +879,6 @@ def test_evidence_attachment_failure_does_not_replace_primary_error(
         observation=None,
         classification_basis="incomplete",
     )
-
-    def fail_vars(value: object, /) -> dict[str, object]:
-        del value
-        raise RuntimeError("attribute storage unavailable")
-
-    monkeypatch.setattr(quota_evidence_module, "vars", fail_vars, raising=False)
 
     # When
     quota_evidence_module.attach_quota_probe_evidence(error, evidence)
