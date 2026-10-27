@@ -1,7 +1,8 @@
 # Coordinator lifecycle design
 
-**Status:** Exploratory proposal for review; the existing runtime skeleton is
-unchanged and all Work acceptance criteria remain TODO. The
+**Status:** Exploratory proposal for review; the former runtime skeleton has
+been removed, its replacement remains planned, and all Work acceptance criteria
+remain TODO. The
 [Work contract](README.md) owns behavior and the
 [current architecture](architecture.md) describes implemented components.
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach

@@ -10,12 +10,11 @@ orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
-Codex invocation leaves are implemented. The coordinator is bound to one run
-and evidence store; it owns a typed dispatch-decision loop, attempt evidence
-ordering, and a directly awaited quota-recovery seam. Dispatch selection,
+Codex invocation leaves are implemented. The former runtime coordinator
+skeleton has been removed. Its replacement remains planned; dispatch selection,
 supervisor-evidence conversion, probe cadence and recovery assessment, retry
-policy, and scheduler accounting remain unimplemented; CLI integration and
-full dispatch remain planned. Shared
+policy, scheduler accounting, CLI integration, and full dispatch remain
+unimplemented. Shared
 consumer-owned runner ports and accepted runtime configuration are implemented
 in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
@@ -293,8 +292,9 @@ one global quota recovery flow from authoritative typed lifecycles.
 
 - **Proposed:** The [coordinator design](coordinator-design.md) defines the
   state ownership, effect order, shutdown, and proposed internal package.
-- **Implemented:** The existing `runner/coordinator.py` is a partial sequential
-  wiring skeleton; its pending leaves do not establish the proposed behavior.
+- **Current maturity:** The former `runner/coordinator.py` wiring skeleton has
+  been removed; the replacement coordinator remains planned and has no runtime
+  implementation.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -308,8 +308,8 @@ one global quota recovery flow from authoritative typed lifecycles.
 Codex, quota, and runtime adapters.
 
 - `runner.__init__` re-exports the package's consumer-facing runner API.
-- `runner.coordinator` currently has partial wiring; the proposed internal
-  package and ownership are described in the
+- `runner.coordinator` is planned; its proposed internal package and ownership
+  are described in the
   [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
@@ -454,9 +454,9 @@ Codex, quota, and runtime adapters.
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
   The CLI composition root and progress adapter remain design stubs. The
-  coordinator now has typed per-run effect wiring around explicit pending
-  dispatch selection, conversion, probe scheduling and assessment, and
-  accounting leaves. The quota adapter implements its bounded source,
+  previous coordinator wiring skeleton was removed; the replacement's dispatch
+  selection, conversion, probe scheduling and assessment, and accounting remain
+  planned. The quota adapter implements its bounded source,
   normalization, polling request, and assessment behavior, but is not yet wired
   into CLI composition or coordinator dispatch.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
@@ -464,9 +464,9 @@ Codex, quota, and runtime adapters.
   coordinator gates. The shared runner values and ports are implemented. The
   neighboring [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a
   historical signature reference; runtime code is authoritative.
-- Effects: the coordinator owns async scheduling and effect ordering. The
-  Codex and quota adapters own their stated external reads; the runtime adapter
-  owns clock, wait, and random effects.
+- Effects: the planned coordinator will own async scheduling and effect
+  ordering. The Codex and quota adapters own their stated external reads; the
+  runtime adapter owns clock, wait, and random effects.
 
 ### Standalone invocation
 
@@ -615,9 +615,9 @@ flowchart LR
 ```
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
-freezer, pure planner, and token-estimation wiring are implemented. Coordinator
-run and returned-attempt composition are partially wired; CLI integration and
-full dispatch remain planned.
+freezer, pure planner, and token-estimation wiring are implemented. The former
+runtime coordinator skeleton has been removed; replacement implementation,
+CLI integration, and full dispatch remain planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -687,7 +687,7 @@ expected identity scope, so the CLI cannot yet enable scoped quota availability.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator/` | Proposed internal lifecycle ownership; the existing `coordinator.py` remains a partial runtime skeleton. |
+| `script/eval/runner/coordinator/` | Proposed internal lifecycle ownership; no runtime coordinator implementation exists. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |
