@@ -350,6 +350,43 @@ def successful_outcome() -> AttemptResult:
     )
 
 
+def stopping_attempt(
+    hooks: list[DispatchStop],
+    requests: list[AttemptRequest],
+    result: AttemptResult,
+) -> AttemptCall:
+    """Build an attempt fake that calls the coordinator's stop hook."""
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        hooks.append(stop)
+        requests.append(request)
+        stop(result)
+        return result
+
+    return attempt
+
+
+def capture_attempt(
+    call: EffectiveCall,
+    result: AttemptResult,
+    started_at: str,
+    ended_at: str,
+    /,
+) -> AttemptEvidence:
+    """Build the attempt observation for a returned fake supervisor outcome."""
+    return AttemptEvidence(
+        control_flow="returned",
+        outcome=result,
+        error_type=None,
+        diagnostic=None,
+        request=call.request,
+        started_at_utc=started_at,
+        ended_at_utc=ended_at,
+        usage_telemetry=None,
+    )
+
+
 def make_coordinator(
     order: list[str],
     quota: FakeQuotaReader,
@@ -426,11 +463,7 @@ def cancellation_blocking_monitor(
             await asyncio.Event().wait()
         except asyncio.CancelledError:
             cleanup_started.set()
-            while not allow_cleanup.is_set():
-                try:
-                    await allow_cleanup.wait()
-                except asyncio.CancelledError:
-                    continue
+            await allow_cleanup.wait()
             cleanup_finished.set()
             raise
 
@@ -617,6 +650,70 @@ async def test_monitor_failure_stops_active_scheduler() -> None:
     # Then
     assert len(evidence.attempt_inputs) == 1
     assert stopped_when_cancelled == [True]
+    assert evidence.final_records == []
+
+
+async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
+    """Share one stop hook and refuse a later call after it is invoked."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2)
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    monitor_started = asyncio.Event()
+    hook_references: list[DispatchStop] = []
+    attempt_requests: list[AttemptRequest] = []
+    outcome = successful_outcome()
+    attempt = stopping_attempt(hook_references, attempt_requests, outcome)
+
+    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+        hook_references.append(stop)
+        monitor_started.set()
+        await asyncio.Event().wait()
+
+    async def scheduler(
+        context: _RunContext,
+        execute: ExecuteAttempt,
+        stop: DispatchStop,
+        is_stopped: Callable[[], bool],
+        /,
+    ) -> RunRecord:
+        hook_references.append(stop)
+        await monitor_started.wait()
+        await execute(context.bound_run.calls[0], 1)
+        assert is_stopped()
+        await execute(context.bound_run.calls[1], 1)
+        return run_record()
+
+    coordinator = Coordinator(
+        attempt=attempt,
+        classifier=FakeClassifier(order),
+        quota_status=quota,
+        runtime=FixedRuntime(),
+        progress=FakeProgress(),
+        schedule_calls=scheduler,
+        monitor_quota=monitor,
+        capture_returned_attempt=capture_attempt,
+    )
+
+    # When
+    with pytest.raises(RuntimeError, match="dispatch was stopped"):
+        await coordinator.run(run, evidence, configuration(quota=True))
+
+    # Then
+    assert_stop_hook_flow(run, evidence, hook_references, attempt_requests)
+
+
+def assert_stop_hook_flow(
+    run: BoundRun,
+    evidence: FakeEvidence,
+    hooks: list[DispatchStop],
+    requests: list[AttemptRequest],
+) -> None:
+    """Check stop-hook identity and rejection of every later request."""
+    assert requests == [run.calls[0].request]
+    assert len(hooks) == 3
+    assert hooks[0] is hooks[1] is hooks[2]
     assert evidence.final_records == []
 
 
