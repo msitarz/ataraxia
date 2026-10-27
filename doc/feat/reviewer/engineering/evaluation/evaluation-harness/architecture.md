@@ -534,10 +534,9 @@ Codex, quota, and runtime adapters.
   configured for the same binding scope, along with the runtime and supervisor
   adapter, into one coordinator. The coordinator, adapters, and CLI composition
   remain design stubs. Runtime
-  [`policy.py`](../../../../../../script/eval/runner/policy.py) exposes reviewed
-  pure-function signatures with explicit pending-implementation errors; it
-  does not yet perform policy calculations. The shared runner values and ports
-  are implemented. The neighboring
+  [`policy.py`](../../../../../../script/eval/runner/policy.py) implements the
+  reviewed pure policy calculations; it does not own effects or coordinator
+  gates. The shared runner values and ports are implemented. The neighboring
   [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a historical
   signature reference; runtime code is authoritative.
 - Effects: the coordinator owns async scheduling and effect ordering. The
@@ -735,8 +734,9 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-Runner policy and AC-9 progress behavior remain design-only; accepted shared
-runner configuration and consumer-owned runtime ports are implemented. The
+AC-9 progress behavior remains design-only; pure runner policy calculations,
+accepted shared runner configuration, and consumer-owned runtime ports are
+implemented. The
 shared base preserves flat attempt fields while permitting probes to reuse the
 process projection. `plan.pyi` remains a historical planner reference. The
 active implementations are

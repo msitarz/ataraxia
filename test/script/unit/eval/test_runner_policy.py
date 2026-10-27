@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Expected policy outcomes awaiting the runner policy implementation."""
+"""Pure runner policy calculations and their boundaries."""
 
 from pathlib import Path
 
@@ -59,7 +59,6 @@ def assessment(
     [("confident_absence", True), ("present_or_unknown", False)],
     ids=["explicit-absence", "semantic-result-or-unknown"],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_confident_no_result_requires_explicit_absence(
     basis: NoResultBasis, expected: bool
 ) -> None:
@@ -94,7 +93,6 @@ def test_confident_no_result_requires_explicit_absence(
         "semantic-result-or-unknown-refused",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_infrastructure_retry_uses_its_category_and_limit(
     category: RetryClass,
     limit: int,
@@ -134,7 +132,6 @@ def test_infrastructure_retry_uses_its_category_and_limit(
         "semantic-result-or-unknown-refused",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_capacity_retry_uses_its_category_and_limit(
     category: RetryClass,
     limit: int,
@@ -165,6 +162,8 @@ def test_capacity_retry_uses_its_category_and_limit(
         (3, 0.5, 4.0, 4.0),
         (100_000, 0.5, 4.0, 4.0),
         (100_000, 4.0, 4.0, 4.0),
+        (3, 0.1, 0.7, 0.7),
+        (10**100, 5e-324, 1.0, 1.0),
     ],
     ids=[
         "first-bound",
@@ -172,9 +171,10 @@ def test_capacity_retry_uses_its_category_and_limit(
         "equal-cap",
         "saturates-before-overflow",
         "equal-base-cap",
+        "cap-not-power-of-two",
+        "huge-index-from-subnormal-base",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_capacity_jitter_bound_saturates_exponential_growth(
     index: int, base: float, cap: float, expected: float
 ) -> None:
@@ -207,7 +207,6 @@ def test_capacity_jitter_bound_saturates_exponential_growth(
         "past-bound",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_quota_wait_remaining_respects_opt_in_and_optional_bound(
     enabled: bool, limit: float | None, waited: float, expected: float | None
 ) -> None:
@@ -238,7 +237,6 @@ def test_quota_wait_remaining_respects_opt_in_and_optional_bound(
         "past-finite-cap",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_quota_probe_requires_opt_in_and_respects_optional_cap(
     enabled: bool, budget: int | None, used: int, expected: bool
 ) -> None:
@@ -260,6 +258,7 @@ def test_quota_probe_requires_opt_in_and_respects_optional_cap(
         ("2030-01-01T00:00:00Z", "2030-01-01T00:00:00Z", 60.0),
         ("2030-01-01T00:00:00Z", "2030-01-01T00:00:20Z", 20.0),
         ("2030-01-01T00:00:00Z", "2030-01-01T00:02:00Z", 60.0),
+        ("2030-01-01T00:00:00Z", "2030-01-01T00:00:00.000001Z", 0.000001),
     ],
     ids=[
         "missing-hint",
@@ -267,9 +266,9 @@ def test_quota_probe_requires_opt_in_and_respects_optional_cap(
         "past-or-now-hint",
         "earlier-future-hint",
         "interval-first",
+        "fractional-second-hint",
     ],
 )
-@pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_quota_poll_delay_uses_earlier_positive_reset_hint_or_interval(
     now: str, hint: str | None, expected: float
 ) -> None:
