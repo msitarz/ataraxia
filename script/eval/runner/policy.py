@@ -26,9 +26,10 @@ def infrastructure_retry_allowed(
 ) -> bool:
     """Gate an explicitly classified infrastructure retry by its allowance.
 
-    Only the infrastructure category and ``retry_limit`` belong here;
-    callers retain the other lifecycle and budget gates. The default limit is
-    zero, so a fresh configuration allows no retry.
+    Eligibility requires the infrastructure category, confident semantic
+    absence, and an unspent ``retry_limit``. The coordinator retains cleanup,
+    cancellation, overflow, evidence-publication, and caller-budget gates. The
+    default limit is zero, so a fresh configuration allows no retry.
     """
     raise NotImplementedError("infrastructure_retry_allowed policy is pending")
 
@@ -41,8 +42,10 @@ def capacity_retry_allowed(
 ) -> bool:
     """Gate an explicitly classified capacity retry by its own allowance.
 
-    This uses ``capacity_retry_limit`` independently from infrastructure
-    retries. Cleanup and evidence gates remain with the coordinator.
+    Eligibility requires the capacity category, confident semantic absence,
+    and an unspent ``capacity_retry_limit``, independently from infrastructure
+    retries. The coordinator retains cleanup, cancellation, overflow,
+    evidence-publication, and caller-budget gates.
     """
     raise NotImplementedError("capacity_retry_allowed policy is pending")
 
@@ -88,6 +91,9 @@ def quota_poll_delay(
 
     Missing, stale, or past hints use the interval. A future hint schedules a
     check only; it never authorizes dispatch. A zero-delay polling loop is
-    excluded.
+    excluded. As a typed precondition, ``now_utc`` and a supplied hint are
+    valid timezone-aware UTC timestamps from their runtime/provider boundary;
+    adapters normalize or refuse malformed source timestamps before this
+    function is called.
     """
     raise NotImplementedError("quota_poll_delay policy is pending")

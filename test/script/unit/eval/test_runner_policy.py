@@ -79,6 +79,7 @@ def test_confident_no_result_requires_explicit_absence(
         ("infrastructure", 0, 0, "confident_absence", False),
         ("infrastructure", 2, 0, "confident_absence", True),
         ("infrastructure", 2, 2, "confident_absence", False),
+        ("infrastructure", 2, 3, "confident_absence", False),
         ("capacity", 2, 0, "confident_absence", False),
         ("unknown", 2, 0, "confident_absence", False),
         ("infrastructure", 2, 0, "present_or_unknown", False),
@@ -87,6 +88,7 @@ def test_confident_no_result_requires_explicit_absence(
         "default-zero-limit",
         "under-infrastructure-limit",
         "at-infrastructure-limit",
+        "past-infrastructure-limit",
         "capacity-is-separate-category",
         "unknown-class-refused",
         "semantic-result-or-unknown-refused",
@@ -117,6 +119,7 @@ def test_infrastructure_retry_uses_its_category_and_limit(
         ("capacity", 0, 0, "confident_absence", False),
         ("capacity", 1, 0, "confident_absence", True),
         ("capacity", 1, 1, "confident_absence", False),
+        ("capacity", 1, 2, "confident_absence", False),
         ("infrastructure", 1, 0, "confident_absence", False),
         ("unknown", 1, 0, "confident_absence", False),
         ("capacity", 1, 0, "present_or_unknown", False),
@@ -125,6 +128,7 @@ def test_infrastructure_retry_uses_its_category_and_limit(
         "default-zero-limit",
         "under-capacity-limit",
         "at-capacity-limit",
+        "past-capacity-limit",
         "infrastructure-is-separate-category",
         "unknown-class-refused",
         "semantic-result-or-unknown-refused",
@@ -157,11 +161,18 @@ def test_capacity_retry_uses_its_category_and_limit(
     ("index", "base", "cap", "expected"),
     [
         (0, 0.5, 4.0, 0.5),
+        (1, 0.5, 4.0, 1.0),
         (3, 0.5, 4.0, 4.0),
         (100_000, 0.5, 4.0, 4.0),
         (100_000, 4.0, 4.0, 4.0),
     ],
-    ids=["first-bound", "equal-cap", "saturates-before-overflow", "equal-base-cap"],
+    ids=[
+        "first-bound",
+        "second-bound-below-cap",
+        "equal-cap",
+        "saturates-before-overflow",
+        "equal-base-cap",
+    ],
 )
 @pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_capacity_jitter_bound_saturates_exponential_growth(
@@ -185,8 +196,16 @@ def test_capacity_jitter_bound_saturates_exponential_growth(
         (True, 10.0, 0.0, 10.0),
         (True, 10.0, 7.5, 2.5),
         (True, 10.0, 10.0, 0.0),
+        (True, 10.0, 12.0, 0.0),
     ],
-    ids=["disabled", "enabled-unbounded", "at-start", "remaining-duration", "at-bound"],
+    ids=[
+        "disabled",
+        "enabled-unbounded",
+        "at-start",
+        "remaining-duration",
+        "at-bound",
+        "past-bound",
+    ],
 )
 @pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
 def test_quota_wait_remaining_respects_opt_in_and_optional_bound(
@@ -209,12 +228,14 @@ def test_quota_wait_remaining_respects_opt_in_and_optional_bound(
         (True, None, 20, True),
         (True, 2, 1, True),
         (True, 2, 2, False),
+        (True, 2, 3, False),
     ],
     ids=[
         "default-no-opt-in",
         "enabled-no-count-cap",
         "under-finite-cap",
         "at-finite-cap",
+        "past-finite-cap",
     ],
 )
 @pytest.mark.xfail(raises=NotImplementedError, strict=True, reason="policy pending")
