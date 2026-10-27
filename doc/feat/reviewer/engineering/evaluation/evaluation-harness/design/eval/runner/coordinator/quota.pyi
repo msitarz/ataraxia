@@ -88,16 +88,17 @@ def probe_persisted(
     stop: StopReason | None,
     remaining_seconds: float | None,
     now_utc: str,
-    closed_wait: WaitRecord | None,
+    monotonic_now: float,
     /,
-) -> tuple[QuotaHistory, Waiting | Open | QuotaStopped]:
-    """Append durable probe evidence and decide using fresh stop and bound facts.
+) -> tuple[QuotaHistory, Waiting]:
+    """Append durable probe evidence and decide whether the wait must close.
 
     Only the trusted adapter's fresh, complete matching-scope observation for
     this pause can authorize availability at the supplied time. Stop and bounds
-    win. Open or stopped requires a durably closed wait, which is appended to
-    history; otherwise
-    Waiting retains closure work.
+    win. A required closure is retained as Waiting.end_record using the supplied
+    clocks; continued exhaustion leaves it empty. The owner writes that closure
+    before quota_wait_completed can open or stop the quota state. The shared stop
+    latch may already have closed dispatch.
     """
     ...
 

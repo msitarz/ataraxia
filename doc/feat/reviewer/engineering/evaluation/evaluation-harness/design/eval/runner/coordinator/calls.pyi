@@ -54,8 +54,9 @@ def attempt_persisted(
 
     Passive observation is selected only when enabled. Retry eligibility uses
     the independent allowances in history, safe cleanup, and no-result evidence.
-    A capacity wait is supplied only after its context and jitter are sampled;
-    an infrastructure retry queues without a capacity delay. Stop wins.
+    A supplied capacity wait is prepared with sampled context and jitter; the
+    owner submits its start only if selected. An infrastructure retry queues
+    without a capacity delay. Stop wins.
     """
     ...
 
@@ -72,7 +73,10 @@ def telemetry_persisted(
     capacity_wait: CallWait | None,
     /,
 ) -> RetryWait | Queued | Finished | Stopped:
-    """Decide after durable passive telemetry with the same retry policy."""
+    """Decide after durable telemetry with the same retry policy.
+
+    A supplied capacity wait is prepared, not yet submitted.
+    """
     ...
 
 def attempt_write_failed(state: Recording, error: BaseException, /) -> EvidencePending:
@@ -98,7 +102,9 @@ def call_wait_started(
     closure: WaitRecord | None,
     /,
 ) -> RetryWait:
-    """Mark the start durable; cancellation or stop requires a durable end.
+    """Mark a successfully settled submitted start durable.
+
+    Cancellation or stop requires a durable end.
 
     When cancellation or stop occurred, closure supplies the pending end record
     retained in the returned wait. The owner writes it before propagation.

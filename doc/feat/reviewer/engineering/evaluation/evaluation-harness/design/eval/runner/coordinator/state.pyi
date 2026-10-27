@@ -57,18 +57,19 @@ class CallEvidenceFailure:
 
 @dataclass(frozen=True)
 class CallWait:
-    """A call-local wait from submitted start through durable end.
+    """A call-local wait from preparation through durable end.
 
-    The owner retains the submitted write until it settles. ``start_phase``
-    determines whether cancellation must close the wait; monotonic time and the
-    sampled delay support progress without a parallel timer ledger.
+    A prepared wait has a sampled delay but no submitted start write. The owner
+    submits and retains that write until it settles. ``start_phase`` determines
+    whether cancellation must close the wait; monotonic time and the sampled
+    delay support progress without a parallel timer ledger.
     """
 
     wait_id: WaitId
     context: CapacityWaitContext
     started_at_utc: str
     started_monotonic: float
-    start_phase: Literal["submitted", "durable"]
+    start_phase: Literal["prepared", "submitted", "durable"]
     end_record: WaitRecord | None
 
 @dataclass(frozen=True)
