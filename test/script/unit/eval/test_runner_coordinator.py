@@ -1111,6 +1111,35 @@ async def test_cancelled_probe_with_attached_evidence_never_resumes() -> None:
     assert evidence.final_records == []
 
 
+def start_probe_with_attached_failure(
+    run: BoundRun,
+    evidence: BlockingProbeEvidence,
+    quota: FakeQuotaReader,
+    error: BaseException,
+    order: list[str],
+    /,
+) -> tuple[asyncio.Task[RunRecord], QuotaProbeEvidence, list[AttemptRequest]]:
+    """Start a paused run whose failing poll carries exact request evidence."""
+    request = make_probe_request(run)
+    control_flow: Literal["cancelled", "raised"] = (
+        "cancelled" if isinstance(error, asyncio.CancelledError) else "raised"
+    )
+    probe = make_probe_evidence(
+        request, run.calls[0], state="unknown", control_flow=control_flow
+    )
+    attach_quota_probe_evidence(error, probe)
+    quota.probe_error = error
+    coordinator, _, requests = make_coordinator(
+        run,
+        evidence,
+        quota,
+        order,
+        selector=AttemptThenPause(run.calls[0]),
+    )
+    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
+    return asyncio.create_task(coordinator.run()), probe, requests
+
+
 async def test_probe_stop_latch_blocks_recovery_and_later_attempts() -> None:
     """Keep a stop raised by the probe adapter latched through settlement."""
     # Given
@@ -1146,27 +1175,21 @@ async def test_repeated_cancellation_waits_for_attached_probe_evidence() -> None
     run = bound_run(config=configuration(quota=True))
     evidence = BlockingProbeEvidence(order)
     quota = FakeQuotaReader(order)
-    request = make_probe_request(run)
-    probe = make_probe_evidence(
-        request, run.calls[0], state="unknown", control_flow="cancelled"
-    )
     cancellation = asyncio.CancelledError()
-    attach_quota_probe_evidence(cancellation, probe)
-    quota.probe_error = cancellation
-    coordinator, _, _ = make_coordinator(
-        run,
-        evidence,
-        quota,
-        order,
-        selector=AttemptThenPause(run.calls[0]),
+    run_task, probe, requests = start_probe_with_attached_failure(
+        run, evidence, quota, cancellation, order
     )
-    coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
-    run_task = asyncio.create_task(coordinator.run())
 
     # When
     await evidence.write_started.wait()
     run_task.cancel()
+    await asyncio.sleep(0)
+    assert not run_task.done()
+    assert not evidence.write_finished.is_set()
     run_task.cancel()
+    await asyncio.sleep(0)
+    assert not run_task.done()
+    assert not evidence.write_finished.is_set()
     evidence.allow_write.set()
 
     # Then
@@ -1175,6 +1198,39 @@ async def test_repeated_cancellation_waits_for_attached_probe_evidence() -> None
     assert raised.value is cancellation
     assert evidence.write_finished.is_set()
     assert evidence.probe_inputs == [probe]
+    assert requests == [run.calls[0].request]
+    assert evidence.final_records == []
+
+
+async def test_owner_cancellation_wins_during_probe_failure_settlement() -> None:
+    """Prefer owner cancellation after preserving attached failure evidence."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = BlockingProbeEvidence(order)
+    quota = FakeQuotaReader(order)
+    failure = RuntimeError("probe failed")
+    run_task, probe, requests = start_probe_with_attached_failure(
+        run, evidence, quota, failure, order
+    )
+
+    # When
+    await evidence.write_started.wait()
+    run_task.cancel()
+    await asyncio.sleep(0)
+    assert not run_task.done()
+    assert not evidence.write_finished.is_set()
+    evidence.allow_write.set()
+
+    # Then
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await run_task
+    assert raised.value is not failure
+    assert raised.value.__cause__ is failure
+    assert "probe failed" in str(raised.value.__cause__)
+    assert evidence.write_finished.is_set()
+    assert evidence.probe_inputs == [probe]
+    assert requests == [run.calls[0].request]
     assert evidence.final_records == []
 
 

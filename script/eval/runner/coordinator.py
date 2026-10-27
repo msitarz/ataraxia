@@ -7,7 +7,7 @@ Dispatch selection and quota recovery policy remain explicit pending leaves.
 import asyncio
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import Literal, assert_never
 
 from script.eval.evidence import EvidenceStore
 from script.eval.model import (
@@ -186,6 +186,8 @@ class Coordinator:
                     if stop.stopped():
                         raise RuntimeError("dispatch was stopped before completion")
                     return record
+                case unreachable:
+                    assert_never(unreachable)
 
     async def _await_recovery_for_pause(
         self,
@@ -268,58 +270,94 @@ class Coordinator:
             if stop.stopped():
                 raise RuntimeError("dispatch was stopped during quota recovery")
             request = await self.prepare_quota_probe(self, trigger, prior_probe)
-            await self.evidence.record_quota_probe_event(
-                QuotaProbeStarted(kind="started", request=request)
-            )
-            if stop.stopped():
-                raise RuntimeError("dispatch was stopped before quota probe")
-            try:
-                probe = await self.quota_status.poll(request, stop)
-            except BaseException as error:
-                await self._record_probe_after_failure(error, request)
-                stop(error)
-                raise
-            await self.evidence.record_quota_probe_settled(probe)
-            if stop.stopped():
-                raise RuntimeError("dispatch was stopped during quota probe")
+            probe = await self._poll_and_settle_probe(request, stop)
             action = await self.decide_quota_recovery(self, trigger, prior_probe, probe)
-            if action == "resume":
-                return
-            if action == "stop":
-                raise RuntimeError("quota recovery stopped without resumption")
-            prior_probe = probe
+            match action:
+                case "resume":
+                    return
+                case "stop":
+                    raise RuntimeError("quota recovery stopped without resumption")
+                case "continue":
+                    prior_probe = probe
+                case unreachable:
+                    assert_never(unreachable)
+
+    async def _poll_and_settle_probe(
+        self, request: QuotaProbeRequest, stop: _DispatchGate, /
+    ) -> QuotaProbeEvidence:
+        """Persist the start and settlement around one supervised poll.
+
+        Returns:
+            The quota probe evidence returned by the reader.
+
+        Raises:
+            RuntimeError: Dispatch stop is latched during the probe.
+        """
+        await self.evidence.record_quota_probe_event(
+            QuotaProbeStarted(kind="started", request=request)
+        )
+        if stop.stopped():
+            raise RuntimeError("dispatch was stopped before quota probe")
+        try:
+            probe = await self.quota_status.poll(request, stop)
+        except BaseException as error:
+            stop(error)
+            owner_cancellation = await self._record_probe_after_failure(error, request)
+            if owner_cancellation is not None:
+                if isinstance(error, asyncio.CancelledError):
+                    error.add_note(
+                        "Additional owner cancellation arrived while preserving "
+                        "the probe cancellation"
+                    )
+                    raise error
+                owner_cancellation.add_note(
+                    f"Quota probe failed while settling evidence: {error!r}"
+                )
+                raise owner_cancellation from error
+            raise
+        await self.evidence.record_quota_probe_settled(probe)
+        if stop.stopped():
+            raise RuntimeError("dispatch was stopped during quota probe")
+        return probe
 
     async def _record_probe_after_failure(
         self, error: BaseException, request: QuotaProbeRequest, /
-    ) -> None:
-        """Persist attached evidence without replacing its primary failure."""
+    ) -> asyncio.CancelledError | None:
+        """Persist attached evidence and report cancellation during settlement.
+
+        Returns:
+            Cancellation delivered to this owner while the evidence write settled.
+        """
         probe = quota_probe_evidence(error, request)
         if probe is None:
-            return
+            return None
         settlement = asyncio.create_task(
             self.evidence.record_quota_probe_settled(probe),
             name=f"quota-probe-settlement-{request.schedule.probe_id}",
         )
+        owner_cancellation: asyncio.CancelledError | None = None
         while not settlement.done():
             try:
                 await asyncio.shield(settlement)
             except asyncio.CancelledError as cancellation:
-                error.add_note(
-                    "Additional cancellation arrived while settling probe evidence: "
-                    f"{cancellation!r}"
-                )
+                if settlement.cancelled():
+                    error.add_note("Quota probe evidence settlement was cancelled")
+                    return owner_cancellation
+                if owner_cancellation is None:
+                    owner_cancellation = cancellation
             except BaseException as persistence_error:
                 error.add_note(
                     "Quota probe evidence could not be persisted: "
                     f"{persistence_error!r}"
                 )
-                return
+                return owner_cancellation
         if settlement.cancelled():
             error.add_note("Quota probe evidence settlement was cancelled")
         elif (persistence_error := settlement.exception()) is not None:
             error.add_note(
                 f"Quota probe evidence could not be persisted: {persistence_error!r}"
             )
+        return owner_cancellation
 
 
 async def _select_dispatch(
