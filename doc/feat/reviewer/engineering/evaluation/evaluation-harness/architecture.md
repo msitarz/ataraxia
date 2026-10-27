@@ -296,11 +296,14 @@ gating retries and stopping globally on unsafe outcomes.
 - **Current maturity:** the runtime coordinator composes a typed scheduler
   callback, creates and joins one opt-in monitor task, and wires a returned
   attempt through classification, durable attempt recording, and optional
-  passive quota telemetry. The scheduler, supervisor-outcome conversion, monitor
-  cadence/probe lifecycle, retry and wait decisions, transition accounting, and
-  progress projection remain pending leaves. The scheduler must return its run
-  record after all work settles; the coordinator then finalizes it. The current
-  wiring does not establish dispatch gates, concurrency, retries, pause/resume,
+  passive quota telemetry. It observes scheduler and monitor tasks together;
+  an early monitor exit latches stop and settles the scheduler. Owned tasks stay
+  joined through repeated cancellation of their owner. The scheduler,
+  supervisor-outcome conversion, monitor cadence/probe lifecycle, retry and
+  wait decisions, transition accounting, and progress projection remain pending
+  leaves. The scheduler must return its run record after all work settles; the
+  coordinator then finalizes it. This stage does not establish scheduler
+  dispatch gates, concurrency, retries, pause/resume,
   probe behavior, complete shutdown, or truthful final accounting.
 - Progress is a projection of the frozen plan and coordinator lifecycle, not a
   second accounting ledger. Disjoint call, attempt, and probe totals and the
