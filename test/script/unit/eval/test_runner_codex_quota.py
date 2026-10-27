@@ -874,6 +874,54 @@ async def test_older_available_record_cannot_replace_fresh_exhaustion(
     assert older.windows[0].usage_percent == pytest.approx(35.0)
 
 
+async def test_delayed_read_cannot_replace_newer_exhausted_observation(
+    tmp_path: Path,
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows(ordinal=17))
+    local_source = LocalCodexQuotaStatusSource(sessions)
+    old = await local_source.read_session_for_thread(SYNTHETIC_THREAD_ID)
+    write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp="2026-10-27T10:00:00Z", primary_used=100, ordinal=18),
+    )
+    new = await local_source.read_session_for_thread(SYNTHETIC_THREAD_ID)
+    assert old is not None and new is not None
+    started = asyncio.Event()
+    release = asyncio.Event()
+
+    class DelayedSource:
+        calls = 0
+
+        async def read_session_for_thread(
+            self, thread_id: str, /
+        ) -> CodexSessionSnapshot | None:
+            self.calls += 1
+            if self.calls == 1:
+                started.set()
+                await release.wait()
+                return old
+            return new
+
+    reader = make_reader(DelayedSource(), make_identity_scope())
+    attempt = make_attempt_evidence(thread_started())
+    delayed = asyncio.create_task(reader.observe_settled_attempt(attempt))
+    await started.wait()
+
+    # When
+    exhausted = await reader.observe_settled_attempt(attempt)
+    release.set()
+    older = await delayed
+
+    # Then
+    assert exhausted.windows[0].state == "exhausted"
+    assert older.windows[0].state == "unknown"
+    assert older.windows[0].usage_percent == pytest.approx(35.0)
+    assert older.diagnostic == "quota source sequence did not advance"
+
+
 @pytest.mark.parametrize(
     ("timestamp", "expected_state", "diagnostic"),
     [

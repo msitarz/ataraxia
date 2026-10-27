@@ -331,7 +331,8 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     exact UUID-suffixed rollout candidate. The source validates consumed fields;
     the normalizer accepts CLI 0.164.0 and fails closed on unrecognized or incomplete
     input. The probe uses the caller's frozen nonempty instruction file and
-    receives a fixed minimal prompt.
+    receives a fixed minimal prompt. Use each reader and its ordering state
+    only from one event loop; it is not thread-safe.
     """
 
     source: CodexQuotaStatusSource
@@ -454,7 +455,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
             self.runtime.utc_now(),
             self.max_observation_age_seconds,
         )
-        return await self._ordering.accept(observation, self.expected_scope)
+        return self._ordering.accept(observation, self.expected_scope)
 
 
 @dataclass(frozen=True)
@@ -479,13 +480,12 @@ class _OrderedObservation:
 
 @dataclass
 class _ObservationOrdering:
-    """Reject delayed snapshots before they can replace newer quota state."""
+    """Order snapshots without yielding, confined to the reader's event loop."""
 
-    lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     latest: _OrderedObservation | None = None
     latest_snapshots: dict[str, _OrderedObservation] = field(default_factory=dict)
 
-    async def accept(
+    def accept(
         self, observation: QuotaObservation, expected_scope: QuotaScope | None, /
     ) -> QuotaObservation:
         """Apply one cross-read freshness order to scoped complete snapshots.
@@ -502,14 +502,13 @@ class _ObservationOrdering:
         record = _observation_order_key(observation)
         if isinstance(record, str):
             return _as_unknown(observation, record)
-        async with self.lock:
-            issue = _ordering_issue(
-                record, self.latest_snapshots.get(record.coordinate), self.latest
-            )
-            if issue is not None:
-                return _as_unknown(observation, issue)
-            self.latest = record
-            self.latest_snapshots[record.coordinate] = record
+        issue = _ordering_issue(
+            record, self.latest_snapshots.get(record.coordinate), self.latest
+        )
+        if issue is not None:
+            return _as_unknown(observation, issue)
+        self.latest = record
+        self.latest_snapshots[record.coordinate] = record
         return observation
 
 
