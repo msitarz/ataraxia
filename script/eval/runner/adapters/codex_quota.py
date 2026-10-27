@@ -7,7 +7,6 @@ when runtime identity, completeness, freshness, or scope cannot be verified.
 
 import asyncio
 from asyncio import CancelledError
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
@@ -317,18 +316,6 @@ class CodexQuotaSettings:
             raise ValueError("probe_instructions_file must be absolute")
 
 
-type ExtractThreadId = Callable[[bytes | None], str | None]
-type NormalizeSession = Callable[
-    [CodexSessionSnapshot | None, QuotaScope | None, str, float], QuotaObservation
-]
-type BuildProbeRequest = Callable[
-    [QuotaProbeRequest, CodexQuotaSettings], AttemptRequest
-]
-type AssessProbe = Callable[
-    [AttemptEvidence, QuotaObservation | None], tuple[QuotaState, str | None]
-]
-
-
 @dataclass(frozen=True, kw_only=True)
 class CodexQuotaStatusReader(QuotaStatusReader):
     """Read passive telemetry and expose separate, supervised quota polls.
@@ -353,10 +340,6 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     attempt_call: AttemptCall
     runtime: Runtime
     max_observation_age_seconds: float = 60.0
-    extract_thread_id: ExtractThreadId | None = None
-    normalize_session: NormalizeSession | None = None
-    build_probe_request: BuildProbeRequest | None = None
-    assess_probe: AssessProbe | None = None
     _ordering: _ObservationOrdering = field(
         default_factory=lambda: _ObservationOrdering(), compare=False, repr=False
     )
@@ -384,7 +367,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         """Look up this attempt's source session and normalize it once.
 
         Returns:
-            The injected provider-neutral observation.
+            The provider-neutral observation.
         """
         return await self._observe_telemetry(evidence)
 
@@ -409,9 +392,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
             raise ValueError(
                 "quota probe request does not match the reader's verified scope"
             )
-        build_request = self.build_probe_request or _build_probe_attempt_request
-        assess_probe = self.assess_probe or _assess_probe
-        attempt_request = build_request(request, self.settings)
+        attempt_request = _build_probe_attempt_request(request, self.settings)
         started_at_utc = self.runtime.utc_now()
         outcome: AttemptResult | None = None
         attempt: AttemptEvidence | None = None
@@ -424,7 +405,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
                 attempt_request, outcome, started_at_utc, ended_at_utc
             )
             observation = await self._observe_telemetry(attempt)
-            quota_state, classification_basis = assess_probe(attempt, observation)
+            quota_state, classification_basis = _assess_probe(attempt, observation)
             return QuotaProbeEvidence(
                 request=request,
                 process=attempt,
@@ -459,17 +440,15 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         """Correlate captured thread telemetry and normalize its source.
 
         Returns:
-            The injected source-backed observation.
+            The source-backed observation.
         """
-        extract_thread_id = self.extract_thread_id or _extract_thread_id
-        normalize_session = self.normalize_session or _normalize_session
-        thread_id = extract_thread_id(attempt.usage_telemetry)
+        thread_id = _extract_thread_id(attempt.usage_telemetry)
         snapshot = (
             await self.source.read_session_for_thread(thread_id)
             if thread_id is not None
             else None
         )
-        observation = normalize_session(
+        observation = _normalize_session(
             snapshot,
             self.expected_scope,
             self.runtime.utc_now(),

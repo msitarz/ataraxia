@@ -605,8 +605,9 @@ Codex, quota, and runtime adapters.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
 - The adapter package exports `SystemRuntime` and the typed Codex binding,
-  request, classifier, and quota-reader adapters. Their injected operations
-  remain available for composition and tests, while default leaves now resolve
+  request, classifier, and quota-reader adapters. Codex request and classifier
+  operations remain injectable; the quota reader uses its source, supervisor,
+  and runtime ports. The default leaves now resolve
   and probe the executable, retain requested settings with native values marked
   unknown, construct a request and effective identity, and classify only
   confirmed prelaunch failure. Quota and model-capacity recognition remain

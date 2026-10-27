@@ -2,7 +2,6 @@
 """Codex quota source, normalization, polling, and lifecycle behavior."""
 
 import asyncio
-from collections.abc import Callable
 import json
 from pathlib import Path
 from threading import Event
@@ -14,7 +13,6 @@ import pytest
 from script.eval.model import (
     AttemptEvidence,
     QuotaAllowanceId,
-    QuotaObservation,
     QuotaProbeEvidence,
     QuotaProbeId,
     QuotaProbeRequest,
@@ -126,23 +124,9 @@ async def unused_attempt_call(
 
 
 def make_reader(
-    source: RecordingSource,
+    source: CodexQuotaStatusSource,
     scope: QuotaScope | None,
-    extract_thread_id: Callable[[bytes | None], str | None] | None,
-    normalize_session: Callable[
-        [CodexSessionSnapshot | None, QuotaScope | None, str, float],
-        QuotaObservation,
-    ]
-    | None,
     attempt_call: AttemptCall | None = None,
-    build_probe_request: Callable[
-        [QuotaProbeRequest, CodexQuotaSettings], AttemptRequest
-    ]
-    | None = None,
-    assess_probe: Callable[
-        [AttemptEvidence, QuotaObservation | None], tuple[QuotaState, str | None]
-    ]
-    | None = None,
     *,
     output_limit_bytes: int = 1024,
     probe_instructions_file: Path = Path("/tmp/instructions.txt"),
@@ -162,10 +146,6 @@ def make_reader(
         ),
         attempt_call=(unused_attempt_call if attempt_call is None else attempt_call),
         runtime=FixedRuntime(),
-        extract_thread_id=extract_thread_id,
-        normalize_session=normalize_session,
-        build_probe_request=build_probe_request,
-        assess_probe=assess_probe,
     )
     return reader
 
@@ -361,193 +341,6 @@ class RecordingAttemptCall:
         return self.result
 
 
-class RecordingProbeRecipe:
-    """Return one request and retain the exact quota request and settings."""
-
-    def __init__(self, request: AttemptRequest, /) -> None:
-        self.request = request
-        self.inputs: list[tuple[QuotaProbeRequest, CodexQuotaSettings]] = []
-
-    def __call__(
-        self, request: QuotaProbeRequest, settings: CodexQuotaSettings, /
-    ) -> AttemptRequest:
-        self.inputs.append((request, settings))
-        return self.request
-
-
-class RecordingThreadExtractor:
-    """Return one opaque thread identifier for the exact captured bytes."""
-
-    def __init__(self, telemetry: bytes, /) -> None:
-        self.telemetry = telemetry
-        self.thread_ids: list[str] = []
-
-    def __call__(self, raw: bytes | None, /) -> str:
-        assert raw is self.telemetry
-        thread_id = "opaque-probe-thread"
-        self.thread_ids.append(thread_id)
-        return thread_id
-
-
-class RecordingNormalizer:
-    """Return one generic observation after verifying scope and read time."""
-
-    def __init__(
-        self,
-        snapshot: CodexSessionSnapshot,
-        scope: QuotaScope,
-        observation: QuotaObservation,
-        /,
-    ) -> None:
-        self.snapshot = snapshot
-        self.scope = scope
-        self.observation = observation
-        self.calls: list[CodexSessionSnapshot | None] = []
-
-    def __call__(
-        self,
-        snapshot: CodexSessionSnapshot | None,
-        scope: QuotaScope | None,
-        read_at_utc: str,
-        max_age: float,
-        /,
-    ) -> QuotaObservation:
-        assert snapshot is self.snapshot
-        assert scope is self.scope
-        assert read_at_utc == "2026-10-27T10:00:00Z"
-        assert max_age.is_integer() and int(max_age) == 60
-        self.calls.append(snapshot)
-        return self.observation
-
-
-class RecordingAssessment:
-    """Return an explicitly unknown controlled assessment."""
-
-    def __init__(self) -> None:
-        self.calls: list[tuple[AttemptEvidence, QuotaObservation | None]] = []
-
-    def __call__(
-        self, attempt: AttemptEvidence, observation: QuotaObservation | None, /
-    ) -> tuple[QuotaState, str | None]:
-        self.calls.append((attempt, observation))
-        return "unknown", "controlled assessment only"
-
-
-def assert_poll_wiring(
-    result: QuotaProbeEvidence,
-    quota_request: QuotaProbeRequest,
-    attempt_request: AttemptRequest,
-    process_result: AttemptResult,
-    stdout: bytes,
-    source: RecordingSource,
-    attempt_call: RecordingAttemptCall,
-    recipe: RecordingProbeRecipe,
-    extractor: RecordingThreadExtractor,
-    normalizer: RecordingNormalizer,
-    assessment: RecordingAssessment,
-    reader: CodexQuotaStatusReader,
-    stop: DispatchStop,
-) -> None:
-    """Check exact request forwarding and generic process association."""
-    assert recipe.inputs == [(quota_request, reader.settings)]
-    assert recipe.inputs[0][0] is quota_request
-    assert recipe.inputs[0][1] is reader.settings
-    assert attempt_call.calls == [(attempt_request, stop)]
-    assert attempt_call.calls[0][0] is attempt_request
-    assert attempt_call.calls[0][1] is stop
-    assert source.thread_ids == ["opaque-probe-thread"]
-    assert extractor.thread_ids == ["opaque-probe-thread"]
-    assert normalizer.calls == [source.snapshot]
-    assert len(assessment.calls) == 1
-    assert assessment.calls[0][0].request is attempt_request
-    assert assessment.calls[0][0].outcome is process_result
-    assert assessment.calls[0][0].usage_telemetry is stdout
-    assert assessment.calls[0][1] is normalizer.observation
-    assert result.request is quota_request
-    assert result.process is assessment.calls[0][0]
-    assert result.quota_state == "unknown"
-    assert result.observation is normalizer.observation
-    assert not hasattr(result.process, "attempt_number")
-
-
-async def test_passive_observation_forwards_exact_thread_and_snapshot() -> None:
-    # Given
-    snapshot = CodexSessionSnapshot("source-opaque-7")
-    source = RecordingSource(snapshot)
-    scope = make_scope()
-    telemetry = b"opaque invocation telemetry"
-    normalized_inputs: list[
-        tuple[CodexSessionSnapshot | None, QuotaScope | None, str, float]
-    ] = []
-
-    def normalize_session(
-        received: CodexSessionSnapshot | None,
-        received_scope: QuotaScope | None,
-        read_at_utc: str,
-        max_age: float,
-    ) -> QuotaObservation:
-        source.events.append("normalize")
-        normalized_inputs.append((received, received_scope, read_at_utc, max_age))
-        return QuotaObservation(
-            scope=received_scope,
-            read_at_utc=read_at_utc,
-            source_coordinate=received.source_coordinate if received else None,
-            windows=(),
-            diagnostic="test normalization only",
-        )
-
-    reader = make_reader(
-        source,
-        scope,
-        lambda raw: "thread-opaque-1" if raw is telemetry else None,
-        normalize_session,
-    )
-
-    # When
-    observation = await reader.observe_settled_attempt(make_attempt_evidence(telemetry))
-
-    # Then
-    assert source.thread_ids == ["thread-opaque-1"]
-    assert source.events == ["lookup", "normalize"]
-    assert normalized_inputs == [(snapshot, scope, "2026-10-27T10:00:00Z", 60.0)]
-    assert normalized_inputs[0][0] is snapshot
-    assert observation.scope is scope
-    assert observation.source_coordinate == "source-opaque-7"
-    assert observation.read_at_utc == "2026-10-27T10:00:00Z"
-
-
-async def test_passive_observation_skips_lookup_without_correlated_thread() -> None:
-    # Given
-    source = RecordingSource(CodexSessionSnapshot("source-1"))
-    scope = make_scope()
-    normalized_inputs: list[CodexSessionSnapshot | None] = []
-
-    def normalize_session(
-        snapshot: CodexSessionSnapshot | None,
-        received_scope: QuotaScope | None,
-        read_at_utc: str,
-        max_age: float,
-    ) -> QuotaObservation:
-        normalized_inputs.append(snapshot)
-        return QuotaObservation(
-            scope=received_scope,
-            read_at_utc=read_at_utc,
-            source_coordinate=None,
-            windows=(),
-            diagnostic="test normalization only",
-        )
-
-    reader = make_reader(source, scope, lambda raw: None, normalize_session)
-
-    # When
-    observation = await reader.observe_settled_attempt(make_attempt_evidence(None))
-
-    # Then
-    assert source.thread_ids == []
-    assert normalized_inputs == [None]
-    assert observation.scope is scope
-
-
 async def test_passive_lookup_preserves_source_exception() -> None:
     # Given
     source_error = OSError("session read failed")
@@ -561,28 +354,37 @@ async def test_passive_lookup_preserves_source_exception() -> None:
             raise source_error
 
     source = FailingSource(None)
-    reader = make_reader(
-        source,
-        make_scope(),
-        lambda raw: "thread-opaque-2",
-        lambda snapshot, scope, read_at, max_age: pytest.fail(
-            "normalization must not follow a failed source lookup"
-        ),
-    )
+    reader = make_reader(source, make_scope())
 
     # When
     with pytest.raises(OSError, match="session read failed") as raised:
-        await reader.observe_settled_attempt(make_attempt_evidence(b"telemetry"))
+        await reader.observe_settled_attempt(make_attempt_evidence(thread_started()))
 
     # Then
     assert raised.value is source_error
-    assert source.thread_ids == ["thread-opaque-2"]
+    assert source.thread_ids == [SYNTHETIC_THREAD_ID]
+
+
+async def test_passive_observation_skips_lookup_without_correlated_thread() -> None:
+    # Given
+    source = RecordingSource(None)
+    reader = make_reader(source, make_scope())
+
+    # When
+    observation = await reader.observe_settled_attempt(make_attempt_evidence(None))
+
+    # Then
+    assert source.thread_ids == []
+    assert observation.scope is None
+    assert (
+        observation.diagnostic == "quota observation does not match the verified scope"
+    )
 
 
 async def test_default_thread_extraction_correlates_the_json_event() -> None:
     # Given
     source = RecordingSource(None)
-    reader = make_reader(source, None, None, None)
+    reader = make_reader(source, None)
 
     # When
     observation = await reader.observe_settled_attempt(
@@ -608,8 +410,6 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
     reader = make_reader(
         source,
         request.schedule.scope,
-        None,
-        None,
         attempt_call,
         output_limit_bytes=0,
     )
@@ -683,7 +483,7 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
 async def test_poll_refuses_a_request_outside_the_verified_scope() -> None:
     # Given
     attempt_call = RecordingAttemptCall(make_process_result(b"", b""))
-    reader = make_reader(RecordingSource(None), make_scope(), None, None, attempt_call)
+    reader = make_reader(RecordingSource(None), make_scope(), attempt_call)
     request = make_probe_request(scope=make_identity_scope())
 
     # When
@@ -702,8 +502,6 @@ async def test_probe_instructions_path_is_valid_unicode_toml() -> None:
     reader = make_reader(
         RecordingSource(None),
         request.schedule.scope,
-        None,
-        None,
         attempt_call,
         probe_instructions_file=instructions,
     )
@@ -1081,7 +879,7 @@ async def test_repeated_old_source_cannot_override_newer_other_source(
 ) -> None:
     # Given
     source = RecordingSource(None)
-    reader = make_reader(source, make_identity_scope(), None, None)
+    reader = make_reader(source, make_identity_scope())
     attempt = make_attempt_evidence(thread_started())
 
     async def snapshot(
@@ -1319,60 +1117,31 @@ def test_scope_hash_is_stable_and_does_not_retain_identity() -> None:
 async def test_poll_forwards_one_exact_request_and_stop_callback() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
-    stdout = b"opaque probe stdout"
+    stdout = thread_started()
     process_result = make_process_result(stdout, b"raw probe stderr")
-    snapshot = CodexSessionSnapshot("source-probe")
-    source = RecordingSource(snapshot)
-    observation = QuotaObservation(
-        scope=quota_request.schedule.scope,
-        read_at_utc="2026-10-27T10:00:00Z",
-        source_coordinate="source-probe",
-        windows=(),
-        diagnostic="controlled normalization result",
-    )
+    source = RecordingSource(None)
     attempt_call = RecordingAttemptCall(process_result)
-    recipe = RecordingProbeRecipe(attempt_request)
-    extractor = RecordingThreadExtractor(stdout)
-    normalizer = RecordingNormalizer(
-        snapshot, quota_request.schedule.scope, observation
-    )
-    assessment = RecordingAssessment()
-    reader = make_reader(
-        source,
-        quota_request.schedule.scope,
-        extractor,
-        normalizer,
-        attempt_call,
-        recipe,
-        assessment,
-    )
+    reader = make_reader(source, quota_request.schedule.scope, attempt_call)
 
     # When
     result = await reader.poll(quota_request, stop_dispatch)
 
     # Then
-    assert_poll_wiring(
-        result,
-        quota_request,
-        attempt_request,
-        process_result,
-        stdout,
-        source,
-        attempt_call,
-        recipe,
-        extractor,
-        normalizer,
-        assessment,
-        reader,
-        stop_dispatch,
-    )
+    assert len(attempt_call.calls) == 1
+    attempt_request, stop = attempt_call.calls[0]
+    assert stop is stop_dispatch
+    assert result.request is quota_request
+    assert result.process.request is attempt_request
+    assert result.process.outcome is process_result
+    assert result.process.usage_telemetry is stdout
+    assert source.thread_ids == [SYNTHETIC_THREAD_ID]
+    assert result.quota_state == "unknown"
 
 
 async def test_poll_preserves_cancellation_and_supervisor_observation() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
+    requests: list[AttemptRequest] = []
     stdout = b"partial probe stdout"
     stderr = b"partial probe stderr"
     cancellation = asyncio.CancelledError("process attempt cancelled")
@@ -1390,16 +1159,13 @@ async def test_poll_preserves_cancellation_and_supervisor_observation() -> None:
         request: AttemptRequest, stop_dispatch: DispatchStop, /
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         raise cancellation
 
     reader = make_reader(
         RecordingSource(None),
         quota_request.schedule.scope,
-        lambda raw: None,
-        None,
         attempt_call,
-        lambda request, settings: attempt_request,
     )
 
     # When
@@ -1410,7 +1176,7 @@ async def test_poll_preserves_cancellation_and_supervisor_observation() -> None:
     assert raised.value is cancellation
     evidence = quota_probe_evidence(raised.value, quota_request)
     assert evidence is not None
-    assert evidence.process.request is attempt_request
+    assert evidence.process.request is requests[0]
     assert evidence.process.control_flow == "cancelled"
     assert evidence.process.outcome is supervisor_evidence
     assert evidence.process.usage_telemetry is stdout
@@ -1421,7 +1187,7 @@ async def test_poll_preserves_cancellation_and_supervisor_observation() -> None:
 async def test_poll_preserves_supervisor_cancellation_object_and_facts() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
+    requests: list[AttemptRequest] = []
     cancellation = AttemptCancelled(
         AttemptObservation(
             output=CapturedOutput(b"", b""),
@@ -1434,16 +1200,13 @@ async def test_poll_preserves_supervisor_cancellation_object_and_facts() -> None
         request: AttemptRequest, stop: DispatchStop, /
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         raise cancellation
 
     reader = make_reader(
         RecordingSource(None),
         quota_request.schedule.scope,
-        lambda raw: None,
-        None,
         attempt_call,
-        lambda request, settings: attempt_request,
     )
 
     # When
@@ -1462,7 +1225,7 @@ async def test_poll_preserves_supervisor_cancellation_object_and_facts() -> None
 async def test_poll_preserves_attached_unexpected_supervisor_failure() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
+    requests: list[AttemptRequest] = []
     stdout = b"captured before unexpected failure"
     failure = RuntimeError("supervisor caller failed")
     supervisor_evidence = AttemptFailureEvidence(
@@ -1479,16 +1242,13 @@ async def test_poll_preserves_attached_unexpected_supervisor_failure() -> None:
         request: AttemptRequest, stop_dispatch: DispatchStop, /
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         raise failure
 
     reader = make_reader(
         RecordingSource(None),
         quota_request.schedule.scope,
-        lambda raw: None,
-        None,
         attempt_call,
-        lambda request, settings: attempt_request,
     )
 
     # When
@@ -1501,38 +1261,32 @@ async def test_poll_preserves_attached_unexpected_supervisor_failure() -> None:
     assert evidence is not None
     assert evidence.process.outcome is supervisor_evidence
     assert evidence.process.usage_telemetry is stdout
-    assert evidence.process.request is attempt_request
+    assert evidence.process.request is requests[0]
 
 
 async def test_postprocessing_error_keeps_returned_process_and_request_facts() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
-    process_result = make_process_result(b"actual stdout", b"actual stderr")
+    requests: list[AttemptRequest] = []
+    process_result = make_process_result(thread_started(), b"actual stderr")
     postprocessing_error = ValueError("source normalization failed")
 
     async def attempt_call(
         request: AttemptRequest, stop_dispatch: DispatchStop, /
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         return process_result
 
-    def fail_normalization(
-        snapshot: CodexSessionSnapshot | None,
-        scope: QuotaScope | None,
-        read_at_utc: str,
-        max_age: float,
-    ) -> QuotaObservation:
-        raise postprocessing_error
+    class FailingSource(RecordingSource):
+        @override
+        async def read_session_for_thread(
+            self, thread_id: str, /
+        ) -> CodexSessionSnapshot | None:
+            raise postprocessing_error
 
     reader = make_reader(
-        RecordingSource(None),
-        quota_request.schedule.scope,
-        lambda raw: "thread-for-failing-source",
-        fail_normalization,
-        attempt_call,
-        lambda request, settings: attempt_request,
+        FailingSource(None), quota_request.schedule.scope, attempt_call
     )
 
     # When
@@ -1544,78 +1298,24 @@ async def test_postprocessing_error_keeps_returned_process_and_request_facts() -
     evidence = quota_probe_evidence(raised.value, quota_request)
     assert evidence is not None
     assert evidence.request is quota_request
-    assert evidence.process.request is attempt_request
+    assert evidence.process.request is requests[0]
     assert evidence.process.control_flow == "returned"
     assert evidence.process.outcome is process_result
     assert (
         evidence.process.started_at_utc,
         evidence.process.ended_at_utc,
     ) == ("2026-10-27T10:00:00Z", "2026-10-27T10:00:00Z")
-    assert evidence.process.usage_telemetry == b"actual stdout"
+    assert evidence.process.usage_telemetry == thread_started()
     assert process_result.observation.output is not None
     assert process_result.observation.output.stderr == b"actual stderr"
     assert evidence.quota_state == "unknown"
     assert evidence.observation is None
 
 
-async def test_assessment_error_retains_normalized_observation_and_process() -> None:
-    # Given
-    quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
-    process_result = make_process_result(b"assessment stdout", b"assessment stderr")
-    observation = QuotaObservation(
-        scope=quota_request.schedule.scope,
-        read_at_utc="2026-10-27T10:00:00Z",
-        source_coordinate="opaque-source",
-        windows=(),
-        diagnostic="normalized before assessment",
-    )
-    assessor_error = RuntimeError("assessment failed")
-
-    async def attempt_call(
-        request: AttemptRequest, stop: DispatchStop, /
-    ) -> AttemptResult:
-        await asyncio.sleep(0)
-        assert request is attempt_request
-        del stop
-        return process_result
-
-    def fail_assessment(
-        attempt: AttemptEvidence, received: QuotaObservation | None, /
-    ) -> tuple[QuotaState, str | None]:
-        assert received is observation
-        assert attempt.outcome is process_result
-        raise assessor_error
-
-    reader = make_reader(
-        RecordingSource(None),
-        quota_request.schedule.scope,
-        lambda raw: None,
-        lambda snapshot, scope, read_at, max_age: observation,
-        attempt_call,
-        lambda request, settings: attempt_request,
-        fail_assessment,
-    )
-
-    # When
-    with pytest.raises(RuntimeError, match="assessment failed") as raised:
-        await reader.poll(quota_request, stop_dispatch)
-
-    # Then
-    assert raised.value is assessor_error
-    evidence = quota_probe_evidence(assessor_error, quota_request)
-    assert evidence is not None
-    assert evidence.observation is observation
-    assert evidence.quota_state == "unknown"
-    assert evidence.process.outcome is process_result
-    assert evidence.process.request is attempt_request
-    assert evidence.process.usage_telemetry == b"assessment stdout"
-
-
 async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> None:
     # Given
     quota_request = make_probe_request()
-    attempt_request = make_probe_attempt_request()
+    requests: list[AttemptRequest] = []
     stdout = b"settled despite stop-hook error"
     process_result = Completed(
         observation=AttemptObservation(
@@ -1629,7 +1329,7 @@ async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> N
 
     async def attempt(request: AttemptRequest, /) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         return process_result
 
     async def attempt_call(
@@ -1644,10 +1344,7 @@ async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> N
     reader = make_reader(
         RecordingSource(None),
         quota_request.schedule.scope,
-        lambda raw: None,
-        None,
         attempt_call,
-        lambda request, settings: attempt_request,
     )
 
     # When
@@ -1660,7 +1357,7 @@ async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> N
     assert evidence is not None
     assert evidence.process.control_flow == "raised"
     assert evidence.process.outcome is process_result
-    assert evidence.process.request is attempt_request
+    assert evidence.process.request is requests[0]
     assert evidence.process.usage_telemetry is stdout
     assert process_result.observation.output is not None
     assert process_result.observation.output.stderr == b"real stderr"
@@ -1741,23 +1438,20 @@ async def test_reused_exception_evidence_is_request_specific() -> None:
     # Given
     first_request = make_probe_request("probe-1")
     second_request = make_probe_request("probe-2")
-    attempt_request = make_probe_attempt_request()
+    requests: list[AttemptRequest] = []
     shared_error = RuntimeError("shared source failure")
 
     async def attempt_call(
         request: AttemptRequest, stop_dispatch: DispatchStop, /
     ) -> AttemptResult:
         await asyncio.sleep(0)
-        assert request is attempt_request
+        requests.append(request)
         raise shared_error
 
     reader = make_reader(
         RecordingSource(None),
         first_request.schedule.scope,
-        lambda raw: None,
-        None,
         attempt_call,
-        lambda request, settings: attempt_request,
     )
 
     # When
