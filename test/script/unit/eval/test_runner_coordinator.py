@@ -212,6 +212,46 @@ class FakeProgress(ProgressSink):
         self.snapshots.append(snapshot)
 
 
+def assert_progress_partitions(progress: FakeProgress, planned: int) -> None:
+    """Check every published snapshot partitions each lifecycle inventory."""
+    assert progress.snapshots
+    for snapshot in progress.snapshots:
+        c = snapshot.counts
+        assert (
+            sum((
+                c.calls_queued,
+                c.calls_stopped_not_started,
+                c.calls_active,
+                c.calls_retry_wait,
+                c.calls_evidence_pending,
+                c.calls_succeeded,
+                c.calls_failed,
+                c.calls_cancelled,
+            ))
+            == planned
+        )
+        assert (
+            sum((
+                c.attempts_active,
+                c.attempts_evidence_pending,
+                c.attempts_succeeded,
+                c.attempts_failed,
+                c.attempts_cancelled,
+            ))
+            == c.attempts_started
+        )
+        assert (
+            sum((
+                c.probes_active,
+                c.probes_evidence_pending,
+                c.probes_completed,
+                c.probes_failed,
+                c.probes_cancelled,
+            ))
+            == c.probes_started
+        )
+
+
 def fake_outcome_kind(evidence: AttemptEvidence) -> str:
     """Project the outcome kind needed by in-memory coordinator evidence."""
     outcome = evidence.outcome
@@ -813,6 +853,7 @@ async def test_default_dispatch_runs_and_finalizes_the_frozen_plan() -> None:
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     requests: list[AttemptRequest] = []
+    progress = FakeProgress()
     coordinator = Coordinator(
         bound_run=run,
         evidence=evidence,
@@ -820,7 +861,7 @@ async def test_default_dispatch_runs_and_finalizes_the_frozen_plan() -> None:
         classifier=FakeClassifier(order),
         quota_status=quota,
         runtime=FixedRuntime(),
-        progress=FakeProgress(),
+        progress=progress,
         capture_returned_attempt=capture_attempt,
     )
 
@@ -834,6 +875,7 @@ async def test_default_dispatch_runs_and_finalizes_the_frozen_plan() -> None:
     assert len(actual.calls[0].attempts) == 1
     assert evidence.final_records == [actual]
     assert quota.observations == 0 and quota.probes == 0
+    assert_progress_partitions(progress, 1)
 
 
 async def test_attempt_stop_hook_refuses_a_later_planned_attempt() -> None:
@@ -1263,7 +1305,8 @@ async def test_capacity_retry_persists_its_zero_jitter_wait() -> None:
     quota = FakeQuotaReader(order)
     coordinator, classifier, requests = make_coordinator(run, evidence, quota, order)
     runtime = FixedRuntime()
-    coordinator = replace(coordinator, runtime=runtime)
+    progress = FakeProgress()
+    coordinator = replace(coordinator, runtime=runtime, progress=progress)
     classifier.assessment = RetryAssessment(
         retry_class="capacity",
         classification_basis="typed transient-capacity signal",
@@ -1297,6 +1340,7 @@ async def test_capacity_retry_persists_its_zero_jitter_wait() -> None:
     assert len(record.waits) == 1
     assert record.waits[0].end == "delay_elapsed"
     assert record.waits[0].context.kind == "capacity"
+    assert_progress_partitions(progress, 1)
 
 
 async def test_cancellation_during_capacity_wait_is_reported_as_cancelled() -> None:  # ruff: ignore[too-many-statements]
@@ -1501,6 +1545,13 @@ async def test_quota_pause_waits_for_one_fresh_scoped_available_probe() -> None:
     assert record.calls[0].state == "complete"
     assert record.calls[1].state == "complete"
     assert record.calls[0].attempts[1].attempt_number == 2
+    assert_progress_partitions(progress, 2)
+    assert any(
+        snapshot.counts.probes_completed == 1
+        and snapshot.quota_observation is not None
+        and snapshot.quota_observation.source_coordinate == "session:2"
+        for snapshot in progress.snapshots
+    )
     assert any(
         snapshot.phase == "quota_paused" and snapshot.counts.probes_started == 0
         for snapshot in progress.snapshots
@@ -2114,3 +2165,92 @@ async def test_cancellation_retains_failure_of_blocked_attempt_write() -> None:
     assert not any(
         t.get_name().startswith("eval-evidence-") for t in asyncio.all_tasks()
     )
+
+
+@pytest.mark.parametrize(
+    "outcome",
+    [
+        OutputLimitExceeded(
+            AttemptObservation(
+                None,
+                0.1,
+                CleanupEvidence(
+                    "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+                ),
+            ),
+            None,
+        ),
+        Completed(
+            AttemptObservation(
+                None, 0.1, CleanupEvidence("owned", (), "failed", "wait failed")
+            ),
+            0,
+        ),
+    ],
+    ids=["output-limit", "unsafe-cleanup"],
+)
+async def test_final_call_unsafe_stop_leaves_run_incomplete(
+    outcome: AttemptResult,
+) -> None:
+    # Given
+    order: list[str] = []
+    run = bound_run()
+    evidence = FakeEvidence(order)
+    coordinator, _, requests = make_coordinator(
+        run, evidence, FakeQuotaReader(order), order
+    )
+    progress = FakeProgress()
+    coordinator = replace(
+        coordinator, attempt=make_attempt(order, [outcome], requests), progress=progress
+    )
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert record.state == "incomplete"
+    assert record.calls[0].state == "failed"
+    assert evidence.final_records == [record]
+    assert progress.snapshots[-1].final_status == "incomplete_evidence"
+    assert_progress_partitions(progress, 1)
+
+
+class BlockingPassiveQuota(FakeQuotaReader):
+    """Pause optional observation after the attempt is durably recorded."""
+
+    def __init__(self, order: list[str]) -> None:
+        super().__init__(order)
+        self.started = asyncio.Event()
+
+    @override
+    async def observe_settled_attempt(
+        self, evidence: AttemptEvidence, /
+    ) -> QuotaObservation:
+        self.started.set()
+        await asyncio.Event().wait()
+        return self.observation
+
+
+async def test_progress_partitions_calls_when_passive_observation_is_cancelled() -> (
+    None
+):
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(quota=True))
+    evidence = FakeEvidence(order)
+    quota = BlockingPassiveQuota(order)
+    coordinator, _, _ = make_coordinator(run, evidence, quota, order)
+    progress = FakeProgress()
+    coordinator = replace(coordinator, progress=progress)
+    task = asyncio.create_task(coordinator.run())
+    await quota.started.wait()
+
+    # When
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    # Then
+    assert len(evidence.attempt_records) == 1
+    assert progress.snapshots[-1].counts.attempts_succeeded == 1
+    assert_progress_partitions(progress, 1)

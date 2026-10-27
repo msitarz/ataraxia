@@ -11,11 +11,9 @@ orchestration wiring is implemented in
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
 Codex invocation leaves are implemented. The coordinator is bound to one run
-and evidence store; it owns a typed dispatch-decision loop, attempt evidence
-ordering, and a directly awaited quota-recovery seam. Dispatch selection,
-supervisor-evidence conversion, probe cadence and recovery assessment, retry
-policy, and scheduler accounting remain unimplemented; CLI integration and
-full dispatch remain planned. Shared
+and evidence store; it owns concurrent dispatch, evidence settlement, retry and
+quota recovery, stop accounting, and progress snapshots. CLI integration,
+the terminal progress adapter, and integrated acceptance remain pending. Shared
 consumer-owned runner ports and accepted runtime configuration are implemented
 in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
@@ -30,13 +28,11 @@ amendments are owned by
 [AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff),
 and
 [AC-8](README.md#ac-8-todo-standalone-invocation-supports-external-execution).
-The typed sketches below describe the proposed policy boundary for those
-amendments; they do not establish recognition rules, a Codex reset API, or
-implemented behavior. The captured exec quota observation does not identify a
-machine-readable source for reset times, and the capacity report does not
-establish a CLI recognition signal. Until investigation verifies those sources,
-adapters return explicit unknown or unavailable results and the coordinator
-fails closed. All ACs remain TODO.
+The typed sketches below describe the policy boundary for those amendments.
+The quota adapter recognizes the reviewed CLI 0.164.0 rollout format, with
+identity and freshness checks; live behavior remains unverified. The concrete
+outcome classifier does not recognize quota or capacity failures and fails
+closed. All ACs remain TODO.
 
 ## TL;DR
 
@@ -294,18 +290,12 @@ gating retries and stopping globally on unsafe outcomes.
 - The intended coordinator schedules calls in plan order under one concurrency
   limit. Distinct planned calls may execute concurrently; completion order does
   not change their identity or evidence association.
-- **Current maturity:** one runtime coordinator is constructed for one bound
-  run and its evidence store; its configuration comes from the frozen plan.
-  It owns a typed dispatch-decision loop, wires attempts through classification,
-  durable attempt recording, and optional passive quota telemetry, and directly
-  awaits recovery only after a quota-pause decision. Returned probe evidence is
-  persisted before the recovery-decision leaf can resume dispatch; attached
-  evidence is persisted before an escaped probe failure is re-raised. Dispatch
-  selection, supervisor-outcome conversion, probe request cadence and recovery
-  assessment, retry and wait decisions, transition accounting, and progress
-  projection remain pending leaves. This stage does not establish concurrency,
-  retries, pause policy, probe scheduling or assessment, complete shutdown, or
-  truthful final accounting.
+- **Current maturity:** one runtime coordinator is bound to a frozen run and
+  evidence store. Per-call workers enforce the concurrency limit, persist
+  attempts and quota evidence, apply bounded retries and quota recovery, settle
+  cancellation, account for stopped calls, and publish progress snapshots.
+  The CLI composition root, terminal progress adapter, and integrated
+  acceptance remain pending; deterministic tests do not verify live behavior.
 - Progress is a projection of the frozen plan and coordinator lifecycle, not a
   second accounting ledger. Disjoint call, attempt, and probe totals and the
   definition of remaining work are specified under
@@ -353,8 +343,8 @@ gating retries and stopping globally on unsafe outcomes.
   inconclusive observation. The coordinator trusts these internal typed values
   and compares scope equality; it does not parse account identifiers. Persisted
   scope identifiers are opaque and nonsecret, never raw account names,
-  credentials, or tokens. The current source format and identity evidence are
-  unresolved, so these validation boundaries remain planned and fail closed.
+  credentials, or tokens. The adapter validates the reviewed CLI 0.164.0
+  source format; live identity and freshness behavior remains unverified.
 - A later mixed-provider runner could pause only calls sharing a blocked quota
   scope. That is not the current AC-6 behavior: the single Codex binding keeps
   the pause global, and this design adds no provider registry or CLI provider
@@ -414,9 +404,8 @@ gating retries and stopping globally on unsafe outcomes.
   failure, unsafe cleanup, or uncertain acquisition latches stop. Cancellation
   propagates through the awaited probe; attached probe evidence is persisted
   before the original cancellation or failure is re-raised. Current typed
-  wiring persists the started event immediately before polling and settlement
-  afterward; schedule and prelaunch-cancellation event synthesis remains
-  pending.
+  wiring persists scheduling, started, prelaunch-cancellation, and settlement
+  events at their respective lifecycle transitions.
 - Capacity backoff is local to its call. For retry index `k`, sample full jitter
   in `[0, min(cap, base * 2**k)]`, saturating the bound at `cap`; await and
   sample through the injected `Runtime` port. Release the attempt slot
@@ -469,10 +458,8 @@ Codex, quota, and runtime adapters.
 
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` is wired around consumer ports and pure policy functions,
-  not concrete adapters. Current code owns one dispatch-decision loop, returned
-  attempt ordering, and direct awaited quota recovery. Dispatch selection,
-  probe scheduling and assessment, retries, waits, progress, and not-started
-  accounting remain pending.
+  not concrete adapters. Per-call workers own dispatch, durable settlement,
+  retry and quota waits, progress, and stopped-call accounting.
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
   bounds, cumulative quota-wait limits, probe authorization, and reset-hint
@@ -485,10 +472,9 @@ Codex, quota, and runtime adapters.
   port exposes separate settled-attempt ingestion and supervised-poll calls.
 - `runner.ports` also owns the immutable `ProgressSnapshot`, disjoint
   `ProgressCounts`, per-call retry-wait views, and the synchronous
-  `ProgressSink` port. The intended coordinator derives queued, active,
-  retry-wait, stopped-not-started, evidence-pending, succeeded, failed, and
-  cancelled call counts from its live call states; attempt and probe counters
-  remain separate. Runtime progress projection is still pending.
+  `ProgressSink` port. The coordinator derives queued, active, retry-wait,
+  stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
+  counts from its live call states; attempt and probe counters remain separate.
   A queued call is runnable but not dispatched. A stopped-not-started call is
   unexecuted and cannot resume after the final report. Evidence-pending means a
   result is known in memory but its required durable write failed, so the
@@ -616,11 +602,10 @@ Codex, quota, and runtime adapters.
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
   The CLI composition root and progress adapter remain design stubs. The
-  coordinator now has typed per-run effect wiring around explicit pending
-  dispatch selection, conversion, probe scheduling and assessment, and
-  accounting leaves. The quota adapter implements its bounded source,
-  normalization, polling request, and assessment behavior, but is not yet wired
-  into CLI composition or coordinator dispatch.
+  coordinator implements per-run dispatch, conversion, probe scheduling and
+  assessment, and accounting through its injected ports. The quota adapter
+  implements its bounded source, normalization, polling request, and assessment
+  behavior; CLI composition remains pending.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
@@ -778,8 +763,8 @@ flowchart LR
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. Coordinator
-run and returned-attempt composition are partially wired; CLI integration and
-full dispatch remain planned.
+dispatch and returned-attempt composition are implemented; CLI integration,
+terminal progress, and integrated acceptance remain pending.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -807,8 +792,7 @@ retain and await submitted evidence operations during shutdown. The lock is
 in-memory and serializes only this adapter on its event loop; it provides no
 cross-process coordination. The filesystem store creates a new output directory
 inside or outside the context repository and writes `plan.json` plus optional
-`instructions.bin` before dispatch. Attempt
-metadata lives in
+`instructions.bin` before dispatch. Attempt metadata lives in
 `attempts/position-<position>/<sha256-call-id>/attempt-<number>.json`; probe
 artifacts use a `sha256-probe-id` directory. Stream suffixes are appended to the
 complete identity-based stem, so dots in an identity cannot change the suffix.
@@ -821,24 +805,26 @@ file and directory entries are fsynced. Event appends are fsynced. These
 promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
-dispatch and preserving not-started accounting remain runner responsibilities.
-AC-9 progress behavior remains design-only; pure runner policy calculations,
-accepted shared runner configuration, and consumer-owned runtime ports are
-implemented. The shared base preserves flat attempt fields while permitting
-probes to reuse the process projection. `plan.pyi` remains a historical
-planner reference. The active implementations are
+dispatch and preserving not-started accounting are runner responsibilities. The
+coordinator publishes progress snapshots; the terminal adapter and AC-9
+integrated acceptance remain pending. Pure runner policy calculations, accepted
+shared runner configuration, and consumer-owned runtime ports are implemented.
+The shared base preserves flat attempt fields while permitting probes to reuse
+the process projection. `plan.pyi` remains a historical planner reference. The
+active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection are implemented. CLI integration, dispatch, and the remaining
-harness behavior are planned. Do not add a parallel runtime model or change
-supervisor types. Private helpers and concrete persistence formats remain
-flexible; supervisor outcomes and requests continue to use the existing public
-types. Codex quota recognition is implemented against the reviewed CLI 0.164.0
-rollout shape with runtime identity, completeness, and freshness checks; later
-CLI schemas require separate review. The quota binding still does not supply an
-expected identity scope, so the CLI cannot yet enable scoped quota availability.
+storage/projection and coordinator dispatch are implemented. CLI integration,
+terminal progress, and integrated acceptance remain pending. Do not add a
+parallel runtime model or change supervisor types. Private helpers and concrete
+persistence formats remain flexible; supervisor outcomes and requests continue
+to use the existing public types. Codex quota recognition is implemented against
+the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
+freshness checks; later CLI schemas require separate review. The quota binding
+still does not supply an expected identity scope, so the CLI cannot yet enable
+scoped quota availability.
 
 | Proposed module | Responsibility |
 | --- | --- |
@@ -848,7 +834,7 @@ expected identity scope, so the CLI cannot yet enable scoped quota availability.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator.py` | Typed per-run dispatch and paused-recovery effects; decision, cadence, retry, progress, and accounting policy remain pending. |
+| `script/eval/runner/coordinator.py` | Per-run dispatch, retries, quota recovery, evidence settlement, progress snapshots, and stop accounting. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |

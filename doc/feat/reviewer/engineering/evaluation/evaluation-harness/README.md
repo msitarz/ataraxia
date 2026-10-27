@@ -525,17 +525,18 @@ live model or quota calls. This does not establish the parent experiment's
 integrated protections or results; all acceptance criteria remain TODO.
 
 The quota contract amendment and provider-neutral coordinator are implemented
-through passive observation and one awaited recovery flow. Provider-specific
-source recognition and live CLI recipe verification remain separate evidence
-requirements; no live quota or model calls were made. The maintainer supplied an
+through passive observation and one awaited recovery flow. The quota adapter
+recognizes the reviewed CLI 0.164.0 rollout format, while live behavior and the
+CLI recipe remain unverified; no live quota or model calls were made. The
+maintainer supplied an
 [exhausted five-hour quota capture and session telemetry excerpt](quota-capture.md).
-The excerpt identifies a candidate numeric reset source, but file correlation,
-account and allowance association, freshness, and failure handling still require
-review. The authorized future probe condition is recorded there; its unattended
-recipe and positive availability evidence also remain prerequisites. An
-app-server schema does not establish the exec schema. Existing adapter behavior
-and intent-only scenarios do not establish a safe unattended source or a live
-Codex probe recipe. No live probes or model calls are authorized by this
+The adapter checks file correlation, account and allowance association,
+freshness, and failure handling against that reviewed format; live behavior
+remains unverified. The authorized future probe condition is recorded there; its
+unattended recipe and positive availability evidence also remain prerequisites.
+An app-server schema does not establish the exec schema. Existing adapter
+behavior and intent-only scenarios do not establish a safe unattended source or
+a live Codex probe recipe. No live probes or model calls are authorized by this
 amendment.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for

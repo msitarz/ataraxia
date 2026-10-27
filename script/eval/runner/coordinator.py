@@ -915,7 +915,7 @@ class Coordinator:
             ),
             calls_active=states.count("running"),
             calls_retry_wait=states.count("retry_wait"),
-            calls_evidence_pending=len(self._state.pending_calls),
+            calls_evidence_pending=states.count("evidence_pending"),
             calls_succeeded=states.count("complete"),
             calls_failed=states.count("failed"),
             calls_cancelled=states.count("cancelled"),
@@ -959,6 +959,7 @@ class Coordinator:
             started_at = self.runtime.utc_now()
             attempt_evidence = await self._capture_attempt(call, stop, started_at)
             if not _attempt_evidence_dispatch_safe(attempt_evidence):
+                self._state.run_incomplete = True
                 stop(RuntimeError("attempt cleanup forbids further dispatch"))
             captured = True
         finally:
@@ -992,6 +993,7 @@ class Coordinator:
             )
             if self._quota_exhausted(settled):
                 stop.pause()
+            self._state.statuses[position] = _call_status(settled)
             self._publish_progress("quota_paused" if stop.paused else "running")
             return settled
         finally:
@@ -1230,13 +1232,21 @@ class Coordinator:
             ):
                 self._state.cancellation = self._state.cancellation or cancellation
                 self._require_gate()(cancellation)
-            expected_scope = getattr(self.quota_status, "expected_scope", None)
-            if (
-                observation.scope == self.bound_run.binding.quota_scope
-                and observation.scope == expected_scope
-            ):
-                self._state.quota_observation = observation
+            self._retain_quota_observation(observation)
         return observation
+
+    def _retain_quota_observation(
+        self, observation: QuotaObservation | None, /
+    ) -> None:
+        """Expose only durably recorded observations for the bound scope."""
+        expected_scope = self.quota_status.expected_scope
+        if (
+            observation is not None
+            and observation.scope is not None
+            and observation.scope == self.bound_run.binding.quota_scope
+            and observation.scope == expected_scope
+        ):
+            self._state.quota_observation = observation
 
     async def _settle_write[T](
         self, write: Coroutine[Any, Any, T], label: str, /
@@ -1808,6 +1818,7 @@ class Coordinator:
             stop(error)
             raise
         self._state.pending_probes -= 1
+        self._retain_quota_observation(probe.observation)
         if cancellation is not None:
             self._state.cancellation = self._state.cancellation or cancellation
             stop(cancellation)
@@ -1853,6 +1864,7 @@ class Coordinator:
             self._state.run_incomplete = True
             return None, False
         self._state.pending_probes -= 1
+        self._retain_quota_observation(probe.observation)
         return owner_cancellation, True
 
 
