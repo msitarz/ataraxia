@@ -89,10 +89,20 @@ establish weekly-exhaustion behavior or permission to retry a blocked call.
 The maintainer subsequently chose a dedicated asynchronous quota poller using
 `codex exec --json`, separate from evaluation attempts. The specified condition
 is `gpt-6-luna` with effort `none`, minimal nonempty instructions and prompt,
-plugins, tools, and MCP disabled, and a read-only empty working directory.
+the available CLI controls requesting plugins, tools, and MCP disabled, and a
+read-only empty working directory.
 This records the requested future condition, not an observed probe, a verified
 pricing comparison, or a validated CLI flag recipe. No additional calls were
 made for this record.
+
+Quota probes inherit the maintainer-accepted CLI 0.164.0 limitation in the
+[Step 1 disposition](../preparation.md#combined-step-1-candidate-and-stopping-point).
+Its static candidate render retained `functions.exec`, `functions.wait`, nested
+MCP resource and patch declarations, and injected permission and environment
+context despite the requested disable controls. This is a known limitation of
+the requested probe condition, not a tool-free guarantee or verification of the
+authenticated runtime input. Further wrapper removal is not a prerequisite;
+validation must still record the effective restrictions and remaining context.
 
 The poller must positively confirm fresh availability for the evaluation's quota
 scope before restarting eligible evaluation attempts; Luna availability does not
