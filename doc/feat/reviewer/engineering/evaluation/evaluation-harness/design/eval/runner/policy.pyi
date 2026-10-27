@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pure retry eligibility, allowance, and backoff calculations."""
+"""Historical proposed signatures; the runtime skeleton owns current exports."""
 
 from ..model import HarnessConfig, RetryAssessment  # ruff: ignore[relative-imports]
 
