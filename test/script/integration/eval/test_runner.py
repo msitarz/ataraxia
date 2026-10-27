@@ -1,7 +1,103 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Intent placeholders for supervisor-backed scheduling and stop policy."""
+"""Coordinator integration against controlled local subprocesses."""
+
+import asyncio
+import hashlib
+import json
+import os
+from pathlib import Path
+import signal
+import sys
 
 import pytest
+
+from script.eval.evidence import create_evidence_store
+from script.eval.model import (
+    AttemptEvidence,
+    DirectoryOption,
+    FrozenPlan,
+    HarnessConfig,
+    PlannedCall,
+    QuotaObservation,
+    QuotaProbeEvidence,
+    QuotaProbeRequest,
+    RetryAssessment,
+)
+from script.eval.runner.coordinator import Coordinator
+from script.eval.runner.ports import (
+    BoundRun,
+    CliBinding,
+    EffectiveCall,
+    OutcomeClassifier,
+    ProgressSink,
+    ProgressSnapshot,
+    QuotaStatusReader,
+    Runtime,
+)
+from script.process_supervisor import (
+    AttemptRequest,
+    AttemptResult,
+    DispatchStop,
+    call_supervisor,
+    run_attempt,
+)
+
+
+class NoQuota(QuotaStatusReader):
+    """Quotas stay disabled in this local subprocess boundary test."""
+
+    @property
+    def expected_scope(self) -> None:
+        return None
+
+    async def observe_settled_attempt(
+        self, evidence: AttemptEvidence, /
+    ) -> QuotaObservation:
+        raise AssertionError("quota telemetry is disabled")
+
+    async def poll(
+        self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
+    ) -> QuotaProbeEvidence:
+        raise AssertionError("quota probes are disabled")
+
+
+class UnknownClassifier(OutcomeClassifier):
+    """Do not retry or interpret captured process output."""
+
+    def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
+        return RetryAssessment(
+            retry_class="unknown",
+            classification_basis=None,
+            no_result_basis="present_or_unknown",
+            diagnostic="integration test has no classifier",
+        )
+
+
+class QuietProgress(ProgressSink):
+    """Discard progress in the process cleanup scenario."""
+
+    def publish(self, snapshot: ProgressSnapshot, /) -> None:
+        return
+
+
+class FixedRuntime(Runtime):
+    """Use real UTC and monotonic clocks while making waits cancellable."""
+
+    def utc_now(self) -> str:
+        from datetime import UTC, datetime
+
+        return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+    def monotonic(self) -> float:
+        from time import monotonic
+
+        return monotonic()
+
+    async def sleep(self, seconds: float, /) -> None:
+        await asyncio.sleep(seconds)
+
+    def uniform(self, lower: float, upper: float, /) -> float:
+        return lower
 
 
 @pytest.mark.xfail(
@@ -24,22 +120,127 @@ def test_concurrent_calls_wait_for_each_attempt_cleanup_before_reusing_its_slot(
     pass
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-4 signals and task cancellation await active cleanup",
+async def _controlled_child_coordinator(
+    tmp_path: Path,
+) -> tuple[Coordinator, Path]:
+    """Prepare one actual supervised child and its filesystem evidence store."""
+    output_directory = tmp_path / "evidence"
+    child_started = tmp_path / "child-started"
+    configuration = HarnessConfig(
+        ordered_options=(DirectoryOption(position=0, path=Path("context")),),
+        models=("model-a",),
+        efforts=("low",),
+        concurrency=1,
+        output_directory=output_directory,
+        dry_run=False,
+        timeout_seconds=30.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=0,
+        instructions_file_path=None,
+    )
+    prompt = b"controlled child"
+    planned = PlannedCall(
+        position=0,
+        context_indices=(),
+        model="model-a",
+        effort="low",
+        prompt_sha256=hashlib.sha256(prompt).hexdigest(),
+        prompt=prompt,
+    )
+    plan = FrozenPlan(
+        run_id="signal-run",
+        configuration=configuration,
+        repository_root=tmp_path,
+        head_commit="fixture-head",
+        snapshots=(),
+        boundary_bytes=(),
+        instructions_file=None,
+        calls=(planned,),
+    )
+    store = create_evidence_store()
+    prepared = await store.create(output_directory, plan)
+    request = AttemptRequest(
+        argv=(
+            sys.executable,
+            "-c",
+            "import pathlib,time; pathlib.Path("
+            + repr(str(child_started))
+            + ").write_text('started'); time.sleep(60)",
+        ),
+        cwd=tmp_path,
+        timeout_seconds=30.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=0,
+        stdin="devnull",
+    )
+    call = EffectiveCall(
+        run_id=plan.run_id,
+        call_id="signal-call",
+        planned_call=planned,
+        request=request,
+    )
+    bound = BoundRun(
+        plan=plan,
+        binding=CliBinding(
+            executable_path=Path(sys.executable),
+            cli_version=None,
+            runner_version="integration-test",
+            effective_settings=(),
+            quota_scope=None,
+        ),
+        evidence=prepared,
+        calls=(call,),
+    )
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        return await call_supervisor(request, run_attempt, stop)
+
+    coordinator = Coordinator(
+        bound_run=bound,
+        evidence=store,
+        attempt=attempt,
+        classifier=UnknownClassifier(),
+        quota_status=NoQuota(),
+        runtime=FixedRuntime(),
+        progress=QuietProgress(),
+    )
+    return coordinator, child_started
+
+
+@pytest.mark.skipif(
+    os.name != "posix", reason="process-group supervision requires POSIX"
 )
-def test_interrupt_signals_and_task_cancel_wait_for_active_cleanup() -> None:
-    """Exercise SIGINT, SIGTERM, and task cancellation with an active child."""
-    # Given
-    # Controlled attempts active when SIGINT, SIGTERM, or task cancellation occurs.
+@pytest.mark.parametrize("interrupt", [signal.SIGINT, signal.SIGTERM])
+async def test_interrupt_cancels_and_reaps_a_controlled_child(
+    tmp_path: Path, interrupt: signal.Signals
+) -> None:
+    """Own SIGINT/SIGTERM, settle a real child, and restore prior handlers."""
+    coordinator, child_started = await _controlled_child_coordinator(tmp_path)
+    old_handler = signal.getsignal(interrupt)
+    task = asyncio.create_task(coordinator.run())
+    try:
+        for _ in range(300):
+            if child_started.exists():
+                break
+            await asyncio.sleep(0.01)
+        assert child_started.exists(), "controlled child did not start"
+        os.kill(os.getpid(), interrupt)
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    finally:
+        if not task.done():
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
 
-    # When
-    # The stop hook latches shutdown while the supervisor owns the child lifecycle.
-
-    # Then
-    # No new attempt starts and cancellation does not bypass bounded active cleanup.
-    pass
+    assert signal.getsignal(interrupt) is old_handler
+    persisted = json.loads((tmp_path / "evidence" / "run.json").read_text())
+    attempt = persisted["calls"][0]["attempts"][0]
+    assert attempt["outcome_kind"] == "cancelled"
+    assert attempt["cleanup"]["process"] == "owned"
+    assert attempt["cleanup"]["direct_wait"] == "reaped"
 
 
 @pytest.mark.xfail(

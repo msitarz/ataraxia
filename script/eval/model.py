@@ -543,7 +543,12 @@ class WaitEvent(StrictModel):
 
 
 class CallRecord(StrictModel):
-    """Persisted state and source identity for one scheduled call."""
+    """Persisted state and source identity for one scheduled call.
+
+    A call with a cancelled attempt is persisted as ``failed``; the attempt's
+    ``outcome_kind`` and progress snapshot retain cancellation as a distinct
+    outcome without expanding this record's state schema.
+    """
 
     run_id: RunId
     call_id: CallId

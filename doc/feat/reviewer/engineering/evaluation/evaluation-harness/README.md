@@ -515,42 +515,41 @@ text without keeping an agent conversation alive.
 
 The original Work definition authorized no runner implementation, typed
 architecture, corpus preparation, or model calls. Later bounded assignments
-authorized the architecture proposal and typed boundary, shared model records,
-the input boundary, and the pure planning wiring. A subsequent bounded
-implementation assignment delivered grouping, exact-byte context composition,
-and deterministic call-matrix expansion through the public pure planner. The
-current bounded assignment implements local `tiktoken` token counting and
-its development dependency behind the provider-neutral port. Its approved
-first-use vocabulary download and native cache write are documented in the
-current architecture. These assignments do not establish CLI integration,
-other runner components, corpus preparation, or model calls.
-All acceptance criteria remain TODO, and completion of this generic runner
-cannot establish the parent experiment's integrated protections or results.
+delivered the architecture and typed boundary, shared model records, input
+boundary, pure planning wiring, local `tiktoken` token counting, and the
+provider-neutral coordinator. The coordinator owns bounded concurrent matrix
+dispatch, call-local retry waits, durable attempt and wait accounting, global
+quota pause and awaited recovery, cancellation settlement, and passive progress
+projection. Its deterministic unit coverage exercises these boundaries without
+live model or quota calls. This does not establish the parent experiment's
+integrated protections or results; all acceptance criteria remain TODO.
 
-Quota monitoring is a contract amendment only. The maintainer supplied an
+The quota contract amendment and provider-neutral coordinator are implemented
+through passive observation and one awaited recovery flow. The quota adapter
+recognizes the reviewed CLI 0.164.0 rollout format, while live behavior and the
+CLI recipe remain unverified; no live quota or model calls were made. The
+maintainer supplied an
 [exhausted five-hour quota capture and session telemetry excerpt](quota-capture.md).
-The excerpt identifies a candidate numeric reset source, but file correlation,
-account and allowance association, freshness, and failure handling still require
-review. The authorized future probe condition is recorded there; its unattended
-recipe and positive availability evidence also remain prerequisites. An
-app-server schema does not establish the exec schema. The architecture, proposed
-typed boundaries, and intent-only BDD scenarios describe the earlier polling
-amendment; they establish no runtime behavior. No live probes, quota
-implementation, or model calls are authorized by this amendment.
+The adapter checks file correlation, account and allowance association,
+freshness, and failure handling against that reviewed format; live behavior
+remains unverified. The authorized future probe condition is recorded there; its
+unattended recipe and positive availability evidence also remain prerequisites.
+An app-server schema does not establish the exec schema. Existing adapter
+behavior and intent-only scenarios do not establish a safe unattended source or
+a live Codex probe recipe. No live probes or model calls are authorized by this
+amendment.
 
 The [third-party capacity report](capacity-report.md) supplies motivation for
 AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
-recognition also remains an unresolved implementation prerequisite. The
-architecture records consumer-owned classifier and quota-status ports with
-explicit unknown outcomes; their concrete recognition and reset adapters remain
-undefined until evidence verifies their sources. No runner implementation or
-model calls are authorized by this contract amendment.
+recognition remains an unresolved source-verification prerequisite. The
+coordinator consumes the classifier and quota-status ports, with unknown
+outcomes failing closed; the contract amendment does not authorize live model
+calls.
 
 Progress reporting remains in this generic harness Work rather than a separate
-child Work. Its bounded amendment defines AC-9 before evidence persistence is
-implemented; the delivery stage covers this contract, a separately reviewed
-typed design, and intent-only BDD scenarios, not runtime implementation. The
-contract alone establishes no reporting behavior. It adds no logger, event bus,
+child Work. The coordinator publishes best-effort snapshots from call, attempt,
+probe, and durable-evidence state through the existing progress port. Terminal
+counts reflect only persisted records. This does not add a logger, event bus,
 adapter framework, monitoring service, scheduler integration, or dependency on
 an agent session. All acceptance criteria remain TODO.
 
@@ -558,5 +557,5 @@ The current quota contract limits probes to the awaited recovery flow after
 recognized exhaustion and active-attempt settlement. Passive after-attempt
 telemetry remains enabled by the quota-wait opt-in. Earlier architecture and
 intent-only scenarios describing active-period monitoring require alignment
-before they can support implementation review; this amendment establishes no
-runtime behavior and authorizes no live probes or model calls.
+before they can support implementation review. No live probes or model calls
+were made.
