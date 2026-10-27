@@ -241,17 +241,39 @@ supervisor request.
 - Execution resolves the absolute Codex path and observable CLI version and
   settings after the dry-run branch through `runner.adapters.codex`, without
   probing the CLI during dry run.
+- The resolver reports explicitly requested execution controls separately
+  from native effective values. Its default reader does not inspect private
+  user configuration or authentication state: requested read-only sandbox,
+  unattended approval policy, and ignored user config are recorded as
+  requested, while native effective values and automatic instruction bytes
+  remain unknown unless independently observed. Tool/feature availability and
+  other inherited process context are also unknown; the adapter does not claim
+  that Codex has no tools or cannot access private data through other means.
 - The Codex adapter implements the consumer-owned `AttemptRequestBuilder` port.
   Its builder consumes the frozen plan and scheduled call, the resolved
   binding, and the staged instruction path returned by evidence preparation.
   When configured, it passes that path to Codex as
   `-c model_instructions_file=PATH`; when omitted, it adds no override and
-  leaves Codex's native system instructions in place. It then returns an
-  effective-call identity and `AttemptRequest`.
+  leaves Codex's native system instructions in place, whose automatic bytes
+  remain unavailable. The request uses JSONL output, no color, the requested
+  model and effort, read-only sandboxing, and approval policy `never`, without
+  a permission-bypass flag. It returns an effective-call identity and
+  `AttemptRequest`. No verified flag recipe currently disables all tools or
+  features, so their availability is not asserted.
 - The builder is pure: the plan supplies run identity and ordered frozen
   inputs, the binding supplies runtime settings, and the evidence result
   supplies the staged path. It hashes those effective inputs without opening
   the staged file or original source path.
+- The prompt is passed as one argv value after `--`, without added headers or
+  normalization. The operating system's argument-size limit applies, and NUL
+  cannot be represented in an argv value; request construction rejects NUL
+  explicitly. No prompt-file protocol is implemented.
+- Call identity includes the sanitized binding settings in ordered, typed form
+  so unknown values remain distinct from observed values. It excludes run and
+  scheduled position, evidence artifact locations, output destination,
+  concurrency, and retry policy. Quota and model-capacity output recognition
+  is unsupported; ordinary completion and ambiguous process outcomes remain
+  unknown except for supervisor-confirmed prelaunch infrastructure failure.
 - When runtime binding is unavailable during dry run, the report marks its
   binding and effective-call identity unknown. It may show a plan identity,
   clearly labeled as such, but never as the effective invocation identity.

@@ -66,3 +66,20 @@ def test_binding_keeps_version_unknown_when_fake_probe_fails(
     assert binding.executable_path == executable.resolve()
     assert binding.cli_version is None
     assert binding.quota_scope is None
+
+
+def test_binding_reports_missing_codex_on_empty_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Given
+    empty_path = tmp_path / "empty"
+    empty_path.mkdir()
+    monkeypatch.setenv("PATH", os.fspath(empty_path))
+    resolver = CodexCliBindingResolver(runner_version=lambda: "0.1.0")
+
+    # When
+    with pytest.raises(FileNotFoundError) as raised:
+        resolver.resolve(configuration())
+
+    # Then
+    assert str(raised.value) == "Codex CLI executable was not found on PATH"

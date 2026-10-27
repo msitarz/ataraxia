@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Typed Codex invocation adapter skeletons.
+"""Bounded Codex CLI binding, request construction, and outcome classification.
 
-The adapters wire reviewed runner values to explicit leaf operations. The
-Codex CLI details remain unfinished until their external contracts are
-verified; default leaves therefore fail visibly instead of guessing.
+Native settings that cannot be observed without reading private user state are
+reported as unknown. Outcome text is not parsed for quota or capacity signals.
 """
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
 import hashlib
 from importlib.metadata import version
-import json
 import os
 from pathlib import Path
 import shutil
@@ -64,8 +62,8 @@ class CodexCliBindingResolver(CliBindingResolver):
     Attributes:
         resolve_executable: Find the CLI executable for this process.
         probe_version: Observe the version using the resolved executable path.
-        read_effective_settings: Return sanitized settings observed for that
-            executable and this run configuration.
+        read_effective_settings: Return sanitized requested controls and
+            verified native settings; unavailable native settings remain None.
         runner_version: Return the installed harness package version.
     """
 
@@ -103,7 +101,8 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
 
     The injected operations receive immutable plan/call/binding values, only the
     staged instruction path, and supervisor settings. They must not open source
-    or staged files; no request operation is implemented by default.
+    or staged files. The default request uses an argv prompt; operating-system
+    argument-size limits and NUL's inability to appear in an argument apply.
 
     Attributes:
         effective_call_id: Derive an identity from frozen plan/call inputs,
@@ -155,8 +154,8 @@ class CodexOutcomeClassifier(OutcomeClassifier):
     """Pass one settled supervisor observation to a classifier operation.
 
     This boundary receives no stream events and has no semantic answer parser.
-    Until Codex outcome signals and confident no-result evidence are verified,
-    classification remains an unfinished leaf operation.
+    Only supervisor-confirmed prelaunch failure establishes confident absence;
+    quota and capacity recognition remain unsupported.
 
     Attributes:
         assess_settled_evidence: Classify one settled supervisor evidence value.
@@ -230,6 +229,7 @@ def _read_effective_settings(
         ("effective_approval_policy", None),
         ("effective_model_reasoning_effort", None),
         ("effective_sandbox_mode", None),
+        ("effective_tool_controls", None),
         ("automatic_system_instructions", None),
     )
 
@@ -307,6 +307,17 @@ def _effective_call_components(
             ("instructions-content", plan.instructions_file.content),
         )
     )
+    setting_fields = tuple(
+        component
+        for key, value in sorted(
+            binding.effective_settings,
+            key=lambda setting: (setting[0], _encode_setting_value(setting[1])),
+        )
+        for component in (
+            ("binding-setting-key", key.encode("utf-8")),
+            ("binding-setting-value", _encode_setting_value(value)),
+        )
+    )
     return (
         ("format", b"ataraxia-codex-effective-call-v1"),
         ("repository-root", str(plan.repository_root).encode("utf-8")),
@@ -331,6 +342,7 @@ def _effective_call_components(
             "instructions-override",
             b"configured" if config.instructions_file_path is not None else b"default",
         ),
+        *setting_fields,
     )
 
 
@@ -367,6 +379,9 @@ def _build_attempt_request(
     """
     if (plan.instructions_file is None) != (staged_instructions_path is None):
         raise ValueError("staged instructions must match the frozen plan")
+    prompt = call.prompt.decode("utf-8")
+    if "\x00" in prompt:
+        raise ValueError("Codex argv prompts cannot contain NUL characters")
     argv = [
         str(binding.executable_path),
         "exec",
@@ -387,7 +402,7 @@ def _build_attempt_request(
             "-c",
             "model_instructions_file=" + _toml_string(str(staged_instructions_path)),
         ))
-    argv.extend(("--", call.prompt.decode("utf-8")))
+    argv.extend(("--", prompt))
     return AttemptRequest(
         argv=tuple(argv),
         cwd=plan.repository_root,
@@ -426,9 +441,53 @@ def _assess_settled_evidence(evidence: AttemptEvidence, /) -> RetryAssessment:
 
 
 def _toml_string(value: str, /) -> str:
-    """Encode a TOML basic string with JSON-compatible escaping.
+    """Encode Unicode text as a valid TOML basic string.
 
     Returns:
         The quoted TOML string value.
+
+    Raises:
+        ValueError: The value contains an invalid Unicode surrogate code point.
     """
-    return json.dumps(value, ensure_ascii=True)
+    escaped: list[str] = ['"']
+    for character in value:
+        codepoint = ord(character)
+        if character == '"':
+            escaped.append('\\"')
+        elif character == "\\":
+            escaped.append("\\\\")
+        elif character == "\b":
+            escaped.append("\\b")
+        elif character == "\t":
+            escaped.append("\\t")
+        elif character == "\n":
+            escaped.append("\\n")
+        elif character == "\f":
+            escaped.append("\\f")
+        elif character == "\r":
+            escaped.append("\\r")
+        elif codepoint < 0x20 or 0x7F <= codepoint <= 0x9F:
+            escaped.append(f"\\u{codepoint:04X}")
+        elif 0xD800 <= codepoint <= 0xDFFF:
+            raise ValueError("TOML strings cannot contain surrogate code points")
+        else:
+            escaped.append(character)
+    escaped.append('"')
+    return "".join(escaped)
+
+
+def _encode_setting_value(value: SettingValue, /) -> bytes:
+    """Encode a known/unknown setting with a stable type tag.
+
+    Returns:
+        A tagged value that distinguishes unknown, strings, and scalar types.
+    """
+    if value is None:
+        return b"unknown"
+    if isinstance(value, bool):
+        return b"bool:true" if value else b"bool:false"
+    if isinstance(value, int):
+        return b"int:" + str(value).encode("ascii")
+    if isinstance(value, float):
+        return b"float:" + value.hex().encode("ascii")
+    return b"str:" + value.encode("utf-8")

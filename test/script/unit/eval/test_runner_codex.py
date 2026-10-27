@@ -3,6 +3,8 @@
 
 from dataclasses import replace
 from pathlib import Path
+import subprocess
+import tomllib
 
 import pytest
 
@@ -25,11 +27,15 @@ from script.eval.runner.adapters import (
     CodexOutcomeClassifier,
 )
 from script.process_supervisor import (
+    AttemptCancelled,
     AttemptObservation,
     AttemptRequest,
     CapturedOutput,
     CleanupEvidence,
+    Completed,
     InfrastructureFailure,
+    OutputLimitExceeded,
+    TimedOut,
 )
 
 type BuilderInputs = tuple[
@@ -366,7 +372,7 @@ def test_request_builder_forwards_no_instruction_path_when_unconfigured() -> Non
 def test_request_preserves_prompt_and_escapes_staged_path_as_toml() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
-    unusual_path = Path('/repo/notes "draft"\\final.md')
+    unusual_path = Path('/repo/notes 😀 "draft"\\final\x01\x7f.md')
     staged_evidence = PreparedEvidence(
         output_directory=evidence.output_directory,
         plan_artifact=evidence.plan_artifact,
@@ -382,15 +388,34 @@ def test_request_preserves_prompt_and_escapes_staged_path_as_toml() -> None:
 
     # Then
     assert request.argv[-2:] == ("--", "-literal prompt")
-    assert request.argv[13:15] == (
-        "-c",
-        'model_instructions_file="/repo/notes \\"draft\\"\\\\final.md"',
-    )
+    settings = {
+        request.argv[index + 1].split("=", 1)[0]: tomllib.loads(
+            request.argv[index + 1]
+        )[request.argv[index + 1].split("=", 1)[0]]
+        for index, argument in enumerate(request.argv[:-1])
+        if argument == "-c"
+    }
+    assert settings["model_instructions_file"] == str(unusual_path)
+    assert settings["model_reasoning_effort"] == "low"
+    assert settings["approval_policy"] == "never"
     assert request.cwd == plan.repository_root
     assert request.stdin == "devnull"
     assert request.timeout_seconds == config.timeout_seconds
     assert request.cleanup_timeout_seconds == config.cleanup_timeout_seconds
     assert request.output_limit_bytes == config.output_limit_bytes
+
+
+def test_request_refuses_nul_in_argv_prompt() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    nul_prompt = call.model_copy(update={"prompt": b"before\x00after"})
+
+    # When
+    with pytest.raises(ValueError) as raised:
+        CodexAttemptRequestBuilder().build(plan, nul_prompt, binding, evidence, config)
+
+    # Then
+    assert str(raised.value) == "Codex argv prompts cannot contain NUL characters"
 
 
 def test_effective_identity_ignores_run_and_position_but_tracks_frozen_inputs() -> None:
@@ -542,6 +567,67 @@ def test_effective_identity_tracks_model_effort_and_cli_binding() -> None:
     assert version_variant != original
 
 
+def test_effective_identity_tracks_binding_settings_but_not_run_policy() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    builder = CodexAttemptRequestBuilder()
+    changed_settings = replace(
+        binding,
+        effective_settings=(("effective_model_reasoning_effort", "high"),),
+    )
+    settings_binding = replace(
+        binding,
+        effective_settings=(("z-setting", None), ("a-setting", "known")),
+    )
+    reordered_settings_binding = replace(
+        settings_binding,
+        effective_settings=tuple(reversed(settings_binding.effective_settings)),
+    )
+    changed_output = config.model_copy(
+        update={"output_directory": Path("other-output")}
+    )
+    changed_policy = config.model_copy(
+        update={
+            "concurrency": 3,
+            "retry_limit": 2,
+            "capacity_retry_limit": 1,
+            "capacity_backoff_base_seconds": 1.0,
+            "capacity_backoff_cap_seconds": 2.0,
+        }
+    )
+
+    # When
+    original = builder.build(plan, call, binding, evidence, config).call_id
+    setting_variant = builder.build(
+        plan, call, changed_settings, evidence, config
+    ).call_id
+    settings_identity = builder.build(
+        plan, call, settings_binding, evidence, config
+    ).call_id
+    reordered_settings_identity = builder.build(
+        plan, call, reordered_settings_binding, evidence, config
+    ).call_id
+    policy_variant = builder.build(
+        plan, call, binding, evidence, changed_policy
+    ).call_id
+    output_variant = builder.build(
+        plan, call, binding, evidence, changed_output
+    ).call_id
+    changed_stage = PreparedEvidence(
+        output_directory=Path("different-stage"),
+        plan_artifact=Path("different-stage/plan.json"),
+        model_instructions_file=None,
+    )
+    stage_variant = builder.build(plan, call, binding, changed_stage, config).call_id
+
+    # Then
+    assert setting_variant != original
+    assert reordered_settings_identity == settings_identity
+    assert policy_variant == original
+    assert output_variant == original
+    assert stage_variant == original
+
+
 def test_classifier_confirms_absence_only_for_supervisor_not_started_evidence() -> None:
     # Given
     config, _, _, _, _ = plan_and_inputs(with_instructions=False)
@@ -577,6 +663,71 @@ def test_classifier_confirms_absence_only_for_supervisor_not_started_evidence() 
     assert assessment.classification_basis == (
         "supervisor confirmed no process was launched"
     )
+
+
+def classifier_scenario_evidence(
+    scenario: str, base: AttemptEvidence
+) -> AttemptEvidence:
+    """Build one synthetic supervisor outcome for a classifier scenario."""
+    observation = AttemptObservation(
+        output=CapturedOutput(
+            b"capacity reached" if scenario == "capacity-like-output" else b"",
+            b"quota exhausted" if scenario == "quota-like-output" else b"",
+        ),
+        elapsed_seconds=1.0,
+        cleanup=CleanupEvidence("owned", (), "reaped", None),
+    )
+    outcome = base.outcome
+    control_flow = "returned"
+    if scenario == "completed-nonzero":
+        outcome = Completed(observation, 1)
+    elif scenario in {"capacity-like-output", "quota-like-output"}:
+        outcome = Completed(observation, 0)
+    elif scenario == "cancelled":
+        outcome = AttemptCancelled(observation, -15)
+        control_flow = "cancelled"
+    elif scenario == "timeout":
+        outcome = TimedOut(observation, -9)
+    elif scenario == "output-overflow":
+        outcome = OutputLimitExceeded(observation, -9)
+    elif scenario == "launched-infrastructure":
+        outcome = InfrastructureFailure(
+            observation, 1, "OSError", "failure after launch"
+        )
+    elif scenario == "uncertain-acquisition":
+        outcome = None
+        control_flow = "raised"
+    evidence = replace(base, outcome=outcome, control_flow=control_flow)
+
+    return evidence
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    (
+        "completed-zero",
+        "completed-nonzero",
+        "cancelled",
+        "timeout",
+        "output-overflow",
+        "launched-infrastructure",
+        "uncertain-acquisition",
+        "capacity-like-output",
+        "quota-like-output",
+    ),
+)
+def test_classifier_keeps_nonconfirmed_outcomes_unknown(scenario: str) -> None:
+    # Given
+    config, _, _, _, _ = plan_and_inputs(with_instructions=False)
+    evidence = classifier_scenario_evidence(scenario, settled_evidence(config))
+    classifier = CodexOutcomeClassifier()
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "unknown"
+    assert assessment.no_result_basis == "present_or_unknown"
 
 
 def test_request_builder_propagates_identity_failure_without_request_retry() -> None:
@@ -716,8 +867,37 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
         ("effective_approval_policy", None),
         ("effective_model_reasoning_effort", None),
         ("effective_sandbox_mode", None),
+        ("effective_tool_controls", None),
         ("automatic_system_instructions", None),
     )
+
+
+def test_version_timeout_leaves_version_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    config, _, _, _, _ = plan_and_inputs(with_instructions=False)
+    executable_path = Path("/absolute/codex")
+
+    def timed_out(
+        command: tuple[str, ...], **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert command == (str(executable_path), "--version")
+        assert kwargs.get("timeout") == 5
+        raise subprocess.TimeoutExpired(command, 5.0)
+
+    monkeypatch.setattr(subprocess, "run", timed_out)
+    resolver = CodexCliBindingResolver(
+        resolve_executable=lambda: executable_path,
+        runner_version=lambda: "0.1.0",
+    )
+
+    # When
+    binding = resolver.resolve(config)
+
+    # Then
+    assert binding.executable_path == executable_path
+    assert binding.cli_version is None
 
 
 def test_default_request_is_built_after_injected_identity() -> None:
