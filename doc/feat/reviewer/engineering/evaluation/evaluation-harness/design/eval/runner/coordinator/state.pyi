@@ -15,6 +15,7 @@ from script.eval.model import (
     QuotaProbeRecord,
     QuotaProbeRequest,
     QuotaProbeSchedule,
+    QuotaTelemetryEvent,
     QuotaWaitContext,
     RetryAssessment,
     WaitEvent,
@@ -49,9 +50,9 @@ class WaitWrite:
 
 @dataclass(frozen=True)
 class CallEvidenceFailure:
-    """A failed obligation and original exception, not a durable outcome."""
+    """A failed obligation and error; history retains any durable attempt."""
 
-    obligation: AttemptWrite | WaitWrite
+    obligation: AttemptWrite | WaitWrite | QuotaTelemetryEvent
     error: BaseException
 
 @dataclass(frozen=True)
@@ -69,14 +70,6 @@ class CallWait:
     started_monotonic: float
     start_phase: Literal["submitted", "durable"]
     end_record: WaitRecord | None
-
-@dataclass(frozen=True)
-class InfrastructureWait:
-    """Call-local infrastructure delay with an explicit monotonic origin."""
-
-    failed_attempt: AttemptNumber
-    started_monotonic: float
-    sampled_seconds: float
 
 @dataclass(frozen=True)
 class Queued:
@@ -99,11 +92,26 @@ class Recording:
     attempt: AttemptWrite
 
 @dataclass(frozen=True)
-class RetryWait:
-    """An ordinary or capacity delay owned by this call, not the quota gate."""
+class ObservingQuota:
+    """The attempt is durable; the adapter is ingesting its passive evidence."""
 
     history: CallHistory
-    wait: CallWait | InfrastructureWait
+    attempt_number: AttemptNumber
+    evidence: AttemptEvidence
+
+@dataclass(frozen=True)
+class RecordingTelemetry:
+    """The attempt is durable and its observed telemetry write is pending."""
+
+    history: CallHistory
+    event: QuotaTelemetryEvent
+
+@dataclass(frozen=True)
+class RetryWait:
+    """A capacity delay owned by this call, not the quota gate."""
+
+    history: CallHistory
+    wait: CallWait
 
 @dataclass(frozen=True)
 class Finished:
@@ -127,8 +135,30 @@ class Stopped:
     outcome: Literal["not_started", "failure", "cancelled"]
 
 type CallState = (
-    Queued | Attempting | Recording | RetryWait | Finished | EvidencePending | Stopped
+    Queued
+    | Attempting
+    | Recording
+    | ObservingQuota
+    | RecordingTelemetry
+    | RetryWait
+    | Finished
+    | EvidencePending
+    | Stopped
 )
+
+@dataclass(frozen=True)
+class PauseOrigin:
+    """The first exhaustion closes dispatch before fallible persistence."""
+
+    call: EffectiveCall
+    attempt_number: AttemptNumber
+
+@dataclass(frozen=True)
+class PauseTrigger:
+    """The latched origin and its validated, durably recorded observation."""
+
+    origin: PauseOrigin
+    observation: QuotaObservation
 
 @dataclass(frozen=True)
 class Open:

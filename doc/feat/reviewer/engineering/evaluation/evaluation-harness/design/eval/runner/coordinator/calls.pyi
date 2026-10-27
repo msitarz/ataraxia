@@ -5,7 +5,12 @@ from asyncio import Semaphore
 
 from script.eval.evidence import EvidenceStore
 from script.eval.model import HarnessConfig
-from script.eval.runner.ports import AttemptCall, OutcomeClassifier, Runtime
+from script.eval.runner.ports import (
+    AttemptCall,
+    OutcomeClassifier,
+    QuotaStatusReader,
+    Runtime,
+)
 
 from .coordinator import RunControl
 from .state import CallState, Queued
@@ -21,6 +26,7 @@ class CallOwner:
         slots: Semaphore,
         attempt: AttemptCall,
         classifier: OutcomeClassifier,
+        quota_status: QuotaStatusReader,
         evidence: EvidenceStore,
         runtime: Runtime,
     ) -> None: ...

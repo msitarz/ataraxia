@@ -15,8 +15,10 @@ with known lifecycle bugs, not a validated alternative.
   effects.
 - Progress derives from those states and durable records rather than a second
   ledger.
-- Existing consumer ports and the flat persisted `CallRecord` schema remain
-  unchanged.
+- Existing consumer port responsibilities and the flat persisted `CallRecord`
+  schema are retained.
+- The evidence lifecycle-input union has the proposed refinement described
+  below.
 - The [type sketch](design/eval/runner/coordinator/) describes proposed shared
   state boundaries, not runtime implementation or final private signatures.
 
@@ -45,7 +47,9 @@ with known lifecycle bugs, not a validated alternative.
 | --- | --- | --- |
 | Queued | Attempting, stopped | No attempt has started. |
 | Attempting | Recording | The supervisor owns the attempt through cleanup. |
-| Recording | Retry wait, queued, finished, stopped, evidence pending | Settlement is known and its write decides what may be claimed. |
+| Recording | Observing quota, retry wait, queued, finished, stopped, evidence pending | The attempt write settles before later effects. |
+| Observing quota | Recording telemetry, stopped | The opt-in adapter ingests the durable attempt evidence. |
+| Recording telemetry | Retry wait, queued, finished, stopped, evidence pending | The observation write settles before it can support recovery. |
 | Retry wait | Queued, stopped, evidence pending | A call-local wait is closed durably before dispatch. |
 | Finished | None | A durable terminal outcome will not be repeated. |
 | Evidence pending | None | A required record failed and no durable result is claimed. |
@@ -54,8 +58,10 @@ with known lifecycle bugs, not a validated alternative.
 - Attempt history belongs to its call, and terminal records remain immutable.
 - Infrastructure and capacity allowances are separate finite counts defaulting
   to zero.
-- Their jitter policies are independent, and quota retry is independent of
-  ordinary retries.
+- Quota retry is independent of both allowances.
+- Infrastructure retry requeues after durable eligibility and yields before
+  reconsidering dispatch.
+- Only capacity retry uses its configured full-jitter delay.
 - A retry requires confident no-result evidence, safe cleanup, and durable
   settlement.
 - A nonzero exit or capacity text alone does not prove no semantic result.
@@ -199,9 +205,24 @@ with known lifecycle bugs, not a validated alternative.
 - `QuotaOwner` exposes one quota state, durable wait and probe history, and
   latest validated observation to the run owner.
 - `RunControl` owns the stop latch and dispatch gate shared by those owners.
-- A call owner closes the quota gate as soon as it recognizes exhaustion.
-- The coordinator drains and persists active calls before awaiting quota
-  recovery.
+- With quota waiting enabled, a call owner immediately closes the quota gate on
+  recognized exhaustion and retains the first call position and attempt as the
+  pause origin.
+- The run owner awaits the latched pause notification alongside worker
+  completion, without polling or a separate quota-monitor task.
+- Workers at the dispatch gate remain blocked while the run owner drains active
+  attempts and their writes.
+- The call owner uses the existing quota reader after durable attempt settlement
+  and writes its validated observation as telemetry.
+- A durably recorded matching observation and the first pause origin form the
+  typed `PauseTrigger` retained by `RunControl`.
+- After draining, the coordinator derives `QuotaWaitContext` from that trigger
+  and validated run policy, then awaits `QuotaOwner` recovery.
+- An unavailable, unknown, stale, or mismatched trigger cannot open the gate or
+  authorize a probe and follows the contract's failure handling.
+- A failed telemetry write retains its `QuotaTelemetryEvent`, error, and
+  already durable attempt in the same call's evidence-pending state.
+- Passive ingestion and its writes are skipped when quota waiting is disabled.
 - Call owners use the coordinator-owned semaphore through supervisor cleanup.
 - `settle` retains a submitted task and returns its value or failure alongside
   any concurrent owner cancellation.
@@ -214,8 +235,12 @@ with known lifecycle bugs, not a validated alternative.
 - `Recording` counts as active until the write settles, and a failed attempt
   write moves its captured number, evidence, assessment, and error to
   `EvidencePending`.
-- A retry wait retains its sampled delay and monotonic start; capacity waits
-  also retain the durable start, context, and pending end record.
+- Passive observation and telemetry recording also count as active; a failed
+  telemetry write leaves the durable attempt in history rather than inventing
+  an attempt-write failure.
+- A capacity retry wait retains its sampled delay, monotonic start, durable
+  start phase, context, and pending end record.
+- Infrastructure retries project as queued while awaiting a fresh invocation.
 - A retained wait-start write that succeeds during cancellation still obliges
   the owner to write its end and retain its `WaitRecord`.
 - Each planned position projects into exactly one call bucket: queued, active,
