@@ -874,6 +874,46 @@ async def test_older_available_record_cannot_replace_fresh_exhaustion(
     assert older.windows[0].usage_percent == pytest.approx(35.0)
 
 
+@pytest.mark.parametrize(
+    ("timestamp", "expected_state", "diagnostic"),
+    [
+        (
+            "2026-10-27T09:59:59Z",
+            "unknown",
+            "quota snapshots have ambiguous equal timestamps",
+        ),
+        ("2026-10-27T10:00:00Z", "exhausted", None),
+    ],
+    ids=["equal-timestamps-ambiguous", "newer-source-ordinal-independent"],
+)
+async def test_ordering_compares_timestamps_across_distinct_sources(
+    tmp_path: Path, timestamp: str, expected_state: str, diagnostic: str | None
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    rollout = write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows(ordinal=17))
+    reader = make_local_reader(sessions, make_identity_scope())
+    attempt = make_attempt_evidence(thread_started())
+    first = await reader.observe_settled_attempt(attempt)
+    new_day = sessions / "2026" / "10" / "28"
+    new_day.mkdir(parents=True)
+    rollout.unlink()
+    replacement = write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp=timestamp, primary_used=100, ordinal=1),
+    )
+    replacement.rename(new_day / replacement.name)
+
+    # When
+    second = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert first.windows[0].state == "available"
+    assert second.windows[0].state == expected_state
+    assert second.diagnostic == diagnostic
+
+
 async def test_repeated_old_source_cannot_override_newer_other_source(
     tmp_path: Path,
 ) -> None:

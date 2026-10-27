@@ -457,21 +457,33 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         return await self._ordering.accept(observation, self.expected_scope)
 
 
+@dataclass(frozen=True)
+class _WindowFacts:
+    """Window fields used to detect a changed same-ordinal record."""
+
+    window_id: str
+    state: QuotaState
+    usage_percent: float | None
+    reset_at_utc: str | None
+
+
+@dataclass(frozen=True)
+class _OrderedObservation:
+    """One source record's ordering coordinates and relevant window facts."""
+
+    coordinate: str
+    timestamp: datetime
+    sequence: int
+    windows: tuple[_WindowFacts, ...]
+
+
 @dataclass
 class _ObservationOrdering:
     """Reject delayed snapshots before they can replace newer quota state."""
 
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
-    latest_timestamp: datetime | None = None
-    latest_coordinate: str | None = None
-    latest_snapshots: dict[
-        str,
-        tuple[
-            datetime,
-            int,
-            tuple[tuple[str, str, float | None, str | None], ...],
-        ],
-    ] = field(default_factory=dict)
+    latest: _OrderedObservation | None = None
+    latest_snapshots: dict[str, _OrderedObservation] = field(default_factory=dict)
 
     async def accept(
         self, observation: QuotaObservation, expected_scope: QuotaScope | None, /
@@ -487,81 +499,18 @@ class _ObservationOrdering:
             ).model_copy(update={"scope": None})
         if not _has_complete_windows(observation):
             return observation
-        order = _observation_order_key(observation)
-        if isinstance(order, str):
-            return _as_unknown(observation, order)
-        return await self._accept_ordered(observation, order)
-
-    async def _accept_ordered(
-        self,
-        observation: QuotaObservation,
-        order: tuple[str, datetime, int],
-        /,
-    ) -> QuotaObservation:
-        """Compare and retain a validated source-order key atomically.
-
-        Returns:
-            The observation or an unknown copy on ordering regression.
-        """
-        coordinate, timestamp, sequence = order
-        signature = _observation_signature(observation)
+        record = _observation_order_key(observation)
+        if isinstance(record, str):
+            return _as_unknown(observation, record)
         async with self.lock:
-            prior = self.latest_snapshots.get(coordinate)
-            if prior is not None and (timestamp, sequence) == prior[:2]:
-                if signature == prior[2]:
-                    latest_timestamp = self.latest_timestamp
-                    if latest_timestamp is not None and timestamp < latest_timestamp:
-                        return _as_unknown(
-                            observation,
-                            "quota snapshot is older than a prior observation",
-                        )
-                    if (
-                        latest_timestamp is not None
-                        and timestamp == latest_timestamp
-                        and coordinate != self.latest_coordinate
-                    ):
-                        return _as_unknown(
-                            observation,
-                            "quota snapshots have ambiguous equal timestamps",
-                        )
-                    return observation
-                return _as_unknown(
-                    observation, "quota source repeated an ordinal with changed facts"
-                )
-            prior_ordinal = None if prior is None else prior[1]
             issue = _ordering_issue(
-                coordinate,
-                timestamp,
-                sequence,
-                prior_ordinal,
-                self.latest_timestamp,
-                self.latest_coordinate,
+                record, self.latest_snapshots.get(record.coordinate), self.latest
             )
             if issue is not None:
                 return _as_unknown(observation, issue)
-            self.latest_timestamp = timestamp
-            self.latest_coordinate = coordinate
-            self.latest_snapshots[coordinate] = (timestamp, sequence, signature)
+            self.latest = record
+            self.latest_snapshots[record.coordinate] = record
         return observation
-
-
-def _observation_signature(
-    observation: QuotaObservation, /
-) -> tuple[tuple[str, str, float | None, str | None], ...]:
-    """Retain usage and reset facts for same-ordinal conflict detection.
-
-    Returns:
-        Stable window facts used to detect a changed source record.
-    """
-    return tuple(
-        (
-            str(window.window_id),
-            window.state,
-            window.usage_percent,
-            window.reset_at_utc,
-        )
-        for window in observation.windows
-    )
 
 
 def _has_complete_windows(observation: QuotaObservation, /) -> bool:
@@ -577,7 +526,7 @@ def _has_complete_windows(observation: QuotaObservation, /) -> bool:
 
 def _observation_order_key(
     observation: QuotaObservation, /
-) -> tuple[str, datetime, int] | str:
+) -> _OrderedObservation | str:
     """Validate the common producer timestamp and ordinal across windows.
 
     Returns:
@@ -596,26 +545,39 @@ def _observation_order_key(
     timestamp = _parse_timestamp(timestamp_text)
     if timestamp is None:
         return "quota source timestamp is invalid"
-    return coordinate, timestamp, sequence
+    windows = tuple(
+        _WindowFacts(
+            str(window.window_id),
+            window.state,
+            window.usage_percent,
+            window.reset_at_utc,
+        )
+        for window in observation.windows
+    )
+    return _OrderedObservation(coordinate, timestamp, sequence, windows)
 
 
 def _ordering_issue(
-    coordinate: str,
-    timestamp: datetime,
-    sequence: int,
-    prior_ordinal: int | None,
-    latest_timestamp: datetime | None,
-    latest_coordinate: str | None,
+    record: _OrderedObservation,
+    prior: _OrderedObservation | None,
+    latest: _OrderedObservation | None,
     /,
 ) -> str | None:
     """Return a precise reason when one source snapshot regresses ordering."""
-    if prior_ordinal is not None and sequence <= prior_ordinal:
+    repeated = (
+        prior is not None
+        and record.timestamp == prior.timestamp
+        and record.sequence == prior.sequence
+    )
+    if repeated and prior is not None and record.windows != prior.windows:
+        return "quota source repeated an ordinal with changed facts"
+    if not repeated and prior is not None and record.sequence <= prior.sequence:
         return "quota source sequence did not advance"
-    if latest_timestamp is None:
+    if latest is None:
         return None
-    if timestamp < latest_timestamp:
+    if record.timestamp < latest.timestamp:
         return "quota snapshot is older than a prior observation"
-    if timestamp == latest_timestamp and coordinate != latest_coordinate:
+    if record.timestamp == latest.timestamp and record.coordinate != latest.coordinate:
         return "quota snapshots have ambiguous equal timestamps"
     return None
 
