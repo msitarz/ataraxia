@@ -28,6 +28,7 @@ from script.eval.runner.adapters import (
     RawCodexSessionSnapshot,
 )
 from script.eval.runner.ports import AttemptCall
+import script.eval.runner.quota_evidence as quota_evidence_module
 from script.process_supervisor import (
     AttemptCancelled,
     AttemptFailureEvidence,
@@ -38,6 +39,7 @@ from script.process_supervisor import (
     CleanupEvidence,
     Completed,
     DispatchStop,
+    call_supervisor,
 )
 
 
@@ -532,7 +534,7 @@ async def test_poll_preserves_cancellation_and_supervisor_observation() -> None:
             elapsed_seconds=0.5,
             cleanup=CleanupEvidence("owned", (), "expired", None),
         ),
-        exit_status=130,
+        exit_status=None,
     )
     vars(cancellation)["process_supervisor_evidence"] = supervisor_evidence
 
@@ -705,6 +707,182 @@ async def test_postprocessing_error_keeps_returned_process_and_request_facts() -
     assert process_result.observation.output.stderr == b"actual stderr"
     assert evidence.quota_state == "unknown"
     assert evidence.observation is None
+
+
+async def test_assessment_error_retains_normalized_observation_and_process() -> None:
+    # Given
+    quota_request = make_probe_request()
+    attempt_request = make_probe_attempt_request()
+    process_result = make_process_result(b"assessment stdout", b"assessment stderr")
+    observation = QuotaObservation(
+        scope=quota_request.schedule.scope,
+        read_at_utc="2026-10-27T10:00:00Z",
+        source_coordinate="opaque-source",
+        windows=(),
+        diagnostic="normalized before assessment",
+    )
+    assessor_error = RuntimeError("assessment failed")
+
+    async def attempt_call(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        await asyncio.sleep(0)
+        assert request is attempt_request
+        del stop
+        return process_result
+
+    def fail_assessment(
+        attempt: AttemptEvidence, received: QuotaObservation | None, /
+    ) -> tuple[QuotaState, str | None]:
+        assert received is observation
+        assert attempt.outcome is process_result
+        raise assessor_error
+
+    reader = make_reader(
+        RecordingSource(None),
+        quota_request.schedule.scope,
+        lambda raw: None,
+        lambda snapshot, scope, read_at: observation,
+        attempt_call,
+        lambda request, settings: attempt_request,
+        fail_assessment,
+    )
+
+    # When
+    with pytest.raises(RuntimeError, match="assessment failed") as raised:
+        await reader.poll(quota_request, stop_dispatch)
+
+    # Then
+    assert raised.value is assessor_error
+    evidence = quota_probe_evidence(assessor_error, quota_request)
+    assert evidence is not None
+    assert evidence.observation is observation
+    assert evidence.quota_state == "unknown"
+    assert evidence.process.outcome is process_result
+    assert evidence.process.request is attempt_request
+    assert evidence.process.usage_telemetry == b"assessment stdout"
+
+
+async def test_call_supervisor_attached_outcome_is_retained_on_stop_error() -> None:
+    # Given
+    quota_request = make_probe_request()
+    attempt_request = make_probe_attempt_request()
+    stdout = b"settled despite stop-hook error"
+    process_result = Completed(
+        observation=AttemptObservation(
+            output=CapturedOutput(stdout, b"real stderr"),
+            elapsed_seconds=0.5,
+            cleanup=CleanupEvidence("owned", (), "expired", None),
+        ),
+        exit_status=0,
+    )
+    stop_error = RuntimeError("dispatch stop failed")
+
+    async def attempt(request: AttemptRequest, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        assert request is attempt_request
+        return process_result
+
+    async def attempt_call(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        return await call_supervisor(request, attempt, stop)
+
+    def failing_stop(outcome: AttemptResult | BaseException, /) -> None:
+        assert outcome is process_result
+        raise stop_error
+
+    reader = make_reader(
+        RecordingSource(None),
+        quota_request.schedule.scope,
+        lambda raw: None,
+        None,
+        attempt_call,
+        lambda request, settings: attempt_request,
+    )
+
+    # When
+    with pytest.raises(RuntimeError, match="dispatch stop failed") as raised:
+        await reader.poll(quota_request, failing_stop)
+
+    # Then
+    assert raised.value is stop_error
+    evidence = quota_probe_evidence(stop_error, quota_request)
+    assert evidence is not None
+    assert evidence.process.control_flow == "raised"
+    assert evidence.process.outcome is process_result
+    assert evidence.process.request is attempt_request
+    assert evidence.process.usage_telemetry is stdout
+    assert process_result.observation.output is not None
+    assert process_result.observation.output.stderr == b"real stderr"
+
+
+def test_malformed_preexisting_evidence_is_not_overwritten() -> None:
+    # Given
+    error = RuntimeError("malformed evidence")
+    malformed = ("not quota evidence",)
+    setattr(error, quota_evidence_module._EVIDENCE_ATTRIBUTE, malformed)
+    request = make_probe_request()
+    evidence = QuotaProbeEvidence(
+        request=request,
+        process=AttemptEvidence(
+            control_flow="raised",
+            outcome=None,
+            error_type="RuntimeError",
+            diagnostic="failure",
+            request=make_probe_attempt_request(),
+            started_at_utc="2026-10-27T10:00:00Z",
+            ended_at_utc="2026-10-27T10:00:00Z",
+            usage_telemetry=None,
+        ),
+        quota_state="unknown",
+        observation=None,
+        classification_basis="incomplete",
+    )
+
+    # When
+    quota_evidence_module.attach_quota_probe_evidence(error, evidence)
+
+    # Then
+    assert getattr(error, quota_evidence_module._EVIDENCE_ATTRIBUTE) is malformed
+    assert quota_probe_evidence(error, request) is None
+
+
+def test_evidence_attachment_failure_does_not_replace_primary_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    error = RuntimeError("primary error")
+    request = make_probe_request()
+    evidence = QuotaProbeEvidence(
+        request=request,
+        process=AttemptEvidence(
+            control_flow="raised",
+            outcome=None,
+            error_type="RuntimeError",
+            diagnostic="failure",
+            request=make_probe_attempt_request(),
+            started_at_utc="2026-10-27T10:00:00Z",
+            ended_at_utc="2026-10-27T10:00:00Z",
+            usage_telemetry=None,
+        ),
+        quota_state="unknown",
+        observation=None,
+        classification_basis="incomplete",
+    )
+
+    def fail_vars(value: object, /) -> dict[str, object]:
+        del value
+        raise RuntimeError("attribute storage unavailable")
+
+    monkeypatch.setattr(quota_evidence_module, "vars", fail_vars, raising=False)
+
+    # When
+    quota_evidence_module.attach_quota_probe_evidence(error, evidence)
+
+    # Then
+    assert str(error) == "primary error"
+    assert quota_probe_evidence(error, request) is None
 
 
 async def test_reused_exception_evidence_is_request_specific() -> None:

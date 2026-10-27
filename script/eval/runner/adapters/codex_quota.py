@@ -148,6 +148,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         outcome: AttemptResult | None = None
         attempt: AttemptEvidence | None = None
         ended_at_utc: str | None = None
+        observation: QuotaObservation | None = None
         try:
             outcome = await self.attempt_call(attempt_request, stop_dispatch)
             ended_at_utc = self.runtime.utc_now()
@@ -180,7 +181,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
                     request=request,
                     process=attempt,
                     quota_state="unknown",
-                    observation=None,
+                    observation=observation,
                     classification_basis="probe assessment did not complete",
                 ),
             )

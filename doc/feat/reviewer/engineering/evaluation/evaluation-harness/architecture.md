@@ -558,6 +558,16 @@ Codex, quota, and runtime adapters.
   supplied telemetry and quota captures remain candidate evidence only; source
   lookup, session association, scope identity, freshness, request flags, and
   exec output schema remain unverified.
+  The intended adapter behavior remains pending source verification: map both
+  required five-hour and weekly windows, normalize usage from a verified
+  ``used_percent`` value or from ``100 - remaining_percent``, and calculate
+  observation age from producer time to read time. Missing, invalid, or
+  future-dated producer times remain unknown; an old but valid time remains a
+  known age rather than being discarded. Reset times are hints only. Progress
+  snapshots reuse existing scoped observations and producer-based ages without
+  additional quota reads or lookups. Any persisted source coordinate must be
+  sanitized and contain no PII. None of these normalization or freshness rules
+  is implemented by the current skeleton.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
 - The adapter package exports `SystemRuntime` and the typed Codex binding,
