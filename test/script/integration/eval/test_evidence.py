@@ -5,6 +5,7 @@ from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
+import tomllib
 
 import pytest
 
@@ -13,6 +14,7 @@ from script.eval.inputs import GitRepositoryReader
 from script.eval.model import (
     AttemptEvidence,
     DirectoryOption,
+    FrozenPlan,
     HarnessConfig,
     InstructionsSnapshot,
     QuotaProbeCancelled,
@@ -24,6 +26,8 @@ from script.eval.model import (
     WaitEvent,
 )
 from script.eval.plan import PurePlanBuilder
+from script.eval.runner import CliBinding
+from script.eval.runner.adapters import CodexAttemptRequestBuilder
 from script.process_supervisor import (
     AttemptObservation,
     AttemptRequest,
@@ -329,23 +333,79 @@ async def test_attempt_record_retains_effective_deadline_grace_and_output_limit(
     assert record.output_limit_bytes == 128
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-2 staged instruction snapshot survives source edits",
-)
-def test_request_uses_staged_instructions_after_original_file_changes() -> None:
+def frozen_instruction_plan(
+    tmp_path: Path,
+) -> tuple[Path, bytes, HarnessConfig, FrozenPlan]:
+    """Freeze a tracked instruction file with its real repository reader."""
+    repository = make_repository(tmp_path / "context")
+    original = repository / "instructions.md"
+    instruction_bytes = b"frozen system instructions"
+    original.write_bytes(instruction_bytes)
+    git(repository, "add", "instructions.md")
+    git(repository, "commit", "-qm", "add instructions")
+    configuration = HarnessConfig(
+        ordered_options=(DirectoryOption(position=0, path=repository / "context"),),
+        models=("model-a",),
+        efforts=("low",),
+        concurrency=1,
+        output_directory=tmp_path / "run",
+        dry_run=False,
+        timeout_seconds=5.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=0,
+        instructions_file_path=original,
+    )
+    inputs = GitRepositoryReader().freeze(configuration)
+    plan = PurePlanBuilder("run-1").plan(inputs, configuration)
+    return original, instruction_bytes, configuration, plan
+
+
+def static_cli_binding() -> CliBinding:
+    """Describe an absolute CLI path without launching Codex in integration tests."""
+    return CliBinding(
+        executable_path=Path("/absolute/codex"),
+        cli_version="codex-cli test",
+        runner_version="test",
+        effective_settings=(("automatic_system_instructions", None),),
+        quota_scope=None,
+    )
+
+
+async def test_request_uses_staged_instructions_after_original_file_changes(
+    tmp_path: Path,
+) -> None:
     """Prove the native setting targets frozen evidence, never a reopened source."""
     # Given
-    # A clean tracked -i file frozen into the new evidence area.
+    original, instruction_bytes, configuration, plan = frozen_instruction_plan(tmp_path)
+    prepared = await create_evidence_store().create(tmp_path / "run", plan)
+    binding = static_cli_binding()
+    builder = CodexAttemptRequestBuilder()
 
     # When
-    # The original source changes after freeze and the request is then constructed.
+    original.write_bytes(b"changed source")
+    effective_call = builder.build(
+        plan, plan.calls[0], binding, prepared, configuration
+    )
 
     # Then
-    # argv maps -c model_instructions_file=PATH to the staged snapshot path and
-    # execution remains based on the captured bytes.
-    pass
+    # argv maps the override to staged immutable bytes; no source bytes changed
+    # in the frozen plan or persisted evidence.
+    staged = prepared.model_instructions_file
+    assert staged is not None
+    assert staged.read_bytes() == instruction_bytes
+    assert plan.instructions_file is not None
+    assert plan.instructions_file.content == instruction_bytes
+    request = effective_call.request
+    assert request.argv[-1] == plan.calls[0].prompt.decode("utf-8")
+    override = next(
+        request.argv[index + 1]
+        for index, argument in enumerate(request.argv[:-1])
+        if argument == "-c"
+        and request.argv[index + 1].startswith("model_instructions_file=")
+    )
+    assert tomllib.loads(override)["model_instructions_file"] == str(staged)
+    assert original.read_bytes() == b"changed source"
 
 
 async def test_unignored_in_repository_output_is_written_and_makes_next_freeze_dirty(
@@ -586,21 +646,44 @@ async def test_wait_telemetry_and_prelaunch_cancel_append_without_process_record
     assert not (prepared.output_directory / "probes").exists()
 
 
-@pytest.mark.xfail(
-    run=False,
-    strict=True,
-    reason="not implemented: AC-2 omitted instruction file preserves Codex defaults",
-)
-def test_omitted_instructions_file_adds_no_override_or_staged_artifact() -> None:
+async def test_omitted_instructions_file_adds_no_override_or_staged_artifact(
+    tmp_path: Path,
+) -> None:
     """Retain default/unavailable metadata when the optional -i input is absent."""
     # Given
-    # A clean planned invocation with no -i / --instructions-file setting.
+    repository = make_repository(tmp_path / "context")
+    configuration = HarnessConfig(
+        ordered_options=(DirectoryOption(position=0, path=repository / "context"),),
+        models=("model-a",),
+        efforts=("low",),
+        concurrency=1,
+        output_directory=tmp_path / "run",
+        dry_run=False,
+        timeout_seconds=5.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=0,
+        instructions_file_path=None,
+    )
+    inputs = GitRepositoryReader().freeze(configuration)
+    plan = PurePlanBuilder("run-1").plan(inputs, configuration)
+    prepared = await create_evidence_store().create(tmp_path / "run", plan)
+    binding = static_cli_binding()
+    effective_call = CodexAttemptRequestBuilder().build(
+        plan, plan.calls[0], binding, prepared, configuration
+    )
 
     # When
-    # The effective request is built and the frozen plan is persisted.
+    assert plan.instructions_file is None
+    assert prepared.model_instructions_file is None
+    assert binding.effective_settings == (("automatic_system_instructions", None),)
 
     # Then
-    # argv has no model_instructions_file override, no instruction artifact is
-    # staged, and metadata says defaults are preserved with automatic bytes
-    # unavailable.
-    pass
+    assert not any(
+        argument.startswith("model_instructions_file=")
+        for index, argument in enumerate(effective_call.request.argv)
+        if index > 0 and effective_call.request.argv[index - 1] == "-c"
+    )
+    assert prepared.model_instructions_file is None
+    assert {path.name for path in prepared.output_directory.iterdir()} == {"plan.json"}
+    assert json.loads(prepared.plan_artifact.read_text())["instructions_file"] is None

@@ -9,9 +9,10 @@ freezer is implemented in
 orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
-expansion. The token estimator, dry-run report builder, and evidence storage are
-implemented. CLI integration and dispatch remain planned. Shared consumer-owned
-runner ports and accepted runtime configuration are implemented in
+expansion. The token estimator, dry-run report builder, evidence storage, and
+Codex invocation leaves are implemented. CLI integration and dispatch remain
+planned. Shared consumer-owned runner ports and accepted runtime configuration
+are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -240,17 +241,39 @@ supervisor request.
 - Execution resolves the absolute Codex path and observable CLI version and
   settings after the dry-run branch through `runner.adapters.codex`, without
   probing the CLI during dry run.
+- The resolver reports explicitly requested execution controls separately
+  from native effective values. Its default reader does not inspect private
+  user configuration or authentication state: requested read-only sandbox,
+  unattended approval policy, and ignored user config are recorded as
+  requested, while native effective values and automatic instruction bytes
+  remain unknown unless independently observed. Tool/feature availability and
+  other inherited process context are also unknown; the adapter does not claim
+  that Codex has no tools or cannot access private data through other means.
 - The Codex adapter implements the consumer-owned `AttemptRequestBuilder` port.
   Its builder consumes the frozen plan and scheduled call, the resolved
   binding, and the staged instruction path returned by evidence preparation.
   When configured, it passes that path to Codex as
   `-c model_instructions_file=PATH`; when omitted, it adds no override and
-  leaves Codex's native system instructions in place. It then returns an
-  effective-call identity and `AttemptRequest`.
+  leaves Codex's native system instructions in place, whose automatic bytes
+  remain unavailable. The request uses JSONL output, no color, the requested
+  model and effort, read-only sandboxing, and approval policy `never`, without
+  a permission-bypass flag. It returns an effective-call identity and
+  `AttemptRequest`. No verified flag recipe currently disables all tools or
+  features, so their availability is not asserted.
 - The builder is pure: the plan supplies run identity and ordered frozen
   inputs, the binding supplies runtime settings, and the evidence result
   supplies the staged path. It hashes those effective inputs without opening
   the staged file or original source path.
+- The prompt is passed as one argv value after `--`, without added headers or
+  normalization. The operating system's argument-size limit applies, and NUL
+  cannot be represented in an argv value; request construction rejects NUL
+  explicitly. No prompt-file protocol is implemented.
+- Call identity includes the sanitized binding settings in ordered, typed form
+  so unknown values remain distinct from observed values. It excludes run and
+  scheduled position, evidence artifact locations, output destination,
+  concurrency, and retry policy. Quota and model-capacity output recognition
+  is unsupported; ordinary completion and ambiguous process outcomes remain
+  unknown except for supervisor-confirmed prelaunch infrastructure failure.
 - When runtime binding is unavailable during dry run, the report marks its
   binding and effective-call identity unknown. It may show a plan identity,
   clearly labeled as such, but never as the effective invocation identity.
@@ -501,10 +524,19 @@ Codex, quota, and runtime adapters.
   mechanism remains an implementation prerequisite to verify before use; if no
   prompt try-write mechanism is available, composition selects the silent sink.
   `publish` never catches cancellation, `KeyboardInterrupt`, or `SystemExit`.
-- `runner.adapters.codex` resolves the CLI binding, builds each fresh request
-  from frozen inputs, and classifies only settled captured stdout JSONL and raw
-  stderr. It makes no streaming promise and returns unknown for unsupported or
-  unverified classification signals; it never parses answer content.
+- `runner.adapters.codex` resolves one absolute executable from `PATH` and
+  probes that same path with a bounded `--version` command. It records the
+  requested read-only sandbox, `approval_policy="never"`, and ignored user
+  config as explicit invocation settings; native effective settings and
+  automatic instruction bytes remain unknown. The builder passes frozen prompt
+  bytes, requested model and effort, plus the staged native instructions path
+  when configured. Its current argv uses `codex exec --json`, disables color,
+  uses the read-only sandbox and `approval_policy="never"`, and places the
+  literal prompt after `--`. No verified tool-disable setting is available in
+  this implementation, so it does not claim tool-free execution or private-data
+  isolation. The classifier returns confident absence only when supervisor
+  evidence confirms the process never launched; quota, capacity, nonzero exit,
+  and all other outcomes remain unknown. It never parses answer content.
 - `runner.adapters.codex_quota` implements the provider-neutral quota-reader
   port for a Codex binding scope. It owns passive session lookup and separate
   supervised probe request construction/invocation through the injected public
@@ -530,14 +562,15 @@ Codex, quota, and runtime adapters.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
 - The adapter package exports `SystemRuntime` and the typed Codex binding,
-  request, and classifier skeletons. The Codex skeletons compose injected
-  operations and fail visibly through their default unfinished leaves; they do
-  not yet discover or probe the CLI, read effective settings, build an argv or
-  effective identity, or recognize settled-output signals. No classifier
-  result is available until its evidence contract is verified. The Codex
-  signature sketch in `design/eval/runner/adapters/codex.pyi` is historical;
-  runtime code is authoritative. The CLI composition root, coordinator, quota,
-  and progress adapters remain design stubs. Runtime
+  request, and classifier adapters. Their injected operations remain available
+  for composition and tests, while default leaves now resolve and probe the
+  executable, retain requested settings with native values marked unknown,
+  construct a request and effective identity, and classify only confirmed
+  prelaunch failure. Quota and model-capacity recognition remain unsupported
+  because the supplied captures do not establish reliable structured signals.
+  The Codex signature sketch in `design/eval/runner/adapters/codex.pyi` is
+  historical; runtime code is authoritative. The CLI composition root,
+  coordinator, quota, and progress adapters remain design stubs. Runtime
   [`policy.py`](../../../../../../script/eval/runner/policy.py) implements the
   reviewed pure policy calculations; it does not own effects or coordinator
   gates. The shared runner values and ports are implemented. The neighboring

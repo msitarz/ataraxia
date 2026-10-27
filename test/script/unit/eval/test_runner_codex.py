@@ -1,7 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Codex adapter wiring through the typed runner boundaries."""
 
+from dataclasses import replace
 from pathlib import Path
+import subprocess
+import tomllib
 
 import pytest
 
@@ -14,6 +17,8 @@ from script.eval.model import (
     PlannedCall,
     PreparedEvidence,
     RetryAssessment,
+    SeparatorOption,
+    SourceSnapshot,
 )
 from script.eval.runner import CliBinding
 from script.eval.runner.adapters import (
@@ -21,7 +26,17 @@ from script.eval.runner.adapters import (
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
 )
-from script.process_supervisor import AttemptRequest
+from script.process_supervisor import (
+    AttemptCancelled,
+    AttemptObservation,
+    AttemptRequest,
+    CapturedOutput,
+    CleanupEvidence,
+    Completed,
+    InfrastructureFailure,
+    OutputLimitExceeded,
+    TimedOut,
+)
 
 type BuilderInputs = tuple[
     FrozenPlan, PlannedCall, CliBinding, Path | None, HarnessConfig
@@ -71,7 +86,7 @@ def plan_and_inputs(
     config = configuration(instructions_file_path=instruction_path)
     call = PlannedCall(
         position=0,
-        context_indices=(0,),
+        context_indices=(),
         model="model-a",
         effort="low",
         prompt_sha256="a" * 64,
@@ -354,6 +369,367 @@ def test_request_builder_forwards_no_instruction_path_when_unconfigured() -> Non
     assert effective_call.request is request
 
 
+def test_request_preserves_prompt_and_escapes_staged_path_as_toml() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    unusual_path = Path('/repo/notes 😀 "draft"\\final\x01\x7f.md')
+    staged_evidence = PreparedEvidence(
+        output_directory=evidence.output_directory,
+        plan_artifact=evidence.plan_artifact,
+        model_instructions_file=unusual_path,
+    )
+    leading_hyphen_call = call.model_copy(update={"prompt": b"-literal prompt"})
+    builder = CodexAttemptRequestBuilder()
+
+    # When
+    request = builder.build(
+        plan, leading_hyphen_call, binding, staged_evidence, config
+    ).request
+
+    # Then
+    assert request.argv[-2:] == ("--", "-literal prompt")
+    settings = {
+        request.argv[index + 1].split("=", 1)[0]: tomllib.loads(
+            request.argv[index + 1]
+        )[request.argv[index + 1].split("=", 1)[0]]
+        for index, argument in enumerate(request.argv[:-1])
+        if argument == "-c"
+    }
+    assert settings["model_instructions_file"] == str(unusual_path)
+    assert settings["model_reasoning_effort"] == "low"
+    assert settings["approval_policy"] == "never"
+    assert request.cwd == plan.repository_root
+    assert request.stdin == "devnull"
+    assert request.timeout_seconds == config.timeout_seconds
+    assert request.cleanup_timeout_seconds == config.cleanup_timeout_seconds
+    assert request.output_limit_bytes == config.output_limit_bytes
+
+
+def test_request_refuses_nul_in_argv_prompt() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    nul_prompt = call.model_copy(update={"prompt": b"before\x00after"})
+
+    # When
+    with pytest.raises(ValueError) as raised:
+        CodexAttemptRequestBuilder().build(plan, nul_prompt, binding, evidence, config)
+
+    # Then
+    assert str(raised.value) == "Codex argv prompts cannot contain NUL characters"
+
+
+def test_effective_identity_ignores_run_and_position_but_tracks_frozen_inputs() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    source = SourceSnapshot(
+        directory_position=0,
+        repository_path="context/a.txt",
+        commit_blob_sha="e" * 40,
+        content_sha256="f" * 64,
+        content=b"frozen source",
+    )
+    call = call.model_copy(update={"context_indices": (0,)})
+    plan = plan.model_copy(update={"snapshots": (source,)})
+    builder = CodexAttemptRequestBuilder()
+    second_position = call.model_copy(update={"position": 1})
+    second_run = plan.model_copy(update={"run_id": "run-2"})
+    changed_prompt = call.model_copy(update={"prompt": b"changed prompt"})
+
+    # When
+    first_identity = builder.build(plan, call, binding, evidence, config).call_id
+    repeated_identity = builder.build(
+        second_run, second_position, binding, evidence, config
+    ).call_id
+    changed_identity = builder.build(
+        plan, changed_prompt, binding, evidence, config
+    ).call_id
+
+    # Then
+    assert repeated_identity == first_identity
+    assert changed_identity != first_identity
+
+
+def test_effective_identity_tracks_context_and_explicit_separator_settings() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    source = SourceSnapshot(
+        directory_position=0,
+        repository_path="context/a.txt",
+        commit_blob_sha="e" * 40,
+        content_sha256="f" * 64,
+        content=b"frozen source",
+    )
+    call = call.model_copy(update={"context_indices": (0,)})
+    plan = plan.model_copy(update={"snapshots": (source,)})
+    changed_source = source.model_copy(update={"content": b"updated source"})
+    changed_plan_source = plan.model_copy(update={"snapshots": (changed_source,)})
+    changed_separator = plan.model_copy(update={"boundary_bytes": (b"\n",)})
+    second_source = source.model_copy(
+        update={
+            "directory_position": 2,
+            "repository_path": "context-b/b.txt",
+            "content": b"second source",
+        }
+    )
+    omitted_separator_config = configuration(
+        ordered_options=(
+            DirectoryOption(position=0, path=Path("context-a")),
+            DirectoryOption(position=2, path=Path("context-b")),
+        )
+    )
+    explicit_separator_config = configuration(
+        ordered_options=(
+            DirectoryOption(position=0, path=Path("context-a")),
+            SeparatorOption(position=1, value="\\n\\n"),
+            DirectoryOption(position=2, path=Path("context-b")),
+        )
+    )
+    two_context_call = call.model_copy(update={"context_indices": (0, 1)})
+    omitted_separator_plan = plan.model_copy(
+        update={
+            "configuration": omitted_separator_config,
+            "snapshots": (source, second_source),
+            "boundary_bytes": (b"\n\n",),
+        }
+    )
+    explicit_separator_plan = omitted_separator_plan.model_copy(
+        update={"configuration": explicit_separator_config}
+    )
+    builder = CodexAttemptRequestBuilder()
+
+    # When
+    original = builder.build(plan, call, binding, evidence, config).call_id
+    context_variant = builder.build(
+        changed_plan_source, call, binding, evidence, config
+    ).call_id
+    separator_variant = builder.build(
+        changed_separator, call, binding, evidence, config
+    ).call_id
+    omitted_separator_identity = builder.build(
+        omitted_separator_plan, two_context_call, binding, evidence, config
+    ).call_id
+    explicit_separator_identity = builder.build(
+        explicit_separator_plan, two_context_call, binding, evidence, config
+    ).call_id
+
+    # Then
+    assert context_variant != original
+    assert separator_variant != original
+    assert explicit_separator_identity != omitted_separator_identity
+
+
+def test_effective_identity_tracks_frozen_instruction_bytes() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    changed_instructions = InstructionsSnapshot(
+        repository_path="INSTRUCTIONS.md",
+        commit_blob_sha="c" * 40,
+        content_sha256="1" * 64,
+        content=b"updated instructions",
+    )
+    changed_plan = plan.model_copy(update={"instructions_file": changed_instructions})
+    builder = CodexAttemptRequestBuilder()
+
+    # When
+    original = builder.build(plan, call, binding, evidence, config).call_id
+    changed = builder.build(changed_plan, call, binding, evidence, config).call_id
+
+    # Then
+    assert changed != original
+
+
+def test_effective_identity_tracks_model_effort_and_cli_binding() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    builder = CodexAttemptRequestBuilder()
+    changed_model = call.model_copy(update={"model": "model-b"})
+    changed_effort = call.model_copy(update={"effort": "high"})
+    changed_path = replace(binding, executable_path=Path("/opt/codex"))
+    changed_version = replace(binding, cli_version="codex 2.0")
+
+    # When
+    original = builder.build(plan, call, binding, evidence, config).call_id
+    model_variant = builder.build(
+        plan, changed_model, binding, evidence, config
+    ).call_id
+    effort_variant = builder.build(
+        plan, changed_effort, binding, evidence, config
+    ).call_id
+    path_variant = builder.build(plan, call, changed_path, evidence, config).call_id
+    version_variant = builder.build(
+        plan, call, changed_version, evidence, config
+    ).call_id
+
+    # Then
+    assert model_variant != original
+    assert effort_variant != original
+    assert path_variant != original
+    assert version_variant != original
+
+
+def test_effective_identity_tracks_binding_settings_but_not_run_policy() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    builder = CodexAttemptRequestBuilder()
+    changed_settings = replace(
+        binding,
+        effective_settings=(("effective_model_reasoning_effort", "high"),),
+    )
+    settings_binding = replace(
+        binding,
+        effective_settings=(("z-setting", None), ("a-setting", "known")),
+    )
+    reordered_settings_binding = replace(
+        settings_binding,
+        effective_settings=tuple(reversed(settings_binding.effective_settings)),
+    )
+    changed_output = config.model_copy(
+        update={"output_directory": Path("other-output")}
+    )
+    changed_policy = config.model_copy(
+        update={
+            "concurrency": 3,
+            "retry_limit": 2,
+            "capacity_retry_limit": 1,
+            "capacity_backoff_base_seconds": 1.0,
+            "capacity_backoff_cap_seconds": 2.0,
+        }
+    )
+
+    # When
+    original = builder.build(plan, call, binding, evidence, config).call_id
+    setting_variant = builder.build(
+        plan, call, changed_settings, evidence, config
+    ).call_id
+    settings_identity = builder.build(
+        plan, call, settings_binding, evidence, config
+    ).call_id
+    reordered_settings_identity = builder.build(
+        plan, call, reordered_settings_binding, evidence, config
+    ).call_id
+    policy_variant = builder.build(
+        plan, call, binding, evidence, changed_policy
+    ).call_id
+    output_variant = builder.build(
+        plan, call, binding, evidence, changed_output
+    ).call_id
+    changed_stage = PreparedEvidence(
+        output_directory=Path("different-stage"),
+        plan_artifact=Path("different-stage/plan.json"),
+        model_instructions_file=None,
+    )
+    stage_variant = builder.build(plan, call, binding, changed_stage, config).call_id
+
+    # Then
+    assert setting_variant != original
+    assert reordered_settings_identity == settings_identity
+    assert policy_variant == original
+    assert output_variant == original
+    assert stage_variant == original
+
+
+def test_classifier_confirms_absence_only_for_supervisor_not_started_evidence() -> None:
+    # Given
+    config, _, _, _, _ = plan_and_inputs(with_instructions=False)
+    evidence = settled_evidence(config)
+    not_started = InfrastructureFailure(
+        AttemptObservation(
+            output=CapturedOutput(b"", b""),
+            elapsed_seconds=0.0,
+            cleanup=CleanupEvidence("not_started", (), "not_started", None),
+        ),
+        exit_status=None,
+        error_type="FileNotFoundError",
+        diagnostic="Codex could not be launched",
+    )
+    evidence = AttemptEvidence(
+        control_flow="returned",
+        outcome=not_started,
+        error_type=None,
+        diagnostic=None,
+        request=evidence.request,
+        started_at_utc=evidence.started_at_utc,
+        ended_at_utc=evidence.ended_at_utc,
+        usage_telemetry=None,
+    )
+    classifier = CodexOutcomeClassifier()
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "infrastructure"
+    assert assessment.no_result_basis == "confident_absence"
+    assert assessment.classification_basis == (
+        "supervisor confirmed no process was launched"
+    )
+
+
+def classifier_scenario_evidence(
+    scenario: str, base: AttemptEvidence
+) -> AttemptEvidence:
+    """Build one synthetic supervisor outcome for a classifier scenario."""
+    observation = AttemptObservation(
+        output=CapturedOutput(
+            b"capacity reached" if scenario == "capacity-like-output" else b"",
+            b"quota exhausted" if scenario == "quota-like-output" else b"",
+        ),
+        elapsed_seconds=1.0,
+        cleanup=CleanupEvidence("owned", (), "reaped", None),
+    )
+    outcome = base.outcome
+    control_flow = "returned"
+    if scenario == "completed-nonzero":
+        outcome = Completed(observation, 1)
+    elif scenario in {"capacity-like-output", "quota-like-output"}:
+        outcome = Completed(observation, 0)
+    elif scenario == "cancelled":
+        outcome = AttemptCancelled(observation, -15)
+        control_flow = "cancelled"
+    elif scenario == "timeout":
+        outcome = TimedOut(observation, -9)
+    elif scenario == "output-overflow":
+        outcome = OutputLimitExceeded(observation, -9)
+    elif scenario == "launched-infrastructure":
+        outcome = InfrastructureFailure(
+            observation, 1, "OSError", "failure after launch"
+        )
+    elif scenario == "uncertain-acquisition":
+        outcome = None
+        control_flow = "raised"
+    evidence = replace(base, outcome=outcome, control_flow=control_flow)
+
+    return evidence
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    (
+        "completed-zero",
+        "completed-nonzero",
+        "cancelled",
+        "timeout",
+        "output-overflow",
+        "launched-infrastructure",
+        "uncertain-acquisition",
+        "capacity-like-output",
+        "quota-like-output",
+    ),
+)
+def test_classifier_keeps_nonconfirmed_outcomes_unknown(scenario: str) -> None:
+    # Given
+    config, _, _, _, _ = plan_and_inputs(with_instructions=False)
+    evidence = classifier_scenario_evidence(scenario, settled_evidence(config))
+    classifier = CodexOutcomeClassifier()
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "unknown"
+    assert assessment.no_result_basis == "present_or_unknown"
+
+
 def test_request_builder_propagates_identity_failure_without_request_retry() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
@@ -421,30 +797,39 @@ def test_outcome_classifier_forwards_only_one_settled_evidence_value() -> None:
     assert calls[0] is evidence
 
 
-def test_default_codex_leaf_operations_fail_visibly() -> None:
+def test_default_request_and_classifier_use_conservative_codex_behavior() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
     settled = settled_evidence(config)
-    resolver = CodexCliBindingResolver()
     builder = CodexAttemptRequestBuilder()
     classifier = CodexOutcomeClassifier()
 
     # When
-    with pytest.raises(NotImplementedError) as resolver_error:
-        resolver.resolve(config)
-    with pytest.raises(NotImplementedError) as builder_error:
-        builder.build(plan, call, binding, evidence, config)
-    with pytest.raises(NotImplementedError) as classifier_error:
-        classifier.assess(settled)
+    effective_call = builder.build(plan, call, binding, evidence, config)
+    assessment = classifier.assess(settled)
 
     # Then
-    assert resolver_error.value.args == (
-        "Codex executable discovery is not implemented",
+    assert effective_call.request.argv == (
+        "/bin/codex",
+        "exec",
+        "--ignore-user-config",
+        "--json",
+        "--color",
+        "never",
+        "--model=model-a",
+        "-c",
+        'model_reasoning_effort="low"',
+        "--sandbox",
+        "read-only",
+        "-c",
+        'approval_policy="never"',
+        "-c",
+        'model_instructions_file="/repo/out/instructions.bin"',
+        "--",
+        "frozen prompt bytes",
     )
-    assert builder_error.value.args == ("effective-call identity is not implemented",)
-    assert classifier_error.value.args == (
-        "Codex outcome signal recognition is not implemented",
-    )
+    assert assessment.retry_class == "unknown"
+    assert assessment.no_result_basis == "present_or_unknown"
 
 
 def test_default_settings_reader_runs_after_version_probe() -> None:
@@ -469,19 +854,59 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
     )
 
     # When
-    with pytest.raises(NotImplementedError) as raised:
-        resolver.resolve(config)
+    binding = resolver.resolve(config)
 
     # Then
     assert events == ["resolve", "version"]
     assert probed_paths == [executable_path]
     assert probed_paths[0] is executable_path
-    assert raised.value.args == (
-        "Codex effective-settings discovery is not implemented",
+    assert binding.effective_settings == (
+        ("requested_approval_policy", "never"),
+        ("requested_ignore_user_config", True),
+        ("requested_sandbox_mode", "read-only"),
+        ("effective_approval_policy", None),
+        ("effective_model_reasoning_effort", None),
+        ("effective_sandbox_mode", None),
+        ("effective_tool_controls", None),
+        ("automatic_system_instructions", None),
     )
 
 
-def test_default_request_operation_fails_after_injected_identity() -> None:
+def test_version_timeout_leaves_version_unknown(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    config, _, _, _, _ = plan_and_inputs(with_instructions=False)
+    executable_path = Path("/absolute/codex")
+
+    def timed_out(
+        command: tuple[str, ...],
+        *,
+        check: bool,
+        capture_output: bool,
+        timeout: float,
+    ) -> subprocess.CompletedProcess[bytes]:
+        assert command == (str(executable_path), "--version")
+        assert check is False
+        assert capture_output is True
+        assert timeout == 5
+        raise subprocess.TimeoutExpired(command, timeout)
+
+    monkeypatch.setattr(subprocess, "run", timed_out)
+    resolver = CodexCliBindingResolver(
+        resolve_executable=lambda: executable_path,
+        runner_version=lambda: "0.1.0",
+    )
+
+    # When
+    binding = resolver.resolve(config)
+
+    # Then
+    assert binding.executable_path == executable_path
+    assert binding.cli_version is None
+
+
+def test_default_request_is_built_after_injected_identity() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
 
@@ -497,13 +922,12 @@ def test_default_request_operation_fails_after_injected_identity() -> None:
     builder = CodexAttemptRequestBuilder(effective_call_id=effective_call_id)
 
     # When
-    with pytest.raises(NotImplementedError) as raised:
-        builder.build(plan, call, binding, evidence, config)
+    effective_call = builder.build(plan, call, binding, evidence, config)
 
     # Then
-    assert raised.value.args == (
-        "Codex argv and request construction are not implemented",
-    )
+    assert effective_call.call_id == "call-1"
+    assert effective_call.request.argv[0] == str(binding.executable_path)
+    assert effective_call.request.argv[-2:] == ("--", call.prompt.decode("utf-8"))
 
 
 def test_classifier_propagates_failure_without_retrying() -> None:
