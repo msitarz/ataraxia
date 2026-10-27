@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Pure retry eligibility, allowance, and backoff calculations."""
+"""Historical proposed signatures; the runtime skeleton owns current exports."""
 
 from ..model import HarnessConfig, RetryAssessment  # ruff: ignore[relative-imports]
 
@@ -59,6 +59,9 @@ def quota_poll_delay(
 
     A missing, stale, or past hint falls back to the configured interval; a
     hint schedules a check only and never authorizes dispatch. Zero-delay hint
-    loops are excluded.
+    loops are excluded. ``now_utc`` and a supplied hint are valid
+    timezone-aware UTC timestamps from runtime/provider boundaries; adapters
+    normalize or refuse malformed source timestamps before calling this
+    function.
     """
     ...

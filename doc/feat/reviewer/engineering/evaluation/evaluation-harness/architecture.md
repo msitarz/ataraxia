@@ -532,9 +532,14 @@ Codex, quota, and runtime adapters.
 - The adapter package exports these planned adapters. The CLI composition root
   wires the Codex request and classifier adapters and one quota adapter
   configured for the same binding scope, along with the runtime and supervisor
-  adapter, into one coordinator. The coordinator, policy, adapters, and CLI
-  composition remain design stubs; the shared runner values and ports are
-  implemented.
+  adapter, into one coordinator. The coordinator, adapters, and CLI composition
+  remain design stubs. Runtime
+  [`policy.py`](../../../../../../script/eval/runner/policy.py) exposes reviewed
+  pure-function signatures with explicit pending-implementation errors; it
+  does not yet perform policy calculations. The shared runner values and ports
+  are implemented. The neighboring
+  [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a historical
+  signature reference; runtime code is authoritative.
 - Effects: the coordinator owns async scheduling and effect ordering. The
   Codex and quota adapters own their stated external reads; the runtime adapter
   owns clock, wait, and random effects.
