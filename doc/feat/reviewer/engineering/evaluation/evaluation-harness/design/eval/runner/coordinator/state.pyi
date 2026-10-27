@@ -1,63 +1,130 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exploratory coordinator state; not an active runtime interface."""
+"""Exploratory live state; durable history and each in-flight fact have one owner."""
 
+from asyncio import CancelledError
 from dataclasses import dataclass
 from typing import Literal
 
 from script.eval.model import (
     AttemptEvidence,
+    AttemptNumber,
     AttemptRecord,
+    CapacityWaitContext,
     QuotaObservation,
+    QuotaProbeEvidence,
     QuotaProbeRecord,
     QuotaProbeRequest,
+    QuotaProbeSchedule,
+    QuotaWaitContext,
+    RetryAssessment,
+    WaitEvent,
+    WaitId,
     WaitRecord,
 )
 from script.eval.runner.ports import EffectiveCall
+from script.process_supervisor import AttemptResult
 
 @dataclass(frozen=True)
 class CallHistory:
-    """Durable attempts and waits owned by one planned position."""
+    """Durable records for one position; the active attempt is not in history."""
 
     call: EffectiveCall
     attempts: tuple[AttemptRecord, ...]
     waits: tuple[WaitRecord, ...]
-    infrastructure_retries: int
-    capacity_retries: int
+
+@dataclass(frozen=True)
+class AttemptWrite:
+    """Captured attempt and classification retained until the write succeeds."""
+
+    number: AttemptNumber
+    evidence: AttemptEvidence
+    assessment: RetryAssessment | None
+
+@dataclass(frozen=True)
+class WaitWrite:
+    """A failed wait event and its pending final summary, if closing."""
+
+    event: WaitEvent
+    record: WaitRecord | None
+
+@dataclass(frozen=True)
+class CallEvidenceFailure:
+    """A failed obligation and original exception, not a durable outcome."""
+
+    obligation: AttemptWrite | WaitWrite
+    error: BaseException
+
+@dataclass(frozen=True)
+class CallWait:
+    """A call-local wait from submitted start through durable end.
+
+    The owner retains the submitted write until it settles. ``start_phase``
+    determines whether cancellation must close the wait; monotonic time and the
+    sampled delay support progress without a parallel timer ledger.
+    """
+
+    wait_id: WaitId
+    context: CapacityWaitContext
+    started_at_utc: str
+    started_monotonic: float
+    start_phase: Literal["submitted", "durable"]
+    end_record: WaitRecord | None
+
+@dataclass(frozen=True)
+class InfrastructureWait:
+    """Call-local infrastructure delay with an explicit monotonic origin."""
+
+    failed_attempt: AttemptNumber
+    started_monotonic: float
+    sampled_seconds: float
 
 @dataclass(frozen=True)
 class Queued:
+    """Runnable or gated planned position; history distinguishes a retry."""
+
     history: CallHistory
 
 @dataclass(frozen=True)
 class Attempting:
+    """One dispatched invocation, including its supervisor cleanup."""
+
     history: CallHistory
-    attempt_number: int
+    attempt_number: AttemptNumber
 
 @dataclass(frozen=True)
 class Recording:
+    """A captured attempt whose required write has not yet settled."""
+
     history: CallHistory
-    attempt_number: int
-    evidence: AttemptEvidence
+    attempt: AttemptWrite
 
 @dataclass(frozen=True)
 class RetryWait:
+    """An ordinary or capacity delay owned by this call, not the quota gate."""
+
     history: CallHistory
-    reason: Literal["infrastructure", "capacity", "quota"]
+    wait: CallWait | InfrastructureWait
 
 @dataclass(frozen=True)
 class Finished:
+    """A durable terminal call outcome."""
+
     history: CallHistory
     outcome: Literal["success", "failure", "cancelled"]
 
 @dataclass(frozen=True)
 class EvidencePending:
+    """The failed obligation retains the attempt or wait facts for inspection."""
+
     history: CallHistory
-    """A required write failed; the corresponding outcome is not durable."""
+    failure: CallEvidenceFailure
 
 @dataclass(frozen=True)
 class Stopped:
+    """Stop forbids further dispatch; empty attempt history is not started."""
+
     history: CallHistory
-    """No further attempt is permitted; empty history remains not started."""
+    outcome: Literal["not_started", "failure", "cancelled"]
 
 type CallState = (
     Queued | Attempting | Recording | RetryWait | Finished | EvidencePending | Stopped
@@ -65,48 +132,120 @@ type CallState = (
 
 @dataclass(frozen=True)
 class Open:
-    pass
+    """The quota gate is open."""
 
 @dataclass(frozen=True)
 class Draining:
-    observation: QuotaObservation
+    """A recognized exhaustion closes dispatch while attempts settle."""
+
+    context: QuotaWaitContext
 
 @dataclass(frozen=True)
 class Waiting:
+    """One global wait retains trigger, cumulative bound, and start persistence."""
+
+    context: QuotaWaitContext
+    wait_id: WaitId
+    started_at_utc: str
+    started_monotonic: float
+    start_phase: Literal["submitted", "durable"]
+    end_record: WaitRecord | None
     observation: QuotaObservation
-    wait_id: str
-    cumulative_seconds: float
+
+@dataclass(frozen=True)
+class ProbePrepared:
+    """Durable intent made before actual poll timing exists."""
+
+    schedule: QuotaProbeSchedule
+    pause_wait_id: WaitId
+
+@dataclass(frozen=True)
+class ProbeNotDispatched:
+    """Close preparation without a process or probe-budget charge."""
+
+    prepared: ProbePrepared
+    cause: Literal["bound", "stop", "cancelled"]
+    ended_at_utc: str
+    elapsed_seconds: float
+
+@dataclass(frozen=True)
+class ProbeDispatched:
+    """Actual poll invocation with its exact request and actual timing."""
+
+    request: QuotaProbeRequest
+
+type ProbeDispatchEvent = ProbePrepared | ProbeNotDispatched | ProbeDispatched
+
+@dataclass(frozen=True)
+class PreparingProbe:
+    """Schedule and pause identity while preparation is retained and settled."""
+
+    waiting: Waiting
+    preparation: ProbePrepared
 
 @dataclass(frozen=True)
 class Probing:
+    """The current exact request is retained while the invoked poll runs."""
+
     waiting: Waiting
     request: QuotaProbeRequest
 
 @dataclass(frozen=True)
-class QuotaStopped:
-    pass
+class RecordingProbe:
+    """Captured probe evidence remains active until its write settles."""
 
-type QuotaState = Open | Draining | Waiting | Probing | QuotaStopped
+    waiting: Waiting
+    evidence: QuotaProbeEvidence
 
 @dataclass(frozen=True)
-class ProbeHistory:
-    """Durable probe results are distinct from evaluation attempts."""
+class ProbeEvidencePending:
+    """An invoked probe lacks durable evidence or its required write failed."""
 
+    waiting: Waiting
+    request: QuotaProbeRequest
+    evidence: QuotaProbeEvidence | None
+    error: BaseException
+
+@dataclass(frozen=True)
+class QuotaEvidencePending:
+    """A failed wait or pre-dispatch journal write retains its obligation."""
+
+    waiting: Waiting
+    obligation: WaitWrite | ProbeDispatchEvent
+    error: BaseException
+
+@dataclass(frozen=True)
+class QuotaStopped:
+    """No recovery may reopen dispatch."""
+
+type QuotaState = (
+    Open
+    | Draining
+    | Waiting
+    | PreparingProbe
+    | Probing
+    | RecordingProbe
+    | ProbeEvidencePending
+    | QuotaEvidencePending
+    | QuotaStopped
+)
+
+@dataclass(frozen=True)
+class QuotaHistory:
+    """Durable quota waits and probes; in-flight facts belong to quota state."""
+
+    waits: tuple[WaitRecord, ...]
     probes: tuple[QuotaProbeRecord, ...]
 
 @dataclass(frozen=True)
-class Running:
-    """The run owner may dispatch subject to the quota gate."""
+class StopReason:
+    """First stop and original owner or leaf cancellation, if one occurs later.
 
-@dataclass(frozen=True)
-class Stopping:
-    """The first reason owns shutdown; sibling cancellations are secondary."""
+    Internal sibling cancellations do not replace the primary control flow.
+    Recording failure is retained and attached as cause when cancellation wins.
+    """
 
-    reason: BaseException | str
-    cancellation_origin: Literal["owner", "leaf", "internal"] | None
-
-@dataclass(frozen=True)
-class Final:
-    outcome: Literal["success", "failure", "cancelled", "incomplete_evidence"]
-
-type RunPhase = Running | Stopping | Final
+    first: BaseException | AttemptResult
+    cancellation: CancelledError | None
+    cancellation_origin: Literal["owner", "leaf"] | None
+    recording_failure: BaseException | None

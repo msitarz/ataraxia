@@ -1,9 +1,29 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Retained writes, durable wait closure, and cancellation precedence.
+"""Retain submitted tasks and preserve cancellation with their outcome."""
 
-The run owner retains each submitted operation until it settles even through
-repeated cancellation. A durable wait start must have a durable end and a
-retained WaitRecord. A recording failure marks the run incomplete and remains
-available as the cause of the primary cancellation. Probe timeout translation
-must recover exact-request evidence from the exception chain before settlement.
-"""
+from asyncio import CancelledError, Task
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class SettledValue[T]:
+    """Successful task value and any concurrent owner cancellation."""
+
+    value: T
+    cancellation: CancelledError | None
+
+@dataclass(frozen=True)
+class SettledFailure:
+    """Task failure and any concurrent owner cancellation, both preserved."""
+
+    error: BaseException
+    cancellation: CancelledError | None
+
+type Settlement[T] = SettledValue[T] | SettledFailure
+
+async def settle[T](task: Task[T], /) -> Settlement[T]:
+    """Retain a submitted task through repeated owner cancellation.
+
+    A cancelling owner remains primary; the caller attaches any task failure as
+    its cause and closes a successfully started wait before propagating it.
+    """
+    ...

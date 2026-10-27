@@ -72,8 +72,11 @@ with known lifecycle bugs, not a validated alternative.
 | --- | --- | --- |
 | Open | Draining, stopped | Dispatch may proceed unless the run has stopped. |
 | Draining | Waiting, stopped | New dispatch is paused while active attempts settle durably. |
-| Waiting | Probing, open, stopped | One recovery wait owns cadence, bounds, and its durable events. |
-| Probing | Waiting, open, stopped | At most one separately supervised probe is in flight. |
+| Waiting | Preparing, open, stopped, evidence pending | One recovery wait owns cadence, bounds, and its durable events. |
+| Preparing | Probing, waiting, stopped, evidence pending | A probe intent settles before the final dispatch gate. |
+| Probing | Recording, evidence pending | At most one separately supervised probe is in flight. |
+| Recording | Waiting, open, stopped, evidence pending | Captured probe evidence must settle before a decision. |
+| Evidence pending | None | A required journal or probe write failed. |
 | Stopped | None | Recovery cannot reopen dispatch. |
 
 - Quota opt-in defaults off and off means no passive quota reads or probes.
@@ -92,7 +95,8 @@ with known lifecycle bugs, not a validated alternative.
   durable.
 - Probe caps count actual dispatches, and a pre-dispatch end retains its
   truthful lifecycle evidence.
-- The proposed `ProbePrepared` input journals intent before the final gate.
+- The proposed `ProbePrepared` input journals schedule and pause identity before
+  the final gate, without inventing an actual poll time.
 - If the bound, stop, or cancellation wins after preparation, a
   `ProbeNotDispatched` event closes it without a process record or probe charge.
 - `ProbeDispatched` represents an actual poll invocation and increments the
@@ -188,3 +192,74 @@ with known lifecycle bugs, not a validated alternative.
   remain flexible.
 - Static sketches cannot prove cancellation, persistence, signal restoration, or
   delivered behavior.
+
+## Shared lifecycle and effect boundaries
+
+- `CallOwner` exposes one call state and its durable history to the run owner.
+- `QuotaOwner` exposes one quota state, durable wait and probe history, and
+  latest validated observation to the run owner.
+- `RunControl` owns the stop latch and dispatch gate shared by those owners.
+- A call owner closes the quota gate as soon as it recognizes exhaustion.
+- The coordinator drains and persists active calls before awaiting quota
+  recovery.
+- Call owners use the coordinator-owned semaphore through supervisor cleanup.
+- `settle` retains a submitted task and returns its value or failure alongside
+  any concurrent owner cancellation.
+- `ProgressView` captures the owners' states and explicit clocks for a pure
+  `ProgressSnapshot` projection.
+- These ordinary internal classes and functions describe shared ownership, not
+  a framework or the final signatures of private helpers.
+- Each call state contains its durable attempt history plus at most one current
+  attempt or failed attempt-write obligation.
+- `Recording` counts as active until the write settles, and a failed attempt
+  write moves its captured number, evidence, assessment, and error to
+  `EvidencePending`.
+- A retry wait retains its sampled delay and monotonic start; capacity waits
+  also retain the durable start, context, and pending end record.
+- A retained wait-start write that succeeds during cancellation still obliges
+  the owner to write its end and retain its `WaitRecord`.
+- Each planned position projects into exactly one call bucket: queued, active,
+  retry-wait, evidence-pending, stopped-not-started, succeeded, failed, or
+  cancelled.
+- `Stopped` with no dispatched attempt projects as stopped-not-started; other
+  stopped calls project by their recorded failure or cancellation.
+- Attempt totals derive from durable call histories plus each active or pending
+  attempt, with retries counted only when dispatched.
+- Retry allowances are derived from the classified attempt history and current
+  invocation, not maintained in a second ledger.
+- Probe totals derive from durable probe history plus the one active or pending
+  probe; preparation alone never counts as a probe.
+- Quota waiting retains its trigger context, pause identity, monotonic start,
+  cumulative earlier duration, and start-write phase.
+- Probe preparation retains the schedule and pause identity without inventing
+  poll timing.
+- The exact `QuotaProbeRequest` is constructed at invocation and retained by
+  identity through the reader, timeout translation, and evidence settlement.
+- Probe recording and failed or missing evidence remain distinct from an active
+  poll and retain its request, captured evidence when available, and failure.
+- A failed wait or probe journal write retains its obligation and error rather
+  than claiming durability.
+- Future evidence-port wiring must accept the proposed preparation, dispatch,
+  and not-dispatched inputs in place of the current started input.
+- The existing runtime types and evidence port are unchanged by this sketch.
+
+## Run lifecycle
+
+| Phase | Owner responsibility |
+| --- | --- |
+| Running | Dispatch bounded workers while the stop and quota gates allow it. |
+| Stopping | Latch the first stop, preserve later owner or leaf cancellation, and cancel siblings. |
+| Settling | Join attempts, probes, retained writes, and durably close started waits. |
+| Finalizing | Write truthful final accounting and then report its durable outcome. |
+| Finished | Return or propagate the primary control flow after all owned work settles. |
+
+- These phases describe structured control flow and need no class per phase.
+- A supervisor stop latched before a leaf cancellation cannot consume that
+  original cancellation or prevent sibling cancellation.
+- Internal stop-induced sibling cancellation does not replace the initiating
+  reason.
+- Finalization is a retained write, including when cancellation repeats.
+- If finalization fails during cancellation, cancellation remains primary and
+  the write failure is retained as its cause.
+- A final write failure otherwise marks the run incomplete and prevents a
+  successful final report.

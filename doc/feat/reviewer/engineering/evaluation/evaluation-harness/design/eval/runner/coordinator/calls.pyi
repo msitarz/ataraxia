@@ -1,7 +1,31 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Call-local attempt settlement, retry eligibility, and cancellable backoff.
+"""Call-local attempt settlement, retry eligibility, and cancellable backoff."""
 
-Pure transitions consume explicit policy inputs; the async owner performs effects.
+from asyncio import Semaphore
 
-Private helper signatures are intentionally left open for implementation.
-"""
+from script.eval.evidence import EvidenceStore
+from script.eval.model import HarnessConfig
+from script.eval.runner.ports import AttemptCall, OutcomeClassifier, Runtime
+
+from .coordinator import RunControl
+from .state import CallState, Queued
+
+class CallOwner:
+    """Own and expose one call's current state through all submitted effects."""
+
+    def __init__(
+        self,
+        initial: Queued,
+        config: HarnessConfig,
+        control: RunControl,
+        slots: Semaphore,
+        attempt: AttemptCall,
+        classifier: OutcomeClassifier,
+        evidence: EvidenceStore,
+        runtime: Runtime,
+    ) -> None: ...
+    @property
+    def state(self) -> CallState: ...
+    async def run(self) -> CallState:
+        """Settle the call or stop it; retain submitted writes during cancellation."""
+        ...

@@ -1,32 +1,32 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exploratory quota recovery and probe lifecycle input design.
+"""Exploratory quota recovery and bounded async ownership."""
 
-Pure transitions consume explicit time and observations; the async owner polls.
-Private helper signatures are intentionally left open for implementation.
-"""
+from script.eval.evidence import EvidenceStore
+from script.eval.model import HarnessConfig, QuotaObservation
+from script.eval.runner.ports import QuotaStatusReader, Runtime
 
-from dataclasses import dataclass
-from typing import Literal
+from .coordinator import RunControl
+from .state import Draining, QuotaHistory, QuotaState
 
-from script.eval.model import QuotaProbeRequest
+class QuotaOwner:
+    """Own the current pause and its durable probe history."""
 
-@dataclass(frozen=True)
-class ProbePrepared:
-    """Durable intent before the final dispatch gate; no process is claimed."""
-
-    request: QuotaProbeRequest
-
-@dataclass(frozen=True)
-class ProbeNotDispatched:
-    """Close a prepared probe without a process or probe-budget charge."""
-
-    request: QuotaProbeRequest
-    cause: Literal["bound", "stop", "cancelled"]
-
-@dataclass(frozen=True)
-class ProbeDispatched:
-    """Record an actual poll invocation, never preparation alone."""
-
-    request: QuotaProbeRequest
-
-type ProbeDispatchEvent = ProbePrepared | ProbeNotDispatched | ProbeDispatched
+    def __init__(
+        self,
+        initial: Draining,
+        history: QuotaHistory,
+        config: HarnessConfig,
+        control: RunControl,
+        reader: QuotaStatusReader,
+        evidence: EvidenceStore,
+        runtime: Runtime,
+    ) -> None: ...
+    @property
+    def state(self) -> QuotaState: ...
+    @property
+    def history(self) -> QuotaHistory: ...
+    @property
+    def observation(self) -> QuotaObservation | None: ...
+    async def recover(self) -> QuotaState:
+        """Recover after the run owner drains and persists all active attempts."""
+        ...
