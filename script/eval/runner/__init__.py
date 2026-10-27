@@ -18,6 +18,7 @@ from .ports import (
     QuotaStatusReader,
     Runtime,
 )
+from .quota_evidence import attach_quota_probe_evidence, quota_probe_evidence
 
 __all__ = (
     "AttemptCall",
@@ -35,4 +36,6 @@ __all__ = (
     "ProgressSnapshot",
     "QuotaStatusReader",
     "Runtime",
+    "attach_quota_probe_evidence",
+    "quota_probe_evidence",
 )

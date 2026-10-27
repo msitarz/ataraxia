@@ -14,9 +14,7 @@ from pathlib import Path
 import shutil
 import subprocess
 
-from script.process_supervisor import AttemptRequest, InfrastructureFailure
-
-from ...model import (  # ruff: ignore[relative-imports]
+from script.eval.model import (
     AttemptEvidence,
     CallId,
     FrozenPlan,
@@ -27,13 +25,14 @@ from ...model import (  # ruff: ignore[relative-imports]
     SeparatorOption,
     SettingValue,
 )
-from ..ports import (  # ruff: ignore[relative-imports]
+from script.eval.runner.ports import (
     AttemptRequestBuilder,
     CliBinding,
     CliBindingResolver,
     EffectiveCall,
     OutcomeClassifier,
 )
+from script.process_supervisor import AttemptRequest, InfrastructureFailure
 
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
