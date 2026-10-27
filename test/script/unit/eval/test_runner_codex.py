@@ -63,11 +63,12 @@ def configuration(**overrides: object) -> HarnessConfig:
     return HarnessConfig.model_validate(values)
 
 
-def plan_and_inputs() -> tuple[
-    HarnessConfig, FrozenPlan, PlannedCall, CliBinding, PreparedEvidence
-]:
+def plan_and_inputs(
+    *, with_instructions: bool = True
+) -> tuple[HarnessConfig, FrozenPlan, PlannedCall, CliBinding, PreparedEvidence]:
     """Create frozen inputs with distinct original and staged instruction paths."""
-    config = configuration()
+    instruction_path = Path("/repo/INSTRUCTIONS.md") if with_instructions else None
+    config = configuration(instructions_file_path=instruction_path)
     call = PlannedCall(
         position=0,
         context_indices=(0,),
@@ -88,7 +89,9 @@ def plan_and_inputs() -> tuple[
             commit_blob_sha="c" * 40,
             content_sha256="d" * 64,
             content=b"frozen system instructions",
-        ),
+        )
+        if with_instructions
+        else None,
         calls=(call,),
     )
     binding = CliBinding(
@@ -101,24 +104,51 @@ def plan_and_inputs() -> tuple[
     evidence = PreparedEvidence(
         output_directory=Path("/repo/out"),
         plan_artifact=Path("/repo/out/plan.json"),
-        model_instructions_file=Path("/repo/out/instructions.bin"),
+        model_instructions_file=(
+            Path("/repo/out/instructions.bin") if with_instructions else None
+        ),
     )
     return config, plan, call, binding, evidence
+
+
+def settled_evidence(config: HarnessConfig) -> AttemptEvidence:
+    """Build one settled supervisor evidence value for classifier tests."""
+    request = AttemptRequest(
+        argv=("/bin/codex",),
+        cwd=Path("/repo"),
+        timeout_seconds=config.timeout_seconds,
+        cleanup_timeout_seconds=config.cleanup_timeout_seconds,
+        grace_seconds=config.grace_seconds,
+        output_limit_bytes=config.output_limit_bytes,
+        stdin="devnull",
+    )
+    return AttemptEvidence(
+        control_flow="returned",
+        outcome=None,
+        error_type=None,
+        diagnostic=None,
+        request=request,
+        started_at_utc="2026-10-27T00:00:00Z",
+        ended_at_utc="2026-10-27T00:00:01Z",
+        usage_telemetry=None,
+    )
 
 
 def test_binding_uses_resolved_path_for_probe_and_settings_in_order() -> None:
     # Given
     config, _, _, _, _ = plan_and_inputs()
     executable_path = Path("/verified/codex")
-    events: list[tuple[object, ...]] = []
+    events: list[str] = []
+    probed_paths: list[Path] = []
+    settings_inputs: list[tuple[Path, HarnessConfig]] = []
 
     def resolve_executable() -> Path:
-        events.append(("resolve",))
+        events.append("resolve")
         return executable_path
 
     def probe_version(path: Path) -> str:
-        events.append(("version", path))
-        assert path is executable_path
+        events.append("version")
+        probed_paths.append(path)
         return "codex 1.2.3"
 
     settings = (("approval_policy", "never"),)
@@ -126,9 +156,8 @@ def test_binding_uses_resolved_path_for_probe_and_settings_in_order() -> None:
     def read_settings(
         path: Path, received_config: HarnessConfig
     ) -> tuple[tuple[str, str], ...]:
-        events.append(("settings", path, received_config))
-        assert path is executable_path
-        assert received_config is config
+        events.append("settings")
+        settings_inputs.append((path, received_config))
         return settings
 
     resolver = CodexCliBindingResolver(
@@ -142,16 +171,20 @@ def test_binding_uses_resolved_path_for_probe_and_settings_in_order() -> None:
     binding = resolver.resolve(config)
 
     # Then
+    assert binding == CliBinding(
+        executable_path=executable_path,
+        cli_version="codex 1.2.3",
+        runner_version="0.1.0",
+        effective_settings=settings,
+        quota_scope=None,
+    )
     assert binding.executable_path is executable_path
-    assert binding.cli_version == "codex 1.2.3"
-    assert binding.runner_version == "0.1.0"
     assert binding.effective_settings is settings
-    assert binding.quota_scope is None
-    assert events == [
-        ("resolve",),
-        ("version", executable_path),
-        ("settings", executable_path, config),
-    ]
+    assert events == ["resolve", "version", "settings"]
+    assert probed_paths == [executable_path]
+    assert probed_paths[0] is executable_path
+    assert settings_inputs[0][0] is executable_path
+    assert settings_inputs[0][1] is config
 
 
 def test_binding_propagates_probe_failure_without_reading_settings_or_retrying() -> (
@@ -161,6 +194,7 @@ def test_binding_propagates_probe_failure_without_reading_settings_or_retrying()
     config, _, _, _, _ = plan_and_inputs()
     failure = RuntimeError("version probe failed")
     events: list[str] = []
+    probed_paths: list[Path] = []
 
     def resolve_executable() -> Path:
         events.append("resolve")
@@ -168,7 +202,7 @@ def test_binding_propagates_probe_failure_without_reading_settings_or_retrying()
 
     def probe_version(path: Path) -> str:
         events.append("probe")
-        assert path == Path("/verified/codex")
+        probed_paths.append(path)
         raise failure
 
     def read_settings(
@@ -191,6 +225,7 @@ def test_binding_propagates_probe_failure_without_reading_settings_or_retrying()
     # Then
     assert raised.value is failure
     assert events == ["resolve", "probe"]
+    assert probed_paths == [Path("/verified/codex")]
 
 
 def test_request_builder_forwards_frozen_context_and_staged_path_in_order() -> None:
@@ -258,11 +293,65 @@ def test_request_builder_forwards_frozen_context_and_staged_path_in_order() -> N
     assert effective_call.request is request
     assert events == ["identity", "request"]
     assert len(observed_inputs) == 2
-    for received in observed_inputs:
-        assert_builder_inputs(received, plan, call, binding, staged_path, config)
+    assert_builder_inputs(observed_inputs[0], plan, call, binding, staged_path, config)
+    assert_builder_inputs(observed_inputs[1], plan, call, binding, staged_path, config)
     assert observed_inputs[0][1].prompt is call.prompt
     assert observed_inputs[0][3] is staged_path
     assert observed_inputs[1][3] is staged_path
+
+
+def test_request_builder_forwards_no_instruction_path_when_unconfigured() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs(with_instructions=False)
+    request = AttemptRequest(
+        argv=("/bin/codex",),
+        cwd=plan.repository_root,
+        timeout_seconds=config.timeout_seconds,
+        cleanup_timeout_seconds=config.cleanup_timeout_seconds,
+        grace_seconds=config.grace_seconds,
+        output_limit_bytes=config.output_limit_bytes,
+        stdin="devnull",
+    )
+    identity_paths: list[Path | None] = []
+    request_paths: list[Path | None] = []
+
+    def effective_call_id(
+        frozen_plan: FrozenPlan,
+        planned_call: PlannedCall,
+        cli_binding: CliBinding,
+        staged_path: Path | None,
+        received_config: HarnessConfig,
+    ) -> str:
+        identity_paths.append(staged_path)
+        return "call-with-default-instructions"
+
+    def build_attempt_request(
+        frozen_plan: FrozenPlan,
+        planned_call: PlannedCall,
+        cli_binding: CliBinding,
+        staged_path: Path | None,
+        received_config: HarnessConfig,
+    ) -> AttemptRequest:
+        request_paths.append(staged_path)
+        return request
+
+    builder = CodexAttemptRequestBuilder(
+        effective_call_id=effective_call_id,
+        build_attempt_request=build_attempt_request,
+    )
+
+    # When
+    effective_call = builder.build(plan, call, binding, evidence, config)
+
+    # Then
+    assert plan.instructions_file is None
+    assert config.instructions_file_path is None
+    assert evidence.model_instructions_file is None
+    assert identity_paths == [None]
+    assert request_paths == [None]
+    assert request.argv == ("/bin/codex",)
+    assert effective_call.call_id == "call-with-default-instructions"
+    assert effective_call.request is request
 
 
 def test_request_builder_propagates_identity_failure_without_request_retry() -> None:
@@ -308,32 +397,14 @@ def test_request_builder_propagates_identity_failure_without_request_retry() -> 
 def test_outcome_classifier_forwards_only_one_settled_evidence_value() -> None:
     # Given
     config, _, _, _, _ = plan_and_inputs()
-    request = AttemptRequest(
-        argv=("/bin/codex",),
-        cwd=Path("/repo"),
-        timeout_seconds=config.timeout_seconds,
-        cleanup_timeout_seconds=config.cleanup_timeout_seconds,
-        grace_seconds=config.grace_seconds,
-        output_limit_bytes=config.output_limit_bytes,
-        stdin="devnull",
-    )
-    evidence = AttemptEvidence(
-        control_flow="returned",
-        outcome=None,
-        error_type=None,
-        diagnostic=None,
-        request=request,
-        started_at_utc="2026-10-27T00:00:00Z",
-        ended_at_utc="2026-10-27T00:00:01Z",
-        usage_telemetry=None,
-    )
+    evidence = settled_evidence(config)
     assessment = RetryAssessment(
         retry_class="unknown",
         classification_basis=None,
         no_result_basis="present_or_unknown",
         diagnostic="Codex classifier contract is not verified",
     )
-    calls: list[object] = []
+    calls: list[AttemptEvidence] = []
 
     def assess_settled_evidence(received: AttemptEvidence) -> RetryAssessment:
         calls.append(received)
@@ -353,104 +424,97 @@ def test_outcome_classifier_forwards_only_one_settled_evidence_value() -> None:
 def test_default_codex_leaf_operations_fail_visibly() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
+    settled = settled_evidence(config)
     resolver = CodexCliBindingResolver()
     builder = CodexAttemptRequestBuilder()
     classifier = CodexOutcomeClassifier()
 
     # When
-    with pytest.raises(NotImplementedError, match="executable discovery"):
+    with pytest.raises(NotImplementedError) as resolver_error:
         resolver.resolve(config)
-    with pytest.raises(NotImplementedError, match="effective-call identity"):
+    with pytest.raises(NotImplementedError) as builder_error:
         builder.build(plan, call, binding, evidence, config)
-
-    settled = AttemptEvidence(
-        control_flow="returned",
-        outcome=None,
-        error_type=None,
-        diagnostic=None,
-        request=AttemptRequest(
-            argv=("/bin/codex",),
-            cwd=Path("/repo"),
-            timeout_seconds=1.0,
-            cleanup_timeout_seconds=1.0,
-            grace_seconds=0.0,
-            output_limit_bytes=0,
-            stdin="devnull",
-        ),
-        started_at_utc="2026-10-27T00:00:00Z",
-        ended_at_utc="2026-10-27T00:00:01Z",
-        usage_telemetry=None,
-    )
-    # Then
-    with pytest.raises(NotImplementedError, match="signal recognition"):
+    with pytest.raises(NotImplementedError) as classifier_error:
         classifier.assess(settled)
+
+    # Then
+    assert resolver_error.value.args == (
+        "Codex executable discovery is not implemented",
+    )
+    assert builder_error.value.args == ("effective-call identity is not implemented",)
+    assert classifier_error.value.args == (
+        "Codex outcome signal recognition is not implemented",
+    )
 
 
 def test_default_settings_reader_runs_after_version_probe() -> None:
     # Given
     config, _, _, _, _ = plan_and_inputs()
     executable_path = Path("/resolved/codex")
-    events: list[object] = []
+    events: list[str] = []
+    probed_paths: list[Path] = []
 
     def probe_version(path: Path) -> str:
-        events.append(path)
-        assert path is executable_path
+        events.append("version")
+        probed_paths.append(path)
         return "codex 1.2.3"
 
+    def resolve_executable() -> Path:
+        events.append("resolve")
+        return executable_path
+
     resolver = CodexCliBindingResolver(
-        resolve_executable=lambda: executable_path,
+        resolve_executable=resolve_executable,
         probe_version=probe_version,
     )
 
     # When
-    with pytest.raises(NotImplementedError, match="effective-settings discovery"):
+    with pytest.raises(NotImplementedError) as raised:
         resolver.resolve(config)
 
     # Then
-    assert events == [executable_path]
+    assert events == ["resolve", "version"]
+    assert probed_paths == [executable_path]
+    assert probed_paths[0] is executable_path
+    assert raised.value.args == (
+        "Codex effective-settings discovery is not implemented",
+    )
 
 
 def test_default_request_operation_fails_after_injected_identity() -> None:
     # Given
     config, plan, call, binding, evidence = plan_and_inputs()
-    builder = CodexAttemptRequestBuilder(effective_call_id=lambda *_: "call-1")
+
+    def effective_call_id(
+        plan: FrozenPlan,
+        call: PlannedCall,
+        binding: CliBinding,
+        staged_path: Path | None,
+        received_config: HarnessConfig,
+    ) -> str:
+        return "call-1"
+
+    builder = CodexAttemptRequestBuilder(effective_call_id=effective_call_id)
 
     # When
-    with pytest.raises(NotImplementedError, match="argv and request construction"):
+    with pytest.raises(NotImplementedError) as raised:
         builder.build(plan, call, binding, evidence, config)
 
     # Then
-    assert evidence.model_instructions_file == Path("/repo/out/instructions.bin")
+    assert raised.value.args == (
+        "Codex argv and request construction are not implemented",
+    )
 
 
 def test_classifier_propagates_failure_without_retrying() -> None:
     # Given
     config, _, _, _, _ = plan_and_inputs()
-    request = AttemptRequest(
-        argv=("/bin/codex",),
-        cwd=Path("/repo"),
-        timeout_seconds=config.timeout_seconds,
-        cleanup_timeout_seconds=config.cleanup_timeout_seconds,
-        grace_seconds=config.grace_seconds,
-        output_limit_bytes=config.output_limit_bytes,
-        stdin="devnull",
-    )
-    evidence = AttemptEvidence(
-        control_flow="returned",
-        outcome=None,
-        error_type=None,
-        diagnostic=None,
-        request=request,
-        started_at_utc="2026-10-27T00:00:00Z",
-        ended_at_utc="2026-10-27T00:00:01Z",
-        usage_telemetry=None,
-    )
+    evidence = settled_evidence(config)
     failure = RuntimeError("classification failed")
-    calls = 0
+    calls: list[AttemptEvidence] = []
 
     def assess_settled_evidence(received: AttemptEvidence) -> RetryAssessment:
-        nonlocal calls
-        calls += 1
+        calls.append(received)
         assert received is evidence
         raise failure
 
@@ -462,4 +526,5 @@ def test_classifier_propagates_failure_without_retrying() -> None:
 
     # Then
     assert raised.value is failure
-    assert calls == 1
+    assert calls == [evidence]
+    assert calls[0] is evidence

@@ -54,6 +54,13 @@ class CodexCliBindingResolver(CliBindingResolver):
 
     The path passed to both later operations is the exact resolved binding
     candidate. Provider quota identity remains unknown until verified.
+
+    Attributes:
+        resolve_executable: Find the CLI executable for this process.
+        probe_version: Observe the version using the resolved executable path.
+        read_effective_settings: Return sanitized settings observed for that
+            executable and this run configuration.
+        runner_version: Return the installed harness package version.
     """
 
     resolve_executable: ResolveExecutable = field(
@@ -91,6 +98,13 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
     The injected operations receive immutable plan/call/binding values, only the
     staged instruction path, and supervisor settings. They must not open source
     or staged files; no request operation is implemented by default.
+
+    Attributes:
+        effective_call_id: Derive an identity from frozen plan/call inputs,
+            binding, staged instruction path, and config without opening files.
+        build_attempt_request: Build argv and supervisor limits from the same
+            values; source bytes come from the frozen plan and the staged path
+            is passed through without reading it.
     """
 
     effective_call_id: EffectiveCallId = field(
@@ -137,6 +151,9 @@ class CodexOutcomeClassifier(OutcomeClassifier):
     This boundary receives no stream events and has no semantic answer parser.
     Until Codex outcome signals and confident no-result evidence are verified,
     classification remains an unfinished leaf operation.
+
+    Attributes:
+        assess_settled_evidence: Classify one settled supervisor evidence value.
     """
 
     assess_settled_evidence: AssessSettledEvidence = field(
