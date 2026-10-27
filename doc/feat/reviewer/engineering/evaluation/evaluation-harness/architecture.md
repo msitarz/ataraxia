@@ -564,26 +564,34 @@ Codex, quota, and runtime adapters.
   retained. The normalizer accepts only the observed CLI 0.164.0 metadata and
   `rate_limits` shapes, validates matching session/thread IDs and provider plus
   account/user identity, requires both 300-minute and 10080-minute windows, and
-  maps their numeric usage and reset hints. It rejects malformed, incomplete,
-  stale, future-dated, out-of-order, or unsupported records as unknown. A
-  60-second positive age limit is configurable on the reader. Per-reader
-  ordering retains the latest producer timestamp globally and the latest ordinal
-  per sanitized source coordinate, so a delayed older snapshot becomes unknown.
+  maps their numeric usage and optional reset hints. Missing or malformed reset
+  hints do not invalidate usage state. It rejects malformed, incomplete,
+  stale, future-dated, out-of-order, or unsupported records as unknown while
+  retaining valid usage, producer timestamp, and ordinal facts for stale or
+  future snapshots. A 60-second positive age limit is configurable on the
+  reader. Per-reader ordering retains the latest producer timestamp globally
+  and the latest record per sanitized source coordinate. An identical repeated
+  record is idempotent, changed facts at the same ordinal become unknown, and a
+  delayed older snapshot cannot replace newer state.
   The domain-separated scope helper hashes provider, account, and user identity
   without logging or persisting raw identifiers; observations remain unscoped
   unless their derived identity matches a caller-supplied expected binding
   scope. The current Codex binding still supplies no scope.
 - Active quota polling builds one fixed Luna/`none` supervised request with a
   caller-staged nonempty instruction path, minimal argv prompt, JSONL output,
-  read-only empty cwd, and the available explicit CLI feature/config disables.
+  read-only empty cwd, and the available explicit CLI feature/config disables,
+  including approval never, web search disabled, and request-user-input off.
   It ignores user config and does not use `--ephemeral`, because the rollout is
   needed for telemetry. The CLI has no verified global MCP-server clear, and
   the maintainer accepted the CLI 0.164.0 tool/context limitation: those
   controls do not prove that the outer `functions.exec` wrapper or injected
   context is absent. See [quota-capture](quota-capture.md) for the inspection
-  scope and remaining correlation limits. Availability requires a successful
-  probe and complete scoped windows whose producer timestamp falls within that
-  probe; unknown telemetry cannot resume dispatch. The reader invokes the
+  scope and remaining correlation limits. Both quota outcomes require a safely
+  settled Completed probe and complete scoped windows whose producer timestamp
+  falls within that probe. Availability additionally requires exit status zero;
+  fresh exhaustion remains conclusive after a nonzero exit. Timeouts, output
+  overflow, cancellation, and unsafe cleanup remain unknown. Unknown telemetry
+  cannot resume dispatch. The reader invokes the
   existing `AttemptCall` once with the exact request and stop callback and
   retains the process outcome, captured output, and normalized observation in
   `QuotaProbeEvidence`. If cancellation or another exception escapes after

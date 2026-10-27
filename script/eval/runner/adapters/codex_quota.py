@@ -17,7 +17,7 @@ import json
 import math
 import os
 from pathlib import Path
-from typing import BinaryIO, Protocol
+from typing import BinaryIO, Protocol, cast
 from uuid import UUID
 
 from script.eval.model import (
@@ -32,6 +32,7 @@ from script.eval.model import (
     QuotaWindowId,
     QuotaWindowObservation,
 )
+from script.eval.runner.adapters.codex import _toml_string
 from script.eval.runner.ports import (
     AttemptCall,
     QuotaStatusReader,
@@ -74,6 +75,44 @@ class RawCodexSessionSnapshot:
     content: bytes = field(repr=False)
     source_coordinate: str
     requested_thread_id: str | None = field(default=None, repr=False)
+
+
+@dataclass(frozen=True, repr=False)
+class _SessionMetadata:
+    """Validated identity fields consumed from one session metadata row."""
+
+    id: str
+    session_id: str
+    model_provider: str
+    cli_version: str
+    creator_account_id: str
+    creator_user_id: str
+
+
+@dataclass(frozen=True)
+class _QuotaWindowValues:
+    """Validated usage with an optional, non-authoritative reset hint."""
+
+    usage_percent: float
+    reset_at_utc: str | None
+
+
+@dataclass(frozen=True)
+class _TokenCountRecord:
+    """Validated quota facts from one ordered token-count event."""
+
+    timestamp: datetime
+    sequence: int
+    primary: _QuotaWindowValues
+    secondary: _QuotaWindowValues
+
+
+@dataclass(frozen=True)
+class _SessionTelemetry:
+    """Small validated projection of one selected CLI rollout."""
+
+    metadata: _SessionMetadata
+    token_counts: tuple[_TokenCountRecord, ...]
 
 
 @dataclass(frozen=True)
@@ -320,7 +359,15 @@ class _ObservationOrdering:
 
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
     latest_timestamp: datetime | None = None
-    latest_ordinals: dict[str, int] = field(default_factory=dict)
+    latest_coordinate: str | None = None
+    latest_snapshots: dict[
+        str,
+        tuple[
+            datetime,
+            int,
+            tuple[tuple[str, str, float | None, str | None], ...],
+        ],
+    ] = field(default_factory=dict)
 
     async def accept(
         self, observation: QuotaObservation, expected_scope: QuotaScope | None, /
@@ -353,21 +400,64 @@ class _ObservationOrdering:
             The observation or an unknown copy on ordering regression.
         """
         coordinate, timestamp, sequence = order
+        signature = _observation_signature(observation)
         async with self.lock:
-            prior_ordinal = self.latest_ordinals.get(coordinate)
+            prior = self.latest_snapshots.get(coordinate)
+            if prior is not None and (timestamp, sequence) == prior[:2]:
+                if signature == prior[2]:
+                    latest_timestamp = self.latest_timestamp
+                    if latest_timestamp is not None and timestamp < latest_timestamp:
+                        return _as_unknown(
+                            observation,
+                            "quota snapshot is older than a prior observation",
+                        )
+                    if (
+                        latest_timestamp is not None
+                        and timestamp == latest_timestamp
+                        and coordinate != self.latest_coordinate
+                    ):
+                        return _as_unknown(
+                            observation,
+                            "quota snapshots have ambiguous equal timestamps",
+                        )
+                    return observation
+                return _as_unknown(
+                    observation, "quota source repeated an ordinal with changed facts"
+                )
+            prior_ordinal = None if prior is None else prior[1]
             issue = _ordering_issue(
                 coordinate,
                 timestamp,
                 sequence,
                 prior_ordinal,
                 self.latest_timestamp,
-                self.latest_ordinals,
+                self.latest_coordinate,
             )
             if issue is not None:
                 return _as_unknown(observation, issue)
             self.latest_timestamp = timestamp
-            self.latest_ordinals[coordinate] = sequence
+            self.latest_coordinate = coordinate
+            self.latest_snapshots[coordinate] = (timestamp, sequence, signature)
         return observation
+
+
+def _observation_signature(
+    observation: QuotaObservation, /
+) -> tuple[tuple[str, str, float | None, str | None], ...]:
+    """Retain usage and reset facts for same-ordinal conflict detection.
+
+    Returns:
+        Stable window facts used to detect a changed source record.
+    """
+    return tuple(
+        (
+            str(window.window_id),
+            window.state,
+            window.usage_percent,
+            window.reset_at_utc,
+        )
+        for window in observation.windows
+    )
 
 
 def _has_complete_windows(observation: QuotaObservation, /) -> bool:
@@ -411,7 +501,7 @@ def _ordering_issue(
     sequence: int,
     prior_ordinal: int | None,
     latest_timestamp: datetime | None,
-    latest_ordinals: dict[str, int],
+    latest_coordinate: str | None,
     /,
 ) -> str | None:
     """Return a precise reason when one source snapshot regresses ordering."""
@@ -421,7 +511,7 @@ def _ordering_issue(
         return None
     if timestamp < latest_timestamp:
         return "quota snapshot is older than a prior observation"
-    if timestamp == latest_timestamp and coordinate not in latest_ordinals:
+    if timestamp == latest_timestamp and coordinate != latest_coordinate:
         return "quota snapshots have ambiguous equal timestamps"
     return None
 
@@ -831,57 +921,56 @@ def _normalize_session(
         return _unknown_observation(
             None, read_at_utc, None, "session telemetry is unavailable"
         )
-    rows = _decode_selected_rows(snapshot.content)
-    if rows is None:
+    telemetry = _parse_session_telemetry(snapshot.content)
+    if telemetry is None:
         return _unknown_observation(
             None,
             read_at_utc,
             snapshot.source_coordinate,
-            "session telemetry is malformed",
+            "session telemetry is malformed or incomplete",
         )
-    session_scope, identity_issue = _session_scope(rows, snapshot, scope)
-    if identity_issue is not None:
-        return _unknown_observation(
-            None, read_at_utc, snapshot.source_coordinate, identity_issue
-        )
-    token_rows = _token_count_rows(rows)
-    if not token_rows:
+    session_scope, identity_issue = _session_scope(telemetry.metadata, snapshot, scope)
+    if identity_issue is not None or session_scope is None:
         return _unknown_observation(
             None,
             read_at_utc,
             snapshot.source_coordinate,
-            "session telemetry is incomplete",
+            identity_issue or "session quota scope is unavailable",
         )
-    latest = _latest_rate_limit_record(token_rows, read_at, max_observation_age_seconds)
+    latest, ordering_issue = _latest_rate_limit_record(telemetry.token_counts)
     if latest is None:
         return _unknown_observation(
             session_scope,
             read_at_utc,
             snapshot.source_coordinate,
-            "rate-limit rows are malformed, stale, or out of order",
+            ordering_issue or "session telemetry is incomplete",
         )
-    source_sequence, observed_at, limits = latest
-    if not _has_supported_allowance_shape(limits):
-        return _unknown_observation(
+    age = (read_at - latest.timestamp).total_seconds()
+    if age < 0:
+        return _observation_from_record(
             session_scope,
-            read_at_utc,
+            _format_timestamp(read_at),
             snapshot.source_coordinate,
-            "rate-limit allowance fields are unsupported",
+            latest,
+            "unknown",
+            "quota source timestamp is in the future",
         )
-    windows = _quota_windows(source_sequence, observed_at, limits)
-    if windows is None:
-        return _unknown_observation(
+    if age > max_observation_age_seconds:
+        return _observation_from_record(
             session_scope,
-            read_at_utc,
+            _format_timestamp(read_at),
             snapshot.source_coordinate,
-            "required quota windows are incomplete",
+            latest,
+            "unknown",
+            "quota source observation is stale",
         )
-    return QuotaObservation(
-        scope=session_scope,
-        read_at_utc=_format_timestamp(read_at),
-        source_coordinate=snapshot.source_coordinate,
-        windows=windows,
-        diagnostic=None,
+    return _observation_from_record(
+        session_scope,
+        _format_timestamp(read_at),
+        snapshot.source_coordinate,
+        latest,
+        None,
+        None,
     )
 
 
@@ -900,7 +989,7 @@ def _valid_age_limit(value: object, /) -> bool:
 
 
 def _session_scope(
-    rows: list[dict[str, object]],
+    metadata: _SessionMetadata,
     snapshot: RawCodexSessionSnapshot,
     expected_scope: QuotaScope | None,
     /,
@@ -911,32 +1000,20 @@ def _session_scope(
         The matching scope and no issue, or an unscoped failure diagnostic.
     """
     requested_thread_id = _canonical_uuid(snapshot.requested_thread_id)
-    metadata = [row for row in rows if row.get("type") == "session_meta"]
-    if requested_thread_id is None or len(metadata) != 1:
-        return None, "session metadata or requested thread identity is incomplete"
-    payload = metadata[0].get("payload")
-    if not isinstance(payload, dict):
-        return None, "session metadata is malformed"
     if (
-        payload.get("id") != requested_thread_id
-        or payload.get("session_id") != requested_thread_id
+        requested_thread_id is None
+        or metadata.id != requested_thread_id
+        or metadata.session_id != requested_thread_id
     ):
         return None, "session identity does not match the invocation"
-    if payload.get("cli_version") != "0.164.0":
+    if metadata.cli_version != "0.164.0":
         return None, "session CLI version is unsupported"
-    provider = payload.get("model_provider")
-    account_id = payload.get("creator_account_id")
-    user_id = payload.get("creator_user_id")
-    if (
-        not isinstance(provider, str)
-        or not isinstance(account_id, str)
-        or not isinstance(user_id, str)
-    ):
-        return None, "session quota identity is incomplete"
-    if not provider.strip() or not account_id.strip() or not user_id.strip():
-        return None, "session quota identity is incomplete"
     try:
-        observed_scope = codex_quota_scope_from_identity(provider, account_id, user_id)
+        observed_scope = codex_quota_scope_from_identity(
+            metadata.model_provider,
+            metadata.creator_account_id,
+            metadata.creator_user_id,
+        )
     except ValueError:
         return None, "session provider is unsupported"
     if expected_scope is None or observed_scope != expected_scope:
@@ -944,68 +1021,170 @@ def _session_scope(
     return expected_scope, None
 
 
-def _token_count_rows(rows: list[dict[str, object]], /) -> list[dict[str, object]]:
-    """Select token-count events while leaving unrelated rows opaque.
+def _parse_session_telemetry(content: bytes, /) -> _SessionTelemetry | None:
+    """Validate selected JSONL rows once at the adapter raw-data boundary.
 
     Returns:
-        The selected raw event envelopes.
+        Typed consumed fields, or None for malformed or incomplete data.
     """
-    return [
-        row
-        for row in rows
-        if row.get("type") == "event_msg"
-        and isinstance(row.get("payload"), dict)
-        and row["payload"].get("type") == "token_count"
-    ]
+    rows = _decode_selected_rows(content)
+    if rows is None:
+        return None
+    metadata = _parse_metadata_rows(rows)
+    token_counts = _parse_quota_rows(rows)
+    if metadata is None or token_counts is None:
+        return None
+    return _SessionTelemetry(metadata, token_counts)
+
+
+def _parse_metadata_rows(rows: list[dict[str, object]], /) -> _SessionMetadata | None:
+    """Require one valid session identity record from selected rollout rows.
+
+    Returns:
+        The validated identity or None when it is missing, duplicate, or invalid.
+    """
+    metadata: _SessionMetadata | None = None
+    for row in rows:
+        if row.get("type") == "session_meta":
+            if metadata is not None:
+                return None
+            metadata = _parse_session_metadata(row)
+            if metadata is None:
+                return None
+    return metadata
+
+
+def _parse_quota_rows(
+    rows: list[dict[str, object]], /
+) -> tuple[_TokenCountRecord, ...] | None:
+    """Require each consumed token-count event to validate into typed facts.
+
+    Returns:
+        Validated events, or None when they are missing or malformed.
+    """
+    token_counts: list[_TokenCountRecord] = []
+    for row in rows:
+        if _is_token_count_row(row):
+            record = _parse_token_count_record(row)
+            if record is None:
+                return None
+            token_counts.append(record)
+    return tuple(token_counts) if token_counts else None
+
+
+def _is_token_count_row(row: dict[str, object], /) -> bool:
+    """Identify the consumed token-count event envelope.
+
+    Returns:
+        Whether the row is a token-count event.
+    """
+    payload = row.get("payload")
+    return (
+        row.get("type") == "event_msg"
+        and isinstance(payload, dict)
+        and payload.get("type") == "token_count"
+    )
+
+
+def _parse_session_metadata(row: dict[str, object], /) -> _SessionMetadata | None:
+    """Validate the identity fields needed to bind telemetry to its thread.
+
+    Returns:
+        The typed identity record, or None for incomplete identity data.
+    """
+    payload = row.get("payload")
+    if not isinstance(payload, dict):
+        return None
+    id_value = _nonempty_text(payload.get("id"))
+    session_id = _nonempty_text(payload.get("session_id"))
+    provider = _nonempty_text(payload.get("model_provider"))
+    cli_version = _nonempty_text(payload.get("cli_version"))
+    account_id = _nonempty_text(payload.get("creator_account_id"))
+    user_id = _nonempty_text(payload.get("creator_user_id"))
+    values = (id_value, session_id, provider, cli_version, account_id, user_id)
+    if any(value is None for value in values):
+        return None
+    id_value, session_id, provider, cli_version, account_id, user_id = cast(
+        tuple[str, str, str, str, str, str], values
+    )
+    if _canonical_uuid(id_value) is None or _canonical_uuid(session_id) is None:
+        return None
+    return _SessionMetadata(
+        id=id_value,
+        session_id=session_id,
+        model_provider=provider,
+        cli_version=cli_version,
+        creator_account_id=account_id,
+        creator_user_id=user_id,
+    )
+
+
+def _nonempty_text(value: object, /) -> str | None:
+    """Narrow required identity strings without retaining raw mapping types.
+
+    Returns:
+        The nonempty string value, or None for other values.
+    """
+    return value if isinstance(value, str) and value.strip() else None
 
 
 def _latest_rate_limit_record(
-    rows: list[dict[str, object]],
-    read_at: datetime,
-    max_age: float,
+    records: tuple[_TokenCountRecord, ...],
     /,
-) -> tuple[int, datetime, dict[str, object]] | None:
-    """Validate row order and return one recent complete rate-limit record.
+) -> tuple[_TokenCountRecord | None, str | None]:
+    """Validate producer order and select its newest typed quota record.
 
     Returns:
-        The latest source sequence, timestamp, and quota object when valid.
+        The newest row, or an ordering/incompleteness diagnostic.
     """
-    parsed = [_parse_rate_limit_row(row) for row in rows]
-    if any(record is None for record in parsed):
-        return None
-    records = [record for record in parsed if record is not None]
     for earlier, later in pairwise(records):
-        if later[0] <= earlier[0] or later[1] < earlier[1]:
-            return None
-    latest = records[-1]
-    age = (read_at - latest[1]).total_seconds()
-    return latest if 0 <= age <= max_age else None
+        if later.sequence <= earlier.sequence or later.timestamp < earlier.timestamp:
+            return None, "rate-limit rows are out of source order"
+    return (records[-1], None) if records else (None, "session telemetry is incomplete")
 
 
-def _quota_windows(
-    sequence: int, observed_at: datetime, limits: dict[str, object], /
-) -> tuple[QuotaWindowObservation, ...] | None:
-    """Create the required provider-neutral Codex quota windows.
+def _observation_from_record(
+    scope: QuotaScope,
+    read_at_utc: str,
+    coordinate: str,
+    record: _TokenCountRecord,
+    state: QuotaState | None,
+    diagnostic: str | None,
+    /,
+) -> QuotaObservation:
+    """Project a validated quota record while retaining source facts.
 
     Returns:
-        Both required windows or ``None`` when either source window is invalid.
+        A provider-neutral observation preserving optional reset hints.
     """
-    primary = _parse_window(limits.get("primary"), "primary", 300)
-    secondary = _parse_window(limits.get("secondary"), "secondary", 10080)
-    if primary is None or secondary is None:
-        return None
-    return tuple(
+    windows = tuple(
         QuotaWindowObservation(
             window_id=QuotaWindowId(window_id),
-            state="exhausted" if usage >= 100 else "available",
-            usage_percent=usage,
-            reset_at_utc=reset_at,
-            source_observed_at_utc=_format_timestamp(observed_at),
-            source_sequence=sequence,
+            state=(
+                "unknown"
+                if state == "unknown"
+                else "exhausted"
+                if values.usage_percent >= 100
+                else "available"
+            ),
+            usage_percent=values.usage_percent,
+            reset_at_utc=values.reset_at_utc,
+            source_observed_at_utc=_format_timestamp(record.timestamp),
+            source_sequence=record.sequence,
             source="codex-cli-0.164.0-session",
-            diagnostic=None,
+            diagnostic=diagnostic,
         )
-        for window_id, usage, reset_at in (primary, secondary)
+        for window_id, values in (
+            ("codex_primary_300m", record.primary),
+            ("codex_secondary_10080m", record.secondary),
+        )
+    )
+    return QuotaObservation(
+        scope=scope,
+        read_at_utc=read_at_utc,
+        source_coordinate=coordinate,
+        windows=windows,
+        diagnostic=diagnostic,
     )
 
 
@@ -1026,15 +1205,22 @@ def _build_probe_attempt_request(
     del request
     config_args = (
         "-c",
-        f"model_reasoning_effort={json.dumps('none')}",
+        f"model_reasoning_effort={_toml_string('none')}",
         "-c",
-        f"model_instructions_file={json.dumps(str(settings.probe_instructions_file))}",
+        "model_instructions_file="
+        + _toml_string(str(settings.probe_instructions_file)),
         "-c",
         "agents.enabled=false",
         "-c",
         "skills.bundled.enabled=false",
         "-c",
         "memories.use_memories=false",
+        "-c",
+        'approval_policy="never"',
+        "-c",
+        'web_search="disabled"',
+        "-c",
+        "features.request_user_input=false",
     )
     disabled_features = (
         "plugins",
@@ -1056,6 +1242,8 @@ def _build_probe_attempt_request(
         str(settings.executable_path),
         "exec",
         "--json",
+        "--color",
+        "never",
         "--ignore-user-config",
         "--sandbox",
         "read-only",
@@ -1066,6 +1254,7 @@ def _build_probe_attempt_request(
         "gpt-6-luna",
         *config_args,
         *feature_args,
+        "--",
         "Check the current Codex quota. Reply READY.",
     )
     return AttemptRequest(
@@ -1084,7 +1273,7 @@ def _assess_probe(
     observation: QuotaObservation | None,
     /,
 ) -> tuple[QuotaState, str | None]:
-    """Require fresh scoped telemetry and a successful probe to resume dispatch.
+    """Require fresh scoped telemetry and safe process settlement.
 
     Returns:
         The conservative state and its classification basis.
@@ -1098,13 +1287,14 @@ def _assess_probe(
         window.state in {"unknown", "unavailable"} for window in observation.windows
     ):
         return "unknown", "probe quota observation is incomplete"
+    outcome = attempt.outcome
     if (
         attempt.control_flow != "returned"
-        or not isinstance(attempt.outcome, Completed)
-        or attempt.outcome.exit_status != 0
+        or not isinstance(outcome, Completed)
+        or not outcome.observation.cleanup.dispatch_permitted
         or attempt.ended_at_utc is None
     ):
-        return "unknown", "probe process did not complete successfully"
+        return "unknown", "probe process did not settle safely"
     source_times = {
         _parse_timestamp(window.source_observed_at_utc)
         for window in observation.windows
@@ -1121,6 +1311,8 @@ def _assess_probe(
         return "unknown", "probe telemetry was not produced during this probe"
     if any(window.state == "exhausted" for window in observation.windows):
         return "exhausted", "fresh scoped telemetry reports an exhausted Codex window"
+    if outcome.exit_status != 0:
+        return "unknown", "available quota telemetry accompanied a failed probe"
     return "available", "successful probe produced fresh scoped available windows"
 
 
@@ -1146,18 +1338,16 @@ def _decode_selected_rows(content: bytes, /) -> list[dict[str, object]] | None:
     return rows
 
 
-def _parse_rate_limit_row(
-    row: dict[str, object], /
-) -> tuple[int, datetime, dict[str, object]] | None:
-    """Validate the consumed envelope and timestamp/ordinal pair.
+def _parse_token_count_record(row: dict[str, object], /) -> _TokenCountRecord | None:
+    """Validate one consumed token-count event into typed quota values.
 
     Returns:
-        A valid ordinal, producer timestamp, and rate-limit object.
+        One validated quota record, or None when consumed data is invalid.
     """
     ordinal = row.get("ordinal")
     timestamp = _parse_timestamp(row.get("timestamp"))
     payload = row.get("payload")
-    if not isinstance(ordinal, int) or isinstance(ordinal, bool) or ordinal < 0:
+    if isinstance(ordinal, bool) or not isinstance(ordinal, int) or ordinal < 0:
         return None
     if timestamp is None or not isinstance(payload, dict):
         return None
@@ -1166,14 +1356,20 @@ def _parse_rate_limit_row(
     limits = payload.get("rate_limits")
     if not isinstance(limits, dict) or limits.get("limit_id") != "codex":
         return None
-    return ordinal, timestamp, limits
+    if not _has_supported_allowance_shape(limits):
+        return None
+    primary = _parse_window(limits.get("primary"), 300)
+    secondary = _parse_window(limits.get("secondary"), 10080)
+    if primary is None or secondary is None:
+        return None
+    return _TokenCountRecord(timestamp, ordinal, primary, secondary)
 
 
 def _has_supported_allowance_shape(limits: dict[str, object], /) -> bool:
-    """Reject unsupported additional limits or balances.
+    """Reject unsupported additional limits or nonzero credit balances.
 
     Returns:
-        Whether the source represents only the two modeled quota windows.
+        Whether the allowance matches the currently modeled Codex shape.
     """
     required_fields = {
         "credits",
@@ -1204,19 +1400,16 @@ def _has_supported_allowance_shape(limits: dict[str, object], /) -> bool:
     )
 
 
-def _parse_window(
-    value: object, window: str, expected_minutes: int, /
-) -> tuple[str, float, str] | None:
-    """Validate one fixed Codex quota-window record.
+def _parse_window(value: object, expected_minutes: int, /) -> _QuotaWindowValues | None:
+    """Validate usage strictly while retaining reset time as an optional hint.
 
     Returns:
-        The normalized window ID, usage percentage, and reset hint.
+        Typed usage facts, or None when required window data is invalid.
     """
     if not isinstance(value, dict):
         return None
     used_percent = value.get("used_percent")
     window_minutes = value.get("window_minutes")
-    resets_at = value.get("resets_at")
     if isinstance(used_percent, bool) or not isinstance(used_percent, (int, float)):
         return None
     try:
@@ -1229,17 +1422,23 @@ def _parse_window(
         return None
     if window_minutes != expected_minutes:
         return None
-    if isinstance(resets_at, bool) or not isinstance(resets_at, int):
+    reset_at = _optional_reset_timestamp(value.get("resets_at"))
+    return _QuotaWindowValues(usage, reset_at)
+
+
+def _optional_reset_timestamp(value: object, /) -> str | None:
+    """Parse an optional reset hint without invalidating usage telemetry.
+
+    Returns:
+        A canonical UTC hint, or None when the hint is missing or invalid.
+    """
+    if isinstance(value, bool) or not isinstance(value, int):
         return None
     try:
-        reset = datetime.fromtimestamp(resets_at, UTC)
+        reset = datetime.fromtimestamp(value, UTC)
     except OverflowError, OSError, ValueError:
         return None
-    return (
-        f"codex_{window}_{window_minutes}m",
-        usage,
-        _format_timestamp(reset),
-    )
+    return _format_timestamp(reset)
 
 
 def _unknown_observation(

@@ -111,7 +111,10 @@ remaining context.
 The poller must positively confirm fresh availability for the evaluation's quota
 scope before restarting eligible evaluation attempts; Luna availability does not
 establish capacity for another model. Numeric session reset hints support
-scheduling, while rereading old telemetry cannot establish availability. The
+scheduling when present, but missing or malformed hints do not erase known
+usage state and never establish availability by themselves. Stale observations
+retain their producer timestamp, ordinal, and usage as unknown evidence;
+rereading an identical record does not refresh its producer age. The
 [quota-monitoring contract](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run)
 owns polling, budgets, cleanup, evidence, and failure requirements.
 
@@ -123,8 +126,9 @@ types, and equality checks; it did not expose account/user identifier values,
 messages, or base instructions. This is version-specific evidence for the
 named Codex CLI 0.164.0 file, not a universal schema guarantee.
 
-- Its `session_meta` envelope has `type`, `timestamp`, `ordinal`, and `payload`;
-  the payload includes string fields `id`, `session_id`, `model_provider`,
+- Its `session_meta` envelope has `type`, `timestamp`, `ordinal`, and
+  `payload`; the timestamp is a string and ordinal an integer. The payload
+  includes string fields `id`, `session_id`, `model_provider`,
   `cli_version`, `creator_account_id`, and `creator_user_id` among other fields.
 - In that file, `id` and `session_id` match each other and the rollout filename
   suffix. The file is the separate interactive status session described above;
@@ -135,8 +139,8 @@ named Codex CLI 0.164.0 file, not a universal schema guarantee.
   integer ordinal, and `payload.rate_limits`. That object includes `limit_id`,
   `primary`, `secondary`, `credits`, `individual_limit`,
   `spend_control_reached`, and `rate_limit_reached_type`; the primary and
-  secondary window records include `used_percent`, `window_minutes`, and
-  `resets_at`.
+  secondary window records include numeric `used_percent`, integer
+  `window_minutes`, and integer `resets_at` values in the inspected record.
 
 The adapter supports only the observed 0.164.0 shape and checks the requested
 thread UUID against the candidate filename, `session_meta.id`, and

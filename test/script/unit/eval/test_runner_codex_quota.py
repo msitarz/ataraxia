@@ -6,6 +6,7 @@ from collections.abc import Callable
 import json
 from pathlib import Path
 from threading import Event
+import tomllib
 from typing import override
 
 import pytest
@@ -43,6 +44,9 @@ from script.process_supervisor import (
     CleanupEvidence,
     Completed,
     DispatchStop,
+    OutputLimitExceeded,
+    SignalAttempt,
+    TimedOut,
     call_supervisor,
 )
 
@@ -139,6 +143,9 @@ def make_reader(
         [AttemptEvidence, QuotaObservation | None], tuple[QuotaState, str | None]
     ]
     | None = None,
+    *,
+    output_limit_bytes: int = 1024,
+    probe_instructions_file: Path = Path("/tmp/instructions.txt"),
 ) -> CodexQuotaStatusReader:
     """Compose reader ports with deterministic test collaborators."""
     reader = CodexQuotaStatusReader(
@@ -147,10 +154,10 @@ def make_reader(
         settings=CodexQuotaSettings(
             executable_path=Path("/opt/codex"),
             empty_read_only_cwd=Path("/tmp/empty"),
-            probe_instructions_file=Path("/tmp/instructions.txt"),
+            probe_instructions_file=probe_instructions_file,
             timeout_seconds=10.0,
             cleanup_timeout_seconds=2.0,
-            output_limit_bytes=1024,
+            output_limit_bytes=output_limit_bytes,
             grace_seconds=0.0,
         ),
         attempt_call=(unused_attempt_call if attempt_call is None else attempt_call),
@@ -308,7 +315,15 @@ def make_process_result(stdout: bytes, stderr: bytes) -> Completed:
         observation=AttemptObservation(
             output=CapturedOutput(stdout=stdout, stderr=stderr),
             elapsed_seconds=0.25,
-            cleanup=CleanupEvidence("owned", (), "reaped", None),
+            cleanup=CleanupEvidence(
+                "owned",
+                (
+                    SignalAttempt("SIGTERM", "sent", None),
+                    SignalAttempt("SIGKILL", "sent", None),
+                ),
+                "reaped",
+                None,
+            ),
         ),
         exit_status=0,
     )
@@ -598,6 +613,7 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
         None,
         None,
         attempt_call,
+        output_limit_bytes=0,
     )
 
     # When
@@ -610,6 +626,8 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
         "/opt/codex",
         "exec",
         "--json",
+        "--color",
+        "never",
         "--ignore-user-config",
         "--sandbox",
         "read-only",
@@ -628,6 +646,12 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
         "skills.bundled.enabled=false",
         "-c",
         "memories.use_memories=false",
+        "-c",
+        'approval_policy="never"',
+        "-c",
+        'web_search="disabled"',
+        "-c",
+        "features.request_user_input=false",
         "--disable",
         "plugins",
         "--disable",
@@ -650,9 +674,11 @@ async def test_default_probe_recipe_uses_fixed_supervised_arguments() -> None:
         "code_mode",
         "--disable",
         "skill_search",
+        "--",
         "Check the current Codex quota. Reply READY.",
     )
     assert "--ephemeral" not in attempt_call.calls[0][0].argv
+    assert attempt_call.calls[0][0].output_limit_bytes == 0
     assert result.quota_state == "unknown"
 
 
@@ -668,6 +694,35 @@ async def test_poll_refuses_a_request_outside_the_verified_scope() -> None:
 
     # Then
     assert attempt_call.calls == []
+
+
+async def test_probe_instructions_path_is_valid_unicode_toml() -> None:
+    # Given
+    instructions = Path("/tmp/quota-probe-🧭.txt")
+    request = make_probe_request()
+    attempt_call = RecordingAttemptCall(make_process_result(thread_started(), b""))
+    reader = make_reader(
+        RecordingSource(None),
+        request.schedule.scope,
+        None,
+        None,
+        attempt_call,
+        probe_instructions_file=instructions,
+    )
+
+    # When
+    await reader.poll(request, stop_dispatch)
+
+    # Then
+    argv = attempt_call.calls[0][0].argv
+    assignments = [
+        argv[index + 1] for index, argument in enumerate(argv[:-1]) if argument == "-c"
+    ]
+    settings = tomllib.loads("\n".join(assignments))
+    assert settings["model_instructions_file"] == str(instructions)
+    assert settings["web_search"] == "disabled"
+    assert settings["approval_policy"] == "never"
+    assert settings["features"]["request_user_input"] is False
 
 
 async def test_local_source_projects_one_rollout_through_public_reader(
@@ -755,12 +810,15 @@ async def test_local_reader_fails_closed_on_untrusted_session_rows(
     )
 
     # Then
-    assert (
-        observation.scope is None
-        if metadata_overrides
-        else observation.scope == make_identity_scope()
-    )
+    if metadata_overrides or not secondary_present or isinstance(primary_used, bool):
+        assert observation.scope is None
+    else:
+        assert observation.scope == make_identity_scope()
     assert [window.state for window in observation.windows] == ["unknown", "unknown"]
+    if timestamp != "2026-10-27T09:59:59Z":
+        assert observation.windows[0].usage_percent == pytest.approx(35.0)
+        assert observation.windows[0].source_observed_at_utc == timestamp
+        assert observation.windows[0].source_sequence == 17
 
 
 async def test_local_source_rejects_ambiguous_rollout_candidates(
@@ -842,23 +900,121 @@ async def test_local_source_file_read_does_not_block_event_loop(tmp_path: Path) 
     assert await pending is None
 
 
-async def test_repeated_source_ordinal_cannot_restore_availability(
+async def test_exact_source_reread_is_idempotent_and_conflict_fails_closed(
     tmp_path: Path,
 ) -> None:
     # Given
     sessions = tmp_path / "sessions"
-    write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows())
+    rollout = write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows())
     reader = make_local_reader(sessions, make_identity_scope())
     attempt = make_attempt_evidence(thread_started())
 
     # When
     first = await reader.observe_settled_attempt(attempt)
     second = await reader.observe_settled_attempt(attempt)
+    rollout.write_bytes(
+        rollout.read_bytes().replace(b'"used_percent":35', b'"used_percent":91', 1)
+    )
+    conflicting = await reader.observe_settled_attempt(attempt)
 
     # Then
     assert [window.state for window in first.windows] == ["available", "available"]
-    assert [window.state for window in second.windows] == ["unknown", "unknown"]
-    assert second.diagnostic == "quota source sequence did not advance"
+    assert [window.state for window in second.windows] == ["available", "available"]
+    assert [window.state for window in conflicting.windows] == ["unknown", "unknown"]
+    assert (
+        conflicting.diagnostic == "quota source repeated an ordinal with changed facts"
+    )
+    assert conflicting.windows[0].usage_percent == pytest.approx(91.0)
+
+
+async def test_exact_source_reread_does_not_refresh_producer_age(
+    tmp_path: Path,
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows())
+    runtime = SequenceRuntime(("2026-10-27T10:00:00Z", "2026-10-27T10:00:02Z"))
+    reader = make_local_reader(
+        sessions, make_identity_scope(), max_age=1.0, runtime=runtime
+    )
+    attempt = make_attempt_evidence(thread_started())
+
+    # When
+    first = await reader.observe_settled_attempt(attempt)
+    repeated = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert first.windows[0].state == "available"
+    assert repeated.windows[0].state == "unknown"
+    assert repeated.windows[0].source_observed_at_utc == "2026-10-27T09:59:59Z"
+    assert repeated.windows[0].source_sequence == 17
+    assert repeated.windows[0].usage_percent == pytest.approx(35.0)
+
+
+async def test_older_available_record_cannot_replace_fresh_exhaustion(
+    tmp_path: Path,
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    rollout = write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp="2026-10-27T09:59:59Z", primary_used=100),
+    )
+    reader = make_local_reader(sessions, make_identity_scope())
+    attempt = make_attempt_evidence(thread_started())
+
+    # When
+    exhausted = await reader.observe_settled_attempt(attempt)
+    second_day = sessions / "2026" / "10" / "28"
+    second_day.mkdir(parents=True)
+    moved_rollout = second_day / rollout.name
+    rollout.rename(moved_rollout)
+    content = moved_rollout.read_bytes()
+    content = content.replace(b"2026-10-27T09:59:59Z", b"2026-10-27T09:59:58Z", 1)
+    content = content.replace(b'"used_percent":100', b'"used_percent":35', 1)
+    content = content.replace(b'"ordinal":17', b'"ordinal":18', 1)
+    moved_rollout.write_bytes(content)
+    older = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert exhausted.windows[0].state == "exhausted"
+    assert older.windows[0].state == "unknown"
+    assert older.windows[0].usage_percent == pytest.approx(35.0)
+
+
+async def test_repeated_old_source_cannot_override_newer_other_source() -> None:
+    # Given
+    source = RecordingSource(None)
+    reader = make_reader(source, make_identity_scope(), None, None)
+    attempt = make_attempt_evidence(thread_started())
+
+    def snapshot(
+        coordinate: str, timestamp: str, primary_used: int, ordinal: int
+    ) -> RawCodexSessionSnapshot:
+        rows = session_rows(
+            timestamp=timestamp, primary_used=primary_used, ordinal=ordinal
+        )
+        content = b"\n".join(
+            json.dumps(row, separators=(",", ":")).encode() for row in rows
+        )
+        return RawCodexSessionSnapshot(content, coordinate, SYNTHETIC_THREAD_ID)
+
+    old_record = snapshot("coordinate-old", "2026-10-27T09:59:58Z", 35, 17)
+    source.snapshot = old_record
+
+    # When
+    first = await reader.observe_settled_attempt(attempt)
+    source.snapshot = snapshot("coordinate-new", "2026-10-27T09:59:59Z", 100, 18)
+    newer = await reader.observe_settled_attempt(attempt)
+    source.snapshot = old_record
+    repeated_old = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert first.windows[0].state == "available"
+    assert newer.windows[0].state == "exhausted"
+    assert repeated_old.windows[0].state == "unknown"
+    assert repeated_old.diagnostic == "quota snapshot is older than a prior observation"
 
 
 async def test_past_reset_hint_does_not_override_exhausted_usage(
@@ -886,6 +1042,36 @@ async def test_past_reset_hint_does_not_override_exhausted_usage(
     # Then
     assert observation.windows[0].state == "exhausted"
     assert observation.windows[0].reset_at_utc == "1970-01-01T00:00:00Z"
+
+
+@pytest.mark.parametrize("reset_value", [None, "invalid-synthetic-reset"])
+async def test_invalid_reset_hint_preserves_known_exhaustion(
+    tmp_path: Path, reset_value: object
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    rows = session_rows(primary_used=100)
+    payload = rows[-1]["payload"]
+    assert isinstance(payload, dict)
+    limits = payload["rate_limits"]
+    assert isinstance(limits, dict)
+    primary = limits["primary"]
+    assert isinstance(primary, dict)
+    if reset_value is None:
+        del primary["resets_at"]
+    else:
+        primary["resets_at"] = reset_value
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, rows)
+    reader = make_local_reader(sessions, make_identity_scope())
+
+    # When
+    observation = await reader.observe_settled_attempt(
+        make_attempt_evidence(thread_started())
+    )
+
+    # Then
+    assert observation.windows[0].state == "exhausted"
+    assert observation.windows[0].reset_at_utc is None
 
 
 @pytest.mark.parametrize(
@@ -922,6 +1108,92 @@ async def test_probe_assesses_only_fresh_scoped_local_telemetry(
     assert result.observation is not None
     assert result.observation.scope == scope
     assert len(attempt.calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("primary_used", "exit_status", "safe_cleanup", "expected_state"),
+    [
+        (100, 1, True, "exhausted"),
+        (35, 1, True, "unknown"),
+        (35, 0, False, "unknown"),
+        (100, 1, False, "unknown"),
+        (35, 0, True, "available"),
+    ],
+)
+async def test_probe_assessment_requires_safe_settlement(
+    tmp_path: Path,
+    primary_used: int,
+    exit_status: int,
+    safe_cleanup: bool,
+    expected_state: QuotaState,
+) -> None:
+    # Given
+    scope = make_identity_scope()
+    sessions = tmp_path / "sessions"
+    write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp="2026-10-27T09:59:59Z", primary_used=primary_used),
+    )
+    completed = make_process_result(thread_started(), b"synthetic stderr")
+    cleanup = (
+        completed.observation.cleanup
+        if safe_cleanup
+        else CleanupEvidence(
+            "owned",
+            (SignalAttempt("SIGTERM", "sent", None),),
+            "expired",
+            None,
+        )
+    )
+    process = Completed(
+        AttemptObservation(completed.observation.output, 0.25, cleanup), exit_status
+    )
+    runtime = SequenceRuntime((
+        "2026-10-27T09:59:58Z",
+        "2026-10-27T10:00:01Z",
+        "2026-10-27T10:00:02Z",
+    ))
+    attempt = RecordingAttemptCall(process)
+    reader = make_local_reader(sessions, scope, runtime=runtime, attempt_call=attempt)
+    request = make_probe_request(scope=scope)
+
+    # When
+    result = await reader.poll(request, stop_dispatch)
+
+    # Then
+    assert result.quota_state == expected_state
+    assert len(attempt.calls) == 1
+
+
+@pytest.mark.parametrize("failure", [TimedOut, OutputLimitExceeded])
+async def test_non_completed_probe_outcomes_never_confirm_quota_state(
+    tmp_path: Path, failure: type[TimedOut] | type[OutputLimitExceeded]
+) -> None:
+    # Given
+    scope = make_identity_scope()
+    sessions = tmp_path / "sessions"
+    write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp="2026-10-27T09:59:59Z", primary_used=100),
+    )
+    completed = make_process_result(thread_started(), b"synthetic stderr")
+    process = failure(completed.observation, 1)
+    runtime = SequenceRuntime((
+        "2026-10-27T09:59:58Z",
+        "2026-10-27T10:00:01Z",
+        "2026-10-27T10:00:02Z",
+    ))
+    reader = make_local_reader(
+        sessions, scope, runtime=runtime, attempt_call=RecordingAttemptCall(process)
+    )
+
+    # When
+    result = await reader.poll(make_probe_request(scope=scope), stop_dispatch)
+
+    # Then
+    assert result.quota_state == "unknown"
 
 
 def test_scope_hash_is_stable_and_does_not_retain_identity() -> None:
