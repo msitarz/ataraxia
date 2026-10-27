@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Codex CLI binding, request, and settled-output classification adapters."""
+"""Historical Codex adapter signature sketch; runtime code is authoritative.
+
+The signatures remain a record of the reviewed public port shape. See
+``script/eval/runner/adapters/codex.py`` for the current typed wiring skeleton;
+its external-operation leaves and Codex behavior are not implemented yet.
+"""
 
 from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
