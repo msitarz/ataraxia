@@ -13,6 +13,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
 
+from script.eval.model import (
+    AttemptEvidence,
+    QuotaObservation,
+    QuotaProbeEvidence,
+    QuotaProbeRequest,
+    QuotaScope,
+    QuotaState,
+)
+from script.eval.runner.ports import (
+    AttemptCall,
+    QuotaStatusReader,
+    Runtime,
+)
 from script.eval.runner.quota_evidence import attach_quota_probe_evidence
 from script.process_supervisor import (
     AttemptCancelled,
@@ -25,20 +38,6 @@ from script.process_supervisor import (
     OutputLimitExceeded,
     TimedOut,
     failure_evidence,
-)
-
-from ...model import (  # ruff: ignore[relative-imports]
-    AttemptEvidence,
-    QuotaObservation,
-    QuotaProbeEvidence,
-    QuotaProbeRequest,
-    QuotaScope,
-    QuotaState,
-)
-from ..ports import (  # ruff: ignore[relative-imports]
-    AttemptCall,
-    QuotaStatusReader,
-    Runtime,
 )
 
 
