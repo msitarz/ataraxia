@@ -1,5 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Fail-closed adapter boundary for source-backed Codex quota observations."""
+"""Historical reviewed signature sketch for Codex quota observation wiring.
+
+Runtime ``script/eval/runner/adapters/codex_quota.py`` is authoritative. It
+currently supplies typed source and supervisor wiring around explicit pending
+leaves; this sketch does not establish a verified source or quota behavior.
+"""
 
 from dataclasses import dataclass
 from pathlib import Path

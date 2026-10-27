@@ -259,7 +259,14 @@ class QuotaStatusReader(Protocol):
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
     ) -> QuotaProbeEvidence:
-        """Run one separately supervised probe, never reuse an evaluation."""
+        """Run one separate supervised probe, never reuse an evaluation.
+
+        If cancellation or another exception escapes after dispatch, the reader
+        attaches available ``QuotaProbeEvidence`` to that same exception and
+        re-raises it unchanged. The caller retains this exact request object and
+        retrieves its evidence with ``quota_probe_evidence``. A missing match
+        means incomplete evidence, never success or availability.
+        """
         ...
 
 
