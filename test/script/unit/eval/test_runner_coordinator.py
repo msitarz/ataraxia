@@ -2,7 +2,7 @@
 """Coordinator wiring order and owned-task lifecycle."""
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from pathlib import Path
 
 import pytest
@@ -54,7 +54,9 @@ from script.process_supervisor import (
     DispatchStop,
 )
 
-type ExecuteAttempt = Callable[[EffectiveCall, AttemptNumber], Awaitable[AttemptRecord]]
+type ExecuteAttempt = Callable[
+    [EffectiveCall, AttemptNumber], Coroutine[None, None, AttemptRecord]
+]
 
 
 def configuration(

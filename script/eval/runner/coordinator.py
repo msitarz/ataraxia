@@ -6,7 +6,7 @@ leaves until their behavior is implemented and reviewed.
 """
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass, field
 
 from script.eval.evidence import EvidenceStore
@@ -32,7 +32,9 @@ from script.process_supervisor import AttemptResult, DispatchStop
 type CaptureReturnedAttempt = Callable[
     [EffectiveCall, AttemptResult, str, str], AttemptEvidence
 ]
-type ExecuteAttempt = Callable[[EffectiveCall, AttemptNumber], Awaitable[AttemptRecord]]
+type ExecuteAttempt = Callable[
+    [EffectiveCall, AttemptNumber], Coroutine[None, None, AttemptRecord]
+]
 type DispatchStopped = Callable[[], bool]
 
 
@@ -58,9 +60,9 @@ class _DispatchGate:
 
 type ScheduleCalls = Callable[
     ["Coordinator", ExecuteAttempt, DispatchStop, DispatchStopped],
-    Awaitable[RunRecord],
+    Coroutine[None, None, RunRecord],
 ]
-type MonitorQuota = Callable[[Coordinator, DispatchStop], Awaitable[None]]
+type MonitorQuota = Callable[[Coordinator, DispatchStop], Coroutine[None, None, None]]
 
 
 @dataclass(frozen=True)
@@ -123,14 +125,12 @@ class Coordinator:
             return await self._execute_attempt(call, attempt_number, gate)
 
         scheduler_task = asyncio.create_task(
-            _await_schedule(
-                self.schedule_calls(self, execute_attempt, gate, gate.stopped)
-            ),
+            self.schedule_calls(self, execute_attempt, gate, gate.stopped),
             name=f"evaluation-scheduler-{self.bound_run.plan.run_id}",
         )
         monitor_task = (
             asyncio.create_task(
-                _await_monitor(self.monitor_quota(self, gate)),
+                self.monitor_quota(self, gate),
                 name=f"quota-monitor-{self.bound_run.plan.run_id}",
             )
             if self.config.quota_wait_enabled
@@ -281,20 +281,6 @@ def _add_failure_notes(
     for failure in failures:
         if failure is not owner:
             owner.add_note(f"Owned coordinator task also failed: {failure!r}")
-
-
-async def _await_monitor(monitor: Awaitable[None], /) -> None:
-    """Adapt an injected awaitable monitor to an asyncio task coroutine."""
-    await monitor
-
-
-async def _await_schedule(scheduler: Awaitable[RunRecord], /) -> RunRecord:
-    """Adapt an injected awaitable scheduler to an asyncio task coroutine.
-
-    Returns:
-        The scheduler's run record.
-    """
-    return await scheduler
 
 
 async def _schedule_calls(
