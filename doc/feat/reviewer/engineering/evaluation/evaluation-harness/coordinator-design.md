@@ -269,10 +269,44 @@ with known lifecycle bugs, not a validated alternative.
 - Probe recording and failed or missing evidence remain distinct from an active
   poll and retain its request, captured evidence when available, and failure.
 - A failed wait or probe journal write retains its obligation and error rather
-  than claiming durability.
+  than claiming durability. If a dispatch journal fails, its invoked probe state
+  remains attached while the owner settles and records that probe.
 - Future evidence-port wiring must accept the proposed preparation, dispatch,
   and not-dispatched inputs in place of the current started input.
 - The existing runtime types and evidence port are unchanged by this sketch.
+
+## Pure transition map
+
+These proposed functions take captured, durable, policy, clock, and control
+facts as values. They perform no I/O and own no tasks. The async owners perform
+and retain each write, read, sleep, or invocation before passing its result to
+the next decision. Inputs must refer to the same call, wait, or exact probe
+request as the supplied state; construction and adapter boundaries establish
+those relationships.
+
+| Function | From and explicit inputs | To and effect boundary |
+| --- | --- | --- |
+| `capture_attempt` | `Attempting`, captured supervisor evidence and classification | `Recording`; the owner submits its attempt write. |
+| `attempt_persisted` | `Recording`, durable record, configuration, stop and sampled capacity-wait facts | Durable history with `ObservingQuota`, `RetryWait`, `Queued`, `Finished`, or `Stopped`; policy and independent allowances select the next step. |
+| `capture_telemetry` | `ObservingQuota` and captured event | `RecordingTelemetry`; the owner submits its telemetry write. |
+| `telemetry_persisted` | `RecordingTelemetry`, configuration, stop and sampled capacity-wait facts | Retry wait, queue, terminal outcome, or stop after the telemetry write settles. |
+| `attempt_write_failed`, `telemetry_write_failed`, `call_wait_write_failed` | The respective in-flight call state, exact failed wait input when needed, and error | `EvidencePending`, retaining the obligation and already durable history. |
+| `call_wait_started` | `RetryWait`, settled start, cancellation/stop and pending closure facts | Durable-start `RetryWait`; the owner closes it before propagating cancellation or stop. |
+| `call_wait_completed` | `RetryWait`, durable end record and stop | `Queued` or `Stopped` after appending the wait to history. |
+| `quota_wait_started` | Drained `Draining`, submitted wait, settled start, cancellation/stop and pending closure facts | Durable-start `Waiting`; the owner closes it before stop or cancellation propagates. |
+| `probe_dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
+| `probe_dispatched` | `PreparingProbe`, request built at invocation | `Probing`; the owner retains the dispatch journal write alongside the probe. |
+| `capture_probe` | `Probing`, captured exact-request outcome or missing evidence and error | `RecordingProbe` or `ProbeEvidencePending`; the owner extracts exception-chain evidence and writes captured evidence. |
+| `probe_persisted` | `RecordingProbe`, durable record and history, fresh stop, bound and time, optional durable wait closure | Updated history and `Waiting`, `Open`, or `QuotaStopped`; opening or stopping requires the wait closure to have settled. |
+| `quota_wait_completed` | `Waiting`, history, durable end record, fresh stop, bound and time | Updated history and `Open` or `QuotaStopped`; only a verified available closure opens. |
+| `quota_write_failed`, `probe_write_failed` | In-flight quota state, exact failed obligation or captured probe and error | The corresponding pending state retains the error and evidence. |
+
+Stop and bound facts are sampled again after awaited writes. Cancellation
+remains primary in `RunControl` and settlement; a transition does not consume
+it. The quota adapter establishes scope, completeness, ordering, and freshness;
+the core uses its typed observation without parsing CLI output. These signatures
+describe shared decisions, leaving incidental updates and private helpers
+flexible.
 
 ## Run lifecycle
 

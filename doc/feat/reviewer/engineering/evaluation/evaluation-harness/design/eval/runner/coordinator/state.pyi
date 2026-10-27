@@ -238,11 +238,16 @@ class ProbeEvidencePending:
 
 @dataclass(frozen=True)
 class QuotaEvidencePending:
-    """A failed wait or pre-dispatch journal write retains its obligation."""
+    """A failed wait or probe journal write retains its obligation.
+
+    A dispatch journal may fail while the invoked probe is still settling. Its
+    state remains attached until the owner captures and persists that outcome.
+    """
 
     waiting: Waiting
     obligation: WaitWrite | ProbeDispatchEvent
     error: BaseException
+    probe: Probing | RecordingProbe | ProbeEvidencePending | None
 
 @dataclass(frozen=True)
 class QuotaStopped:

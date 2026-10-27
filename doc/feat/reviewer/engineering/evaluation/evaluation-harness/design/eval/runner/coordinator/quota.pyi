@@ -1,12 +1,140 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exploratory quota recovery and bounded async ownership."""
 
+from asyncio import CancelledError
+
 from script.eval.evidence import EvidenceStore
-from script.eval.model import HarnessConfig, QuotaObservation
+from script.eval.model import (
+    HarnessConfig,
+    QuotaObservation,
+    QuotaProbeEvidence,
+    QuotaProbeRecord,
+    QuotaProbeRequest,
+    WaitRecord,
+)
 from script.eval.runner.ports import QuotaStatusReader, Runtime
 
 from .control import RunControl
-from .state import Draining, QuotaHistory, QuotaState
+from .state import (
+    Draining,
+    Open,
+    PreparingProbe,
+    ProbeDispatchEvent,
+    ProbeEvidencePending,
+    ProbeNotDispatched,
+    Probing,
+    QuotaEvidencePending,
+    QuotaHistory,
+    QuotaState,
+    QuotaStopped,
+    RecordingProbe,
+    StopReason,
+    Waiting,
+    WaitWrite,
+)
+
+def quota_wait_started(
+    state: Draining,
+    waiting: Waiting,
+    cancellation: CancelledError | None,
+    stop: StopReason | None,
+    closure: WaitRecord | None,
+    /,
+) -> Waiting:
+    """Settle the durable start after drain; cancellation or stop requires closure.
+
+    Cancellation or stop supplies a pending closure retained in Waiting. The
+    owner writes it before reporting stop or propagating cancellation.
+    """
+    ...
+
+def probe_dispatch_gate(
+    state: PreparingProbe,
+    config: HarnessConfig,
+    probes_used: int,
+    remaining_seconds: float | None,
+    stop: StopReason | None,
+    cancellation: CancelledError | None,
+    ended_at_utc: str,
+    elapsed_seconds: float,
+    /,
+) -> PreparingProbe | ProbeNotDispatched:
+    """Recheck fresh bounds and stop after the preparation write settles.
+
+    A returned preparation permits the effect owner to construct the actual
+    request at invocation; otherwise it must durably close the preparation.
+    No request timestamp or probe charge is created here.
+    """
+    ...
+
+def probe_dispatched(state: PreparingProbe, request: QuotaProbeRequest, /) -> Probing:
+    """Retain the request constructed by the owner at actual invocation."""
+    ...
+
+def capture_probe(
+    state: Probing, evidence: QuotaProbeEvidence | None, error: BaseException | None, /
+) -> RecordingProbe | ProbeEvidencePending:
+    """Retain exact-request evidence, including evidence from an exception chain.
+
+    Missing or mismatched evidence stays pending with an explicit error; a timeout
+    never becomes availability. The effect owner extracts evidence before this call.
+    """
+    ...
+
+def probe_persisted(
+    state: RecordingProbe,
+    history: QuotaHistory,
+    record: QuotaProbeRecord,
+    stop: StopReason | None,
+    remaining_seconds: float | None,
+    now_utc: str,
+    closed_wait: WaitRecord | None,
+    /,
+) -> tuple[QuotaHistory, Waiting | Open | QuotaStopped]:
+    """Append durable probe evidence and decide using fresh stop and bound facts.
+
+    Only the trusted adapter's fresh, complete matching-scope observation for
+    this pause can authorize availability at the supplied time. Stop and bounds
+    win. Open or stopped requires a durably closed wait, which is appended to
+    history; otherwise
+    Waiting retains closure work.
+    """
+    ...
+
+def quota_wait_completed(
+    state: Waiting,
+    history: QuotaHistory,
+    record: WaitRecord,
+    stop: StopReason | None,
+    remaining_seconds: float | None,
+    now_utc: str,
+    /,
+) -> tuple[QuotaHistory, Open | QuotaStopped]:
+    """Append the durable wait closure before opening or stopping the gate.
+
+    Only a quota-available closure supported by the current verified observation
+    opens the gate if still fresh at the supplied time; stop, bound, and all
+    other ends leave it stopped.
+    """
+    ...
+
+def quota_write_failed(
+    state: Waiting | PreparingProbe | Probing | RecordingProbe | ProbeEvidencePending,
+    obligation: WaitWrite | ProbeDispatchEvent,
+    error: BaseException,
+    /,
+) -> QuotaEvidencePending:
+    """Retain the exact journal input, error, and any dispatched probe state.
+
+    The owner still settles an invoked probe and its evidence after this failure.
+    """
+    ...
+
+def probe_write_failed(
+    state: RecordingProbe, error: BaseException, /
+) -> ProbeEvidencePending:
+    """Keep captured exact-request evidence when its required write fails."""
+    ...
 
 class QuotaOwner:
     """Own the current pause and its durable probe history."""
