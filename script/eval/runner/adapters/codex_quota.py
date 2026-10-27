@@ -239,6 +239,13 @@ class _SessionTelemetry:
     token_counts: tuple[_RawTokenRow, ...]
 
 
+@dataclass(frozen=True, repr=False)
+class _SelectedRows:
+    """A safe source read, with absent telemetry for invalid consumed fields."""
+
+    telemetry: _SessionTelemetry | None
+
+
 @dataclass(frozen=True)
 class LocalCodexQuotaStatusSource:
     """Look up one exact rollout under an explicitly configured sessions root.
@@ -671,7 +678,7 @@ def _read_candidate(
     ):
         return None
     return CodexSessionSnapshot(
-        telemetry=selected_rows[0],
+        telemetry=selected_rows.telemetry,
         source_coordinate=_source_coordinate(root, resolved),
         requested_thread_id=thread_id,
     )
@@ -705,11 +712,11 @@ def _source_coordinate(root: Path, path: Path, /) -> str:
     return f"codex-session-sha256:{digest.hexdigest()}"
 
 
-def _read_selected_rows(path: Path, /) -> tuple[_SessionTelemetry | None] | None:
+def _read_selected_rows(path: Path, /) -> _SelectedRows | None:
     """Read a stable rollout, distinguishing malformed telemetry from read failure.
 
     Returns:
-        A wrapped validated projection, or None when the source is unsafe.
+        A selected projection, or None when the source is unsafe.
     """
     maximum_line_bytes = 8 * 1024 * 1024
     maximum_rollout_bytes = 128 * 1024 * 1024
@@ -762,11 +769,11 @@ class _RolloutCollector:
 
 def _collect_selected_rows(
     stream: BinaryIO, maximum_line_bytes: int, /
-) -> tuple[_SessionTelemetry | None] | None:
+) -> _SelectedRows | None:
     """Validate selected fields while discarding transcript and extension data.
 
     Returns:
-        Wrapped telemetry, or None when the source envelope is unsafe.
+        Selected telemetry, or None when the source envelope is unsafe.
     """
     collector = _RolloutCollector()
     while line := stream.readline(maximum_line_bytes + 1):
@@ -782,8 +789,8 @@ def _collect_selected_rows(
         return None
     metadata = collector.metadata
     if collector.invalid or metadata is None or not collector.token_counts:
-        return (None,)
-    return (_SessionTelemetry(metadata, tuple(collector.token_counts)),)
+        return _SelectedRows(None)
+    return _SelectedRows(_SessionTelemetry(metadata, tuple(collector.token_counts)))
 
 
 def _validate_selected_row(
@@ -980,61 +987,50 @@ def _normalize_session(
             if read_at is None
             else "freshness bound is invalid"
         )
-        return _unknown_observation(scope, read_at_utc, None, reason)
+        return _observation(scope, read_at_utc, None, None, reason)
     if snapshot is None or not snapshot.source_coordinate:
-        return _unknown_observation(
-            None, read_at_utc, None, "session telemetry is unavailable"
+        return _observation(
+            None, read_at_utc, None, None, "session telemetry is unavailable"
         )
     telemetry = snapshot.telemetry
     if telemetry is None:
-        return _unknown_observation(
+        return _observation(
             None,
             read_at_utc,
             snapshot.source_coordinate,
+            None,
             "session telemetry is malformed or incomplete",
         )
     session_scope, identity_issue = _session_scope(telemetry.metadata, snapshot, scope)
     if identity_issue is not None or session_scope is None:
-        return _unknown_observation(
+        return _observation(
             None,
             read_at_utc,
             snapshot.source_coordinate,
+            None,
             identity_issue or "session quota scope is unavailable",
         )
     latest, ordering_issue = _latest_rate_limit_record(telemetry.token_counts)
     if latest is None:
-        return _unknown_observation(
+        return _observation(
             session_scope,
             read_at_utc,
             snapshot.source_coordinate,
+            None,
             ordering_issue or "session telemetry is incomplete",
         )
     age = (read_at - latest.timestamp).total_seconds()
+    diagnostic = None
     if age < 0:
-        return _observation_from_record(
-            session_scope,
-            _format_timestamp(read_at),
-            snapshot.source_coordinate,
-            latest,
-            "unknown",
-            "quota source timestamp is in the future",
-        )
-    if age > max_observation_age_seconds:
-        return _observation_from_record(
-            session_scope,
-            _format_timestamp(read_at),
-            snapshot.source_coordinate,
-            latest,
-            "unknown",
-            "quota source observation is stale",
-        )
-    return _observation_from_record(
+        diagnostic = "quota source timestamp is in the future"
+    elif age > max_observation_age_seconds:
+        diagnostic = "quota source observation is stale"
+    return _observation(
         session_scope,
         _format_timestamp(read_at),
         snapshot.source_coordinate,
         latest,
-        None,
-        None,
+        diagnostic,
     )
 
 
@@ -1100,48 +1096,60 @@ def _latest_rate_limit_record(
     return (records[-1], None) if records else (None, "session telemetry is incomplete")
 
 
-def _observation_from_record(
-    scope: QuotaScope,
+_CODEX_WINDOW_IDS = (
+    QuotaWindowId("codex_primary_300m"),
+    QuotaWindowId("codex_secondary_10080m"),
+)
+
+
+def _observation(
+    scope: QuotaScope | None,
     read_at_utc: str,
-    coordinate: str,
-    record: _RawTokenRow,
-    state: QuotaState | None,
+    coordinate: str | None,
+    record: _RawTokenRow | None,
     diagnostic: str | None,
     /,
 ) -> QuotaObservation:
-    """Project a validated quota record while retaining source facts.
+    """Construct both windows and retain any available producer facts.
 
     Returns:
-        A provider-neutral observation preserving optional reset hints.
+        The observation, made unknown when a diagnostic is supplied.
     """
+    values = (
+        (record.payload.rate_limits.primary, record.payload.rate_limits.secondary)
+        if record is not None
+        else (None, None)
+    )
     windows = tuple(
         QuotaWindowObservation(
-            window_id=QuotaWindowId(window_id),
+            window_id=window_id,
             state=(
                 "unknown"
-                if state == "unknown"
+                if value is None
                 else "exhausted"
-                if values.used_percent >= 100
+                if value.used_percent >= 100
                 else "available"
             ),
-            usage_percent=values.used_percent,
-            reset_at_utc=values.resets_at,
-            source_observed_at_utc=_format_timestamp(record.timestamp),
-            source_sequence=record.ordinal,
+            usage_percent=value.used_percent if value is not None else None,
+            reset_at_utc=value.resets_at if value is not None else None,
+            source_observed_at_utc=_format_timestamp(record.timestamp)
+            if record is not None
+            else None,
+            source_sequence=record.ordinal if record is not None else None,
             source="codex-cli-0.164.0-session",
-            diagnostic=diagnostic,
+            diagnostic=None,
         )
-        for window_id, values in (
-            ("codex_primary_300m", record.payload.rate_limits.primary),
-            ("codex_secondary_10080m", record.payload.rate_limits.secondary),
-        )
+        for window_id, value in zip(_CODEX_WINDOW_IDS, values, strict=True)
     )
-    return QuotaObservation(
+    observation = QuotaObservation(
         scope=scope,
         read_at_utc=read_at_utc,
         source_coordinate=coordinate,
         windows=windows,
-        diagnostic=diagnostic,
+        diagnostic=None,
+    )
+    return (
+        _as_unknown(observation, diagnostic) if diagnostic is not None else observation
     )
 
 
@@ -1237,7 +1245,7 @@ def _assess_probe(
     """
     if observation is None or observation.scope is None or not observation.windows:
         return "unknown", "probe has no complete scoped quota observation"
-    required_windows = {"codex_primary_300m", "codex_secondary_10080m"}
+    required_windows = set(_CODEX_WINDOW_IDS)
     if {window.window_id for window in observation.windows} != required_windows:
         return "unknown", "probe does not contain both required quota windows"
     if any(
@@ -1286,48 +1294,6 @@ def _optional_reset_timestamp(value: object, /) -> str | None:
     except OverflowError, OSError, ValueError:
         return None
     return _format_timestamp(reset)
-
-
-def _unknown_observation(
-    scope: QuotaScope | None,
-    read_at_utc: str,
-    coordinate: str | None,
-    diagnostic: str,
-    /,
-) -> QuotaObservation:
-    """Create an explicit unscoped-or-scoped unknown observation.
-
-    Returns:
-        Both required Codex windows with unknown state and the diagnostic.
-    """
-    return QuotaObservation(
-        scope=scope,
-        read_at_utc=read_at_utc,
-        source_coordinate=coordinate,
-        windows=(
-            QuotaWindowObservation(
-                window_id=QuotaWindowId("codex_primary_300m"),
-                state="unknown",
-                usage_percent=None,
-                reset_at_utc=None,
-                source_observed_at_utc=None,
-                source_sequence=None,
-                source="codex-cli-0.164.0-session",
-                diagnostic=diagnostic,
-            ),
-            QuotaWindowObservation(
-                window_id=QuotaWindowId("codex_secondary_10080m"),
-                state="unknown",
-                usage_percent=None,
-                reset_at_utc=None,
-                source_observed_at_utc=None,
-                source_sequence=None,
-                source="codex-cli-0.164.0-session",
-                diagnostic=diagnostic,
-            ),
-        ),
-        diagnostic=diagnostic,
-    )
 
 
 def _as_unknown(observation: QuotaObservation, diagnostic: str, /) -> QuotaObservation:

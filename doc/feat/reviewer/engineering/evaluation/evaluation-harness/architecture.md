@@ -570,7 +570,8 @@ Codex, quota, and runtime adapters.
   incomplete, stale, future-dated, out-of-order, or unsupported records as
   unknown while retaining valid usage, producer timestamp, and ordinal facts for
   stale or future snapshots. A 60-second positive age limit is configurable on
-  the reader. Per-reader ordering retains the latest producer timestamp globally
+  the reader. Each reader and its synchronous ordering state are confined to one
+  event loop. Per-reader ordering retains the latest producer timestamp globally
   and the latest record per sanitized source coordinate. An identical repeated
   record is idempotent, changed facts at the same ordinal become unknown, and a
   delayed older snapshot cannot replace newer state. The domain-separated scope
