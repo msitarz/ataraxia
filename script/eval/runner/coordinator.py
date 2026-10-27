@@ -56,36 +56,26 @@ class _DispatchGate:
         return self.reason is not None
 
 
-@dataclass(frozen=True)
-class _RunContext:
-    """Private run inputs and the exact collaborators owned by the coordinator."""
-
-    bound_run: BoundRun
-    evidence: EvidenceStore
-    config: HarnessConfig
-    attempt: AttemptCall
-    classifier: OutcomeClassifier
-    quota_status: QuotaStatusReader
-    runtime: Runtime
-    progress: ProgressSink
-
-
 type ScheduleCalls = Callable[
-    [_RunContext, ExecuteAttempt, DispatchStop, DispatchStopped], Awaitable[RunRecord]
+    ["Coordinator", ExecuteAttempt, DispatchStop, DispatchStopped],
+    Awaitable[RunRecord],
 ]
-type MonitorQuota = Callable[[_RunContext, DispatchStop], Awaitable[None]]
+type MonitorQuota = Callable[[Coordinator, DispatchStop], Awaitable[None]]
 
 
 @dataclass(frozen=True)
 class Coordinator:
     """Own run-task lifecycle and compose one durable attempt at a time.
 
-    The scheduler owns call ordering, semaphore gates, stop policy, retry
-    selection, and accounting. It must await every callback it starts. The
-    monitor leaf owns cadence and probe lifecycle; it receives the same run
-    context and stop hook as the scheduler.
+    This instance is bound to one run and one evidence store. Configuration is
+    always read from the bound frozen plan. The scheduler owns call ordering,
+    semaphore gates, stop policy, retry selection, and accounting; it must
+    await every callback it starts. The monitor leaf owns cadence and probe
+    lifecycle.
     """
 
+    bound_run: BoundRun
+    evidence: EvidenceStore
     attempt: AttemptCall
     classifier: OutcomeClassifier
     quota_status: QuotaStatusReader
@@ -97,13 +87,12 @@ class Coordinator:
         default_factory=lambda: _capture_returned_attempt
     )
 
-    async def run(
-        self,
-        bound_run: BoundRun,
-        evidence: EvidenceStore,
-        config: HarnessConfig,
-        /,
-    ) -> RunRecord:
+    @property
+    def config(self) -> HarnessConfig:
+        """Configuration frozen into this coordinator's plan."""
+        return self.bound_run.plan.configuration
+
+    async def run(self) -> RunRecord:
         """Run the scheduler seam and finalize the record it returns.
 
         Returns:
@@ -112,23 +101,13 @@ class Coordinator:
         Raises:
             ValueError: Dry-run plans must return through the reporting path.
         """
-        if config.dry_run:
+        if self.config.dry_run:
             raise ValueError("dry-run plans do not enter the coordinator")
-        context = _RunContext(
-            bound_run=bound_run,
-            evidence=evidence,
-            config=config,
-            attempt=self.attempt,
-            classifier=self.classifier,
-            quota_status=self.quota_status,
-            runtime=self.runtime,
-            progress=self.progress,
-        )
-        record = await self._dispatch(context)
-        await evidence.finalize(record)
+        record = await self._dispatch()
+        await self.evidence.finalize(record)
         return record
 
-    async def _dispatch(self, context: _RunContext, /) -> RunRecord:
+    async def _dispatch(self) -> RunRecord:
         """Run scheduler and monitor tasks through their owned settlement.
 
         Returns:
@@ -141,20 +120,20 @@ class Coordinator:
         ) -> AttemptRecord:
             if gate.stopped():
                 raise RuntimeError("dispatch was stopped before this attempt")
-            return await self._execute_attempt(context, call, attempt_number, gate)
+            return await self._execute_attempt(call, attempt_number, gate)
 
         scheduler_task = asyncio.create_task(
             _await_schedule(
-                self.schedule_calls(context, execute_attempt, gate, gate.stopped)
+                self.schedule_calls(self, execute_attempt, gate, gate.stopped)
             ),
-            name=f"evaluation-scheduler-{context.bound_run.plan.run_id}",
+            name=f"evaluation-scheduler-{self.bound_run.plan.run_id}",
         )
         monitor_task = (
             asyncio.create_task(
-                _await_monitor(self.monitor_quota(context, gate)),
-                name=f"quota-monitor-{context.bound_run.plan.run_id}",
+                _await_monitor(self.monitor_quota(self, gate)),
+                name=f"quota-monitor-{self.bound_run.plan.run_id}",
             )
-            if context.config.quota_wait_enabled
+            if self.config.quota_wait_enabled
             else None
         )
 
@@ -185,7 +164,6 @@ class Coordinator:
 
     async def _execute_attempt(
         self,
-        context: _RunContext,
         call: EffectiveCall,
         attempt_number: AttemptNumber,
         stop_dispatch: DispatchStop,
@@ -196,14 +174,14 @@ class Coordinator:
         Returns:
             The durable record for this invocation.
         """
-        started_at = context.runtime.utc_now()
-        outcome = await context.attempt(call.request, stop_dispatch)
-        ended_at = context.runtime.utc_now()
+        started_at = self.runtime.utc_now()
+        outcome = await self.attempt(call.request, stop_dispatch)
+        ended_at = self.runtime.utc_now()
         attempt_evidence = self.capture_returned_attempt(
             call, outcome, started_at, ended_at
         )
-        assessment = context.classifier.assess(attempt_evidence)
-        attempt_record = await context.evidence.record_attempt(
+        assessment = self.classifier.assess(attempt_evidence)
+        attempt_record = await self.evidence.record_attempt(
             call.run_id,
             call.call_id,
             call.planned_call.position,
@@ -211,11 +189,11 @@ class Coordinator:
             attempt_evidence,
             assessment,
         )
-        if context.config.quota_wait_enabled:
-            observation = await context.quota_status.observe_settled_attempt(
+        if self.config.quota_wait_enabled:
+            observation = await self.quota_status.observe_settled_attempt(
                 attempt_evidence
             )
-            await context.evidence.record_quota_telemetry(
+            await self.evidence.record_quota_telemetry(
                 QuotaTelemetryEvent(
                     run_id=call.run_id,
                     call_id=call.call_id,
@@ -320,7 +298,7 @@ async def _await_schedule(scheduler: Awaitable[RunRecord], /) -> RunRecord:
 
 
 async def _schedule_calls(
-    context: _RunContext,
+    context: Coordinator,
     execute_attempt: ExecuteAttempt,
     stop_dispatch: DispatchStop,
     dispatch_stopped: DispatchStopped,
@@ -336,7 +314,7 @@ async def _schedule_calls(
     raise NotImplementedError("coordinator scheduling policy is not implemented")
 
 
-async def _monitor_quota(context: _RunContext, stop_dispatch: DispatchStop, /) -> None:
+async def _monitor_quota(context: Coordinator, stop_dispatch: DispatchStop, /) -> None:
     """Own one cadence and probe cycle for an opted-in run.
 
     Raises:

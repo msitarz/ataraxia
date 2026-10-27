@@ -32,7 +32,6 @@ from script.eval.runner.coordinator import (
     Coordinator,
     MonitorQuota,
     ScheduleCalls,
-    _RunContext,
 )
 from script.eval.runner.ports import (
     AttemptCall,
@@ -83,9 +82,9 @@ def configuration(
     )
 
 
-def bound_run(*, calls_count: int = 1) -> BoundRun:
+def bound_run(*, calls_count: int = 1, config: HarnessConfig | None = None) -> BoundRun:
     """Build a fully validated plan and matching effective calls."""
-    config = configuration()
+    actual_config = configuration() if config is None else config
     planned_calls = tuple(
         PlannedCall(
             position=position,
@@ -99,7 +98,7 @@ def bound_run(*, calls_count: int = 1) -> BoundRun:
     )
     plan = FrozenPlan(
         run_id="run-1",
-        configuration=config,
+        configuration=actual_config,
         repository_root=Path("/repo"),
         head_commit="head-1",
         snapshots=(),
@@ -388,6 +387,8 @@ def capture_attempt(
 
 
 def make_coordinator(
+    run: BoundRun,
+    evidence: EvidenceStore,
     order: list[str],
     quota: FakeQuotaReader,
     outcomes: list[AttemptResult] | None = None,
@@ -420,6 +421,8 @@ def make_coordinator(
         )
 
     coordinator = Coordinator(
+        bound_run=run,
+        evidence=evidence,
         attempt=make_attempt(order, actual_outcomes, actual_requests),
         classifier=classifier,
         quota_status=quota,
@@ -432,23 +435,19 @@ def make_coordinator(
     return coordinator, classifier, actual_requests
 
 
-def assert_context_matches(
-    context: _RunContext,
+def assert_coordinator_matches(
+    context: Coordinator,
     coordinator: Coordinator,
     run: BoundRun,
     evidence: EvidenceStore,
-    config: HarnessConfig,
     quota: QuotaStatusReader,
 ) -> None:
-    """Check that each collaborator receives the same original run values."""
-    assert context.bound_run is run
-    assert context.evidence is evidence
-    assert context.config is config
-    assert context.attempt is coordinator.attempt
-    assert context.classifier is coordinator.classifier
-    assert context.quota_status is quota
-    assert context.runtime is coordinator.runtime
-    assert context.progress is coordinator.progress
+    """Check callback identity and configuration from the bound plan."""
+    assert context is coordinator
+    assert coordinator.bound_run is run
+    assert coordinator.evidence is evidence
+    assert coordinator.config is run.plan.configuration
+    assert coordinator.quota_status is quota
 
 
 def cancellation_blocking_monitor(
@@ -458,7 +457,7 @@ def cancellation_blocking_monitor(
 ) -> MonitorQuota:
     """Build a monitor that waits for explicit cleanup release after cancel."""
 
-    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
         try:
             await asyncio.Event().wait()
         except asyncio.CancelledError:
@@ -471,7 +470,7 @@ def cancellation_blocking_monitor(
 
 
 async def completed_scheduler(
-    context: _RunContext,
+    context: Coordinator,
     execute: ExecuteAttempt,
     stop: DispatchStop,
     is_stopped: Callable[[], bool],
@@ -517,24 +516,24 @@ def assert_attempt_flow(
     ]
 
 
-async def test_context_forwards_exact_run_settings_and_collaborators() -> None:
+async def test_bound_run_supplies_exact_settings_and_collaborators() -> None:
     """Pass original collaborators and nondefault policy settings to both leaves."""
     # Given
     order: list[str] = []
-    run = bound_run()
     config = configuration(quota=True, concurrency=3, quota_poll_interval=8.5)
+    run = bound_run(config=config)
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
-    contexts: list[_RunContext] = []
+    contexts: list[Coordinator] = []
     monitor_started = asyncio.Event()
 
-    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
         contexts.append(context)
         monitor_started.set()
         await asyncio.Event().wait()
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -546,16 +545,16 @@ async def test_context_forwards_exact_run_settings_and_collaborators() -> None:
         return run_record()
 
     coordinator, _, _ = make_coordinator(
-        order, quota, monitor=monitor, scheduler=scheduler
+        run, evidence, order, quota, monitor=monitor, scheduler=scheduler
     )
 
     # When
-    await coordinator.run(run, evidence, config)
+    await coordinator.run()
 
     # Then
     assert len(contexts) == 2
     for context in contexts:
-        assert_context_matches(context, coordinator, run, evidence, config, quota)
+        assert_coordinator_matches(context, coordinator, run, evidence, quota)
     assert contexts[0] is contexts[1]
     assert contexts[0].config.concurrency == 3
     assert contexts[0].config.quota_poll_interval_seconds == pytest.approx(8.5)
@@ -565,17 +564,17 @@ async def test_attempt_effects_preserve_identity_and_durable_order() -> None:
     """Persist the exact classified attempt before reading and recording quota."""
     # Given
     order: list[str] = []
-    run = bound_run()
+    run = bound_run(config=configuration(quota=True))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     outcomes = [successful_outcome()]
     scheduler_record = run_record()
 
-    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
         await asyncio.Event().wait()
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -585,11 +584,11 @@ async def test_attempt_effects_preserve_identity_and_durable_order() -> None:
         return scheduler_record
 
     coordinator, classifier, requests = make_coordinator(
-        order, quota, outcomes, monitor=monitor, scheduler=scheduler
+        run, evidence, order, quota, outcomes, monitor=monitor, scheduler=scheduler
     )
 
     # When
-    result = await coordinator.run(run, evidence, configuration(quota=True))
+    result = await coordinator.run()
 
     # Then
     assert_attempt_flow(
@@ -609,18 +608,18 @@ async def test_monitor_failure_stops_active_scheduler() -> None:
     """Fail the run and stop an active scheduler when its monitor exits early."""
     # Given
     order: list[str] = []
-    run = bound_run(calls_count=2)
+    run = bound_run(calls_count=2, config=configuration(quota=True))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     scheduler_started = asyncio.Event()
     stopped_when_cancelled: list[bool] = []
 
-    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
         await scheduler_started.wait()
         raise RuntimeError("monitor failed")
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -636,6 +635,8 @@ async def test_monitor_failure_stops_active_scheduler() -> None:
         return run_record()
 
     coordinator, _, _ = make_coordinator(
+        run,
+        evidence,
         order,
         quota,
         outcomes=[successful_outcome()],
@@ -645,7 +646,7 @@ async def test_monitor_failure_stops_active_scheduler() -> None:
 
     # When
     with pytest.raises(RuntimeError, match="monitor failed"):
-        await coordinator.run(run, evidence, configuration(quota=True))
+        await coordinator.run()
 
     # Then
     assert len(evidence.attempt_inputs) == 1
@@ -657,7 +658,7 @@ async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
     """Share one stop hook and refuse a later call after it is invoked."""
     # Given
     order: list[str] = []
-    run = bound_run(calls_count=2)
+    run = bound_run(calls_count=2, config=configuration(quota=True))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     monitor_started = asyncio.Event()
@@ -666,13 +667,13 @@ async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
     outcome = successful_outcome()
     attempt = stopping_attempt(hook_references, attempt_requests, outcome)
 
-    async def monitor(context: _RunContext, stop: DispatchStop, /) -> None:
+    async def monitor(context: Coordinator, stop: DispatchStop, /) -> None:
         hook_references.append(stop)
         monitor_started.set()
         await asyncio.Event().wait()
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -686,6 +687,8 @@ async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
         return run_record()
 
     coordinator = Coordinator(
+        bound_run=run,
+        evidence=evidence,
         attempt=attempt,
         classifier=FakeClassifier(order),
         quota_status=quota,
@@ -698,7 +701,7 @@ async def test_attempt_stop_hook_latches_and_rejects_later_dispatch() -> None:
 
     # When
     with pytest.raises(RuntimeError, match="dispatch was stopped"):
-        await coordinator.run(run, evidence, configuration(quota=True))
+        await coordinator.run()
 
     # Then
     assert_stop_hook_flow(run, evidence, hook_references, attempt_requests)
@@ -721,7 +724,7 @@ async def test_repeated_cancellation_waits_for_monitor_cleanup() -> None:
     """Retain monitor cleanup through repeated cancellation of the run owner."""
     # Given
     order: list[str] = []
-    run = bound_run()
+    run = bound_run(config=configuration(quota=True))
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     cleanup_started = asyncio.Event()
@@ -729,6 +732,8 @@ async def test_repeated_cancellation_waits_for_monitor_cleanup() -> None:
     cleanup_finished = asyncio.Event()
 
     coordinator, _, _ = make_coordinator(
+        run,
+        evidence,
         order,
         quota,
         monitor=cancellation_blocking_monitor(
@@ -738,9 +743,7 @@ async def test_repeated_cancellation_waits_for_monitor_cleanup() -> None:
     )
 
     # When
-    run_task = asyncio.create_task(
-        coordinator.run(run, evidence, configuration(quota=True))
-    )
+    run_task = asyncio.create_task(coordinator.run())
     await cleanup_started.wait()
     run_task.cancel()
     await asyncio.sleep(0)
@@ -762,6 +765,8 @@ async def test_default_scheduler_and_conversion_leaves_are_pending() -> None:
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     coordinator = Coordinator(
+        bound_run=bound_run(),
+        evidence=evidence,
         attempt=make_attempt(order, [successful_outcome()], []),
         classifier=FakeClassifier(order),
         quota_status=quota,
@@ -771,7 +776,7 @@ async def test_default_scheduler_and_conversion_leaves_are_pending() -> None:
 
     # When
     with pytest.raises(NotImplementedError, match="scheduling policy"):
-        await coordinator.run(bound_run(), evidence, configuration())
+        await coordinator.run()
 
     # Then
     assert evidence.final_records == []
@@ -787,7 +792,7 @@ async def test_default_monitor_leaf_fails_closed_and_stops_scheduler() -> None:
     stopped_when_cancelled: list[bool] = []
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -802,6 +807,8 @@ async def test_default_monitor_leaf_fails_closed_and_stops_scheduler() -> None:
         return run_record()
 
     coordinator = Coordinator(
+        bound_run=bound_run(config=configuration(quota=True)),
+        evidence=FakeEvidence(order),
         attempt=make_attempt(order, [successful_outcome()], []),
         classifier=FakeClassifier(order),
         quota_status=quota,
@@ -812,9 +819,7 @@ async def test_default_monitor_leaf_fails_closed_and_stops_scheduler() -> None:
 
     # When
     with pytest.raises(NotImplementedError, match="quota monitor cadence"):
-        await coordinator.run(
-            bound_run(), FakeEvidence(order), configuration(quota=True)
-        )
+        await coordinator.run()
 
     # Then
     assert scheduler_started.is_set()
@@ -830,7 +835,7 @@ async def test_default_attempt_conversion_leaf_remains_explicitly_pending() -> N
     evidence = FakeEvidence(order)
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -840,6 +845,8 @@ async def test_default_attempt_conversion_leaf_remains_explicitly_pending() -> N
         return run_record()
 
     coordinator = Coordinator(
+        bound_run=bound_run(),
+        evidence=evidence,
         attempt=make_attempt(order, [successful_outcome()], []),
         classifier=FakeClassifier(order),
         quota_status=quota,
@@ -850,7 +857,7 @@ async def test_default_attempt_conversion_leaf_remains_explicitly_pending() -> N
 
     # When
     with pytest.raises(NotImplementedError, match="evidence conversion"):
-        await coordinator.run(bound_run(), evidence, configuration())
+        await coordinator.run()
 
     # Then
     assert order == ["attempt"]
@@ -867,7 +874,7 @@ async def test_monitor_disabled_run_does_not_read_or_probe_quota() -> None:
     quota = FakeQuotaReader(order)
 
     async def scheduler(
-        context: _RunContext,
+        context: Coordinator,
         execute: ExecuteAttempt,
         stop: DispatchStop,
         is_stopped: Callable[[], bool],
@@ -877,11 +884,16 @@ async def test_monitor_disabled_run_does_not_read_or_probe_quota() -> None:
         return run_record()
 
     coordinator, _, _ = make_coordinator(
-        order, quota, monitor=_monitor_that_must_not_start, scheduler=scheduler
+        run,
+        evidence,
+        order,
+        quota,
+        monitor=_monitor_that_must_not_start,
+        scheduler=scheduler,
     )
 
     # When
-    await coordinator.run(run, evidence, configuration())
+    await coordinator.run()
 
     # Then
     assert quota.observations == 0 and quota.probes == 0
@@ -895,6 +907,8 @@ async def test_dry_run_is_refused_before_any_coordinator_effects() -> None:
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     coordinator, _, _ = make_coordinator(
+        bound_run(config=configuration(quota=True, dry_run=True)),
+        evidence,
         order,
         quota,
         monitor=_monitor_that_must_not_start,
@@ -903,9 +917,7 @@ async def test_dry_run_is_refused_before_any_coordinator_effects() -> None:
 
     # When
     with pytest.raises(ValueError, match="dry-run plans"):
-        await coordinator.run(
-            bound_run(), evidence, configuration(quota=True, dry_run=True)
-        )
+        await coordinator.run()
 
     # Then
     assert quota.observations == 0 and quota.probes == 0
@@ -913,7 +925,7 @@ async def test_dry_run_is_refused_before_any_coordinator_effects() -> None:
 
 
 async def _monitor_that_must_not_start(
-    context: _RunContext, stop: DispatchStop, /
+    context: Coordinator, stop: DispatchStop, /
 ) -> None:
     """Fail if a disabled or dry-run monitor is launched."""
     await asyncio.sleep(0)
@@ -921,7 +933,7 @@ async def _monitor_that_must_not_start(
 
 
 async def _scheduler_that_must_not_start(
-    context: _RunContext,
+    context: Coordinator,
     execute: ExecuteAttempt,
     stop: DispatchStop,
     is_stopped: Callable[[], bool],

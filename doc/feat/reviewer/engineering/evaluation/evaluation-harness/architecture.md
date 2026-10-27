@@ -293,12 +293,14 @@ gating retries and stopping globally on unsafe outcomes.
 - The intended coordinator schedules calls in plan order under one concurrency
   limit. Distinct planned calls may execute concurrently; completion order does
   not change their identity or evidence association.
-- **Current maturity:** the runtime coordinator composes a typed scheduler
-  callback, creates and joins one opt-in monitor task, and wires a returned
-  attempt through classification, durable attempt recording, and optional
-  passive quota telemetry. It observes scheduler and monitor tasks together;
-  an early monitor exit latches stop and settles the scheduler. Owned tasks stay
-  joined through repeated cancellation of their owner. The scheduler,
+- **Current maturity:** one runtime coordinator is constructed for one bound
+  run and its evidence store; its configuration comes from the frozen plan.
+  It composes a typed scheduler callback, creates and joins one opt-in monitor
+  task, and wires a returned attempt through classification, durable attempt
+  recording, and optional passive quota telemetry. It observes scheduler and
+  monitor tasks together; an early monitor exit latches stop and settles the
+  scheduler. Owned tasks stay joined through repeated cancellation of their
+  owner. The scheduler,
   supervisor-outcome conversion, monitor cadence/probe lifecycle, retry and
   wait decisions, transition accounting, and progress projection remain pending
   leaves. The scheduler must return its run record after all work settles; the
