@@ -529,12 +529,15 @@ Codex, quota, and runtime adapters.
   account PII.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
-- The adapter package currently exports the implemented `SystemRuntime`; other
-  concrete adapter exports await their implementations. The CLI composition
-  root wires the Codex request and classifier adapters and one quota adapter
-  configured for the same binding scope, along with the runtime and supervisor
-  adapter, into one coordinator. The coordinator, Codex, quota, and progress
-  adapters and CLI composition remain design stubs. Runtime
+- The adapter package exports `SystemRuntime` and the typed Codex binding,
+  request, and classifier skeletons. The Codex skeletons compose injected
+  operations and fail visibly through their default unfinished leaves; they do
+  not yet discover or probe the CLI, read effective settings, build an argv or
+  effective identity, or recognize settled-output signals. No classifier
+  result is available until its evidence contract is verified. The Codex
+  signature sketch in `design/eval/runner/adapters/codex.pyi` is historical;
+  runtime code is authoritative. The CLI composition root, coordinator, quota,
+  and progress adapters remain design stubs. Runtime
   [`policy.py`](../../../../../../script/eval/runner/policy.py) implements the
   reviewed pure policy calculations; it does not own effects or coordinator
   gates. The shared runner values and ports are implemented. The neighboring
