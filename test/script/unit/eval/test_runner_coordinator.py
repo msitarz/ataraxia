@@ -2,6 +2,7 @@
 """Coordinator decision wiring, evidence order, and paused recovery."""
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
 from typing import Literal, override
@@ -31,6 +32,8 @@ from script.eval.model import (
     QuotaProviderId,
     QuotaScope,
     QuotaTelemetryEvent,
+    QuotaWindowId,
+    QuotaWindowObservation,
     RetryAssessment,
     RunRecord,
     WaitEvent,
@@ -58,6 +61,7 @@ from script.eval.runner.ports import (
 )
 from script.eval.runner.quota_evidence import attach_quota_probe_evidence
 from script.process_supervisor import (
+    AttemptCancelled,
     AttemptObservation,
     AttemptRequest,
     AttemptResult,
@@ -65,6 +69,9 @@ from script.process_supervisor import (
     CleanupEvidence,
     Completed,
     DispatchStop,
+    InfrastructureFailure,
+    OutputLimitExceeded,
+    SignalAttempt,
 )
 
 
@@ -74,6 +81,8 @@ def configuration(
     dry_run: bool = False,
     concurrency: int = 1,
     quota_poll_interval: float = 7.5,
+    retry_limit: int = 0,
+    capacity_retry_limit: int = 0,
 ) -> HarnessConfig:
     """Build a valid run configuration with selectable scheduling settings."""
     return HarnessConfig(
@@ -89,11 +98,20 @@ def configuration(
         output_limit_bytes=0,
         quota_wait_enabled=quota,
         quota_poll_interval_seconds=quota_poll_interval,
+        retry_limit=retry_limit,
+        capacity_retry_limit=capacity_retry_limit,
+        capacity_backoff_base_seconds=1.0 if capacity_retry_limit else None,
+        capacity_backoff_cap_seconds=4.0 if capacity_retry_limit else None,
         instructions_file_path=None,
     )
 
 
-def bound_run(*, calls_count: int = 1, config: HarnessConfig | None = None) -> BoundRun:
+def bound_run(
+    *,
+    calls_count: int = 1,
+    config: HarnessConfig | None = None,
+    quota_scope: QuotaScope | None = None,
+) -> BoundRun:
     """Build a fully validated plan and matching effective calls."""
     actual_config = configuration() if config is None else config
     planned_calls = tuple(
@@ -140,7 +158,7 @@ def bound_run(*, calls_count: int = 1, config: HarnessConfig | None = None) -> B
             cli_version="1.0",
             runner_version="test",
             effective_settings=(),
-            quota_scope=None,
+            quota_scope=quota_scope,
         ),
         evidence=PreparedEvidence(
             output_directory=Path("output"),
@@ -169,6 +187,9 @@ def run_record() -> RunRecord:
 class FixedRuntime(Runtime):
     """Provide deterministic timestamps and ordinary cancellable waits."""
 
+    def __init__(self) -> None:
+        self.delays: list[float] = []
+
     def utc_now(self) -> str:
         return "2026-10-27T10:00:00Z"
 
@@ -176,7 +197,8 @@ class FixedRuntime(Runtime):
         return 1.0
 
     async def sleep(self, seconds: float, /) -> None:
-        await asyncio.sleep(seconds)
+        self.delays.append(seconds)
+        await asyncio.sleep(0)
 
     def uniform(self, lower: float, upper: float, /) -> float:
         return lower
@@ -232,13 +254,22 @@ class FakeEvidence(EvidenceStore):
             evidence,
             retry_assessment,
         ))
+        outcome = evidence.outcome
+        outcome_kind = (
+            "infrastructure_failure"
+            if isinstance(outcome, InfrastructureFailure)
+            else "cancelled"
+            if isinstance(outcome, AttemptCancelled)
+            else "completed"
+        )
+        exit_status = getattr(outcome, "exit_status", None)
         record = AttemptRecord.model_validate({
             "run_id": run_id,
             "call_id": call_id,
             "position": position,
             "attempt_number": attempt_number,
             "control_flow": "returned",
-            "outcome_kind": "completed",
+            "outcome_kind": outcome_kind,
             "started_at_utc": evidence.started_at_utc,
             "ended_at_utc": evidence.ended_at_utc,
             "argv": evidence.request.argv,
@@ -249,7 +280,7 @@ class FakeEvidence(EvidenceStore):
             "output_limit_bytes": 0,
             "elapsed_seconds": 0.5,
             "elapsed_basis": "supervisor_observation",
-            "exit_status": 0,
+            "exit_status": exit_status,
             "termination_reason": None,
             "cleanup": None,
             "stdout_artifact": None,
@@ -366,6 +397,9 @@ class FakeQuotaReader(QuotaStatusReader):
             diagnostic="source unavailable",
         )
         self.probe_result: QuotaProbeEvidence | None = None
+        self.probe_builder: Callable[[QuotaProbeRequest], QuotaProbeEvidence] | None = (
+            None
+        )
         self.probe_error: BaseException | None = None
         self.stop_reason: AttemptResult | BaseException | None = None
 
@@ -390,6 +424,8 @@ class FakeQuotaReader(QuotaStatusReader):
             stop_dispatch(self.stop_reason)
         if self.probe_error is not None:
             raise self.probe_error
+        if self.probe_builder is not None:
+            return self.probe_builder(request)
         assert self.probe_result is not None
         return self.probe_result
 
@@ -528,7 +564,9 @@ def successful_outcome() -> AttemptResult:
         observation=AttemptObservation(
             output=CapturedOutput(stdout=b"answer", stderr=b""),
             elapsed_seconds=0.5,
-            cleanup=CleanupEvidence("owned", (), "reaped", None),
+            cleanup=CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+            ),
         ),
         exit_status=0,
     )
@@ -651,7 +689,7 @@ def make_coordinator(
     quota: FakeQuotaReader,
     order: list[str],
     *,
-    selector: _SelectDispatch,
+    selector: _SelectDispatch | None = None,
 ) -> tuple[Coordinator, FakeClassifier, list[AttemptRequest]]:
     """Compose a bound coordinator with exact fake collaborators."""
     requests: list[AttemptRequest] = []
@@ -664,9 +702,10 @@ def make_coordinator(
         quota_status=quota,
         runtime=FixedRuntime(),
         progress=FakeProgress(),
-        select_dispatch=selector,
         capture_returned_attempt=capture_attempt,
     )
+    if selector is not None:
+        coordinator = replace(coordinator, select_dispatch=selector)
     return coordinator, classifier, requests
 
 
@@ -738,8 +777,8 @@ async def test_run_persists_attempt_before_passive_observation() -> None:
     ]
 
 
-async def test_default_dispatch_selection_stays_explicitly_pending() -> None:
-    """Do not finalize or launch attempts while dispatch selection is pending."""
+async def test_default_dispatch_runs_and_finalizes_the_frozen_plan() -> None:
+    """Run each frozen position and persist its complete call accounting."""
     # Given
     order: list[str] = []
     run = bound_run()
@@ -758,12 +797,14 @@ async def test_default_dispatch_selection_stays_explicitly_pending() -> None:
     )
 
     # When
-    with pytest.raises(NotImplementedError, match="dispatch selection"):
-        await coordinator.run()
+    actual = await coordinator.run()
 
     # Then
-    assert requests == []
-    assert evidence.events == []
+    assert requests == [run.calls[0].request]
+    assert actual.state == "complete"
+    assert actual.calls[0].state == "complete"
+    assert len(actual.calls[0].attempts) == 1
+    assert evidence.final_records == [actual]
     assert quota.observations == 0 and quota.probes == 0
 
 
@@ -809,15 +850,275 @@ async def test_attempt_stop_hook_refuses_a_later_selected_attempt() -> None:
     assert evidence.final_records == []
 
 
-async def test_default_attempt_conversion_stays_explicitly_pending() -> None:
-    """Keep returned supervisor evidence conversion visible at run boundary."""
+async def test_default_scheduler_honors_the_configured_concurrency_bound() -> None:
+    """Run a matrix in plan order without exceeding its active-call limit."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=4, config=configuration(concurrency=2))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, _, requests = make_coordinator(run, evidence, quota, order)
+    rendezvous = asyncio.Barrier(2)
+    active = 0
+    maximum_active = 0
+
+    async def concurrent_attempt(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        nonlocal active, maximum_active
+        active += 1
+        maximum_active = max(maximum_active, active)
+        await rendezvous.wait()
+        active -= 1
+        requests.append(request)
+        return successful_outcome()
+
+    coordinator = replace(coordinator, attempt=concurrent_attempt)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert maximum_active == 2
+    assert len(requests) == 4
+    assert tuple(call.position for call in record.calls) == (0, 1, 2, 3)
+    assert all(call.state == "complete" for call in record.calls)
+
+
+async def test_unsafe_cleanup_stops_dispatch_and_accounts_for_unstarted_calls() -> None:
+    """Stop after output overflow and retain every call's launch status."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2)
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, _, requests = make_coordinator(run, evidence, quota, order)
+    overflow = OutputLimitExceeded(
+        observation=AttemptObservation(
+            None,
+            0.1,
+            CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+            ),
+        ),
+        exit_status=None,
+    )
+
+    async def overflowing_attempt(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        requests.append(request)
+        await asyncio.sleep(0)
+        return overflow
+
+    progress = FakeProgress()
+    coordinator = replace(coordinator, attempt=overflowing_attempt, progress=progress)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert requests == [run.calls[0].request]
+    assert record.state == "incomplete"
+    assert tuple(call.state for call in record.calls) == ("failed", "not_started")
+    assert progress.snapshots[-1].counts.calls_stopped_not_started == 1
+
+
+async def test_attempt_cancellation_is_durable_then_propagated() -> None:
+    """Persist cancellation accounting before re-raising supervisor cancellation."""
+    # Given
+    order: list[str] = []
+    run = bound_run(calls_count=2)
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, _, requests = make_coordinator(run, evidence, quota, order)
+    cancellation = AttemptCancelled(
+        AttemptObservation(
+            None,
+            0.1,
+            CleanupEvidence(
+                "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+            ),
+        )
+    )
+
+    async def cancelled_attempt(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        requests.append(request)
+        await asyncio.sleep(0)
+        raise cancellation
+
+    progress = FakeProgress()
+    coordinator = replace(coordinator, attempt=cancelled_attempt, progress=progress)
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await coordinator.run()
+
+    # Then
+    assert raised.value is cancellation
+    assert requests == [run.calls[0].request]
+    assert evidence.final_records[0].state == "incomplete"
+    assert evidence.final_records[0].calls[0].attempts[0].outcome_kind == "cancelled"
+    assert progress.snapshots[-1].final_status == "cancelled"
+
+
+async def test_infrastructure_retry_uses_its_finite_allowance() -> None:
+    """Retry one confidently absent result and retain both attempt records."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(retry_limit=1))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, classifier, requests = make_coordinator(run, evidence, quota, order)
+    classifier.assessment = RetryAssessment(
+        retry_class="infrastructure",
+        classification_basis="supervisor no-launch evidence",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+    cleanup = CleanupEvidence("not_started", (), "not_started", None)
+    absent = InfrastructureFailure(
+        observation=AttemptObservation(None, 0.1, cleanup),
+        exit_status=None,
+        error_type="launch_error",
+        diagnostic="no process was launched",
+    )
+    outcomes = iter((absent, successful_outcome()))
+
+    async def retrying_attempt(
+        request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        await asyncio.sleep(0)
+        requests.append(request)
+        return next(outcomes)
+
+    coordinator = replace(coordinator, attempt=retrying_attempt)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert len(requests) == 2
+    assert [item.attempt_number for item in record.calls[0].attempts] == [1, 2]
+    assert record.calls[0].state == "complete"
+    assert record.calls[0].attempts[0].retry_assessment == classifier.assessment
+
+
+async def test_capacity_retry_persists_its_zero_jitter_wait() -> None:
+    """Record capacity backoff before an independent retry invocation."""
+    # Given
+    order: list[str] = []
+    run = bound_run(config=configuration(capacity_retry_limit=1))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, classifier, requests = make_coordinator(run, evidence, quota, order)
+    runtime = FixedRuntime()
+    coordinator = replace(coordinator, runtime=runtime)
+    classifier.assessment = RetryAssessment(
+        retry_class="capacity",
+        classification_basis="typed transient-capacity signal",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+    absent = InfrastructureFailure(
+        observation=AttemptObservation(
+            None, 0.1, CleanupEvidence("not_started", (), "not_started", None)
+        ),
+        exit_status=None,
+        error_type="capacity",
+        diagnostic="no result was produced",
+    )
+    outcomes = iter((absent, successful_outcome()))
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        requests.append(request)
+        await asyncio.sleep(0)
+        return next(outcomes)
+
+    coordinator = replace(coordinator, attempt=attempt)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert len(requests) == 2
+    assert runtime.delays == [0.0]
+    assert [attempt.attempt_number for attempt in record.calls[0].attempts] == [1, 2]
+    assert len(record.waits) == 1
+    assert record.waits[0].end == "delay_elapsed"
+    assert record.waits[0].context.kind == "capacity"
+
+
+async def test_cancellation_during_capacity_wait_is_reported_as_cancelled() -> None:  # ruff: ignore[too-many-statements]
+    """Keep run cancellation distinct when no retry process is active."""
+    order: list[str] = []
+    run = bound_run(calls_count=2, config=configuration(capacity_retry_limit=1))
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    coordinator, classifier, _ = make_coordinator(run, evidence, quota, order)
+    waiting = asyncio.Event()
+
+    class WaitingRuntime(FixedRuntime):
+        @override
+        async def sleep(self, seconds: float, /) -> None:
+            self.delays.append(seconds)
+            waiting.set()
+            await asyncio.Event().wait()
+
+    coordinator = replace(coordinator, runtime=WaitingRuntime())
+    classifier.assessment = RetryAssessment(
+        retry_class="capacity",
+        classification_basis="typed transient-capacity signal",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+    absent = InfrastructureFailure(
+        observation=AttemptObservation(
+            None, 0.1, CleanupEvidence("not_started", (), "not_started", None)
+        ),
+        exit_status=None,
+        error_type="capacity",
+        diagnostic="no result was produced",
+    )
+    progress = FakeProgress()
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        await asyncio.sleep(0)
+        return absent
+
+    coordinator = replace(
+        coordinator,
+        attempt=attempt,
+        progress=progress,
+    )
+    task = asyncio.create_task(coordinator.run())
+    await waiting.wait()
+    task.cancel()
+
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    assert evidence.final_records[0].state == "incomplete"
+    assert tuple(call.state for call in evidence.final_records[0].calls) == (
+        "failed",
+        "not_started",
+    )
+    final = progress.snapshots[-1]
+    assert final.final_status == "cancelled"
+    assert final.counts.calls_cancelled == 1
+    assert final.counts.calls_stopped_not_started == 1
+
+
+async def test_default_attempt_conversion_preserves_supervisor_observations() -> None:
+    """Persist the returned supervisor outcome with its original request."""
     # Given
     order: list[str] = []
     run = bound_run()
     evidence = FakeEvidence(order)
     quota = FakeQuotaReader(order)
     requests: list[AttemptRequest] = []
-    seen: list[_SettledAttempt | None] = []
     coordinator = Coordinator(
         bound_run=run,
         evidence=evidence,
@@ -826,22 +1127,19 @@ async def test_default_attempt_conversion_stays_explicitly_pending() -> None:
         quota_status=quota,
         runtime=FixedRuntime(),
         progress=FakeProgress(),
-        select_dispatch=selection_sequence(
-            [_DispatchAttempt(run.calls[0], 1), _DispatchComplete(run_record())], seen
-        ),
     )
 
     # When
-    with pytest.raises(NotImplementedError, match="evidence conversion"):
-        await coordinator.run()
+    actual = await coordinator.run()
 
     # Then
     assert requests == [run.calls[0].request]
-    assert evidence.attempt_inputs == []
-    assert evidence.final_records == []
+    assert evidence.attempt_inputs[0][4].outcome == successful_outcome()
+    assert actual.calls[0].attempts[0].exit_status == 0
+    assert evidence.final_records == [actual]
 
 
-async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() -> None:
+async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() -> None:  # ruff: ignore[too-many-statements]
     """Await recovery only for a settled pause and persist probe before resuming."""
     # Given
     order: list[str] = []
@@ -879,8 +1177,10 @@ async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() 
     assert recovery.request_provider.inputs == [(trigger, None)]
     assert quota.requests == [probe_request]
     assert quota.requests[0] is probe_request
-    assert isinstance(evidence.probe_events[0], QuotaProbeStarted)
-    assert evidence.probe_events[0].request is probe_request
+    assert evidence.probe_events[0].kind == "scheduled"
+    assert isinstance(evidence.probe_events[1], QuotaProbeStarted)
+    assert evidence.probe_events[0].schedule is probe_request.schedule
+    assert evidence.probe_events[1].request is probe_request
     assert requests == [run.calls[0].request, run.calls[1].request]
     assert evidence.probe_inputs == [probe_result]
     assert evidence.probe_inputs[0] is probe_result
@@ -892,6 +1192,7 @@ async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() 
         "observe_quota",
         "record_telemetry",
         "prepare_probe",
+        "record_probe_start",
         "record_probe_start",
         "poll",
         "record_probe_settled",
@@ -905,8 +1206,8 @@ async def test_quota_recovery_is_pause_gated_and_persists_before_next_attempt() 
     ]
 
 
-async def test_default_probe_request_preparation_stays_pending() -> None:
-    """Do not poll when recovery request policy has not been supplied."""
+async def test_default_probe_preparation_refuses_unscoped_quota() -> None:
+    """Fail closed when a quota observation has no verified scope."""
     # Given
     order: list[str] = []
     run = bound_run(config=configuration(quota=True))
@@ -918,7 +1219,7 @@ async def test_default_probe_request_preparation_stays_pending() -> None:
     )
 
     # When
-    with pytest.raises(NotImplementedError, match="request preparation"):
+    with pytest.raises(RuntimeError, match="scoped exhaustion observation"):
         await coordinator.run()
 
     # Then
@@ -927,8 +1228,127 @@ async def test_default_probe_request_preparation_stays_pending() -> None:
     assert evidence.final_records == []
 
 
-async def test_default_recovery_assessment_stays_pending_after_durable_probe() -> None:
-    """Persist returned probe evidence before the default assessment leaf fails."""
+async def test_quota_pause_waits_for_one_fresh_scoped_available_probe() -> None:  # ruff: ignore[too-many-statements]
+    """Gate later calls until fresh, matching quota evidence is persisted."""
+    # Given
+    order: list[str] = []
+    scope = QuotaScope(
+        provider_id=QuotaProviderId("codex"),
+        allowance_id=QuotaAllowanceId("allowance-a"),
+    )
+    run = bound_run(
+        calls_count=2,
+        config=configuration(quota=True),
+        quota_scope=scope,
+    )
+    evidence = FakeEvidence(order)
+    quota = FakeQuotaReader(order)
+    quota.observation = QuotaObservation(
+        scope=scope,
+        read_at_utc="2026-10-27T10:00:00Z",
+        source_coordinate="session:1",
+        windows=(
+            QuotaWindowObservation(
+                window_id=QuotaWindowId("primary"),
+                state="exhausted",
+                usage_percent=100.0,
+                reset_at_utc=None,
+                source_observed_at_utc="2026-10-27T10:00:00Z",
+                source_sequence=1,
+                source="test",
+                diagnostic=None,
+            ),
+        ),
+        diagnostic=None,
+    )
+    coordinator, classifier, requests = make_coordinator(run, evidence, quota, order)
+    runtime = FixedRuntime()
+    progress = FakeProgress()
+    coordinator = replace(coordinator, runtime=runtime, progress=progress)
+    classifier.assessment = RetryAssessment(
+        retry_class="quota",
+        classification_basis="scoped exhausted observation",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+    absent = InfrastructureFailure(
+        observation=AttemptObservation(
+            None, 0.1, CleanupEvidence("not_started", (), "not_started", None)
+        ),
+        exit_status=None,
+        error_type="quota",
+        diagnostic="quota exhausted before a result",
+    )
+
+    async def attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+        position = request.argv[-1]
+        requests.append(request)
+        await asyncio.sleep(0)
+        if position == "0":
+            classifier.assessment = RetryAssessment(
+                retry_class="quota",
+                classification_basis="scoped exhausted observation",
+                no_result_basis="confident_absence",
+                diagnostic=None,
+            )
+            return absent
+        classifier.assessment = RetryAssessment(
+            retry_class="unknown",
+            classification_basis=None,
+            no_result_basis="present_or_unknown",
+            diagnostic=None,
+        )
+        return successful_outcome()
+
+    def build_probe(request: QuotaProbeRequest) -> QuotaProbeEvidence:
+        base = make_probe_evidence(request, run.calls[0])
+        available = QuotaObservation(
+            scope=scope,
+            read_at_utc="2026-10-27T10:00:00Z",
+            source_coordinate="session:2",
+            windows=(
+                QuotaWindowObservation(
+                    window_id=QuotaWindowId("primary"),
+                    state="available",
+                    usage_percent=10.0,
+                    reset_at_utc=None,
+                    source_observed_at_utc=request.poll_started_at_utc,
+                    source_sequence=2,
+                    source="test",
+                    diagnostic=None,
+                ),
+            ),
+            diagnostic=None,
+        )
+        return replace(base, observation=available)
+
+    quota.probe_builder = build_probe
+    coordinator = replace(coordinator, attempt=attempt)
+
+    # When
+    record = await coordinator.run()
+
+    # Then
+    assert quota.probes == 1
+    assert runtime.delays == [7.5]
+    assert record.waits[0].end == "quota_available"
+    assert [attempt.outcome_kind for attempt in record.calls[0].attempts] == [
+        "infrastructure_failure"
+    ]
+    assert record.calls[0].state == "failed"
+    assert record.calls[1].state == "complete"
+    assert any(
+        snapshot.phase == "quota_paused" and snapshot.counts.probes_started == 0
+        for snapshot in progress.snapshots
+    )
+    assert any(
+        snapshot.phase == "quota_paused" and snapshot.counts.probes_started == 1
+        for snapshot in progress.snapshots
+    )
+
+
+async def test_default_recovery_assessment_stops_on_unknown_probe() -> None:
+    """Persist a probe but refuse resumption without fresh available evidence."""
     # Given
     order: list[str] = []
     run = bound_run(config=configuration(quota=True))
@@ -947,13 +1367,13 @@ async def test_default_recovery_assessment_stays_pending_after_durable_probe() -
     coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
 
     # When
-    with pytest.raises(NotImplementedError, match="recovery assessment"):
+    with pytest.raises(RuntimeError, match="stopped without resumption"):
         await coordinator.run()
 
     # Then
     assert evidence.probe_inputs == [probe]
     assert evidence.probe_inputs[0] is probe
-    assert evidence.events[-1] == "probe-settled"
+    assert evidence.events[-3:] == ["probe-settled", "wait", "wait"]
     assert evidence.final_records == []
 
 
@@ -1158,7 +1578,7 @@ async def test_probe_stop_latch_blocks_recovery_and_later_attempts() -> None:
     coordinator = replace(coordinator, prepare_quota_probe=FixedProbeRequest(request))
 
     # When
-    with pytest.raises(RuntimeError, match="stopped during quota probe"):
+    with pytest.raises(RuntimeError, match="stopped without resumption"):
         await coordinator.run()
 
     # Then
