@@ -15,8 +15,9 @@ from script.process_supervisor import AttemptResult, DispatchStop
 class RunControl:
     """Own a run's immediate stop and quota decisions.
 
-    Notification and asynchronous waiting are injected pending leaves. The
-    default leaves raise until the lifecycle implementation supplies them.
+    The notification leaf wakes waiters after a state change. The wait leaf
+    waits until its supplied predicate holds. Both are pending: their defaults
+    raise until the lifecycle implementation supplies them.
     """
 
     _notify: Callable[[], None] = field(default_factory=lambda: _notify_pending)
@@ -116,15 +117,19 @@ class RunControl:
         return self.dispatch_allowed()
 
     def _pause_or_stop(self) -> bool:
+        """Return whether a pause or stop has latched."""
         return self._quota_origin is not None or self._reason is not None
 
     def _dispatch_or_stop(self) -> bool:
+        """Return whether the gate is open or the run has stopped."""
         return self.dispatch_allowed() or self._reason is not None
 
 
 def _notify_pending() -> None:
+    """Mark notification as an unfinished effect."""
     raise NotImplementedError("control notification is pending")
 
 
 async def _wait_pending(_ready: Callable[[], bool]) -> None:
+    """Mark asynchronous predicate waiting as an unfinished effect."""
     raise NotImplementedError("control waiting is pending")
