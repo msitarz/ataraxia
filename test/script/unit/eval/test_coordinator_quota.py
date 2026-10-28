@@ -19,7 +19,12 @@ from script.eval.model import (
 )
 from script.eval.runner.coordinator.call_states import CallHistory
 from script.eval.runner.coordinator.control import RunControl
-from script.eval.runner.coordinator.quota import QuotaOwner, _reset_hint
+from script.eval.runner.coordinator.quota import (
+    QuotaOwner,
+    RaceOutcome,
+    _reset_hint,
+    _should_cancel_owned,
+)
 from script.eval.runner.coordinator.quota_states import (
     Draining,
     Open,
@@ -1427,3 +1432,27 @@ async def test_another_owners_cancellation_during_probe_is_not_propagated() -> N
     assert quota.history.waits[0].end == "cancelled"
     assert control.reason is not None
     assert control.reason.cancellation is other
+
+
+@pytest.mark.parametrize(
+    ("outcome", "done", "probe", "active", "expected"),
+    [
+        ("stop", False, True, True, True),
+        ("bound", False, True, False, False),
+        ("cancelled", False, False, False, True),
+        ("stop", True, True, True, False),
+        ("completed", False, True, True, False),
+    ],
+    ids=("active-probe", "inactive-probe", "nonprobe", "already-done", "completed"),
+)
+def test_race_cancels_only_interrupted_owned_operations(
+    outcome: RaceOutcome, done: bool, probe: bool, active: bool, expected: bool
+) -> None:
+    # Given
+    # The parametrized inputs describe the owned task and selected race outcome.
+
+    # When
+    result = _should_cancel_owned(outcome, done, probe, active)
+
+    # Then
+    assert result is expected

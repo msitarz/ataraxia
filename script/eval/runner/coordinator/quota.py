@@ -54,6 +54,8 @@ from .quota_states import (
 from .settlement import SettledFailure, Settlement, settle
 from .state import WaitWrite
 
+type RaceOutcome = Literal["completed", "stop", "bound", "cancelled"]
+
 
 class QuotaOwner:
     """Own one drained pause and its durable wait and probe history."""
@@ -396,7 +398,7 @@ class QuotaOwner:
             The resulting terminal or evidence-pending state.
         """
         while True:
-            end = self._end_for_control(self._local_cancellation)
+            end: WaitEnd | None = self._end_for_control(self._local_cancellation)
             remaining = self._remaining_wait(waiting)
             if end is None and (
                 remaining == 0
@@ -474,6 +476,7 @@ class QuotaOwner:
             The monotonic start and a closure when the delay was interrupted.
         """
         started = self._runtime.monotonic()
+        outcome: RaceOutcome
         outcome, slept = await self._race(
             asyncio.create_task(self._runtime.sleep(delay)),
             self._remaining_wait(waiting),
@@ -487,7 +490,7 @@ class QuotaOwner:
                 self._control.latch_stop(slept.error)
             outcome = "stop"
         if outcome != "completed":
-            cause = (
+            cause: Literal["cancelled", "bound", "stop"] = (
                 "cancelled"
                 if self._local_cancellation is not None
                 else ("bound" if outcome == "bound" else "stop")
@@ -550,7 +553,7 @@ class QuotaOwner:
 
     async def _race[T](
         self, task: Task[T], remaining: float | None, *, probe: bool = False
-    ) -> tuple[str, Settlement[T]]:
+    ) -> tuple[RaceOutcome, Settlement[T]]:
         """Race an owned operation against stop and the cumulative bound.
 
         Returns:
@@ -563,7 +566,7 @@ class QuotaOwner:
             else asyncio.create_task(self._runtime.sleep(remaining))
         )
         watchers = {task, stop} if timer is None else {task, stop, timer}
-        outcome = "completed"
+        outcome: RaceOutcome = "completed"
         try:
             await asyncio.wait(watchers, return_when=asyncio.FIRST_COMPLETED)
         except CancelledError as error:
@@ -573,11 +576,7 @@ class QuotaOwner:
             outcome = "cancelled"
         if outcome == "completed":
             outcome = self._race_outcome(timer)
-        if (
-            outcome != "completed"
-            and not task.done()
-            and (not probe or self._probe_active)
-        ):
+        if _should_cancel_owned(outcome, task.done(), probe, self._probe_active):
             self._probe_interrupted = probe
             task.cancel()
         settled = await settle(task)
@@ -588,7 +587,7 @@ class QuotaOwner:
         await self._dispose_watchers(stop, timer)
         return outcome, settled
 
-    def _race_outcome(self, timer: Task[None] | None) -> str:
+    def _race_outcome(self, timer: Task[None] | None) -> RaceOutcome:
         """Select stop or bound before accepting a completed operation.
 
         Returns:
@@ -627,6 +626,7 @@ class QuotaOwner:
             Updated wait or a wait with a required closure.
         """
         self._probe_interrupted = False
+        outcome: RaceOutcome
         outcome, settled = await self._race(
             asyncio.create_task(self._invoke_probe(state, started)),
             self._remaining_wait(state.waiting),
@@ -660,7 +660,9 @@ class QuotaOwner:
             return self._ending(state.waiting, "unknown")
         return await self._record_probe(probe, outcome)
 
-    async def _record_probe(self, probe: RecordingProbe, outcome: str) -> Waiting:
+    async def _record_probe(
+        self, probe: RecordingProbe, outcome: RaceOutcome
+    ) -> Waiting:
         """Persist captured process evidence and select the next wait state.
 
         Returns:
@@ -703,7 +705,8 @@ class QuotaOwner:
         else:
             self._state = waiting
         if waiting.end_record is None and outcome != "completed":
-            return self._ending(waiting, "bound" if outcome == "bound" else "stop")
+            end: WaitEnd = "bound" if outcome == "bound" else "stop"
+            return self._ending(waiting, end)
         return waiting
 
     async def _invoke_probe(
@@ -785,6 +788,20 @@ class QuotaOwner:
             scheduled_wait_seconds=elapsed,
             scheduled_wait_elapsed_basis="monotonic",
         )
+
+
+def _should_cancel_owned(
+    outcome: RaceOutcome, done: bool, probe: bool, probe_active: bool, /
+) -> bool:
+    """Cancel interrupted work only while its cancellable operation is active.
+
+    An inactive probe task must settle its dispatch journal or pre-dispatch
+    gate; cancelling it there could abandon required lifecycle evidence.
+
+    Returns:
+        Whether the race should cancel the owned task.
+    """
+    return outcome != "completed" and not done and (not probe or probe_active)
 
 
 def _reset_hint(observation: QuotaObservation) -> str | None:
