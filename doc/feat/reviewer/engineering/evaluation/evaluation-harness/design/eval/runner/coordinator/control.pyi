@@ -4,9 +4,9 @@
 from asyncio import CancelledError
 from typing import Literal
 
+from script.eval.runner.coordinator.quota_states import PauseOrigin, PauseTrigger
+from script.eval.runner.coordinator.state import StopReason
 from script.process_supervisor import AttemptResult, DispatchStop
-
-from .state import PauseOrigin, PauseTrigger, StopReason
 
 class RunControl:
     """One run's mutable stop latch and global dispatch gate.

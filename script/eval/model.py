@@ -85,9 +85,10 @@ class HarnessConfig(StrictModel):
     """CLI settings; validation does not perform I/O or dispatch.
 
     Quota waiting and capacity retries default off. Enabled quota waiting
-    rejects a zero probe budget; ``None`` leaves the harness probe count
-    uncapped. Positive capacity retry allowances require finite positive
-    backoff base and cap values, with the cap at least as large as the base.
+    permits a zero probe budget, which forbids probes; ``None`` leaves the
+    harness probe count uncapped. Positive capacity retry allowances require
+    finite positive backoff base and cap values, with the cap at least as large
+    as the base.
     Progress refresh interval and any supplied wait/backoff durations are
     finite and positive.
     """
@@ -162,10 +163,8 @@ class HarnessConfig(StrictModel):
             The validated configuration.
 
         Raises:
-            ValueError: A quota budget or capacity retry relationship is invalid.
+            ValueError: A capacity retry relationship is invalid.
         """
-        if self.quota_wait_enabled and self.quota_probe_budget == 0:
-            raise ValueError("enabled quota waiting requires a positive probe budget")
         if self.capacity_retry_limit > 0 and (
             self.capacity_backoff_base_seconds is None
             or self.capacity_backoff_cap_seconds is None
@@ -301,13 +300,18 @@ class QuotaWindowObservation(StrictModel):
 
 
 class QuotaObservation(StrictModel):
-    """Provider-neutral windows from one source snapshot and verified scope."""
+    """Provider-neutral windows and their producer-based freshness expiry.
+
+    ``valid_until_utc`` is inclusive: equality remains fresh. Missing expiry
+    cannot establish availability. Rereading a source does not extend it.
+    """
 
     scope: QuotaScope | None
     read_at_utc: str
     source_coordinate: str | None
     windows: tuple[QuotaWindowObservation, ...]
     diagnostic: str | None
+    valid_until_utc: str | None = None
 
 
 class RetryAssessment(StrictModel):

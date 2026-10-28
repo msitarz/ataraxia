@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Call-local attempt settlement, retry eligibility, and cancellable backoff."""
+"""Historical free-function transitions; runtime state methods are authoritative.
+
+The async owner declarations remain planned.
+"""
 
 from asyncio import CancelledError, Semaphore
 
@@ -12,15 +15,7 @@ from script.eval.model import (
     RetryAssessment,
     WaitRecord,
 )
-from script.eval.runner.ports import (
-    AttemptCall,
-    OutcomeClassifier,
-    QuotaStatusReader,
-    Runtime,
-)
-
-from .control import RunControl
-from .state import (
+from script.eval.runner.coordinator.call_states import (
     Attempting,
     CallState,
     CallWait,
@@ -32,9 +27,19 @@ from .state import (
     RecordingTelemetry,
     RetryWait,
     Stopped,
+)
+from script.eval.runner.coordinator.state import (
     StopReason,
     WaitWrite,
 )
+from script.eval.runner.ports import (
+    AttemptCall,
+    OutcomeClassifier,
+    QuotaStatusReader,
+    Runtime,
+)
+
+from .control import RunControl
 
 def capture_attempt(
     state: Attempting, evidence: AttemptEvidence, assessment: RetryAssessment | None, /

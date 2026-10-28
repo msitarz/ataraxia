@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exploratory quota recovery and bounded async ownership."""
+"""Historical free-function transitions; runtime state methods are authoritative.
+
+The async owner declarations remain planned.
+"""
 
 from asyncio import CancelledError
 
@@ -12,10 +15,7 @@ from script.eval.model import (
     QuotaProbeRequest,
     WaitRecord,
 )
-from script.eval.runner.ports import QuotaStatusReader, Runtime
-
-from .control import RunControl
-from .state import (
+from script.eval.runner.coordinator.quota_states import (
     Draining,
     Open,
     PreparingProbe,
@@ -28,10 +28,15 @@ from .state import (
     QuotaState,
     QuotaStopped,
     RecordingProbe,
-    StopReason,
     Waiting,
+)
+from script.eval.runner.coordinator.state import (
+    StopReason,
     WaitWrite,
 )
+from script.eval.runner.ports import QuotaStatusReader, Runtime
+
+from .control import RunControl
 
 def quota_wait_started(
     state: Draining,
