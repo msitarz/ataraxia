@@ -4,6 +4,7 @@
 from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Literal, assert_never
 
 from script.eval.model import (
     ProcessRecord,
@@ -44,10 +45,42 @@ from .quota_states import (
     RecordingProbe,
 )
 
+type CallBucket = Literal[
+    "calls_queued",
+    "calls_stopped_not_started",
+    "calls_active",
+    "calls_retry_wait",
+    "calls_evidence_pending",
+    "calls_succeeded",
+    "calls_failed",
+    "calls_cancelled",
+]
+type AttemptBucket = Literal[
+    "attempts_started",
+    "retries_started",
+    "attempts_active",
+    "attempts_evidence_pending",
+    "attempts_succeeded",
+    "attempts_failed",
+    "attempts_cancelled",
+]
+type ProbeBucket = Literal[
+    "probes_started",
+    "probes_active",
+    "probes_evidence_pending",
+    "probes_completed",
+    "probes_failed",
+    "probes_cancelled",
+]
+type Bucket = CallBucket | AttemptBucket | ProbeBucket
+
 
 @dataclass(frozen=True)
 class ProgressView:
-    """Coherent owner state and explicit clocks for one projection."""
+    """Capture coherent owner states and durable histories with explicit clocks.
+
+    Monotonic time measures waits; UTC time measures producer observation age.
+    """
 
     run_id: RunId
     phase: ProgressRunPhase
@@ -69,7 +102,7 @@ def project(view: ProgressView, /) -> ProgressSnapshot:
     Returns:
         An immutable consumer snapshot of the supplied facts.
     """
-    counts: Counter[str] = Counter()
+    counts: Counter[Bucket] = Counter()
     reasons: Counter[RetryClass] = Counter()
     waits: list[CallWait] = []
     for state in view.calls:
@@ -111,9 +144,11 @@ def project(view: ProgressView, /) -> ProgressSnapshot:
 
 
 def _count_call(
-    state: CallState, counts: Counter[str], reasons: Counter[RetryClass]
+    state: CallState, counts: Counter[Bucket], reasons: Counter[RetryClass]
 ) -> None:
+    """Count one call state and its durable and current attempts."""
     history = state.history
+    bucket: CallBucket
     if isinstance(state, Queued):
         bucket = "calls_queued"
     elif isinstance(
@@ -124,23 +159,42 @@ def _count_call(
         bucket = "calls_retry_wait"
     elif isinstance(state, EvidencePending):
         bucket = "calls_evidence_pending"
-    elif isinstance(state, Stopped) and not history.attempts:
-        bucket = "calls_stopped_not_started"
+    elif isinstance(state, Finished | Stopped):
+        if isinstance(state, Stopped) and not history.attempts:
+            bucket = "calls_stopped_not_started"
+        else:
+            bucket = _terminal_call_bucket(state.outcome)
     else:
-        assert isinstance(state, Finished | Stopped)
-        bucket = {
-            "success": "calls_succeeded",
-            "failure": "calls_failed",
-            "cancelled": "calls_cancelled",
-            "not_started": "calls_stopped_not_started",
-        }[state.outcome]
+        assert_never(state)
     counts[bucket] += 1
     _count_attempts(state, counts, reasons)
 
 
+def _terminal_call_bucket(
+    outcome: Literal["success", "failure", "cancelled", "not_started"],
+) -> CallBucket:
+    """Map a settled outcome to its call bucket.
+
+    Returns:
+        The corresponding disjoint call bucket.
+    """
+    match outcome:
+        case "success":
+            return "calls_succeeded"
+        case "failure":
+            return "calls_failed"
+        case "cancelled":
+            return "calls_cancelled"
+        case "not_started":
+            return "calls_stopped_not_started"
+        case other:
+            assert_never(other)
+
+
 def _count_attempts(
-    state: CallState, counts: Counter[str], reasons: Counter[RetryClass]
+    state: CallState, counts: Counter[Bucket], reasons: Counter[RetryClass]
 ) -> None:
+    """Count durable outcomes and at most one current dispatched attempt."""
     history = state.history
     for record in history.attempts:
         counts["attempts_started"] += 1
@@ -179,7 +233,12 @@ def _safe_completion(record: ProcessRecord) -> bool:
     )
 
 
-def _probe_outcome(record: QuotaProbeRecord) -> str:
+def _probe_outcome(record: QuotaProbeRecord) -> ProbeBucket:
+    """Select the terminal bucket for one durable probe record.
+
+    Returns:
+        The completed, failed, or cancelled probe bucket.
+    """
     if record.control_flow == "cancelled" or record.outcome_kind == "cancelled":
         return "probes_cancelled"
     if _safe_completion(record) and (
@@ -193,6 +252,11 @@ def _probe_outcome(record: QuotaProbeRecord) -> str:
 def _window_ages(
     observation: QuotaObservation | None, now: str
 ) -> tuple[tuple[QuotaWindowId, float | None], ...]:
+    """Pair each observed window with age from its producer timestamp.
+
+    Returns:
+        Window identities and their ages, or unknown ages.
+    """
     if observation is None:
         return ()
     return tuple(
@@ -202,6 +266,7 @@ def _window_ages(
 
 
 def _age(timestamp: str | None, now: str) -> float | None:
+    """Return elapsed seconds or unknown for unusable producer time."""
     if timestamp is None:
         return None
     try:
@@ -215,7 +280,32 @@ def _age(timestamp: str | None, now: str) -> float | None:
     return seconds if seconds >= 0 else None
 
 
-def _counts(counts: Counter[str]) -> ProgressCounts:
-    return ProgressCounts(**{
-        field: counts[field] for field in ProgressCounts.__dataclass_fields__
-    })
+def _counts(counts: Counter[Bucket]) -> ProgressCounts:
+    """Build the consumer value from the finite projection buckets.
+
+    Returns:
+        Counts for every consumer field.
+    """
+    return ProgressCounts(
+        calls_queued=counts["calls_queued"],
+        calls_stopped_not_started=counts["calls_stopped_not_started"],
+        calls_active=counts["calls_active"],
+        calls_retry_wait=counts["calls_retry_wait"],
+        calls_evidence_pending=counts["calls_evidence_pending"],
+        calls_succeeded=counts["calls_succeeded"],
+        calls_failed=counts["calls_failed"],
+        calls_cancelled=counts["calls_cancelled"],
+        attempts_started=counts["attempts_started"],
+        retries_started=counts["retries_started"],
+        attempts_active=counts["attempts_active"],
+        attempts_evidence_pending=counts["attempts_evidence_pending"],
+        attempts_succeeded=counts["attempts_succeeded"],
+        attempts_failed=counts["attempts_failed"],
+        attempts_cancelled=counts["attempts_cancelled"],
+        probes_started=counts["probes_started"],
+        probes_active=counts["probes_active"],
+        probes_evidence_pending=counts["probes_evidence_pending"],
+        probes_completed=counts["probes_completed"],
+        probes_failed=counts["probes_failed"],
+        probes_cancelled=counts["probes_cancelled"],
+    )
