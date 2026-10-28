@@ -105,6 +105,12 @@ class Coordinator:
             self._control.latch_stop(caught)
         record = self._projection(self._bound_run, self._states(), self._quota_history)
         result = await settle(asyncio.create_task(self._evidence.finalize(record)))
+        if result.cancellation is not None:
+            self._control.note_cancellation(result.cancellation, "owner")
+        if isinstance(result, SettledFailure):
+            if isinstance(result.error, asyncio.CancelledError):
+                self._control.note_cancellation(result.error, "leaf")
+            self._control.note_recording_failure(result.error)
         _raise_outcome(error, result)
         self._publish("final", _final_status(record, self._states()))
         return record
@@ -153,9 +159,13 @@ class Coordinator:
         with suppress(OSError):
             self._progress.publish(snapshot)
 
-    async def _recover_quota(self, context: QuotaWaitContext) -> None:
-        """Await one drained pause; the pending scheduler must call this seam."""
-        owner = QuotaOwner(
+    def _quota_owner(self, context: QuotaWaitContext) -> QuotaOwner:
+        """Construct a quota owner for the future drained-pause scheduler.
+
+        Returns:
+            An owner sharing this run's controls and effect boundaries.
+        """
+        return QuotaOwner(
             Draining(context),
             self._quota_history,
             self._bound_run.plan.configuration,
@@ -165,26 +175,32 @@ class Coordinator:
             self._runtime,
             self._bound_run.plan.run_id,
         )
-        await owner.recover()
-        self._quota_history = owner.history
 
 
 def _raise_outcome(error: BaseException | None, result: Settlement[None]) -> None:
     """Preserve the local primary control flow after the final write settles."""
+    failure = result.error if isinstance(result, SettledFailure) else None
     cancellation = result.cancellation
     if isinstance(error, asyncio.CancelledError):
-        if isinstance(result, SettledFailure):
-            raise error from result.error
-        raise error
+        _raise_with_cause(error, failure)
     if cancellation is not None:
-        cause = result.error if isinstance(result, SettledFailure) else error
-        raise cancellation from cause
+        _raise_with_cause(
+            cancellation,
+            error if error is not None and error is not cancellation else failure,
+        )
+    if isinstance(failure, asyncio.CancelledError):
+        _raise_with_cause(failure, error)
     if error is not None:
-        if isinstance(result, SettledFailure):
-            raise error from result.error
-        raise error
-    if isinstance(result, SettledFailure):
-        raise result.error
+        _raise_with_cause(error, failure)
+    if failure is not None:
+        raise failure
+
+
+def _raise_with_cause(error: BaseException, cause: BaseException | None) -> None:
+    """Raise the original object without creating a self-referential cause."""
+    if cause is not None and cause is not error:
+        raise error from cause
+    raise error
 
 
 def _final_status(
