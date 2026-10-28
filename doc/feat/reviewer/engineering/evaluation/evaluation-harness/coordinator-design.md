@@ -1,8 +1,9 @@
 # Coordinator lifecycle design
 
 **Status:** Reviewed lifecycle design. State records and pure call and quota
-transitions are implemented; asynchronous owners, composition, and wiring remain
-planned. All Work acceptance criteria remain TODO. The
+transitions are implemented. Settlement has outcome wiring with its
+retained-task loop still unimplemented; other asynchronous owners and
+composition remain planned. All Work acceptance criteria remain TODO. The
 [Work contract](README.md) owns behavior and the
 [current architecture](architecture.md) describes implemented components.
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
@@ -21,8 +22,8 @@ with known lifecycle bugs, not a validated alternative.
 - The evidence lifecycle-input union has the proposed refinement described
   below.
 - The [type sketch](design/eval/runner/coordinator/) is a historical reviewed
-  reference; runtime state and pure transitions are authoritative. Owner and
-  wiring declarations remain planned.
+  reference; runtime state, pure transitions, and settlement outcome wiring are
+  authoritative. Other owner and wiring declarations remain planned.
 
 ## Coordinator
 
