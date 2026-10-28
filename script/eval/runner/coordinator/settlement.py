@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Retain submitted tasks and preserve cancellation with their outcome."""
 
+import asyncio
 from asyncio import CancelledError, Task
-from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 
 
@@ -28,28 +28,13 @@ type Settlement[T] = SettledValue[T] | SettledFailure
 async def settle[T](task: Task[T], /) -> Settlement[T]:
     """Retain a submitted task through repeated owner cancellation.
 
-    A cancelling owner remains primary; the caller attaches any task failure as
-    its cause and closes a successfully started wait before propagating it.
-
-    The retained-task loop is not implemented yet.
+    Return the task outcome and the first owner cancellation separately. The
+    caller decides precedence, exception chaining, and any required closure.
 
     Returns:
         The task value or failure and any owner cancellation.
     """
-    return await _settle(task, _retain_task)
-
-
-async def _settle[T](
-    task: Task[T],
-    retain: Callable[[Task[T]], Coroutine[None, None, CancelledError | None]],
-    /,
-) -> Settlement[T]:
-    """Build the outcome after the retained task settles.
-
-    Returns:
-        The task value or failure and any owner cancellation.
-    """
-    cancellation: CancelledError | None = await retain(task)
+    cancellation = await _retain_task(task)
     try:
         value: T = task.result()
     except BaseException as error:
@@ -58,5 +43,18 @@ async def _settle[T](
 
 
 async def _retain_task[T](task: Task[T], /) -> CancelledError | None:
-    """Wait for the task through owner cancellation; implementation pending."""
-    raise NotImplementedError("retained-task loop is not implemented")
+    """Wait for completion without forwarding cancellation to the task.
+
+    Returns:
+        The first owner cancellation, if any.
+    """
+    # The waiter reports completion without propagating a leaf cancellation.
+    waiter = asyncio.create_task(asyncio.wait({task}))
+    cancellation: CancelledError | None = None
+    while not waiter.done():
+        try:
+            await asyncio.shield(waiter)
+        except CancelledError as error:
+            if cancellation is None:
+                cancellation = error
+    return cancellation
