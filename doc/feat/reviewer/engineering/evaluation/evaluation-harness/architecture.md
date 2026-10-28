@@ -10,16 +10,15 @@ orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
-Codex invocation leaves are implemented. The former runtime coordinator skeleton
-has been removed. State records and pure call and quota transitions are
+Codex invocation leaves are implemented. The runtime coordinator has a thin
+composition skeleton. State records and pure call and quota transitions are
 implemented. Retained-task settlement and pure progress projection are
 implemented. Shared control implements stop and quota gate notification and
 waiting. The call owner implements dispatch, attempt and exceptional evidence
-settlement, capacity retry waits, and opt-in passive telemetry. Other async
-owners, probe cadence, scheduler accounting, CLI integration, and full run
-dispatch remain planned. Shared
-consumer-owned runner ports and accepted runtime configuration are implemented
-in
+settlement, capacity retry waits, and opt-in passive telemetry. A quota owner
+awaits recovery. Multi-call scheduling, run shutdown, final record projection,
+CLI integration, and full run dispatch remain planned. Shared consumer-owned
+runner ports and accepted runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -295,14 +294,16 @@ one global quota recovery flow from authoritative typed lifecycles.
 
 - **Proposed:** The [coordinator design](coordinator-design.md) defines the
   state ownership, effect order, shutdown, and proposed internal package.
-- **Current maturity:** The former `runner/coordinator.py` wiring skeleton has
-  been removed. State records and pure call and quota transitions are
+- **Current maturity:** The coordinator has a thin, privately projected
+  zero-or-one-call path. State records and pure call and quota transitions are
   implemented. Retained-task settlement and pure progress projection are
   implemented. Shared control implements stop and quota gate notification and
   waiting. The call owner implements attempt and exceptional evidence
   settlement, capacity retry waits, and passive telemetry. The quota owner
-  awaits bounded recovery and persists its wait and probe transitions; the run
-  owner and composition remain planned.
+  awaits bounded recovery and persists its wait and probe transitions;
+  multi-call scheduling, shutdown, and production final-record projection remain
+  planned. The thin path requires an injected private projection and refuses
+  unsupported paths before dispatch.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -318,8 +319,8 @@ Codex, quota, and runtime adapters.
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` implements state, pure transitions, retained-task
   settlement, pure progress projection, shared stop and quota control, and call
-  lifecycle ownership, and awaited quota recovery; run ownership and composition
-  remain planned and are described in the
+  lifecycle ownership, awaited quota recovery, and thin run composition. Full
+  run ownership remains planned and is described in the
   [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
