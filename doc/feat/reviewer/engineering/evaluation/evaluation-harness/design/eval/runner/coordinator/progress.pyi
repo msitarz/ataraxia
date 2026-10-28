@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from typing import Literal
 
 from script.eval.model import QuotaObservation, RunId
+from script.eval.runner.coordinator.call_states import CallState
+from script.eval.runner.coordinator.quota_states import QuotaHistory, QuotaState
 from script.eval.runner.ports import ProgressFinalStatus, ProgressSnapshot
-
-from .state import CallState, QuotaHistory, QuotaState
 
 @dataclass(frozen=True)
 class ProgressView:

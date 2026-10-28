@@ -280,29 +280,30 @@ with known lifecycle bugs, not a validated alternative.
 
 ## Pure transition map
 
-These proposed functions take captured, durable, policy, clock, and control
-facts as values. They perform no I/O and own no tasks. The async owners perform
-and retain each write, read, sleep, or invocation before passing its result to
-the next decision. Inputs must refer to the same call, wait, or exact probe
-request as the supplied state; construction and adapter boundaries establish
-those relationships.
+The implemented methods live in `script/eval/runner/coordinator/call_states.py`
+and `quota_states.py`; shared records live in `state.py`. These state methods
+take captured, durable, policy, clock, and control facts as values. They perform
+no I/O and own no tasks. The async owners perform and retain each write, read,
+sleep, or invocation before passing its result to the next decision. Inputs must
+refer to the same call, wait, or exact probe request as the supplied state;
+construction and adapter boundaries establish those relationships.
 
-| Function | From and explicit inputs | To and effect boundary |
+| Method | From and explicit inputs | To and effect boundary |
 | --- | --- | --- |
-| `capture_attempt` | `Attempting`, captured supervisor evidence and classification | `Recording`; the owner submits its attempt write. |
-| `attempt_persisted` | `Recording`, durable record, configuration, stop and prepared capacity-wait facts | Durable history with `ObservingQuota`, `RetryWait`, `Queued`, `Finished`, or `Stopped`; policy and independent allowances select the next step, and the owner submits any selected wait start. |
-| `capture_telemetry` | `ObservingQuota` and captured event | `RecordingTelemetry`; the owner submits its telemetry write. |
-| `telemetry_persisted` | `RecordingTelemetry`, configuration, stop and prepared capacity-wait facts | Retry wait, queue, terminal outcome, or stop after the telemetry write settles. |
-| `attempt_write_failed`, `telemetry_write_failed`, `call_wait_write_failed` | The respective in-flight call state, exact failed wait input when needed, and error | `EvidencePending`, retaining the obligation and already durable history. |
-| `call_wait_started` | `RetryWait`, settled start, cancellation/stop and pending closure facts | Durable-start `RetryWait`; the owner closes it before propagating cancellation or stop. |
-| `call_wait_completed` | `RetryWait`, durable end record and stop | `Queued` or `Stopped` after appending the wait to history. |
-| `quota_wait_started` | Drained `Draining`, submitted wait, settled start, cancellation/stop and pending closure facts | Durable-start `Waiting`; the owner closes it before stop or cancellation propagates. |
-| `probe_dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
-| `probe_dispatched` | `PreparingProbe`, request built at invocation | `Probing`; the owner retains the dispatch journal write alongside the probe. |
-| `capture_probe` | `Probing`, captured exact-request outcome or missing evidence and error | `RecordingProbe` or `ProbeEvidencePending`; the owner extracts exception-chain evidence and writes captured evidence. |
-| `probe_persisted` | `RecordingProbe`, durable record and history, fresh stop, bound and clocks | Updated probe history and `Waiting`; a required end record remains pending for the owner to write. |
-| `quota_wait_completed` | `Waiting`, history, durable end record, fresh stop, bound and time | Updated history and `Open` or `QuotaStopped`; this is the only quota transition completing the wait, and only a verified available closure opens. |
-| `quota_write_failed`, `probe_write_failed` | In-flight quota state, exact failed obligation or captured probe and error | The corresponding pending state retains the error and evidence. |
+| `Attempting.capture` | `Attempting`, captured supervisor evidence and classification | `Recording`; the owner submits its attempt write. |
+| `Recording.persisted` | `Recording`, durable record, configuration, stop and prepared capacity-wait facts | Durable history with `ObservingQuota`, `RetryWait`, `Queued`, `Finished`, or `Stopped`; policy and independent allowances select the next step, and the owner submits any selected wait start. |
+| `ObservingQuota.capture` | `ObservingQuota` and captured event | `RecordingTelemetry`; the owner submits its telemetry write. |
+| `RecordingTelemetry.persisted` | `RecordingTelemetry`, configuration, stop and prepared capacity-wait facts | Retry wait, queue, terminal outcome, or stop after the telemetry write settles. |
+| `Recording.write_failed`, `RecordingTelemetry.write_failed`, `RetryWait.write_failed` | The respective in-flight call state, exact failed wait input when needed, and error | `EvidencePending`, retaining the obligation and already durable history. |
+| `RetryWait.started` | `RetryWait`, settled start, cancellation/stop and pending closure facts | Durable-start `RetryWait`; the owner closes it before propagating cancellation or stop. |
+| `RetryWait.completed` | `RetryWait`, durable end record and stop | `Queued` or `Stopped` after appending the wait to history. |
+| `Draining.started` | Drained `Draining`, submitted wait, settled start, cancellation/stop and pending closure facts | Durable-start `Waiting`; the owner closes it before stop or cancellation propagates. |
+| `PreparingProbe.dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
+| `PreparingProbe.dispatched` | `PreparingProbe`, request built at invocation | `Probing`; the owner retains the dispatch journal write alongside the probe. |
+| `Probing.capture` | `Probing`, captured exact-request outcome or missing evidence and error | `RecordingProbe` or `ProbeEvidencePending`; the owner extracts exception-chain evidence and writes captured evidence. |
+| `RecordingProbe.persisted` | `RecordingProbe`, durable record and history, fresh stop, bound and clocks | Updated probe history and `Waiting`; a required end record remains pending for the owner to write. |
+| `Waiting.completed` | `Waiting`, history, durable end record, fresh stop, bound and time | Updated history and `Open` or `QuotaStopped`; this is the only quota transition completing the wait, and only a verified available closure opens. |
+| `journal_failed`, `RecordingProbe.write_failed` | In-flight quota state, exact failed obligation or captured probe and error | The corresponding pending state retains the error and evidence. |
 
 Stop and bound facts are sampled again after awaited writes. The stop latch can
 close dispatch immediately while quota-state completion awaits the durable wait

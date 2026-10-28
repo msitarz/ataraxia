@@ -32,37 +32,26 @@ from script.eval.model import (
     SignalRecord,
     WaitRecord,
 )
-from script.eval.runner.coordinator.calls import (
-    attempt_persisted,
-    attempt_write_failed,
-    call_wait_completed,
-    call_wait_started,
-    capture_attempt,
-)
-from script.eval.runner.coordinator.quota import (
-    capture_probe,
-    probe_dispatch_gate,
-    probe_persisted,
-    quota_wait_completed,
-)
-from script.eval.runner.coordinator.state import (
+from script.eval.runner.coordinator.call_states import (
     Attempting,
     CallHistory,
     CallWait,
     Finished,
     ObservingQuota,
+    Queued,
+    Recording,
+    RetryWait,
+    Stopped,
+)
+from script.eval.runner.coordinator.quota_states import (
     Open,
     PreparingProbe,
     ProbeEvidencePending,
     ProbePrepared,
     Probing,
-    Queued,
     QuotaHistory,
     QuotaStopped,
-    Recording,
     RecordingProbe,
-    RetryWait,
-    Stopped,
     Waiting,
 )
 from script.eval.runner.ports import EffectiveCall
@@ -183,7 +172,7 @@ def recording(history: CallHistory, number: int, category: RetryClass) -> Record
         None,
         None,
     )
-    return capture_attempt(Attempting(history, number), evidence, assessment(category))
+    return Attempting(history, number).capture(evidence, assessment(category))
 
 
 def capacity_wait(number: int, index: int) -> CallWait:
@@ -248,9 +237,7 @@ def test_durable_attempt_selects_independent_retry_policy(
     record = attempt_record(1, category, exit_status=exit_status)
 
     # When
-    result = attempt_persisted(
-        state, record, config(**settings), None, capacity_wait(1, 0)
-    )
+    result = state.persisted(record, config(**settings), None, capacity_wait(1, 0))
 
     # Then
     assert result.history.attempts == (record,)
@@ -269,24 +256,18 @@ def test_durable_attempt_selects_independent_retry_policy(
 def test_quota_retry_is_independent_of_ordinary_nonzero_opt_in() -> None:
     # Given
     from script.eval.model import QuotaTelemetryEvent
-    from script.eval.runner.coordinator.calls import (
-        capture_telemetry,
-        telemetry_persisted,
-    )
 
     history = CallHistory(call(), (), ())
     cfg = config(quota_wait_enabled=True)
     record = attempt_record(1, "quota")
-    observed = attempt_persisted(
-        recording(history, 1, "quota"), record, cfg, None, None
-    )
+    observed = recording(history, 1, "quota").persisted(record, cfg, None, None)
     assert isinstance(observed, ObservingQuota)
     event = QuotaTelemetryEvent(
         run_id="run", call_id="call", attempt_number=1, observation=observation()
     )
 
     # When
-    result = telemetry_persisted(capture_telemetry(observed, event), cfg, None, None)
+    result = observed.capture(event).persisted(cfg, None, None)
 
     # Then
     assert result == Queued(result.history)
@@ -338,8 +319,7 @@ def test_retry_allowances_count_dispatched_retries(
     state = recording(history, 2, category)
 
     # When
-    result = attempt_persisted(
-        state,
+    result = state.persisted(
         attempt_record(2, category),
         config(**settings),
         None,
@@ -433,8 +413,7 @@ def test_probe_gate_rechecks_wait_bound(
     state = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
 
     # When
-    result = probe_dispatch_gate(
-        state,
+    result = state.dispatch_gate(
         config(quota_wait_enabled=True),
         0,
         remaining,
@@ -486,13 +465,11 @@ def test_available_probe_opens_only_after_fresh_durable_closure(
     record = QuotaProbeRecord.model_validate(fields)
 
     # When
-    history, pending = probe_persisted(
-        state, QuotaHistory((), ()), record, None, None, "2026-01-01T00:00:02Z", 2.0
+    history, pending = state.persisted(
+        QuotaHistory((), ()), record, None, None, "2026-01-01T00:00:02Z", 2.0
     )
     assert pending.end_record is not None
-    history, result = quota_wait_completed(
-        pending, history, pending.end_record, None, None, now
-    )
+    history, result = pending.completed(history, pending.end_record, None, None, now)
 
     # Then
     assert isinstance(result, Open) is expected
@@ -506,7 +483,7 @@ def test_missing_probe_evidence_retains_exact_request_and_error() -> None:
     error = TimeoutError("timeout")
 
     # When
-    result = capture_probe(Probing(waiting(), req), None, error)
+    result = Probing(waiting(), req).capture(None, error)
 
     # Then
     assert isinstance(result, ProbeEvidencePending)
@@ -543,11 +520,11 @@ def test_unsafe_or_inconclusive_attempts_never_retry(
         None,
         None,
     )
-    state = capture_attempt(Attempting(history, 1), evidence, record.retry_assessment)
+    state = Attempting(history, 1).capture(evidence, record.retry_assessment)
 
     # When
-    result = attempt_persisted(
-        state, record, config(retry_limit=1, retry_nonzero_exit=True), None, None
+    result = state.persisted(
+        record, config(retry_limit=1, retry_nonzero_exit=True), None, None
     )
 
     # Then
@@ -563,7 +540,7 @@ def test_failed_attempt_write_retains_error_without_durable_history() -> None:
     error = OSError("write failed")
 
     # When
-    result = attempt_write_failed(state, error)
+    result = state.write_failed(error)
 
     # Then
     assert result.failure.error is error
@@ -590,8 +567,8 @@ def test_cancelled_submitted_wait_retains_closure_until_durable() -> None:
     )
 
     # When
-    started = call_wait_started(state, CancelledError(), None, closure)
-    result = call_wait_completed(started, closure, None)
+    started = state.started(CancelledError(), None, closure)
+    result = started.completed(closure, None)
 
     # Then
     assert started.wait.start_phase == "durable"
@@ -624,7 +601,7 @@ def test_mismatched_probe_evidence_never_becomes_a_record() -> None:
     )
 
     # When
-    result = capture_probe(Probing(waiting(), req), evidence, None)
+    result = Probing(waiting(), req).capture(evidence, None)
 
     # Then
     assert isinstance(result, ProbeEvidencePending)
@@ -645,9 +622,7 @@ def test_latched_stop_does_not_consume_leaf_cancellation() -> None:
     stop = StopReason(RuntimeError("latched"), None, None, None)
 
     # When
-    result = attempt_persisted(
-        state, record, config(quota_wait_enabled=True), stop, None
-    )
+    result = state.persisted(record, config(quota_wait_enabled=True), stop, None)
 
     # Then
     assert isinstance(result, Stopped)
@@ -657,8 +632,8 @@ def test_latched_stop_does_not_consume_leaf_cancellation() -> None:
 
 def test_probe_journal_failure_retains_dispatched_request() -> None:
     # Given
-    from script.eval.runner.coordinator.quota import quota_write_failed
-    from script.eval.runner.coordinator.state import ProbeDispatched
+
+    from script.eval.runner.coordinator.quota_states import ProbeDispatched
 
     req = request()
     probing = Probing(waiting(), req)
@@ -666,7 +641,7 @@ def test_probe_journal_failure_retains_dispatched_request() -> None:
     error = OSError("journal failed")
 
     # When
-    result = quota_write_failed(probing, event, error)
+    result = probing.journal_failed(event, error)
 
     # Then
     assert result.obligation is event
@@ -720,8 +695,7 @@ def test_inconclusive_probe_never_closes_as_available(
     )
 
     # When
-    history, pending = probe_persisted(
-        RecordingProbe(waiting(), evidence),
+    history, pending = RecordingProbe(waiting(), evidence).persisted(
         QuotaHistory((), ()),
         record,
         None,
@@ -774,8 +748,7 @@ def test_probe_closure_preserves_stop_or_original_cancellation(cancelled: bool) 
     stop = StopReason(error, cancellation, "leaf" if cancelled else None, None)
 
     # When
-    history, pending = probe_persisted(
-        RecordingProbe(waiting(), evidence),
+    history, pending = RecordingProbe(waiting(), evidence).persisted(
         QuotaHistory((), ()),
         record,
         stop,
@@ -784,8 +757,8 @@ def test_probe_closure_preserves_stop_or_original_cancellation(cancelled: bool) 
         2.0,
     )
     assert pending.end_record is not None
-    history, result = quota_wait_completed(
-        pending, history, pending.end_record, stop, None, "2026-01-01T00:00:02Z"
+    history, result = pending.completed(
+        history, pending.end_record, stop, None, "2026-01-01T00:00:02Z"
     )
 
     # Then
@@ -801,11 +774,8 @@ def test_quota_wait_start_during_cancellation_requires_and_retains_closure() -> 
     from dataclasses import replace
 
     from script.eval.model import WaitEvent
-    from script.eval.runner.coordinator.quota import (
-        quota_wait_started,
-        quota_write_failed,
-    )
-    from script.eval.runner.coordinator.state import Draining, StopReason, WaitWrite
+    from script.eval.runner.coordinator.quota_states import Draining
+    from script.eval.runner.coordinator.state import StopReason, WaitWrite
 
     state = waiting()
     submitted = replace(state, start_phase="submitted")
@@ -834,10 +804,8 @@ def test_quota_wait_start_during_cancellation_requires_and_retains_closure() -> 
     error = OSError("failed")
 
     # When
-    started = quota_wait_started(
-        Draining(state.context), submitted, None, stop, closure
-    )
-    failed = quota_write_failed(started, WaitWrite(event, closure), error)
+    started = Draining(state.context).started(submitted, None, stop, closure)
+    failed = started.journal_failed(WaitWrite(event, closure), error)
 
     # Then
     assert started.start_phase == "durable"
@@ -853,14 +821,12 @@ def test_quota_wait_start_normal_success_has_no_pending_closure() -> None:
     # Given
     from dataclasses import replace
 
-    from script.eval.runner.coordinator.quota import quota_wait_started
-    from script.eval.runner.coordinator.state import Draining
+    from script.eval.runner.coordinator.quota_states import Draining
 
     state = waiting()
 
     # When
-    result = quota_wait_started(
-        Draining(state.context),
+    result = Draining(state.context).started(
         replace(state, start_phase="submitted"),
         None,
         None,
@@ -876,15 +842,10 @@ def test_quota_wait_start_normal_success_has_no_pending_closure() -> None:
 def test_telemetry_write_failure_keeps_durable_attempt_and_exact_event() -> None:
     # Given
     from script.eval.model import QuotaTelemetryEvent
-    from script.eval.runner.coordinator.calls import (
-        capture_telemetry,
-        telemetry_write_failed,
-    )
 
     history = CallHistory(call(), (), ())
     record = attempt_record(1, "quota")
-    observed = attempt_persisted(
-        recording(history, 1, "quota"),
+    observed = recording(history, 1, "quota").persisted(
         record,
         config(quota_wait_enabled=True),
         None,
@@ -897,7 +858,7 @@ def test_telemetry_write_failure_keeps_durable_attempt_and_exact_event() -> None
     error = OSError("failed")
 
     # When
-    pending = telemetry_write_failed(capture_telemetry(observed, event), error)
+    pending = observed.capture(event).write_failed(error)
 
     # Then
     assert pending.history.attempts == (record,)
@@ -908,7 +869,6 @@ def test_telemetry_write_failure_keeps_durable_attempt_and_exact_event() -> None
 def test_call_wait_write_failure_retains_pending_closure_and_history() -> None:
     # Given
     from script.eval.model import WaitEvent
-    from script.eval.runner.coordinator.calls import call_wait_write_failed
     from script.eval.runner.coordinator.state import WaitWrite
 
     history = CallHistory(call(), (attempt_record(1, "capacity"),), ())
@@ -928,7 +888,7 @@ def test_call_wait_write_failure_retains_pending_closure_and_history() -> None:
     error = OSError("failed")
 
     # When
-    result = call_wait_write_failed(RetryWait(history, wait), write, error)
+    result = RetryWait(history, wait).write_failed(write, error)
 
     # Then
     assert result.history is history
@@ -938,10 +898,6 @@ def test_call_wait_write_failure_retains_pending_closure_and_history() -> None:
 
 def test_dispatched_probe_and_failed_write_keep_exact_request_and_evidence() -> None:
     # Given
-    from script.eval.runner.coordinator.quota import (
-        probe_dispatched,
-        probe_write_failed,
-    )
 
     req = request()
     prepared = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
@@ -964,10 +920,10 @@ def test_dispatched_probe_and_failed_write_keep_exact_request_and_evidence() -> 
     error = OSError("failed")
 
     # When
-    probing = probe_dispatched(prepared, req)
-    captured = capture_probe(probing, evidence, None)
+    probing = prepared.dispatched(req)
+    captured = probing.capture(evidence, None)
     assert isinstance(captured, RecordingProbe)
-    pending = probe_write_failed(captured, error)
+    pending = captured.write_failed(error)
 
     # Then
     assert probing.request is req
@@ -982,14 +938,23 @@ def test_dispatched_probe_and_failed_write_keep_exact_request_and_evidence() -> 
         (True, False, None, "stop"),
         (True, True, None, "cancelled"),
         (False, False, 0, "bound"),
+        (True, False, 0, "stop"),
+        (True, True, 0, "cancelled"),
     ],
-    ids=["stop", "cancel-wins-stop", "probe-cap-zero"],
+    ids=[
+        "stop",
+        "cancel-wins-stop",
+        "probe-cap-zero",
+        "stop-wins-bound",
+        "cancel-wins-bound",
+    ],
 )
 def test_probe_gate_closes_preparation_without_dispatch(
     stop: bool, cancellation: bool, budget: int | None, expected: str
 ) -> None:
     # Given
-    from script.eval.runner.coordinator.state import ProbeNotDispatched, StopReason
+    from script.eval.runner.coordinator.quota_states import ProbeNotDispatched
+    from script.eval.runner.coordinator.state import StopReason
 
     req = request()
     state = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
@@ -997,8 +962,7 @@ def test_probe_gate_closes_preparation_without_dispatch(
     error = CancelledError() if cancellation else None
 
     # When
-    result = probe_dispatch_gate(
-        state,
+    result = state.dispatch_gate(
         config(quota_wait_enabled=True, quota_probe_budget=budget),
         0,
         None,
@@ -1048,8 +1012,7 @@ def test_nonzero_exhausted_probe_continues_waiting() -> None:
     )
 
     # When
-    history, state = probe_persisted(
-        RecordingProbe(waiting(), evidence),
+    history, state = RecordingProbe(waiting(), evidence).persisted(
         QuotaHistory((), ()),
         record,
         None,
@@ -1087,7 +1050,7 @@ def test_latched_cancellation_rejects_non_cancelled_call_wait_closure() -> None:
     with pytest.raises(
         ValueError, match="cancelled wait requires cancelled closure"
     ) as exc:
-        call_wait_started(state, None, stop, closure)
+        state.started(None, stop, closure)
 
     # Then
     assert exc.value.__cause__ is None
@@ -1095,7 +1058,6 @@ def test_latched_cancellation_rejects_non_cancelled_call_wait_closure() -> None:
 
 def test_probe_dispatch_rejects_another_pause() -> None:
     # Given
-    from script.eval.runner.coordinator.quota import probe_dispatched
 
     req = request()
     prepared = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
@@ -1103,7 +1065,7 @@ def test_probe_dispatch_rejects_another_pause() -> None:
 
     # When
     with pytest.raises(ValueError, match="request does not belong") as exc:
-        probe_dispatched(prepared, wrong)
+        prepared.dispatched(wrong)
 
     # Then
     assert exc.value.__cause__ is None
@@ -1143,8 +1105,7 @@ def test_available_probe_with_wrong_scope_stops_after_durable_closure() -> None:
     )
 
     # When
-    history, pending = probe_persisted(
-        RecordingProbe(waiting(), evidence),
+    history, pending = RecordingProbe(waiting(), evidence).persisted(
         QuotaHistory((), ()),
         record,
         None,
@@ -1153,8 +1114,8 @@ def test_available_probe_with_wrong_scope_stops_after_durable_closure() -> None:
         2.0,
     )
     assert pending.end_record is not None
-    history, result = quota_wait_completed(
-        pending, history, pending.end_record, None, None, "2026-01-01T00:00:02Z"
+    history, result = pending.completed(
+        history, pending.end_record, None, None, "2026-01-01T00:00:02Z"
     )
 
     # Then
@@ -1176,9 +1137,7 @@ def test_capacity_third_retry_uses_category_index_two() -> None:
     )
 
     # When
-    result = attempt_persisted(
-        recording(history, 3, "capacity"), record, cfg, None, wait
-    )
+    result = recording(history, 3, "capacity").persisted(record, cfg, None, wait)
 
     # Then
     assert result == RetryWait(result.history, wait)
@@ -1190,8 +1149,7 @@ def test_cancelled_quota_start_requires_closure_after_start_write_succeeds() -> 
     # Given
     from dataclasses import replace
 
-    from script.eval.runner.coordinator.quota import quota_wait_started
-    from script.eval.runner.coordinator.state import Draining
+    from script.eval.runner.coordinator.quota_states import Draining
 
     state = waiting()
     submitted = replace(state, start_phase="submitted")
@@ -1199,7 +1157,7 @@ def test_cancelled_quota_start_requires_closure_after_start_write_succeeds() -> 
 
     # When
     with pytest.raises(ValueError, match="stopped wait requires closure") as exc:
-        quota_wait_started(Draining(state.context), submitted, cancellation, None, None)
+        Draining(state.context).started(submitted, cancellation, None, None)
 
     # Then
     assert exc.value.__cause__ is None
@@ -1211,8 +1169,7 @@ def test_quota_start_retains_closure_for_concurrent_cancellation() -> None:
     # Given
     from dataclasses import replace
 
-    from script.eval.runner.coordinator.quota import quota_wait_started
-    from script.eval.runner.coordinator.state import Draining
+    from script.eval.runner.coordinator.quota_states import Draining
 
     state = waiting()
     submitted = replace(state, start_phase="submitted")
@@ -1227,8 +1184,8 @@ def test_quota_start_retains_closure_for_concurrent_cancellation() -> None:
     )
 
     # When
-    result = quota_wait_started(
-        Draining(state.context), submitted, CancelledError("owner"), None, closure
+    result = Draining(state.context).started(
+        submitted, CancelledError("owner"), None, closure
     )
 
     # Then
@@ -1259,8 +1216,8 @@ def test_latched_call_cancellation_closes_wait_before_stopping() -> None:
     stop = StopReason(RuntimeError("latched"), cancellation, "leaf", None)
 
     # When
-    started = call_wait_started(state, None, stop, closure)
-    result = call_wait_completed(started, closure, stop)
+    started = state.started(None, stop, closure)
+    result = started.completed(closure, stop)
 
     # Then
     assert started.wait.end_record is closure
@@ -1268,3 +1225,108 @@ def test_latched_call_cancellation_closes_wait_before_stopping() -> None:
     assert result.history.waits == (closure,)
     assert stop.cancellation is cancellation
     assert cancellation.__cause__ is None
+
+
+@pytest.mark.parametrize(
+    ("changes", "expected"),
+    [
+        ({}, True),
+        ({"run_id": "other"}, False),
+        ({"call_id": "other"}, False),
+        ({"attempt_number": 2}, False),
+        ({"position": 1}, False),
+        ({"retry_assessment": assessment("capacity")}, False),
+    ],
+    ids=["match", "run", "call", "attempt", "position", "assessment"],
+)
+def test_recording_matches_complete_attempt_identity(
+    changes: dict[str, object], expected: bool
+) -> None:
+    # Given
+    state = recording(CallHistory(call(), (), ()), 1, "infrastructure")
+    record = attempt_record(1, "infrastructure").model_copy(update=changes)
+
+    # When
+    result = state.matches_record(record)
+
+    # Then
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    ("field", "expected"),
+    [
+        ("match", True),
+        ("request", False),
+        ("quota_state", False),
+        ("observation", False),
+    ],
+    ids=["match", "exact-request", "quota-state", "observation"],
+)
+def test_recording_probe_matches_captured_facts(field: str, expected: bool) -> None:
+    # Given
+    req = request()
+    obs = observation()
+    evidence = QuotaProbeEvidence(
+        req,
+        AttemptEvidence(
+            "returned",
+            None,
+            None,
+            None,
+            call().request,
+            "2026-01-01T00:00:00Z",
+            None,
+            None,
+        ),
+        "available",
+        obs,
+        "controlled",
+    )
+    state = RecordingProbe(waiting(), evidence)
+    fields = process_fields()
+    fields.update(
+        request=req,
+        quota_state="available",
+        observation=obs,
+        classification_basis="controlled",
+        exit_status=0,
+    )
+    record = QuotaProbeRecord.model_validate(fields)
+    alternatives: dict[str, dict[str, object]] = {
+        "match": {},
+        "request": {"request": req.model_copy()},
+        "quota_state": {"quota_state": "unknown"},
+        "observation": {"observation": None},
+    }
+    record = record.model_copy(update=alternatives[field])
+
+    # When
+    result = state.matches_record(record)
+
+    # Then
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"run_id": "other"},
+        {"call_id": "other"},
+        {"attempt_number": 2},
+        {"position": 1},
+        {"retry_assessment": assessment("capacity")},
+    ],
+    ids=["run", "call", "attempt", "position", "assessment"],
+)
+def test_recording_rejects_unrelated_attempt_record(changes: dict[str, object]) -> None:
+    # Given
+    state = recording(CallHistory(call(), (), ()), 1, "infrastructure")
+    record = attempt_record(1, "infrastructure").model_copy(update=changes)
+
+    # When
+    with pytest.raises(ValueError, match="attempt record does not belong"):
+        state.persisted(record, config(), None, None)
+
+    # Then
+    assert state.history.attempts == ()

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical reviewed state reference; runtime state.py is authoritative."""
+"""Historical reviewed state reference; runtime state modules are authoritative."""
 
 from asyncio import CancelledError
 from dataclasses import dataclass
