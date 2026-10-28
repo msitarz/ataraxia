@@ -195,7 +195,7 @@ class ProbeNotDispatched:
     """Close preparation without a process or probe-budget charge."""
 
     prepared: ProbePrepared
-    cause: Literal["bound", "stop", "cancelled"]
+    cause: Literal["bound", "stop", "cancelled", "unknown"]
     ended_at_utc: str
     elapsed_seconds: float
 
@@ -238,6 +238,13 @@ class ProbeEvidencePending:
     error: BaseException
 
 @dataclass(frozen=True)
+class QuotaWriteFailure:
+    """The exact failed journal input and original error."""
+
+    obligation: WaitWrite | ProbeDispatchEvent
+    error: BaseException
+
+@dataclass(frozen=True)
 class QuotaEvidencePending:
     """A failed wait or probe journal write retains its obligation.
 
@@ -246,8 +253,7 @@ class QuotaEvidencePending:
     """
 
     waiting: Waiting
-    obligation: WaitWrite | ProbeDispatchEvent
-    error: BaseException
+    failures: tuple[QuotaWriteFailure, *tuple[QuotaWriteFailure, ...]]
     probe: Probing | RecordingProbe | ProbeEvidencePending | None
 
 @dataclass(frozen=True)

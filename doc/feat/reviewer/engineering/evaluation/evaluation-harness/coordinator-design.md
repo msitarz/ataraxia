@@ -5,14 +5,14 @@ transitions, retained-task settlement, and pure progress projection are
 implemented. Shared control implements the stop latch and quota gate, including
 async waiter notification. The call owner implements attempt dispatch and
 settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
-passive telemetry through the shared control and settlement boundaries. A
-quota-owner skeleton persists a wait start and closes it when the bound or probe
-budget forbids polling. Probe recovery, the run owner, and their composition
-remain planned, so this is not a complete runner. All Work acceptance criteria
-remain TODO. The [Work contract](README.md) owns behavior and the
-[current architecture](architecture.md) describes implemented components.
-[PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
-with known lifecycle bugs, not a validated alternative.
+passive telemetry through the shared control and settlement boundaries. A quota
+owner awaits bounded probe recovery and persists its wait and probe transitions
+through the shared control and settlement boundaries. The run owner and
+composition remain planned, so this is not a complete runner. All Work
+acceptance criteria remain TODO. The [Work contract](README.md) owns behavior
+and the [current architecture](architecture.md) describes implemented
+components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
+superseded approach with known lifecycle bugs, not a validated alternative.
 
 ## TL;DR
 
@@ -118,11 +118,10 @@ with known lifecycle bugs, not a validated alternative.
   probe count only when the reader is invoked.
 - Its journal write is retained and settled alongside the invoked probe before
   any result is reported or recovery resumes.
-- The existing runtime `QuotaProbeStarted` describes actual dispatch but is
-  currently written before polling; future wiring replaces that input with
-  preparation and dispatch events and adds the not-dispatched closure.
-- Existing scheduled and settled probe records remain separate from these
-  proposed inputs; this sketch changes no runtime schema or Work contract.
+- The runtime evidence port accepts `QuotaProbePrepared`,
+  `QuotaProbeDispatched`, and `QuotaProbeNotDispatched` in place of the former
+  started input; the quota owner writes these during recovery.
+- Scheduled and settled probe records remain separate from these inputs.
 - A timeout that translates cancellation into `TimeoutError` preserves
   exact-request probe evidence from its exception chain.
 - That evidence includes process, output, and cleanup observations and is
@@ -230,7 +229,11 @@ with known lifecycle bugs, not a validated alternative.
 - After draining, the coordinator derives `QuotaWaitContext` from that trigger
   and validated run policy, then awaits `QuotaOwner` recovery.
 - An unavailable, unknown, stale, or mismatched trigger cannot open the gate or
-  authorize a probe and follows the contract's failure handling.
+  authorize a probe. The owner ends recovery incomplete, stops, and durably
+  closes any started wait as unknown; a prepared probe receives a durable
+  not-dispatched unknown event. The adapter owns required-window completeness
+  and ordering; the pure state checks nonempty known windows, exhaustion, reader
+  scope, and inclusive expiry before effects and again after preparation.
 - A failed telemetry write retains its `QuotaTelemetryEvent`, error, and
   already durable attempt in the same call's evidence-pending state.
 - Passive ingestion and its writes are skipped when quota waiting is disabled.
@@ -278,12 +281,12 @@ with known lifecycle bugs, not a validated alternative.
   identity through the reader, timeout translation, and evidence settlement.
 - Probe recording and failed or missing evidence remain distinct from an active
   poll and retain its request, captured evidence when available, and failure.
-- A failed wait or probe journal write retains its obligation and error rather
-  than claiming durability. If a dispatch journal fails, its invoked probe state
-  remains attached while the owner settles and records that probe.
-- Future evidence-port wiring must accept the proposed preparation, dispatch,
-  and not-dispatched inputs in place of the current started input.
-- The existing runtime types and evidence port are unchanged by this sketch.
+- Failed wait or probe journal writes retain each exact obligation and error in
+  order rather than claiming durability, including a later closure failure after
+  a dispatch journal failure. If a dispatch journal fails, its invoked probe
+  state remains attached while the owner settles and records that probe.
+- Runtime evidence types and quota recovery use preparation, dispatch, and
+  not-dispatched inputs; the run owner still needs to compose recovery.
 
 ## Pure transition map
 
@@ -305,7 +308,7 @@ construction and adapter boundaries establish those relationships.
 | `RetryWait.started` | `RetryWait`, settled start, cancellation/stop and pending closure facts | Durable-start `RetryWait`; the owner closes it before propagating cancellation or stop. |
 | `RetryWait.completed` | `RetryWait`, durable end record and stop | `Queued` or `Stopped` after appending the wait to history. |
 | `Draining.started` | Drained `Draining`, submitted wait, settled start, cancellation/stop and pending closure facts | Durable-start `Waiting`; the owner closes it before stop or cancellation propagates. |
-| `PreparingProbe.dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
+| `PreparingProbe.dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation, reader scope and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
 | `PreparingProbe.dispatched` | `PreparingProbe`, request built at invocation | `Probing`; the owner retains the dispatch journal write alongside the probe. |
 | `Probing.capture` | `Probing`, captured exact-request outcome or missing evidence and error | `RecordingProbe` or `ProbeEvidencePending`; the owner extracts exception-chain evidence and writes captured evidence. |
 | `RecordingProbe.persisted` | `RecordingProbe`, durable record and history, fresh stop, bound and clocks | Updated probe history and `Waiting`; a required end record remains pending for the owner to write. |

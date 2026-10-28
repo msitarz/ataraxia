@@ -5,7 +5,13 @@ from dataclasses import replace
 
 import pytest
 
-from script.eval.model import QuotaProbeEvidence, QuotaProbeRecord, QuotaTelemetryEvent
+from script.eval.model import (
+    QuotaProbeEvidence,
+    QuotaProbeId,
+    QuotaProbeRecord,
+    QuotaTelemetryEvent,
+    WaitEvent,
+)
 from script.eval.runner.coordinator.call_states import (
     Attempting,
     CallHistory,
@@ -25,13 +31,16 @@ from script.eval.runner.coordinator.progress import (
 from script.eval.runner.coordinator.quota_states import (
     Open,
     PreparingProbe,
+    ProbeDispatched,
     ProbeEvidencePending,
     ProbePrepared,
     Probing,
     QuotaEvidencePending,
     QuotaHistory,
+    QuotaWriteFailure,
     RecordingProbe,
 )
+from script.eval.runner.coordinator.state import WaitWrite
 from script.eval.runner.ports import CallWait, ProgressCounts
 from test.script.unit.eval.test_coordinator_states import (
     attempt_record,
@@ -39,6 +48,7 @@ from test.script.unit.eval.test_coordinator_states import (
     capacity_wait,
     observation,
     process_fields,
+    quota_closure,
     recording,
     request,
     waiting,
@@ -183,7 +193,9 @@ def test_probe_preparation_and_nested_pending_are_distinct() -> None:
             replace(
                 base,
                 quota=QuotaEvidencePending(
-                    waiting(), prepared.preparation, OSError(), probe
+                    waiting(),
+                    (QuotaWriteFailure(prepared.preparation, OSError()),),
+                    probe,
                 ),
             )
         ).counts
@@ -363,3 +375,62 @@ def test_mixed_snapshot_has_exact_counts() -> None:
         probes_failed=0,
         probes_cancelled=0,
     )
+
+
+def test_later_wait_failure_retains_dispatch_failure_probe_and_history() -> None:
+    # Given
+    current = waiting()
+    req = request()
+    probing = Probing(current, req)
+    dispatch = ProbeDispatched(req)
+    dispatch_error = OSError("dispatch journal")
+    closure = quota_closure()
+    event = WaitEvent(
+        run_id="run",
+        wait_id=closure.wait_id,
+        context=closure.context,
+        kind="finished",
+        observed_at_utc="2026-01-01T00:00:02Z",
+        elapsed_seconds=2.0,
+        quota_observation=current.observation,
+        end=closure.end,
+        diagnostic=None,
+    )
+    wait_write = WaitWrite(event, closure)
+    wait_error = OSError("wait closure")
+    previous_request = req.model_copy(
+        update={
+            "schedule": req.schedule.model_copy(
+                update={"probe_id": QuotaProbeId("previous")}
+            )
+        }
+    )
+    fields = process_fields()
+    fields.update(
+        request=previous_request,
+        quota_state="unknown",
+        observation=None,
+        classification_basis=None,
+    )
+    old_probe = QuotaProbeRecord.model_validate(fields)
+    previous_wait = closure.model_copy(update={"wait_id": "previous"})
+    history = QuotaHistory((previous_wait,), (old_probe,))
+    first = probing.journal_failed(dispatch, dispatch_error)
+
+    # When
+    pending = first.journal_failed(wait_write, wait_error)
+    counts = project(replace(view(), quota=pending, probes=history)).counts
+
+    # Then
+    assert (
+        pending.failures[0].obligation is dispatch,
+        pending.failures[0].error is dispatch_error,
+        pending.failures[1].obligation is wait_write,
+        pending.failures[1].error is wait_error,
+    ) == (True, True, True, True)
+    assert pending.waiting is current
+    assert pending.probe is probing
+    assert history.waits == (previous_wait,)
+    assert history.probes == (old_probe,)
+    assert (counts.probes_started, counts.probes_active) == (2, 1)
+    assert pending.journal_failed(wait_write, wait_error) is pending

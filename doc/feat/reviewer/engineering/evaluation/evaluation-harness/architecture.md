@@ -300,9 +300,9 @@ one global quota recovery flow from authoritative typed lifecycles.
   implemented. Retained-task settlement and pure progress projection are
   implemented. Shared control implements stop and quota gate notification and
   waiting. The call owner implements attempt and exceptional evidence
-  settlement, capacity retry waits, and passive telemetry. A quota-owner
-  skeleton persists and closes probe-disabled or bounded waits; probe recovery
-  and the run owner remain planned.
+  settlement, capacity retry waits, and passive telemetry. The quota owner
+  awaits bounded recovery and persists its wait and probe transitions; the run
+  owner and composition remain planned.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -318,8 +318,8 @@ Codex, quota, and runtime adapters.
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` implements state, pure transitions, retained-task
   settlement, pure progress projection, shared stop and quota control, and call
-  lifecycle ownership, and a quota wait skeleton; probe recovery, run ownership,
-  and composition remain planned and are described in the
+  lifecycle ownership, and awaited quota recovery; run ownership and composition
+  remain planned and are described in the
   [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
@@ -549,11 +549,11 @@ evidence.
 - Wait events are appended durably when a quota or capacity wait starts (the
   quota start event includes the optional selected reset hint), when quota
   status is rechecked, and when the wait ends. Quota-poll cadence is represented
-  by the probe lifecycle rather than a second wait record. Schedule, start,
-  settlement, and prelaunch cancellation events are persisted as they occur;
-  the probe ID joins them. Quota-pause and capacity-backoff waits retain their
-  own stable wait IDs and policy contexts, so concurrent waits remain
-  distinguishable. The event ledger is persisted as it grows rather than
+  by the probe lifecycle rather than a second wait record. Schedule,
+  preparation, dispatch, settlement, and non-dispatch events are persisted as
+  they occur; the probe ID joins them. Quota-pause and capacity-backoff waits
+  retain their own stable wait IDs and policy contexts, so concurrent waits
+  remain distinguishable. The event ledger is persisted as it grows rather than
   duplicated in the final `RunRecord`; a final summary alone is not evidence for
   a live wait. A failed event write latches stop and forbids resumption or
   retry.
@@ -561,13 +561,13 @@ evidence.
   positive observation for the same scope. This can happen before a reset hint
   or when no hint exists, but only from a probe started for the current pause
   after active evaluations settle. Reaching a reset hint makes the scheduled
-  check due sooner; it never ends the pause or reopens dispatch. Without a
-  hint, checks become due at the configured interval. The awaited recovery flow
-  owns these waits; the coordinator does not run a second reset timer alongside
+  check due sooner; it never ends the pause or reopens dispatch. Without a hint,
+  checks become due at the configured interval. The awaited recovery flow owns
+  these waits; the coordinator does not run a second reset timer alongside
   polling. Unknown or unavailable data fails closed; a bound, cancellation, or
   stop can end the pause without resumption. `delay_elapsed` is the normal end
-  of capacity backoff; quota cadence is captured as scheduled and started probe
-  lifecycle evidence.
+  of capacity backoff; quota cadence is captured in scheduled and dispatched
+  probe lifecycle evidence.
 - A small optional telemetry extractor may preserve generic usage fields while
   retaining raw stdout. It does not validate answer schemas, parse reviewer
   verdicts, inspect labels, or score results.

@@ -18,8 +18,10 @@ from script.eval.model import (
     HarnessConfig,
     InstructionsSnapshot,
     QuotaProbeCancelled,
+    QuotaProbeDispatched,
     QuotaProbeEvidence,
-    QuotaProbeStarted,
+    QuotaProbeNotDispatched,
+    QuotaProbePrepared,
     QuotaTelemetryEvent,
     QuotaWaitContext,
     RunRecord,
@@ -254,7 +256,7 @@ async def test_probe_records_preserve_process_artifacts(
     process = attempt_evidence()
     request = quota_probe_request("probe.alpha")
     await store.record_quota_probe_event(
-        QuotaProbeStarted(kind="started", request=request)
+        QuotaProbeDispatched(kind="dispatched", request=request)
     )
 
     # When
@@ -290,7 +292,7 @@ async def test_probe_records_preserve_process_artifacts(
     assert settled.record.stdout_artifact != dotted_settled.record.stdout_artifact
     events = (tmp_path / "run" / "events.jsonl").read_text().splitlines()
     assert [json.loads(line)["event"]["kind"] for line in events] == [
-        "started",
+        "dispatched",
         "settled",
         "settled",
     ]
@@ -687,3 +689,32 @@ async def test_omitted_instructions_file_adds_no_override_or_staged_artifact(
     assert prepared.model_instructions_file is None
     assert {path.name for path in prepared.output_directory.iterdir()} == {"plan.json"}
     assert json.loads(prepared.plan_artifact.read_text())["instructions_file"] is None
+
+
+async def test_probe_preparation_can_close_without_dispatch(tmp_path: Path) -> None:
+    # Given
+    store = create_evidence_store()
+    prepared = await store.create(tmp_path / "run", frozen_plan())
+    request = quota_probe_request("probe.intent")
+    intent = QuotaProbePrepared(
+        kind="prepared", schedule=request.schedule, pause_wait_id="wait"
+    )
+    closure = QuotaProbeNotDispatched(
+        kind="not_dispatched",
+        schedule=request.schedule,
+        pause_wait_id="wait",
+        cause="bound",
+        ended_at_utc="2026-10-26T00:00:03Z",
+        elapsed_seconds=2.0,
+    )
+
+    # When
+    await store.record_quota_probe_event(intent)
+    await store.record_quota_probe_event(closure)
+
+    # Then
+    lines = (prepared.output_directory / "events.jsonl").read_text().splitlines()
+    assert [json.loads(line)["event"] for line in lines] == [
+        intent.model_dump(mode="json"),
+        closure.model_dump(mode="json"),
+    ]
