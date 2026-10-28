@@ -2,7 +2,7 @@
 """Retain submitted tasks and preserve cancellation with their outcome."""
 
 from asyncio import CancelledError, Task
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 
 
@@ -41,7 +41,7 @@ async def settle[T](task: Task[T], /) -> Settlement[T]:
 
 async def _settle[T](
     task: Task[T],
-    retain: Callable[[Task[T]], Awaitable[CancelledError | None]],
+    retain: Callable[[Task[T]], Coroutine[None, None, CancelledError | None]],
     /,
 ) -> Settlement[T]:
     """Build the outcome after the retained task settles.

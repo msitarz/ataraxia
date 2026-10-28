@@ -77,6 +77,39 @@ async def test_settlement_preserves_task_failure_and_owner_cancellation(
     assert result.cancellation is cancellation
 
 
+@pytest.mark.parametrize(
+    "cancelled", [False, True], ids=["no-owner-cancellation", "owner-cancelled"]
+)
+async def test_settlement_preserves_leaf_cancellation_separately(
+    cancelled: bool,
+) -> None:
+    # Given
+    async def cancel_self() -> int:
+        current = asyncio.current_task()
+        assert current is not None
+        current.cancel("leaf")
+        await asyncio.Event().wait()
+        raise AssertionError("self-cancellation was not delivered")
+
+    task: Task[int] = asyncio.create_task(cancel_self())
+    cancellation = CancelledError("owner") if cancelled else None
+
+    async def retain(submitted: Task[int]) -> CancelledError | None:
+        assert submitted is task
+        await asyncio.wait({submitted})
+        return cancellation
+
+    # When
+    result = await _settle(task, retain)
+
+    # Then
+    assert isinstance(result, SettledFailure)
+    assert isinstance(result.error, CancelledError)
+    assert result.error.args == ("leaf",)
+    assert result.error is not cancellation
+    assert result.cancellation is cancellation
+
+
 async def test_public_settlement_exposes_pending_retained_task_loop() -> None:
     # Given
     ready = asyncio.Event()
