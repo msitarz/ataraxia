@@ -4,6 +4,7 @@
 import asyncio
 from collections.abc import Callable
 from contextlib import suppress
+from typing import Never
 
 from script.eval.evidence import EvidenceStore
 from script.eval.model import QuotaWaitContext, RunRecord
@@ -186,7 +187,7 @@ def _raise_outcome(error: BaseException | None, result: Settlement[None]) -> Non
     if cancellation is not None:
         _raise_with_cause(
             cancellation,
-            error if error is not None and error is not cancellation else failure,
+            failure if failure is not None and failure is not cancellation else error,
         )
     if isinstance(failure, asyncio.CancelledError):
         _raise_with_cause(failure, error)
@@ -196,7 +197,7 @@ def _raise_outcome(error: BaseException | None, result: Settlement[None]) -> Non
         raise failure
 
 
-def _raise_with_cause(error: BaseException, cause: BaseException | None) -> None:
+def _raise_with_cause(error: BaseException, cause: BaseException | None) -> Never:
     """Raise the original object without creating a self-referential cause."""
     if cause is not None and cause is not error:
         raise error from cause

@@ -2,6 +2,7 @@
 """Exercise the coordinator's thin composition, not final metadata projection."""
 
 import asyncio
+from dataclasses import replace
 from pathlib import Path
 from typing import override
 
@@ -331,7 +332,7 @@ def test_final_status_distinguishes_call_outcomes(
             OSError("write"),
             asyncio.CancelledError("owner"),
             "owner",
-            "local",
+            "final",
         ),
         (ValueError("call"), OSError("write"), None, "local", "final"),
         (None, asyncio.CancelledError("leaf"), None, "final", None),
@@ -560,3 +561,101 @@ async def test_leaf_cancellation_of_final_write_preserves_prior_error() -> None:
     assert coordinator._control.reason.first is original
     assert coordinator._control.reason.recording_failure is cancellation
     assert coordinator._control.reason.cancellation is cancellation
+
+
+async def test_multiple_calls_are_refused_before_effects() -> None:
+    # Given
+    original = bound_run()
+    first = original.calls[0]
+    second = replace(
+        first,
+        call_id="call-2",
+        planned_call=first.planned_call.model_copy(update={"position": 1}),
+    )
+    plan = original.plan.model_copy(
+        update={"calls": (first.planned_call, second.planned_call)}
+    )
+    bound = BoundRun(plan, original.binding, original.evidence, (first, second))
+    store, sink, projection = FinalStore(), Sink(), Projection()
+    coordinator = Coordinator(
+        bound,
+        store,
+        _attempt,
+        Classifier(),
+        NoQuota(),
+        Clock(),
+        sink,
+        _projection=projection,
+    )
+
+    # When
+    with pytest.raises(NotImplementedError, match="multi-call scheduling"):
+        await coordinator.run()
+
+    # Then
+    assert store.seen == []
+    assert store.final is None
+    assert sink.snapshots == []
+    assert projection.bound is None
+
+
+async def test_quota_enabled_run_is_refused_before_effects() -> None:
+    # Given
+    original = bound_run()
+    plan = original.plan.model_copy(
+        update={"configuration": config(quota_wait_enabled=True)}
+    )
+    bound = BoundRun(plan, original.binding, original.evidence, original.calls)
+    store, sink, projection = FinalStore(), Sink(), Projection()
+    coordinator = Coordinator(
+        bound,
+        store,
+        _attempt,
+        Classifier(),
+        NoQuota(),
+        Clock(),
+        sink,
+        _projection=projection,
+    )
+
+    # When
+    with pytest.raises(NotImplementedError, match="quota recovery"):
+        await coordinator.run()
+
+    # Then
+    assert store.seen == []
+    assert store.final is None
+    assert sink.snapshots == []
+    assert projection.bound is None
+
+
+async def test_coordinator_reuse_is_refused_without_repeating_effects() -> None:
+    # Given
+    original = bound_run()
+    bound = BoundRun(
+        original.plan.model_copy(update={"calls": ()}),
+        original.binding,
+        original.evidence,
+        (),
+    )
+    store, sink = FinalStore(), Sink()
+    coordinator = Coordinator(
+        bound,
+        store,
+        _attempt,
+        Classifier(),
+        NoQuota(),
+        Clock(),
+        sink,
+        _projection=Projection(),
+    )
+    first_record = await coordinator.run()
+
+    # When
+    with pytest.raises(RuntimeError, match="already ran"):
+        await coordinator.run()
+
+    # Then
+    assert store.final is first_record
+    assert [snapshot.phase for snapshot in sink.snapshots] == ["running", "final"]
+    assert store.seen == []
