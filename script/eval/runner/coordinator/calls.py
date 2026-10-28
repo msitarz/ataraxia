@@ -55,7 +55,7 @@ from .call_states import (
 from .control import RunControl
 from .quota_states import PauseOrigin, PauseTrigger
 from .settlement import SettledFailure, SettledValue, Settlement, settle
-from .state import WaitWrite
+from .state import StopReason, WaitWrite
 
 
 class CallOwner:
@@ -84,7 +84,7 @@ class CallOwner:
         self._evidence = evidence
         self._runtime = runtime
         self._invocation_error: BaseException | None = None
-        self._owner_cancellation: CancelledError | None = None
+        self._local_cancellation: CancelledError | None = None
 
     @property
     def state(self) -> CallState:
@@ -238,12 +238,12 @@ class CallOwner:
             return None
 
     def _note_active_cancellation(self, error: CancelledError) -> None:
-        """Retain whether this task was cancelled or a leaf raised cancellation."""
+        """Retain this call's first cancellation and its owner or leaf origin."""
         task = asyncio.current_task()
         assert task is not None
         origin = "owner" if task.cancelling() else "leaf"
-        if origin == "owner" and self._owner_cancellation is None:
-            self._owner_cancellation = error
+        if self._local_cancellation is None:
+            self._local_cancellation = error
         self._control.note_cancellation(error, origin)
 
     async def _record(self, state: Recording) -> None:
@@ -298,8 +298,8 @@ class CallOwner:
     def _finish_attempt_settlement(self, settled: Settlement[AttemptRecord]) -> None:
         """Propagate invocation and write cancellation after state is updated."""
         cancellation = (
-            self._owner_cancellation
-            if self._owner_cancellation is not None
+            self._local_cancellation
+            if self._local_cancellation is not None
             else settled.cancellation
         )
         if cancellation is not None:
@@ -405,11 +405,8 @@ class CallOwner:
             Prepared facts for a capacity classification, or no candidate.
         """
         assessment = record.retry_assessment
-        if (
-            self._control.reason is not None
-            or assessment is None
-            or assessment.retry_class != "capacity"
-            or self._config.capacity_retry_limit == 0
+        if not _can_prepare_capacity_wait(
+            self._control.reason, assessment, self._config
         ):
             return None
         previous = history.attempts[:-1] if includes_record else history.attempts
@@ -617,3 +614,25 @@ def _exception_outcome(
     ):
         return attached
     return failure_evidence(error)
+
+
+def _can_prepare_capacity_wait(
+    stop: StopReason | None,
+    assessment: RetryAssessment | None,
+    config: HarnessConfig,
+    /,
+) -> bool:
+    """Determine whether a capacity wait candidate may be prepared.
+
+    This does not decide retry eligibility; the call state applies that policy
+    after durable evidence and any required telemetry.
+
+    Returns:
+        Whether the inputs permit preparing a capacity wait candidate.
+    """
+    return (
+        stop is None
+        and assessment is not None
+        and assessment.retry_class == "capacity"
+        and config.capacity_retry_limit > 0
+    )

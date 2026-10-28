@@ -24,6 +24,7 @@ from script.eval.model import (
     QuotaScope,
     QuotaTelemetryEvent,
     RetryAssessment,
+    RetryClass,
     RunRecord,
     WaitEvent,
 )
@@ -35,7 +36,7 @@ from script.eval.runner.coordinator.call_states import (
     Queued,
     Stopped,
 )
-from script.eval.runner.coordinator.calls import CallOwner
+from script.eval.runner.coordinator.calls import CallOwner, _can_prepare_capacity_wait
 from script.eval.runner.coordinator.control import RunControl
 from script.eval.runner.coordinator.quota_states import PauseOrigin, PauseTrigger
 from script.eval.runner.coordinator.state import WaitWrite
@@ -1939,3 +1940,138 @@ async def test_foreign_owner_cancellation_stops_without_propagating() -> None:
     assert control.reason.cancellation is foreign
     assert attempt.calls == 1
     assert not slots.locked()
+
+
+@pytest.mark.parametrize(
+    ("stopped", "category", "limit", "expected"),
+    [
+        (False, "capacity", 1, True),
+        (True, "capacity", 1, False),
+        (False, None, 1, False),
+        (False, "infrastructure", 1, False),
+        (False, "capacity", 0, False),
+    ],
+    ids=["candidate", "stopped", "unclassified", "other category", "disabled"],
+)
+def test_capacity_wait_candidate_guard(
+    stopped: bool, category: RetryClass | None, limit: int, expected: bool
+) -> None:
+    """Candidate preparation remains separate from retry eligibility."""
+    # Given
+    control = RunControl()
+    if stopped:
+        control.latch_stop(RuntimeError("stop"))
+    classification = None if category is None else assessment(category)
+    settings = config(
+        capacity_retry_limit=limit,
+        capacity_backoff_base_seconds=1.0,
+        capacity_backoff_cap_seconds=2.0,
+    )
+
+    # When
+    result = _can_prepare_capacity_wait(control.reason, classification, settings)
+
+    # Then
+    assert result is expected
+
+
+class LeafCancellingAttempt:
+    """Raise one supervisor cancellation without cancelling the owner task."""
+
+    def __init__(self, error: AttemptCancelled) -> None:
+        self.error = error
+        self.calls = 0
+
+    async def __call__(
+        self, request: AttemptRequest, stop_dispatch: DispatchStop, /
+    ) -> AttemptResult:
+        """Latch stop and propagate the exact leaf cancellation."""
+        self.calls += 1
+        stop_dispatch(self.error)
+        await asyncio.sleep(0)
+        raise self.error
+
+
+def leaf_cancellation_setup(
+    store: Store,
+) -> tuple[RunControl, AttemptCancelled, LeafCancellingAttempt, CallOwner]:
+    """Bind a leaf-cancelling supervisor to a controlled evidence store."""
+    slots = Semaphore(1)
+    control = RunControl()
+    store.slots = slots
+    observed = AttemptObservation(
+        CapturedOutput(b"partial", b""),
+        1.0,
+        CleanupEvidence(
+            "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+        ),
+    )
+    cancellation = AttemptCancelled(observed)
+    attempt = LeafCancellingAttempt(cancellation)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        Classifier(),
+        NoQuota(),
+        store,
+        Clock(),
+    )
+    return control, cancellation, attempt, subject
+
+
+async def test_leaf_supervisor_cancellation_precedes_later_owner_cancellation() -> None:
+    """The original leaf cancellation survives owner cancellation during its write."""
+    # Given
+    store = BlockingStore()
+    control, first, attempt, subject = leaf_cancellation_setup(store)
+    task = asyncio.create_task(subject.run())
+    await store.started.wait()
+
+    # When
+    task.cancel("later owner")
+    await asyncio.sleep(0)
+    assert not task.done()
+    store.release.set()
+    with pytest.raises(AttemptCancelled) as raised:
+        await task
+
+    # Then
+    assert raised.value is first
+    assert store.seen[0].outcome is first
+    assert isinstance(subject.state, Stopped)
+    assert len(subject.state.history.attempts) == 1
+    assert control.reason is not None
+    assert control.reason.cancellation is first
+    assert control.reason.cancellation_origin == "leaf"
+    assert attempt.calls == 1
+
+
+async def test_leaf_supervisor_cancellation_precedes_write_leaf_cancellation() -> None:
+    """The original leaf cancellation chains a later cancelled evidence write."""
+    # Given
+    later = asyncio.CancelledError("write leaf")
+    store = Store(later)
+    control, first, attempt, subject = leaf_cancellation_setup(store)
+
+    # When
+    with pytest.raises(AttemptCancelled) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is first
+    assert raised.value.__cause__ is later
+    assert isinstance(subject.state, EvidencePending)
+    obligation = subject.state.failure.obligation
+    assert isinstance(obligation, AttemptWrite)
+    assert obligation.evidence is store.seen[0]
+    assert obligation.evidence.outcome is first
+    assert subject.state.failure.error is later
+    assert subject.state.history.attempts == ()
+    assert control.reason is not None
+    assert control.reason.cancellation is first
+    assert control.reason.cancellation_origin == "leaf"
+    assert control.reason.recording_failure is later
+    assert attempt.calls == 1
