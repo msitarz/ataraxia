@@ -31,9 +31,11 @@ from script.eval.runner.coordinator.call_states import (
     EvidencePending,
     Finished,
     Queued,
+    Recording,
 )
 from script.eval.runner.coordinator.calls import CallOwner
 from script.eval.runner.coordinator.control import RunControl
+from script.eval.runner.coordinator.quota_states import PauseTrigger
 from script.eval.runner.ports import OutcomeClassifier, QuotaStatusReader, Runtime
 from script.process_supervisor import (
     AttemptObservation,
@@ -57,9 +59,11 @@ from test.script.unit.eval.test_coordinator_states import (
 class Store(EvidenceStore):
     """Controlled attempt persistence with optional failure."""
 
-    def __init__(self, failure: Exception | None = None) -> None:
+    def __init__(self, failure: BaseException | None = None) -> None:
         self.failure = failure
         self.seen: list[AttemptEvidence] = []
+        self.slots: Semaphore | None = None
+        self.forwarded: tuple[str, str, int, int, RetryAssessment | None] | None = None
 
     async def record_attempt(
         self,
@@ -72,7 +76,9 @@ class Store(EvidenceStore):
         /,
     ) -> AttemptRecord:
         """Return a matching durable record or fail the submitted write."""
+        assert self.slots is not None and not self.slots.locked()
         self.seen.append(evidence)
+        self.forwarded = (run_id, call_id, position, attempt_number, retry_assessment)
         if self.failure is not None:
             raise self.failure
         return attempt_record(
@@ -113,9 +119,14 @@ class Store(EvidenceStore):
 class Classifier(OutcomeClassifier):
     """Return a controlled non-retry assessment."""
 
+    def __init__(self) -> None:
+        self.seen: AttemptEvidence | None = None
+        self.result = assessment("other")
+
     def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
         """Classify without inspecting output."""
-        return assessment("other")
+        self.seen = evidence
+        return self.result
 
 
 class Clock(Runtime):
@@ -190,6 +201,7 @@ def owner(
     store: Store, slots: Semaphore, control: RunControl, attempt: Attempt
 ) -> CallOwner:
     """Bind typed controlled dependencies to one queued call."""
+    store.slots = slots
     return CallOwner(
         Queued(CallHistory(call(), (), ())),
         config(),
@@ -203,35 +215,57 @@ def owner(
     )
 
 
-@pytest.mark.asyncio
 async def test_success_is_recorded_after_supervisor_releases_slot() -> None:
     """A successful returned attempt reaches a durable terminal state."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     attempt = Attempt(slots, control)
     store = Store()
-    subject = owner(store, slots, control, attempt)
+    classifier = Classifier()
+    store.slots = slots
+    initial = Queued(CallHistory(call(), (), ()))
+    subject = CallOwner(
+        initial,
+        config(),
+        control,
+        slots,
+        attempt,
+        classifier,
+        NoQuota(),
+        store,
+        Clock(),
+    )
 
+    # When
     result = await subject.run()
 
+    # Then
     assert isinstance(result, Finished)
     assert result.outcome == "success"
     assert attempt.calls == 1
     assert len(store.seen) == 1
+    assert store.forwarded == ("run", "call", 0, 1, assessment("other"))
+    assert store.seen[0] is classifier.seen
+    assert store.forwarded is not None and store.forwarded[-1] is classifier.result
+    assert store.seen[0].request is initial.history.call.request
+    assert store.seen[0].usage_telemetry == b"out"
     assert not slots.locked()
 
 
-@pytest.mark.asyncio
 async def test_recording_failure_stops_dispatch_and_retains_attempt() -> None:
     """Failed evidence remains inspectable and closes the shared gate."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     error = OSError("write failed")
     store = Store(error)
     subject = owner(store, slots, control, Attempt(slots, control))
 
+    # When
     result = await subject.run()
 
+    # Then
     assert isinstance(result, EvidencePending)
     assert result.failure.error is error
     assert control.reason is not None
@@ -239,9 +273,9 @@ async def test_recording_failure_stops_dispatch_and_retains_attempt() -> None:
     assert not slots.locked()
 
 
-@pytest.mark.asyncio
 async def test_stop_while_waiting_for_slot_prevents_invocation() -> None:
     """Recheck a shared stop after acquiring a contended slot."""
+    # Given
     slots = Semaphore(1)
     await slots.acquire()
     control = RunControl()
@@ -250,10 +284,12 @@ async def test_stop_while_waiting_for_slot_prevents_invocation() -> None:
     task = asyncio.create_task(subject.run())
     await asyncio.sleep(0)
 
+    # When
     control.latch_stop(RuntimeError("stop"))
     slots.release()
     result = await task
 
+    # Then
     assert attempt.calls == 0
     assert result == subject.state
     assert not slots.locked()
@@ -286,9 +322,9 @@ class BlockingStore(Store):
         )
 
 
-@pytest.mark.asyncio
 async def test_cancel_during_write_settles_and_preserves_cancellation() -> None:
     """A submitted attempt write completes before owner cancellation escapes."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     store = BlockingStore()
@@ -296,6 +332,7 @@ async def test_cancel_during_write_settles_and_preserves_cancellation() -> None:
     task = asyncio.create_task(subject.run())
     await store.started.wait()
 
+    # When
     task.cancel()
     await asyncio.sleep(0)
     assert not task.done()
@@ -303,6 +340,7 @@ async def test_cancel_during_write_settles_and_preserves_cancellation() -> None:
     with pytest.raises(asyncio.CancelledError):
         await task
 
+    # Then
     assert len(store.seen) == 1
     assert control.reason is not None
     assert control.reason.cancellation is not None
@@ -352,10 +390,12 @@ class QuotaReader(NoQuota):
 class QuotaStore(Store):
     """Check pause and trigger ordering around required writes."""
 
-    def __init__(self, control: RunControl) -> None:
+    def __init__(self, control: RunControl, slots: Semaphore) -> None:
         super().__init__()
         self.control = control
+        self.slots = slots
         self.telemetry_written = asyncio.Event()
+        self.telemetry: QuotaTelemetryEvent | None = None
 
     @override
     async def record_attempt(
@@ -379,16 +419,32 @@ class QuotaStore(Store):
     @override
     async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
         """Require the trigger to remain unpublished until the write returns."""
+        assert self.slots is not None and not self.slots.locked()
         assert self.control.quota_trigger is None
+        self.telemetry = event
         self.telemetry_written.set()
 
 
-@pytest.mark.asyncio
+class ObservedControl(RunControl):
+    """Signal only after the real trigger publication completes."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.published = asyncio.Event()
+
+    @override
+    def publish_quota_trigger(self, trigger: PauseTrigger, /) -> None:
+        """Publish through the real control and then notify the test."""
+        super().publish_quota_trigger(trigger)
+        self.published.set()
+
+
 async def test_quota_pause_precedes_writes_and_trigger_follows_telemetry() -> None:
     """Recognized exhaustion closes the gate before fallible persistence."""
+    # Given
     slots = Semaphore(1)
-    control = RunControl()
-    store = QuotaStore(control)
+    control = ObservedControl()
+    store = QuotaStore(control, slots)
     subject = CallOwner(
         Queued(CallHistory(call(), (), ())),
         config(quota_wait_enabled=True),
@@ -402,13 +458,18 @@ async def test_quota_pause_precedes_writes_and_trigger_follows_telemetry() -> No
     )
     task = asyncio.create_task(subject.run())
 
-    await store.telemetry_written.wait()
-    for _ in range(20):
-        if control.quota_trigger is not None or task.done():
-            break
-        await asyncio.sleep(0)
+    # When
+    await control.published.wait()
 
+    # Then
     assert control.quota_trigger is not None
+    assert store.telemetry is not None
+    assert (
+        store.telemetry.run_id,
+        store.telemetry.call_id,
+        store.telemetry.attempt_number,
+    ) == ("run", "call", 1)
+    assert control.quota_trigger.observation is store.telemetry.observation
     assert not slots.locked()
     task.cancel()
     with pytest.raises(asyncio.CancelledError):
@@ -445,12 +506,13 @@ class CapacityStore(Store):
         return record.model_copy(update={"exit_status": 1})
 
 
-@pytest.mark.asyncio
 async def test_capacity_retry_stops_at_named_pending_preparation() -> None:
-    """A durable capacity failure reaches the explicit unfinished boundary."""
+    """A capacity failure stops before submitting its attempt write."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     store = CapacityStore()
+    store.slots = slots
     subject = CallOwner(
         Queued(CallHistory(call(), (), ())),
         config(
@@ -467,16 +529,21 @@ async def test_capacity_retry_stops_at_named_pending_preparation() -> None:
         Clock(),
     )
 
+    # When
     with pytest.raises(NotImplementedError, match="capacity wait preparation"):
         await subject.run()
 
-    assert len(store.seen) == 1
+    # Then
+    assert store.seen == []
+    assert isinstance(subject.state, Recording)
+    assert subject.state.history.attempts == ()
+    assert subject.state.attempt.assessment == assessment("capacity")
     assert not slots.locked()
 
 
-@pytest.mark.asyncio
 async def test_exceptional_attempt_retains_original_stop() -> None:
     """Exceptional evidence is pending and the original failure propagates."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     error = OSError("supervisor failure")
@@ -499,10 +566,110 @@ async def test_exceptional_attempt_retains_original_stop() -> None:
         Clock(),
     )
 
+    # When
     with pytest.raises(OSError) as raised:
         await subject.run()
 
+    # Then
     assert raised.value is error
     assert control.reason is not None
     assert control.reason.first is error
     assert not slots.locked()
+
+
+class CancelledTelemetryStore(QuotaStore):
+    """Raise the supplied leaf cancellation at the telemetry write."""
+
+    def __init__(
+        self, control: RunControl, slots: Semaphore, error: asyncio.CancelledError
+    ) -> None:
+        super().__init__(control, slots)
+        self.error = error
+
+    @override
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+        """Fail the submitted telemetry write with its original cancellation."""
+        assert self.slots is not None and not self.slots.locked()
+        raise self.error
+
+
+async def test_attempt_write_leaf_cancellation_is_preserved() -> None:
+    """A cancelled evidence task retains its failed obligation and propagates."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    error = asyncio.CancelledError("leaf")
+    subject = owner(Store(error), slots, control, Attempt(slots, control))
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is error
+    assert isinstance(subject.state, EvidencePending)
+    assert subject.state.failure.error is error
+    assert control.reason is not None
+    assert control.reason.cancellation is error
+    assert control.reason.cancellation_origin == "leaf"
+
+
+async def test_telemetry_write_leaf_cancellation_is_preserved() -> None:
+    """A cancelled telemetry task retains its event and durable attempt."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    error = asyncio.CancelledError("leaf")
+    store = CancelledTelemetryStore(control, slots, error)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(quota_wait_enabled=True),
+        control,
+        slots,
+        QuotaAttempt(slots, control),
+        QuotaClassifier(),
+        QuotaReader(),
+        store,
+        Clock(),
+    )
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is error
+    assert isinstance(subject.state, EvidencePending)
+    assert subject.state.failure.error is error
+    assert isinstance(subject.state.failure.obligation, QuotaTelemetryEvent)
+    assert len(subject.state.history.attempts) == 1
+    assert control.reason is not None
+    assert control.reason.cancellation_origin == "leaf"
+
+
+async def test_owner_cancellation_remains_primary_when_write_is_cancelled() -> None:
+    """A concurrent owner cancellation retains the leaf failure as cause."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    leaf = asyncio.CancelledError("leaf")
+    store = BlockingStore()
+    store.failure = leaf
+    subject = owner(store, slots, control, Attempt(slots, control))
+    task = asyncio.create_task(subject.run())
+    await store.started.wait()
+
+    # When
+    task.cancel("owner")
+    await asyncio.sleep(0)
+    store.release.set()
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await task
+
+    # Then
+    assert raised.value is not leaf
+    assert raised.value.__cause__ is leaf
+    assert isinstance(subject.state, EvidencePending)
+    assert subject.state.failure.error is leaf
+    assert control.reason is not None
+    assert control.reason.cancellation_origin == "owner"

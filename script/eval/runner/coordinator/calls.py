@@ -12,11 +12,9 @@ from typing import Never
 from script.eval.evidence import EvidenceStore
 from script.eval.model import (
     AttemptEvidence,
-    AttemptRecord,
     HarnessConfig,
     QuotaTelemetryEvent,
 )
-from script.eval.runner.policy import capacity_retry_allowed, safe_process_cleanup
 from script.eval.runner.ports import (
     AttemptCall,
     OutcomeClassifier,
@@ -27,7 +25,6 @@ from script.process_supervisor import AttemptRequest, AttemptResult
 
 from .call_states import (
     Attempting,
-    CallHistory,
     CallState,
     EvidencePending,
     Finished,
@@ -170,6 +167,7 @@ class CallOwner:
 
     async def _record(self, state: Recording) -> None:
         """Retain the attempt write before selecting its next state."""
+        _pending_capacity_preparation(state, self._config)
         call = state.history.call
         task = asyncio.create_task(
             self._evidence.record_attempt(
@@ -186,11 +184,11 @@ class CallOwner:
             self._control.note_cancellation(settled.cancellation, "owner")
         match settled:
             case SettledFailure(error, cancellation):
+                if isinstance(error, CancelledError):
+                    self._control.note_cancellation(error, "leaf")
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(record, cancellation):
-                if not self._config.quota_wait_enabled and self._control.reason is None:
-                    _pending_capacity_preparation(state.history, record, self._config)
                 self._state = state.persisted(
                     record, self._config, self._control.reason, None
                 )
@@ -198,6 +196,10 @@ class CallOwner:
             if isinstance(settled, SettledFailure):
                 raise cancellation from settled.error
             raise cancellation
+        if isinstance(settled, SettledFailure) and isinstance(
+            settled.error, CancelledError
+        ):
+            raise settled.error
 
     async def _observe(self, state: ObservingQuota) -> None:
         """Read passive quota only after the attempt is durable."""
@@ -221,6 +223,8 @@ class CallOwner:
             self._control.note_cancellation(settled.cancellation, "owner")
         match settled:
             case SettledFailure(error, cancellation):
+                if isinstance(error, CancelledError):
+                    self._control.note_cancellation(error, "leaf")
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(_, cancellation):
@@ -228,18 +232,15 @@ class CallOwner:
                 observation = state.event.observation
                 if observation.scope is not None:
                     self._publish_trigger(state, origin)
-                if self._control.reason is None:
-                    _pending_capacity_preparation(
-                        state.history,
-                        state.history.attempts[-1],
-                        self._config,
-                        includes_record=True,
-                    )
                 self._state = state.persisted(self._config, self._control.reason, None)
         if cancellation is not None:
             if isinstance(settled, SettledFailure):
                 raise cancellation from settled.error
             raise cancellation
+        if isinstance(settled, SettledFailure) and isinstance(
+            settled.error, CancelledError
+        ):
+            raise settled.error
 
     def _publish_trigger(
         self, state: RecordingTelemetry, origin: PauseOrigin | None
@@ -261,39 +262,21 @@ async def _pending_retry_wait() -> None:
     raise NotImplementedError("retry-wait lifecycle is pending")
 
 
-def _pending_capacity_preparation(
-    history: CallHistory,
-    record: AttemptRecord,
-    config: HarnessConfig,
-    /,
-    *,
-    includes_record: bool = False,
-) -> None:
-    """Stop at the pending wait preparation before a transition needs its facts.
+def _pending_capacity_preparation(state: Recording, config: HarnessConfig, /) -> None:
+    """Stop before submission when a capacity wait may need preparation.
+
+    This conservative seam leaves retry eligibility to the pure transition once
+    wait preparation is implemented, without claiming an attempt write occurred.
 
     Raises:
-        NotImplementedError: An eligible capacity retry needs a prepared wait.
+        NotImplementedError: Capacity wait preparation is pending.
     """
-    assessment = record.retry_assessment
-    if assessment is None or record.control_flow != "returned":
-        return
-    if record.outcome_kind not in {"completed", "timed_out", "infrastructure_failure"}:
-        return
-    if record.outcome_kind == "completed" and record.exit_status in (0, None):
-        return
-    if not safe_process_cleanup(record):
-        return
-    if record.outcome_kind == "completed" and (
-        record.cleanup is None or record.cleanup.process != "owned"
+    assessment = state.attempt.assessment
+    if (
+        assessment is not None
+        and assessment.retry_class == "capacity"
+        and config.capacity_retry_limit > 0
     ):
-        return
-    previous = history.attempts[:-1] if includes_record else history.attempts
-    used = sum(
-        item.retry_assessment is not None
-        and item.retry_assessment.retry_class == "capacity"
-        for item in previous
-    )
-    if capacity_retry_allowed(assessment, used, config):
         raise NotImplementedError("capacity wait preparation is pending")
 
 
