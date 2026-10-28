@@ -413,3 +413,96 @@ async def test_quota_pause_precedes_writes_and_trigger_follows_telemetry() -> No
     task.cancel()
     with pytest.raises(asyncio.CancelledError):
         await task
+
+
+class CapacityClassifier(Classifier):
+    """Recognize a capacity failure eligible for a later retry."""
+
+    @override
+    def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
+        """Return a controlled capacity classification."""
+        return assessment("capacity")
+
+
+class CapacityStore(Store):
+    """Persist the nonzero process result for the pending wait path."""
+
+    @override
+    async def record_attempt(
+        self,
+        run_id: str,
+        call_id: str,
+        position: int,
+        attempt_number: AttemptNumber,
+        evidence: AttemptEvidence,
+        retry_assessment: RetryAssessment | None,
+        /,
+    ) -> AttemptRecord:
+        """Return the durable nonzero record."""
+        record = await super().record_attempt(
+            run_id, call_id, position, attempt_number, evidence, retry_assessment
+        )
+        return record.model_copy(update={"exit_status": 1})
+
+
+@pytest.mark.asyncio
+async def test_capacity_retry_stops_at_named_pending_preparation() -> None:
+    """A durable capacity failure reaches the explicit unfinished boundary."""
+    slots = Semaphore(1)
+    control = RunControl()
+    store = CapacityStore()
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(
+            capacity_retry_limit=1,
+            capacity_backoff_base_seconds=1.0,
+            capacity_backoff_cap_seconds=2.0,
+        ),
+        control,
+        slots,
+        QuotaAttempt(slots, control),
+        CapacityClassifier(),
+        NoQuota(),
+        store,
+        Clock(),
+    )
+
+    with pytest.raises(NotImplementedError, match="capacity wait preparation"):
+        await subject.run()
+
+    assert len(store.seen) == 1
+    assert not slots.locked()
+
+
+@pytest.mark.asyncio
+async def test_exceptional_attempt_retains_original_stop() -> None:
+    """Exceptional evidence is pending and the original failure propagates."""
+    slots = Semaphore(1)
+    control = RunControl()
+    error = OSError("supervisor failure")
+
+    async def attempt(
+        request: AttemptRequest, stop_dispatch: DispatchStop, /
+    ) -> AttemptResult:
+        await asyncio.sleep(0)
+        raise error
+
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        Classifier(),
+        NoQuota(),
+        Store(),
+        Clock(),
+    )
+
+    with pytest.raises(OSError) as raised:
+        await subject.run()
+
+    assert raised.value is error
+    assert control.reason is not None
+    assert control.reason.first is error
+    assert not slots.locked()

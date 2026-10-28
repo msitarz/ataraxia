@@ -7,9 +7,16 @@ completion, retry waits and cancellation closure remain pending implementation.
 
 import asyncio
 from asyncio import CancelledError, Semaphore
+from typing import Never
 
 from script.eval.evidence import EvidenceStore
-from script.eval.model import AttemptEvidence, HarnessConfig, QuotaTelemetryEvent
+from script.eval.model import (
+    AttemptEvidence,
+    AttemptRecord,
+    HarnessConfig,
+    QuotaTelemetryEvent,
+)
+from script.eval.runner.policy import capacity_retry_allowed, safe_process_cleanup
 from script.eval.runner.ports import (
     AttemptCall,
     OutcomeClassifier,
@@ -20,6 +27,7 @@ from script.process_supervisor import AttemptRequest, AttemptResult
 
 from .call_states import (
     Attempting,
+    CallHistory,
     CallState,
     EvidencePending,
     Finished,
@@ -150,17 +158,15 @@ class CallOwner:
         Returns:
             The returned supervisor result.
 
-        Raises:
-            CancelledError: The invocation was cancelled.
         """
         try:
             return await self._attempt(request, self._control.supervisor_stop)
         except CancelledError as cancellation:
             self._control.note_cancellation(cancellation, "leaf")
-            raise
+            _pending_exception_evidence(cancellation)
         except BaseException as error:
             self._control.latch_stop(error)
-            raise
+            _pending_exception_evidence(error)
 
     async def _record(self, state: Recording) -> None:
         """Retain the attempt write before selecting its next state."""
@@ -183,6 +189,8 @@ class CallOwner:
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(record, cancellation):
+                if not self._config.quota_wait_enabled and self._control.reason is None:
+                    _pending_capacity_preparation(state.history, record, self._config)
                 self._state = state.persisted(
                     record, self._config, self._control.reason, None
                 )
@@ -220,6 +228,13 @@ class CallOwner:
                 observation = state.event.observation
                 if observation.scope is not None:
                     self._publish_trigger(state, origin)
+                if self._control.reason is None:
+                    _pending_capacity_preparation(
+                        state.history,
+                        state.history.attempts[-1],
+                        self._config,
+                        includes_record=True,
+                    )
                 self._state = state.persisted(self._config, self._control.reason, None)
         if cancellation is not None:
             if isinstance(settled, SettledFailure):
@@ -244,3 +259,49 @@ class CallOwner:
 async def _pending_retry_wait() -> None:
     """Mark the unimplemented durable retry-wait lifecycle explicitly."""
     raise NotImplementedError("retry-wait lifecycle is pending")
+
+
+def _pending_capacity_preparation(
+    history: CallHistory,
+    record: AttemptRecord,
+    config: HarnessConfig,
+    /,
+    *,
+    includes_record: bool = False,
+) -> None:
+    """Stop at the pending wait preparation before a transition needs its facts.
+
+    Raises:
+        NotImplementedError: An eligible capacity retry needs a prepared wait.
+    """
+    assessment = record.retry_assessment
+    if assessment is None or record.control_flow != "returned":
+        return
+    if record.outcome_kind not in {"completed", "timed_out", "infrastructure_failure"}:
+        return
+    if record.outcome_kind == "completed" and record.exit_status in (0, None):
+        return
+    if not safe_process_cleanup(record):
+        return
+    if record.outcome_kind == "completed" and (
+        record.cleanup is None or record.cleanup.process != "owned"
+    ):
+        return
+    previous = history.attempts[:-1] if includes_record else history.attempts
+    used = sum(
+        item.retry_assessment is not None
+        and item.retry_assessment.retry_class == "capacity"
+        for item in previous
+    )
+    if capacity_retry_allowed(assessment, used, config):
+        raise NotImplementedError("capacity wait preparation is pending")
+
+
+def _pending_exception_evidence(error: BaseException, /) -> Never:
+    """Leave exceptional supervisor evidence to the next implementation phase.
+
+    The original exception remains the propagated control flow; submitted
+    attempt evidence is not yet constructed or persisted on this path.
+
+    """
+    raise error
