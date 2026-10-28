@@ -5,13 +5,14 @@ transitions, retained-task settlement, and pure progress projection are
 implemented. Shared control implements the stop latch and quota gate, including
 async waiter notification. The call owner implements attempt dispatch and
 settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
-passive telemetry through the shared control and settlement boundaries. The run
-and quota owners and their composition remain planned, so this is not a complete
-runner. All
-Work acceptance criteria remain TODO. The [Work contract](README.md) owns
-behavior and the [current architecture](architecture.md) describes implemented
-components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
-superseded approach with known lifecycle bugs, not a validated alternative.
+passive telemetry through the shared control and settlement boundaries. A
+quota-owner skeleton persists a wait start and closes it when the bound or probe
+budget forbids polling. Probe recovery, the run owner, and their composition
+remain planned, so this is not a complete runner. All Work acceptance criteria
+remain TODO. The [Work contract](README.md) owns behavior and the
+[current architecture](architecture.md) describes implemented components.
+[PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
+with known lifecycle bugs, not a validated alternative.
 
 ## TL;DR
 
