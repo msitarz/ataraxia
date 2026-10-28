@@ -84,6 +84,7 @@ class CallOwner:
         self._evidence = evidence
         self._runtime = runtime
         self._invocation_error: BaseException | None = None
+        self._owner_cancellation: CancelledError | None = None
 
     @property
     def state(self) -> CallState:
@@ -240,7 +241,10 @@ class CallOwner:
         """Retain whether this task was cancelled or a leaf raised cancellation."""
         task = asyncio.current_task()
         assert task is not None
-        self._control.note_cancellation(error, "owner" if task.cancelling() else "leaf")
+        origin = "owner" if task.cancelling() else "leaf"
+        if origin == "owner" and self._owner_cancellation is None:
+            self._owner_cancellation = error
+        self._control.note_cancellation(error, origin)
 
     async def _record(self, state: Recording) -> None:
         """Retain the attempt write before selecting its next state."""
@@ -293,10 +297,9 @@ class CallOwner:
 
     def _finish_attempt_settlement(self, settled: Settlement[AttemptRecord]) -> None:
         """Propagate invocation and write cancellation after state is updated."""
-        reason = self._control.reason
         cancellation = (
-            reason.cancellation
-            if reason is not None and reason.cancellation_origin == "owner"
+            self._owner_cancellation
+            if self._owner_cancellation is not None
             else settled.cancellation
         )
         if cancellation is not None:

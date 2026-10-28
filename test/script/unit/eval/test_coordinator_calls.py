@@ -1888,3 +1888,54 @@ async def test_first_owner_cancellation_survives_later_write_cancellation() -> N
     assert isinstance(subject.state, EvidencePending)
     assert subject.state.failure.error is write_cancellation
     assert attempt.calls == 1
+
+
+class ForeignCancellationStore(Store):
+    """Latch cancellation belonging to another owner while recording."""
+
+    def __init__(
+        self, control: RunControl, cancellation: asyncio.CancelledError
+    ) -> None:
+        super().__init__()
+        self.control = control
+        self.cancellation = cancellation
+
+    @override
+    async def record_attempt(
+        self,
+        run_id: str,
+        call_id: str,
+        position: int,
+        attempt_number: AttemptNumber,
+        evidence: AttemptEvidence,
+        retry_assessment: RetryAssessment | None,
+        /,
+    ) -> AttemptRecord:
+        """Model another owner's cancellation before this attempt is durable."""
+        self.control.note_cancellation(self.cancellation, "owner")
+        return await super().record_attempt(
+            run_id, call_id, position, attempt_number, evidence, retry_assessment
+        )
+
+
+async def test_foreign_owner_cancellation_stops_without_propagating() -> None:
+    """A shared stop cannot inject another call's exception into this owner."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    foreign = asyncio.CancelledError("another call")
+    store = ForeignCancellationStore(control, foreign)
+    attempt = Attempt(slots, control)
+    subject = owner(store, slots, control, attempt)
+
+    # When
+    result = await subject.run()
+
+    # Then
+    assert isinstance(result, Stopped)
+    assert result.outcome == "cancelled"
+    assert len(result.history.attempts) == 1
+    assert control.reason is not None
+    assert control.reason.cancellation is foreign
+    assert attempt.calls == 1
+    assert not slots.locked()
