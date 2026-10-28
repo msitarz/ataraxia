@@ -83,7 +83,7 @@ class QuotaOwner:
                 return self._observation
 
     async def recover(self) -> QuotaState:
-        """Recover after the caller drains and persists every active attempt.
+        """Recover after the caller closes the quota gate, drains and persists attempts.
 
         The current skeleton closes waits when the bound or probe budget is
         exhausted. Probe-capable recovery is an explicit pending leaf.
@@ -168,6 +168,8 @@ class QuotaOwner:
             self._state = QuotaEvidencePending(
                 waiting, WaitWrite(event, None), settled.error, None
             )
+            if cancellation is settled.error:
+                raise cancellation
             if cancellation is not None:
                 raise cancellation from settled.error
             return self._state
@@ -223,6 +225,8 @@ class QuotaOwner:
             self._state = waiting.journal_failed(
                 WaitWrite(event, closure), settled.error
             )
+            if cancellation is settled.error:
+                raise cancellation
             if cancellation is not None:
                 raise cancellation from settled.error
             return self._state
