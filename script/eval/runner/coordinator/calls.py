@@ -111,8 +111,11 @@ class CallOwner:
             raise
         except BaseException as error:
             self._control.latch_stop(error)
-            if isinstance(self._state, ObservingQuota):
-                self._state = Stopped(self._state.history, "failure")
+            if isinstance(self._state, (Queued, ObservingQuota)):
+                history = self._state.history
+                self._state = Stopped(
+                    history, "failure" if history.attempts else "not_started"
+                )
             raise
 
     async def _run(self) -> CallState:
@@ -217,12 +220,16 @@ class CallOwner:
         try:
             return self._classifier.assess(evidence)
         except BaseException as error:
-            if self._invocation_error is None:
+            prior = self._invocation_error
+            if prior is None:
+                self._invocation_error = error
+            elif isinstance(error, CancelledError) and not isinstance(
+                prior, CancelledError
+            ):
+                error.__cause__ = prior
                 self._invocation_error = error
             else:
-                self._invocation_error.add_note(
-                    f"Classification also failed: {error!r}"
-                )
+                prior.add_note("Classification also failed.")
             if isinstance(error, CancelledError):
                 self._note_active_cancellation(error)
             else:

@@ -1685,3 +1685,105 @@ async def test_wait_preparation_failure_preserves_durable_attempt(
     assert store.events == []
     assert attempt.calls == 1
     assert control.reason is not None and control.reason.first is error
+
+
+async def test_classification_cancellation_preserves_invocation_failure() -> None:
+    """A classifier's cancellation propagates with the earlier failure as cause."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    store = Store()
+    store.slots = slots
+    invocation_error = RuntimeError("supervisor")
+    cancellation = asyncio.CancelledError("classification")
+    classifier = FailedClassifier(cancellation)
+
+    async def attempt(
+        request: AttemptRequest, stop_dispatch: DispatchStop, /
+    ) -> AttemptResult:
+        await asyncio.sleep(0)
+        raise invocation_error
+
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        classifier,
+        NoQuota(),
+        store,
+        Clock(),
+    )
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is cancellation
+    assert raised.value.__cause__ is invocation_error
+    assert store.seen[0] is classifier.seen
+    assert store.forwarded is not None and store.forwarded[-1] is None
+    assert isinstance(subject.state, Stopped)
+    assert len(subject.state.history.attempts) == 1
+    assert control.reason is not None
+    assert control.reason.first is invocation_error
+    assert control.reason.cancellation is cancellation
+    assert control.reason.cancellation_origin == "leaf"
+
+
+class FailedYieldClock(Clock):
+    """Raise an error when an infrastructure retry yields."""
+
+    def __init__(self, error: BaseException) -> None:
+        self.error = error
+
+    @override
+    async def sleep(self, seconds: float, /) -> None:
+        """Raise the original retry-yield failure."""
+        await asyncio.sleep(0)
+        raise self.error
+
+
+class InfrastructureClassifier(Classifier):
+    """Classify an infrastructure failure with no semantic result."""
+
+    @override
+    def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
+        """Return a controlled infrastructure classification."""
+        return assessment("infrastructure")
+
+
+async def test_retry_yield_failure_stops_queued_call_with_history() -> None:
+    """A failed retry yield leaves a stopped call with its durable attempt."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    store = CapacityStore()
+    store.slots = slots
+    attempt = QuotaAttempt(slots, control)
+    error = RuntimeError("yield")
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(retry_limit=1, retry_nonzero_exit=True),
+        control,
+        slots,
+        attempt,
+        InfrastructureClassifier(),
+        NoQuota(),
+        store,
+        FailedYieldClock(error),
+    )
+
+    # When
+    with pytest.raises(RuntimeError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is error
+    assert isinstance(subject.state, Stopped)
+    assert subject.state.outcome == "failure"
+    assert len(subject.state.history.attempts) == 1
+    assert attempt.calls == 1
+    assert control.reason is not None and control.reason.first is error
