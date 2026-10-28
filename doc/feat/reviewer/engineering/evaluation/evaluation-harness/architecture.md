@@ -12,9 +12,9 @@ grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
 Codex invocation leaves are implemented. The former runtime coordinator skeleton
 has been removed. State records and pure call and quota transitions are
-implemented. Retained-task settlement is implemented. Other async owners,
-control, progress projection, dispatch wiring, probe cadence, scheduler
-accounting, CLI integration, and full dispatch remain planned. Shared
+implemented. Retained-task settlement and pure progress projection are
+implemented. Other async owners, control, dispatch wiring, probe cadence,
+scheduler accounting, CLI integration, and full dispatch remain planned. Shared
 consumer-owned runner ports and accepted runtime configuration are implemented
 in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
