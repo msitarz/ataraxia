@@ -14,6 +14,7 @@ from script.eval.model import (
     QuotaProbeRecord,
     QuotaProbeRequest,
     QuotaProbeSchedule,
+    QuotaScope,
     QuotaWaitContext,
     WaitEnd,
     WaitId,
@@ -51,6 +52,16 @@ class Draining:
     """A recognized exhaustion closes dispatch while attempts settle."""
 
     context: QuotaWaitContext
+
+    def probe_eligible(
+        self, expected_scope: QuotaScope | None, now_utc: str, /
+    ) -> bool:
+        """Check the drained trigger before any paid probe preparation.
+
+        Returns:
+            Whether the normalized trigger is fresh, scoped, and exhausted.
+        """
+        return probe_eligible(self.context.quota_observation, expected_scope, now_utc)
 
     def started(
         self,
@@ -96,6 +107,20 @@ class Waiting:
     end_record: WaitRecord | None
     observation: QuotaObservation
 
+    def probe_eligible(
+        self, expected_scope: QuotaScope | None, now_utc: str, /
+    ) -> bool:
+        """Recheck the pause and current observation against the reader binding.
+
+        Returns:
+            Whether the current exhaustion can authorize another probe.
+        """
+        return (
+            expected_scope is not None
+            and self.context.quota_observation.scope == expected_scope
+            and probe_eligible(self.observation, expected_scope, now_utc)
+        )
+
     def matches_closure(self, record: WaitRecord, /) -> bool:
         """Check that the pending closure belongs to this durable wait.
 
@@ -135,7 +160,7 @@ class Waiting:
             return history, QuotaStopped()
         if (
             record.end == "quota_available"
-            and _fresh(self.observation, self, now_utc)
+            and _fresh(self.observation, self.context.quota_observation.scope, now_utc)
             and all(window.state == "available" for window in self.observation.windows)
         ):
             return history, Open()
@@ -165,7 +190,7 @@ class ProbeNotDispatched:
     """Close preparation without a process or probe-budget charge."""
 
     prepared: ProbePrepared
-    cause: Literal["bound", "stop", "cancelled"]
+    cause: Literal["bound", "stop", "cancelled", "unknown"]
     ended_at_utc: str
     elapsed_seconds: float
 
@@ -191,20 +216,29 @@ class PreparingProbe:
         remaining_seconds: float | None,
         stop: StopReason | None,
         cancellation: CancelledError | None,
+        expected_scope: QuotaScope | None,
         ended_at_utc: str,
         elapsed_seconds: float,
         /,
     ) -> PreparingProbe | ProbeNotDispatched:
         """Gate a prepared probe using newly sampled policy and control facts.
 
+        An invalid observation closes preparation as unknown. The owner must
+        persist that event, close the wait as unknown, and stop without reopening
+        dispatch. The adapter owns window completeness and source ordering.
+
         Returns:
             The next state built from the supplied facts.
         """
-        cause: Literal["cancelled", "stop", "bound"] | None = _control_end(
+        cause: Literal["cancelled", "stop", "bound", "unknown"] | None = _control_end(
             stop, cancellation, remaining_seconds
         )
         if cause is None and not quota_probe_allowed(config, probes_used):
             cause = "bound"
+        if cause is None and not self.waiting.probe_eligible(
+            expected_scope, ended_at_utc
+        ):
+            cause = "unknown"
         if cause is None:
             return self
         return ProbeNotDispatched(
@@ -480,8 +514,32 @@ def _control_end(
     return None
 
 
+def probe_eligible(
+    observation: QuotaObservation | None,
+    expected_scope: QuotaScope | None,
+    now_utc: str,
+    /,
+) -> bool:
+    """Check a normalized trigger without interpreting provider-specific windows.
+
+    The adapter owns completeness and source ordering. All supplied windows
+    must be known and at least one exhausted; equality with expiry is fresh.
+
+    Returns:
+        Whether the observation authorizes considering a paid probe.
+    """
+    return (
+        _fresh(observation, expected_scope, now_utc)
+        and observation is not None
+        and any(window.state == "exhausted" for window in observation.windows)
+    )
+
+
 def _fresh(
-    observation: QuotaObservation | None, waiting: Waiting, now_utc: str, /
+    observation: QuotaObservation | None,
+    expected_scope: QuotaScope | None,
+    now_utc: str,
+    /,
 ) -> bool:
     """Check whether a scoped observation remains valid at the supplied time.
 
@@ -490,8 +548,8 @@ def _fresh(
     """
     if (
         observation is None
-        or observation.scope is None
-        or observation.scope != waiting.context.quota_observation.scope
+        or expected_scope is None
+        or observation.scope != expected_scope
         or observation.valid_until_utc is None
         or not observation.windows
     ):
@@ -518,7 +576,9 @@ def _probe_end(
         return "unknown"
     if record.cleanup is None or record.cleanup.process != "owned":
         return "unknown"
-    if not safe_process_cleanup(record) or not _fresh(observation, waiting, now_utc):
+    if not safe_process_cleanup(record) or not _fresh(
+        observation, waiting.context.quota_observation.scope, now_utc
+    ):
         return "unknown"
     if observation is None:
         return "unknown"

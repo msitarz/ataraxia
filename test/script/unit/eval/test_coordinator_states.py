@@ -53,6 +53,7 @@ from script.eval.runner.coordinator.quota_states import (
     QuotaStopped,
     RecordingProbe,
     Waiting,
+    probe_eligible,
 )
 from script.eval.runner.ports import EffectiveCall
 from script.process_supervisor import AttemptRequest
@@ -409,8 +410,16 @@ def test_probe_gate_rechecks_wait_bound(
     remaining: float | None, expected: bool
 ) -> None:
     # Given
+    from dataclasses import replace
+
     req = request()
-    state = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
+    obs = observation()
+    exhausted = obs.model_copy(
+        update={"windows": (obs.windows[0].model_copy(update={"state": "exhausted"}),)}
+    )
+    state = PreparingProbe(
+        replace(waiting(), observation=exhausted), ProbePrepared(req.schedule, "wait")
+    )
 
     # When
     result = state.dispatch_gate(
@@ -419,6 +428,7 @@ def test_probe_gate_rechecks_wait_bound(
         remaining,
         None,
         None,
+        req.schedule.scope,
         "2026-01-01T00:00:02Z",
         2.0,
     )
@@ -968,6 +978,7 @@ def test_probe_gate_closes_preparation_without_dispatch(
         None,
         reason,
         error,
+        req.schedule.scope,
         "2026-01-01T00:00:02Z",
         2.0,
     )
@@ -1622,3 +1633,153 @@ def test_attempt_persistence_rejects_unrelated_capacity_wait() -> None:
     # Then
     assert state.history is history
     assert history.attempts == ()
+
+
+@pytest.mark.parametrize(
+    ("state", "scope_case", "expiry", "now", "expected"),
+    [
+        ("exhausted", "matching", "2026-01-01T00:00:03Z", "2026-01-01T00:00:03Z", True),
+        (
+            "exhausted",
+            "matching",
+            "2026-01-01T00:00:03Z",
+            "2026-01-01T00:00:04Z",
+            False,
+        ),
+        ("exhausted", "matching", None, "2026-01-01T00:00:02Z", False),
+        ("exhausted", "other", "2026-01-01T00:00:03Z", "2026-01-01T00:00:02Z", False),
+        ("exhausted", "missing", "2026-01-01T00:00:03Z", "2026-01-01T00:00:02Z", False),
+        (
+            "available",
+            "matching",
+            "2026-01-01T00:00:03Z",
+            "2026-01-01T00:00:02Z",
+            False,
+        ),
+        ("unknown", "matching", "2026-01-01T00:00:03Z", "2026-01-01T00:00:02Z", False),
+        (
+            "unavailable",
+            "matching",
+            "2026-01-01T00:00:03Z",
+            "2026-01-01T00:00:02Z",
+            False,
+        ),
+    ],
+    ids=[
+        "expiry-inclusive",
+        "expired",
+        "no-expiry",
+        "wrong-scope",
+        "no-reader-scope",
+        "available",
+        "unknown",
+        "unavailable",
+    ],
+)
+def test_probe_trigger_requires_fresh_scoped_exhaustion(
+    state: str, scope_case: str, expiry: str | None, now: str, expected: bool
+) -> None:
+    # Given
+    obs = observation()
+    window = obs.windows[0].model_copy(update={"state": state})
+    trigger = obs.model_copy(update={"windows": (window,), "valid_until_utc": expiry})
+    other = QuotaScope(
+        provider_id=QuotaProviderId("p"), allowance_id=QuotaAllowanceId("other")
+    )
+    scope = {"matching": obs.scope, "other": other, "missing": None}[scope_case]
+
+    # When
+    result = probe_eligible(trigger, scope, now)
+
+    # Then
+    assert result is expected
+
+
+def test_probe_trigger_rejects_empty_or_partly_unknown_windows() -> None:
+    # Given
+    obs = observation()
+    exhausted = obs.windows[0].model_copy(update={"state": "exhausted"})
+    unknown = obs.windows[0].model_copy(update={"state": "unknown"})
+    empty = obs.model_copy(update={"windows": ()})
+    mixed = obs.model_copy(update={"windows": (exhausted, unknown)})
+
+    # When
+    results = (
+        probe_eligible(empty, obs.scope, "2026-01-01T00:00:02Z"),
+        probe_eligible(mixed, obs.scope, "2026-01-01T00:00:02Z"),
+    )
+
+    # Then
+    assert results == (False, False)
+
+
+def test_prepared_probe_rechecks_expired_trigger() -> None:
+    # Given
+    from dataclasses import replace
+
+    from script.eval.runner.coordinator.quota_states import ProbeNotDispatched
+
+    req = request()
+    obs = observation()
+    exhausted = obs.model_copy(
+        update={"windows": (obs.windows[0].model_copy(update={"state": "exhausted"}),)}
+    )
+    state = PreparingProbe(
+        replace(waiting(), observation=exhausted), ProbePrepared(req.schedule, "wait")
+    )
+
+    # When
+    result = state.dispatch_gate(
+        config(quota_wait_enabled=True),
+        0,
+        None,
+        None,
+        None,
+        req.schedule.scope,
+        "2026-01-01T00:00:04Z",
+        4.0,
+    )
+
+    # Then
+    assert isinstance(result, ProbeNotDispatched)
+    assert result.cause == "unknown"
+    assert result.prepared is state.preparation
+
+
+def test_drained_trigger_checks_reader_scope_before_probe_preparation() -> None:
+    # Given
+    from script.eval.runner.coordinator.quota_states import Draining
+
+    original = waiting().context
+    exhausted = original.quota_observation.model_copy(
+        update={
+            "windows": (
+                original.quota_observation.windows[0].model_copy(
+                    update={"state": "exhausted"}
+                ),
+            )
+        }
+    )
+    state = Draining(original.model_copy(update={"quota_observation": exhausted}))
+    other = QuotaScope(
+        provider_id=QuotaProviderId("p"), allowance_id=QuotaAllowanceId("other")
+    )
+
+    # When
+    matching = state.probe_eligible(exhausted.scope, "2026-01-01T00:00:03Z")
+    mismatched = state.probe_eligible(other, "2026-01-01T00:00:03Z")
+
+    # Then
+    assert matching is True
+    assert mismatched is False
+
+
+def test_probe_trigger_rejects_missing_observation() -> None:
+    # Given
+    scope = observation().scope
+
+    # When
+    eligible = probe_eligible(None, scope, "2026-01-01T00:00:02Z")
+
+    # Then
+    assert eligible is False

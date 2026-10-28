@@ -195,7 +195,7 @@ class ProbeNotDispatched:
     """Close preparation without a process or probe-budget charge."""
 
     prepared: ProbePrepared
-    cause: Literal["bound", "stop", "cancelled"]
+    cause: Literal["bound", "stop", "cancelled", "unknown"]
     ended_at_utc: str
     elapsed_seconds: float
 

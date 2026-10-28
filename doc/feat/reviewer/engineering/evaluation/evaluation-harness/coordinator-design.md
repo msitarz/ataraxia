@@ -230,7 +230,11 @@ with known lifecycle bugs, not a validated alternative.
 - After draining, the coordinator derives `QuotaWaitContext` from that trigger
   and validated run policy, then awaits `QuotaOwner` recovery.
 - An unavailable, unknown, stale, or mismatched trigger cannot open the gate or
-  authorize a probe and follows the contract's failure handling.
+  authorize a probe. The owner ends recovery incomplete, stops, and durably
+  closes any started wait as unknown; a prepared probe receives a durable
+  not-dispatched unknown event. The adapter owns required-window completeness
+  and ordering; the pure state checks nonempty known windows, exhaustion, reader
+  scope, and inclusive expiry before effects and again after preparation.
 - A failed telemetry write retains its `QuotaTelemetryEvent`, error, and
   already durable attempt in the same call's evidence-pending state.
 - Passive ingestion and its writes are skipped when quota waiting is disabled.
@@ -306,7 +310,7 @@ construction and adapter boundaries establish those relationships.
 | `RetryWait.started` | `RetryWait`, settled start, cancellation/stop and pending closure facts | Durable-start `RetryWait`; the owner closes it before propagating cancellation or stop. |
 | `RetryWait.completed` | `RetryWait`, durable end record and stop | `Queued` or `Stopped` after appending the wait to history. |
 | `Draining.started` | Drained `Draining`, submitted wait, settled start, cancellation/stop and pending closure facts | Durable-start `Waiting`; the owner closes it before stop or cancellation propagates. |
-| `PreparingProbe.dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
+| `PreparingProbe.dispatch_gate` | `PreparingProbe`, fresh policy, budget, remaining time, stop, cancellation, reader scope and closure timing | Permission to invoke or `ProbeNotDispatched`; the owner journals closure or builds the actual request at invocation. |
 | `PreparingProbe.dispatched` | `PreparingProbe`, request built at invocation | `Probing`; the owner retains the dispatch journal write alongside the probe. |
 | `Probing.capture` | `Probing`, captured exact-request outcome or missing evidence and error | `RecordingProbe` or `ProbeEvidencePending`; the owner extracts exception-chain evidence and writes captured evidence. |
 | `RecordingProbe.persisted` | `RecordingProbe`, durable record and history, fresh stop, bound and clocks | Updated probe history and `Waiting`; a required end record remains pending for the owner to write. |

@@ -13,6 +13,7 @@ from script.eval.model import (
     QuotaProbeEvidence,
     QuotaProbeRecord,
     QuotaProbeRequest,
+    QuotaScope,
     RunId,
     WaitRecord,
 )
@@ -54,6 +55,15 @@ def quota_wait_started(
     """
     ...
 
+def probe_eligible(
+    observation: QuotaObservation | None,
+    expected_scope: QuotaScope | None,
+    now_utc: str,
+    /,
+) -> bool:
+    """Require a fresh, scoped, known exhausted observation before probing."""
+    ...
+
 def probe_dispatch_gate(
     state: PreparingProbe,
     config: HarnessConfig,
@@ -61,11 +71,12 @@ def probe_dispatch_gate(
     remaining_seconds: float | None,
     stop: StopReason | None,
     cancellation: CancelledError | None,
+    expected_scope: QuotaScope | None,
     ended_at_utc: str,
     elapsed_seconds: float,
     /,
 ) -> PreparingProbe | ProbeNotDispatched:
-    """Recheck fresh bounds and stop after the preparation write settles.
+    """Recheck freshness, reader scope, bounds and stop after preparation settles.
 
     A returned preparation permits the effect owner to construct the actual
     request at invocation; otherwise it must durably close the preparation.
