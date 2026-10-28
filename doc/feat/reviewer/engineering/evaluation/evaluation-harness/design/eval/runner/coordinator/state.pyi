@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exploratory live state; durable history and each in-flight fact have one owner."""
+"""Historical reviewed state reference; runtime state.py is authoritative."""
 
 from asyncio import CancelledError
 from dataclasses import dataclass

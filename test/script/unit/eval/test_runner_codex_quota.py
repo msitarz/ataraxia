@@ -1563,3 +1563,56 @@ async def test_reused_exception_evidence_is_request_specific() -> None:
     assert second_evidence.request is second_request
     assert quota_probe_evidence(shared_error, make_probe_request("probe-1")) is None
     assert quota_probe_evidence(shared_error, first_request) is first_evidence
+
+
+async def test_fresh_reread_preserves_producer_expiry_at_inclusive_boundary(
+    tmp_path: Path,
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    write_rollout(sessions, SYNTHETIC_THREAD_ID, session_rows())
+    runtime = SequenceRuntime(("2026-10-27T10:00:00Z", "2026-10-27T10:00:01Z"))
+    reader = make_local_reader(
+        sessions, make_identity_scope(), max_age=2.0, runtime=runtime
+    )
+    attempt = make_attempt_evidence(thread_started())
+
+    # When
+    first = await reader.observe_settled_attempt(attempt)
+    repeated = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert first.valid_until_utc == "2026-10-27T10:00:01Z"
+    assert repeated.valid_until_utc == "2026-10-27T10:00:01Z"
+    assert [window.state for window in repeated.windows] == ["available", "available"]
+
+
+@pytest.mark.parametrize(
+    ("timestamp", "secondary_present", "max_age"),
+    [
+        ("2026-10-27T10:00:01Z", True, 60.0),
+        ("2026-10-27T09:59:59Z", False, 60.0),
+        ("2026-10-27T09:59:59Z", True, 1e300),
+    ],
+    ids=["future-producer", "incomplete-windows", "unrepresentable-expiry"],
+)
+async def test_untrusted_or_unrepresentable_observation_has_no_expiry(
+    tmp_path: Path, timestamp: str, secondary_present: bool, max_age: float
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    write_rollout(
+        sessions,
+        SYNTHETIC_THREAD_ID,
+        session_rows(timestamp=timestamp, secondary_present=secondary_present),
+    )
+    reader = make_local_reader(sessions, make_identity_scope(), max_age=max_age)
+
+    # When
+    result = await reader.observe_settled_attempt(
+        make_attempt_evidence(thread_started())
+    )
+
+    # Then
+    assert result.valid_until_utc is None
+    assert all(window.state == "unknown" for window in result.windows)

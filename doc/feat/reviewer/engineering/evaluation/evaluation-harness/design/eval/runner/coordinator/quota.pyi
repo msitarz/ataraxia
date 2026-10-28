@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Exploratory quota recovery and bounded async ownership."""
+"""Historical reviewed pure transition signatures; async owner remains planned."""
 
 from asyncio import CancelledError
 

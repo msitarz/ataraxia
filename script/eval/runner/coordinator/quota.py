@@ -14,9 +14,8 @@ from script.eval.model import (
     WaitEnd,
     WaitRecord,
 )
-from script.eval.runner.policy import quota_probe_allowed
+from script.eval.runner.policy import quota_probe_allowed, safe_process_cleanup
 
-from .calls import _safe_cleanup
 from .state import (
     Draining,
     Open,
@@ -55,7 +54,10 @@ def quota_wait_started(
         raise ValueError("submitted wait does not match pause")
     if (cancellation is not None or stop is not None) and closure is None:
         raise ValueError("stopped wait requires closure")
-    if cancellation is not None and closure is not None and closure.end != "cancelled":
+    cancelled = cancellation is not None or (
+        stop is not None and stop.cancellation is not None
+    )
+    if cancelled and closure is not None and closure.end != "cancelled":
         raise ValueError("cancelled wait requires cancelled closure")
     if closure is not None and (
         closure.wait_id != waiting.wait_id or closure.context != waiting.context
@@ -83,6 +85,7 @@ def probe_dispatch_gate(
     cause = (
         "cancelled"
         if cancellation is not None
+        or (stop is not None and stop.cancellation is not None)
         else "stop"
         if stop is not None
         else "bound"
@@ -188,7 +191,9 @@ def probe_persisted(
         state.waiting, observation=record.observation or state.waiting.observation
     )
     end = (
-        "stop"
+        "cancelled"
+        if stop is not None and stop.cancellation is not None
+        else "stop"
         if stop is not None
         else "bound"
         if remaining_seconds is not None and remaining_seconds <= 0
@@ -218,7 +223,7 @@ def _probe_end(
         return "unknown"
     if record.cleanup is None or record.cleanup.process != "owned":
         return "unknown"
-    if not _safe_cleanup(record) or not _fresh(observation, waiting, now_utc):
+    if not safe_process_cleanup(record) or not _fresh(observation, waiting, now_utc):
         return "unknown"
     if observation is None:
         return "unknown"

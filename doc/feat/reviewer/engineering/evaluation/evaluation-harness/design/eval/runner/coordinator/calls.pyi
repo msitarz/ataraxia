@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Call-local attempt settlement, retry eligibility, and cancellable backoff."""
+"""Historical reviewed pure transition signatures; async owner remains planned."""
 
 from asyncio import CancelledError, Semaphore
 

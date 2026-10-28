@@ -9,7 +9,7 @@ publication, and dispatch ordering.
 from datetime import datetime
 from math import frexp, ldexp
 
-from script.eval.model import HarnessConfig, RetryAssessment
+from script.eval.model import HarnessConfig, ProcessRecord, RetryAssessment
 
 
 def confident_no_result(assessment: RetryAssessment, /) -> bool:
@@ -145,3 +145,22 @@ def quota_poll_delay(
     if seconds_until_hint <= 0:
         return interval_seconds
     return min(interval_seconds, seconds_until_hint)
+
+
+def safe_process_cleanup(record: ProcessRecord, /) -> bool:
+    """Return whether recorded supervisor cleanup permits dispatch."""
+    cleanup = record.cleanup
+    if cleanup is None or cleanup.wait_diagnostic is not None:
+        return False
+    if cleanup.process == "not_started":
+        return not cleanup.signals and cleanup.direct_wait == "not_started"
+    return (
+        cleanup.process == "owned"
+        and cleanup.direct_wait == "reaped"
+        and tuple(item.signal for item in cleanup.signals)
+        in {("SIGKILL",), ("SIGTERM", "SIGKILL")}
+        and all(
+            item.outcome in {"sent", "no_target"} and item.diagnostic is None
+            for item in cleanup.signals
+        )
+    )

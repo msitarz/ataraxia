@@ -17,6 +17,7 @@ from script.eval.runner.policy import (
     capacity_retry_allowed,
     confident_no_result,
     infrastructure_retry_allowed,
+    safe_process_cleanup,
 )
 
 from .state import (
@@ -196,30 +197,12 @@ def _safe_returned(record: ProcessRecord, /) -> bool:
     if (
         record.control_flow != "returned"
         or record.outcome_kind == "cancelled"
-        or not _safe_cleanup(record)
+        or not safe_process_cleanup(record)
     ):
         return False
     if record.outcome_kind == "completed":
         return record.cleanup is not None and record.cleanup.process == "owned"
     return True
-
-
-def _safe_cleanup(record: ProcessRecord, /) -> bool:
-    cleanup = record.cleanup
-    if cleanup is None or cleanup.wait_diagnostic is not None:
-        return False
-    if cleanup.process == "not_started":
-        return not cleanup.signals and cleanup.direct_wait == "not_started"
-    return (
-        cleanup.process == "owned"
-        and cleanup.direct_wait == "reaped"
-        and tuple(item.signal for item in cleanup.signals)
-        in {("SIGKILL",), ("SIGTERM", "SIGKILL")}
-        and all(
-            item.outcome in {"sent", "no_target"} and item.diagnostic is None
-            for item in cleanup.signals
-        )
-    )
 
 
 def attempt_write_failed(state: Recording, error: BaseException, /) -> EvidencePending:
@@ -272,7 +255,10 @@ def call_wait_started(
         raise ValueError("wait start was not submitted")
     if (cancellation is not None or stop is not None) and closure is None:
         raise ValueError("stopped wait requires closure")
-    if cancellation is not None and closure is not None and closure.end != "cancelled":
+    cancelled = cancellation is not None or (
+        stop is not None and stop.cancellation is not None
+    )
+    if cancelled and closure is not None and closure.end != "cancelled":
         raise ValueError("cancelled wait requires cancelled closure")
     if closure is not None and (
         closure.wait_id != state.wait.wait_id or closure.context != state.wait.context

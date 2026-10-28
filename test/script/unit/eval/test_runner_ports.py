@@ -63,6 +63,7 @@ def test_runner_configuration_defaults_are_stable_and_serialized() -> None:
     [
         {"quota_wait_enabled": True, "quota_probe_budget": None},
         {"quota_wait_enabled": True, "quota_probe_budget": 3},
+        {"quota_wait_enabled": True, "quota_probe_budget": 0},
         {"quota_wait_enabled": False, "quota_probe_budget": 0},
         {
             "capacity_retry_limit": 1,
@@ -73,6 +74,7 @@ def test_runner_configuration_defaults_are_stable_and_serialized() -> None:
     ids=[
         "enabled-quota-uncapped",
         "enabled-quota-positive-cap",
+        "enabled-quota-zero-cap",
         "disabled-quota-zero-cap",
         "capacity-retry-equal-backoff-bounds",
     ],
@@ -152,10 +154,6 @@ def test_runner_configuration_rejects_invalid_scalar_bounds(
     ("overrides", "message"),
     [
         (
-            {"quota_wait_enabled": True, "quota_probe_budget": 0},
-            "enabled quota waiting requires a positive probe budget",
-        ),
-        (
             {
                 "capacity_retry_limit": 1,
                 "capacity_backoff_base_seconds": 1.0,
@@ -178,7 +176,6 @@ def test_runner_configuration_rejects_invalid_scalar_bounds(
         ),
     ],
     ids=[
-        "quota-budget-zero",
         "capacity-cap-required",
         "capacity-base-required",
         "cap-below-base",
