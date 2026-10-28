@@ -14,12 +14,10 @@ Codex invocation leaves are implemented. The former runtime coordinator skeleton
 has been removed. State records and pure call and quota transitions are
 implemented. Retained-task settlement and pure progress projection are
 implemented. Shared control implements stop and quota gate notification and
-waiting. The call owner wires a thin returned-attempt path through dispatch,
-attempt recording, and opt-in telemetry. Exceptional supervisor evidence,
-capacity preparation, wait closure, and the complete cancellation lifecycle
-remain pending. Exceptional supervisor calls currently propagate the original
-exception without persisting its evidence. Other async owners, probe cadence,
-scheduler accounting, CLI integration, and full dispatch remain planned. Shared
+waiting. The call owner implements dispatch, attempt and exceptional evidence
+settlement, capacity retry waits, and opt-in passive telemetry. Other async
+owners, probe cadence, scheduler accounting, CLI integration, and full run
+dispatch remain planned. Shared
 consumer-owned runner ports and accepted runtime configuration are implemented
 in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
@@ -301,9 +299,9 @@ one global quota recovery flow from authoritative typed lifecycles.
   been removed. State records and pure call and quota transitions are
   implemented. Retained-task settlement and pure progress projection are
   implemented. Shared control implements stop and quota gate notification and
-  waiting. The call owner wires returned attempts and passive telemetry; its
-  exceptional evidence, capacity preparation, wait closure, and full
-  cancellation lifecycle are pending. Other async owners remain planned.
+  waiting. The call owner implements attempt and exceptional evidence
+  settlement, capacity retry waits, and passive telemetry; other async owners
+  remain planned.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -318,8 +316,8 @@ Codex, quota, and runtime adapters.
 
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` implements state, pure transitions, retained-task
-  settlement, pure progress projection, shared stop and quota control, and thin
-  returned-attempt call wiring; other async ownership and composition remain
+  settlement, pure progress projection, shared stop and quota control, and call
+  lifecycle ownership; other async ownership and composition remain
   planned and are described in the
   [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
@@ -630,10 +628,9 @@ The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The former
 runtime coordinator skeleton has been removed. Coordinator state records and
 pure call and quota transitions and retained-task settlement are implemented.
-The call owner wires returned attempts and opt-in telemetry; exceptional
-supervisor evidence, capacity preparation, and wait and cancellation lifecycles
-remain pending. Other asynchronous owners, CLI integration, and full dispatch
-remain planned.
+The call owner implements attempt settlement, capacity waits, and opt-in
+telemetry. Other asynchronous owners, CLI integration, and full dispatch remain
+planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -704,7 +701,7 @@ expected identity scope, so the CLI cannot yet enable scoped quota availability.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator/` | Implemented state, pure transitions, settlement, progress projection, shared control, and thin returned-attempt call wiring; remaining lifecycle ownership is planned. |
+| `script/eval/runner/coordinator/` | Implemented state, pure transitions, settlement, progress projection, shared control, and call lifecycle ownership; remaining lifecycle ownership is planned. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |

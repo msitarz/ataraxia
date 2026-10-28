@@ -3,11 +3,11 @@
 **Status:** Reviewed lifecycle design. State records and pure call and quota
 transitions, retained-task settlement, and pure progress projection are
 implemented. Shared control implements the stop latch and quota gate, including
-async waiter notification. The call owner wires returned attempts, attempt
-writes, and opt-in passive telemetry through the shared control and settlement
-boundaries. Exceptional supervisor evidence, capacity wait preparation and
-closure, and complete cancellation lifecycle are pending; this wiring is not a
-complete runner. Other asynchronous owners and composition remain planned. All
+async waiter notification. The call owner implements attempt dispatch and
+settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
+passive telemetry through the shared control and settlement boundaries. The run
+and quota owners and their composition remain planned, so this is not a complete
+runner. All
 Work acceptance criteria remain TODO. The [Work contract](README.md) owns
 behavior and the [current architecture](architecture.md) describes implemented
 components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
@@ -27,9 +27,8 @@ superseded approach with known lifecycle bugs, not a validated alternative.
   below.
 - The [type sketch](design/eval/runner/coordinator/) is a historical reviewed
   reference; runtime state, pure transitions, retained-task settlement, and
-  progress projection are authoritative. The runtime call owner supersedes its
-  planned class declaration for the exercised path; other owner declarations
-  remain planned.
+  progress projection and call owner are authoritative. Other owner
+  declarations remain planned.
 
 ## Coordinator
 
