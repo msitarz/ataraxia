@@ -1011,11 +1011,13 @@ class CancellingAttempt:
     def __init__(self, started: asyncio.Event, cancelled: AttemptCancelled) -> None:
         self.started = started
         self.cancelled = cancelled
+        self.calls = 0
 
     async def __call__(
         self, request: AttemptRequest, stop_dispatch: DispatchStop, /
     ) -> AttemptResult:
         """Signal entry and return the supervisor cancellation after cleanup."""
+        self.calls += 1
         self.started.set()
         try:
             await asyncio.Event().wait()
@@ -1787,3 +1789,102 @@ async def test_retry_yield_failure_stops_queued_call_with_history() -> None:
     assert len(subject.state.history.attempts) == 1
     assert attempt.calls == 1
     assert control.reason is not None and control.reason.first is error
+
+
+def cancellation_setup(
+    store: Store,
+) -> tuple[
+    Semaphore, RunControl, AttemptCancelled, CancellingAttempt, CallOwner, asyncio.Event
+]:
+    """Bind one cancellable supervisor to a controlled evidence store."""
+    slots = Semaphore(1)
+    control = RunControl()
+    store.slots = slots
+    started = asyncio.Event()
+    observed = AttemptObservation(
+        CapturedOutput(b"partial", b""),
+        1.0,
+        CleanupEvidence(
+            "owned", (SignalAttempt("SIGKILL", "sent", None),), "reaped", None
+        ),
+    )
+    cancellation = AttemptCancelled(observed)
+    attempt = CancellingAttempt(started, cancellation)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        Classifier(),
+        NoQuota(),
+        store,
+        Clock(),
+    )
+    return slots, control, cancellation, attempt, subject, started
+
+
+async def test_owner_supervisor_cancellation_precedes_write_cancellation() -> None:
+    """Owner cancellation survives a later leaf cancellation of its evidence write."""
+    # Given
+    write_cancellation = asyncio.CancelledError("write leaf")
+    store = Store(write_cancellation)
+    slots, control, owner_cancellation, attempt, subject, started = cancellation_setup(
+        store
+    )
+    task = asyncio.create_task(subject.run())
+    await started.wait()
+
+    # When
+    task.cancel()
+    with pytest.raises(AttemptCancelled) as raised:
+        await task
+
+    # Then
+    assert raised.value is owner_cancellation
+    assert raised.value.__cause__ is write_cancellation
+    assert control.reason is not None
+    assert control.reason.cancellation is owner_cancellation
+    assert control.reason.cancellation_origin == "owner"
+    assert control.reason.recording_failure is write_cancellation
+    assert isinstance(subject.state, EvidencePending)
+    obligation = subject.state.failure.obligation
+    assert isinstance(obligation, AttemptWrite)
+    assert obligation.evidence is store.seen[0]
+    assert obligation.evidence.outcome is owner_cancellation
+    assert subject.state.failure.error is write_cancellation
+    assert subject.state.history.attempts == ()
+    assert len(store.seen) == 1
+    assert attempt.calls == 1
+    assert not slots.locked()
+
+
+async def test_first_owner_cancellation_survives_later_write_cancellation() -> None:
+    """A later owner cancellation cannot replace the supervisor cancellation."""
+    # Given
+    write_cancellation = asyncio.CancelledError("write leaf")
+    store = BlockingStore()
+    store.failure = write_cancellation
+    _, control, first, attempt, subject, started = cancellation_setup(store)
+    task = asyncio.create_task(subject.run())
+    await started.wait()
+    task.cancel("owner")
+    await store.started.wait()
+
+    # When
+    task.cancel("later")
+    await asyncio.sleep(0)
+    assert not task.done()
+    store.release.set()
+    with pytest.raises(AttemptCancelled) as raised:
+        await task
+
+    # Then
+    assert raised.value is first
+    assert raised.value.__cause__ is write_cancellation
+    assert control.reason is not None
+    assert control.reason.cancellation is first
+    assert control.reason.cancellation_origin == "owner"
+    assert isinstance(subject.state, EvidencePending)
+    assert subject.state.failure.error is write_cancellation
+    assert attempt.calls == 1

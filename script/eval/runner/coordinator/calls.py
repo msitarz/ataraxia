@@ -293,11 +293,19 @@ class CallOwner:
 
     def _finish_attempt_settlement(self, settled: Settlement[AttemptRecord]) -> None:
         """Propagate invocation and write cancellation after state is updated."""
-        cancellation = settled.cancellation
+        reason = self._control.reason
+        cancellation = (
+            reason.cancellation
+            if reason is not None and reason.cancellation_origin == "owner"
+            else settled.cancellation
+        )
         if cancellation is not None:
             if isinstance(settled, SettledFailure):
                 raise cancellation from settled.error
-            if self._invocation_error is not None:
+            if (
+                self._invocation_error is not None
+                and self._invocation_error is not cancellation
+            ):
                 raise cancellation from self._invocation_error
             raise cancellation
         if isinstance(settled, SettledFailure) and isinstance(
