@@ -112,6 +112,14 @@ class RunControl:
         await self._wait_until(self._dispatch_or_stop)
         return self.dispatch_allowed()
 
+    async def wait_stopped(self) -> None:
+        """Wait for the shared stop latch."""
+        await self._wait_until(self._stopped)
+
+    def _stopped(self) -> bool:
+        """Return whether a stop has latched."""
+        return self._reason is not None
+
     def _pause_or_stop(self) -> bool:
         """Return whether a pause or stop has latched."""
         return self._quota_origin is not None or self._reason is not None

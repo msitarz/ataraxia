@@ -5,14 +5,14 @@ transitions, retained-task settlement, and pure progress projection are
 implemented. Shared control implements the stop latch and quota gate, including
 async waiter notification. The call owner implements attempt dispatch and
 settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
-passive telemetry through the shared control and settlement boundaries. A
-quota-owner skeleton persists a wait start and closes it when the bound or probe
-budget forbids polling. Probe recovery, the run owner, and their composition
-remain planned, so this is not a complete runner. All Work acceptance criteria
-remain TODO. The [Work contract](README.md) owns behavior and the
-[current architecture](architecture.md) describes implemented components.
-[PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
-with known lifecycle bugs, not a validated alternative.
+passive telemetry through the shared control and settlement boundaries. A quota
+owner awaits bounded probe recovery and persists its wait and probe transitions
+through the shared control and settlement boundaries. The run owner and
+composition remain planned, so this is not a complete runner. All Work
+acceptance criteria remain TODO. The [Work contract](README.md) owns behavior
+and the [current architecture](architecture.md) describes implemented
+components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
+superseded approach with known lifecycle bugs, not a validated alternative.
 
 ## TL;DR
 
@@ -120,7 +120,7 @@ with known lifecycle bugs, not a validated alternative.
   any result is reported or recovery resumes.
 - The runtime evidence port accepts `QuotaProbePrepared`,
   `QuotaProbeDispatched`, and `QuotaProbeNotDispatched` in place of the former
-  started input. The quota owner has not yet wired these inputs.
+  started input; the quota owner writes these during recovery.
 - Scheduled and settled probe records remain separate from these inputs.
 - A timeout that translates cancellation into `TimeoutError` preserves
   exact-request probe evidence from its exception chain.
@@ -285,8 +285,8 @@ with known lifecycle bugs, not a validated alternative.
   order rather than claiming durability, including a later closure failure after
   a dispatch journal failure. If a dispatch journal fails, its invoked probe
   state remains attached while the owner settles and records that probe.
-- Runtime evidence types accept preparation, dispatch, and not-dispatched
-  inputs; the owner still needs to wire these inputs through recovery.
+- Runtime evidence types and quota recovery use preparation, dispatch, and
+  not-dispatched inputs; the run owner still needs to compose recovery.
 
 ## Pure transition map
 

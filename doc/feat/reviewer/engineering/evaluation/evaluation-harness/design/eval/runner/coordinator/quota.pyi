@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Historical free-function transitions; runtime state methods are authoritative.
 
-The async owner is a partial runtime skeleton; probe recovery remains planned.
+The runtime async quota owner is authoritative; run composition remains planned.
 """
 
 from asyncio import CancelledError

@@ -11,6 +11,7 @@ from script.eval.model import (
     HarnessConfig,
     QuotaObservation,
     QuotaProbeEvidence,
+    QuotaProbeLifecycleInput,
     QuotaProbeRecord,
     QuotaProbeRequest,
     QuotaProbeSchedule,
@@ -167,7 +168,10 @@ class Waiting:
         return history, QuotaStopped()
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain the failed journal input and any dispatched probe.
 
@@ -272,7 +276,10 @@ class PreparingProbe:
         return Probing(self.waiting, request)
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain the failed journal input and any dispatched probe.
 
@@ -311,7 +318,10 @@ class Probing:
         return RecordingProbe(self.waiting, evidence)
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain the failed journal input and any dispatched probe.
 
@@ -393,7 +403,10 @@ class RecordingProbe:
         )
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain the failed journal input and any dispatched probe.
 
@@ -415,7 +428,10 @@ class ProbeEvidencePending:
     error: BaseException
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain the failed journal input and any dispatched probe.
 
@@ -431,7 +447,7 @@ class ProbeEvidencePending:
 class QuotaWriteFailure:
     """The exact failed quota journal input and its original error."""
 
-    obligation: WaitWrite | ProbeDispatchEvent
+    obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput
     error: BaseException
 
 
@@ -449,7 +465,10 @@ class QuotaEvidencePending:
     probe: Probing | RecordingProbe | ProbeEvidencePending | None
 
     def journal_failed(
-        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+        self,
+        obligation: WaitWrite | ProbeDispatchEvent | QuotaProbeLifecycleInput,
+        error: BaseException,
+        /,
     ) -> QuotaEvidencePending:
         """Retain a later failure without duplicating the same captured failure.
 

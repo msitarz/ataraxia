@@ -49,7 +49,7 @@ QuotaAllowanceId = NewType("QuotaAllowanceId", str)
 QuotaWindowId = NewType("QuotaWindowId", str)
 QuotaProbeId = NewType("QuotaProbeId", str)
 type QuotaProbeReason = Literal["periodic", "reset_hint"]
-type QuotaProbeCancelCause = Literal["cancelled", "stop", "superseded"]
+type QuotaProbeCancelCause = Literal["cancelled", "stop", "superseded", "bound"]
 
 
 class StrictModel(BaseModel):
