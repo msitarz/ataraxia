@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Shared stop and quota gate wiring; notification and waiting are pending."""
+"""Shared stop latch and quota dispatch gate."""
 
-from asyncio import CancelledError
-from collections.abc import Callable, Coroutine
+from asyncio import CancelledError, Event
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from typing import Literal
 
@@ -15,15 +15,11 @@ from script.process_supervisor import AttemptResult, DispatchStop
 class RunControl:
     """Own a run's immediate stop and quota decisions.
 
-    The notification leaf wakes waiters after a state change. The wait leaf
-    waits until its supplied predicate holds. Both are pending: their defaults
-    raise until the lifecycle implementation supplies them.
+    State changes and waits belong to one asyncio event-loop thread. Each
+    change wakes all current waiters, which recheck their own predicate.
     """
 
-    _notify: Callable[[], None] = field(default_factory=lambda: _notify_pending)
-    _wait: Callable[[Callable[[], bool]], Coroutine[None, None, None]] = field(
-        default_factory=lambda: _wait_pending
-    )
+    _changed: Event = field(default_factory=Event, init=False)
     _reason: StopReason | None = field(default=None, init=False)
     _quota_origin: PauseOrigin | None = field(default=None, init=False)
     _quota_trigger: PauseTrigger | None = field(default=None, init=False)
@@ -94,7 +90,7 @@ class RunControl:
         Returns:
             The origin, or None if stopped.
         """
-        await self._wait(self._pause_or_stop)
+        await self._wait_until(self._pause_or_stop)
         return None if self._reason is not None else self._quota_origin
 
     def resume_after_quota(self) -> None:
@@ -113,7 +109,7 @@ class RunControl:
         Returns:
             Whether dispatch remains allowed after the wait.
         """
-        await self._wait(self._dispatch_or_stop)
+        await self._wait_until(self._dispatch_or_stop)
         return self.dispatch_allowed()
 
     def _pause_or_stop(self) -> bool:
@@ -124,12 +120,14 @@ class RunControl:
         """Return whether the gate is open or the run has stopped."""
         return self.dispatch_allowed() or self._reason is not None
 
+    def _notify(self) -> None:
+        """Wake current waiters and give later waits a fresh event."""
+        changed = self._changed
+        self._changed = Event()
+        changed.set()
 
-def _notify_pending() -> None:
-    """Mark notification as an unfinished effect."""
-    raise NotImplementedError("control notification is pending")
-
-
-async def _wait_pending(_ready: Callable[[], bool]) -> None:
-    """Mark asynchronous predicate waiting as an unfinished effect."""
-    raise NotImplementedError("control waiting is pending")
+    async def _wait_until(self, ready: Callable[[], bool]) -> None:
+        """Recheck readiness after each state change without losing wakeups."""
+        while not ready():
+            changed = self._changed
+            await changed.wait()

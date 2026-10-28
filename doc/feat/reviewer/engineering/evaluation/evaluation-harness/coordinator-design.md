@@ -2,8 +2,9 @@
 
 **Status:** Reviewed lifecycle design. State records and pure call and quota
 transitions, retained-task settlement, and pure progress projection are
-implemented. Shared control has typed wiring with pending notification and wait
-leaves; other asynchronous owners and composition remain planned. All Work
+implemented. Shared control implements the stop latch and quota gate, including
+async waiter notification; other asynchronous owners and composition remain
+planned. All Work
 acceptance criteria remain TODO. The [Work contract](README.md) owns behavior
 and the [current architecture](architecture.md) describes implemented
 components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
