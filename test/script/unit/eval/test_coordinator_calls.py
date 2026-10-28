@@ -28,6 +28,7 @@ from script.eval.model import (
     WaitEvent,
 )
 from script.eval.runner.coordinator.call_states import (
+    AttemptWrite,
     CallHistory,
     EvidencePending,
     Finished,
@@ -356,6 +357,7 @@ async def test_cancel_during_write_settles_and_preserves_cancellation() -> None:
     task.cancel()
     await asyncio.sleep(0)
     task.cancel()
+    await asyncio.sleep(0)
     assert not task.done()
     store.release.set()
     with pytest.raises(asyncio.CancelledError):
@@ -747,6 +749,8 @@ async def test_repeated_cancellation_during_wait_start_closes_durable_wait() -> 
     task.cancel("first")
     await asyncio.sleep(0)
     task.cancel("second")
+    await asyncio.sleep(0)
+    assert not task.done()
     store.release_wait.set()
     with pytest.raises(asyncio.CancelledError, match="first"):
         await task
@@ -788,6 +792,8 @@ async def test_repeated_cancellation_during_wait_end_retains_closure() -> None:
     task.cancel("first")
     await asyncio.sleep(0)
     task.cancel("second")
+    await asyncio.sleep(0)
+    assert not task.done()
     store.release_wait.set()
     with pytest.raises(asyncio.CancelledError, match="first"):
         await task
@@ -985,6 +991,8 @@ async def test_cancelled_wait_start_with_failure_preserves_cause() -> None:
     task.cancel()
     await asyncio.sleep(0)
     task.cancel()
+    await asyncio.sleep(0)
+    assert not task.done()
     store.release.set()
     with pytest.raises(asyncio.CancelledError) as raised:
         await task
@@ -1287,6 +1295,8 @@ async def test_repeated_cancellation_during_telemetry_settles_write() -> None:
     task.cancel("first")
     await asyncio.sleep(0)
     task.cancel("second")
+    await asyncio.sleep(0)
+    assert not task.done()
     store.release.set()
     with pytest.raises(asyncio.CancelledError, match="first"):
         await task
@@ -1455,3 +1465,223 @@ async def test_capacity_retry_requires_confident_no_result() -> None:
     assert result.outcome == "failure"
     assert attempt.calls == 1
     assert store.events == []
+
+
+async def test_write_leaf_cancellation_takes_precedence_over_invocation_failure() -> (
+    None
+):
+    """A leaf cancellation propagates with the original invocation error as cause."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    invocation_error = RuntimeError("invocation")
+    write_cancellation = asyncio.CancelledError("write")
+    store = Store(write_cancellation)
+    store.slots = slots
+
+    async def attempt(
+        request: AttemptRequest, stop_dispatch: DispatchStop, /
+    ) -> AttemptResult:
+        await asyncio.sleep(0)
+        raise invocation_error
+
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        Classifier(),
+        NoQuota(),
+        store,
+        Clock(),
+    )
+
+    # When
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is write_cancellation
+    assert raised.value.__cause__ is invocation_error
+    assert control.reason is not None
+    assert control.reason.first is invocation_error
+    assert control.reason.cancellation is write_cancellation
+    assert control.reason.cancellation_origin == "leaf"
+    assert isinstance(subject.state, EvidencePending)
+    assert subject.state.failure.error is write_cancellation
+    assert isinstance(subject.state.failure.obligation, AttemptWrite)
+    assert subject.state.failure.obligation.evidence is store.seen[0]
+
+
+class CancelledQuotaReader(QuotaReader):
+    """Raise or await cancellation during a passive read."""
+
+    def __init__(self, error: asyncio.CancelledError | None) -> None:
+        self.error = error
+        self.started = asyncio.Event()
+
+    @override
+    async def observe_settled_attempt(
+        self, evidence: AttemptEvidence, /
+    ) -> QuotaObservation:
+        """Signal the read boundary and raise leaf or owner cancellation."""
+        self.started.set()
+        if self.error is not None:
+            raise self.error
+        await asyncio.Event().wait()
+        raise AssertionError
+
+
+@pytest.mark.parametrize("origin", ["leaf", "owner"])
+async def test_passive_quota_cancellation_preserves_origin(origin: str) -> None:
+    """Passive-read cancellation stops with its durable attempt retained."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    store = QuotaStore(control, slots)
+    leaf = asyncio.CancelledError("leaf") if origin == "leaf" else None
+    reader = CancelledQuotaReader(leaf)
+    attempt = QuotaAttempt(slots, control)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(quota_wait_enabled=True),
+        control,
+        slots,
+        attempt,
+        QuotaClassifier(),
+        reader,
+        store,
+        Clock(),
+    )
+    task = asyncio.create_task(subject.run())
+    await reader.started.wait()
+
+    # When
+    if origin == "owner":
+        task.cancel()
+    with pytest.raises(asyncio.CancelledError) as raised:
+        await task
+
+    # Then
+    if leaf is not None:
+        assert raised.value is leaf
+    assert control.reason is not None
+    assert control.reason.cancellation_origin == origin
+    assert isinstance(subject.state, Stopped)
+    assert len(subject.state.history.attempts) == 1
+    assert store.telemetry is None
+    assert attempt.calls == 1
+
+
+class FailedClassifier(Classifier):
+    """Raise the supplied original classification failure."""
+
+    def __init__(self, error: BaseException) -> None:
+        super().__init__()
+        self.error = error
+
+    @override
+    def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment:
+        """Fail after the exact supervisor evidence has been captured."""
+        self.seen = evidence
+        raise self.error
+
+
+async def test_classification_failure_persists_unclassified_attempt() -> None:
+    """Classification failure latches stop and records the original evidence."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    store = Store()
+    store.slots = slots
+    error = RuntimeError("classification")
+    classifier = FailedClassifier(error)
+    attempt = Attempt(slots, control)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(),
+        control,
+        slots,
+        attempt,
+        classifier,
+        NoQuota(),
+        store,
+        Clock(),
+    )
+
+    # When
+    with pytest.raises(RuntimeError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is error
+    assert store.seen[0] is classifier.seen
+    assert store.forwarded is not None and store.forwarded[-1] is None
+    assert isinstance(subject.state, Stopped)
+    assert len(subject.state.history.attempts) == 1
+    assert control.reason is not None and control.reason.first is error
+    assert attempt.calls == 1
+
+
+class FailedJitterClock(Clock):
+    """Raise the supplied failure when capacity jitter is prepared."""
+
+    def __init__(self, error: BaseException) -> None:
+        self.error = error
+
+    @override
+    def uniform(self, lower: float, upper: float, /) -> float:
+        """Raise before any wait event is submitted."""
+        raise self.error
+
+
+class CapacityTelemetryStore(CapacityStore):
+    """Accept passive telemetry after a nonzero capacity attempt."""
+
+    @override
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+        """Retain the telemetry event in the in-memory test boundary."""
+        assert self.slots is not None and not self.slots.locked()
+
+
+@pytest.mark.parametrize("quota_enabled", [False, True])
+async def test_wait_preparation_failure_preserves_durable_attempt(
+    quota_enabled: bool,
+) -> None:
+    """A failed jitter preparation leaves the already recorded attempt in history."""
+    # Given
+    slots = Semaphore(1)
+    control = RunControl()
+    store = CapacityTelemetryStore()
+    store.slots = slots
+    error = RuntimeError("jitter")
+    attempt = QuotaAttempt(slots, control)
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(
+            quota_wait_enabled=quota_enabled,
+            capacity_retry_limit=1,
+            capacity_backoff_base_seconds=1.0,
+            capacity_backoff_cap_seconds=2.0,
+        ),
+        control,
+        slots,
+        attempt,
+        CapacityClassifier(),
+        QuotaReader(),
+        store,
+        FailedJitterClock(error),
+    )
+
+    # When
+    with pytest.raises(RuntimeError) as raised:
+        await subject.run()
+
+    # Then
+    assert raised.value is error
+    assert isinstance(subject.state, Stopped)
+    assert len(subject.state.history.attempts) == 1
+    assert store.events == []
+    assert attempt.calls == 1
+    assert control.reason is not None and control.reason.first is error

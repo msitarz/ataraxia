@@ -14,6 +14,7 @@ from script.eval.model import (
     CapacityWaitContext,
     HarnessConfig,
     QuotaTelemetryEvent,
+    RetryAssessment,
     WaitEnd,
     WaitEvent,
     WaitRecord,
@@ -101,7 +102,7 @@ class CallOwner:
         try:
             return await self._run()
         except CancelledError as cancellation:
-            self._control.note_cancellation(cancellation, "owner")
+            self._note_active_cancellation(cancellation)
             if isinstance(self._state, (Queued, ObservingQuota)):
                 history = self._state.history
                 self._state = Stopped(
@@ -153,8 +154,12 @@ class CallOwner:
                 request = state.history.call.request
                 started = self._runtime.utc_now()
                 evidence = await self._invoke(request, started)
-            assessment = self._classifier.assess(evidence)
-            if self._config.quota_wait_enabled and assessment.retry_class == "quota":
+            assessment = self._classify(evidence)
+            if (
+                self._config.quota_wait_enabled
+                and assessment is not None
+                and assessment.retry_class == "quota"
+            ):
                 self._control.pause_for_quota(PauseOrigin(state.history.call, number))
             assert isinstance(self._state, Attempting)
             self._state = self._state.capture(evidence, assessment)
@@ -199,9 +204,30 @@ class CallOwner:
             None,
             request,
             started,
-            self._runtime.utc_now(),
+            _end_time(self._runtime),
             None if output is None else output.stdout,
         )
+
+    def _classify(self, evidence: AttemptEvidence) -> RetryAssessment | None:
+        """Classify captured evidence, preserving it if classification fails.
+
+        Returns:
+            The classification, or None when its original error must propagate.
+        """
+        try:
+            return self._classifier.assess(evidence)
+        except BaseException as error:
+            if self._invocation_error is None:
+                self._invocation_error = error
+            else:
+                self._invocation_error.add_note(
+                    f"Classification also failed: {error!r}"
+                )
+            if isinstance(error, CancelledError):
+                self._note_active_cancellation(error)
+            else:
+                self._control.latch_stop(error)
+            return None
 
     def _note_active_cancellation(self, error: CancelledError) -> None:
         """Retain whether this task was cancelled or a leaf raised cancellation."""
@@ -232,15 +258,31 @@ class CallOwner:
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(record, _):
-                wait = (
-                    None
-                    if self._config.quota_wait_enabled
-                    else self._prepare_wait(state.history, record)
-                )
-                self._state = state.persisted(
-                    record, self._config, self._control.reason, wait
-                )
+                self._advance_recorded(state, record)
         self._finish_attempt_settlement(settled)
+
+    def _advance_recorded(self, state: Recording, record: AttemptRecord) -> None:
+        """Advance a durable attempt, preserving it if wait preparation fails."""
+        try:
+            wait = (
+                None
+                if self._config.quota_wait_enabled
+                else self._prepare_wait(state.history, record)
+            )
+        except BaseException as error:
+            self._stop_for_preparation_error(error)
+            self._state = state.persisted(
+                record, self._config, self._control.reason, None
+            )
+            raise
+        self._state = state.persisted(record, self._config, self._control.reason, wait)
+
+    def _stop_for_preparation_error(self, error: BaseException) -> None:
+        """Latch the original preparation failure before selecting a stopped state."""
+        if isinstance(error, CancelledError):
+            self._note_active_cancellation(error)
+        else:
+            self._control.latch_stop(error)
 
     def _finish_attempt_settlement(self, settled: Settlement[AttemptRecord]) -> None:
         """Propagate invocation and write cancellation after state is updated."""
@@ -251,16 +293,18 @@ class CallOwner:
             if self._invocation_error is not None:
                 raise cancellation from self._invocation_error
             raise cancellation
+        if isinstance(settled, SettledFailure) and isinstance(
+            settled.error, CancelledError
+        ):
+            if self._invocation_error is not None:
+                raise settled.error from self._invocation_error
+            raise settled.error
         if self._invocation_error is not None:
             error = self._invocation_error
             self._invocation_error = None
             if isinstance(settled, SettledFailure):
                 raise error from settled.error
             raise error
-        if isinstance(settled, SettledFailure) and isinstance(
-            settled.error, CancelledError
-        ):
-            raise settled.error
 
     async def _observe(self, state: ObservingQuota) -> None:
         """Read passive quota only after the attempt is durable."""
@@ -293,10 +337,7 @@ class CallOwner:
                 observation = state.event.observation
                 if observation.scope is not None and self._control.reason is None:
                     self._publish_trigger(state, origin)
-                wait = self._prepare_wait(
-                    state.history, state.history.attempts[-1], includes_record=True
-                )
-                self._state = state.persisted(self._config, self._control.reason, wait)
+                self._advance_telemetry(state)
         if cancellation is not None:
             if isinstance(settled, SettledFailure):
                 raise cancellation from settled.error
@@ -305,6 +346,18 @@ class CallOwner:
             settled.error, CancelledError
         ):
             raise settled.error
+
+    def _advance_telemetry(self, state: RecordingTelemetry) -> None:
+        """Advance durable telemetry while retaining history on preparation failure."""
+        try:
+            wait = self._prepare_wait(
+                state.history, state.history.attempts[-1], includes_record=True
+            )
+        except BaseException as error:
+            self._stop_for_preparation_error(error)
+            self._state = state.persisted(self._config, self._control.reason, None)
+            raise
+        self._state = state.persisted(self._config, self._control.reason, wait)
 
     def _publish_trigger(
         self, state: RecordingTelemetry, origin: PauseOrigin | None
