@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Historical reviewed pure transition signatures; async owner remains planned."""
+"""Historical free-function transitions; runtime state methods are authoritative.
+
+The async owner declarations remain planned.
+"""
 
 from asyncio import CancelledError, Semaphore
 

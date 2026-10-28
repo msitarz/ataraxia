@@ -9,6 +9,7 @@ from script.eval.model import (
     AttemptEvidence,
     AttemptNumber,
     AttemptRecord,
+    CallId,
     CapacityWaitContext,
     HarnessConfig,
     ProcessRecord,
@@ -70,6 +71,21 @@ class CallWait:
     started_monotonic: float
     start_phase: Literal["prepared", "submitted", "durable"]
     end_record: WaitRecord | None
+
+    def matches_retry(
+        self, call_id: CallId, attempt_number: AttemptNumber, retry_index: int, /
+    ) -> bool:
+        """Check this prepared wait belongs to the selected capacity retry.
+
+        Returns:
+            Whether the call, attempt, retry index, and phase match.
+        """
+        return (
+            self.context.call_id == call_id
+            and self.context.failed_attempt_number == attempt_number
+            and self.context.retry_index == retry_index
+            and self.start_phase == "prepared"
+        )
 
 
 @dataclass(frozen=True)
@@ -166,6 +182,19 @@ class ObservingQuota:
     attempt_number: AttemptNumber
     evidence: AttemptEvidence
 
+    def matches_event(self, event: QuotaTelemetryEvent, /) -> bool:
+        """Check that telemetry belongs to this call attempt.
+
+        Returns:
+            Whether the event's run, call, and attempt identities match.
+        """
+        call = self.history.call
+        return (
+            event.run_id == call.run_id
+            and event.call_id == call.call_id
+            and event.attempt_number == self.attempt_number
+        )
+
     def capture(self, event: QuotaTelemetryEvent, /) -> RecordingTelemetry:
         """Retain the exact telemetry event until its write settles.
 
@@ -175,12 +204,7 @@ class ObservingQuota:
         Raises:
             ValueError: The supplied facts do not belong to the same lifecycle.
         """
-        call = self.history.call
-        if (event.run_id, event.call_id, event.attempt_number) != (
-            call.run_id,
-            call.call_id,
-            self.attempt_number,
-        ):
+        if not self.matches_event(event):
             raise ValueError("telemetry does not belong to attempt")
         return RecordingTelemetry(self.history, event)
 
@@ -264,6 +288,19 @@ class RetryWait:
             self, wait=replace(self.wait, start_phase="durable", end_record=closure)
         )
 
+    def matches_closure(self, record: WaitRecord, /) -> bool:
+        """Check that a closure belongs to this durably started wait.
+
+        Returns:
+            Whether the phase, wait identity, and pending closure match.
+        """
+        return (
+            self.wait.start_phase == "durable"
+            and record.wait_id == self.wait.wait_id
+            and record.context == self.wait.context
+            and (self.wait.end_record is None or self.wait.end_record == record)
+        )
+
     def completed(
         self, record: WaitRecord, stop: StopReason | None, /
     ) -> Queued | Stopped:
@@ -275,12 +312,7 @@ class RetryWait:
         Raises:
             ValueError: The supplied facts do not belong to the same lifecycle.
         """
-        if (
-            self.wait.start_phase != "durable"
-            or record.wait_id != self.wait.wait_id
-            or record.context != self.wait.context
-            or (self.wait.end_record is not None and self.wait.end_record != record)
-        ):
+        if not self.matches_closure(record):
             raise ValueError("closure does not belong to durable wait")
         history = replace(self.history, waits=(*self.history.waits, record))
         if record.end == "cancelled" or (
@@ -336,6 +368,11 @@ def _decide(
     wait: CallWait | None,
     /,
 ) -> RetryWait | Queued | Finished | Stopped:
+    """Select the call outcome after required evidence becomes durable.
+
+    Returns:
+        The selected call state.
+    """
     record = history.attempts[-1]
     if record.control_flow == "cancelled" or record.outcome_kind == "cancelled":
         return Stopped(history, "cancelled")
@@ -358,6 +395,14 @@ def _decide(
 def _retry(
     history: CallHistory, config: HarnessConfig, wait: CallWait | None, /
 ) -> RetryWait | Queued | Finished:
+    """Select a retry using independent allowances and supplied wait facts.
+
+    Returns:
+        The selected retry or terminal state.
+
+    Raises:
+        ValueError: The capacity wait does not match the retry.
+    """
     record = history.attempts[-1]
     assessment = record.retry_assessment
     if assessment is None or not confident_no_result(assessment):
@@ -383,12 +428,8 @@ def _retry(
     if infrastructure_retry_allowed(assessment, infrastructure_used, config):
         return Queued(history)
     if capacity_retry_allowed(assessment, capacity_used, config):
-        if (
-            wait is None
-            or wait.context.call_id != history.call.call_id
-            or wait.context.failed_attempt_number != record.attempt_number
-            or wait.context.retry_index != capacity_used
-            or wait.start_phase != "prepared"
+        if wait is None or not wait.matches_retry(
+            history.call.call_id, record.attempt_number, capacity_used
         ):
             raise ValueError("capacity wait does not match retry")
         return RetryWait(history, wait)
@@ -396,6 +437,11 @@ def _retry(
 
 
 def _safe_returned(record: ProcessRecord, /) -> bool:
+    """Determine whether the returned process has safe, owned cleanup.
+
+    Returns:
+        Whether the process was safely returned.
+    """
     if (
         record.control_flow != "returned"
         or record.outcome_kind == "cancelled"

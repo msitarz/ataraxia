@@ -1069,6 +1069,8 @@ def test_probe_dispatch_rejects_another_pause() -> None:
 
     # Then
     assert exc.value.__cause__ is None
+    assert prepared.preparation.pause_wait_id == "wait"
+    assert prepared.waiting.wait_id == "wait"
 
 
 def test_available_probe_with_wrong_scope_stops_after_durable_closure() -> None:
@@ -1330,3 +1332,293 @@ def test_recording_rejects_unrelated_attempt_record(changes: dict[str, object]) 
 
     # Then
     assert state.history.attempts == ()
+
+
+def call_closure() -> WaitRecord:
+    """Build the durable closure for the prepared capacity wait."""
+    wait = capacity_wait(1, 0)
+    return WaitRecord(
+        wait_id=wait.wait_id,
+        context=wait.context,
+        started_at_utc=wait.started_at_utc,
+        ended_at_utc="2026-01-01T00:00:02Z",
+        elapsed_seconds=1.0,
+        end="delay_elapsed",
+        diagnostic=None,
+    )
+
+
+def quota_closure() -> WaitRecord:
+    """Build the pending closure for the quota wait."""
+    state = waiting()
+    return WaitRecord(
+        wait_id=state.wait_id,
+        context=state.context,
+        started_at_utc=state.started_at_utc,
+        ended_at_utc="2026-01-01T00:00:02Z",
+        elapsed_seconds=2.0,
+        end="quota_available",
+        diagnostic=None,
+    )
+
+
+@pytest.mark.parametrize(
+    ("changes", "expected"),
+    [
+        ({}, True),
+        ({"run_id": "other"}, False),
+        ({"call_id": "other"}, False),
+        ({"attempt_number": 2}, False),
+    ],
+    ids=["match", "run", "call", "attempt"],
+)
+def test_observing_quota_matches_event_identity(
+    changes: dict[str, object], expected: bool
+) -> None:
+    # Given
+    from script.eval.model import QuotaTelemetryEvent
+
+    history = CallHistory(call(), (), ())
+    captured = recording(history, 1, "quota")
+    state = ObservingQuota(history, 1, captured.attempt.evidence)
+    event = QuotaTelemetryEvent(
+        run_id="run", call_id="call", attempt_number=1, observation=observation()
+    ).model_copy(update=changes)
+
+    # When
+    result = state.matches_event(event)
+
+    # Then
+    assert result is expected
+
+
+def test_observing_quota_rejects_another_attempt_event() -> None:
+    # Given
+    from script.eval.model import QuotaTelemetryEvent
+
+    history = CallHistory(call(), (), ())
+    state = ObservingQuota(history, 1, recording(history, 1, "quota").attempt.evidence)
+    event = QuotaTelemetryEvent(
+        run_id="run", call_id="call", attempt_number=2, observation=observation()
+    )
+
+    # When
+    with pytest.raises(ValueError, match="telemetry does not belong"):
+        state.capture(event)
+
+    # Then
+    assert state.history is history
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("match", True),
+        ("no_pending", True),
+        ("phase", False),
+        ("id", False),
+        ("context", False),
+        ("pending", False),
+    ],
+    ids=["match", "no-pending", "phase", "id", "context", "pending"],
+)
+def test_retry_wait_matches_closure(case: str, expected: bool) -> None:
+    # Given
+    from dataclasses import replace
+
+    record = call_closure()
+    history = CallHistory(call(), (), ())
+    wait = replace(capacity_wait(1, 0), start_phase="durable", end_record=record)
+    other_context = record.context.model_copy(update={"call_id": "other"})
+    wrong_id = record.model_copy(update={"wait_id": "other"})
+    wrong_context = record.model_copy(update={"context": other_context})
+    cases = {
+        "match": (wait, record),
+        "no_pending": (replace(wait, end_record=None), record),
+        "phase": (replace(wait, start_phase="submitted"), record),
+        "id": (replace(wait, end_record=wrong_id), wrong_id),
+        "context": (replace(wait, end_record=wrong_context), wrong_context),
+        "pending": (
+            replace(wait, end_record=record.model_copy(update={"end": "stop"})),
+            record,
+        ),
+    }
+    selected_wait, selected_record = cases[case]
+    state = RetryWait(history, selected_wait)
+
+    # When
+    result = state.matches_closure(selected_record)
+
+    # Then
+    assert result is expected
+
+
+def test_retry_wait_rejects_unrelated_closure() -> None:
+    # Given
+    from dataclasses import replace
+
+    history = CallHistory(call(), (), ())
+    state = RetryWait(history, replace(capacity_wait(1, 0), start_phase="durable"))
+    record = call_closure().model_copy(update={"wait_id": "other"})
+
+    # When
+    with pytest.raises(ValueError, match="closure does not belong"):
+        state.completed(record, None)
+
+    # Then
+    assert state.history is history
+    assert history.waits == ()
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("match", True),
+        ("phase", False),
+        ("pending", False),
+        ("id", False),
+        ("context", False),
+    ],
+    ids=["match", "phase", "pending", "id", "context"],
+)
+def test_quota_wait_matches_closure(case: str, expected: bool) -> None:
+    # Given
+    from dataclasses import replace
+
+    record = quota_closure()
+    state = replace(waiting(), end_record=record)
+    other_context = record.context.model_copy(update={"trigger_call_id": "other"})
+    wrong_id = record.model_copy(update={"wait_id": "other"})
+    wrong_context = record.model_copy(update={"context": other_context})
+    cases = {
+        "match": (state, record),
+        "phase": (replace(state, start_phase="submitted"), record),
+        "pending": (replace(state, end_record=None), record),
+        "id": (replace(state, end_record=wrong_id), wrong_id),
+        "context": (replace(state, end_record=wrong_context), wrong_context),
+    }
+    selected_state, selected_record = cases[case]
+
+    # When
+    result = selected_state.matches_closure(selected_record)
+
+    # Then
+    assert result is expected
+
+
+def test_quota_wait_rejects_unrelated_closure() -> None:
+    # Given
+    from dataclasses import replace
+
+    record = quota_closure()
+    state = replace(waiting(), end_record=record)
+    history = QuotaHistory((), ())
+    wrong = record.model_copy(update={"wait_id": "other"})
+
+    # When
+    with pytest.raises(ValueError, match="closure does not belong"):
+        state.completed(history, wrong, None, None, "2026-01-01T00:00:02Z")
+
+    # Then
+    assert history.waits == ()
+    assert state.end_record is record
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("match", True),
+        ("schedule", False),
+        ("preparation_pause", False),
+        ("waiting_pause", False),
+        ("scope", False),
+    ],
+    ids=["match", "schedule", "preparation-pause", "waiting-pause", "scope"],
+)
+def test_preparing_probe_matches_request(case: str, expected: bool) -> None:
+    # Given
+    from dataclasses import replace
+
+    req = request()
+    state = PreparingProbe(waiting(), ProbePrepared(req.schedule, "wait"))
+    other_schedule = req.schedule.model_copy(update={"reason": "reset_hint"})
+    other_scope = QuotaScope(
+        provider_id=QuotaProviderId("p"), allowance_id=QuotaAllowanceId("other")
+    )
+    scoped_schedule = req.schedule.model_copy(update={"scope": other_scope})
+    scoped_request = req.model_copy(update={"schedule": scoped_schedule})
+    cases = {
+        "match": (state, req),
+        "schedule": (state, req.model_copy(update={"schedule": other_schedule})),
+        "preparation_pause": (
+            replace(state, preparation=ProbePrepared(req.schedule, "other")),
+            req,
+        ),
+        "waiting_pause": (
+            replace(state, waiting=replace(state.waiting, wait_id="other")),
+            req,
+        ),
+        "scope": (
+            replace(state, preparation=ProbePrepared(scoped_schedule, "wait")),
+            scoped_request,
+        ),
+    }
+    selected_state, selected_request = cases[case]
+
+    # When
+    result = selected_state.matches_request(selected_request)
+
+    # Then
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    ("case", "expected"),
+    [
+        ("match", True),
+        ("call", False),
+        ("attempt", False),
+        ("index", False),
+        ("phase", False),
+    ],
+    ids=["match", "call", "attempt", "index", "phase"],
+)
+def test_call_wait_matches_retry(case: str, expected: bool) -> None:
+    # Given
+    from dataclasses import replace
+
+    wait = capacity_wait(1, 0)
+    cases = {
+        "match": (wait, "call", 1, 0),
+        "call": (wait, "other", 1, 0),
+        "attempt": (wait, "call", 2, 0),
+        "index": (wait, "call", 1, 1),
+        "phase": (replace(wait, start_phase="submitted"), "call", 1, 0),
+    }
+    selected, call_id, number, index = cases[case]
+
+    # When
+    result = selected.matches_retry(call_id, number, index)
+
+    # Then
+    assert result is expected
+
+
+def test_attempt_persistence_rejects_unrelated_capacity_wait() -> None:
+    # Given
+    history = CallHistory(call(), (), ())
+    state = recording(history, 1, "capacity")
+    cfg = config(
+        capacity_retry_limit=1,
+        capacity_backoff_base_seconds=1.0,
+        capacity_backoff_cap_seconds=2.0,
+    )
+    wait = capacity_wait(2, 0)
+
+    # When
+    with pytest.raises(ValueError, match="capacity wait does not match retry"):
+        state.persisted(attempt_record(1, "capacity"), cfg, None, wait)
+
+    # Then
+    assert state.history is history
+    assert history.attempts == ()

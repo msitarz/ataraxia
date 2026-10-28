@@ -96,6 +96,19 @@ class Waiting:
     end_record: WaitRecord | None
     observation: QuotaObservation
 
+    def matches_closure(self, record: WaitRecord, /) -> bool:
+        """Check that the pending closure belongs to this durable wait.
+
+        Returns:
+            Whether the phase, pending record, wait identity, and context match.
+        """
+        return (
+            self.start_phase == "durable"
+            and self.end_record == record
+            and record.wait_id == self.wait_id
+            and record.context == self.context
+        )
+
     def completed(
         self,
         history: QuotaHistory,
@@ -113,12 +126,7 @@ class Waiting:
         Raises:
             ValueError: The supplied facts do not belong to the same lifecycle.
         """
-        if (
-            self.start_phase != "durable"
-            or self.end_record != record
-            or record.wait_id != self.wait_id
-            or record.context != self.context
-        ):
+        if not self.matches_closure(record):
             raise ValueError("closure does not belong to durable wait")
         history = replace(history, waits=(*history.waits, record))
         if stop is not None or (
@@ -203,6 +211,19 @@ class PreparingProbe:
             self.preparation, cause, ended_at_utc, elapsed_seconds
         )
 
+    def matches_request(self, request: QuotaProbeRequest, /) -> bool:
+        """Check that a request belongs to this preparation and pause.
+
+        Returns:
+            Whether its schedule, pause identities, and quota scope match.
+        """
+        return (
+            request.schedule == self.preparation.schedule
+            and request.pause_wait_id == self.preparation.pause_wait_id
+            and request.pause_wait_id == self.waiting.wait_id
+            and request.schedule.scope == self.waiting.context.quota_observation.scope
+        )
+
     def dispatched(self, request: QuotaProbeRequest, /) -> Probing:
         """Retain the exact request at actual invocation.
 
@@ -212,12 +233,7 @@ class PreparingProbe:
         Raises:
             ValueError: The supplied facts do not belong to the same lifecycle.
         """
-        if (
-            request.schedule != self.preparation.schedule
-            or request.pause_wait_id != self.preparation.pause_wait_id
-            or request.pause_wait_id != self.waiting.wait_id
-            or request.schedule.scope != self.waiting.context.quota_observation.scope
-        ):
+        if not self.matches_request(request):
             raise ValueError("request does not belong to prepared probe")
         return Probing(self.waiting, request)
 
@@ -434,6 +450,11 @@ def _control_end(
 def _fresh(
     observation: QuotaObservation | None, waiting: Waiting, now_utc: str, /
 ) -> bool:
+    """Check whether a scoped observation remains valid at the supplied time.
+
+    Returns:
+        Whether the observation is scoped, complete, and fresh.
+    """
     if (
         observation is None
         or observation.scope is None
