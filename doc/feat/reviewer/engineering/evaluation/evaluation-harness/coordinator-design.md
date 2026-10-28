@@ -278,9 +278,10 @@ with known lifecycle bugs, not a validated alternative.
   identity through the reader, timeout translation, and evidence settlement.
 - Probe recording and failed or missing evidence remain distinct from an active
   poll and retain its request, captured evidence when available, and failure.
-- A failed wait or probe journal write retains its obligation and error rather
-  than claiming durability. If a dispatch journal fails, its invoked probe state
-  remains attached while the owner settles and records that probe.
+- Failed wait or probe journal writes retain each exact obligation and error in
+  order rather than claiming durability, including a later closure failure after
+  a dispatch journal failure. If a dispatch journal fails, its invoked probe
+  state remains attached while the owner settles and records that probe.
 - Future evidence-port wiring must accept the proposed preparation, dispatch,
   and not-dispatched inputs in place of the current started input.
 - The existing runtime types and evidence port are unchanged by this sketch.

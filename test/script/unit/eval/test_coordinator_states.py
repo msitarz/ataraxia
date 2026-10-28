@@ -644,8 +644,8 @@ def test_probe_journal_failure_retains_dispatched_request() -> None:
     result = probing.journal_failed(event, error)
 
     # Then
-    assert result.obligation is event
-    assert result.error is error
+    assert result.failures[0].obligation is event
+    assert result.failures[0].error is error
     assert result.probe is probing
     assert result.probe.request is req
 
@@ -811,9 +811,9 @@ def test_quota_wait_start_during_cancellation_requires_and_retains_closure() -> 
     assert started.start_phase == "durable"
     assert started.end_record is closure
     assert failed.waiting is started
-    assert isinstance(failed.obligation, WaitWrite)
-    assert failed.obligation.record is closure
-    assert failed.error is error
+    assert isinstance(failed.failures[0].obligation, WaitWrite)
+    assert failed.failures[0].obligation.record is closure
+    assert failed.failures[0].error is error
     assert cancellation.__cause__ is None
 
 

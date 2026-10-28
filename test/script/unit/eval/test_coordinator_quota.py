@@ -106,10 +106,10 @@ async def test_failed_closure_retains_the_exact_obligation() -> None:
 
     # Then
     assert isinstance(result, QuotaEvidencePending)
-    assert isinstance(result.obligation, WaitWrite)
-    assert result.obligation.record is not None
-    assert result.obligation.event.wait_id == store.events[0].wait_id
-    assert result.error is store.error
+    assert isinstance(result.failures[0].obligation, WaitWrite)
+    assert result.failures[0].obligation.record is not None
+    assert result.failures[0].obligation.event.wait_id == store.events[0].wait_id
+    assert result.failures[0].error is store.error
     assert quota.history.waits == ()
     assert control.reason is not None
     assert control.reason.recording_failure is store.error
@@ -177,10 +177,10 @@ async def test_failed_start_retains_its_event_without_claiming_a_wait() -> None:
 
     # Then
     assert isinstance(result, QuotaEvidencePending)
-    assert isinstance(result.obligation, WaitWrite)
-    assert result.obligation.event.kind == "started"
-    assert result.obligation.record is None
-    assert result.error is store.error
+    assert isinstance(result.failures[0].obligation, WaitWrite)
+    assert result.failures[0].obligation.event.kind == "started"
+    assert result.failures[0].obligation.record is None
+    assert result.failures[0].error is store.error
     assert quota.history.waits == ()
     assert not control.dispatch_allowed()
 
@@ -277,10 +277,10 @@ async def test_leaf_cancellation_retains_exact_failed_write(
     assert caught.value is error
     assert error.__cause__ is None
     assert isinstance(quota.state, QuotaEvidencePending)
-    assert quota.state.error is error
-    assert isinstance(quota.state.obligation, WaitWrite)
-    assert quota.state.obligation.event is store.attempted[-1]
-    assert (quota.state.obligation.record is not None) is has_record
+    assert quota.state.failures[0].error is error
+    assert isinstance(quota.state.failures[0].obligation, WaitWrite)
+    assert quota.state.failures[0].obligation.event is store.attempted[-1]
+    assert (quota.state.failures[0].obligation.record is not None) is has_record
     assert quota.history.waits == ()
     assert control.reason is not None
     assert control.reason.cancellation is error

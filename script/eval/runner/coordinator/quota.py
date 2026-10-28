@@ -28,6 +28,7 @@ from .quota_states import (
     QuotaEvidencePending,
     QuotaHistory,
     QuotaState,
+    QuotaWriteFailure,
     Waiting,
 )
 from .settlement import SettledFailure, Settlement, settle
@@ -166,7 +167,9 @@ class QuotaOwner:
         if isinstance(settled, SettledFailure):
             self._control.note_recording_failure(settled.error)
             self._state = QuotaEvidencePending(
-                waiting, WaitWrite(event, None), settled.error, None
+                waiting,
+                (QuotaWriteFailure(WaitWrite(event, None), settled.error),),
+                None,
             )
             if cancellation is settled.error:
                 raise cancellation

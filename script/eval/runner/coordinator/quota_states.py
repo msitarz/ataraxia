@@ -149,7 +149,7 @@ class Waiting:
         Returns:
             The pending obligation and any active probe.
         """
-        return QuotaEvidencePending(self, obligation, error, None)
+        return QuotaEvidencePending(self, (QuotaWriteFailure(obligation, error),), None)
 
 
 @dataclass(frozen=True)
@@ -245,7 +245,9 @@ class PreparingProbe:
         Returns:
             The pending obligation and any active probe.
         """
-        return QuotaEvidencePending(self.waiting, obligation, error, None)
+        return QuotaEvidencePending(
+            self.waiting, (QuotaWriteFailure(obligation, error),), None
+        )
 
 
 @dataclass(frozen=True)
@@ -282,7 +284,9 @@ class Probing:
         Returns:
             The pending obligation and any active probe.
         """
-        return QuotaEvidencePending(self.waiting, obligation, error, self)
+        return QuotaEvidencePending(
+            self.waiting, (QuotaWriteFailure(obligation, error),), self
+        )
 
 
 @dataclass(frozen=True)
@@ -362,7 +366,9 @@ class RecordingProbe:
         Returns:
             The pending obligation and any active probe.
         """
-        return QuotaEvidencePending(self.waiting, obligation, error, self)
+        return QuotaEvidencePending(
+            self.waiting, (QuotaWriteFailure(obligation, error),), self
+        )
 
 
 @dataclass(frozen=True)
@@ -382,21 +388,48 @@ class ProbeEvidencePending:
         Returns:
             The pending obligation and any active probe.
         """
-        return QuotaEvidencePending(self.waiting, obligation, error, self)
+        return QuotaEvidencePending(
+            self.waiting, (QuotaWriteFailure(obligation, error),), self
+        )
+
+
+@dataclass(frozen=True)
+class QuotaWriteFailure:
+    """The exact failed quota journal input and its original error."""
+
+    obligation: WaitWrite | ProbeDispatchEvent
+    error: BaseException
 
 
 @dataclass(frozen=True)
 class QuotaEvidencePending:
-    """A failed wait or probe journal write retains its obligation.
+    """Journal failures and any invoked probe remain owned until settlement.
 
-    A dispatch journal may fail while the invoked probe is still settling. Its
-    state remains attached until the owner captures and persists that outcome.
+    The nonempty sequence preserves each failed write in order, including a
+    later wait closure after a dispatch journal failure. Probe state remains
+    attached while its independently required evidence settles.
     """
 
     waiting: Waiting
-    obligation: WaitWrite | ProbeDispatchEvent
-    error: BaseException
+    failures: tuple[QuotaWriteFailure, *tuple[QuotaWriteFailure, ...]]
     probe: Probing | RecordingProbe | ProbeEvidencePending | None
+
+    def journal_failed(
+        self, obligation: WaitWrite | ProbeDispatchEvent, error: BaseException, /
+    ) -> QuotaEvidencePending:
+        """Retain a later failure without duplicating the same captured failure.
+
+        Returns:
+            The pending state with its previous failures and probe preserved.
+        """
+        if any(
+            item.obligation is obligation and item.error is error
+            for item in self.failures
+        ):
+            return self
+        return replace(
+            self, failures=(*self.failures, QuotaWriteFailure(obligation, error))
+        )
 
 
 @dataclass(frozen=True)
