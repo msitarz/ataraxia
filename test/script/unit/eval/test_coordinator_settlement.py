@@ -23,21 +23,19 @@ async def _checkpoint() -> None:
 
 async def _cancel_owner_twice[T](
     operation: Coroutine[Any, Any, T], ready: asyncio.Event
-) -> Settlement[T]:
-    """Cancel an owner twice while its submitted operation remains blocked."""
+) -> tuple[Settlement[T], list[tuple[bool, bool]]]:
+    """Cancel an owner twice and record whether either task has ended."""
     submitted = asyncio.create_task(operation)
     owner = asyncio.create_task(settle(submitted))
     await _checkpoint()
     owner.cancel("first")
     await _checkpoint()
-    assert not owner.done()
-    assert not submitted.cancelled()
+    states = [(owner.done(), submitted.cancelled())]
     owner.cancel("second")
     await _checkpoint()
-    assert not owner.done()
-    assert not submitted.cancelled()
+    states.append((owner.done(), submitted.cancelled()))
     ready.set()
-    return await owner
+    return await owner, states
 
 
 async def test_repeated_owner_cancellation_waits_for_successful_task() -> None:
@@ -54,9 +52,10 @@ async def test_repeated_owner_cancellation_waits_for_successful_task() -> None:
 
     # When
     release.set()
-    result = await owner
+    result, states = await owner
 
     # Then
+    assert states == [(False, False), (False, False)]
     assert isinstance(result, SettledValue)
     assert result.value == 42
     assert result.cancellation is not None
@@ -78,9 +77,10 @@ async def test_repeated_owner_cancellation_preserves_task_failure() -> None:
 
     # When
     release.set()
-    result = await owner
+    result, states = await owner
 
     # Then
+    assert states == [(False, False), (False, False)]
     assert isinstance(result, SettledFailure)
     assert result.error is failure
     assert result.cancellation is not None
@@ -105,9 +105,10 @@ async def test_leaf_cancellation_is_separate_from_owner_cancellation() -> None:
 
     # When
     release.set()
-    result = await owner
+    result, states = await owner
 
     # Then
+    assert states == [(False, False), (False, False)]
     assert isinstance(result, SettledFailure)
     assert isinstance(result.error, CancelledError)
     assert result.error.args == ("leaf",)
