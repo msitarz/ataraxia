@@ -92,7 +92,7 @@ class EvidenceStore(Protocol):
     async def record_quota_probe_event(
         self, event: QuotaProbeLifecycleInput, /
     ) -> None:
-        """Append a scheduled, started, or prelaunch-cancelled probe event."""
+        """Append one quota probe lifecycle event."""
 
     async def record_quota_probe_settled(
         self, evidence: QuotaProbeEvidence, /
