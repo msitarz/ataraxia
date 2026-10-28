@@ -149,23 +149,25 @@ def _count_call(
     """Count one call state and its durable and current attempts."""
     history = state.history
     bucket: CallBucket
-    if isinstance(state, Queued):
-        bucket = "calls_queued"
-    elif isinstance(
-        state, Attempting | Recording | ObservingQuota | RecordingTelemetry
-    ):
-        bucket = "calls_active"
-    elif isinstance(state, RetryWait):
-        bucket = "calls_retry_wait"
-    elif isinstance(state, EvidencePending):
-        bucket = "calls_evidence_pending"
-    elif isinstance(state, Finished | Stopped):
-        if isinstance(state, Stopped) and not history.attempts:
-            bucket = "calls_stopped_not_started"
-        else:
-            bucket = _terminal_call_bucket(state.outcome)
-    else:
-        assert_never(state)
+    match state:
+        case Queued():
+            bucket = "calls_queued"
+        case Attempting() | Recording() | ObservingQuota() | RecordingTelemetry():
+            bucket = "calls_active"
+        case RetryWait():
+            bucket = "calls_retry_wait"
+        case EvidencePending():
+            bucket = "calls_evidence_pending"
+        case Finished(outcome=outcome):
+            bucket = _terminal_call_bucket(outcome)
+        case Stopped(outcome=outcome):
+            bucket = (
+                "calls_stopped_not_started"
+                if not history.attempts
+                else _terminal_call_bucket(outcome)
+            )
+        case unexpected:
+            assert_never(unexpected)
     counts[bucket] += 1
     _count_attempts(state, counts, reasons)
 
