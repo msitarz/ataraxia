@@ -118,11 +118,10 @@ with known lifecycle bugs, not a validated alternative.
   probe count only when the reader is invoked.
 - Its journal write is retained and settled alongside the invoked probe before
   any result is reported or recovery resumes.
-- The existing runtime `QuotaProbeStarted` describes actual dispatch but is
-  currently written before polling; future wiring replaces that input with
-  preparation and dispatch events and adds the not-dispatched closure.
-- Existing scheduled and settled probe records remain separate from these
-  proposed inputs; this sketch changes no runtime schema or Work contract.
+- The runtime evidence port accepts `QuotaProbePrepared`,
+  `QuotaProbeDispatched`, and `QuotaProbeNotDispatched` in place of the former
+  started input. The quota owner has not yet wired these inputs.
+- Scheduled and settled probe records remain separate from these inputs.
 - A timeout that translates cancellation into `TimeoutError` preserves
   exact-request probe evidence from its exception chain.
 - That evidence includes process, output, and cleanup observations and is
@@ -286,9 +285,8 @@ with known lifecycle bugs, not a validated alternative.
   order rather than claiming durability, including a later closure failure after
   a dispatch journal failure. If a dispatch journal fails, its invoked probe
   state remains attached while the owner settles and records that probe.
-- Future evidence-port wiring must accept the proposed preparation, dispatch,
-  and not-dispatched inputs in place of the current started input.
-- The existing runtime types and evidence port are unchanged by this sketch.
+- Runtime evidence types accept preparation, dispatch, and not-dispatched
+  inputs; the owner still needs to wire these inputs through recovery.
 
 ## Pure transition map
 

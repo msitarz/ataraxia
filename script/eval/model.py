@@ -409,11 +409,30 @@ class QuotaProbeScheduled(StrictModel):
     schedule: QuotaProbeSchedule
 
 
-class QuotaProbeStarted(StrictModel):
-    """Actual dispatch event written before supervisor invocation."""
+class QuotaProbePrepared(StrictModel):
+    """Retained intent before the final dispatch gate."""
 
-    kind: Literal["started"]
+    kind: Literal["prepared"]
+    schedule: QuotaProbeSchedule
+    pause_wait_id: WaitId
+
+
+class QuotaProbeDispatched(StrictModel):
+    """Actual invocation with its exact request."""
+
+    kind: Literal["dispatched"]
     request: QuotaProbeRequest
+
+
+class QuotaProbeNotDispatched(StrictModel):
+    """Close prepared intent without a process or probe charge."""
+
+    kind: Literal["not_dispatched"]
+    schedule: QuotaProbeSchedule
+    pause_wait_id: WaitId
+    cause: Literal["bound", "stop", "cancelled", "unknown"]
+    ended_at_utc: str
+    elapsed_seconds: NonnegativeSeconds
 
 
 class QuotaProbeCancelled(StrictModel):
@@ -506,7 +525,11 @@ class QuotaProbeSettled(StrictModel):
 
 
 type QuotaProbeLifecycleInput = (
-    QuotaProbeScheduled | QuotaProbeStarted | QuotaProbeCancelled
+    QuotaProbeScheduled
+    | QuotaProbePrepared
+    | QuotaProbeDispatched
+    | QuotaProbeNotDispatched
+    | QuotaProbeCancelled
 )
 type QuotaProbeEvent = QuotaProbeLifecycleInput | QuotaProbeSettled
 
