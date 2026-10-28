@@ -1,142 +1,261 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Settlement outcome wiring and pending retained-task lifecycle."""
+"""Retained task settlement through owner and leaf cancellation."""
 
 import asyncio
-from asyncio import CancelledError, Task
-
-import pytest
+from asyncio import CancelledError
+from collections.abc import Coroutine
 
 from script.eval.runner.coordinator.settlement import (
     SettledFailure,
     SettledValue,
-    _settle,
+    Settlement,
     settle,
 )
 
 
-@pytest.mark.parametrize(
-    "cancelled", [False, True], ids=["no-cancellation", "cancelled"]
-)
-async def test_settlement_preserves_task_value_and_owner_cancellation(
-    cancelled: bool,
-) -> None:
-    # Given
-    ready = asyncio.Event()
+async def _checkpoint() -> None:
+    """Let callbacks already queued by cancellation run before continuing."""
+    reached = asyncio.Event()
+    asyncio.get_running_loop().call_soon(reached.set)
+    await reached.wait()
+
+
+async def _cancel_owner_twice[T](
+    operation: Coroutine[None, None, T], ready: asyncio.Event
+) -> tuple[Settlement[T], list[tuple[bool, bool]]]:
+    """Cancel an owner twice and record whether either task has ended."""
+    submitted = asyncio.create_task(operation)
+    owner = asyncio.create_task(settle(submitted))
+    await _checkpoint()
+    owner.cancel("first")
+    await _checkpoint()
+    states = [(owner.done(), submitted.cancelled())]
+    owner.cancel("second")
+    await _checkpoint()
+    states.append((owner.done(), submitted.cancelled()))
     ready.set()
+    return await owner, states
+
+
+async def test_repeated_owner_cancellation_waits_for_successful_task() -> None:
+    # Given
+    release = asyncio.Event()
 
     async def produce() -> int:
-        await ready.wait()
+        await release.wait()
         return 42
 
-    task: Task[int] = asyncio.create_task(produce())
-    cancellation = CancelledError("owner") if cancelled else None
-
-    async def retain(submitted: Task[int]) -> CancelledError | None:
-        assert submitted is task
-        await asyncio.wait({submitted})
-        return cancellation
+    ready = asyncio.Event()
+    owner = asyncio.create_task(_cancel_owner_twice(produce(), ready))
+    await ready.wait()
 
     # When
-    result = await _settle(task, retain)
+    release.set()
+    result, states = await owner
 
     # Then
+    assert states == [(False, False), (False, False)]
     assert isinstance(result, SettledValue)
     assert result.value == 42
-    assert result.cancellation is cancellation
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("first",)
 
 
-@pytest.mark.parametrize(
-    "cancelled", [False, True], ids=["no-cancellation", "cancelled"]
-)
-async def test_settlement_preserves_task_failure_and_owner_cancellation(
-    cancelled: bool,
-) -> None:
+async def test_repeated_owner_cancellation_preserves_task_failure() -> None:
     # Given
+    release = asyncio.Event()
     failure = ValueError("write failed")
-    ready = asyncio.Event()
-    ready.set()
 
     async def fail() -> int:
-        await ready.wait()
+        await release.wait()
         raise failure
 
-    task: Task[int] = asyncio.create_task(fail())
-    cancellation = CancelledError("owner") if cancelled else None
-
-    async def retain(submitted: Task[int]) -> CancelledError | None:
-        assert submitted is task
-        await asyncio.wait({submitted})
-        return cancellation
+    ready = asyncio.Event()
+    owner = asyncio.create_task(_cancel_owner_twice(fail(), ready))
+    await ready.wait()
 
     # When
-    result = await _settle(task, retain)
+    release.set()
+    result, states = await owner
 
     # Then
+    assert states == [(False, False), (False, False)]
     assert isinstance(result, SettledFailure)
     assert result.error is failure
-    assert result.cancellation is cancellation
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("first",)
 
 
-@pytest.mark.parametrize(
-    "cancelled", [False, True], ids=["no-owner-cancellation", "owner-cancelled"]
-)
-async def test_settlement_preserves_leaf_cancellation_separately(
-    cancelled: bool,
-) -> None:
+async def test_leaf_cancellation_is_separate_from_owner_cancellation() -> None:
     # Given
+    release = asyncio.Event()
+
     async def cancel_self() -> int:
+        await release.wait()
         current = asyncio.current_task()
         assert current is not None
         current.cancel("leaf")
         await asyncio.Event().wait()
         raise AssertionError("self-cancellation was not delivered")
 
-    task: Task[int] = asyncio.create_task(cancel_self())
-    cancellation = CancelledError("owner") if cancelled else None
-
-    async def retain(submitted: Task[int]) -> CancelledError | None:
-        assert submitted is task
-        await asyncio.wait({submitted})
-        return cancellation
+    ready = asyncio.Event()
+    owner = asyncio.create_task(_cancel_owner_twice(cancel_self(), ready))
+    await ready.wait()
 
     # When
-    result = await _settle(task, retain)
+    release.set()
+    result, states = await owner
+
+    # Then
+    assert states == [(False, False), (False, False)]
+    assert isinstance(result, SettledFailure)
+    assert isinstance(result.error, CancelledError)
+    assert result.error.args == ("leaf",)
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("first",)
+    assert result.error is not result.cancellation
+
+
+async def test_pending_task_completes_without_owner_cancellation() -> None:
+    # Given
+    release = asyncio.Event()
+
+    async def produce() -> int:
+        await release.wait()
+        return 42
+
+    task = asyncio.create_task(produce())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    result = await owner
+
+    # Then
+    assert result == SettledValue(value=42, cancellation=None)
+
+
+async def test_pending_leaf_cancellation_is_not_owner_cancellation() -> None:
+    # Given
+    release = asyncio.Event()
+
+    async def cancel_self() -> int:
+        await release.wait()
+        raise CancelledError("leaf")
+
+    task = asyncio.create_task(cancel_self())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    result = await owner
 
     # Then
     assert isinstance(result, SettledFailure)
     assert isinstance(result.error, CancelledError)
     assert result.error.args == ("leaf",)
-    assert result.error is not cancellation
-    assert result.cancellation is cancellation
+    assert result.cancellation is None
 
 
-async def test_public_settlement_exposes_pending_retained_task_loop() -> None:
+async def test_already_settled_value_is_preserved() -> None:
     # Given
-    ready = asyncio.Event()
-    ready.set()
-
     async def produce() -> int:
-        await ready.wait()
+        await _checkpoint()
         return 42
 
-    task: Task[int] = asyncio.create_task(produce())
+    task = asyncio.create_task(produce())
     await asyncio.wait({task})
 
-    # When / Then
-    with pytest.raises(NotImplementedError, match="retained-task loop"):
-        await settle(task)
+    # When
+    result = await settle(task)
+
+    # Then
+    assert result == SettledValue(value=42, cancellation=None)
 
 
-@pytest.mark.skip(reason="retained-task loop is not implemented")
-async def test_repeated_owner_cancellation_waits_for_successful_task() -> None:
-    """A retained task completes before its value and cancellation are returned."""
+async def test_already_settled_failure_is_preserved() -> None:
+    # Given
+    failure = ValueError("write failed")
+
+    async def fail() -> int:
+        await _checkpoint()
+        raise failure
+
+    task = asyncio.create_task(fail())
+    await asyncio.wait({task})
+
+    # When
+    result = await settle(task)
+
+    # Then
+    assert result == SettledFailure(error=failure, cancellation=None)
 
 
-@pytest.mark.skip(reason="retained-task loop is not implemented")
-async def test_repeated_owner_cancellation_preserves_task_failure() -> None:
-    """A retained task's failure and owner cancellation both survive settlement."""
+async def test_already_cancelled_task_is_a_leaf_failure() -> None:
+    # Given
+    async def cancel_self() -> int:
+        await _checkpoint()
+        raise CancelledError("leaf")
+
+    task = asyncio.create_task(cancel_self())
+    await asyncio.wait({task})
+
+    # When
+    result = await settle(task)
+
+    # Then
+    assert isinstance(result, SettledFailure)
+    assert isinstance(result.error, CancelledError)
+    assert result.error.args == ("leaf",)
+    assert result.cancellation is None
 
 
-@pytest.mark.skip(reason="retained-task loop is not implemented")
-async def test_task_cancellation_is_separate_from_owner_cancellation() -> None:
-    """A cancelled submitted task is a failure distinct from owner cancellation."""
+async def test_same_turn_completion_and_owner_cancellation_preserve_both() -> None:
+    # Given
+    release = asyncio.Event()
+
+    async def produce() -> int:
+        await release.wait()
+        return 42
+
+    task = asyncio.create_task(produce())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    owner.cancel("owner")
+    result = await owner
+
+    # Then
+    assert isinstance(result, SettledValue)
+    assert result.value == 42
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("owner",)
+
+
+async def test_same_turn_failure_and_owner_cancellation_preserve_both() -> None:
+    # Given
+    release = asyncio.Event()
+    failure = ValueError("write failed")
+
+    async def fail() -> int:
+        await release.wait()
+        raise failure
+
+    task = asyncio.create_task(fail())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    owner.cancel("owner")
+    result = await owner
+
+    # Then
+    assert isinstance(result, SettledFailure)
+    assert result.error is failure
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("owner",)

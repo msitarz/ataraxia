@@ -12,11 +12,11 @@ grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
 Codex invocation leaves are implemented. The former runtime coordinator skeleton
 has been removed. State records and pure call and quota transitions are
-implemented. Settlement outcome wiring is present, but its retained-task loop is
-unimplemented. Other async owners, control, progress projection, dispatch
-wiring, probe cadence, scheduler accounting, CLI integration, and full dispatch
-remain planned. Shared consumer-owned runner ports and accepted runtime
-configuration are implemented in
+implemented. Retained-task settlement is implemented. Other async owners,
+control, progress projection, dispatch wiring, probe cadence, scheduler
+accounting, CLI integration, and full dispatch remain planned. Shared
+consumer-owned runner ports and accepted runtime configuration are implemented
+in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -294,9 +294,8 @@ one global quota recovery flow from authoritative typed lifecycles.
   state ownership, effect order, shutdown, and proposed internal package.
 - **Current maturity:** The former `runner/coordinator.py` wiring skeleton has
   been removed. State records and pure call and quota transitions are
-  implemented. Settlement outcome wiring is present with its retained-task loop
-  unimplemented; other async owners, control, progress projection, and wiring
-  remain planned.
+  implemented. Retained-task settlement is implemented; other async owners,
+  control, progress projection, and wiring remain planned.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -619,13 +618,12 @@ flowchart LR
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The former
 runtime coordinator skeleton has been removed. Coordinator state records and
-pure call and quota transitions are implemented. Settlement outcome wiring is
-present with its retained-task loop unimplemented; other asynchronous owners,
-CLI integration, and full dispatch remain planned. The input freezer performs
-read-only Git and filesystem effects; composition, planning, and report assembly
-are pure. Estimation returns one explicit value for each planned call, including
-an unknown value when compatibility is not known. The dry-run branch never
-resolves or probes the CLI.
+pure call and quota transitions and retained-task settlement are implemented.
+Other asynchronous owners, CLI integration, and full dispatch remain planned.
+The input freezer performs read-only Git and filesystem effects; composition,
+planning, and report assembly are pure. Estimation returns one explicit value
+for each planned call, including an unknown value when compatibility is not
+known. The dry-run branch never resolves or probes the CLI.
 
 ## Type boundary
 
