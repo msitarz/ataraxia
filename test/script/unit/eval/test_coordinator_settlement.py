@@ -4,7 +4,6 @@
 import asyncio
 from asyncio import CancelledError
 from collections.abc import Coroutine
-from typing import Any
 
 from script.eval.runner.coordinator.settlement import (
     SettledFailure,
@@ -22,7 +21,7 @@ async def _checkpoint() -> None:
 
 
 async def _cancel_owner_twice[T](
-    operation: Coroutine[Any, Any, T], ready: asyncio.Event
+    operation: Coroutine[None, None, T], ready: asyncio.Event
 ) -> tuple[Settlement[T], list[tuple[bool, bool]]]:
     """Cancel an owner twice and record whether either task has ended."""
     submitted = asyncio.create_task(operation)
@@ -211,3 +210,52 @@ async def test_already_cancelled_task_is_a_leaf_failure() -> None:
     assert isinstance(result.error, CancelledError)
     assert result.error.args == ("leaf",)
     assert result.cancellation is None
+
+
+async def test_same_turn_completion_and_owner_cancellation_preserve_both() -> None:
+    # Given
+    release = asyncio.Event()
+
+    async def produce() -> int:
+        await release.wait()
+        return 42
+
+    task = asyncio.create_task(produce())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    owner.cancel("owner")
+    result = await owner
+
+    # Then
+    assert isinstance(result, SettledValue)
+    assert result.value == 42
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("owner",)
+
+
+async def test_same_turn_failure_and_owner_cancellation_preserve_both() -> None:
+    # Given
+    release = asyncio.Event()
+    failure = ValueError("write failed")
+
+    async def fail() -> int:
+        await release.wait()
+        raise failure
+
+    task = asyncio.create_task(fail())
+    owner = asyncio.create_task(settle(task))
+    await _checkpoint()
+
+    # When
+    release.set()
+    owner.cancel("owner")
+    result = await owner
+
+    # Then
+    assert isinstance(result, SettledFailure)
+    assert result.error is failure
+    assert result.cancellation is not None
+    assert result.cancellation.args == ("owner",)
