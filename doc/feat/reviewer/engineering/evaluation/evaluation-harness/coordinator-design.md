@@ -1,8 +1,8 @@
 # Coordinator lifecycle design
 
-**Status:** Exploratory proposal for review; the former runtime skeleton has
-been removed, its replacement remains planned, and all Work acceptance criteria
-remain TODO. The
+**Status:** Reviewed lifecycle design. State records and pure call and quota
+transitions are implemented; asynchronous owners, composition, and wiring remain
+planned. All Work acceptance criteria remain TODO. The
 [Work contract](README.md) owns behavior and the
 [current architecture](architecture.md) describes implemented components.
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
@@ -20,8 +20,9 @@ with known lifecycle bugs, not a validated alternative.
   schema are retained.
 - The evidence lifecycle-input union has the proposed refinement described
   below.
-- The [type sketch](design/eval/runner/coordinator/) describes proposed shared
-  state boundaries, not runtime implementation or final private signatures.
+- The [type sketch](design/eval/runner/coordinator/) is a historical reviewed
+  reference; runtime state and pure transitions are authoritative. Owner and
+  wiring declarations remain planned.
 
 ## Coordinator
 
@@ -331,3 +332,9 @@ incidental updates and private helpers flexible.
   the write failure is retained as its cause.
 - A final write failure otherwise marks the run incomplete and prevents a
   successful final report.
+
+The quota adapter records `valid_until_utc` from the producer timestamp plus its
+configured freshness allowance. Equality with the expiry is fresh; missing or
+expired expiry cannot authorize resumption. Reading the same source again does
+not extend expiry. The pure quota transitions recheck this fact after durable
+probe and wait writes.

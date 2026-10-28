@@ -301,13 +301,18 @@ class QuotaWindowObservation(StrictModel):
 
 
 class QuotaObservation(StrictModel):
-    """Provider-neutral windows from one source snapshot and verified scope."""
+    """Provider-neutral windows and their producer-based freshness expiry.
+
+    ``valid_until_utc`` is inclusive: equality remains fresh. Missing expiry
+    cannot establish availability. Rereading a source does not extend it.
+    """
 
     scope: QuotaScope | None
     read_at_utc: str
     source_coordinate: str | None
     windows: tuple[QuotaWindowObservation, ...]
     diagnostic: str | None
+    valid_until_utc: str | None = None
 
 
 class RetryAssessment(StrictModel):

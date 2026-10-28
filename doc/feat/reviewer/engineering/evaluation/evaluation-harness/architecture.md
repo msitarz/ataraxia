@@ -616,18 +616,20 @@ flowchart LR
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The former
-runtime coordinator skeleton has been removed; replacement implementation,
-CLI integration, and full dispatch remain planned.
-The input freezer performs read-only Git and filesystem effects; composition,
-planning, and report assembly are pure. Estimation returns one explicit value
-for each planned call, including an unknown value when compatibility is not
-known. The dry-run branch never resolves or probes the CLI.
+runtime coordinator skeleton has been removed. Coordinator state records and
+pure call and quota transitions are implemented; asynchronous owners, CLI
+integration, and full dispatch remain planned. The input freezer performs
+read-only Git and filesystem effects; composition, planning, and report assembly
+are pure. Estimation returns one explicit value for each planned call, including
+an unknown value when compatibility is not known. The dry-run branch never
+resolves or probes the CLI.
 
 ## Type boundary
 
 The adjacent [package-shaped type sketch](design/eval/) retains earlier
 boundaries; the [coordinator package sketch](design/eval/runner/coordinator/)
-is exploratory and awaits review. `model.pyi`, `runner/ports.pyi`,
+is a historical reviewed reference for the implemented state and pure
+transitions and planned owners. `model.pyi`, `runner/ports.pyi`,
 and `runner/__init__.pyi` are historical references, not active typing
 interfaces. The `Coordinator` declaration in the `__init__.pyi` sketch is
 planned and is not exported by the runtime package. Evidence-facing quota scope,

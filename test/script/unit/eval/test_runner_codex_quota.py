@@ -836,6 +836,8 @@ async def test_exact_source_reread_does_not_refresh_producer_age(
 
     # Then
     assert first.windows[0].state == "available"
+    assert first.valid_until_utc == "2026-10-27T10:00:00Z"
+    assert repeated.valid_until_utc is None
     assert repeated.windows[0].state == "unknown"
     assert repeated.windows[0].source_observed_at_utc == "2026-10-27T09:59:59Z"
     assert repeated.windows[0].source_sequence == 17

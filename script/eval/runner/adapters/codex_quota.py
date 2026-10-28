@@ -8,7 +8,7 @@ when runtime identity, completeness, freshness, or scope cannot be verified.
 import asyncio
 from asyncio import CancelledError
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 import hashlib
 from itertools import pairwise
@@ -1025,13 +1025,31 @@ def _normalize_session(
         diagnostic = "quota source timestamp is in the future"
     elif age > max_observation_age_seconds:
         diagnostic = "quota source observation is stale"
-    return _observation(
+    observation = _observation(
         session_scope,
         _format_timestamp(read_at),
         snapshot.source_coordinate,
         latest,
         diagnostic,
     )
+    return _with_expiry(observation, latest.timestamp, max_observation_age_seconds)
+
+
+def _with_expiry(
+    observation: QuotaObservation, producer_time: datetime, max_age: float, /
+) -> QuotaObservation:
+    """Attach the producer-based expiry only to complete known observations.
+
+    Returns:
+        The observation with an expiry, or an inconclusive observation.
+    """
+    if observation.diagnostic is not None or not _has_complete_windows(observation):
+        return observation
+    try:
+        expiry = producer_time + timedelta(seconds=max_age)
+    except OverflowError:
+        return _as_unknown(observation, "quota freshness expiry is out of range")
+    return observation.model_copy(update={"valid_until_utc": _format_timestamp(expiry)})
 
 
 def _valid_age_limit(value: object, /) -> bool:
@@ -1309,6 +1327,7 @@ def _as_unknown(observation: QuotaObservation, diagnostic: str, /) -> QuotaObser
                 for window in observation.windows
             ),
             "diagnostic": diagnostic,
+            "valid_until_utc": None,
         }
     )
 
