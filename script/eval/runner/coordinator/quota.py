@@ -237,9 +237,7 @@ class QuotaOwner:
         later = self._cancellation(settled.cancellation, settled)
         cancellation = cancellation or later
         if isinstance(settled, SettledFailure):
-            self._control.note_recording_failure(settled.error)
-            if self._recording_failure is None:
-                self._recording_failure = settled.error
+            self._note_recording_failure(settled.error)
             if self._pending is None:
                 self._pending = replace(
                     waiting.journal_failed(WaitWrite(event, closure), settled.error),
@@ -380,9 +378,7 @@ class QuotaOwner:
         )
         self._cancellation(settled.cancellation, settled)
         if isinstance(settled, SettledFailure):
-            self._control.note_recording_failure(settled.error)
-            if self._recording_failure is None:
-                self._recording_failure = settled.error
+            self._note_recording_failure(settled.error)
             if self._pending is None:
                 self._pending = state.journal_failed(event, settled.error)
             else:
@@ -390,6 +386,15 @@ class QuotaOwner:
             self._state = self._pending
             return False
         return True
+
+    def _note_recording_failure(self, error: BaseException) -> None:
+        """Stop on a failed write and retain its first error for cancellation.
+
+        The retained error remains available for cancellation chaining.
+        """
+        self._control.note_recording_failure(error)
+        if self._recording_failure is None:
+            self._recording_failure = error
 
     async def _recover_wait(self, waiting: Waiting) -> QuotaState:
         """Schedule and await probes until a durable closure is selected.
@@ -514,10 +519,11 @@ class QuotaOwner:
             Its positive delay and durable schedule.
         """
         now = self._runtime.utc_now()
+        reset_hint = _reset_hint(waiting.observation)
         delay = quota_poll_delay(
             self._config.quota_poll_interval_seconds,
             now,
-            _reset_hint(waiting.observation),
+            reset_hint,
         )
         due = (
             datetime.fromisoformat(now.replace("Z", "+00:00"))
@@ -535,7 +541,7 @@ class QuotaOwner:
             created_at_utc=now,
             due_at_utc=due,
             interval_seconds=self._config.quota_poll_interval_seconds,
-            reset_hint_at_utc=_reset_hint(waiting.observation),
+            reset_hint_at_utc=reset_hint,
         )
 
     def _ending(self, waiting: Waiting, end: WaitEnd) -> Waiting:
@@ -675,9 +681,7 @@ class QuotaOwner:
         )
         self._cancellation(written.cancellation, written)
         if isinstance(written, SettledFailure):
-            self._control.note_recording_failure(written.error)
-            if self._recording_failure is None:
-                self._recording_failure = written.error
+            self._note_recording_failure(written.error)
             failed = probe.write_failed(written.error)
             self._probe_pending = failed
             if self._pending is None:
