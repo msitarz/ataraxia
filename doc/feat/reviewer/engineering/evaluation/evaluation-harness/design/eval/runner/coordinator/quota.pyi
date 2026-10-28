@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Historical free-function transitions; runtime state methods are authoritative.
 
-The async owner declarations remain planned.
+The async owner is a partial runtime skeleton; probe recovery remains planned.
 """
 
 from asyncio import CancelledError
@@ -13,6 +13,7 @@ from script.eval.model import (
     QuotaProbeEvidence,
     QuotaProbeRecord,
     QuotaProbeRequest,
+    RunId,
     WaitRecord,
 )
 from script.eval.runner.coordinator.quota_states import (
@@ -154,6 +155,7 @@ class QuotaOwner:
         reader: QuotaStatusReader,
         evidence: EvidenceStore,
         runtime: Runtime,
+        run_id: RunId,
     ) -> None: ...
     @property
     def state(self) -> QuotaState: ...

@@ -300,8 +300,9 @@ one global quota recovery flow from authoritative typed lifecycles.
   implemented. Retained-task settlement and pure progress projection are
   implemented. Shared control implements stop and quota gate notification and
   waiting. The call owner implements attempt and exceptional evidence
-  settlement, capacity retry waits, and passive telemetry; other async owners
-  remain planned.
+  settlement, capacity retry waits, and passive telemetry. A quota-owner
+  skeleton persists and closes probe-disabled or bounded waits; probe recovery
+  and the run owner remain planned.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -317,8 +318,8 @@ Codex, quota, and runtime adapters.
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` implements state, pure transitions, retained-task
   settlement, pure progress projection, shared stop and quota control, and call
-  lifecycle ownership; other async ownership and composition remain
-  planned and are described in the
+  lifecycle ownership, and a quota wait skeleton; probe recovery, run ownership,
+  and composition remain planned and are described in the
   [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
