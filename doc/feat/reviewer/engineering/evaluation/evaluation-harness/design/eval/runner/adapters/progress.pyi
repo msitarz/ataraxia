@@ -1,21 +1,53 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Terminal and silent implementations of the progress sink port."""
+"""Proposed progress admission and standalone writer lifecycle.
+
+The runtime adapter still implements the historical synchronous TryWrite port;
+this proposal does not establish a background writer or AC-9 completion.
+"""
 
 from typing import Literal, Protocol
 
 from ..ports import ProgressSnapshot, Runtime  # ruff: ignore[relative-imports]
 
-type TryWriteResult = Literal["written", "would_block", "unavailable"]
+type Admission = Literal["accepted", "dropped", "unavailable"]
 
-class TryWrite(Protocol):
-    """Nonblocking one-message stderr write supplied by composition.
+class ProgressAdmission(Protocol):
+    """Offer one bounded message without waiting for output or a worker.
 
-    Return ``written`` only when the complete short message was accepted;
-    return ``would_block`` or ``unavailable`` without waiting. An expected
-    ``OSError`` may be raised. Never mutate caller stream flags or queue output.
+    Messages are UTF-8 and bounded to 16 KiB. ``accepted`` acknowledges
+    admission only, not delivery. A pending message may be replaced or discarded
+    at shutdown. ``dropped`` means this message
+    was not admitted; ``unavailable`` disables subsequent presentation.
     """
 
-    def __call__(self, text: str, /) -> TryWriteResult: ...
+    def __call__(self, text: str, /) -> Admission: ...
+
+class ProgressWriter(ProgressAdmission, Protocol):
+    """Own one daemon writer and its duplicate stderr descriptor.
+
+    The worker retains at most one claimed message and one pending message.
+    It owns a non-inheritable duplicated descriptor until it exits, including
+    after close. A partial TTY write may leave a visible fragment.
+    A partial or failed write disables presentation without retrying a suffix.
+    """
+
+    def close(self) -> None:
+        """Stop admission and discard pending output without waiting or joining.
+
+        One already claimed write may remain blocked after close; the daemon
+        worker closes its own descriptor after that attempt returns. Close does
+        not close the caller's descriptor or change its file-status flags.
+        """
+        ...
+
+def open_progress_writer(stderr_fd: int, /) -> ProgressWriter | None:
+    """Duplicate stderr and start one daemon writer for an execution.
+
+    Return None on ordinary setup failure; the creator closes its duplicate if
+    startup fails. The worker takes ownership only after successful startup.
+    Callers do not invoke this factory for dry runs or quiet executions.
+    """
+    ...
 
 class SilentProgressSink:
     """Discard progress snapshots without touching the run or evidence."""
@@ -23,27 +55,26 @@ class SilentProgressSink:
     def publish(self, snapshot: ProgressSnapshot, /) -> None: ...
 
 class TerminalProgressSink:
-    """Use a prompt try-write adapter for terminal or redirected stderr."""
+    """Render bounded updates and offer them to a progress admission port."""
 
-    try_write: TryWrite
+    admit: ProgressAdmission
     is_tty: bool
     runtime: Runtime
     interval_seconds: float
 
     def __init__(
         self,
-        try_write: TryWrite,
+        admit: ProgressAdmission,
         is_tty: bool,
         runtime: Runtime,
         interval_seconds: float,
         /,
     ) -> None: ...
     def publish(self, snapshot: ProgressSnapshot, /) -> None:
-        """Try one update and return promptly when output would block.
+        """Offer an update without treating admission as completed output.
 
-        Routine updates use the injected runtime's monotonic clock and finite
-        interval. Meaningful transitions bypass throttling. Would-block,
-        unavailable output, or OSError skips or disables presentation; no
-        blocking stream write, thread, or renderer queue is used.
+        Routine updates use the injected monotonic clock and finite interval.
+        Meaningful transitions are offered immediately. Dropped messages are
+        not queued by the sink; unavailable output disables presentation.
         """
         ...

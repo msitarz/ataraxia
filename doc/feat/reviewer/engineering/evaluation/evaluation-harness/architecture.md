@@ -378,38 +378,61 @@ Codex, quota, and runtime adapters.
   local backoff never masks active work on other calls. The snapshot carries
   existing scoped quota observations and producer-based per-window ages; it
   performs no quota reads, model calls, or input reads.
-- `runner.adapters.progress` supplies silent and terminal sinks. The standalone
-  composition currently injects the silent sink, including without `--quiet`;
-  terminal progress awaits a verified prompt nonblocking transport. Terminal
-  output leaves stdout untouched, uses compact refresh on a TTY and plain
-  transition lines when redirected, and throttles routine updates using
-  `Runtime.monotonic()` and finite positive
-  `HarnessConfig.progress_interval_seconds` (default 1.0). Retry, pause, resume,
-  stop, error, and final transitions bypass that interval. Routine snapshots
-  coalesce to the latest state without a queue. Composition injects the same
-  `Runtime` instance used by the coordinator.
-- The terminal adapter accepts a narrow synchronous try-write callback. Each
-  call must promptly accept one complete short message or report would-block or
-  unavailable; it cannot wait for writable stderr. Routine output can be skipped
-  or coalesced when output would block; expected `OSError` or unavailable output
-  disables presentation without changing run state. Meaningful transitions
-  bypass the throttle and receive an immediate try-write attempt. If that
-  attempt cannot write, the sink degrades instead of delaying the run. The
-  implemented presenter uses a compact carriage-return and clear-line TTY
-  refresh, limited to one less than the column width supplied by composition (80
-  by default). Phase, quota, and wait transitions clear that row, print a
-  permanent detailed line, and refresh the compact row. Count-only updates
-  refresh the compact row without a permanent line. The final update clears
-  that row and prints the detailed report with a newline; redirected output
-  uses newline-delimited plain text. Detailed
-  messages are bounded and explicitly marked when truncated. A would-block
-  attempt is dropped and routine retries wait for the interval; a changed
-  transition can still be attempted immediately. The callback must not wrap
-  blocking `TextIO.write`, mutate caller stream flags, create a background
-  renderer, or use a timed worker thread. Its platform mechanism remains an
-  implementation prerequisite to verify before use; if no prompt try-write
-  mechanism is available, composition selects the silent sink. `publish` never
-  catches cancellation, `KeyboardInterrupt`, or `SystemExit`.
+- **Implemented:** `runner.adapters.progress` supplies silent and terminal
+  sinks. The standalone composition currently injects the silent sink, even
+  without `--quiet`. The terminal presenter renders evidence-backed snapshots,
+  throttles routine updates, and requests immediate presentation of meaningful
+  transitions. It currently expects a synchronous try-write callback, but no
+  concrete stderr transport is wired.
+- **Proposed for review:** A single daemon writer handles best-effort progress
+  output for one standalone execution. The synchronous progress sink formats a
+  UTF-8 message bounded to 16 KiB, including terminal controls and an explicit
+  truncation marker when needed, and promptly offers it to the writer. It never
+  waits for stderr or for the writer. Terminal width and TTY status are captured
+  at composition. TTY output uses compact refresh; redirected output uses plain
+  status lines. `--quiet` and dry run construct no writer and emit no progress.
+- The writer owns a duplicate of stderr, marked non-inheritable, without
+  changing the inherited descriptor or its file-status flags. Closing or reusing
+  the caller's descriptor cannot redirect a delayed write. The writer alone
+  closes its duplicate when it exits. Duplication, thread startup, and ordinary
+  presentation errors degrade to silence without changing the run result;
+  cancellation and process interrupts still propagate. If startup fails before
+  ownership transfers to the worker, the creator closes the duplicate.
+- Admission is distinct from delivery. `accepted` means only that a complete,
+  byte-bounded message entered the writer's bounded state; it does not say any
+  bytes were written. `dropped` means no admission, and `unavailable` means no
+  further messages can be accepted. The presenter may throttle on admission but
+  must not infer that an admitted message was displayed. Rendered TTY updates
+  must remain coherent when earlier pending updates were replaced or dropped;
+  it cannot rely on its last admitted transition having appeared on screen.
+- State is bounded to one message claimed for writing and one pending message.
+  A new message replaces the pending one; no per-update threads or unbounded
+  executor backlog are allowed. The writer owns only rendered text and its
+  descriptor: it does not read input, quota, models, or evidence. One write
+  attempt per claimed message may block, fail, or write a prefix. A partial
+  write or output error disables later presentation; no remainder is queued or
+  retried, and the accepted message was never a delivery claim. A partial TTY
+  write may leave a visible fragment or incomplete control sequence.
+- Submission and shutdown use only bounded, nonwaiting state operations; no lock
+  is held across I/O. Submission drops the update if state coordination is
+  contended. A shutdown latch stops admission and prevents new claims even if
+  pending state cannot be cleared immediately. Shutdown discards unclaimed
+  pending output and does not join a writer blocked in I/O. It permits at most
+  one already claimed write to remain after the run. A daemon writer that cannot
+  finish before process exit can be abandoned; if the destination unblocks
+  first, it finishes that one attempt and closes its own descriptor. Final
+  progress is best effort and may be lost. The design is for the standalone
+  one-run process, not an unlimited in-process sequence of independently blocked
+  runs.
+- This lossy progress lifecycle does not apply to `EvidenceStore`: required
+  evidence remains authoritative, retained and settled through cancellation,
+  with recording failure reflected in run status. A progress writer cannot
+  conceal a recording failure or change dispatch, retry, cleanup, or exit
+  status. Controlled checks must cover responsive dispatch and cleanup with a
+  blocked destination, bounded replacement and shutdown, partial writes,
+  errors, descriptor ownership, TTY and redirected output, quiet mode, and
+  evidence independence. Implementation and acceptance checks remain
+  outstanding; AC-9 stays TODO.
 - `runner.adapters.codex` resolves one absolute executable from `PATH` and
   probes that same path with a bounded `--version` command. It records the
   requested read-only sandbox, `approval_policy="never"`, and ignored user
@@ -519,8 +542,8 @@ Codex, quota, and runtime adapters.
   and incomplete evidence. Exact numeric values belong to the CLI contract and
   must agree with the standalone acceptance scenario.
 - Progress is currently silent. `--quiet` changes no dispatch, evidence,
-  outcome, retry, or quota behavior. A verified nonblocking stderr transport and
-  the terminal and redirected progress acceptance checks remain outstanding.
+  outcome, retry, or quota behavior. The proposed bounded writer and terminal
+  and redirected progress acceptance checks remain outstanding.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or background daemon.
 
@@ -621,12 +644,10 @@ is unsupported. No acceptance criterion is complete.
 - The composition root owns concrete adapters; domain modules depend on their
   consumer-facing ports. No generic plugin registry or scheduler framework is
   proposed.
-- The standalone composition creates one silent progress sink and supplies it
-  to the coordinator. `Coordinator.run` does not accept a second
-  sink argument, preventing conflicting injections. The terminal adapter gets
-  the injected `Runtime`, the finite interval from configuration, and a
-  try-write callback for stderr; it does not write run evidence or mutate the
-  caller's stderr settings.
+- The standalone composition currently supplies one silent sink to the
+  coordinator. The proposed writer would supply the terminal sink for a
+  non-quiet execution and close admission when that run settles. It does not
+  write run evidence or mutate the caller's stderr settings.
 - Effects: connects the effects listed above and exposes the CLI entry point.
 
 ## Proposed flow
