@@ -14,8 +14,10 @@ Codex invocation leaves are implemented. The coordinator composes bounded
 invocations, call settlement, quota recovery, shutdown, progress projection, and
 final record projection for a prepared bound run. CLI composition wiring is
 implemented with injected collaborators; argument parsing, default adapter
-construction, signal handling, stderr transport, and standalone invocation
-remain planned. Shared consumer-owned
+construction, signal handling, and standalone invocation are implemented.
+Progress currently uses the silent sink because no prompt nonblocking stderr
+transport is verified. Quota waiting is refused until its scope is verified;
+capacity recognition remains unsupported. Shared consumer-owned
 runner ports and accepted runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
@@ -305,13 +307,13 @@ and one global quota recovery flow from authoritative typed lifecycles.
   tasks and can resume while other calls are active; retained and resuming tasks
   are bounded by entered calls in the finite plan, not by concurrency. Stop
   cancels and settles active siblings; quota recovery begins only
-  after active attempts and writes drain. A concrete CLI composition and
-  progress presenter remain planned.
+  after active attempts and writes drain. The standalone CLI composes this
+  coordinator with the silent progress sink.
 - **Accepted known limitation:** A `KeyboardInterrupt` or `SystemExit` raised
   inside a nested evidence or runtime task may escape the event loop before
   retained settlement completes. Coordinator-owned worker wrappers do not fix
   that shared submission boundary. This limitation does not block acceptance.
-  Cooperative `task.cancel()` and the planned CLI signal path are separate.
+  Cooperative `task.cancel()` and the CLI signal path are separate.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -376,11 +378,12 @@ Codex, quota, and runtime adapters.
   local backoff never masks active work on other calls. The snapshot carries
   existing scoped quota observations and producer-based per-window ages; it
   performs no quota reads, model calls, or input reads.
-- `runner.adapters.progress` supplies silent and terminal sinks. Composition
-  selects one sink from the explicit quiet setting and stderr TTY state, then
-  injects it once into the coordinator. Terminal output leaves stdout untouched,
-  uses compact refresh on a TTY and plain transition lines when redirected, and
-  throttles routine updates using `Runtime.monotonic()` and finite positive
+- `runner.adapters.progress` supplies silent and terminal sinks. The standalone
+  composition currently injects the silent sink, including without `--quiet`;
+  terminal progress awaits a verified prompt nonblocking transport. Terminal
+  output leaves stdout untouched, uses compact refresh on a TTY and plain
+  transition lines when redirected, and throttles routine updates using
+  `Runtime.monotonic()` and finite positive
   `HarnessConfig.progress_interval_seconds` (default 1.0). Retry, pause, resume,
   stop, error, and final transitions bypass that interval. Routine snapshots
   coalesce to the latest state without a queue. Composition injects the same
@@ -515,11 +518,9 @@ Codex, quota, and runtime adapters.
 - The exit status distinguishes complete success, run failure, cancellation,
   and incomplete evidence. Exact numeric values belong to the CLI contract and
   must agree with the standalone acceptance scenario.
-- Progress is rendered on stderr, so normal output and dry-run reporting on
-  stdout remain usable. `--quiet` selects a silent sink and changes no dispatch,
-  evidence, outcome, retry, or quota behavior. The standalone acceptance
-  scenario checks terminal and redirected output modes and their progress
-  promises without model calls.
+- Progress is currently silent. `--quiet` changes no dispatch, evidence,
+  outcome, retry, or quota behavior. A verified nonblocking stderr transport and
+  the terminal and redirected progress acceptance checks remain outstanding.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or background daemon.
 
@@ -594,9 +595,10 @@ evidence.
 
 **Implemented wiring:**
 [`script/eval/cli.py`](../../../../../../script/eval/cli.py) sequences injected
-preparation and execution collaborators. Its parser is a stub; default
-factories, signal handling, stderr transport, and the standalone entry point
-remain planned. No acceptance criterion is complete.
+preparation and execution collaborators. The standalone command supplies
+argument parsing, concrete factories, and signal handling. It uses silent
+progress and refuses quota waiting without verified scope; capacity recognition
+is unsupported. No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
@@ -619,8 +621,8 @@ remain planned. No acceptance criterion is complete.
 - The composition root owns concrete adapters; domain modules depend on their
   consumer-facing ports. No generic plugin registry or scheduler framework is
   proposed.
-- The composition root creates exactly one silent or terminal progress sink and
-  supplies it to the coordinator. `Coordinator.run` does not accept a second
+- The standalone composition creates one silent progress sink and supplies it
+  to the coordinator. `Coordinator.run` does not accept a second
   sink argument, preventing conflicting injections. The terminal adapter gets
   the injected `Runtime`, the finite interval from configuration, and a
   try-write callback for stderr; it does not write run evidence or mutate the
@@ -651,7 +653,8 @@ The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The
 runtime coordinator implements bounded invocations, quota recovery, settlement,
 progress projection, and final accounting. Injected CLI composition wiring is
-implemented; the standalone integration remains planned.
+implemented alongside the standalone integration, subject to the limitations
+above.
 The input freezer performs read-only Git and filesystem effects; planning and
 report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -695,8 +698,8 @@ process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
 AC-9 remains incomplete: coordinator progress projection and the terminal sink
-presentation and injected CLI composition are implemented, while concrete stderr
-transport and standalone integration remain planned. Pure runner policy
+presentation and standalone CLI composition are implemented, while concrete
+stderr transport remains planned. Pure runner policy
 calculations, accepted shared runner configuration, and consumer-owned runtime
 ports are implemented. The shared base preserves flat attempt fields while
 permitting probes to reuse the process projection. `plan.pyi` remains a
@@ -705,8 +708,8 @@ historical planner reference. The active implementations are
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection and injected CLI composition are implemented. Standalone
-integration and the remaining harness behavior are planned. Do not add a
+storage/projection and standalone CLI composition are implemented. Remaining
+harness behavior and acceptance verification are planned. Do not add a
 parallel runtime model or change supervisor types. Private helpers and concrete
 persistence formats remain flexible; supervisor outcomes and requests continue
 to use the existing public types. Codex quota recognition is implemented against

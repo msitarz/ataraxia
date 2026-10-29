@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 """Composition of a frozen evaluation plan and one provider-bound run.
 
-Argument parsing, terminal output, and signal handling are not implemented yet.
+Standalone parsing and lifecycle are supplied by the command adapters.
 """
 
 import asyncio
-from collections.abc import Callable, Sequence
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol
 
 from script.eval.evidence import EvidenceStore
 from script.eval.inputs import RepositoryReader
-from script.eval.model import DryRunReport, HarnessConfig, RunRecord
+from script.eval.model import DryRunReport, FrozenPlan, HarnessConfig, RunRecord
+from script.eval.options import parse_config as parse_config
 from script.eval.plan import PlanBuilder
 from script.eval.runner import AttemptRequestBuilder, BoundRun, CliBindingResolver
 from script.eval.runner.coordinator.settlement import SettledFailure, settle
@@ -36,11 +37,6 @@ class CoordinatorFactory(Protocol):
         ...
 
 
-def parse_config(argv: Sequence[str], /) -> HarnessConfig:
-    """Parse ordered options without performing I/O (not yet implemented)."""
-    raise NotImplementedError("CLI argument parsing is not implemented")
-
-
 @dataclass(frozen=True)
 class Composition:
     """Connect explicit collaborators, deferring execution-only construction.
@@ -56,6 +52,7 @@ class Composition:
     request_builder: AttemptRequestBuilder
     evidence_factory: Callable[[], EvidenceStore]
     coordinator_factory: CoordinatorFactory
+    on_plan: Callable[[FrozenPlan], None] | None = None
 
     async def execute(self, config: HarnessConfig, /) -> DryRunReport | RunRecord:
         """Prepare a plan, then estimate it or run its bound requests.
@@ -69,6 +66,8 @@ class Composition:
         """
         inputs = await _run_blocking(self.repository.freeze, config)
         plan = self.planner.plan(inputs, config)
+        if self.on_plan is not None:
+            self.on_plan(plan)
         if config.dry_run:
             return await _run_blocking(build_dry_run_report, plan, self.estimator)
         binding = await _run_blocking(self.binding_resolver.resolve, config)
