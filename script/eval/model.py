@@ -570,7 +570,11 @@ class WaitEvent(StrictModel):
 
 
 class CallRecord(StrictModel):
-    """Persisted state and source identity for one scheduled call."""
+    """Persisted state and source identity for one scheduled call.
+
+    ``failed`` includes a required evidence write failure without inventing an
+    attempt outcome. Progress retains evidence-pending as a separate state.
+    """
 
     run_id: RunId
     call_id: CallId

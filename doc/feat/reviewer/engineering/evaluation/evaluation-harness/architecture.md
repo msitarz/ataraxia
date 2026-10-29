@@ -10,14 +10,10 @@ orchestration wiring is implemented in
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py), including
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
-Codex invocation leaves are implemented. The runtime coordinator has a thin
-composition skeleton. State records and pure call and quota transitions are
-implemented. Retained-task settlement and pure progress projection are
-implemented. Shared control implements stop and quota gate notification and
-waiting. The call owner implements dispatch, attempt and exceptional evidence
-settlement, capacity retry waits, and opt-in passive telemetry. A quota owner
-awaits recovery. Multi-call scheduling, run shutdown, final record projection,
-CLI integration, and full run dispatch remain planned. Shared consumer-owned
+Codex invocation leaves are implemented. The coordinator composes bounded
+dispatch, call settlement, quota recovery, shutdown, progress projection, and
+final record projection for a prepared bound run. CLI integration and a
+concrete progress presenter remain planned. Shared consumer-owned
 runner ports and accepted runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
@@ -197,6 +193,12 @@ reference; the runtime module is authoritative.
 - Effects: none. These values describe decisions and observations but do not
   perform them.
 
+Final call records use `failed` for a required evidence write failure without
+inventing an attempt record or a semantic outcome. Progress reports the live
+evidence-pending state separately. The binding-settings digest is SHA-256 of
+the ordered settings tuple encoded as compact UTF-8 JSON, preserving scalar
+types and order; non-finite floats are rejected. It is not a call identity.
+
 ### Token estimate port
 
 **TL;DR:** Keep estimation separate from planning and execution.
@@ -294,16 +296,18 @@ one global quota recovery flow from authoritative typed lifecycles.
 
 - **Proposed:** The [coordinator design](coordinator-design.md) defines the
   state ownership, effect order, shutdown, and proposed internal package.
-- **Current maturity:** The coordinator has a thin, privately projected
-  zero-or-one-call path. State records and pure call and quota transitions are
-  implemented. Retained-task settlement and pure progress projection are
-  implemented. Shared control implements stop and quota gate notification and
-  waiting. The call owner implements attempt and exceptional evidence
-  settlement, capacity retry waits, and passive telemetry. The quota owner
-  awaits bounded recovery and persists its wait and probe transitions;
-  multi-call scheduling, shutdown, and production final-record projection remain
-  planned. The thin path requires an injected private projection and refuses
-  unsupported paths before dispatch.
+- **Current maturity:** The coordinator composes the call, quota, settlement,
+  and progress owners for a prepared run. It bounds dispatching and settling
+  calls by configured concurrency. Calls in durable capacity delays retain
+  their own sleeping tasks, bounded by the finite plan, while other calls may
+  proceed. Stop cancels and settles active siblings; quota recovery begins only
+  after active attempts and writes drain. A concrete CLI composition and
+  progress presenter remain planned.
+- **Remaining Work issue:** A `KeyboardInterrupt` or `SystemExit` raised inside
+  a nested evidence or runtime task may escape the event loop before retained
+  settlement completes. Coordinator-owned worker wrappers do not fix that
+  shared submission boundary. Cooperative task cancellation and the planned
+  CLI signal path are separate; this issue must be resolved before acceptance.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
@@ -319,9 +323,8 @@ Codex, quota, and runtime adapters.
 - `runner.__init__` re-exports the package's consumer-facing runner API.
 - `runner.coordinator` implements state, pure transitions, retained-task
   settlement, pure progress projection, shared stop and quota control, and call
-  lifecycle ownership, awaited quota recovery, and thin run composition. Full
-  run ownership remains planned and is described in the
-  [coordinator design](coordinator-design.md).
+  lifecycle ownership, awaited quota recovery, and run ownership described in
+  the [coordinator design](coordinator-design.md).
 - `runner.policy` contains pure functions for confident no-result eligibility,
   separate infrastructure and capacity allowance checks, saturated jitter
   bounds, cumulative quota-wait limits, probe authorization, and reset-hint
@@ -337,8 +340,8 @@ Codex, quota, and runtime adapters.
   `ProgressSink` port. The pure projection derives queued, active,
   retry-wait, stopped-not-started, evidence-pending, succeeded, failed, and
   cancelled call counts from its live call states; attempt and probe counters
-  remain separate. Coordinator wiring and progress sink implementations remain
-  planned.
+  remain separate. Coordinator wiring is implemented; a concrete progress
+  sink remains planned.
   A queued call is runnable but not dispatched. A stopped-not-started call is
   unexecuted and cannot resume after the final report. Evidence-pending means a
   result is known in memory but its required durable write failed, so the
@@ -466,19 +469,17 @@ Codex, quota, and runtime adapters.
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
   The CLI composition root and progress adapter remain design stubs. The
-  previous coordinator wiring skeleton was removed; the replacement's dispatch
-  selection, conversion, probe scheduling and assessment, and accounting remain
-  planned. The quota adapter implements its bounded source,
-  normalization, polling request, and assessment behavior, but is not yet wired
-  into CLI composition or coordinator dispatch.
+  quota adapter implements its bounded source, normalization, polling request,
+  and assessment behavior, but is not yet wired into CLI composition. The
+  coordinator accepts the quota port and owns awaited recovery.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
   neighboring [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a
   historical signature reference; runtime code is authoritative.
-- Effects: the planned coordinator will own async scheduling and effect
-  ordering. The Codex and quota adapters own their stated external reads; the
-  runtime adapter owns clock, wait, and random effects.
+- Effects: the coordinator owns async scheduling and effect ordering. The Codex
+  and quota adapters own their stated external reads; the runtime adapter owns
+  clock, wait, and random effects.
 
 ### Standalone invocation
 
@@ -627,12 +628,9 @@ flowchart LR
 ```
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
-freezer, pure planner, and token-estimation wiring are implemented. The former
-runtime coordinator skeleton has been removed. Coordinator state records and
-pure call and quota transitions and retained-task settlement are implemented.
-The call owner implements attempt settlement, capacity waits, and opt-in
-telemetry. Other asynchronous owners, CLI integration, and full dispatch remain
-planned.
+freezer, pure planner, and token-estimation wiring are implemented. The
+runtime coordinator implements bounded dispatch, quota recovery, settlement,
+progress projection, and final accounting. CLI integration remains planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
@@ -642,27 +640,26 @@ known. The dry-run branch never resolves or probes the CLI.
 
 The adjacent [package-shaped type sketch](design/eval/) retains earlier
 boundaries; the [coordinator package sketch](design/eval/runner/coordinator/) is
-a historical reviewed reference for the implemented state and pure transitions
-and planned owners. `model.pyi`, `runner/ports.pyi`, and `runner/__init__.pyi`
-are historical references, not active typing interfaces. The `Coordinator`
-declaration in the `__init__.pyi` sketch is planned and is not exported by the
-runtime package. Evidence-facing quota scope, window and observation, retry
-assessment, wait and probe lifecycle, and shared `ProcessRecord` values have
-migrated into `script/eval/model.py`. The active `script/eval/evidence.py` binds
-the prepared run context for one adapter lifecycle. `EvidenceStoreAdapter`
-requires all injected leaf dependencies; `create_evidence_store()` supplies the
-filesystem leaves. The adapter composes typed identity forwarding with
-asynchronous projection/write ordering. Each submitted operation, including lock
-waiting, projection (which may write multiple raw output artifacts), and append
-are serialized and retained through settlement when its caller is cooperatively
-cancelled. Synchronous injected leaves run off the event loop. A coroutine that
-has not started and submitted its retained task is not yet an operation owned by
-the adapter. The runner must retain and await submitted evidence operations
-during shutdown. The lock is in-memory and serializes only this adapter on its
-event loop; it provides no cross-process coordination. The filesystem store
-creates a new output directory inside or outside the context repository and
-writes `plan.json` plus optional `instructions.bin` before dispatch. Attempt
-metadata lives in
+a historical reviewed reference for the implemented coordinator package.
+`model.pyi`, `runner/ports.pyi`, and `runner/__init__.pyi` are historical
+references, not active typing interfaces. `Coordinator` is exported by the
+runtime coordinator package. Evidence-facing quota scope, window and
+observation, retry assessment, wait and probe lifecycle, and shared
+`ProcessRecord` values have migrated into `script/eval/model.py`. The active
+`script/eval/evidence.py` binds the prepared run context for one adapter
+lifecycle. `EvidenceStoreAdapter` requires all injected leaf dependencies;
+`create_evidence_store()` supplies the filesystem leaves. The adapter composes
+typed identity forwarding with asynchronous projection/write ordering. Each
+submitted operation, including lock waiting, projection (which may write
+multiple raw output artifacts), and append are serialized and retained through
+settlement when its caller is cooperatively cancelled. Synchronous injected
+leaves run off the event loop. A coroutine that has not started and submitted
+its retained task is not yet an operation owned by the adapter. The runner must
+retain and await submitted evidence operations during shutdown. The lock is
+in-memory and serializes only this adapter on its event loop; it provides no
+cross-process coordination. The filesystem store creates a new output directory
+inside or outside the context repository and writes `plan.json` plus optional
+`instructions.bin` before dispatch. Attempt metadata lives in
 `attempts/position-<position>/<sha256-call-id>/attempt-<number>.json`; probe
 artifacts use a `sha256-probe-id` directory. Stream suffixes are appended to the
 complete identity-based stem, so dots in an identity cannot change the suffix.
@@ -676,23 +673,23 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-AC-9 remains incomplete: pure progress projection is implemented, while
-coordinator wiring and progress presentation remain planned. Pure runner policy
-calculations, accepted shared runner configuration, and consumer-owned runtime
-ports are implemented. The shared base preserves flat attempt fields while
-permitting probes to reuse the process projection. `plan.pyi` remains a
-historical planner reference. The active implementations are
+AC-9 remains incomplete: coordinator progress projection is wired, while
+concrete progress presentation remains planned. Pure runner policy calculations,
+accepted shared runner configuration, and consumer-owned runtime ports are
+implemented. The shared base preserves flat attempt fields while permitting
+probes to reuse the process projection. `plan.pyi` remains a historical planner
+reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection are implemented. CLI integration, dispatch, and the remaining
-harness behavior are planned. Do not add a parallel runtime model or change
-supervisor types. Private helpers and concrete persistence formats remain
-flexible; supervisor outcomes and requests continue to use the existing public
-types. Codex quota recognition is implemented against the reviewed CLI 0.164.0
-rollout shape with runtime identity, completeness, and freshness checks; later
-CLI schemas require separate review. The quota binding still does not supply an
+storage/projection are implemented. CLI integration and the remaining harness
+behavior are planned. Do not add a parallel runtime model or change supervisor
+types. Private helpers and concrete persistence formats remain flexible;
+supervisor outcomes and requests continue to use the existing public types.
+Codex quota recognition is implemented against the reviewed CLI 0.164.0 rollout
+shape with runtime identity, completeness, and freshness checks; later CLI
+schemas require separate review. The quota binding still does not supply an
 expected identity scope, so the CLI cannot yet enable scoped quota availability.
 
 | Proposed module | Responsibility |
@@ -703,7 +700,7 @@ expected identity scope, so the CLI cannot yet enable scoped quota availability.
 | `script/eval/plan.py` | Pure source grouping, exact-byte context composition, and call-matrix scheduling. |
 | `script/eval/tokens.py` | Consumer-owned token-estimation port, `tiktoken` tokenizer adapter, and pure dry-run report assembly. |
 | `script/eval/runner/__init__.py` | Public runner imports for the CLI composition root. |
-| `script/eval/runner/coordinator/` | Implemented state, pure transitions, settlement, progress projection, shared control, and call lifecycle ownership; remaining lifecycle ownership is planned. |
+| `script/eval/runner/coordinator/` | Coordinator state, control, call and quota ownership, scheduling, settlement, progress and final records. |
 | `script/eval/runner/policy.py` | Pure retry eligibility, separate allowances, quota-wait/probe limits, reset-hint scheduling, and saturated jitter calculations. |
 | `script/eval/runner/ports.py` | Consumer-owned supervisor, quota-reader, and runtime protocols plus frozen `CliBinding`, `BoundRun`, and `EffectiveCall` values. |
 | `script/eval/runner/quota_evidence.py` | Generic exception-carried probe evidence retained alongside the original exception and retrieved by exact request identity. |
