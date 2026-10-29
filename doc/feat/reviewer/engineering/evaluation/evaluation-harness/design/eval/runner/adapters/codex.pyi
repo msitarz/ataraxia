@@ -45,7 +45,10 @@ class CodexOutcomeClassifier(OutcomeClassifier):
 
     No streaming assumption or answer parsing is permitted. Until a Codex
     signal and no-result basis are verified from direct evidence, ambiguous or
-    unsupported observations return an unknown RetryAssessment.
+    unsupported observations return an unknown RetryAssessment. The proposed
+    version-bounded full-stream inference and its limits are described in the
+    current architecture; runtime does not yet implement it.
     """
 
+    def __init__(self, cli_version: str | None) -> None: ...
     def assess(self, evidence: AttemptEvidence, /) -> RetryAssessment: ...

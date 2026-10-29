@@ -196,6 +196,24 @@ class OutcomeClassifier(Protocol):
         """
         ...
 
+@dataclass(frozen=True)
+class QuotaAttemptObservation:
+    """Proposed scope verification and window facts from one settled attempt.
+
+    A mismatch is distinct from unavailable identity so the coordinator can
+    latch stop. A matched scope need not have known windows.
+    """
+
+    scope_status: Literal["matched", "unavailable", "mismatch"]
+    observation: QuotaObservation
+
+@dataclass(frozen=True)
+class QuotaProbeObservation:
+    """Proposed probe evidence and its independently verified invocation scope."""
+
+    scope_status: Literal["matched", "unavailable", "mismatch"]
+    evidence: QuotaProbeEvidence
+
 class QuotaStatusReader(Protocol):
     """Separate passive ingestion from supervised active polling.
 
@@ -210,25 +228,25 @@ class QuotaStatusReader(Protocol):
 
     @property
     def expected_scope(self) -> QuotaScope | None:
-        """Verified scope paired with this reader, if known."""
+        """Verified scope, initially absent and pinned by an evaluation session."""
         ...
 
     async def observe_settled_attempt(
         self,
         evidence: AttemptEvidence,
         /,
-    ) -> QuotaObservation:
-        """Return source-backed windows from settled attempt evidence, else unknown.
+    ) -> QuotaAttemptObservation:
+        """Verify invocation identity and return source-backed window facts.
 
-        Preserve sanitized source coordinates and producer provenance on the
-        observation. The coordinator retains call/attempt association and checks
-        observation scope against its binding.
+        Pin the first valid evaluation scope, report mismatches distinctly, and
+        preserve sanitized source coordinates and producer provenance. A missing
+        binding scope is allowed; a present one must match the pinned scope.
         """
         ...
 
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
-    ) -> QuotaProbeEvidence:
+    ) -> QuotaProbeObservation:
         """Run one separately supervised probe; never reuse an evaluation call."""
         ...
 

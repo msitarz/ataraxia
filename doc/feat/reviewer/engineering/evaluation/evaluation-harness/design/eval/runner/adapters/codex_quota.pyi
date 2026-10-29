@@ -14,13 +14,13 @@ from script.process_supervisor import DispatchStop
 
 from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
-    QuotaObservation,
-    QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
 )
 from ..ports import (  # ruff: ignore[relative-imports]
     AttemptCall,
+    QuotaAttemptObservation,
+    QuotaProbeObservation,
     QuotaStatusReader,
     Runtime,
 )
@@ -47,6 +47,7 @@ class CodexQuotaSettings:
 
     executable_path: Path
     empty_read_only_cwd: Path
+    probe_instructions_file: Path
     timeout_seconds: float
     cleanup_timeout_seconds: float
     output_limit_bytes: int
@@ -56,6 +57,11 @@ class CodexQuotaSettings:
 class CodexQuotaStatusReader(QuotaStatusReader):
     """One Codex adapter for passive session ingestion and active supervised polls.
 
+    Proposed connection pins the first validated evaluation session's scope;
+    later evaluations and probes verify it. Mismatches stop dispatch and missing
+    identity cannot establish a trigger. Valid identity may pin without quota
+    windows; fresh complete scoped windows remain necessary for availability.
+
     It owns fixed Luna/none probe request construction, invocation through the
     injected existing supervisor call, thread-ID extraction and local-session
     correlation privately, and mapping of both required five-hour and weekly
@@ -64,13 +70,13 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     stale, or unrecognized, the observation is unknown/unavailable and cannot
     authorize resumption. It orders producer timestamps and uses source sequence
     only within a single source coordinate; older evidence remains inconclusive.
-    No endpoint or exec schema is assumed: file discovery, source schema, thread
-    correlation, scope association, and freshness rules remain unverified.
-    Persist sanitized coordinates only, never account PII.
+    Runtime currently requires a supplied scope. The proposed pinning lifecycle
+    is described in the architecture and has not been implemented. Persist
+    sanitized coordinates only, never account PII.
     """
 
     source: RawCodexQuotaStatusSource
-    expected_scope: QuotaScope | None
+    quota_scope: QuotaScope | None
     settings: CodexQuotaSettings
     attempt_call: AttemptCall
     runtime: Runtime
@@ -79,9 +85,9 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         self,
         evidence: AttemptEvidence,
         /,
-    ) -> QuotaObservation: ...
+    ) -> QuotaAttemptObservation: ...
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
-    ) -> QuotaProbeEvidence:
-        """Return shared process evidence and a separately classified observation."""
+    ) -> QuotaProbeObservation:
+        """Return process evidence, scope verification, and quota assessment."""
         ...

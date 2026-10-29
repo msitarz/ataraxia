@@ -800,3 +800,90 @@ flowchart LR
 
 These module names are a typed design map only. They do not specify private
 file boundaries, create runtime modules, or change the existing supervisor.
+
+### Proposed standalone quota connection
+
+This is a design for review, not implemented behavior. The standalone runner
+currently refuses quota waiting and uses an unavailable reader. This proposal
+reuses the existing coordinator, supervisor, quota adapter, and evidence store.
+It needs an AC-6 clarification before implementation: the current instruction
+that unknown observations end recovery must distinguish unknown
+**window values** from an unrecognized quota state. A recognized, scoped
+exhaustion event can support a wait while numeric windows and reset hints remain
+unknown. Unknown scope, unrecognized state, or a failed probe still stops
+recovery. Fresh positive availability continues to require both complete, fresh,
+scoped probe windows.
+
+On opt-in execution, composition supplies the reader with the same inherited
+Codex home used by its child requests: honor `CODEX_HOME` when supplied and use
+Codex's default home otherwise. The sessions directory is under that home. The
+implementation must verify path resolution against the supported CLI's behavior;
+it must not silently read a different home. No private authentication or config
+is read to discover identity. Dry runs and executions without quota waiting read
+no session files and launch no probes. A run-owned resource holds a frozen,
+nonempty probe instructions file and a separate empty read-only working
+directory until every probe has settled; both are cleaned up on all exits. The
+probe uses the bound executable and existing finite supervisor limits. Resource
+preparation must not dispatch a paid preflight invocation.
+
+The reader correlates a settled invocation's captured `thread.started` ID with
+its exact rollout. It validates the filename, matching metadata IDs, supported
+CLI version and provider, and identity fields before deriving the existing
+opaque scope. The first valid evaluation session pins that scope, even if quota
+rows are absent; no availability or reset is inferred from metadata. Each later
+evaluation and probe verifies its own correlated identity against the pin.
+Reader state is serialized on the event loop, including simultaneous first
+observations. A mismatch latches stop before further dispatch, including when an
+active attempt settles during a pause. Missing or untrustworthy identity remains
+unavailable and stops new dispatch after the attempt is persisted; it cannot
+establish a trigger or authorize a probe or resumption.
+Raw identity and paths are not retained in evidence. When a binding already has
+a verified scope, it must also match; an absent binding scope does not forbid a
+scope subsequently verified by invocation metadata.
+
+A proposed narrow classifier identifies a quota candidate and confident absence
+from process evidence only when the first two conditions below hold. The third
+condition is checked asynchronously before that candidate becomes a scoped
+durable trigger:
+
+- The bound CLI version is exactly the supported `0.164.0`; the supervisor
+  reports a safely cleaned up `Completed` process with nonzero exit, complete
+  captured stdout and empty captured stderr. Timeout, overflow, missing or
+  truncated capture, unsafe cleanup, and exceptional settlement are unknown.
+- The entire stdout is strict UTF-8 JSONL consisting of exactly one ordered
+  `thread.started`, `turn.started`, `error`, and `turn.failed` sequence, with a
+  canonical thread ID. No additional row, including `item.*` or
+  `turn.completed`, is accepted. Both error messages agree and match only the
+  supplied usage-limit message form in [quota capture](quota-capture.md), with
+  a bounded time field; unrecognized wording is unknown. It does not parse
+  reviewer answers or infer absence from exit status or an error message alone.
+- The same invocation's validated session identity matches the pinned scope, and
+  the event remains fresh under a finite bound measured from the settled
+  invocation, not from rereading a session file. A scope mismatch stops
+  dispatch.
+
+The
+[Codex non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode)
+currently describes `--json` as a stream of emitted events and identifies agent
+messages as item events. Together with the supplied capture, this motivates the
+conservative full-stream inference above; it does not prove the behavior of the
+historical CLI version or the absence of all other semantic output. The sample
+alone remains insufficient proof. This inference needs explicit review before
+implementation, and unsupported variants fail closed. Passive exhausted windows
+alone also do not classify a failed evaluation or establish no result.
+
+The coordinator closes dispatch as soon as this candidate failure is classified,
+then drains active work and persists attempt and correlated scope evidence. A
+durable trigger pairs that attempt's recognized exhaustion with its verified
+scope, even when its windows are unknown. The coordinator verifies the reader's
+pinned scope, trigger scope, and any present binding scope before recovery. A
+probe may likewise be classified exhausted from the same narrow event and
+matching identity even without window rows; its numerical fields stay unknown.
+A successful probe can reopen dispatch only after its own fresh, complete,
+matching scoped windows prove availability and its evidence is durable. Failed,
+ambiguous, missing, stale or mismatched identity and unavailable positive probe
+evidence stop recovery. The existing cadence, budget, cancellation, cleanup,
+retry and durable-evidence rules continue to apply. No new scheduler is needed.
+
+The proposed [intent scenarios](quota-connection-scenarios.md) describe the
+connection and its refusal cases; they are not executable acceptance evidence.
