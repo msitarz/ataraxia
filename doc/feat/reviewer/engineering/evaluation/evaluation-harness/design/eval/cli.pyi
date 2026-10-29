@@ -6,8 +6,9 @@ Help explains that ``--instructions-file`` maps to the native Codex setting
 The finite progress refresh interval is supplied through run configuration.
 """
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Protocol
 
 from .evidence import EvidenceStore
 from .inputs import RepositoryReader
@@ -15,14 +16,22 @@ from .model import DryRunReport, HarnessConfig, RunRecord
 from .plan import PlanBuilder
 from .runner import (
     AttemptRequestBuilder,
+    BoundRun,
     CliBindingResolver,
-    Coordinator,
 )
 from .tokens import TokenEstimator
 
 def parse_config(argv: Sequence[str], /) -> HarnessConfig:
     """Parse ordered CLI options and validate settings without side effects."""
     ...
+
+class RunCoordinator(Protocol):
+    async def run(self) -> RunRecord: ...
+
+class CoordinatorFactory(Protocol):
+    def __call__(
+        self, bound_run: BoundRun, evidence: EvidenceStore, config: HarnessConfig, /
+    ) -> RunCoordinator: ...
 
 @dataclass(frozen=True)
 class Composition:
@@ -33,8 +42,8 @@ class Composition:
     estimator: TokenEstimator
     binding_resolver: CliBindingResolver
     request_builder: AttemptRequestBuilder
-    coordinator: Coordinator
-    evidence: EvidenceStore
+    evidence_factory: Callable[[], EvidenceStore]
+    coordinator_factory: CoordinatorFactory
 
     async def execute(self, config: HarnessConfig, /) -> DryRunReport | RunRecord:
         """Plan and estimate, or persist frozen inputs before execution."""
