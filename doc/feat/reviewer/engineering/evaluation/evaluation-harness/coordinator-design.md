@@ -16,11 +16,12 @@ planned. All Work acceptance criteria remain TODO. The
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
 with known lifecycle bugs, not a validated alternative.
 
-A remaining shared-owner issue precedes acceptance: an interrupt raised inside a
-nested evidence or runtime task can escape the event loop before settlement.
-The coordinator retains its own worker tasks, but that does not repair nested
-submission. Cooperative task cancellation and the planned CLI signal path are
-separate from this issue.
+The maintainer accepts a known shared-owner limitation: a `KeyboardInterrupt`
+or `SystemExit` raised inside a nested evidence or runtime task can escape the
+event loop before retained settlement completes. This limitation does not
+block acceptance. Retaining coordinator-owned worker tasks does not repair the
+nested submission boundary. Cooperative `task.cancel()` and the planned CLI
+signal path remain separate from this limitation.
 
 ## TL;DR
 

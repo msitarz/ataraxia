@@ -305,11 +305,11 @@ and one global quota recovery flow from authoritative typed lifecycles.
   cancels and settles active siblings; quota recovery begins only
   after active attempts and writes drain. A concrete CLI composition and
   progress presenter remain planned.
-- **Remaining Work issue:** A `KeyboardInterrupt` or `SystemExit` raised inside
-  a nested evidence or runtime task may escape the event loop before retained
-  settlement completes. Coordinator-owned worker wrappers do not fix that
-  shared submission boundary. Cooperative task cancellation and the planned
-  CLI signal path are separate; this issue must be resolved before acceptance.
+- **Accepted known limitation:** A `KeyboardInterrupt` or `SystemExit` raised
+  inside a nested evidence or runtime task may escape the event loop before
+  retained settlement completes. Coordinator-owned worker wrappers do not fix
+  that shared submission boundary. This limitation does not block acceptance.
+  Cooperative `task.cancel()` and the planned CLI signal path are separate.
 - The proposal replaces the approach in
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
