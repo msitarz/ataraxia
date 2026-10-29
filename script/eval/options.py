@@ -83,8 +83,7 @@ def _parser() -> argparse.ArgumentParser:
         epilog=(
             "Exit codes: 0 success, 1 failure, 2 invalid arguments, "
             "3 evidence setup or recording incomplete, 130 cancellation. "
-            "Progress is currently "
-            "silent because no prompt nonblocking stderr transport is available."
+            "Progress is best effort and may be dropped if stderr is slow."
         ),
     )
     parser.add_argument(

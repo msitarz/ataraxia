@@ -264,3 +264,130 @@ def test_quiet_preserves_execution_and_evidence(tmp_path: Path) -> None:
     record = json.loads((output / "run.json").read_text())
     assert record["calls"][0]["state"] == "complete"
     assert record["calls"][0]["attempts"][0]["exit_status"] == 0
+
+
+@pytest.mark.parametrize("tty", [False, True], ids=["redirected", "tty"])
+def test_command_reports_live_progress_to_stderr(tmp_path: Path, tty: bool) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    read_fd, target = progress_destination(tty)
+
+    # When
+    code, stdout, progress = signal_progress_command(
+        repo, output, env, tmp_path, read_fd, target, True
+    )
+
+    # Then
+    assert code == 130
+    assert b"scheduled calls: 1" in stdout
+    assert b"phase=running" in progress
+    assert (b"\x1b" in progress) == tty
+
+
+def test_blocked_stderr_does_not_delay_signal_cleanup(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    read_fd, target = full_pipe()
+
+    # When
+    code, stdout, _ = signal_progress_command(
+        repo, output, env, tmp_path, read_fd, target, False
+    )
+
+    # Then
+    assert code == 130
+    assert b"scheduled calls: 1" in stdout
+    record = json.loads((output / "run.json").read_text())
+    assert record["state"] == "incomplete"
+    assert record["calls"][0]["attempts"][0]["cleanup"]["direct_wait"] == "reaped"
+
+
+def progress_destination(tty: bool) -> tuple[int, int]:
+    """Return a terminal or pipe pair for progress output."""
+    if tty:
+        import pty
+
+        return pty.openpty()
+    return os.pipe()
+
+
+def full_pipe() -> tuple[int, int]:
+    """Fill a pipe before starting the command and restore blocking mode."""
+    read_fd, target = os.pipe()
+    os.set_blocking(target, False)
+    try:
+        while True:
+            os.write(target, b"x" * 512)
+    except BlockingIOError:
+        pass
+    os.set_blocking(target, True)
+    return read_fd, target
+
+
+def signal_progress_command(
+    repo: Path,
+    output: Path,
+    env: dict[str, str],
+    directory: Path,
+    read_fd: int,
+    target: int,
+    read_progress: bool,
+) -> tuple[int | None, bytes, bytes]:
+    """Wait for the fake child and optionally observe progress before cancelling."""
+    ready = directory / "ready"
+    os.mkfifo(ready)
+    ready_fd = os.open(ready, os.O_RDONLY | os.O_NONBLOCK)
+    env["FAKE_READY_FIFO"] = str(ready)
+    process = subprocess.Popen(
+        command(repo, output), cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=target
+    )
+    os.close(target)
+    try:
+        empty: list[int] = []
+        assert select.select([ready_fd], empty, empty, 15)[0]
+        assert os.read(ready_fd, 100) == b"ready\n"
+        progress = b""
+        if read_progress:
+            assert select.select([read_fd], empty, empty, 5)[0]
+            progress = os.read(read_fd, 16384)
+        process.send_signal(signal.SIGTERM)
+        stdout, _ = process.communicate(timeout=15)
+        return process.returncode, stdout, progress
+    finally:
+        os.close(ready_fd)
+        os.close(read_fd)
+        if process.poll() is None:
+            process.kill()
+            process.communicate(timeout=5)
+
+
+def test_blocked_stderr_does_not_delay_successful_exit(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    read_fd, target = full_pipe()
+    process = subprocess.Popen(
+        command(repo, output), cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=target
+    )
+    os.close(target)
+
+    # When
+    try:
+        stdout, _ = process.communicate(timeout=15)
+    finally:
+        os.close(read_fd)
+        if process.poll() is None:
+            process.kill()
+            process.communicate(timeout=5)
+
+    # Then
+    assert process.returncode == 0
+    assert b"scheduled calls: 1" in stdout
+    record = json.loads((output / "run.json").read_text())
+    assert record["state"] == "complete"
+    assert record["calls"][0]["state"] == "complete"

@@ -3,12 +3,14 @@
 
 import asyncio
 from collections.abc import Callable, Coroutine, Generator
-from contextlib import AbstractContextManager, contextmanager
+from contextlib import AbstractContextManager, contextmanager, suppress
+import os
 import signal
 import sys
+from typing import Protocol
 from uuid import uuid4
 
-from script.eval.cli import Composition
+from script.eval.cli import Composition, RunCoordinator
 from script.eval.evidence import EvidenceStore, create_evidence_store
 from script.eval.evidence_status import EvidenceStatus
 from script.eval.inputs import GitRepositoryReader
@@ -25,13 +27,16 @@ from script.eval.model import (
 )
 from script.eval.options import parse_config
 from script.eval.plan import PurePlanBuilder
-from script.eval.runner import BoundRun
+from script.eval.runner import BoundRun, ProgressSink
 from script.eval.runner.adapters import (
     CodexAttemptRequestBuilder,
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
+    ProgressWriter,
     SilentProgressSink,
     SystemRuntime,
+    TerminalProgressSink,
+    open_progress_writer,
 )
 from script.eval.runner.coordinator import Coordinator
 from script.eval.tokens import tiktoken_estimator
@@ -96,16 +101,22 @@ def create_composition(status: EvidenceStatus) -> Composition:
     """
     runtime = SystemRuntime()
 
-    def coordinator(bound: BoundRun, evidence: EvidenceStore, /) -> Coordinator:
-        return Coordinator(
-            bound,
-            evidence,
-            _attempt,
-            CodexOutcomeClassifier(),
-            UnavailableQuota(),
-            runtime,
-            SilentProgressSink(),
-        )
+    def coordinator(bound: BoundRun, evidence: EvidenceStore, /) -> ProgressRun:
+        sink, writer = _progress(bound.plan.configuration, runtime)
+        try:
+            runner = Coordinator(
+                bound,
+                evidence,
+                _attempt,
+                CodexOutcomeClassifier(),
+                UnavailableQuota(),
+                runtime,
+                sink,
+            )
+        except BaseException:
+            _close_progress(writer)
+            raise
+        return ProgressRun(runner, writer)
 
     return Composition(
         GitRepositoryReader(),
@@ -143,8 +154,8 @@ def main() -> int:
     Exit 0 means success, 1 means a failed run or invalid prerequisites,
     2 means command-line validation failure, 3 means submitted evidence setup
     or recording failed or remained incomplete (including an existing output),
-    and 130 means cancellation. Progress is silent until a prompt nonblocking
-    stderr transport is available.
+    and 130 means cancellation. Progress is best effort and may be dropped
+    when stderr is slow or unavailable.
 
     Returns:
         The process exit status.
@@ -264,3 +275,87 @@ def _announce_plan(plan: FrozenPlan) -> None:
     """Display the frozen matrix size before any binding or dispatch."""
     sys.stdout.write(f"scheduled calls: {len(plan.calls)}\n")
     sys.stdout.flush()
+
+
+class ProgressResource(Protocol):
+    """A progress resource whose admission can be closed promptly."""
+
+    def close(self) -> None:
+        """Stop accepting progress without waiting for output."""
+        ...
+
+
+class ProgressRun:
+    """Close progress admission when the coordinator settles."""
+
+    def __init__(
+        self, coordinator: RunCoordinator, writer: ProgressResource | None
+    ) -> None:
+        """Retain one coordinator and its optional progress writer."""
+        self.coordinator = coordinator
+        self.writer = writer
+
+    async def run(self) -> RunRecord:
+        """Run and close progress without waiting for a blocked writer.
+
+        Returns:
+            The coordinator's final record.
+        """
+        try:
+            return await self.coordinator.run()
+        finally:
+            _close_progress(self.writer)
+
+
+def _progress(
+    config: HarnessConfig, runtime: SystemRuntime
+) -> tuple[ProgressSink, ProgressWriter | None]:
+    """Select a best-effort writer or silence without affecting the run.
+
+    Returns:
+        One progress sink and its writer, if startup succeeded.
+    """
+    if config.quiet:
+        return SilentProgressSink(), None
+    try:
+        return _start_progress(config, runtime)
+    except Exception:
+        return SilentProgressSink(), None
+
+
+def _start_progress(
+    config: HarnessConfig, runtime: SystemRuntime
+) -> tuple[ProgressSink, ProgressWriter | None]:
+    """Prepare one optional writer and its terminal presentation.
+
+    Returns:
+        The presentation and its owned writer, or a silent sink.
+    """
+    fd = sys.stderr.fileno()
+    is_tty = os.isatty(fd)
+    try:
+        columns = max(2, os.get_terminal_size(fd).columns) if is_tty else 80
+    except OSError:
+        columns = 80
+    writer = open_progress_writer(fd)
+    if writer is None:
+        return SilentProgressSink(), None
+    try:
+        sink = TerminalProgressSink(
+            writer,
+            is_tty,
+            runtime,
+            config.progress_interval_seconds,
+            tty_columns=columns,
+        )
+    except BaseException:
+        _close_progress(writer)
+        raise
+    return sink, writer
+
+
+def _close_progress(writer: ProgressResource | None) -> None:
+    """Disable progress without concealing the run's outcome."""
+    if writer is not None:
+        with suppress(Exception):
+            writer.close()
