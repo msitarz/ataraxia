@@ -30,7 +30,7 @@ class RunCoordinator(Protocol):
 
 class CoordinatorFactory(Protocol):
     def __call__(
-        self, bound_run: BoundRun, evidence: EvidenceStore, config: HarnessConfig, /
+        self, bound_run: BoundRun, evidence: EvidenceStore, /
     ) -> RunCoordinator: ...
 
 @dataclass(frozen=True)

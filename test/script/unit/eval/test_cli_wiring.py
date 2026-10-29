@@ -17,6 +17,7 @@ from script.eval.model import (
     FrozenInputs,
     FrozenPlan,
     HarnessConfig,
+    InstructionsSnapshot,
     PlannedCall,
     PreparedEvidence,
     RunRecord,
@@ -35,7 +36,16 @@ class Harness:
         self.events: list[str] = []
         self.fail: str | None = None
         self.bound: BoundRun | None = None
-        self.prepared = PreparedEvidence(Path("/out"), Path("/out/plan"), None)
+        self.frozen: FrozenInputs | None = None
+        self.plan_value: FrozenPlan | None = None
+        self.configs: list[HarnessConfig] = []
+        self.requests: list[
+            tuple[FrozenPlan, PlannedCall, CliBinding, PreparedEvidence, HarnessConfig]
+        ] = []
+        self.estimates: list[tuple[bytes, str, EstimateBasis]] = []
+        self.prepared = PreparedEvidence(
+            Path("/out"), Path("/out/plan"), Path("/out/instructions")
+        )
         self.store = create_evidence_store(create_evidence=self.create)
         self.binding = CliBinding(Path("/codex"), "version", "runner", (), None)
         self.record = RunRecord(
@@ -65,20 +75,34 @@ class Harness:
             content_sha256=sha256(content).hexdigest(),
             content=content,
         )
-        return FrozenInputs(Path("/repo"), "head", (source,), None)
+        self.configs.append(config)
+        instruction = b"instructions"
+        snapshot = InstructionsSnapshot(
+            repository_path="instructions",
+            commit_blob_sha="blob",
+            content_sha256=sha256(instruction).hexdigest(),
+            content=instruction,
+        )
+        self.frozen = FrozenInputs(Path("/repo"), "head", (source,), snapshot)
+        return self.frozen
 
     def plan(self, inputs: FrozenInputs, config: HarnessConfig, /) -> FrozenPlan:
         self.step("plan")
-        return PurePlanBuilder("run").plan(inputs, config)
+        assert inputs is self.frozen
+        self.configs.append(config)
+        self.plan_value = PurePlanBuilder("run").plan(inputs, config)
+        return self.plan_value
 
     def estimate(
         self, content: bytes, model: str, basis: EstimateBasis, /
     ) -> TokenEstimate:
         self.step("estimate")
+        self.estimates.append((content, model, basis))
         return TokenEstimate(model, 1, "fake", None, None, basis, "exact", None)
 
     def resolve(self, config: HarnessConfig, /) -> CliBinding:
         self.step("bind")
+        self.configs.append(config)
         return self.binding
 
     def build(
@@ -91,7 +115,7 @@ class Harness:
         /,
     ) -> EffectiveCall:
         self.step("request")
-        assert binding is self.binding and evidence is self.prepared
+        self.requests.append((plan, call, binding, evidence, config))
         return EffectiveCall(
             plan.run_id,
             "call",
@@ -102,15 +126,14 @@ class Harness:
     def create(self, output_directory: Path, plan: FrozenPlan, /) -> PreparedEvidence:
         self.step("create")
         assert output_directory == Path("/out")
+        assert plan is self.plan_value
         return self.prepared
 
     def evidence(self) -> EvidenceStore:
         self.step("store")
         return self.store
 
-    def coordinator(
-        self, bound: BoundRun, evidence: EvidenceStore, config: HarnessConfig, /
-    ) -> Harness:
+    def coordinator(self, bound: BoundRun, evidence: EvidenceStore, /) -> Harness:
         self.step("coordinator")
         assert evidence is self.store
         self.bound = bound
@@ -129,7 +152,7 @@ class Harness:
 def config(*, dry_run: bool) -> HarnessConfig:
     return HarnessConfig(
         ordered_options=(DirectoryOption(position=0, path=Path("context")),),
-        models=("model",),
+        models=("model-a", "model-b"),
         efforts=("low",),
         concurrency=1,
         output_directory=None if dry_run else Path("/out"),
@@ -138,29 +161,46 @@ def config(*, dry_run: bool) -> HarnessConfig:
         cleanup_timeout_seconds=1.0,
         grace_seconds=0.0,
         output_limit_bytes=0,
-        instructions_file_path=None,
+        instructions_file_path=Path("instructions"),
     )
 
 
-def test_dry_run_stops_after_estimation() -> None:
+async def test_dry_run_stops_after_estimation() -> None:
     # Given
     harness = Harness()
 
     # When
-    result = asyncio.run(harness.composition().execute(config(dry_run=True)))
+    configuration = config(dry_run=True)
+    result = await harness.composition().execute(configuration)
 
     # Then
     assert isinstance(result, DryRunReport)
-    assert result.scheduled_call_count == 1
-    assert harness.events == ["freeze", "plan", "estimate"]
+    assert result.plan is harness.plan_value
+    assert result.scheduled_call_count == 2
+    assert harness.configs == [configuration, configuration]
+    assert harness.estimates == [
+        (b"prompt", "model-a", "supplied_context"),
+        (b"instructions", "model-a", "instructions_file"),
+        (b"prompt", "model-b", "supplied_context"),
+        (b"instructions", "model-b", "instructions_file"),
+    ]
+    assert harness.events == [
+        "freeze",
+        "plan",
+        "estimate",
+        "estimate",
+        "estimate",
+        "estimate",
+    ]
 
 
-def test_execution_binds_evidence_and_requests_before_coordinator() -> None:
+async def test_execution_binds_evidence_and_requests_before_coordinator() -> None:
     # Given
     harness = Harness()
 
     # When
-    result = asyncio.run(harness.composition().execute(config(dry_run=False)))
+    configuration = config(dry_run=False)
+    result = await harness.composition().execute(configuration)
 
     # Then
     assert result is harness.record
@@ -171,14 +211,34 @@ def test_execution_binds_evidence_and_requests_before_coordinator() -> None:
         "store",
         "create",
         "request",
+        "request",
         "coordinator",
         "run",
     ]
     assert harness.bound is not None
     assert harness.bound.binding is harness.binding
     assert harness.bound.evidence is harness.prepared
-    assert len(harness.bound.calls) == 1
-    assert harness.bound.calls[0].planned_call is harness.bound.plan.calls[0]
+    assert harness.bound.plan is harness.plan_value
+    assert harness.configs == [configuration, configuration, configuration]
+    assert [call.planned_call for call in harness.bound.calls] == list(
+        harness.bound.plan.calls
+    )
+    assert [call.planned_call.model for call in harness.bound.calls] == [
+        "model-a",
+        "model-b",
+    ]
+    assert harness.requests == [
+        (harness.bound.plan, call, harness.binding, harness.prepared, configuration)
+        for call in harness.bound.plan.calls
+    ]
+    assert all(
+        plan is harness.bound.plan
+        and binding is harness.binding
+        and prepared is harness.prepared
+        and supplied is configuration
+        for plan, _, binding, prepared, supplied in harness.requests
+    )
+    assert harness.prepared.model_instructions_file == Path("/out/instructions")
 
 
 @pytest.mark.parametrize(
@@ -192,29 +252,31 @@ def test_execution_binds_evidence_and_requests_before_coordinator() -> None:
     ],
     ids=["freeze", "plan", "binding", "evidence", "request"],
 )
-def test_failure_prevents_later_steps(failure: str, events: list[str]) -> None:
+async def test_failure_prevents_later_steps(failure: str, events: list[str]) -> None:
     # Given
     harness = Harness()
     harness.fail = failure
 
     # When
     with pytest.raises(ValueError, match=failure):
-        asyncio.run(harness.composition().execute(config(dry_run=False)))
+        await harness.composition().execute(config(dry_run=False))
 
     # Then
     assert harness.events == events
 
 
-def test_cancellation_retains_blocking_preparation_and_prevents_dispatch() -> None:
+async def test_cancellation_retains_failed_preparation_and_prevents_dispatch() -> None:
     # Given
     started, release = Event(), Event()
     harness = Harness()
+    failure = ValueError("worker failed")
 
     class BlockingRepository:
         def freeze(self, configuration: HarnessConfig, /) -> FrozenInputs:
             started.set()
-            release.wait()
-            return harness.freeze(configuration)
+            if not release.wait(timeout=5):
+                raise TimeoutError("test did not release worker")
+            raise failure
 
     composition = Composition(
         BlockingRepository(),
@@ -225,19 +287,23 @@ def test_cancellation_retains_blocking_preparation_and_prevents_dispatch() -> No
         harness.evidence,
         harness.coordinator,
     )
+    task = asyncio.create_task(composition.execute(config(dry_run=False)))
 
-    async def exercise() -> None:
-        task = asyncio.create_task(composition.execute(config(dry_run=False)))
-        await asyncio.to_thread(started.wait)
-        task.cancel()
+    # When
+    try:
+        assert await asyncio.to_thread(started.wait, 5)
+        task.cancel("first")
+        await asyncio.sleep(0)
+        task.cancel("second")
         await asyncio.sleep(0)
         assert not task.done()
         release.set()
-        with pytest.raises(asyncio.CancelledError):
-            await task
-
-    # When
-    asyncio.run(exercise())
+        with pytest.raises(asyncio.CancelledError) as caught:
+            await asyncio.wait_for(task, timeout=5)
+    finally:
+        release.set()
 
     # Then
-    assert harness.events == ["freeze"]
+    assert caught.value.args == ("first",)
+    assert caught.value.__cause__ is failure
+    assert harness.events == []

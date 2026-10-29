@@ -12,8 +12,10 @@ grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
 Codex invocation leaves are implemented. The coordinator composes bounded
 invocations, call settlement, quota recovery, shutdown, progress projection, and
-final record projection for a prepared bound run. CLI integration and a
-concrete progress presenter remain planned. Shared consumer-owned
+final record projection for a prepared bound run. CLI composition wiring is
+implemented with injected collaborators; argument parsing, default adapter
+construction, signal handling, stderr transport, and standalone invocation
+remain planned. Shared consumer-owned
 runner ports and accepted runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
@@ -590,6 +592,12 @@ evidence.
 
 ### Entry point composition
 
+**Implemented wiring:**
+[`script/eval/cli.py`](../../../../../../script/eval/cli.py) sequences injected
+preparation and execution collaborators. Its parser is a stub; default
+factories, signal handling, stderr transport, and the standalone entry point
+remain planned. No acceptance criterion is complete.
+
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
 - The entry point connects CLI settings, input freezing, pure composition and
@@ -642,9 +650,10 @@ flowchart LR
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The
 runtime coordinator implements bounded invocations, quota recovery, settlement,
-progress projection, and final accounting. CLI integration remains planned.
-The input freezer performs read-only Git and filesystem effects; composition,
-planning, and report assembly are pure. Estimation returns one explicit value
+progress projection, and final accounting. Injected CLI composition wiring is
+implemented; the standalone integration remains planned.
+The input freezer performs read-only Git and filesystem effects; planning and
+report assembly are pure. Estimation returns one explicit value
 for each planned call, including an unknown value when compatibility is not
 known. The dry-run branch never resolves or probes the CLI.
 
@@ -686,24 +695,25 @@ process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
 AC-9 remains incomplete: coordinator progress projection and the terminal sink
-presentation are implemented, while concrete stderr transport and CLI
-composition remain planned. Pure runner policy calculations, accepted shared
-runner configuration, and consumer-owned runtime ports are implemented. The
-shared base preserves flat attempt fields while permitting probes to reuse the
-process projection. `plan.pyi` remains a historical planner reference. The
-active implementations are
+presentation and injected CLI composition are implemented, while concrete stderr
+transport and standalone integration remain planned. Pure runner policy
+calculations, accepted shared runner configuration, and consumer-owned runtime
+ports are implemented. The shared base preserves flat attempt fields while
+permitting probes to reuse the process projection. `plan.pyi` remains a
+historical planner reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection are implemented. CLI integration and the remaining harness
-behavior are planned. Do not add a parallel runtime model or change supervisor
-types. Private helpers and concrete persistence formats remain flexible;
-supervisor outcomes and requests continue to use the existing public types.
-Codex quota recognition is implemented against the reviewed CLI 0.164.0 rollout
-shape with runtime identity, completeness, and freshness checks; later CLI
-schemas require separate review. The quota binding still does not supply an
-expected identity scope, so the CLI cannot yet enable scoped quota availability.
+storage/projection and injected CLI composition are implemented. Standalone
+integration and the remaining harness behavior are planned. Do not add a
+parallel runtime model or change supervisor types. Private helpers and concrete
+persistence formats remain flexible; supervisor outcomes and requests continue
+to use the existing public types. Codex quota recognition is implemented against
+the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
+freshness checks; later CLI schemas require separate review. The quota binding
+still does not supply an expected identity scope, so the CLI cannot yet enable
+scoped quota availability.
 
 | Proposed module | Responsibility |
 | --- | --- |

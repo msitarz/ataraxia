@@ -9,13 +9,13 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
-from .evidence import EvidenceStore
-from .inputs import RepositoryReader
-from .model import DryRunReport, HarnessConfig, RunRecord
-from .plan import PlanBuilder
-from .runner import AttemptRequestBuilder, BoundRun, CliBindingResolver
-from .runner.coordinator.settlement import SettledFailure, settle
-from .tokens import TokenEstimator, build_dry_run_report
+from script.eval.evidence import EvidenceStore
+from script.eval.inputs import RepositoryReader
+from script.eval.model import DryRunReport, HarnessConfig, RunRecord
+from script.eval.plan import PlanBuilder
+from script.eval.runner import AttemptRequestBuilder, BoundRun, CliBindingResolver
+from script.eval.runner.coordinator.settlement import SettledFailure, settle
+from script.eval.tokens import TokenEstimator, build_dry_run_report
 
 
 class RunCoordinator(Protocol):
@@ -30,7 +30,7 @@ class CoordinatorFactory(Protocol):
     """Construct a provider coordinator after evidence and requests exist."""
 
     def __call__(
-        self, bound_run: BoundRun, evidence: EvidenceStore, config: HarnessConfig, /
+        self, bound_run: BoundRun, evidence: EvidenceStore, /
     ) -> RunCoordinator:
         """Bind the run and its store to one coordinator."""
         ...
@@ -66,8 +66,6 @@ class Composition:
         Returns:
             The dry-run report or the coordinator's final record.
 
-        Raises:
-            ValueError: Execution has no output directory.
         """
         inputs = await _run_blocking(self.repository.freeze, config)
         plan = self.planner.plan(inputs, config)
@@ -75,8 +73,7 @@ class Composition:
             return await _run_blocking(build_dry_run_report, plan, self.estimator)
         binding = await _run_blocking(self.binding_resolver.resolve, config)
         output = config.output_directory
-        if output is None:
-            raise ValueError("execution requires an output directory")
+        assert output is not None  # Validated execution configuration.
         evidence = self.evidence_factory()
         prepared = await evidence.create(output, plan)
         calls = tuple(
@@ -84,7 +81,7 @@ class Composition:
             for call in plan.calls
         )
         bound = BoundRun(plan, binding, prepared, calls)
-        return await self.coordinator_factory(bound, evidence, config).run()
+        return await self.coordinator_factory(bound, evidence).run()
 
 
 async def _run_blocking[**P, T](
