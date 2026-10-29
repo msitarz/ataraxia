@@ -339,15 +339,15 @@ Codex, quota, and runtime adapters.
   port exposes separate settled-attempt ingestion and supervised-poll calls.
 - `runner.ports` also owns the immutable `ProgressSnapshot`, disjoint
   `ProgressCounts`, per-call retry-wait views, and the synchronous
-  `ProgressSink` port. The pure projection derives queued, active,
-  retry-wait, stopped-not-started, evidence-pending, succeeded, failed, and
-  cancelled call counts from its live call states; attempt and probe counters
-  remain separate. Coordinator wiring is implemented; a concrete progress
-  sink remains planned.
-  A queued call is runnable but not dispatched. A stopped-not-started call is
-  unexecuted and cannot resume after the final report. Evidence-pending means a
-  result is known in memory but its required durable write failed, so the
-  report does not claim a persisted success or failure.
+  `ProgressSink` port. The pure projection derives queued, active, retry-wait,
+  stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
+  counts from its live call states; attempt and probe counters remain separate.
+  Coordinator wiring and the terminal sink shell are implemented; terminal
+  rendering and throttle behavior remain planned. A queued call is runnable but
+  not dispatched. A stopped-not-started call is unexecuted and cannot resume
+  after the final report. Evidence-pending means a result is known in memory but
+  its required durable write failed, so the report does not claim a persisted
+  success or failure.
 - For `N` planned calls, `N` equals queued + stopped-not-started + active +
   retry-wait + evidence-pending + succeeded + failed + cancelled. Remaining
   calls equal queued + stopped-not-started + active + retry-wait +
@@ -675,12 +675,13 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-AC-9 remains incomplete: coordinator progress projection is wired, while
-concrete progress presentation remains planned. Pure runner policy calculations,
-accepted shared runner configuration, and consumer-owned runtime ports are
-implemented. The shared base preserves flat attempt fields while permitting
-probes to reuse the process projection. `plan.pyi` remains a historical planner
-reference. The active implementations are
+AC-9 remains incomplete: coordinator progress projection and the terminal sink
+shell are wired, while terminal rendering, throttling, and concrete transport
+remain planned. Pure runner policy calculations, accepted shared runner
+configuration, and consumer-owned runtime ports are implemented. The shared base
+preserves flat attempt fields while permitting probes to reuse the process
+projection. `plan.pyi` remains a historical planner reference. The active
+implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
