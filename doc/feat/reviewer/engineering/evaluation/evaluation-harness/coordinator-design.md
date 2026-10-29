@@ -8,7 +8,7 @@ settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
 passive telemetry through the shared control and settlement boundaries. A quota
 owner awaits bounded probe recovery and persists its wait and probe transitions
 through the shared control and settlement boundaries. The run owner composes
-bounded dispatch, awaited recovery, shutdown, progress, and final record
+bounded invocations, awaited recovery, shutdown, progress, and final record
 projection for a prepared run. CLI composition and concrete presentation remain
 planned. All Work acceptance criteria remain TODO. The
 [Work contract](README.md) owns behavior and the
@@ -39,8 +39,11 @@ separate from this issue.
 
 ## Coordinator
 
-- The run owner creates bounded workers and prevents dispatch after stop or
-  pause.
+- The run owner admits calls incrementally and prevents dispatch after stop or
+  pause. It does not create a task for every planned call.
+- Configured concurrency bounds invocations through cleanup. Capacity waits
+  retain tasks and may resume while other calls are active, so retained and
+  resuming tasks are bounded by entered calls in the finite plan.
 - It checks the stop latch and quota gate immediately before every dispatch.
 - It holds each attempt slot through the supervisor's bounded cleanup.
 - It releases the slot before any retry wait or quota probe.
@@ -333,7 +336,7 @@ incidental updates and private helpers flexible.
 
 | Phase | Owner responsibility |
 | --- | --- |
-| Running | Dispatch bounded workers while the stop and quota gates allow it. |
+| Running | Admit calls incrementally and bound invocations while stop and quota gates allow them. |
 | Stopping | Latch the first stop, preserve later owner or leaf cancellation, and cancel siblings. |
 | Settling | Join attempts, probes, retained writes, and durably close started waits. |
 | Finalizing | Write truthful final accounting and then report its durable outcome. |

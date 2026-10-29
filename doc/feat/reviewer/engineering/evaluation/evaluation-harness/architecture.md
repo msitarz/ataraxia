@@ -11,7 +11,7 @@ orchestration wiring is implemented in
 grouping, separator decoding, exact-byte composition, and deterministic matrix
 expansion. The token estimator, dry-run report builder, evidence storage, and
 Codex invocation leaves are implemented. The coordinator composes bounded
-dispatch, call settlement, quota recovery, shutdown, progress projection, and
+invocations, call settlement, quota recovery, shutdown, progress projection, and
 final record projection for a prepared bound run. CLI integration and a
 concrete progress presenter remain planned. Shared consumer-owned
 runner ports and accepted runtime configuration are implemented in
@@ -291,16 +291,18 @@ supervisor request.
 
 ### Async dispatch coordinator
 
-**TL;DR:** One run owner coordinates bounded workers, call-local retries, and
-one global quota recovery flow from authoritative typed lifecycles.
+**TL;DR:** One run owner coordinates bounded invocations, call-local retries,
+and one global quota recovery flow from authoritative typed lifecycles.
 
 - **Proposed:** The [coordinator design](coordinator-design.md) defines the
   state ownership, effect order, shutdown, and proposed internal package.
 - **Current maturity:** The coordinator composes the call, quota, settlement,
-  and progress owners for a prepared run. It bounds dispatching and settling
-  calls by configured concurrency. Calls in durable capacity delays retain
-  their own sleeping tasks, bounded by the finite plan, while other calls may
-  proceed. Stop cancels and settles active siblings; quota recovery begins only
+  and progress owners for a prepared run. Configured concurrency bounds active
+  invocations through cleanup. The coordinator admits new owners incrementally
+  instead of creating a task for every planned call. Capacity waits retain
+  tasks and can resume while other calls are active; retained and resuming tasks
+  are bounded by entered calls in the finite plan, not by concurrency. Stop
+  cancels and settles active siblings; quota recovery begins only
   after active attempts and writes drain. A concrete CLI composition and
   progress presenter remain planned.
 - **Remaining Work issue:** A `KeyboardInterrupt` or `SystemExit` raised inside
@@ -629,7 +631,7 @@ flowchart LR
 
 The diagram shows proposed harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The
-runtime coordinator implements bounded dispatch, quota recovery, settlement,
+runtime coordinator implements bounded invocations, quota recovery, settlement,
 progress projection, and final accounting. CLI integration remains planned.
 The input freezer performs read-only Git and filesystem effects; composition,
 planning, and report assembly are pure. Estimation returns one explicit value

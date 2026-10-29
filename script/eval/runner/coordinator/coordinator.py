@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Run ownership, bounded dispatch, quota recovery and finalization."""
+"""Run ownership, bounded invocations, quota recovery and finalization."""
 
 import asyncio
 from typing import Literal, Never
@@ -31,10 +31,11 @@ from .state import StopReason
 class Coordinator:
     """Own one prepared provider-bound run and all tasks until settlement.
 
-    Active dispatch and settlement are bounded by configured concurrency.
-    A call sleeping in its own durable capacity wait releases that scheduling
-    capacity. Such waits retain one task each until they close; their number is
-    bounded by the finite plan rather than the concurrency setting.
+    Configured concurrency bounds active invocations through cleanup. New call
+    owners are admitted incrementally, without a task per planned position.
+    Capacity waits retain tasks and can resume while other calls are active, so
+    the number of retained and resuming tasks is bounded by entered calls in
+    the finite plan rather than by the concurrency setting.
     """
 
     def __init__(
@@ -144,7 +145,7 @@ class Coordinator:
                 raise cancellation from primary
 
     async def _schedule_loop(self) -> None:
-        """Run a bounded plan loop and respond to stop or quota pause."""
+        """Admit calls incrementally and respond to stop or quota pause."""
         while True:
             self._changed.clear()
             self._collect_finished()
@@ -187,7 +188,7 @@ class Coordinator:
         self._changed.set()
 
     def _start_calls(self) -> None:
-        """Start only enough non-sleeping owners to fill configured capacity."""
+        """Admit new owners while non-sleeping owners are below the limit."""
         active = sum(not owner.waiting_delay for owner in self._tasks.values())
         limit = self._bound_run.plan.configuration.concurrency
         while active < limit and self._next < len(self._calls):
