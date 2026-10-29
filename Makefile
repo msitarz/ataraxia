@@ -124,7 +124,10 @@ else
 	@if [ "$(MAKELEVEL)" -eq 0 ]; then printf '%b\n' '$(_TEST_QUALITY_QUESTIONS)'; fi
 endif
 
-.PHONY: run deps-lock
+.PHONY: eval run deps-lock
+eval: ## run the evaluation harness; CLI_ARGS='options and values'
+	uv run python -m script.eval $(_CLI_ARGS)
+
 run: ## run the project CLI; CLI_ARGS='options and values'
 ifeq ($(strip $(CLI_ARGS)),)
 	@echo "Set CLI_ARGS to the CLI options to run." >&2
