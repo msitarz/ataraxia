@@ -2,7 +2,7 @@
 """Run ownership, bounded dispatch, quota recovery and finalization."""
 
 import asyncio
-from typing import Never
+from typing import Literal, Never
 
 from script.eval.evidence import EvidenceStore
 from script.eval.model import QuotaObservation, QuotaWaitContext, RunRecord
@@ -22,9 +22,10 @@ from .calls import CallOwner
 from .control import RunControl
 from .progress import ProgressView, project
 from .quota import QuotaOwner, _reset_hint
-from .quota_states import Draining, Open, QuotaHistory
+from .quota_states import Draining, Open, PauseOrigin, QuotaHistory
 from .records import run_record, settings_digest
 from .settlement import SettledFailure, SettledValue, Settlement, settle
+from .state import StopReason
 
 
 class Coordinator:
@@ -77,7 +78,7 @@ class Coordinator:
         self._internal: set[asyncio.Task[BaseException | None]] = set()
         self._next = 0
         self._quota: QuotaOwner | None = None
-        self._quota_task: asyncio.Task[object] | None = None
+        self._quota_task: asyncio.Task[BaseException | None] | None = None
         self._quota_history = QuotaHistory((), ())
         self._error: BaseException | None = None
         self._used = False
@@ -175,7 +176,7 @@ class Coordinator:
             raise cancellation
         self._watcher = self._watch_control()
 
-    def _watch_control(self) -> asyncio.Task[object]:
+    def _watch_control(self) -> asyncio.Task[PauseOrigin | None]:
         """Return a watcher that wakes the scheduler on pause or stop."""
         task = asyncio.create_task(self._control.wait_for_quota_pause())
         task.add_done_callback(self._wake)
@@ -209,18 +210,12 @@ class Coordinator:
                 error = caught
             if error is not None and task not in self._internal:
                 self._capture_error(error, "leaf")
-            elif isinstance(error, asyncio.CancelledError):
+            elif _is_initiating_failure(
+                error, owner.invocation_error, self._control.reason
+            ):
                 reason = self._control.reason
-                if (
-                    reason is not None
-                    and isinstance(reason.first, BaseException)
-                    and (
-                        error.__cause__ is reason.first
-                        or owner.invocation_error is reason.first
-                    )
-                    and reason.first is not reason.recording_failure
-                ):
-                    self._capture_error(reason.first, "leaf")
+                assert reason is not None and isinstance(reason.first, BaseException)
+                self._capture_error(reason.first, "leaf")
             self._internal.discard(task)
 
     def _drained(self) -> bool:
@@ -286,7 +281,9 @@ class Coordinator:
                 RuntimeError("quota recovery ended without availability")
             )
 
-    def _capture_error(self, error: BaseException, origin: str) -> None:
+    def _capture_error(
+        self, error: BaseException, origin: Literal["owner", "leaf"]
+    ) -> None:
         """Latch local error facts without borrowing another task's exception."""
         if isinstance(error, asyncio.CancelledError):
             self._control.note_cancellation(
@@ -297,8 +294,17 @@ class Coordinator:
         if isinstance(error, (KeyboardInterrupt, SystemExit)) and not isinstance(
             self._error, (KeyboardInterrupt, SystemExit, asyncio.CancelledError)
         ):
-            if self._error is not None and error.__cause__ is None:
-                error.__cause__ = self._error
+            prior = self._error
+            reason = self._control.reason
+            if (
+                prior is None
+                and reason is not None
+                and isinstance(reason.first, BaseException)
+                and reason.first is not reason.recording_failure
+            ):
+                prior = reason.first
+            if prior is not None and prior is not error and error.__cause__ is None:
+                error.__cause__ = prior
             self._error = error
         elif self._error is None:
             self._error = error
@@ -391,8 +397,31 @@ class Coordinator:
         )
         try:
             self._progress.publish(snapshot)
-        except OSError:
+        except Exception:
             self._progress_enabled = False
+
+
+def _is_initiating_failure(
+    error: BaseException | None,
+    invocation_error: BaseException | None,
+    reason: StopReason | None,
+    /,
+) -> bool:
+    """Identify the call's initiating error behind internal cancellation.
+
+    For example, a cancelled sibling must not turn the run's unrelated stop
+    reason into its own failure. A call's retained invocation error or the
+    cancellation's explicit cause can establish that association.
+
+    Returns:
+        Whether the retained reason belongs to this internally stopped call.
+    """
+    if not isinstance(error, asyncio.CancelledError) or reason is None:
+        return False
+    first = reason.first
+    if not isinstance(first, BaseException) or first is reason.recording_failure:
+        return False
+    return error.__cause__ is first or invocation_error is first
 
 
 async def _run_call(owner: CallOwner) -> BaseException | None:
@@ -421,7 +450,7 @@ async def _run_quota(owner: QuotaOwner) -> BaseException | None:
     return None
 
 
-async def _stop_watcher(watcher: asyncio.Task[object]) -> asyncio.CancelledError | None:
+async def _stop_watcher[T](watcher: asyncio.Task[T]) -> asyncio.CancelledError | None:
     """Cancel and join a local watcher while retaining owner cancellation.
 
     Returns:
@@ -432,7 +461,7 @@ async def _stop_watcher(watcher: asyncio.Task[object]) -> asyncio.CancelledError
     return result.cancellation
 
 
-async def _join(tasks: tuple[asyncio.Task[object], ...]) -> None:
+async def _join(tasks: tuple[asyncio.Task[BaseException | None], ...]) -> None:
     """Observe each task without propagating sibling failures."""
     await asyncio.gather(*tasks, return_exceptions=True)
 

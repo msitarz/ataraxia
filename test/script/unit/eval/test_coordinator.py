@@ -25,8 +25,13 @@ from script.eval.model import (
     SourceSnapshot,
 )
 from script.eval.runner.coordinator import Coordinator
-from script.eval.runner.coordinator.coordinator import _raise_outcome, _stop_watcher
+from script.eval.runner.coordinator.coordinator import (
+    _is_initiating_failure,
+    _raise_outcome,
+    _stop_watcher,
+)
 from script.eval.runner.coordinator.settlement import SettledFailure, SettledValue
+from script.eval.runner.coordinator.state import StopReason
 from script.eval.runner.ports import BoundRun, CliBinding, ProgressSnapshot
 from script.process_supervisor import (
     AttemptObservation,
@@ -1038,12 +1043,18 @@ class FailedSink:
         raise self.error
 
 
+@pytest.mark.parametrize(
+    "failure",
+    [OSError("closed"), ValueError("closed"), RuntimeError("broken")],
+    ids=["os-error", "closed-stream", "runtime-error"],
+)
 async def test_expected_progress_failure_disables_further_presentation(
     tmp_path: Path,
+    failure: Exception,
 ) -> None:
     # Given
     bound, store = await prepare(tmp_path, 1)
-    sink = FailedSink(OSError("closed output"))
+    sink = FailedSink(failure)
 
     # When
     record = await Coordinator(
@@ -1053,6 +1064,8 @@ async def test_expected_progress_failure_disables_further_presentation(
     # Then
     assert record.state == "complete"
     assert record.calls[0].state == "complete"
+    assert record.calls[0].attempts[0].exit_status == 0
+    assert (bound.evidence.output_directory / "run.json").is_file()
     assert sink.calls == 1
 
 
@@ -1245,13 +1258,21 @@ async def test_finalization_leaf_cancellation_preserves_prior_local_error(
     tmp_path: Path,
 ) -> None:
     # Given
-    original = ValueError("presentation")
+    original = ValueError("invocation")
     cancellation = asyncio.CancelledError("final leaf")
     bound, _ = await prepare(tmp_path, 1)
+    bound = replace(bound, calls=(replace(bound.calls[0], call_id="call"),))
     store = LeafFinalStore(cancellation)
     coordinator = Coordinator(
-        bound, store, attempt, Classifier(), NoQuota(), Clock(), FailedSink(original)
+        bound,
+        store,
+        FailedInvocation(original),
+        Classifier(),
+        NoQuota(),
+        Clock(),
+        Sink(),
     )
+    store.slots = coordinator._slots
 
     # When
     with pytest.raises(asyncio.CancelledError) as raised:
@@ -1442,19 +1463,14 @@ async def test_invocation_error_survives_failed_write_during_internal_stop(
 
 
 class InterruptingStopSink:
-    """Raise an ordinary error, then an interrupt during stopping."""
+    """Interrupt presentation during the stop transition."""
 
     def __init__(self) -> None:
-        self.original = ValueError("first report")
         self.interrupt = KeyboardInterrupt("stop report")
-        self.calls = 0
 
     def publish(self, snapshot: ProgressSnapshot, /) -> None:
-        """Fail initially and interrupt the stop report."""
-        self.calls += 1
-        if self.calls == 1:
-            raise self.original
-        if self.calls == 2:
+        """Raise only when the execution failure begins shutdown."""
+        if snapshot.phase == "stopping":
             raise self.interrupt
 
 
@@ -1463,15 +1479,68 @@ async def test_progress_interrupt_during_stop_preserves_prior_error(
 ) -> None:
     # Given
     bound, store = await prepare(tmp_path, 1)
+    original = ValueError("invocation")
     sink = InterruptingStopSink()
 
     # When
     with pytest.raises(KeyboardInterrupt, match="stop report") as raised:
         await Coordinator(
-            bound, store, attempt, Classifier(), NoQuota(), Clock(), sink
+            bound,
+            store,
+            FailedInvocation(original),
+            Classifier(),
+            NoQuota(),
+            Clock(),
+            sink,
         ).run()
 
     # Then
     assert raised.value is sink.interrupt
-    assert raised.value.__cause__ is sink.original
+    assert raised.value.__cause__ is original
     assert (bound.evidence.output_directory / "run.json").is_file()
+
+
+_first = ValueError("initiating")
+_other = ValueError("unrelated")
+_caused_cancel = asyncio.CancelledError("internal")
+_caused_cancel.__cause__ = _first
+_internal_cancel = asyncio.CancelledError("internal")
+
+
+@pytest.mark.parametrize(
+    ("error", "invocation_error", "reason", "expected"),
+    [
+        (_caused_cancel, None, StopReason(_first, None, None, None), True),
+        (_internal_cancel, _first, StopReason(_first, None, None, None), True),
+        (_internal_cancel, None, None, False),
+        (None, _first, StopReason(_first, None, None, None), False),
+        (_internal_cancel, _first, StopReason(result(), None, None, None), False),
+        (_internal_cancel, _other, StopReason(_first, None, None, None), False),
+        (_first, _first, StopReason(_first, None, None, None), False),
+        (_caused_cancel, _first, StopReason(_first, None, None, _first), False),
+    ],
+    ids=[
+        "explicit-cause",
+        "invocation-owner",
+        "missing-reason",
+        "missing-error",
+        "supervisor-result",
+        "other-call",
+        "not-cancellation",
+        "recording-failure",
+    ],
+)
+def test_internal_stop_recovers_only_its_own_initiating_failure(
+    error: BaseException | None,
+    invocation_error: BaseException | None,
+    reason: StopReason | None,
+    expected: bool,
+) -> None:
+    # Given
+    # Each case supplies its own association facts.
+
+    # When
+    result = _is_initiating_failure(error, invocation_error, reason)
+
+    # Then
+    assert result is expected
