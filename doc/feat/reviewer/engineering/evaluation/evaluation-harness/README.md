@@ -271,6 +271,10 @@ restarting the runner or repeating completed calls.
 - On explicitly recognized Codex quota exhaustion, the coordinator pauses all
   new dispatch globally, lets active attempts settle through bounded cleanup,
   and persists their evidence before waiting or resuming.
+- Recognized exhaustion from reviewable operational CLI error evidence for the
+  same identified quota scope may permit waiting even when numeric window
+  percentages or reset hints are unknown; unknown numeric fields alone do not
+  make the quota state unknown or establish availability or a reset.
 - Waiting holds no attempt semaphore slot and leaves no CLI subprocess asleep;
   the live runner uses asynchronous, cancellable waits.
 - Waiting preserves the original frozen plan, inputs, invocation settings, and
@@ -310,8 +314,9 @@ restarting the runner or repeating completed calls.
   deadlines and output limit, outside evaluation semaphore slots but bounded
   by the single-probe limit, stop latch, and caller operational budget.
 - Probe dispatch and failures follow this explicit polling policy rather than
-  consuming evaluation infrastructure retry allowances; unknown observations,
-  malformed data, scope mismatch, or infrastructure errors stop new dispatch,
+  consuming evaluation infrastructure retry allowances; unknown quota state,
+  unknown identity or scope, malformed data outside the permitted unknown
+  numeric fields, scope mismatch, or infrastructure errors stop new dispatch,
   end quota recovery, and mark the run incomplete with inability to continue,
   never availability or an invented reset.
 - Probes are explicit potentially billable operations: configuration and usage
@@ -333,10 +338,11 @@ restarting the runner or repeating completed calls.
   hint; periodic checks can detect earlier availability, while a future hint can
   wake a check before the next interval. Past or repeated hints cannot create an
   immediate polling loop.
-- A hint reaching its time never authorizes evaluation dispatch. Only a fresh
-  positive availability confirmation for the same quota scope reopens dispatch;
-  the source association and freshness rules remain implementation
-  prerequisites.
+- A hint reaching its time never authorizes evaluation dispatch; only a fresh
+  positive availability confirmation with complete known required windows from
+  the same probe and quota scope, supported by durable evidence, reopens
+  dispatch, and the source association and freshness rules remain
+  implementation prerequisites.
 - A probe's Luna availability establishes no other model's capacity; AC-7
   governs model-capacity failures separately. Usage between checks can exhaust
   quota again, so later attempt failures still follow this policy.
