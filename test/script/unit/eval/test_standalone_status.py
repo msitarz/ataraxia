@@ -3,7 +3,10 @@
 
 import asyncio
 from collections.abc import Callable, Coroutine
+from contextlib import AbstractContextManager
 from pathlib import Path
+import signal
+from types import TracebackType
 
 import pytest
 
@@ -46,6 +49,10 @@ def fail_finalize(preparation: PreparedEvidence, result: RunRecord) -> None:
     raise OSError("finalize failed")
 
 
+def finalize_ok(preparation: PreparedEvidence, result: RunRecord) -> None:
+    """Accept one final record without effects."""
+
+
 async def create_then_finalize(
     config: HarnessConfig, status: EvidenceStatus
 ) -> DryRunReport | RunRecord:
@@ -73,12 +80,19 @@ async def cancelled(
 @pytest.mark.parametrize(
     ("operation", "create", "finalize", "expected"),
     [
+        (create_then_finalize, prepared, finalize_ok, 0),
         (ordinary_failure, prepared, fail_finalize, 1),
-        (create_then_finalize, fail_create, fail_finalize, 1),
+        (create_then_finalize, fail_create, fail_finalize, 3),
         (create_then_finalize, prepared, fail_finalize, 3),
         (cancelled, prepared, fail_finalize, 130),
     ],
-    ids=["ordinary-failure", "failed-create", "failed-finalize", "cancellation"],
+    ids=[
+        "success",
+        "ordinary-failure",
+        "failed-create",
+        "failed-finalize",
+        "cancellation",
+    ],
 )
 async def test_exit_status_distinguishes_failure_evidence_and_cancellation(
     operation: Callable[
@@ -97,10 +111,12 @@ async def test_exit_status_distinguishes_failure_evidence_and_cancellation(
     )
 
     # When
+    before = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
     code = await run_owned(frozen_plan().configuration, status, operation)
 
     # Then
     assert code == expected
+    assert {sig: signal.getsignal(sig) for sig in before} == before
 
 
 async def test_evidence_failure_preserves_original_exception_and_status() -> None:
@@ -124,3 +140,44 @@ async def test_evidence_failure_preserves_original_exception_and_status() -> Non
     # Then
     assert caught.value is error
     assert status.started and not status.finalized
+
+
+async def test_signal_setup_failure_does_not_start_operation() -> None:
+    # Given
+    status = EvidenceStatus(lambda: create_evidence_store(create_evidence=prepared))
+    invoked = False
+
+    async def operation(
+        config: HarnessConfig, store: EvidenceStatus
+    ) -> DryRunReport | RunRecord:
+        nonlocal invoked
+        invoked = True
+        await asyncio.sleep(0)
+        return record()
+
+    class FailedSignals(AbstractContextManager[None]):
+        def __enter__(self) -> None:
+            raise OSError("cannot install signal handlers")
+
+        def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc: BaseException | None,
+            traceback: TracebackType | None,
+        ) -> None:
+            pass
+
+    def fail_install(
+        loop: asyncio.AbstractEventLoop, owner: asyncio.Task[object]
+    ) -> FailedSignals:
+        return FailedSignals()
+
+    # When
+    with pytest.raises(OSError, match="cannot install"):
+        await run_owned(
+            frozen_plan().configuration, status, operation, signals=fail_install
+        )
+
+    # Then
+    assert not invoked
+    assert not status.started

@@ -2,7 +2,8 @@
 """Standalone execution, signal ownership, and explicit exit status."""
 
 import asyncio
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable, Coroutine, Generator
+from contextlib import AbstractContextManager, contextmanager
 import signal
 import sys
 from uuid import uuid4
@@ -44,6 +45,11 @@ from script.process_supervisor import (
 
 
 async def _attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
+    """Forward one attempt through the existing supervisor.
+
+    Returns:
+        The supervisor's settled result.
+    """
     return await call_supervisor(request, run_attempt, stop)
 
 
@@ -135,7 +141,8 @@ def main() -> int:
     """Run one owned event loop and map outcomes to process status.
 
     Exit 0 means success, 1 means a failed run or invalid prerequisites,
-    2 means command-line validation failure, 3 means incomplete evidence,
+    2 means command-line validation failure, 3 means submitted evidence setup
+    or recording failed or remained incomplete (including an existing output),
     and 130 means cancellation. Progress is silent until a prompt nonblocking
     stderr transport is available.
 
@@ -159,38 +166,68 @@ async def run_owned(
         Coroutine[object, object, DryRunReport | RunRecord],
     ],
     /,
+    *,
+    signals: Callable[
+        [asyncio.AbstractEventLoop, asyncio.Task[object]], AbstractContextManager[None]
+    ]
+    | None = None,
 ) -> int:
     """Own signals and the run task until its work settles.
 
     Returns:
         The process status for the settled operation.
     """
-    loop = asyncio.get_running_loop()
-    task = asyncio.create_task(operation(config, status))
+    owner = asyncio.current_task()
+    assert owner is not None
+    signal_owner = _owned_signals if signals is None else signals
+    with signal_owner(asyncio.get_running_loop(), owner):
+        return await _settled_status(operation(config, status), status)
+
+
+@contextmanager
+def _owned_signals(
+    loop: asyncio.AbstractEventLoop, owner: asyncio.Task[object]
+) -> Generator[None]:
+    """Install cancellation handlers before dispatch and restore prior handlers."""
     previous = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
     installed: list[signal.Signals] = []
     try:
         for sig in previous:
-            loop.add_signal_handler(sig, task.cancel)
+            loop.add_signal_handler(sig, owner.cancel)
             installed.append(sig)
-        try:
-            result = await task
-        except asyncio.CancelledError:
-            return 130
-        except Exception as error:
-            sys.stderr.write(f"evaluation failed: {error}\n")
-            return (
-                3 if status.started and (status.failed or not status.finalized) else 1
-            )
-        _print_result(result)
-        return _exit_status(result)
+        yield
     finally:
         for sig in installed:
             loop.remove_signal_handler(sig)
             signal.signal(sig, previous[sig])
 
 
+async def _settled_status(
+    operation: Coroutine[object, object, DryRunReport | RunRecord],
+    status: EvidenceStatus,
+) -> int:
+    """Await the operation through cleanup and map its result or exception.
+
+    Returns:
+        The corresponding standalone exit status.
+    """
+    try:
+        result = await operation
+    except asyncio.CancelledError:
+        return 130
+    except Exception as error:
+        sys.stderr.write(f"evaluation failed: {error}\n")
+        return 3 if status.started and (status.failed or not status.finalized) else 1
+    _print_result(result)
+    return _exit_status(result)
+
+
 def _exit_status(result: DryRunReport | RunRecord) -> int:
+    """Map completed accounting to its process status.
+
+    Returns:
+        Zero for success, one for failed calls, or three for incomplete runs.
+    """
     if isinstance(result, DryRunReport):
         return 0
     if result.state == "incomplete":
@@ -199,6 +236,7 @@ def _exit_status(result: DryRunReport | RunRecord) -> int:
 
 
 def _print_result(result: DryRunReport | RunRecord) -> None:
+    """Render final accounting or supplied-context estimates to stdout."""
     if isinstance(result, RunRecord):
         sys.stdout.write(
             f"run {result.run_id}: {result.state}; "

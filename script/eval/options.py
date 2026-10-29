@@ -82,7 +82,8 @@ def _parser() -> argparse.ArgumentParser:
         description="Run a frozen evaluation matrix.",
         epilog=(
             "Exit codes: 0 success, 1 failure, 2 invalid arguments, "
-            "3 incomplete evidence, 130 cancellation. Progress is currently "
+            "3 evidence setup or recording incomplete, 130 cancellation. "
+            "Progress is currently "
             "silent because no prompt nonblocking stderr transport is available."
         ),
     )
@@ -148,7 +149,15 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--quota-wait-limit-seconds", type=float)
     parser.add_argument("--quota-poll-interval-seconds", type=float, default=60.0)
     parser.add_argument("--quota-probe-budget", type=int)
-    parser.add_argument("--capacity-retry-limit", type=int, default=0)
+    parser.add_argument(
+        "--capacity-retry-limit",
+        type=int,
+        default=0,
+        help=(
+            "capacity retries require recognized capacity outcomes; "
+            "recognition is currently unsupported"
+        ),
+    )
     parser.add_argument("--capacity-backoff-base-seconds", type=float)
     parser.add_argument("--capacity-backoff-cap-seconds", type=float)
     return parser

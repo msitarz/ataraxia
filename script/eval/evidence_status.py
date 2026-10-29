@@ -27,6 +27,7 @@ class EvidenceStatus:
     """Observe persistence without changing errors or recording behavior."""
 
     def __init__(self, factory: Callable[[], EvidenceStore]) -> None:
+        """Retain the factory without constructing a store for a dry run."""
         self.factory = factory
         self._store: EvidenceStore | None = None
         self.started = False
@@ -41,10 +42,10 @@ class EvidenceStatus:
         Returns:
             The store's prepared evidence.
         """
+        self.started = True
         if self._store is None:
             self._store = self.factory()
         result = await self._store.create(output_directory, plan)
-        self.started = True
         return result
 
     async def record_attempt(
@@ -112,7 +113,11 @@ class EvidenceStatus:
 
     async def finalize(self, record: RunRecord, /) -> None:
         """Retain successful finalization after the store settles."""
-        await self._require_store().finalize(record)
+        try:
+            await self._require_store().finalize(record)
+        except Exception:
+            self.failed = True
+            raise
         self.finalized = True
 
     def _require_store(self) -> EvidenceStore:

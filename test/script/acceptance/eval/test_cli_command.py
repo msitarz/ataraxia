@@ -47,10 +47,12 @@ def environment(tmp_path: Path) -> dict[str, str]:
 
 
 @pytest.mark.parametrize(
-    ("fake_exit", "expected"), [("0", 0), ("7", 1)], ids=["success", "failed-attempt"]
+    ("fake_exit", "expected", "expected_state"),
+    [("0", 0, "complete"), ("7", 1, "failed")],
+    ids=["success", "failed-attempt"],
 )
 def test_command_records_fake_attempt_and_maps_outcome(
-    tmp_path: Path, fake_exit: str, expected: int
+    tmp_path: Path, fake_exit: str, expected: int, expected_state: str
 ) -> None:
     # Given
     repo = make_repository(tmp_path / "repo")
@@ -72,7 +74,7 @@ def test_command_records_fake_attempt_and_maps_outcome(
     assert result.returncode == expected, result.stderr
     assert "scheduled calls: 1" in result.stdout
     record = json.loads((output / "run.json").read_text())
-    assert record["calls"][0]["state"] == ("complete" if expected == 0 else "failed")
+    assert record["calls"][0]["state"] == expected_state
 
 
 def test_quota_wait_fails_before_provider_binding(tmp_path: Path) -> None:
@@ -80,6 +82,8 @@ def test_quota_wait_fails_before_provider_binding(tmp_path: Path) -> None:
     repo = make_repository(tmp_path / "repo")
     output = tmp_path / "evidence"
     env = environment(tmp_path)
+    marker = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(marker)
 
     # When
     result = subprocess.run(
@@ -95,6 +99,7 @@ def test_quota_wait_fails_before_provider_binding(tmp_path: Path) -> None:
     assert result.returncode == 1
     assert "scope is not verified" in result.stderr
     assert not output.exists()
+    assert not marker.exists()
 
 
 @pytest.mark.parametrize(
@@ -205,3 +210,57 @@ def test_make_entry_exposes_standalone_help(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert "model_instructions_file=PATH" in result.stdout
     assert "130 cancellation" in result.stdout
+
+
+def test_recording_obstruction_reports_incomplete_evidence(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    env["FAKE_OBSTRUCT_PATH"] = str(output / "attempts")
+
+    # When
+    result = subprocess.run(
+        command(repo, output),
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 3, result.stderr
+    record = json.loads((output / "run.json").read_text())
+    assert record["state"] == "incomplete"
+    assert record["calls"][0]["state"] == "failed"
+    assert record["calls"][0]["attempts"] == []
+    assert (output / "attempts").read_text() == "block attempt artifacts"
+
+
+def test_quiet_preserves_execution_and_evidence(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    marker = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(marker)
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--quiet"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 0, result.stderr
+    assert result.stderr == ""
+    assert "--version" in marker.read_text()
+    assert "exec " in marker.read_text()
+    record = json.loads((output / "run.json").read_text())
+    assert record["calls"][0]["state"] == "complete"
+    assert record["calls"][0]["attempts"][0]["exit_status"] == 0
