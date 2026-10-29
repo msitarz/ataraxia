@@ -7,12 +7,14 @@ async waiter notification. The call owner implements attempt dispatch and
 settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
 passive telemetry through the shared control and settlement boundaries. A quota
 owner awaits bounded probe recovery and persists its wait and probe transitions
-through the shared control and settlement boundaries. The run owner and
-composition remain planned, so this is not a complete runner. All Work
-acceptance criteria remain TODO. The [Work contract](README.md) owns behavior
-and the [current architecture](architecture.md) describes implemented
-components. [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a
-superseded approach with known lifecycle bugs, not a validated alternative.
+through the shared control and settlement boundaries. A thin run composition
+exercises zero or one call with a private test projection. Multi-call
+scheduling, coordinated shutdown, and production final record projection remain
+planned, so this is not a complete runner. All Work acceptance criteria remain
+TODO. The [Work contract](README.md) owns behavior and the
+[current architecture](architecture.md) describes implemented components.
+[PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
+with known lifecycle bugs, not a validated alternative.
 
 ## TL;DR
 
@@ -28,8 +30,8 @@ superseded approach with known lifecycle bugs, not a validated alternative.
   below.
 - The [type sketch](design/eval/runner/coordinator/) is a historical reviewed
   reference; runtime state, pure transitions, retained-task settlement, and
-  progress projection and call owner are authoritative. Other owner
-  declarations remain planned.
+  progress projection and call and quota owners are authoritative. The run
+  sketch remains planned beyond its thin composition.
 
 ## Coordinator
 
