@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Thin run composition; scheduling, shutdown and record projection remain pending."""
+"""Run ownership, bounded invocations, quota recovery and finalization."""
 
 import asyncio
-from collections.abc import Callable
-from contextlib import suppress
-from typing import Never
+from typing import Literal, Never
 
 from script.eval.evidence import EvidenceStore
-from script.eval.model import QuotaWaitContext, RunRecord
+from script.eval.model import QuotaObservation, QuotaWaitContext, RunRecord
 from script.eval.runner.ports import (
     AttemptCall,
     BoundRun,
@@ -19,32 +17,25 @@ from script.eval.runner.ports import (
     Runtime,
 )
 
-from .call_states import (
-    CallHistory,
-    CallState,
-    EvidencePending,
-    Finished,
-    Queued,
-    Stopped,
-)
+from .call_states import CallHistory, CallState, EvidencePending, Finished, Queued
 from .calls import CallOwner
 from .control import RunControl
 from .progress import ProgressView, project
-from .quota import QuotaOwner
-from .quota_states import Draining, Open, QuotaHistory
-from .settlement import SettledFailure, Settlement, settle
-
-type RunProjection = Callable[
-    [BoundRun, tuple[CallState, ...], QuotaHistory], RunRecord
-]
+from .quota import QuotaOwner, _reset_hint
+from .quota_states import Draining, Open, PauseOrigin, QuotaHistory
+from .records import run_record, settings_digest
+from .settlement import SettledFailure, SettledValue, Settlement, settle
+from .state import StopReason
 
 
 class Coordinator:
-    """Own the collaborators for one prepared, provider-bound run.
+    """Own one prepared provider-bound run and all tasks until settlement.
 
-    The current thin path accepts at most one call and no quota recovery. The
-    private projection seam is unfinished; it must be supplied to exercise the
-    path until final metadata projection is implemented.
+    Configured concurrency bounds active invocations through cleanup. New call
+    owners are admitted incrementally, without a task per planned position.
+    Capacity waits retain tasks and can resume while other calls are active, so
+    the number of retained and resuming tasks is bounded by entered calls in
+    the finite plan rather than by the concurrency setting.
     """
 
     def __init__(
@@ -56,17 +47,17 @@ class Coordinator:
         quota_status: QuotaStatusReader,
         runtime: Runtime,
         progress: ProgressSink,
-        *,
-        _projection: RunProjection | None = None,
     ) -> None:
-        """Bind a prepared run without reading inputs or starting effects."""
+        """Bind already prepared evidence and frozen inputs without effects."""
         self._bound_run = bound_run
         self._evidence = evidence
         self._quota_status = quota_status
         self._runtime = runtime
         self._progress = progress
-        self._projection = _projection
+        self._progress_enabled = True
         self._control = RunControl()
+        self._changed = asyncio.Event()
+        self._observation: QuotaObservation | None = None
         self._slots = asyncio.Semaphore(bound_run.plan.configuration.concurrency)
         self._calls = tuple(
             CallOwner(
@@ -79,94 +70,188 @@ class Coordinator:
                 quota_status,
                 evidence,
                 runtime,
+                _changed=self._changed.set,
+                _observed=self._observe,
             )
             for call in bound_run.calls
         )
+        self._tasks: dict[asyncio.Task[BaseException | None], CallOwner] = {}
+        self._internal: set[asyncio.Task[BaseException | None]] = set()
+        self._next = 0
+        self._quota: QuotaOwner | None = None
+        self._quota_task: asyncio.Task[BaseException | None] | None = None
         self._quota_history = QuotaHistory((), ())
+        self._error: BaseException | None = None
         self._used = False
 
     async def run(self) -> RunRecord:
-        """Run the exercised thin path, then retain finalization.
+        """Dispatch, settle, and finalize the run before returning or raising.
 
         Returns:
-            The projected, durably finalized record.
-
-        Unsupported scheduling and projection raise NotImplementedError.
-        Reusing an instance raises RuntimeError.
-        """
-        self._check_ready()
-        assert self._projection is not None
-        error: BaseException | None = None
-        try:
-            self._publish("running", None)
-            if self._calls:
-                await self._calls[0].run()
-        except BaseException as caught:
-            error = caught
-            self._control.latch_stop(caught)
-        record = self._projection(self._bound_run, self._states(), self._quota_history)
-        result = await settle(asyncio.create_task(self._evidence.finalize(record)))
-        if result.cancellation is not None:
-            self._control.note_cancellation(result.cancellation, "owner")
-        if isinstance(result, SettledFailure):
-            if isinstance(result.error, asyncio.CancelledError):
-                self._control.note_cancellation(result.error, "leaf")
-            self._control.note_recording_failure(result.error)
-        _raise_outcome(error, result)
-        self._publish("final", _final_status(record, self._states()))
-        return record
-
-    def _check_ready(self) -> None:
-        """Refuse unsupported paths before any invocation or evidence effect.
+            The durable final accounting.
 
         Raises:
-            RuntimeError: This coordinator already ran.
+            RuntimeError: This coordinator was already used.
         """
         if self._used:
             raise RuntimeError("coordinator already ran")
         self._used = True
-        if self._projection is None:
-            raise NotImplementedError("final record projection is pending")
-        if (
-            len(self._calls) > 1
-            or self._bound_run.plan.configuration.quota_wait_enabled
-        ):
-            raise NotImplementedError(
-                "multi-call scheduling and quota recovery are pending"
-            )
-
-    def _states(self) -> tuple[CallState, ...]:
-        """Return current call facts for projection."""
-        return tuple(owner.state for owner in self._calls)
-
-    def _publish(
-        self, phase: ProgressRunPhase, final_status: ProgressFinalStatus | None
-    ) -> None:
-        """Project snapshots and isolate expected presentation failures."""
-        assert phase in ("running", "final")
-        snapshot = project(
-            ProgressView(
-                self._bound_run.plan.run_id,
-                phase,
-                final_status,
-                self._states(),
-                Open(),
-                self._quota_history,
-                None,
-                self._runtime.monotonic(),
-                self._runtime.utc_now(),
-            )
+        digest = settings_digest(self._bound_run.binding.effective_settings)
+        try:
+            self._publish("running", None)
+            await self._schedule()
+        except BaseException as error:
+            self._capture_error(error, "owner")
+        await self._shutdown()
+        states = self._states()
+        incomplete = self._control.reason is not None or any(
+            not isinstance(state, Finished) for state in states
         )
-        with suppress(OSError):
-            self._progress.publish(snapshot)
+        record = run_record(
+            self._bound_run, states, self._quota_history, incomplete, digest
+        )
+        result = await settle(asyncio.create_task(self._evidence.finalize(record)))
+        self._finalization_facts(result)
+        if isinstance(result, SettledValue):
+            try:
+                self._publish(
+                    "final",
+                    _final_status(
+                        record,
+                        states,
+                        self._control.reason is not None
+                        and self._control.reason.cancellation is not None,
+                    ),
+                )
+            except BaseException as error:
+                self._capture_error(error, "owner")
+        _raise_outcome(self._primary_error(), result)
+        return record
 
-    def _quota_owner(self, context: QuotaWaitContext) -> QuotaOwner:
-        """Construct a quota owner for the future drained-pause scheduler.
+    async def _schedule(self) -> None:
+        """Own the control watcher until the plan loop stops."""
+        self._watcher = self._watch_control()
+        primary: BaseException | None = None
+        try:
+            await self._schedule_loop()
+        except BaseException as error:
+            primary = error
+            raise
+        finally:
+            cancellation = await _stop_watcher(self._watcher)
+            if cancellation is not None and not isinstance(
+                primary, asyncio.CancelledError
+            ):
+                raise cancellation from primary
 
-        Returns:
-            An owner sharing this run's controls and effect boundaries.
-        """
-        return QuotaOwner(
+    async def _schedule_loop(self) -> None:
+        """Admit calls incrementally and respond to stop or quota pause."""
+        while True:
+            self._changed.clear()
+            self._collect_finished()
+            if self._control.reason is not None:
+                return
+            if self._next == len(self._calls) and not self._tasks:
+                return
+            if self._control.quota_origin is not None:
+                await self._handle_pause()
+            else:
+                self._start_calls()
+                self._publish("running", None)
+            if self._next == len(self._calls) and not self._tasks:
+                return
+            await self._changed.wait()
+
+    async def _handle_pause(self) -> None:
+        """Report draining or await a drained quota recovery."""
+        if not self._drained():
+            self._publish("quota_paused", None)
+            return
+        await self._recover_quota()
+        await self._replace_watcher()
+
+    async def _replace_watcher(self) -> None:
+        """Join the prior pause watcher before observing another pause."""
+        cancellation = await _stop_watcher(self._watcher)
+        if cancellation is not None:
+            raise cancellation
+        self._watcher = self._watch_control()
+
+    def _watch_control(self) -> asyncio.Task[PauseOrigin | None]:
+        """Return a watcher that wakes the scheduler on pause or stop."""
+        task = asyncio.create_task(self._control.wait_for_quota_pause())
+        task.add_done_callback(self._wake)
+        return task
+
+    def _wake[T](self, task: asyncio.Future[T]) -> None:
+        """Wake the run loop after an owned task settles."""
+        self._changed.set()
+
+    def _start_calls(self) -> None:
+        """Admit new owners while non-sleeping owners are below the limit."""
+        active = sum(not owner.waiting_delay for owner in self._tasks.values())
+        limit = self._bound_run.plan.configuration.concurrency
+        while active < limit and self._next < len(self._calls):
+            owner = self._calls[self._next]
+            self._next += 1
+            task = asyncio.create_task(_run_call(owner))
+            self._tasks[task] = owner
+            task.add_done_callback(self._wake)
+            active += 1
+
+    def _collect_finished(self) -> None:
+        """Retrieve completed task outcomes without forwarding sibling errors."""
+        for task in tuple(self._tasks):
+            if not task.done():
+                continue
+            owner = self._tasks.pop(task)
+            try:
+                error = task.result()
+            except BaseException as caught:
+                error = caught
+            if error is not None and task not in self._internal:
+                self._capture_error(error, "leaf")
+            elif _is_initiating_failure(
+                error, owner.invocation_error, self._control.reason
+            ):
+                reason = self._control.reason
+                assert reason is not None and isinstance(reason.first, BaseException)
+                self._capture_error(reason.first, "leaf")
+            self._internal.discard(task)
+
+    def _drained(self) -> bool:
+        """Return whether no active attempt or required call write remains."""
+        return all(
+            task.done() or isinstance(owner.state, Queued) or owner.waiting_delay
+            for task, owner in self._tasks.items()
+        )
+
+    async def _recover_quota(self) -> None:
+        """Await recovery only after active attempt evidence has drained."""
+        trigger = self._control.quota_trigger
+        if trigger is None:
+            self._control.latch_stop(RuntimeError("missing durable quota trigger"))
+            return
+        scope = self._bound_run.binding.quota_scope
+        if (
+            scope is None
+            or scope != self._quota_status.expected_scope
+            or trigger.observation.scope != scope
+        ):
+            self._control.latch_stop(RuntimeError("quota scope does not match binding"))
+            return
+        context = QuotaWaitContext(
+            kind="quota",
+            trigger_call_id=trigger.origin.call.call_id,
+            trigger_attempt_number=trigger.origin.attempt_number,
+            cumulative_waited_before_seconds=sum(
+                wait.elapsed_seconds or 0.0 for wait in self._quota_history.waits
+            ),
+            wait_limit_seconds=self._bound_run.plan.configuration.quota_wait_limit_seconds,
+            quota_observation=trigger.observation,
+            selected_reset_at_utc=_reset_hint(trigger.observation),
+        )
+        owner = QuotaOwner(
             Draining(context),
             self._quota_history,
             self._bound_run.plan.configuration,
@@ -175,7 +260,211 @@ class Coordinator:
             self._evidence,
             self._runtime,
             self._bound_run.plan.run_id,
+            _changed=self._changed.set,
+            _observed=self._observe,
         )
+        self._quota = owner
+        task = asyncio.create_task(_run_quota(owner))
+        self._quota_task = task
+        task.add_done_callback(self._wake)
+        while not task.done():
+            self._changed.clear()
+            self._publish("quota_paused", None)
+            if not task.done():
+                await self._changed.wait()
+        self._quota_history = owner.history
+        self._quota_task = None
+        error = task.result()
+        if error is not None:
+            raise error
+        if not isinstance(owner.state, Open):
+            self._control.latch_stop(
+                RuntimeError("quota recovery ended without availability")
+            )
+
+    def _capture_error(
+        self, error: BaseException, origin: Literal["owner", "leaf"]
+    ) -> None:
+        """Latch local error facts without borrowing another task's exception."""
+        if isinstance(error, asyncio.CancelledError):
+            self._control.note_cancellation(
+                error, "owner" if origin == "owner" else "leaf"
+            )
+        else:
+            self._control.latch_stop(error)
+        if isinstance(error, (KeyboardInterrupt, SystemExit)) and not isinstance(
+            self._error, (KeyboardInterrupt, SystemExit, asyncio.CancelledError)
+        ):
+            prior = self._error
+            reason = self._control.reason
+            if (
+                prior is None
+                and reason is not None
+                and isinstance(reason.first, BaseException)
+                and reason.first is not reason.recording_failure
+            ):
+                prior = reason.first
+            if prior is not None and prior is not error and error.__cause__ is None:
+                error.__cause__ = prior
+            self._error = error
+        elif self._error is None:
+            self._error = error
+
+    async def _shutdown(self) -> None:
+        """Cancel siblings and retain every owned task until its effects settle."""
+        if self._control.reason is not None:
+            self._report_stopping()
+            for task, owner in self._tasks.items():
+                if not task.done():
+                    owner.cancel_for_stop()
+                    self._internal.add(task)
+                    task.cancel()
+        tasks = tuple(self._tasks)
+        if self._quota_task is not None:
+            tasks += (self._quota_task,)
+        if tasks:
+            result = await settle(asyncio.create_task(_join(tasks)))
+            if result.cancellation is not None:
+                self._capture_error(result.cancellation, "owner")
+        if self._quota is not None:
+            self._quota_history = self._quota.history
+        self._collect_finished()
+        for owner in self._calls:
+            owner.stop_queued()
+
+    def _report_stopping(self) -> None:
+        """Report the stop without allowing presentation to abandon cleanup."""
+        try:
+            self._publish("stopping", None)
+        except BaseException as error:
+            self._capture_error(error, "owner")
+
+    def _primary_error(self) -> BaseException | None:
+        """Return the local reason with any separately retained failure."""
+        reason = self._control.reason
+        primary = (
+            reason.cancellation
+            if reason is not None and reason.cancellation is not None
+            else self._error
+        )
+        if primary is None or primary.__cause__ is not None:
+            return primary
+        failure = None if reason is None else reason.recording_failure
+        if failure is None or failure is primary:
+            failure = self._error
+        if failure is not None and failure is not primary:
+            primary.__cause__ = failure
+        return primary
+
+    def _finalization_facts(self, result: Settlement[None]) -> None:
+        """Retain cancellation and failed final writes before propagation."""
+        if result.cancellation is not None:
+            self._control.note_cancellation(result.cancellation, "owner")
+        if isinstance(result, SettledFailure):
+            if isinstance(result.error, asyncio.CancelledError):
+                self._control.note_cancellation(result.error, "leaf")
+            self._control.note_recording_failure(result.error)
+
+    def _observe(self, observation: QuotaObservation) -> None:
+        """Retain the latest durably recorded passive quota observation."""
+        self._observation = observation
+        self._changed.set()
+
+    def _states(self) -> tuple[CallState, ...]:
+        """Return current call facts for projection."""
+        return tuple(owner.state for owner in self._calls)
+
+    def _publish(
+        self, phase: ProgressRunPhase, final_status: ProgressFinalStatus | None
+    ) -> None:
+        """Project current facts and isolate expected presentation failures."""
+        if not self._progress_enabled:
+            return
+        quota = self._quota
+        snapshot = project(
+            ProgressView(
+                self._bound_run.plan.run_id,
+                phase,
+                final_status,
+                self._states(),
+                Open() if quota is None else quota.state,
+                self._quota_history if quota is None else quota.history,
+                quota.observation
+                if quota is not None and self._quota_task is not None
+                else self._observation,
+                self._runtime.monotonic(),
+                self._runtime.utc_now(),
+            )
+        )
+        try:
+            self._progress.publish(snapshot)
+        except Exception:
+            self._progress_enabled = False
+
+
+def _is_initiating_failure(
+    error: BaseException | None,
+    invocation_error: BaseException | None,
+    reason: StopReason | None,
+    /,
+) -> bool:
+    """Identify the call's initiating error behind internal cancellation.
+
+    For example, a cancelled sibling must not turn the run's unrelated stop
+    reason into its own failure. A call's retained invocation error or the
+    cancellation's explicit cause can establish that association.
+
+    Returns:
+        Whether the retained reason belongs to this internally stopped call.
+    """
+    if not isinstance(error, asyncio.CancelledError) or reason is None:
+        return False
+    first = reason.first
+    if not isinstance(first, BaseException) or first is reason.recording_failure:
+        return False
+    return error.__cause__ is first or invocation_error is first
+
+
+async def _run_call(owner: CallOwner) -> BaseException | None:
+    """Capture even interrupts so the run owner can settle siblings first.
+
+    Returns:
+        The original failure, or None after successful owner completion.
+    """
+    try:
+        await owner.run()
+    except BaseException as error:
+        return error
+    return None
+
+
+async def _run_quota(owner: QuotaOwner) -> BaseException | None:
+    """Capture recovery failure until the run owner has retained its history.
+
+    Returns:
+        The original failure, or None after recovery returns.
+    """
+    try:
+        await owner.recover()
+    except BaseException as error:
+        return error
+    return None
+
+
+async def _stop_watcher[T](watcher: asyncio.Task[T]) -> asyncio.CancelledError | None:
+    """Cancel and join a local watcher while retaining owner cancellation.
+
+    Returns:
+        The first cancellation received while joining, if any.
+    """
+    watcher.cancel()
+    result = await settle(watcher)
+    return result.cancellation
+
+
+async def _join(tasks: tuple[asyncio.Task[BaseException | None], ...]) -> None:
+    """Observe each task without propagating sibling failures."""
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 def _raise_outcome(error: BaseException | None, result: Settlement[None]) -> None:
@@ -205,18 +494,17 @@ def _raise_with_cause(error: BaseException, cause: BaseException | None) -> Neve
 
 
 def _final_status(
-    record: RunRecord, states: tuple[CallState, ...]
+    record: RunRecord, states: tuple[CallState, ...], cancelled: bool
 ) -> ProgressFinalStatus:
     """Return a status distinguished by accounting and durable call outcomes."""
-    if record.state == "incomplete" or any(
-        isinstance(state, EvidencePending) for state in states
-    ):
+    if any(isinstance(state, EvidencePending) for state in states):
         return "incomplete_evidence"
-    if any(
-        isinstance(state, (Finished, Stopped)) and state.outcome == "cancelled"
-        for state in states
+    if cancelled or any(
+        isinstance(state, Finished) and state.outcome == "cancelled" for state in states
     ):
         return "cancelled"
+    if record.state == "incomplete":
+        return "incomplete_evidence"
     if any(
         not isinstance(state, Finished) or state.outcome != "success"
         for state in states

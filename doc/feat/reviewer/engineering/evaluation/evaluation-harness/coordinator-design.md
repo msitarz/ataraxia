@@ -7,14 +7,21 @@ async waiter notification. The call owner implements attempt dispatch and
 settlement, exceptional supervisor evidence, capacity retry waits, and opt-in
 passive telemetry through the shared control and settlement boundaries. A quota
 owner awaits bounded probe recovery and persists its wait and probe transitions
-through the shared control and settlement boundaries. A thin run composition
-exercises zero or one call with a private test projection. Multi-call
-scheduling, coordinated shutdown, and production final record projection remain
-planned, so this is not a complete runner. All Work acceptance criteria remain
-TODO. The [Work contract](README.md) owns behavior and the
+through the shared control and settlement boundaries. The run owner composes
+bounded invocations, awaited recovery, shutdown, progress, and final record
+projection for a prepared run. CLI composition and concrete presentation remain
+planned. All Work acceptance criteria remain TODO. The
+[Work contract](README.md) owns behavior and the
 [current architecture](architecture.md) describes implemented components.
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
 with known lifecycle bugs, not a validated alternative.
+
+The maintainer accepts a known shared-owner limitation: a `KeyboardInterrupt`
+or `SystemExit` raised inside a nested evidence or runtime task can escape the
+event loop before retained settlement completes. This limitation does not
+block acceptance. Retaining coordinator-owned worker tasks does not repair the
+nested submission boundary. Cooperative `task.cancel()` and the planned CLI
+signal path remain separate from this limitation.
 
 ## TL;DR
 
@@ -29,14 +36,15 @@ with known lifecycle bugs, not a validated alternative.
 - The evidence lifecycle-input union has the proposed refinement described
   below.
 - The [type sketch](design/eval/runner/coordinator/) is a historical reviewed
-  reference; runtime state, pure transitions, retained-task settlement, and
-  progress projection and call and quota owners are authoritative. The run
-  sketch remains planned beyond its thin composition.
+  reference; the runtime coordinator package is authoritative.
 
 ## Coordinator
 
-- The run owner creates bounded workers and prevents dispatch after stop or
-  pause.
+- The run owner admits calls incrementally and prevents dispatch after stop or
+  pause. It does not create a task for every planned call.
+- Configured concurrency bounds invocations through cleanup. Capacity waits
+  retain tasks and may resume while other calls are active, so retained and
+  resuming tasks are bounded by entered calls in the finite plan.
 - It checks the stop latch and quota gate immediately before every dispatch.
 - It holds each attempt slot through the supervisor's bounded cleanup.
 - It releases the slot before any retry wait or quota probe.
@@ -329,7 +337,7 @@ incidental updates and private helpers flexible.
 
 | Phase | Owner responsibility |
 | --- | --- |
-| Running | Dispatch bounded workers while the stop and quota gates allow it. |
+| Running | Admit calls incrementally and bound invocations while stop and quota gates allow them. |
 | Stopping | Latch the first stop, preserve later owner or leaf cancellation, and cancel siblings. |
 | Settling | Join attempts, probes, retained writes, and durably close started waits. |
 | Finalizing | Write truthful final accounting and then report its durable outcome. |

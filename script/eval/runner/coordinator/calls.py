@@ -3,6 +3,7 @@
 
 import asyncio
 from asyncio import CancelledError, Semaphore
+from collections.abc import Callable
 from dataclasses import replace
 from typing import Literal
 from uuid import uuid4
@@ -13,6 +14,7 @@ from script.eval.model import (
     AttemptRecord,
     CapacityWaitContext,
     HarnessConfig,
+    QuotaObservation,
     QuotaTelemetryEvent,
     RetryAssessment,
     WaitEnd,
@@ -72,9 +74,16 @@ class CallOwner:
         quota_status: QuotaStatusReader,
         evidence: EvidenceStore,
         runtime: Runtime,
+        *,
+        _changed: Callable[[], None] | None = None,
+        _observed: Callable[[QuotaObservation], None] | None = None,
     ) -> None:
         """Bind the run's shared controls and call-specific dependencies."""
-        self._state: CallState = initial
+        self._changed = _changed
+        self._observed = _observed
+        self._current_state: CallState = initial
+        self._internally_cancelled = False
+        self._waiting_delay = False
         self._config = config
         self._control = control
         self._slots = slots
@@ -85,6 +94,56 @@ class CallOwner:
         self._runtime = runtime
         self._invocation_error: BaseException | None = None
         self._local_cancellation: CancelledError | None = None
+
+    @property
+    def _state(self) -> CallState:
+        """The current state owned by this call."""
+        return self._current_state
+
+    @_state.setter
+    def _state(self, state: CallState) -> None:
+        """Wake the run owner whenever this call advances."""
+        self._current_state = state
+        self._notify_change()
+
+    def _notify_change(self) -> None:
+        """Notify the run owner without creating a background task."""
+        if self._changed is not None:
+            self._changed()
+
+    @property
+    def waiting_delay(self) -> bool:
+        """Whether the call is sleeping after a durable capacity wait start."""
+        return self._waiting_delay
+
+    def stop_queued(self) -> None:
+        """Mark a queued position stopped after all owned tasks settle."""
+        if isinstance(self._state, Queued):
+            history = self._state.history
+            self._state = Stopped(
+                history, "not_started" if not history.attempts else "failure"
+            )
+
+    def _set_waiting_delay(self, waiting: bool) -> None:
+        """Notify the run owner when a durable delay starts or ends."""
+        self._waiting_delay = waiting
+        self._notify_change()
+
+    def cancel_for_stop(self) -> None:
+        """Mark a subsequent task cancellation as internal run shutdown."""
+        self._internally_cancelled = True
+
+    def _note_control_cancellation(
+        self, error: CancelledError, origin: Literal["owner", "leaf"], /
+    ) -> None:
+        """Keep internal sibling cancellation from replacing the run's reason."""
+        if not (self._internally_cancelled and origin == "owner"):
+            self._control.note_cancellation(error, origin)
+
+    @property
+    def invocation_error(self) -> BaseException | None:
+        """The call's original invocation or classification failure, if retained."""
+        return self._invocation_error
 
     @property
     def state(self) -> CallState:
@@ -158,6 +217,7 @@ class CallOwner:
                 request = state.history.call.request
                 started = self._runtime.utc_now()
                 evidence = await self._invoke(request, started)
+            self._stop_for_unsafe_result(evidence)
             assessment = self._classify(evidence)
             if (
                 self._config.quota_wait_enabled
@@ -171,6 +231,15 @@ class CallOwner:
         self._state = Stopped(
             state.history, "not_started" if not state.history.attempts else "failure"
         )
+
+    def _stop_for_unsafe_result(self, evidence: AttemptEvidence) -> None:
+        """Latch overflow or unsafe cleanup before any fallible recording."""
+        outcome = evidence.outcome
+        if isinstance(outcome, OutputLimitExceeded) or (
+            isinstance(outcome, (Completed, TimedOut, InfrastructureFailure))
+            and not outcome.observation.cleanup.dispatch_permitted
+        ):
+            self._control.latch_stop(outcome)
 
     async def _invoke(self, request: AttemptRequest, started: str) -> AttemptEvidence:
         """Capture returned or exceptional supervisor facts for durable writing.
@@ -244,7 +313,7 @@ class CallOwner:
         origin = "owner" if task.cancelling() else "leaf"
         if self._local_cancellation is None:
             self._local_cancellation = error
-        self._control.note_cancellation(error, origin)
+        self._note_control_cancellation(error, origin)
 
     async def _record(self, state: Recording) -> None:
         """Retain the attempt write before selecting its next state."""
@@ -261,11 +330,11 @@ class CallOwner:
         )
         settled = await settle(task)
         if settled.cancellation is not None:
-            self._control.note_cancellation(settled.cancellation, "owner")
+            self._note_control_cancellation(settled.cancellation, "owner")
         match settled:
             case SettledFailure(error, _):
                 if isinstance(error, CancelledError):
-                    self._control.note_cancellation(error, "leaf")
+                    self._note_control_cancellation(error, "leaf")
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(record, _):
@@ -343,14 +412,16 @@ class CallOwner:
             asyncio.create_task(self._evidence.record_quota_telemetry(state.event))
         )
         if settled.cancellation is not None:
-            self._control.note_cancellation(settled.cancellation, "owner")
+            self._note_control_cancellation(settled.cancellation, "owner")
         match settled:
             case SettledFailure(error, cancellation):
                 if isinstance(error, CancelledError):
-                    self._control.note_cancellation(error, "leaf")
+                    self._note_control_cancellation(error, "leaf")
                 self._control.note_recording_failure(error)
                 self._state = state.write_failed(error)
             case SettledValue(_, cancellation):
+                if self._observed is not None:
+                    self._observed(state.event.observation)
                 origin = self._control.quota_origin
                 observation = state.event.observation
                 if observation.scope is not None and self._control.reason is None:
@@ -472,10 +543,10 @@ class CallOwner:
             asyncio.create_task(self._evidence.record_wait_event(event))
         )
         if settled.cancellation is not None:
-            self._control.note_cancellation(settled.cancellation, "owner")
+            self._note_control_cancellation(settled.cancellation, "owner")
         if isinstance(settled, SettledFailure):
             if isinstance(settled.error, CancelledError):
-                self._control.note_cancellation(settled.error, "leaf")
+                self._note_control_cancellation(settled.error, "leaf")
             self._control.note_recording_failure(settled.error)
             self._state = state.write_failed(WaitWrite(event, None), settled.error)
             self._raise_settlement(settled)
@@ -501,6 +572,7 @@ class CallOwner:
         """Wait without a slot and always close a durably started delay."""
         cancellation: CancelledError | None = None
         failure: BaseException | None = None
+        self._set_waiting_delay(True)
         try:
             await self._runtime.sleep(state.wait.context.sampled_seconds)
         except CancelledError as error:
@@ -509,6 +581,7 @@ class CallOwner:
         except BaseException as error:
             failure = error
             self._control.latch_stop(error)
+        self._set_waiting_delay(False)
         end: Literal["delay_elapsed", "cancelled", "stop"] = "delay_elapsed"
         if cancellation is not None:
             end = "cancelled"
@@ -550,12 +623,12 @@ class CallOwner:
             asyncio.create_task(self._evidence.record_wait_event(event))
         )
         if settled.cancellation is not None:
-            self._control.note_cancellation(settled.cancellation, "owner")
+            self._note_control_cancellation(settled.cancellation, "owner")
             if cancellation is None:
                 cancellation = settled.cancellation
         if isinstance(settled, SettledFailure):
             if isinstance(settled.error, CancelledError):
-                self._control.note_cancellation(settled.error, "leaf")
+                self._note_control_cancellation(settled.error, "leaf")
             self._control.note_recording_failure(settled.error)
             self._state = state.write_failed(WaitWrite(event, record), settled.error)
             if cancellation is not None:

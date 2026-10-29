@@ -3,6 +3,7 @@
 
 import asyncio
 from asyncio import CancelledError, Task
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import datetime, timedelta
 from typing import Literal
@@ -70,9 +71,14 @@ class QuotaOwner:
         evidence: EvidenceStore,
         runtime: Runtime,
         run_id: RunId,
+        *,
+        _changed: Callable[[], None] | None = None,
+        _observed: Callable[[QuotaObservation], None] | None = None,
     ) -> None:
         """Bind the shared gate and effect boundaries for this pause."""
-        self._state: QuotaState = initial
+        self._changed = _changed
+        self._observed = _observed
+        self._current_state: QuotaState = initial
         self._history = history
         self._observation = initial.context.quota_observation
         self._config = config
@@ -87,6 +93,18 @@ class QuotaOwner:
         self._recording_failure: BaseException | None = None
         self._probe_interrupted = False
         self._probe_active = False
+
+    @property
+    def _state(self) -> QuotaState:
+        """This owner's current quota state."""
+        return self._current_state
+
+    @_state.setter
+    def _state(self, state: QuotaState) -> None:
+        """Notify the run owner when progress changes."""
+        self._current_state = state
+        if self._changed is not None:
+            self._changed()
 
     @property
     def state(self) -> QuotaState:
@@ -699,6 +717,8 @@ class QuotaOwner:
             self._runtime.monotonic(),
         )
         self._observation = waiting.observation
+        if self._observed is not None:
+            self._observed(waiting.observation)
         if waiting.end_record is not None and waiting.end_record.end == "unknown":
             self._control.latch_stop(
                 RuntimeError("probe did not establish quota state")
