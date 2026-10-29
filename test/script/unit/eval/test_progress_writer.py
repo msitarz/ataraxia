@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Bounded progress admission and worker ownership."""
+"""Bounded progress admission and worker ownership with controlled I/O."""
 
-import os
-from pathlib import Path
+import asyncio
+from collections.abc import Callable
+from contextlib import suppress
 import threading
 from typing import override
 
@@ -15,7 +16,7 @@ from script.eval.runner.adapters.progress_writer import (
 
 
 class ControlledWrite:
-    """Hold the first write while recording any subsequent claims."""
+    """Hold the first write while recording claims and descriptor closure."""
 
     def __init__(self) -> None:
         self.started = threading.Event()
@@ -23,12 +24,14 @@ class ControlledWrite:
         self.second = threading.Event()
         self.closed = threading.Event()
         self.messages: list[bytes] = []
+        self.closed_fds: list[int] = []
         self.thread: threading.Thread | None = None
-        self.inheritable: bool | None = None
+
+    def duplicate(self, fd: int) -> int:
+        return 73
 
     def write(self, fd: int, data: bytes) -> int:
         self.messages.append(data)
-        self.inheritable = os.get_inheritable(fd)
         if len(self.messages) == 1:
             self.started.set()
             if not self.release.wait(5):
@@ -38,23 +41,23 @@ class ControlledWrite:
         return len(data)
 
     def close(self, fd: int) -> None:
-        os.close(fd)
+        self.closed_fds.append(fd)
         self.closed.set()
 
-    def thread_factory(self, target: object) -> threading.Thread:
-        assert callable(target)
+    def thread_factory(self, target: Callable[[], None]) -> threading.Thread:
         self.thread = threading.Thread(target=target)
         return self.thread
 
 
-def test_latest_pending_message_replaces_older_while_writer_is_blocked(
-    tmp_path: Path,
-) -> None:
+def test_latest_pending_message_replaces_older_while_writer_is_blocked() -> None:
     # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
     io = ControlledWrite()
     writer = open_progress_writer(
-        fd, write=io.write, close_fd=io.close, thread_factory=io.thread_factory
+        1,
+        duplicate=io.duplicate,
+        write=io.write,
+        close_fd=io.close,
+        thread_factory=io.thread_factory,
     )
     assert writer is not None
 
@@ -71,26 +74,51 @@ def test_latest_pending_message_replaces_older_while_writer_is_blocked(
     finally:
         io.release.set()
         writer.close()
-        os.close(fd)
 
     # Then
     assert io.messages == [b"first", b"latest"]
+    assert io.closed_fds == [73]
     assert io.thread is not None and io.thread.daemon
-    assert io.inheritable is False
     assert writer("after close") == "unavailable"
 
 
-def test_close_drops_pending_and_never_waits_for_blocked_write(tmp_path: Path) -> None:
+def test_important_pending_message_survives_routine_refresh() -> None:
     # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
     io = ControlledWrite()
-    writer = open_progress_writer(fd, write=io.write, close_fd=io.close)
+    writer = open_progress_writer(
+        1, duplicate=io.duplicate, write=io.write, close_fd=io.close
+    )
     assert writer is not None
 
     # When
     try:
-        assert writer("first") == "accepted"
-        assert io.started.wait(5)
+        assert writer("first") == "accepted" and io.started.wait(5)
+        assert writer("detail", important=True) == "accepted"
+        routine = writer("refresh")
+        io.release.set()
+        assert io.second.wait(5)
+        writer.close()
+        assert io.closed.wait(5)
+    finally:
+        io.release.set()
+        writer.close()
+
+    # Then
+    assert routine == "dropped"
+    assert io.messages == [b"first", b"detail"]
+
+
+def test_close_discards_pending_without_waiting_for_blocked_write() -> None:
+    # Given
+    io = ControlledWrite()
+    writer = open_progress_writer(
+        1, duplicate=io.duplicate, write=io.write, close_fd=io.close
+    )
+    assert writer is not None
+
+    # When
+    try:
+        assert writer("first") == "accepted" and io.started.wait(5)
         assert writer("pending") == "accepted"
         writer.close()
         assert not io.closed.is_set()
@@ -99,7 +127,6 @@ def test_close_drops_pending_and_never_waits_for_blocked_write(tmp_path: Path) -
     finally:
         io.release.set()
         writer.close()
-        os.close(fd)
 
     # Then
     assert io.messages == [b"first"]
@@ -108,171 +135,163 @@ def test_close_drops_pending_and_never_waits_for_blocked_write(tmp_path: Path) -
 
 @pytest.mark.parametrize("partial", [True, False], ids=["partial", "error"])
 def test_failed_write_disables_admission_and_closes_owned_descriptor(
-    tmp_path: Path, partial: bool
+    partial: bool,
 ) -> None:
     # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
-    closed = threading.Event()
+    io = ControlledWrite()
 
     def write(target: int, data: bytes) -> int:
         if partial:
             return 1
         raise OSError("broken")
 
-    def close(target: int) -> None:
-        os.close(target)
-        closed.set()
-
-    writer = open_progress_writer(fd, write=write, close_fd=close)
+    writer = open_progress_writer(
+        1, duplicate=io.duplicate, write=write, close_fd=io.close
+    )
     assert writer is not None
 
     # When
     try:
         assert writer("message") == "accepted"
-        assert closed.wait(5)
+        assert io.closed.wait(5)
         result = writer("later")
     finally:
         writer.close()
-        os.close(fd)
 
     # Then
     assert result == "unavailable"
+    assert io.closed_fds == [73]
 
 
-def test_oversized_message_is_dropped(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ("é" * (MAX_MESSAGE_BYTES // 2), "accepted"),
+        ("é" * (MAX_MESSAGE_BYTES // 2) + "x", "dropped"),
+    ],
+    ids=["exact-byte-limit", "one-byte-over"],
+)
+def test_utf8_byte_limit(message: str, expected: str) -> None:
     # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
     io = ControlledWrite()
-    writer = open_progress_writer(fd, write=io.write, close_fd=io.close)
+    writer = open_progress_writer(
+        1, duplicate=io.duplicate, write=io.write, close_fd=io.close
+    )
     assert writer is not None
 
     # When
     try:
-        result = writer("x" * (MAX_MESSAGE_BYTES + 1))
-        writer.close()
-        assert io.closed.wait(5)
+        result = writer(message)
     finally:
         io.release.set()
         writer.close()
-        os.close(fd)
+        assert io.closed.wait(5)
 
     # Then
-    assert result == "dropped"
-    assert io.messages == []
+    assert result == expected
 
 
-def test_start_failure_closes_only_the_owned_duplicate(tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "error",
+    [KeyboardInterrupt(), asyncio.CancelledError(), SystemExit()],
+    ids=["interrupt", "cancel", "exit"],
+)
+def test_interrupted_start_closes_duplicate_and_preserves_error(
+    error: BaseException,
+) -> None:
     # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
-    closed: list[int] = []
+    io = ControlledWrite()
 
     class RefuseStart(threading.Thread):
         @override
         def start(self) -> None:
-            raise RuntimeError("no worker")
-
-    def close(target: int) -> None:
-        closed.append(target)
-        os.close(target)
+            raise error
 
     # When
-    try:
-        writer = open_progress_writer(
-            fd, close_fd=close, thread_factory=lambda target: RefuseStart(target=target)
+    with pytest.raises(type(error)) as caught:
+        open_progress_writer(
+            1,
+            duplicate=io.duplicate,
+            close_fd=io.close,
+            thread_factory=lambda target: RefuseStart(target=target),
         )
-        os.write(fd, b"caller")
-    finally:
-        os.close(fd)
 
     # Then
-    assert writer is None
-    assert len(closed) == 1 and closed[0] != fd
-    assert (tmp_path / "output").read_bytes() == b"caller"
+    assert caught.value is error
+    assert io.closed_fds == [73]
 
 
-class DelayedFileWrite(ControlledWrite):
-    """Delay one real descriptor write until the caller releases it."""
-
-    @override
-    def write(self, fd: int, data: bytes) -> int:
-        super().write(fd, data)
-        return os.write(fd, data)
-
-
-def test_delayed_write_uses_owned_descriptor_after_caller_reuses_fd(
-    tmp_path: Path,
-) -> None:
+def test_late_worker_after_failed_start_cannot_close_or_write_duplicate() -> None:
     # Given
-    first, second = tmp_path / "first", tmp_path / "second"
-    fd = os.open(first, os.O_CREAT | os.O_WRONLY, 0o600)
-    io = DelayedFileWrite()
-    writer = open_progress_writer(fd, write=io.write, close_fd=io.close)
-    assert writer is not None
-    reused: int | None = None
-    source_open = True
+    io = ControlledWrite()
+    enter, entered = threading.Event(), threading.Event()
 
-    # When
-    try:
-        assert writer("original") == "accepted" and io.started.wait(5)
-        writer.close()
-        source_open = False
-        reused = reuse_descriptor(fd, second)
-        io.release.set()
-        assert io.closed.wait(5)
-        os.write(reused, b"new")
-    finally:
-        io.release.set()
-        writer.close()
-        if reused is not None:
-            os.close(reused)
-        elif source_open:
-            os.close(fd)
-
-    # Then
-    assert first.read_bytes() == b"original"
-    assert second.read_bytes() == b"new"
-
-
-def test_start_error_after_worker_started_leaves_close_to_worker(
-    tmp_path: Path,
-) -> None:
-    # Given
-    fd = os.open(tmp_path / "output", os.O_CREAT | os.O_WRONLY, 0o600)
-    closed = threading.Event()
-    closed_fds: list[int] = []
-
-    class StartThenFail(threading.Thread):
+    class DelayedStart(threading.Thread):
         @override
         def start(self) -> None:
             super().start()
-            raise RuntimeError("start interrupted")
+            raise RuntimeError("start failed")
 
-    def close(target: int) -> None:
-        closed_fds.append(target)
-        os.close(target)
-        closed.set()
+    def factory(target: Callable[[], None]) -> threading.Thread:
+        def delayed() -> None:
+            if enter.wait(5):
+                target()
+            entered.set()
+
+        return DelayedStart(target=delayed)
 
     # When
     try:
-        writer = open_progress_writer(
-            fd,
-            close_fd=close,
-            thread_factory=lambda target: StartThenFail(target=target),
+        result = open_progress_writer(
+            1,
+            duplicate=io.duplicate,
+            write=io.write,
+            close_fd=io.close,
+            thread_factory=factory,
         )
-        assert closed.wait(5)
-        os.write(fd, b"caller")
+        enter.set()
+        assert entered.wait(5)
     finally:
-        os.close(fd)
+        enter.set()
+        io.release.set()
 
     # Then
-    assert writer is None
-    assert len(closed_fds) == 1 and closed_fds[0] != fd
-    assert (tmp_path / "output").read_bytes() == b"caller"
+    assert result is None
+    assert io.closed_fds == [73]
+    assert io.messages == []
 
 
-def reuse_descriptor(fd: int, path: Path) -> int:
-    """Close a caller descriptor and allocate its number for another file."""
-    os.close(fd)
-    replacement = os.open(path, os.O_CREAT | os.O_WRONLY, 0o600)
-    assert replacement == fd
-    return replacement
+def test_unexpected_worker_exit_disables_admission() -> None:
+    # Given
+    io = ControlledWrite()
+
+    def write(fd: int, data: bytes) -> int:
+        raise SystemExit()
+
+    def factory(target: Callable[[], None]) -> threading.Thread:
+        def capture() -> None:
+            with suppress(SystemExit):
+                target()
+
+        return threading.Thread(target=capture)
+
+    writer = open_progress_writer(
+        1,
+        duplicate=io.duplicate,
+        write=write,
+        close_fd=io.close,
+        thread_factory=factory,
+    )
+    assert writer is not None
+
+    # When
+    try:
+        assert writer("message") == "accepted"
+        assert io.closed.wait(5)
+        result = writer("later")
+    finally:
+        writer.close()
+
+    # Then
+    assert result == "unavailable"
+    assert io.closed_fds == [73]

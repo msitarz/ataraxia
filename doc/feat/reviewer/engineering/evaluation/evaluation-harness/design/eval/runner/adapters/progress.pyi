@@ -15,11 +15,12 @@ class ProgressAdmission(Protocol):
 
     Messages are UTF-8 and bounded to 16 KiB. ``accepted`` acknowledges
     admission only, not delivery. A pending message may be replaced or discarded
-    at shutdown. ``dropped`` means this message
-    was not admitted; ``unavailable`` disables subsequent presentation.
+    at shutdown. Routine messages cannot replace a pending important message.
+    ``dropped`` means this message was not admitted; ``unavailable`` disables
+    subsequent presentation.
     """
 
-    def __call__(self, text: str, /) -> Admission: ...
+    def __call__(self, text: str, /, *, important: bool = False) -> Admission: ...
 
 class ProgressWriter(ProgressAdmission, Protocol):
     """Own one daemon writer and its duplicate stderr descriptor.

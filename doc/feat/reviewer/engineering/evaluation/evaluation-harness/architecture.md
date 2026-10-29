@@ -393,17 +393,20 @@ Codex, quota, and runtime adapters.
   the caller's descriptor cannot redirect a delayed write. The writer alone
   closes its duplicate when it exits. Duplication, thread startup, and ordinary
   presentation errors degrade to silence without changing the run result;
-  cancellation and process interrupts still propagate. If startup fails before
-  ownership transfers to the worker, the creator closes the duplicate.
+  cancellation and process interrupts still propagate. An explicit handoff
+  determines whether the creator or worker owns closure if startup fails or is
+  interrupted; a late worker cannot access a revoked duplicate.
 - Admission is distinct from delivery. `accepted` means only that a complete,
   byte-bounded message entered the writer's bounded state; it does not say any
   bytes were written. `dropped` means no admission, and `unavailable` means no
   further messages can be accepted. The presenter may throttle on admission but
   must not infer that an admitted message was displayed. Rendered TTY updates
-  must remain coherent when earlier pending updates were replaced or dropped;
-  it cannot rely on its last admitted transition having appeared on screen.
-- State is bounded to one message claimed for writing and one pending message.
-  A new message replaces the pending one; no per-update threads or unbounded
+  keeps routine TTY refreshes on one cleared row. A transition's detailed
+  message remains pending ahead of a later routine refresh; an admitted message
+  can still be lost, so admission does not assert it appeared on screen.
+- State is bounded to one message claimed for writing and one pending message. A
+  new important transition may replace pending output; a routine refresh cannot
+  replace a pending important transition. No per-update threads or unbounded
   executor backlog are allowed. The writer owns only rendered text and its
   descriptor: it does not read input, quota, models, or evidence. One write
   attempt per claimed message may block, fail, or write a prefix. A partial

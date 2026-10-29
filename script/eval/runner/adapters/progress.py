@@ -27,7 +27,7 @@ type Admission = Literal["accepted", "dropped", "unavailable"]
 class ProgressAdmission(Protocol):
     """Offer one bounded message promptly; acceptance is not delivery."""
 
-    def __call__(self, text: str, /) -> Admission:
+    def __call__(self, text: str, /, *, important: bool = False) -> Admission:
         """Admit, drop, or refuse a message without waiting."""
         ...
 
@@ -104,7 +104,9 @@ class TerminalProgressSink:
         if message is None:
             return
         try:
-            result = self.admit(_bounded(message))
+            result = self.admit(
+                _bounded(message), important=self.is_tty and "\n" in message
+            )
         except OSError:
             result = "unavailable"
         self._presentation.settle(snapshot, now, result)
@@ -117,6 +119,7 @@ class _TerminalPresentation:
         self.disabled = False
         self.last_attempt: float | None = None
         self.last_transition: _Transition | None = None
+        self.last_admitted: _Transition | None = None
 
     def prepare(
         self,
@@ -142,11 +145,13 @@ class _TerminalPresentation:
         ):
             return None
         if is_tty and snapshot.phase != "final":
-            return (
-                "\r\x1b[2K"
-                + _render(snapshot, False, tty_columns)
-                + _live_line(snapshot, tty_columns)
-            )
+            if _detail_changed(self.last_admitted, transition):
+                return (
+                    "\r\x1b[2K"
+                    + _render(snapshot, False, tty_columns)
+                    + _live_line(snapshot, tty_columns)
+                )
+            return _live_line(snapshot, tty_columns)
         return _render(snapshot, is_tty, tty_columns)
 
     def settle(
@@ -155,6 +160,8 @@ class _TerminalPresentation:
         """Bound retry cadence after a failed write and disable unavailable output."""
         self.last_attempt = now
         self.last_transition = _transition(snapshot)
+        if result == "accepted":
+            self.last_admitted = self.last_transition
         if result == "unavailable":
             self.disabled = True
 
@@ -204,7 +211,7 @@ def _detail_changed(previous: _Transition | None, current: _Transition) -> bool:
     """Detect changes that warrant a permanent TTY detail line.
 
     Returns:
-        Whether phase, quota, or wait identity changed since the last write.
+        Whether phase, quota, or wait identity changed since the prior fact.
     """
     return previous is None or (
         previous.run_id != current.run_id

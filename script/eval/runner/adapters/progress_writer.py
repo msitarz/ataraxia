@@ -30,11 +30,11 @@ class ProgressWriter:
         self._write = write
         self._close_fd = close_fd
         self._lock = threading.Lock()
-        self._pending: bytes | None = None
+        self._pending: tuple[bytes, bool] | None = None
         self._closed = False
         self._failed = False
 
-    def __call__(self, text: str, /) -> Admission:
+    def __call__(self, text: str, /, *, important: bool = False) -> Admission:
         """Admit one message, replace pending output, or promptly drop it.
 
         Returns:
@@ -50,7 +50,9 @@ class ProgressWriter:
         try:
             if self._closed or self._failed:
                 return "unavailable"
-            self._pending = data
+            if self._pending is not None and self._pending[1] and not important:
+                return "dropped"
+            self._pending = (data, important)
             return "accepted"
         finally:
             self._lock.release()
@@ -64,6 +66,7 @@ class ProgressWriter:
         try:
             self._work_loop()
         finally:
+            self._failed = True
             with suppress(Exception):
                 self._close_fd(self._fd)
 
@@ -94,8 +97,8 @@ class ProgressWriter:
         try:
             if self._closed:
                 return None
-            message, self._pending = self._pending, None
-            return message
+            pending, self._pending = self._pending, None
+            return None if pending is None else pending[0]
         finally:
             self._lock.release()
 
@@ -116,22 +119,61 @@ def open_progress_writer(
     """
     try:
         owned = duplicate(stderr_fd)
-    except OSError:
+    except Exception:
         return None
     writer = ProgressWriter(owned, write, close_fd)
-    thread: threading.Thread | None = None
-    try:
-        thread = (thread_factory or _thread)(writer.work)
-        thread.daemon = True
-        thread.start()
-    except Exception:
-        if thread is not None and thread.ident is not None:
-            writer.close()
-        else:
-            with suppress(Exception):
-                close_fd(owned)
-        return None
-    return writer
+    handoff = _DescriptorHandoff(writer, owned, close_fd)
+    return handoff.start(thread_factory or _thread)
+
+
+class _DescriptorHandoff:
+    """Transfer a duplicate to a started worker or revoke a failed start."""
+
+    def __init__(
+        self, writer: ProgressWriter, fd: int, close_fd: Callable[[int], None]
+    ) -> None:
+        self.writer = writer
+        self.fd = fd
+        self.close_fd = close_fd
+        self.lock = threading.Lock()
+        self.granted = False
+        self.claimed = False
+
+    def start(
+        self, factory: Callable[[Callable[[], None]], threading.Thread]
+    ) -> ProgressWriter | None:
+        """Start a worker while retaining ownership until start settles.
+
+        Returns:
+            The writer on success, or None on an ordinary setup failure.
+        """
+        try:
+            with self.lock:
+                thread = factory(self.enter)
+                thread.daemon = True
+                thread.start()
+                self.granted = True
+        except BaseException as error:
+            with self.lock:
+                claimed = self.claimed
+                self.granted = False
+            if claimed:
+                self.writer.close()
+            else:
+                with suppress(BaseException):
+                    self.close_fd(self.fd)
+            if isinstance(error, Exception):
+                return None
+            raise
+        return self.writer
+
+    def enter(self) -> None:
+        """Claim ownership only after start succeeds, or leave revoked state."""
+        with self.lock:
+            if not self.granted:
+                return
+            self.claimed = True
+        self.writer.work()
 
 
 def _thread(target: Callable[[], None]) -> threading.Thread:

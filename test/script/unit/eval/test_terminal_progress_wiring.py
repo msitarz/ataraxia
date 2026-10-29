@@ -93,7 +93,7 @@ class Writer:
         self.result = result
         self.error = error
 
-    def __call__(self, text: str, /) -> Admission:
+    def __call__(self, text: str, /, *, important: bool = False) -> Admission:
         self.events.append(("write", text))
         if self.error is not None:
             raise self.error
@@ -568,7 +568,7 @@ def test_large_redirected_report_bounds_details_and_escapes_control_characters()
     assert "not-started=1" in line and "[truncated]" in line
 
 
-def test_tty_frames_remain_complete_when_admitted_updates_are_replaced() -> None:
+def test_tty_quota_and_wait_transitions_show_details_without_count_floods() -> None:
     # Given
     events: list[object] = []
     window = QuotaWindowObservation(
@@ -622,7 +622,43 @@ def test_tty_frames_remain_complete_when_admitted_updates_are_replaced() -> None
         in writes[1]
     )
     assert "call:capacity:attempt=1:elapsed=2.0s:remaining=3.0s" in writes[2]
-    assert "weekly:state=exhausted" in writes[3]
-    assert "call:capacity:attempt=1" in writes[3] and "a=1 r=1 p=1" in writes[3]
+    assert "\n" not in writes[3] and "a=1 r=1 p=1" in writes[3]
     assert all(line.startswith("\r\x1b[2K") for line in writes)
     assert all(len(line.rsplit("\r\x1b[2K", 1)[1]) < 80 for line in writes)
+
+
+def test_dropped_tty_transition_is_reoffered_with_details() -> None:
+    # Given
+    events: list[object] = []
+    clock = Clock(events)
+
+    class DropFirst:
+        def __call__(self, text: str, /, *, important: bool = False) -> Admission:
+            events.append(("offer", text, important))
+            return (
+                "dropped"
+                if len([
+                    event
+                    for event in events
+                    if isinstance(event, tuple) and event[0] == "offer"
+                ])
+                == 1
+                else "accepted"
+            )
+
+    sink = TerminalProgressSink(DropFirst(), True, clock, 1.0)
+    value = replace(snapshot(), phase="quota_paused")
+
+    # When
+    sink.publish(value)
+    clock.now += 1.0
+    sink.publish(value)
+
+    # Then
+    offers = [
+        event for event in events if isinstance(event, tuple) and event[0] == "offer"
+    ]
+    assert len(offers) == 2
+    assert all(
+        event[2] is True and "phase=quota_paused" in event[1] for event in offers
+    )
