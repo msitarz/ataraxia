@@ -342,8 +342,8 @@ Codex, quota, and runtime adapters.
   `ProgressSink` port. The pure projection derives queued, active, retry-wait,
   stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
   counts from its live call states; attempt and probe counters remain separate.
-  Coordinator wiring and the terminal sink shell are implemented; terminal
-  rendering and throttle behavior remain planned. A queued call is runnable but
+  Coordinator wiring and terminal presentation are implemented; the concrete
+  stderr transport remains planned. A queued call is runnable but
   not dispatched. A stopped-not-started call is unexecuted and cannot resume
   after the final report. Evidence-pending means a result is known in memory but
   its required durable write failed, so the report does not claim a persisted
@@ -390,6 +390,11 @@ Codex, quota, and runtime adapters.
   disables presentation without changing run state. Meaningful transitions
   bypass the throttle and receive an immediate try-write attempt. If that
   attempt cannot write, the sink degrades instead of delaying the run. The
+  implemented presenter emits a single carriage-return and clear-line refresh on
+  TTYs, ending the final report with a newline; redirected output uses
+  newline-delimited plain text. Messages are bounded and explicitly marked when
+  truncated. A would-block attempt is dropped and routine retries wait for the
+  interval; a changed transition can still be attempted immediately. The
   callback must not wrap blocking `TextIO.write`, mutate caller stream flags,
   create a background renderer, or use a timed worker thread. Its platform
   mechanism remains an implementation prerequisite to verify before use; if no
@@ -676,12 +681,12 @@ process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
 AC-9 remains incomplete: coordinator progress projection and the terminal sink
-shell are wired, while terminal rendering, throttling, and concrete transport
-remain planned. Pure runner policy calculations, accepted shared runner
-configuration, and consumer-owned runtime ports are implemented. The shared base
-preserves flat attempt fields while permitting probes to reuse the process
-projection. `plan.pyi` remains a historical planner reference. The active
-implementations are
+presentation are implemented, while concrete stderr transport and CLI
+composition remain planned. Pure runner policy calculations, accepted shared
+runner configuration, and consumer-owned runtime ports are implemented. The
+shared base preserves flat attempt fields while permitting probes to reuse the
+process projection. `plan.pyi` remains a historical planner reference. The
+active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
