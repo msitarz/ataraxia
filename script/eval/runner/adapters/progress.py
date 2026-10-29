@@ -20,6 +20,27 @@ class TryWrite(Protocol):
         ...
 
 
+class Presentation(Protocol):
+    """Own pending rendering and throttle state for a terminal sink."""
+
+    def prepare(
+        self,
+        snapshot: ProgressSnapshot,
+        now: float,
+        is_tty: bool,
+        interval_seconds: float,
+        /,
+    ) -> str | None:
+        """Select and render an update, or skip it."""
+        ...
+
+    def settle(
+        self, snapshot: ProgressSnapshot, now: float, result: TryWriteResult, /
+    ) -> None:
+        """Record the outcome of an attempted write."""
+        ...
+
+
 class SilentProgressSink:
     """Discard snapshots without touching evaluation or evidence."""
 
@@ -41,12 +62,17 @@ class TerminalProgressSink:
         runtime: Runtime,
         interval_seconds: float,
         /,
+        *,
+        presentation: Presentation | None = None,
     ) -> None:
         """Retain the composition dependencies for synchronous publication."""
         self.try_write = try_write
         self.is_tty = is_tty
         self.runtime = runtime
         self.interval_seconds = interval_seconds
+        self._presentation = (
+            presentation if presentation is not None else _PendingPresentation()
+        )
 
     def publish(self, snapshot: ProgressSnapshot, /) -> None:
         """Prepare and attempt an update, isolating expected output failures.
@@ -56,20 +82,33 @@ class TerminalProgressSink:
         transitions; a skipped update makes no write attempt.
         """
         now = self.runtime.monotonic()
-        message = self._prepare(snapshot, now)
+        message = self._presentation.prepare(
+            snapshot, now, self.is_tty, self.interval_seconds
+        )
         if message is None:
             return
         try:
             result = self.try_write(message)
         except OSError:
             result = "unavailable"
-        self._settle(snapshot, now, result)
+        self._presentation.settle(snapshot, now, result)
 
-    def _prepare(self, snapshot: ProgressSnapshot, now: float, /) -> str | None:
+
+class _PendingPresentation:
+    """Placeholder for terminal rendering and state."""
+
+    def prepare(
+        self,
+        snapshot: ProgressSnapshot,
+        now: float,
+        is_tty: bool,
+        interval_seconds: float,
+        /,
+    ) -> str | None:
         """Select and render an update using throttle and terminal mode."""
         raise NotImplementedError
 
-    def _settle(
+    def settle(
         self, snapshot: ProgressSnapshot, now: float, result: TryWriteResult, /
     ) -> None:
         """Record presentation state after the prompt write attempt."""

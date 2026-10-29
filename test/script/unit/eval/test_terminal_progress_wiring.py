@@ -2,106 +2,206 @@
 """Terminal progress composition keeps output separate from run state."""
 
 import asyncio
-from unittest.mock import Mock, call
 
 import pytest
 
 from script.eval.runner.adapters.progress import (
     SilentProgressSink,
     TerminalProgressSink,
+    TryWriteResult,
 )
-from script.eval.runner.coordinator.progress import project
-from test.script.unit.eval.test_coordinator_progress import view
+from script.eval.runner.ports import ProgressCounts, ProgressSnapshot
+
+
+def snapshot() -> ProgressSnapshot:
+    """Provide one empty running snapshot for forwarding checks."""
+    return ProgressSnapshot(
+        "run",
+        "running",
+        None,
+        ProgressCounts(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        (),
+        (),
+        None,
+        (),
+    )
+
+
+class Clock:
+    """Provide the runtime port and record monotonic clock use."""
+
+    def __init__(self, events: list[object]) -> None:
+        self.events = events
+
+    def monotonic(self) -> float:
+        self.events.append(("clock",))
+        return 12.5
+
+    def utc_now(self) -> str:
+        raise AssertionError("unexpected UTC clock")
+
+    async def sleep(self, seconds: float, /) -> None:
+        raise AssertionError("unexpected sleep")
+
+    def uniform(self, lower: float, upper: float, /) -> float:
+        raise AssertionError("unexpected randomness")
+
+
+class Presentation:
+    """Record the injected pending presentation operations."""
+
+    def __init__(self, events: list[object], message: str | None) -> None:
+        self.events = events
+        self.message = message
+
+    def prepare(
+        self, value: ProgressSnapshot, now: float, is_tty: bool, interval: float, /
+    ) -> str | None:
+        self.events.append(("prepare", value, now, is_tty, interval))
+        return self.message
+
+    def settle(
+        self, value: ProgressSnapshot, now: float, result: TryWriteResult, /
+    ) -> None:
+        self.events.append(("settle", value, now, result))
+
+
+class Writer:
+    """Record one prompt write or raise its configured exception."""
+
+    def __init__(
+        self,
+        events: list[object],
+        result: TryWriteResult = "written",
+        error: BaseException | None = None,
+    ) -> None:
+        self.events = events
+        self.result = result
+        self.error = error
+
+    def __call__(self, text: str, /) -> TryWriteResult:
+        self.events.append(("write", text))
+        if self.error is not None:
+            raise self.error
+        return self.result
 
 
 def test_silent_sink_discards_snapshot() -> None:
-    """Quiet presentation needs no clock or output dependency."""
-    assert SilentProgressSink().publish(project(view())) is None
+    # Given
+    value = snapshot()
+
+    # When
+    result = SilentProgressSink().publish(value)
+
+    # Then
+    assert result is None
 
 
-def test_terminal_forwards_snapshot_clock_and_output_in_order(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """One eligible snapshot flows through preparation, write, then settlement."""
-    snapshot = project(view())
-    events = Mock()
-    runtime = Mock()
-    runtime.monotonic.return_value = 12.5
-    writer = Mock(return_value="written")
-    sink = TerminalProgressSink(writer, True, runtime, 2.0)
-    prepare = Mock(return_value="line")
-    settle = Mock()
-    monkeypatch.setattr(sink, "_prepare", prepare)
-    monkeypatch.setattr(sink, "_settle", settle)
-    events.attach_mock(runtime.monotonic, "clock")
-    events.attach_mock(prepare, "prepare")
-    events.attach_mock(writer, "write")
-    events.attach_mock(settle, "settle")
+def test_terminal_forwards_snapshot_clock_and_output_in_order() -> None:
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    sink = TerminalProgressSink(
+        Writer(events),
+        True,
+        Clock(events),
+        2.0,
+        presentation=Presentation(events, "line"),
+    )
 
-    sink.publish(snapshot)
+    # When
+    sink.publish(value)
 
-    assert events.mock_calls == [
-        call.clock(),
-        call.prepare(snapshot, 12.5),
-        call.write("line"),
-        call.settle(snapshot, 12.5, "written"),
+    # Then
+    assert events == [
+        ("clock",),
+        ("prepare", value, 12.5, True, 2.0),
+        ("write", "line"),
+        ("settle", value, 12.5, "written"),
     ]
-    assert sink.is_tty is True
-    assert sink.interval_seconds == pytest.approx(2.0)
 
 
-def test_skipped_update_does_not_write_or_settle(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """A throttle decision can skip output without a queued write."""
-    runtime, writer = Mock(), Mock()
-    sink = TerminalProgressSink(writer, False, runtime, 1.0)
-    settle = Mock()
-    monkeypatch.setattr(sink, "_prepare", Mock(return_value=None))
-    monkeypatch.setattr(sink, "_settle", settle)
+def test_skipped_update_does_not_write_or_settle() -> None:
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    sink = TerminalProgressSink(
+        Writer(events),
+        False,
+        Clock(events),
+        1.0,
+        presentation=Presentation(events, None),
+    )
 
-    sink.publish(project(view()))
+    # When
+    sink.publish(value)
 
-    writer.assert_not_called()
-    settle.assert_not_called()
-
-
-@pytest.mark.parametrize("result", ["would_block", "unavailable", OSError("closed")])
-def test_output_failures_reach_settlement(
-    result: object, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Expected transport failures are presented to the state owner."""
-    runtime, writer = Mock(), Mock()
-    runtime.monotonic.return_value = 8.0
-    if isinstance(result, OSError):
-        writer.side_effect = result
-    else:
-        writer.return_value = result
-    sink = TerminalProgressSink(writer, False, runtime, 1.0)
-    settle = Mock()
-    monkeypatch.setattr(sink, "_prepare", Mock(return_value="line"))
-    monkeypatch.setattr(sink, "_settle", settle)
-    snapshot = project(view())
-
-    sink.publish(snapshot)
-
-    expected = "unavailable" if isinstance(result, OSError) else result
-    settle.assert_called_once_with(snapshot, 8.0, expected)
+    # Then
+    assert events == [("clock",), ("prepare", value, 12.5, False, 1.0)]
 
 
 @pytest.mark.parametrize(
-    "error", [asyncio.CancelledError(), KeyboardInterrupt(), SystemExit()]
+    ("result", "error", "expected"),
+    [
+        ("would_block", None, "would_block"),
+        ("unavailable", None, "unavailable"),
+        ("written", OSError("closed"), "unavailable"),
+    ],
+    ids=["would-block", "unavailable", "os-error"],
 )
-def test_interrupts_propagate(
-    error: BaseException, monkeypatch: pytest.MonkeyPatch
+def test_output_failures_reach_settlement(
+    result: TryWriteResult,
+    error: OSError | None,
+    expected: TryWriteResult,
 ) -> None:
-    """Output must not consume cancellation or process interrupts."""
-    writer = Mock(side_effect=error)
-    sink = TerminalProgressSink(writer, False, Mock(), 1.0)
-    settle = Mock()
-    monkeypatch.setattr(sink, "_prepare", Mock(return_value="line"))
-    monkeypatch.setattr(sink, "_settle", settle)
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    sink = TerminalProgressSink(
+        Writer(events, result, error),
+        False,
+        Clock(events),
+        1.0,
+        presentation=Presentation(events, "line"),
+    )
 
-    with pytest.raises(type(error)):
-        sink.publish(project(view()))
-    settle.assert_not_called()
+    # When
+    sink.publish(value)
+
+    # Then
+    assert events == [
+        ("clock",),
+        ("prepare", value, 12.5, False, 1.0),
+        ("write", "line"),
+        ("settle", value, 12.5, expected),
+    ]
+
+
+@pytest.mark.parametrize(
+    "error",
+    [asyncio.CancelledError(), KeyboardInterrupt(), SystemExit()],
+    ids=["cancellation", "keyboard-interrupt", "system-exit"],
+)
+def test_interrupts_propagate(error: BaseException) -> None:
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    sink = TerminalProgressSink(
+        Writer(events, error=error),
+        False,
+        Clock(events),
+        1.0,
+        presentation=Presentation(events, "line"),
+    )
+
+    # When
+    with pytest.raises(type(error)) as caught:
+        sink.publish(value)
+
+    # Then
+    assert caught.value is error
+    assert events == [
+        ("clock",),
+        ("prepare", value, 12.5, False, 1.0),
+        ("write", "line"),
+    ]
