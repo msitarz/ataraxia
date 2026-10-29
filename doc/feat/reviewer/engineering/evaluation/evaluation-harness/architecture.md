@@ -390,16 +390,18 @@ Codex, quota, and runtime adapters.
   disables presentation without changing run state. Meaningful transitions
   bypass the throttle and receive an immediate try-write attempt. If that
   attempt cannot write, the sink degrades instead of delaying the run. The
-  implemented presenter emits a single carriage-return and clear-line refresh on
-  TTYs, ending the final report with a newline; redirected output uses
-  newline-delimited plain text. Messages are bounded and explicitly marked when
-  truncated. A would-block attempt is dropped and routine retries wait for the
-  interval; a changed transition can still be attempted immediately. The
-  callback must not wrap blocking `TextIO.write`, mutate caller stream flags,
-  create a background renderer, or use a timed worker thread. Its platform
-  mechanism remains an implementation prerequisite to verify before use; if no
-  prompt try-write mechanism is available, composition selects the silent sink.
-  `publish` never catches cancellation, `KeyboardInterrupt`, or `SystemExit`.
+  implemented presenter uses a compact carriage-return and clear-line TTY
+  refresh, limited to one less than the column width supplied by composition (80
+  by default). The final update clears that row and prints the detailed report
+  with a newline; redirected output uses newline-delimited plain text. Detailed
+  messages are bounded and explicitly marked when truncated. A would-block
+  attempt is dropped and routine retries wait for the interval; a changed
+  transition can still be attempted immediately. The callback must not wrap
+  blocking `TextIO.write`, mutate caller stream flags, create a background
+  renderer, or use a timed worker thread. Its platform mechanism remains an
+  implementation prerequisite to verify before use; if no prompt try-write
+  mechanism is available, composition selects the silent sink. `publish` never
+  catches cancellation, `KeyboardInterrupt`, or `SystemExit`.
 - `runner.adapters.codex` resolves one absolute executable from `PATH` and
   probes that same path with a bounded `--version` command. It records the
   requested read-only sandbox, `approval_policy="never"`, and ignored user

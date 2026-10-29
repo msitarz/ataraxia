@@ -1,11 +1,25 @@
 # SPDX-License-Identifier: Apache-2.0
 """Nonblocking terminal and silent progress sinks."""
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from itertools import islice
 from typing import Literal, Protocol
 
-from script.eval.model import QuotaObservation, QuotaWindowObservation
-from script.eval.runner.ports import ProgressSnapshot, Runtime
+from script.eval.model import (
+    QuotaObservation,
+    QuotaScope,
+    QuotaWindowId,
+    QuotaWindowObservation,
+    RetryClass,
+)
+from script.eval.runner.ports import (
+    ProgressCounts,
+    ProgressFinalStatus,
+    ProgressRunPhase,
+    ProgressSnapshot,
+    Runtime,
+)
 
 type TryWriteResult = Literal["written", "would_block", "unavailable"]
 
@@ -31,6 +45,7 @@ class Presentation(Protocol):
         now: float,
         is_tty: bool,
         interval_seconds: float,
+        tty_columns: int,
         /,
     ) -> str | None:
         """Select and render an update, or skip it."""
@@ -66,8 +81,16 @@ class TerminalProgressSink:
         /,
         *,
         presentation: Presentation | None = None,
+        tty_columns: int = 80,
     ) -> None:
-        """Retain the composition dependencies for synchronous publication."""
+        """Retain the composition dependencies for synchronous publication.
+
+        Raises:
+            ValueError: The supplied terminal width is less than two columns.
+        """
+        if tty_columns < 2:
+            raise ValueError("tty_columns must be at least 2")
+        self.tty_columns = tty_columns
         self.try_write = try_write
         self.is_tty = is_tty
         self.runtime = runtime
@@ -84,7 +107,7 @@ class TerminalProgressSink:
         """
         now = self.runtime.monotonic()
         message = self._presentation.prepare(
-            snapshot, now, self.is_tty, self.interval_seconds
+            snapshot, now, self.is_tty, self.interval_seconds, self.tty_columns
         )
         if message is None:
             return
@@ -101,7 +124,7 @@ class _TerminalPresentation:
     def __init__(self) -> None:
         self.disabled = False
         self.last_attempt: float | None = None
-        self.last_transition: object = None
+        self.last_transition: _Transition | None = None
 
     def prepare(
         self,
@@ -109,6 +132,7 @@ class _TerminalPresentation:
         now: float,
         is_tty: bool,
         interval_seconds: float,
+        tty_columns: int,
         /,
     ) -> str | None:
         """Render transitions immediately and routine updates at the interval.
@@ -125,7 +149,7 @@ class _TerminalPresentation:
             and now - self.last_attempt < interval_seconds
         ):
             return None
-        return _render(snapshot, is_tty)
+        return _render(snapshot, is_tty, tty_columns)
 
     def settle(
         self, snapshot: ProgressSnapshot, now: float, result: TryWriteResult, /
@@ -137,18 +161,37 @@ class _TerminalPresentation:
             self.disabled = True
 
 
-def _transition(snapshot: ProgressSnapshot) -> object:
+@dataclass(frozen=True)
+class _Transition:
+    """Snapshot facts whose changes warrant immediate presentation."""
+
+    run_id: str
+    phase: ProgressRunPhase
+    final_status: ProgressFinalStatus | None
+    counts: ProgressCounts
+    retry_reasons: tuple[tuple[RetryClass, int], ...]
+    waits: tuple[tuple[str, Literal["infrastructure", "capacity"], int], ...]
+    quota: (
+        tuple[QuotaScope | None, tuple[QuotaWindowObservation, ...], str | None] | None
+    )
+
+
+def _transition(snapshot: ProgressSnapshot) -> _Transition:
     """Identify meaningful changes without treating elapsed time as a transition.
 
     Returns:
         A comparable key for transition detection.
     """
     observation = snapshot.quota_observation
-    quota = None if observation is None else (observation.scope, observation.windows)
+    quota = (
+        None
+        if observation is None
+        else (observation.scope, observation.windows, observation.valid_until_utc)
+    )
     waits = tuple(
         (wait.call_id, wait.reason, wait.attempt_number) for wait in snapshot.call_waits
     )
-    return (
+    return _Transition(
         snapshot.run_id,
         snapshot.phase,
         snapshot.final_status,
@@ -159,12 +202,14 @@ def _transition(snapshot: ProgressSnapshot) -> object:
     )
 
 
-def _render(snapshot: ProgressSnapshot, is_tty: bool) -> str:
+def _render(snapshot: ProgressSnapshot, is_tty: bool, tty_columns: int) -> str:
     """Produce one short display line, with explicit truncation when needed.
 
     Returns:
         A complete terminal or redirected message.
     """
+    if is_tty and snapshot.phase != "final":
+        return _live_line(snapshot, tty_columns)
     c = snapshot.counts
     remaining = (
         c.calls_queued
@@ -174,7 +219,8 @@ def _render(snapshot: ProgressSnapshot, is_tty: bool) -> str:
         + c.calls_evidence_pending
     )
     calls = (
-        f"calls completed/success={c.calls_succeeded} failed={c.calls_failed} "
+        f"calls completed={c.calls_succeeded + c.calls_failed + c.calls_cancelled} "
+        f"success={c.calls_succeeded} failed={c.calls_failed} "
         f"cancelled={c.calls_cancelled} remaining={remaining} "
         f"(queued={c.calls_queued} active={c.calls_active} "
         f"retry-wait={c.calls_retry_wait} "
@@ -193,15 +239,7 @@ def _render(snapshot: ProgressSnapshot, is_tty: bool) -> str:
         f"completed={c.probes_completed} failed={c.probes_failed} "
         f"cancelled={c.probes_cancelled} evidence-pending={c.probes_evidence_pending}"
     )
-    waits = (
-        ",".join(
-            f"{_safe(w.call_id)}:{w.reason}:attempt={w.attempt_number}:"
-            f"elapsed={w.elapsed_seconds:.1f}s:"
-            f"remaining={_number(w.remaining_seconds, 's')}"
-            for w in snapshot.call_waits
-        )
-        or "none"
-    )
+    waits = _waits(snapshot)
     reasons = (
         ",".join(f"{reason}={count}" for reason, count in snapshot.retry_reasons)
         or "none"
@@ -221,6 +259,67 @@ def _render(snapshot: ProgressSnapshot, is_tty: bool) -> str:
     )
 
 
+def _live_line(snapshot: ProgressSnapshot, columns: int) -> str:
+    """Render a single ASCII row, reserving the last column against wrapping.
+
+    Returns:
+        A carriage-return refresh bounded to the caller-supplied width.
+    """
+    c = snapshot.counts
+    completed = c.calls_succeeded + c.calls_failed + c.calls_cancelled
+    remaining = (
+        c.calls_queued
+        + c.calls_stopped_not_started
+        + c.calls_active
+        + c.calls_retry_wait
+        + c.calls_evidence_pending
+    )
+    text = (
+        f"{_safe(snapshot.run_id)} {snapshot.phase} "
+        f"done={completed} fail={c.calls_failed} left={remaining}"
+    )
+    width = columns - 1
+    if len(text) > width:
+        text = text[: max(0, width - 1)] + "~"
+    return "\r\x1b[2K" + text
+
+
+def _waits(snapshot: ProgressSnapshot) -> str:
+    """Render a bounded number of waits with an omission marker.
+
+    Returns:
+        The wait summaries, or none when no calls are waiting.
+    """
+    text = (
+        ",".join(
+            f"{_safe(wait.call_id)}:{wait.reason}:attempt={wait.attempt_number}:"
+            f"elapsed={wait.elapsed_seconds:.1f}s:"
+            f"remaining={_number(wait.remaining_seconds, 's')}"
+            for wait in islice(snapshot.call_waits, 8)
+        )
+        or "none"
+    )
+    if len(snapshot.call_waits) > 8:
+        text += ",... [truncated]"
+    return text
+
+
+def _age_for(snapshot: ProgressSnapshot, window_id: QuotaWindowId) -> float | None:
+    """Find the supplied producer age for one window.
+
+    Returns:
+        The matching age or None when unavailable.
+    """
+    return next(
+        (
+            age
+            for identity, age in snapshot.quota_window_ages_seconds
+            if identity == window_id
+        ),
+        None,
+    )
+
+
 def _quota(snapshot: ProgressSnapshot) -> str:
     """Format the supplied observation, preserving unknowns and source age.
 
@@ -236,14 +335,15 @@ def _quota(snapshot: ProgressSnapshot) -> str:
         if scope is None
         else f"{_safe(scope.provider_id)}/{_safe(scope.allowance_id)}"
     )
-    ages = dict(snapshot.quota_window_ages_seconds)
     windows = (
         ";".join(
-            _window(observation, window, ages.get(window.window_id))
-            for window in observation.windows
+            _window(observation, window, _age_for(snapshot, window.window_id))
+            for window in islice(observation.windows, 8)
         )
         or "unknown"
     )
+    if len(observation.windows) > 8:
+        windows += ";... [truncated]"
     return f"quota scope={scope_text} windows={windows}"
 
 
@@ -300,5 +400,7 @@ def _safe(value: str) -> str:
     Returns:
         An escaped identifier.
     """
-    escaped = ascii(value)[1:-1]
-    return escaped if len(escaped) <= 100 else escaped[:97] + "..."
+    escaped = ascii(value[:100])[1:-1]
+    return (
+        escaped if len(value) <= 100 and len(escaped) <= 100 else escaped[:97] + "..."
+    )

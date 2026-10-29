@@ -65,9 +65,15 @@ class Presentation:
         self.message = message
 
     def prepare(
-        self, value: ProgressSnapshot, now: float, is_tty: bool, interval: float, /
+        self,
+        value: ProgressSnapshot,
+        now: float,
+        is_tty: bool,
+        interval: float,
+        tty_columns: int,
+        /,
     ) -> str | None:
-        self.events.append(("prepare", value, now, is_tty, interval))
+        self.events.append(("prepare", value, now, is_tty, interval, tty_columns))
         return self.message
 
     def settle(
@@ -125,7 +131,7 @@ def test_terminal_forwards_snapshot_clock_and_output_in_order() -> None:
     # Then
     assert events == [
         ("clock",),
-        ("prepare", value, 12.5, True, 2.0),
+        ("prepare", value, 12.5, True, 2.0, 80),
         ("write", "line"),
         ("settle", value, 12.5, "written"),
     ]
@@ -147,7 +153,7 @@ def test_skipped_update_does_not_write_or_settle() -> None:
     sink.publish(value)
 
     # Then
-    assert events == [("clock",), ("prepare", value, 12.5, False, 1.0)]
+    assert events == [("clock",), ("prepare", value, 12.5, False, 1.0, 80)]
 
 
 @pytest.mark.parametrize(
@@ -181,7 +187,7 @@ def test_output_failures_reach_settlement(
     # Then
     assert events == [
         ("clock",),
-        ("prepare", value, 12.5, False, 1.0),
+        ("prepare", value, 12.5, False, 1.0, 80),
         ("write", "line"),
         ("settle", value, 12.5, expected),
     ]
@@ -212,7 +218,7 @@ def test_interrupts_propagate(error: BaseException) -> None:
     assert caught.value is error
     assert events == [
         ("clock",),
-        ("prepare", value, 12.5, False, 1.0),
+        ("prepare", value, 12.5, False, 1.0, 80),
         ("write", "line"),
     ]
 
@@ -277,7 +283,7 @@ def test_final_tty_report_keeps_disjoint_counts_and_status() -> None:
     assert isinstance(event, tuple)
     line = event[1]
     assert line.startswith("\r\x1b[2Krun=run phase=final final=incomplete_evidence")
-    assert "calls completed/success=2 failed=1 cancelled=1 remaining=2" in line
+    assert "calls completed=4 success=2 failed=1 cancelled=1 remaining=2" in line
     assert "not-started=1 evidence-pending=1" in line
     assert "attempts started=4 active=0 success=2 failed=1 cancelled=1" in line
     assert "retries=1" in line
@@ -431,3 +437,133 @@ def test_wait_elapsed_changes_do_not_bypass_throttle() -> None:
     assert len(writes) == 2
     assert "call:capacity:attempt=1:elapsed=1.0s:remaining=4.0s" in writes[0][1]
     assert "call:capacity:attempt=1:elapsed=2.0s:remaining=3.0s" in writes[1][1]
+
+
+@pytest.mark.parametrize("columns", [12, 80], ids=["narrow", "typical"])
+def test_repeated_tty_refreshes_fit_a_single_unwrapped_row(columns: int) -> None:
+    # Given
+    events: list[object] = []
+    clock = Clock(events)
+    value = snapshot()
+    sink = TerminalProgressSink(Writer(events), True, clock, 1.0, tty_columns=columns)
+
+    # When
+    sink.publish(value)
+    sink.publish(replace(value, phase="quota_paused"))
+
+    # Then
+    writes = [
+        event[1] for event in events if isinstance(event, tuple) and event[0] == "write"
+    ]
+    assert len(writes) == 2
+    assert all(line.startswith("\r\x1b[2K") and "\n" not in line for line in writes)
+    assert all(len(line.removeprefix("\r\x1b[2K")) < columns for line in writes)
+
+
+def test_final_status_bypasses_routine_interval() -> None:
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    sink = TerminalProgressSink(Writer(events), True, Clock(events), 10.0)
+
+    # When
+    sink.publish(value)
+    sink.publish(replace(value, phase="final", final_status="success"))
+
+    # Then
+    writes = [
+        event[1] for event in events if isinstance(event, tuple) and event[0] == "write"
+    ]
+    assert len(writes) == 2
+    assert writes[1].startswith("\r\x1b[2Krun=run phase=final final=success")
+    assert writes[1].endswith("\n")
+
+
+def test_quota_age_is_routine_but_unknown_and_expiry_changes_are_transitions() -> None:
+    # Given
+    events: list[object] = []
+    clock = Clock(events)
+    window = QuotaWindowObservation(
+        window_id=QuotaWindowId("weekly"),
+        state="available",
+        usage_percent=20.0,
+        reset_at_utc=None,
+        source_observed_at_utc="2026-01-01T00:00:00Z",
+        source_sequence=None,
+        source=None,
+        diagnostic=None,
+    )
+    observation = QuotaObservation(
+        scope=None,
+        read_at_utc="2026-01-01T00:00:00Z",
+        source_coordinate=None,
+        windows=(window,),
+        diagnostic=None,
+        valid_until_utc="2026-01-01T00:00:10Z",
+    )
+    value = replace(
+        snapshot(),
+        quota_observation=observation,
+        quota_window_ages_seconds=((QuotaWindowId("weekly"), 1.0),),
+    )
+    aged = replace(value, quota_window_ages_seconds=((QuotaWindowId("weekly"), 2.0),))
+    expiry = replace(
+        aged, quota_observation=observation.model_copy(update={"valid_until_utc": None})
+    )
+    unknown = replace(expiry, quota_observation=None)
+    sink = TerminalProgressSink(Writer(events), False, clock, 10.0)
+
+    # When
+    sink.publish(value)
+    sink.publish(aged)
+    sink.publish(expiry)
+    sink.publish(unknown)
+
+    # Then
+    writes = [
+        event[1] for event in events if isinstance(event, tuple) and event[0] == "write"
+    ]
+    assert len(writes) == 3
+    assert "age=1.0s:freshness=fresh" in writes[0]
+    assert "age=2.0s:freshness=unknown" in writes[1]
+    assert writes[2].endswith("quota=unknown\n")
+
+
+def test_large_redirected_report_bounds_details_and_escapes_control_characters() -> (
+    None
+):
+    # Given
+    events: list[object] = []
+    value = snapshot()
+    waits = tuple(
+        CallWait(f"call\x1b[{index}\n", "capacity", 1, 1.0, 2.0) for index in range(100)
+    )
+    counts = replace(
+        value.counts,
+        calls_succeeded=2,
+        calls_failed=1,
+        calls_cancelled=1,
+        calls_stopped_not_started=1,
+    )
+    final = replace(
+        value,
+        run_id="run\n\x1b[31m",
+        counts=counts,
+        call_waits=waits,
+        phase="final",
+        final_status="failure",
+    )
+    sink = TerminalProgressSink(Writer(events), False, Clock(events), 1.0)
+
+    # When
+    sink.publish(final)
+
+    # Then
+    event = events[1]
+    assert isinstance(event, tuple)
+    line = event[1]
+    assert len(line) <= 4001
+    assert line.count("\n") == 1 and "\x1b" not in line
+    assert "run=run\\n\\x1b[31m phase=final final=failure" in line
+    assert "calls completed=4 success=2 failed=1 cancelled=1 remaining=1" in line
+    assert "not-started=1" in line and "[truncated]" in line
