@@ -392,8 +392,11 @@ Codex, quota, and runtime adapters.
   attempt cannot write, the sink degrades instead of delaying the run. The
   implemented presenter uses a compact carriage-return and clear-line TTY
   refresh, limited to one less than the column width supplied by composition (80
-  by default). The final update clears that row and prints the detailed report
-  with a newline; redirected output uses newline-delimited plain text. Detailed
+  by default). Phase, quota, and wait transitions clear that row, print a
+  permanent detailed line, and refresh the compact row. Count-only updates
+  refresh the compact row without a permanent line. The final update clears
+  that row and prints the detailed report with a newline; redirected output
+  uses newline-delimited plain text. Detailed
   messages are bounded and explicitly marked when truncated. A would-block
   attempt is dropped and routine retries wait for the interval; a changed
   transition can still be attempted immediately. The callback must not wrap

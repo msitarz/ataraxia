@@ -125,6 +125,7 @@ class _TerminalPresentation:
         self.disabled = False
         self.last_attempt: float | None = None
         self.last_transition: _Transition | None = None
+        self.last_displayed: _Transition | None = None
 
     def prepare(
         self,
@@ -145,10 +146,18 @@ class _TerminalPresentation:
         transition = _transition(snapshot)
         if (
             self.last_attempt is not None
-            and transition == self.last_transition
+            and not _detail_changed(self.last_transition, transition)
             and now - self.last_attempt < interval_seconds
         ):
             return None
+        if is_tty and snapshot.phase != "final":
+            if _detail_changed(self.last_displayed, transition):
+                return (
+                    "\r\x1b[2K"
+                    + _render(snapshot, False, tty_columns)
+                    + _live_line(snapshot, tty_columns)
+                )
+            return _live_line(snapshot, tty_columns)
         return _render(snapshot, is_tty, tty_columns)
 
     def settle(
@@ -157,6 +166,8 @@ class _TerminalPresentation:
         """Bound retry cadence after a failed write and disable unavailable output."""
         self.last_attempt = now
         self.last_transition = _transition(snapshot)
+        if result == "written":
+            self.last_displayed = self.last_transition
         if result == "unavailable":
             self.disabled = True
 
@@ -199,6 +210,20 @@ def _transition(snapshot: ProgressSnapshot) -> _Transition:
         snapshot.retry_reasons,
         waits,
         quota,
+    )
+
+
+def _detail_changed(previous: _Transition | None, current: _Transition) -> bool:
+    """Detect changes that warrant a permanent TTY detail line.
+
+    Returns:
+        Whether phase, quota, or wait identity changed since the last write.
+    """
+    return previous is None or (
+        previous.run_id != current.run_id
+        or previous.phase != current.phase
+        or previous.quota != current.quota
+        or previous.waits != current.waits
     )
 
 
@@ -276,7 +301,8 @@ def _live_line(snapshot: ProgressSnapshot, columns: int) -> str:
     )
     text = (
         f"{_safe(snapshot.run_id)} {snapshot.phase} "
-        f"done={completed} fail={c.calls_failed} left={remaining}"
+        f"done={completed} fail={c.calls_failed} left={remaining} "
+        f"a={c.attempts_active} r={c.retries_started} p={c.probes_active}"
     )
     width = columns - 1
     if len(text) > width:
