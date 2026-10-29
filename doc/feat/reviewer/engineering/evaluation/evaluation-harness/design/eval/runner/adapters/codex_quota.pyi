@@ -14,13 +14,13 @@ from script.process_supervisor import DispatchStop
 
 from ...model import (  # ruff: ignore[relative-imports]
     AttemptEvidence,
+    QuotaObservation,
+    QuotaProbeEvidence,
     QuotaProbeRequest,
     QuotaScope,
 )
 from ..ports import (  # ruff: ignore[relative-imports]
     AttemptCall,
-    QuotaAttemptObservation,
-    QuotaProbeObservation,
     QuotaStatusReader,
     Runtime,
 )
@@ -57,10 +57,9 @@ class CodexQuotaSettings:
 class CodexQuotaStatusReader(QuotaStatusReader):
     """One Codex adapter for passive session ingestion and active supervised polls.
 
-    Proposed connection pins the first validated evaluation session's scope;
-    later evaluations and probes verify it. Mismatches stop dispatch and missing
-    identity cannot establish a trigger. Valid identity may pin without quota
-    windows; fresh complete scoped windows remain necessary for availability.
+    The proposed connection pins the first validated evaluation session's scope.
+    Later evaluations and probes must match it, even when quota windows are absent.
+    Unavailable or mismatched identity cannot authorize further dispatch.
 
     It owns fixed Luna/none probe request construction, invocation through the
     injected existing supervisor call, thread-ID extraction and local-session
@@ -70,13 +69,12 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     stale, or unrecognized, the observation is unknown/unavailable and cannot
     authorize resumption. It orders producer timestamps and uses source sequence
     only within a single source coordinate; older evidence remains inconclusive.
-    Runtime currently requires a supplied scope. The proposed pinning lifecycle
-    is described in the architecture and has not been implemented. Persist
-    sanitized coordinates only, never account PII.
+    Runtime currently requires a supplied scope; proposed pinning is not yet
+    implemented. Persist sanitized coordinates only, never account PII.
     """
 
     source: RawCodexQuotaStatusSource
-    quota_scope: QuotaScope | None
+    expected_scope: QuotaScope | None
     settings: CodexQuotaSettings
     attempt_call: AttemptCall
     runtime: Runtime
@@ -85,9 +83,9 @@ class CodexQuotaStatusReader(QuotaStatusReader):
         self,
         evidence: AttemptEvidence,
         /,
-    ) -> QuotaAttemptObservation: ...
+    ) -> QuotaObservation: ...
     async def poll(
         self, request: QuotaProbeRequest, stop_dispatch: DispatchStop, /
-    ) -> QuotaProbeObservation:
-        """Return process evidence, scope verification, and quota assessment."""
+    ) -> QuotaProbeEvidence:
+        """Return shared process evidence and a separately classified observation."""
         ...
