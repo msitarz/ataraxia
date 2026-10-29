@@ -15,10 +15,10 @@ invocations, call settlement, quota recovery, shutdown, progress projection, and
 final record projection for a prepared bound run. CLI composition wiring is
 implemented with injected collaborators; argument parsing, default adapter
 construction, signal handling, and standalone invocation are implemented.
-Progress currently uses the silent sink because no prompt nonblocking stderr
-transport is verified. Quota waiting is refused until its scope is verified;
-capacity recognition remains unsupported. Shared consumer-owned
-runner ports and accepted runtime configuration are implemented in
+Progress uses a bounded best-effort background writer for non-quiet execution.
+Quota waiting is refused until its scope is verified; capacity recognition
+remains unsupported. Shared consumer-owned runner ports and accepted runtime
+configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -308,7 +308,7 @@ and one global quota recovery flow from authoritative typed lifecycles.
   are bounded by entered calls in the finite plan, not by concurrency. Stop
   cancels and settles active siblings; quota recovery begins only
   after active attempts and writes drain. The standalone CLI composes this
-  coordinator with the silent progress sink.
+  coordinator with best-effort progress or the silent sink when quiet.
 - **Accepted known limitation:** A `KeyboardInterrupt` or `SystemExit` raised
   inside a nested evidence or runtime task may escape the event loop before
   retained settlement completes. Coordinator-owned worker wrappers do not fix
@@ -346,12 +346,12 @@ Codex, quota, and runtime adapters.
   `ProgressSink` port. The pure projection derives queued, active, retry-wait,
   stopped-not-started, evidence-pending, succeeded, failed, and cancelled call
   counts from its live call states; attempt and probe counters remain separate.
-  Coordinator wiring and terminal presentation are implemented; the concrete
-  stderr transport remains planned. A queued call is runnable but
-  not dispatched. A stopped-not-started call is unexecuted and cannot resume
-  after the final report. Evidence-pending means a result is known in memory but
-  its required durable write failed, so the report does not claim a persisted
-  success or failure.
+  Coordinator wiring, terminal presentation, and the best-effort stderr
+  transport are implemented. A queued call is runnable but not dispatched. A
+  stopped-not-started call is unexecuted and cannot resume after the final
+  report. Evidence-pending means a result is known in memory but its required
+  durable write failed, so the report does not claim a persisted success or
+  failure.
 - For `N` planned calls, `N` equals queued + stopped-not-started + active +
   retry-wait + evidence-pending + succeeded + failed + cancelled. Remaining
   calls equal queued + stopped-not-started + active + retry-wait +
@@ -379,12 +379,9 @@ Codex, quota, and runtime adapters.
   existing scoped quota observations and producer-based per-window ages; it
   performs no quota reads, model calls, or input reads.
 - **Implemented:** `runner.adapters.progress` supplies silent and terminal
-  sinks. The standalone composition currently injects the silent sink, even
-  without `--quiet`. The terminal presenter renders evidence-backed snapshots,
-  throttles routine updates, and requests immediate presentation of meaningful
-  transitions. It currently expects a synchronous try-write callback, but no
-  concrete stderr transport is wired.
-- **Proposed for review:** A single daemon writer handles best-effort progress
+  sinks. The terminal presenter renders evidence-backed snapshots, throttles
+  routine updates, and offers meaningful transitions immediately. A single
+  daemon writer handles best-effort progress
   output for one standalone execution. The synchronous progress sink formats a
   UTF-8 message bounded to 16 KiB, including terminal controls and an explicit
   truncation marker when needed, and promptly offers it to the writer. It never
@@ -428,11 +425,10 @@ Codex, quota, and runtime adapters.
   evidence remains authoritative, retained and settled through cancellation,
   with recording failure reflected in run status. A progress writer cannot
   conceal a recording failure or change dispatch, retry, cleanup, or exit
-  status. Controlled checks must cover responsive dispatch and cleanup with a
-  blocked destination, bounded replacement and shutdown, partial writes,
-  errors, descriptor ownership, TTY and redirected output, quiet mode, and
-  evidence independence. Implementation and acceptance checks remain
-  outstanding; AC-9 stays TODO.
+  status. Controlled checks cover responsive cleanup with a blocked destination,
+  bounded replacement and shutdown, partial writes, errors, descriptor
+  ownership, TTY and redirected output, quiet mode, and evidence independence.
+  Full Work acceptance remains outstanding; AC-9 stays TODO.
 - `runner.adapters.codex` resolves one absolute executable from `PATH` and
   probes that same path with a bounded `--version` command. It records the
   requested read-only sandbox, `approval_policy="never"`, and ignored user
@@ -508,8 +504,8 @@ Codex, quota, and runtime adapters.
   unsupported because the supplied captures do not establish reliable structured
   signals. The Codex and quota signature sketches in
   `design/eval/runner/adapters/` are historical; runtime code is authoritative.
-  The CLI composition root and progress adapter remain design stubs. The
-  quota adapter implements its bounded source, normalization, polling request,
+  The CLI composition root and progress adapter are implemented. The quota
+  adapter implements its bounded source, normalization, polling request,
   and assessment behavior, but is not yet wired into CLI composition. The
   coordinator accepts the quota port and owns awaited recovery.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
@@ -541,11 +537,13 @@ Codex, quota, and runtime adapters.
 - The exit status distinguishes complete success, run failure, cancellation,
   and incomplete evidence. Exact numeric values belong to the CLI contract and
   must agree with the standalone acceptance scenario.
-- Progress is currently silent. `--quiet` changes no dispatch, evidence,
-  outcome, retry, or quota behavior. The proposed bounded writer and terminal
-  and redirected progress acceptance checks remain outstanding.
+- Progress uses a bounded best-effort writer; `--quiet` changes no dispatch,
+  evidence, outcome, retry, or quota behavior. Final progress may be lost on
+  shutdown, while durable evidence remains authoritative. Error diagnostics
+  outside the progress writer still use synchronous stderr after run settlement;
+  a blocked stderr can delay a failure exit even after cleanup.
 - Effects: an external process invocation and the same effects as CLI execution;
-  there is no scheduler service or background daemon.
+  there is no scheduler service or separate daemon process.
 
 ### Evidence store
 
@@ -619,9 +617,9 @@ evidence.
 **Implemented wiring:**
 [`script/eval/cli.py`](../../../../../../script/eval/cli.py) sequences injected
 preparation and execution collaborators. The standalone command supplies
-argument parsing, concrete factories, and signal handling. It uses silent
-progress and refuses quota waiting without verified scope; capacity recognition
-is unsupported. No acceptance criterion is complete.
+argument parsing, concrete factories, signal handling, and best-effort progress.
+It refuses quota waiting without verified scope; capacity recognition is
+unsupported. No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
@@ -644,10 +642,10 @@ is unsupported. No acceptance criterion is complete.
 - The composition root owns concrete adapters; domain modules depend on their
   consumer-facing ports. No generic plugin registry or scheduler framework is
   proposed.
-- The standalone composition currently supplies one silent sink to the
-  coordinator. The proposed writer would supply the terminal sink for a
-  non-quiet execution and close admission when that run settles. It does not
-  write run evidence or mutate the caller's stderr settings.
+- The standalone composition supplies a terminal sink for non-quiet execution
+  and closes its writer's admission when the run settles. It supplies a silent
+  sink for quiet execution. The writer does not write run evidence or mutate
+  the caller's stderr settings.
 - Effects: connects the effects listed above and exposes the CLI entry point.
 
 ## Proposed flow
@@ -718,9 +716,9 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-AC-9 remains incomplete: coordinator progress projection and the terminal sink
-presentation and standalone CLI composition are implemented, while concrete
-stderr transport remains planned. Pure runner policy
+AC-9 remains incomplete: coordinator progress projection, terminal presentation,
+and standalone best-effort stderr transport are implemented; full acceptance
+remains outstanding. Pure runner policy
 calculations, accepted shared runner configuration, and consumer-owned runtime
 ports are implemented. The shared base preserves flat attempt fields while
 permitting probes to reuse the process projection. `plan.pyi` remains a

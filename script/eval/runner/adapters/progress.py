@@ -21,18 +21,14 @@ from script.eval.runner.ports import (
     Runtime,
 )
 
-type TryWriteResult = Literal["written", "would_block", "unavailable"]
+type Admission = Literal["accepted", "dropped", "unavailable"]
 
 
-class TryWrite(Protocol):
-    """Promptly accept one complete short message or report it cannot be written.
+class ProgressAdmission(Protocol):
+    """Offer one bounded message promptly; acceptance is not delivery."""
 
-    An expected ``OSError`` may be raised. The callback must not wait, queue
-    output, or mutate stream flags. Composition owns the transport.
-    """
-
-    def __call__(self, text: str, /) -> TryWriteResult:
-        """Try one complete message without waiting."""
+    def __call__(self, text: str, /) -> Admission:
+        """Admit, drop, or refuse a message without waiting."""
         ...
 
 
@@ -52,7 +48,7 @@ class Presentation(Protocol):
         ...
 
     def settle(
-        self, snapshot: ProgressSnapshot, now: float, result: TryWriteResult, /
+        self, snapshot: ProgressSnapshot, now: float, result: Admission, /
     ) -> None:
         """Record the outcome of an attempted write."""
         ...
@@ -66,15 +62,11 @@ class SilentProgressSink:
 
 
 class TerminalProgressSink:
-    """Compose a monotonic presentation decision with a prompt try-write port.
-
-    The caller supplies a prompt writer; no concrete stderr transport is
-    supplied by this adapter.
-    """
+    """Compose a monotonic presentation decision with prompt admission."""
 
     def __init__(
         self,
-        try_write: TryWrite,
+        admit: ProgressAdmission,
         is_tty: bool,
         runtime: Runtime,
         interval_seconds: float,
@@ -91,7 +83,7 @@ class TerminalProgressSink:
         if tty_columns < 2:
             raise ValueError("tty_columns must be at least 2")
         self.tty_columns = tty_columns
-        self.try_write = try_write
+        self.admit = admit
         self.is_tty = is_tty
         self.runtime = runtime
         self.interval_seconds = interval_seconds
@@ -112,7 +104,7 @@ class TerminalProgressSink:
         if message is None:
             return
         try:
-            result = self.try_write(message)
+            result = self.admit(_bounded(message))
         except OSError:
             result = "unavailable"
         self._presentation.settle(snapshot, now, result)
@@ -125,7 +117,6 @@ class _TerminalPresentation:
         self.disabled = False
         self.last_attempt: float | None = None
         self.last_transition: _Transition | None = None
-        self.last_displayed: _Transition | None = None
 
     def prepare(
         self,
@@ -151,23 +142,19 @@ class _TerminalPresentation:
         ):
             return None
         if is_tty and snapshot.phase != "final":
-            if _detail_changed(self.last_displayed, transition):
-                return (
-                    "\r\x1b[2K"
-                    + _render(snapshot, False, tty_columns)
-                    + _live_line(snapshot, tty_columns)
-                )
-            return _live_line(snapshot, tty_columns)
+            return (
+                "\r\x1b[2K"
+                + _render(snapshot, False, tty_columns)
+                + _live_line(snapshot, tty_columns)
+            )
         return _render(snapshot, is_tty, tty_columns)
 
     def settle(
-        self, snapshot: ProgressSnapshot, now: float, result: TryWriteResult, /
+        self, snapshot: ProgressSnapshot, now: float, result: Admission, /
     ) -> None:
         """Bound retry cadence after a failed write and disable unavailable output."""
         self.last_attempt = now
         self.last_transition = _transition(snapshot)
-        if result == "written":
-            self.last_displayed = self.last_transition
         if result == "unavailable":
             self.disabled = True
 
@@ -430,3 +417,17 @@ def _safe(value: str) -> str:
     return (
         escaped if len(value) <= 100 and len(escaped) <= 100 else escaped[:97] + "..."
     )
+
+
+def _bounded(message: str) -> str:
+    """Bound UTF-8 output with a visible truncation marker.
+
+    Returns:
+        The original message or a complete UTF-8 prefix with a marker.
+    """
+    data = message.encode("utf-8")
+    limit = 16 * 1024
+    if len(data) <= limit:
+        return message
+    marker = "... [truncated]\n"
+    return data[: limit - len(marker)].decode("utf-8", errors="ignore") + marker

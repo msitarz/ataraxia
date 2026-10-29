@@ -19,7 +19,7 @@ from script.eval.model import (
     PreparedEvidence,
     RunRecord,
 )
-from script.eval.standalone import run_owned
+from script.eval.standalone import ProgressRun, run_owned
 from test.script.integration.eval.support import frozen_plan
 
 
@@ -181,3 +181,47 @@ async def test_signal_setup_failure_does_not_start_operation() -> None:
     # Then
     assert not invoked
     assert not status.started
+
+
+class BrokenProgress:
+    """A progress resource whose close fails."""
+
+    def close(self) -> None:
+        raise OSError("close failed")
+
+
+async def test_progress_close_failure_does_not_change_success() -> None:
+    # Given
+    result = record()
+
+    class Coordinator:
+        async def run(self) -> RunRecord:
+            await asyncio.sleep(0)
+            return result
+
+    run = ProgressRun(Coordinator(), BrokenProgress())
+
+    # When
+    outcome = await run.run()
+
+    # Then
+    assert outcome is result
+
+
+async def test_progress_close_failure_preserves_original_run_failure() -> None:
+    # Given
+    error = ValueError("run failed")
+
+    class Coordinator:
+        async def run(self) -> RunRecord:
+            await asyncio.sleep(0)
+            raise error
+
+    run = ProgressRun(Coordinator(), BrokenProgress())
+
+    # When
+    with pytest.raises(ValueError) as caught:
+        await run.run()
+
+    # Then
+    assert caught.value is error

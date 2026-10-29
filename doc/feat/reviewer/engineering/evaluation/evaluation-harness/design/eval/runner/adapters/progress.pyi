@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Proposed progress admission and standalone writer lifecycle.
+"""Progress admission and standalone writer lifecycle.
 
-The runtime adapter still implements the historical synchronous TryWrite port;
-this proposal does not establish a background writer or AC-9 completion.
+The runtime modules implement this boundary; AC-9 completion remains open.
 """
 
 from typing import Literal, Protocol

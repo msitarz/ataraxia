@@ -15,9 +15,9 @@ from script.eval.model import (
     QuotaWindowObservation,
 )
 from script.eval.runner.adapters.progress import (
+    Admission,
     SilentProgressSink,
     TerminalProgressSink,
-    TryWriteResult,
 )
 from script.eval.runner.ports import CallWait, ProgressCounts, ProgressSnapshot
 
@@ -76,9 +76,7 @@ class Presentation:
         self.events.append(("prepare", value, now, is_tty, interval, tty_columns))
         return self.message
 
-    def settle(
-        self, value: ProgressSnapshot, now: float, result: TryWriteResult, /
-    ) -> None:
+    def settle(self, value: ProgressSnapshot, now: float, result: Admission, /) -> None:
         self.events.append(("settle", value, now, result))
 
 
@@ -88,14 +86,14 @@ class Writer:
     def __init__(
         self,
         events: list[object],
-        result: TryWriteResult = "written",
+        result: Admission = "accepted",
         error: BaseException | None = None,
     ) -> None:
         self.events = events
         self.result = result
         self.error = error
 
-    def __call__(self, text: str, /) -> TryWriteResult:
+    def __call__(self, text: str, /) -> Admission:
         self.events.append(("write", text))
         if self.error is not None:
             raise self.error
@@ -133,7 +131,7 @@ def test_terminal_forwards_snapshot_clock_and_output_in_order() -> None:
         ("clock",),
         ("prepare", value, 12.5, True, 2.0, 80),
         ("write", "line"),
-        ("settle", value, 12.5, "written"),
+        ("settle", value, 12.5, "accepted"),
     ]
 
 
@@ -159,16 +157,16 @@ def test_skipped_update_does_not_write_or_settle() -> None:
 @pytest.mark.parametrize(
     ("result", "error", "expected"),
     [
-        ("would_block", None, "would_block"),
+        ("dropped", None, "dropped"),
         ("unavailable", None, "unavailable"),
-        ("written", OSError("closed"), "unavailable"),
+        ("accepted", OSError("closed"), "unavailable"),
     ],
-    ids=["would-block", "unavailable", "os-error"],
+    ids=["dropped", "unavailable", "os-error"],
 )
 def test_output_failures_reach_settlement(
-    result: TryWriteResult,
+    result: Admission,
     error: OSError | None,
-    expected: TryWriteResult,
+    expected: Admission,
 ) -> None:
     # Given
     events: list[object] = []
@@ -294,18 +292,18 @@ def test_final_tty_report_keeps_disjoint_counts_and_status() -> None:
 @pytest.mark.parametrize(
     ("result", "error", "expected_writes"),
     [
-        ("would_block", None, 2),
+        ("dropped", None, 2),
         ("unavailable", None, 1),
-        ("written", OSError("closed"), 1),
+        ("accepted", OSError("closed"), 1),
     ],
     ids=[
-        "would-block-retries-at-interval",
+        "dropped-retries-at-interval",
         "unavailable-disables",
         "os-error-disables",
     ],
 )
 def test_default_presentation_degrades_output_without_blocking(
-    result: TryWriteResult,
+    result: Admission,
     error: OSError | None,
     expected_writes: int,
 ) -> None:
@@ -570,7 +568,7 @@ def test_large_redirected_report_bounds_details_and_escapes_control_characters()
     assert "not-started=1" in line and "[truncated]" in line
 
 
-def test_tty_quota_and_wait_transitions_show_details_without_count_floods() -> None:
+def test_tty_frames_remain_complete_when_admitted_updates_are_replaced() -> None:
     # Given
     events: list[object] = []
     window = QuotaWindowObservation(
@@ -624,6 +622,7 @@ def test_tty_quota_and_wait_transitions_show_details_without_count_floods() -> N
         in writes[1]
     )
     assert "call:capacity:attempt=1:elapsed=2.0s:remaining=3.0s" in writes[2]
-    assert "\n" not in writes[3] and "a=1 r=1 p=1" in writes[3]
+    assert "weekly:state=exhausted" in writes[3]
+    assert "call:capacity:attempt=1" in writes[3] and "a=1 r=1 p=1" in writes[3]
     assert all(line.startswith("\r\x1b[2K") for line in writes)
     assert all(len(line.rsplit("\r\x1b[2K", 1)[1]) < 80 for line in writes)
