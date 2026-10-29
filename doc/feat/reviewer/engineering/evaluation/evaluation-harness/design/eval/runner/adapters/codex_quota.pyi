@@ -47,6 +47,7 @@ class CodexQuotaSettings:
 
     executable_path: Path
     empty_read_only_cwd: Path
+    probe_instructions_file: Path
     timeout_seconds: float
     cleanup_timeout_seconds: float
     output_limit_bytes: int
@@ -56,6 +57,10 @@ class CodexQuotaSettings:
 class CodexQuotaStatusReader(QuotaStatusReader):
     """One Codex adapter for passive session ingestion and active supervised polls.
 
+    The proposed connection pins the first validated evaluation session's scope.
+    Later evaluations and probes must match it, even when quota windows are absent.
+    Unavailable or mismatched identity cannot authorize further dispatch.
+
     It owns fixed Luna/none probe request construction, invocation through the
     injected existing supervisor call, thread-ID extraction and local-session
     correlation privately, and mapping of both required five-hour and weekly
@@ -64,9 +69,8 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     stale, or unrecognized, the observation is unknown/unavailable and cannot
     authorize resumption. It orders producer timestamps and uses source sequence
     only within a single source coordinate; older evidence remains inconclusive.
-    No endpoint or exec schema is assumed: file discovery, source schema, thread
-    correlation, scope association, and freshness rules remain unverified.
-    Persist sanitized coordinates only, never account PII.
+    Runtime currently requires a supplied scope; proposed pinning is not yet
+    implemented. Persist sanitized coordinates only, never account PII.
     """
 
     source: RawCodexQuotaStatusSource

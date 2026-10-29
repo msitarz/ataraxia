@@ -210,7 +210,7 @@ class QuotaStatusReader(Protocol):
 
     @property
     def expected_scope(self) -> QuotaScope | None:
-        """Verified scope paired with this reader, if known."""
+        """Proposed: pin the first valid evaluation scope when initially absent."""
         ...
 
     async def observe_settled_attempt(
@@ -221,8 +221,10 @@ class QuotaStatusReader(Protocol):
         """Return source-backed windows from settled attempt evidence, else unknown.
 
         Preserve sanitized source coordinates and producer provenance on the
-        observation. The coordinator retains call/attempt association and checks
-        observation scope against its binding.
+        observation. The proposed coordinator accepts a pinned reader scope when
+        binding scope is absent, and requires any present binding scope to match.
+        Unavailable or mismatched identity returns an unscoped observation and
+        stops dispatch after durable recording.
         """
         ...
 
