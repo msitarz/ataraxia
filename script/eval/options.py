@@ -149,10 +149,7 @@ def _parser() -> argparse.ArgumentParser:
         "--capacity-retry-limit",
         type=int,
         default=0,
-        help=(
-            "capacity retries require recognized capacity outcomes; "
-            "recognition is currently unsupported"
-        ),
+        help=("maximum retries for recognized transient model-capacity failures"),
     )
     parser.add_argument("--capacity-backoff-base-seconds", type=float)
     parser.add_argument("--capacity-backoff-cap-seconds", type=float)
