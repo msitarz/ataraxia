@@ -72,7 +72,7 @@ isolation.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Ordered inputs define a deterministic matrix
+### **AC-1 DONE** Ordered inputs define a deterministic matrix
 
 A caller can inspect the complete scheduled matrix before any model call.
 
@@ -143,7 +143,7 @@ A caller can inspect the complete scheduled matrix before any model call.
 - Unsupported model-effort combinations fail explicitly without silently
   substituting either value, and runtime rejection remains a failed attempt.
 
-### **AC-2 TODO** Frozen inputs and execution metadata identify every call
+### **AC-2 DONE** Frozen inputs and execution metadata identify every call
 
 Retained evidence identifies the exact supplied bytes and execution settings.
 
@@ -183,7 +183,7 @@ Retained evidence identifies the exact supplied bytes and execution settings.
   instructions and records no override, with automatic system bytes marked
   unavailable rather than reporting zero system context.
 
-### **AC-3 TODO** Raw evidence survives without replacement or interpretation
+### **AC-3 DONE** Raw evidence survives without replacement or interpretation
 
 Every scheduled call and launched attempt has inspectable evidence.
 
@@ -209,7 +209,7 @@ Every scheduled call and launched attempt has inspectable evidence.
   fabricating a successful record or losing the frozen plan's not-started
   status.
 
-### **AC-4 TODO** Bounded dispatch respects cleanup and stop signals
+### **AC-4 DONE** Bounded dispatch respects cleanup and stop signals
 
 Concurrency never permits a later attempt to bypass required cleanup.
 
@@ -244,7 +244,7 @@ Concurrency never permits a later attempt to bypass required cleanup.
   stop-before-recording, output limits, retries, and failure accounting without
   making model calls.
 
-### **AC-5 TODO** Explicit subset reruns preserve experiment ownership
+### **AC-5 DONE** Explicit subset reruns preserve experiment ownership
 
 A caller can rerun a manually selected subset as a new run.
 
@@ -259,7 +259,7 @@ A caller can rerun a manually selected subset as a new run.
   experiment retry and budget limits and must not count reruns or cached answers
   as independent trials without its declared protocol.
 
-### **AC-6 TODO** Optional quota waiting preserves the active run
+### **AC-6 DONE** Optional quota waiting preserves the active run
 
 A caller can opt into waiting for recognized Codex quota exhaustion without
 restarting the runner or repeating completed calls.
@@ -382,7 +382,7 @@ restarting the runner or repeating completed calls.
   release, probe cleanup and recovery settlement, and fresh-confirmation-only
   resumption without making model calls.
 
-### **AC-7 TODO** Optional model-capacity retries use bounded backoff
+### **AC-7 DONE** Optional model-capacity retries use bounded backoff
 
 A caller can opt into finite retries for recognized transient model-capacity
 failures while preserving the original call and its evidence.
@@ -432,7 +432,7 @@ failures while preserving the original call and its evidence.
   invocations, quota gating, and cancellation without model calls; the eventual
   design exposes time and randomness dependencies for deterministic checks.
 
-### **AC-8 TODO** Standalone invocation supports external execution
+### **AC-8 DONE** Standalone invocation supports external execution
 
 A caller can launch the harness from a terminal or external cron or launchd
 job without keeping an agent conversation alive.
@@ -460,7 +460,7 @@ job without keeping an agent conversation alive.
   behavior and exit meanings without model calls; usage guidance distinguishes
   checked behavior from live CLI and availability prerequisites.
 
-### **AC-9 TODO** Progress reports evidence-backed execution state
+### **AC-9 DONE** Progress reports evidence-backed execution state
 
 A caller can follow a standalone run's progress from a terminal or redirected
 text without keeping an agent conversation alive.
@@ -519,50 +519,23 @@ text without keeping an agent conversation alive.
 
 ## Additional context
 
-The original Work definition authorized no runner implementation, typed
-architecture, corpus preparation, or model calls. Later bounded assignments
-authorized the architecture proposal and typed boundary, shared model records,
-the input boundary, and the pure planning wiring. A subsequent bounded
-implementation assignment delivered grouping, exact-byte context composition,
-and deterministic call-matrix expansion through the public pure planner. The
-current bounded assignment implements local `tiktoken` token counting and
-its development dependency behind the provider-neutral port. Its approved
-first-use vocabulary download and native cache write are documented in the
-current architecture. These assignments do not establish CLI integration,
-other runner components, corpus preparation, or model calls.
-All acceptance criteria remain TODO, and completion of this generic runner
-cannot establish the parent experiment's integrated protections or results.
-
-Quota monitoring is a contract amendment only. The maintainer supplied an
-[exhausted five-hour quota capture and session telemetry excerpt](quota-capture.md).
-The excerpt identifies a candidate numeric reset source, but file correlation,
-account and allowance association, freshness, and failure handling still require
-review. The authorized future probe condition is recorded there; its unattended
-recipe and positive availability evidence also remain prerequisites. An
-app-server schema does not establish the exec schema. The architecture, proposed
-typed boundaries, and intent-only BDD scenarios describe the earlier polling
-amendment; they establish no runtime behavior. No live probes, quota
-implementation, or model calls are authorized by this amendment.
-
-The [third-party capacity report](capacity-report.md) supplies motivation for
-AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
-recognition also remains an unresolved implementation prerequisite. The
-architecture records consumer-owned classifier and quota-status ports with
-explicit unknown outcomes; their concrete recognition and reset adapters remain
-undefined until evidence verifies their sources. No runner implementation or
-model calls are authorized by this contract amendment.
-
-Progress reporting remains in this generic harness Work rather than a separate
-child Work. Its bounded amendment defines AC-9 before evidence persistence is
-implemented; the delivery stage covers this contract, a separately reviewed
-typed design, and intent-only BDD scenarios, not runtime implementation. The
-contract alone establishes no reporting behavior. It adds no logger, event bus,
-adapter framework, monitoring service, scheduler integration, or dependency on
-an agent session. All acceptance criteria remain TODO.
-
-The current quota contract limits probes to the awaited recovery flow after
-recognized exhaustion and active-attempt settlement. Passive after-attempt
-telemetry remains enabled by the quota-wait opt-in. Earlier architecture and
-intent-only scenarios describing active-period monitoring require alignment
-before they can support implementation review; this amendment establishes no
-runtime behavior and authorizes no live probes or model calls.
+- The generic runner, evidence store, Codex CLI adapter, quota recovery,
+  capacity retry, standalone command, and progress reporting are implemented.
+- The generic harness criteria are independently verified within this Work’s
+  controlled scope.
+- The [architecture](architecture.md) and typed boundary files preserve
+  historical design context alongside the current implementation.
+- Codex quota recognition uses validated runtime session shape and scope with
+  Codex CLI 0.164.0 or newer; unsupported or ambiguous observations fail closed.
+- The [quota capture](quota-capture.md) and
+  [capacity report](capacity-report.md) retain the original evidence and
+  motivation.
+- Controlled checks do not prove live availability, authentication, tool-free
+  execution, or context isolation. Accepted CLI limitations remain in the parent
+  [preparation record](../preparation.md#combined-step-1-candidate-and-stopping-point).
+- Progress is best effort and separate from durable evidence.
+- Cooperative signal cancellation and supervisor lifecycle limits apply; no
+  restart recovery is provided.
+- The caller owns experiment authorization, protocol, budgets, corpus, and
+  interpretation. Completion of this child does not complete the parent
+  Evaluation.

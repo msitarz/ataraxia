@@ -8,8 +8,9 @@ From the repository root, prepare the locked environment once:
 make setup
 ```
 
-You need `uv`, Git, and the Codex CLI on `PATH`, with an authenticated Codex
-subscription session. The harness calls Codex CLI; it has no direct provider
+You need Python 3.14 or newer, `uv`, Git, and the Codex CLI on `PATH`, with an
+authenticated Codex subscription session. Setup installs the locked development
+dependencies. The harness calls Codex CLI; it has no direct provider
 API implementation.
 
 Preview a small matrix without making model calls or creating output:
@@ -75,7 +76,12 @@ capacity retries.
 
 Every invocation requires at least one `-d`, `-m`, and `-e`. Execution also
 requires `-o` naming a new output directory. Rerun a subset with another new
-directory; the harness does not resume a previous run.
+directory; the harness does not resume a previous run. A sparse subset that is
+not one Cartesian product requires separate invocations and fresh output
+directories. The caller reconciles previous attempts and retries against its
+experiment limits across runs. Count reruns or cached answers as independent
+trials only when the caller’s protocol permits it; the harness does not know
+that protocol or enforce its budgets.
 
 ## Responsibilities
 
@@ -95,8 +101,10 @@ directory; the harness does not resume a previous run.
 - Quota telemetry requires Codex CLI 0.164.0 or later and a recognized,
   validated runtime session shape. It fails closed when identity, freshness,
   completeness, or quota scope cannot be verified.
-- The harness requests Codex's read-only sandbox. It cannot establish the
-  effective tool set or isolate context that Codex itself may add; its
+- Execution requests Codex's read-only sandbox and `approval_policy="never"`,
+  using `--ignore-user-config`. Controlled tests exercise the local invocation,
+  not live authentication or provider availability. The harness cannot establish
+  the effective tool set or isolate context that Codex itself may add; its
   invocation controls do not prove tool-free execution or personal-context
   isolation.
 
@@ -109,8 +117,9 @@ directory; the harness does not resume a previous run.
   selected file from each directory in argument order. Repeated directories
   remain separate positions.
 - `-c` limits concurrent attempts. Per-attempt and cleanup timeouts bound
-  process work. Infrastructure retry and capacity retry allowances are
-  separate.
+  process work. An output limit of zero disables the byte cap, so capture memory
+  is unbounded despite the timeouts. Infrastructure retry and capacity retry
+  allowances are separate.
 - Quota waiting is opt-in. A supplied wait-duration limit bounds total waiting;
   if omitted, the harness sets no cumulative duration bound. The optional
   `--quota-probe-budget` counts separate quota-check CLI invocations. Neither

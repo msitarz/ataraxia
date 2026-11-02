@@ -17,6 +17,6 @@ establish a structured detection interface or that failure occurred before any
 semantic result. It does not demonstrate an account-wide or shared five-hour
 quota condition. Its same-thread continuation strategy is not the harness
 policy:
-[AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff)
+[AC-7](README.md#ac-7-done-optional-model-capacity-retries-use-bounded-backoff)
 requires eligible fresh independent invocations with bounded backoff and jitter.
 No implementation, probe, or model call is established by this report.

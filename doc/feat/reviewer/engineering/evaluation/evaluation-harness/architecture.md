@@ -26,15 +26,14 @@ sibling [process supervisor](../process-supervisor/README.md) is implemented and
 owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
 and run evidence around that boundary.
 
-The planned quota wait, model-capacity retry, and standalone-invocation
-amendments are owned by
-[AC-6](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run),
-[AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff),
+Quota wait, model-capacity retry, and standalone invocation are owned by
+[AC-6](README.md#ac-6-done-optional-quota-waiting-preserves-the-active-run),
+[AC-7](README.md#ac-7-done-optional-model-capacity-retries-use-bounded-backoff),
 and
-[AC-8](README.md#ac-8-todo-standalone-invocation-supports-external-execution).
+[AC-8](README.md#ac-8-done-standalone-invocation-supports-external-execution).
 The runtime uses the reviewed narrow quota inference and correlated session
 telemetry below. The supplied capture does not alone prove that inference.
-Capacity recognition uses the same conservative envelope. All ACs remain TODO.
+Capacity recognition uses the same conservative envelope.
 
 ## TL;DR
 
@@ -318,8 +317,7 @@ and one global quota recovery flow from authoritative typed lifecycles.
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
 - One coordinator owns one provider and one frozen run without restart recovery.
-- The Work contract remains authoritative and every acceptance criterion is
-  TODO.
+- The [Work contract](README.md) remains authoritative.
 
 ### Runner policy, ports, and adapters
 
@@ -431,7 +429,6 @@ Codex, quota, and runtime adapters.
   status. Controlled checks cover responsive cleanup with a blocked destination,
   bounded replacement and shutdown, partial writes, errors, descriptor
   ownership, TTY and redirected output, quiet mode, and evidence independence.
-  Full Work acceptance remains outstanding; AC-9 stays TODO.
 - `runner.adapters.codex` resolves one absolute executable from `PATH` and
   probes that same path with a bounded `--version` command. It records the
   requested read-only sandbox, `approval_policy="never"`, and ignored user
@@ -579,7 +576,7 @@ reports the failure even in quiet mode.
 
 AC-6 distinguishes unknown numeric window values from an unrecognized quota
 state. A scoped recognized exhaustion can support a wait without window values;
-unknown scope or state still stops recovery. AC-6 remains TODO.
+unknown scope or state still stops recovery.
 
 **Capacity inference:**
 
@@ -704,7 +701,6 @@ evidence.
 preparation and execution collaborators. The standalone command supplies
 argument parsing, concrete factories, signal handling, and best-effort progress.
 It verifies quota scope from correlated invocations when waiting is enabled.
-No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
@@ -773,7 +769,7 @@ flowchart LR
     STORE --> RUN[Immutable run evidence]
 ```
 
-The diagram shows proposed harness boundaries. The existing supervisor, input
+The diagram shows the harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The
 runtime coordinator implements bounded invocations, quota recovery, settlement,
 progress projection, and final accounting. Injected CLI composition wiring is
@@ -821,20 +817,18 @@ promises cover ordinary filesystem operation failures, not recovery after
 process termination, `SIGKILL`, machine failure, or concurrent writes from a
 second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
-AC-9 remains incomplete: coordinator progress projection, terminal presentation,
-and standalone best-effort stderr transport are implemented; full acceptance
-remains outstanding. Pure runner policy calculations, accepted shared runner
-configuration, and consumer-owned runtime ports are implemented. The shared base
-preserves flat attempt fields while permitting probes to reuse the process
-projection. `plan.pyi` remains a historical planner reference. The active
-implementations are
+Coordinator progress projection, terminal presentation, and standalone
+best-effort stderr transport are implemented. Pure runner policy calculations,
+accepted shared runner configuration, and consumer-owned runtime ports are
+implemented. The shared base preserves flat attempt fields while permitting
+probes to reuse the process projection. `plan.pyi` remains a historical planner
+reference. The active implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection and standalone CLI composition are implemented. Remaining
-harness behavior and acceptance verification are planned. Do not add a parallel
-runtime model or change supervisor types. Private helpers and concrete
+storage/projection and standalone CLI composition are implemented. Do not add a
+parallel runtime model or change supervisor types. Private helpers and concrete
 persistence formats remain flexible; supervisor outcomes and requests continue
 to use the existing public types. Codex quota recognition is implemented against
 the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
@@ -877,7 +871,7 @@ flowchart LR
     CLI --> QUOTA[runner/adapters/codex_quota.py]
     CLI --> PROGRESS_ADAPTER[runner/adapters/progress.py]
     CLI --> EVIDENCE[evidence.py]
-    RUNNER --> COORD[proposed runner/coordinator package]
+    RUNNER --> COORD[runner/coordinator package]
     RUNNER --> CODEX[runner/adapters/codex.py]
     RUNNER --> RUNTIME[runner/adapters/runtime.py]
     COORD --> POLICY[runner/policy.py]

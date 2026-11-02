@@ -6,7 +6,7 @@ The maintainer supplied this transcript on 26 October 2026. The original capture
 files were not independently inspected or verified. This record retains one
 exhausted five-hour quota case and a separate interactive status observation; it
 does not establish the
-[quota-wait criterion](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run).
+[quota-wait criterion](README.md#ac-6-done-optional-quota-waiting-preserves-the-active-run).
 
 ## Exec observation
 
@@ -115,7 +115,7 @@ scheduling when present, but missing or malformed hints do not erase known
 usage state and never establish availability by themselves. Stale observations
 retain their producer timestamp, ordinal, and usage as unknown evidence;
 rereading an identical record does not refresh its producer age. The
-[quota-monitoring contract](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run)
+[quota-monitoring contract](README.md#ac-6-done-optional-quota-waiting-preserves-the-active-run)
 owns polling, budgets, cleanup, evidence, and failure requirements.
 
 ## Targeted rollout schema verification
