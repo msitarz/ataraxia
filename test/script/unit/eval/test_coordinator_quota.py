@@ -35,6 +35,7 @@ from script.eval.runner.coordinator.quota_states import (
     QuotaStopped,
 )
 from script.eval.runner.coordinator.state import WaitWrite
+from script.eval.runner.ports import QuotaTelemetryError
 from script.eval.runner.quota_evidence import attach_quota_probe_evidence
 from script.process_supervisor import DispatchStop
 from test.script.unit.eval.test_coordinator_calls import Clock, NoQuota, Store
@@ -698,6 +699,9 @@ async def test_missing_probe_evidence_stays_pending_after_durable_closure() -> N
     assert isinstance(result, ProbeEvidencePending)
     assert result.evidence is None
     assert isinstance(result.error, TimeoutError)
+    assert control.reason is not None
+    assert isinstance(control.reason.first, QuotaTelemetryError)
+    assert control.reason.first.__cause__ is result.error
     assert quota.history.waits[0].end == "unknown"
     assert not control.dispatch_allowed()
 

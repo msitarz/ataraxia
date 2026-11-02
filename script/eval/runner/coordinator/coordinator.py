@@ -246,11 +246,15 @@ class Coordinator:
         """Await recovery only after active attempt evidence has drained."""
         trigger = self._control.quota_trigger
         if trigger is None:
-            self._control.latch_stop(RuntimeError("missing durable quota trigger"))
+            self._control.latch_stop(
+                QuotaTelemetryError("missing durable quota trigger")
+            )
             return
         scope = self._quota_status.expected_scope
         if not self._scope_matches(scope, trigger.observation.scope):
-            self._control.latch_stop(RuntimeError("quota scope does not match binding"))
+            self._control.latch_stop(
+                QuotaTelemetryError("quota scope does not match binding")
+            )
             return
         context = QuotaWaitContext(
             kind="quota",
@@ -295,10 +299,10 @@ class Coordinator:
     def _note_quota_recovery_failure(self) -> None:
         """Retain the original failure behind a sanitized recovery diagnostic."""
         self._control.latch_stop(
-            QuotaTelemetryError("quota recovery ended without availability")
+            RuntimeError("quota recovery ended without availability")
         )
         reason = self._control.reason
-        if reason is not None and isinstance(reason.first, Exception):
+        if reason is not None and isinstance(reason.first, QuotaTelemetryError):
             failure = QuotaTelemetryError("quota recovery failed")
             failure.__cause__ = reason.first
             self._error = failure
@@ -447,8 +451,8 @@ def _is_initiating_failure(
     if reason is None:
         return False
     first = reason.first
-    if error is first and invocation_error is first:
-        return True
+    if isinstance(first, QuotaTelemetryError) and error is first:
+        return invocation_error is first and first is not reason.recording_failure
     if not isinstance(error, asyncio.CancelledError):
         return False
     if not isinstance(first, BaseException) or first is reason.recording_failure:
