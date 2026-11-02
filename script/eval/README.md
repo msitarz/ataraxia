@@ -123,10 +123,18 @@ directory; the harness does not resume a previous run.
   quota.
 - Output may be inside or outside the repository. If it is inside and not
   ignored by Git, it leaves untracked files and makes the checkout dirty.
-- Dry run reports the scheduled call count and token estimates, not a listing
-  of every matrix row. It validates and freezes inputs, but does not start
-  Codex or create harness output. A first tokenizer lookup may download and
-  cache vocabulary data.
+- Dry run lists every scheduled position, source path, model, effort, and token
+  estimate, with totals and estimation caveats. Instructions are estimated
+  separately. It validates and freezes inputs, but does not start Codex or
+  create harness output. A first tokenizer lookup may download and cache
+  vocabulary data.
+
+For example, one dry-run row can look like:
+
+```text
+  0: model=gpt-6-luna effort=low context tokens=42
+    source: 'contexts/example.txt'
+```
 
 ## Artifacts and control
 
