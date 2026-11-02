@@ -963,7 +963,9 @@ _QUOTA_MESSAGE = (
 )
 
 
-def quota_output(*, first: str | None = None, last: str | None = None) -> bytes:
+def quota_output(
+    *, first: str | None = None, last: str | None = None, message: str = _QUOTA_MESSAGE
+) -> bytes:
     """Build the reviewed operational event sequence with explicit variants."""
     return (
         "\n".join((
@@ -973,11 +975,11 @@ def quota_output(*, first: str | None = None, last: str | None = None) -> bytes:
                 '"thread_id":"01a1781b-a54f-7763-9f82-74709e5e0fcf"}'
             ),
             '{"type":"turn.started"}',
-            json.dumps({"type": "error", "message": _QUOTA_MESSAGE}),
+            json.dumps({"type": "error", "message": message}),
             last
             or json.dumps({
                 "type": "turn.failed",
-                "error": {"message": _QUOTA_MESSAGE},
+                "error": {"message": message},
             }),
         ))
         + "\n"
@@ -1112,6 +1114,38 @@ def test_classifier_rejects_ambiguous_quota_evidence(
     # Given
     evidence = quota_evidence(outcome)
     classifier = CodexOutcomeClassifier(cli_version=version)
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "unknown"
+    assert assessment.no_result_basis == "present_or_unknown"
+
+
+@pytest.mark.parametrize("version", ["0.164.0", "codex-cli 0.165.0"])
+def test_classifier_recognizes_synthetic_capacity_failure(version: str) -> None:
+    # Given: the envelope is constructed from upstream source, not a live capture.
+    message = "Selected model is at capacity. Please try a different model."
+    evidence = quota_evidence(
+        Completed(quota_observation(quota_output(message=message)), 1)
+    )
+    classifier = CodexOutcomeClassifier(cli_version=version)
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "capacity"
+    assert assessment.no_result_basis == "confident_absence"
+
+
+def test_classifier_refuses_capacity_text_in_an_ambiguous_envelope() -> None:
+    # Given
+    message = "Selected model is at capacity. Please try a different model."
+    stdout = quota_output(message=message) + b'{"type":"item.completed"}\n'
+    evidence = quota_evidence(Completed(quota_observation(stdout), 1))
+    classifier = CodexOutcomeClassifier(cli_version="0.164.0")
 
     # When
     assessment = classifier.assess(evidence)

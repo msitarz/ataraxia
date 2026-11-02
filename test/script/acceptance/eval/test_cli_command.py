@@ -12,7 +12,11 @@ import sys
 
 import pytest
 
-from test.script.integration.eval.support import git_test_environment, make_repository
+from test.script.integration.eval.support import (
+    git,
+    git_test_environment,
+    make_repository,
+)
 
 ROOT = Path(__file__).resolve().parents[4]
 FIXTURE = ROOT / "test/script/fixtures/eval/fake_codex.py"
@@ -591,3 +595,110 @@ def test_quota_wait_rejects_unsupported_codex_home(
     assert result.returncode == 3, result.stderr
     assert "Codex home" in result.stderr or "CODEX_HOME" in result.stderr
     assert not Path(env["FAKE_QUOTA_STATE"]).exists()
+
+
+@pytest.mark.parametrize(
+    ("mode", "retry_options", "expected_exit", "attempts", "state"),
+    [
+        ("success", [], 1, 1, "failed"),
+        (
+            "success",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            0,
+            2,
+            "complete",
+        ),
+        (
+            "exhaust",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            1,
+            2,
+            "failed",
+        ),
+        (
+            "ambiguous",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            1,
+            1,
+            "failed",
+        ),
+    ],
+    ids=["default-zero", "retry-success", "exhausted", "ambiguous"],
+)
+def test_capacity_retries_use_the_same_frozen_invocation(
+    tmp_path: Path,
+    mode: str,
+    retry_options: list[str],
+    expected_exit: int,
+    attempts: int,
+    state: str,
+) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    instructions = add_capacity_instructions(repo)
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    binary = tmp_path / "bin" / "codex"
+    shutil.copyfile(ROOT / "test/script/fixtures/eval/fake_capacity_codex.py", binary)
+    binary.chmod(0o755)
+    log = tmp_path / "invocations.jsonl"
+    env["FAKE_CAPACITY_LOG"] = str(log)
+    env["FAKE_CAPACITY_MODE"] = mode
+    settings = ["--instructions-file", str(instructions), *retry_options]
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), *settings],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == expected_exit, result.stderr
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+    assert len(calls) == attempts
+    assert len({call["pid"] for call in calls}) == attempts
+    assert all(call["argv"] == calls[0]["argv"] for call in calls)
+    assert all(call["instructions"] == calls[0]["instructions"] for call in calls)
+    assert calls[0]["instructions"] == "frozen instructions"
+    assert "--model=model" in calls[0]["argv"] and "context" in calls[0]["argv"]
+    record = json.loads((output / "run.json").read_text())
+    assert record["calls"][0]["state"] == state
+    assert len(record["calls"][0]["attempts"]) == attempts
+
+
+def add_capacity_instructions(repo: Path) -> Path:
+    """Commit a frozen instructions input in the disposable repository.
+
+    Returns:
+        The committed instructions path.
+    """
+    instructions = repo / "instructions.txt"
+    instructions.write_text("frozen instructions")
+    git(repo, "add", "instructions.txt")
+    git(repo, "commit", "-qm", "instructions")
+    return instructions
