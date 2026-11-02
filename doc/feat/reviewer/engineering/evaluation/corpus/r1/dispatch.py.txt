@@ -6,7 +6,9 @@ below owns the complete record it returns. Identifiers are nonempty strings;
 quantities and times are JSON integers (booleans are not integers here).
 Amounts are in whole cents, weights in grams, and times in UTC epoch seconds.
 The caller persists all fields in the returned value and uses the identifiers
-for ownership checks before exposing a record to a customer.
+for ownership checks before exposing a record to a customer. Record dataclasses
+are trusted internal representations: these adapters own and enforce the domain
+invariants when constructing them; internal callers supply validated values.
 """
 
 from dataclasses import dataclass
@@ -18,24 +20,44 @@ class RecordError(ValueError):
 
 
 def text(value: object, field: str) -> str:
+    """Validate a nonempty string.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
     if not isinstance(value, str) or not value.strip():
         raise RecordError(f"{field} must be a nonempty string")
     return value
 
 
 def integer(value: object, field: str, minimum: int = 0) -> int:
+    """Validate an integer at the stated minimum.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
     if type(value) is not int or value < minimum:
         raise RecordError(f"{field} must be an integer at least {minimum}")
     return value
 
 
 def fields(value: object, name: str) -> dict[str, Any]:
+    """Validate a string-keyed object.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
     if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
         raise RecordError(f"{name} must be an object with string keys")
     return value
 
 
 def required(record: dict[str, Any], key: str) -> object:
+    """Read a required field.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
     if key not in record:
         raise RecordError(f"missing {key}")
     return record[key]
@@ -138,7 +160,11 @@ class Claim:
 
 
 def booking_record(value: object) -> Booking:
-    """Adapt a booking; a route must join distinct locations in time order."""
+    """Adapt a booking; a route must join distinct locations in time order.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "booking")
     booking_id = text(required(record, "booking_id"), "booking_id")
     customer_id = text(required(record, "customer_id"), "customer_id")
@@ -165,7 +191,11 @@ def booking_record(value: object) -> Booking:
 
 
 def quote_record(value: object) -> Quote:
-    """Adapt a quote whose expiry must follow its issue time."""
+    """Adapt a quote whose expiry must follow its issue time.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "quote")
     quote_id = text(required(record, "quote_id"), "quote_id")
     customer_id = text(required(record, "customer_id"), "customer_id")
@@ -190,7 +220,11 @@ def quote_record(value: object) -> Quote:
 
 
 def vehicle_record(value: object) -> Vehicle:
-    """Adapt a vehicle; its next inspection must follow the last one."""
+    """Adapt a vehicle with one current inspection whose due time follows its check.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "vehicle")
     vehicle_id = text(required(record, "vehicle_id"), "vehicle_id")
     carrier_id = text(required(record, "carrier_id"), "carrier_id")
@@ -198,8 +232,27 @@ def vehicle_record(value: object) -> Vehicle:
     registration = text(required(record, "registration"), "registration")
     capacity = integer(required(record, "capacity"), "capacity", 1)
     available = integer(required(record, "available_at"), "available_at")
-    inspected = integer(required(record, "inspected_at"), "inspected_at")
-    due = integer(required(record, "inspection_due"), "inspection_due")
+    history = required(record, "inspections")
+    if not isinstance(history, list):
+        raise RecordError("inspections must be a list")
+    current = None
+    for raw_inspection in history:
+        inspection = fields(raw_inspection, "inspection")
+        status = text(required(inspection, "status"), "inspection status")
+        if status not in {"current", "past"}:
+            raise RecordError("inspection status must be current or past")
+        checked = integer(required(inspection, "checked_at"), "checked_at")
+        next_due = integer(required(inspection, "next_due"), "next_due")
+        if status == "current":
+            if current is not None:
+                raise RecordError("multiple current inspections")
+            if available >= next_due:
+                if checked >= next_due:
+                    raise RecordError("inspection due must follow inspection")
+            current = (checked, next_due)
+    if current is None:
+        raise RecordError("missing current inspection")
+    inspected, due = current
     return Vehicle(
         vehicle_id=vehicle_id,
         carrier_id=carrier_id,
@@ -213,7 +266,11 @@ def vehicle_record(value: object) -> Vehicle:
 
 
 def consignment_record(value: object) -> Consignment:
-    """Adapt a consignment due strictly after pickup."""
+    """Adapt a consignment due strictly after pickup.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "consignment")
     consignment_id = text(required(record, "consignment_id"), "consignment_id")
     customer_id = text(required(record, "customer_id"), "customer_id")
@@ -238,7 +295,11 @@ def consignment_record(value: object) -> Consignment:
 
 
 def route_record(value: object) -> Route:
-    """Adapt a carrier route between different locations in time order."""
+    """Adapt a carrier route between different locations in time order.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "route")
     route_id = text(required(record, "route_id"), "route_id")
     carrier_id = text(required(record, "carrier_id"), "carrier_id")
@@ -263,7 +324,11 @@ def route_record(value: object) -> Route:
 
 
 def invoice_record(value: object) -> Invoice:
-    """Adapt an invoice whose total is the subtotal plus tax."""
+    """Adapt an invoice whose total is the subtotal plus tax.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "invoice")
     invoice_id = text(required(record, "invoice_id"), "invoice_id")
     customer_id = text(required(record, "customer_id"), "customer_id")
@@ -288,7 +353,11 @@ def invoice_record(value: object) -> Invoice:
 
 
 def delivery_record(value: object) -> Delivery:
-    """Adapt a delivery; damaged pieces cannot exceed received pieces."""
+    """Adapt a delivery; damaged pieces cannot exceed received pieces.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "delivery")
     delivery_id = text(required(record, "delivery_id"), "delivery_id")
     customer_id = required(record, "customer_id")
@@ -313,7 +382,11 @@ def delivery_record(value: object) -> Delivery:
 
 
 def claim_record(value: object) -> Claim:
-    """Adapt a claim no larger than its declared value and before deadline."""
+    """Adapt a claim no larger than its declared value and before deadline.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
     record = fields(value, "claim")
     claim_id = text(required(record, "claim_id"), "claim_id")
     customer_id = text(required(record, "customer_id"), "customer_id")
