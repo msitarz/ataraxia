@@ -3,7 +3,10 @@
 
 import argparse
 from collections.abc import Sequence
+import difflib
 from pathlib import Path
+import re
+from typing import NoReturn, override
 
 from pydantic import ValidationError
 
@@ -13,6 +16,106 @@ from script.eval.model import (
     OrderedOption,
     SeparatorOption,
 )
+
+# Require one close option to avoid suggesting an ambiguous correction.
+_OPTION_SUGGESTION_CUTOFF = 0.75
+
+_NUMERIC_FIELDS = frozenset({
+    "concurrency",
+    "timeout_seconds",
+    "cleanup_timeout_seconds",
+    "grace_seconds",
+    "output_limit_bytes",
+    "progress_interval_seconds",
+    "retry_limit",
+    "quota_wait_limit_seconds",
+    "quota_poll_interval_seconds",
+    "quota_probe_budget",
+    "capacity_retry_limit",
+    "capacity_backoff_base_seconds",
+    "capacity_backoff_cap_seconds",
+})
+
+_SEMANTIC_ERRORS = {
+    "at least one directory is required": (
+        "provide at least one -d/--directory parameter. "
+        "Example: -d path/to/contexts -m gpt-6-luna -e low -n"
+    ),
+    "at least one model is required": "provide at least one -m/--model parameter.",
+    "at least one effort is required": "provide at least one -e/--effort parameter.",
+    "execution requires an output directory": (
+        "execution requires -o/--output-directory; provide one or use -n/--dry-run."
+    ),
+    "grace_seconds must be less than cleanup_timeout_seconds": (
+        "--grace-seconds must be less than --cleanup-timeout-seconds."
+    ),
+    "separators must occur singly between directories": (
+        "place each -s/--separator between two -d/--directory parameters."
+    ),
+    "separator contains an unknown or dangling escape": (
+        r"-s/--separator supports only \n, \r, \t, and \\ escapes."
+    ),
+    "capacity retries require backoff base and cap durations": (
+        "--capacity-retry-limit requires --capacity-backoff-base-seconds "
+        "and --capacity-backoff-cap-seconds."
+    ),
+    "capacity backoff cap must be at least its base": (
+        "--capacity-backoff-cap-seconds must be at least "
+        "--capacity-backoff-base-seconds."
+    ),
+}
+
+
+class _ArgumentParser(argparse.ArgumentParser):
+    """Render argument failures without repeating the full help text."""
+
+    @override
+    def error(self, message: str) -> NoReturn:
+        """Exit with concise guidance for an invalid command line."""
+        prefix = "unrecognized arguments: "
+        if message.startswith(prefix):
+            unknown = message.removeprefix(prefix).split()[0]
+            options = [
+                name for name in self._option_string_actions if name.startswith("--")
+            ]
+            matches = difflib.get_close_matches(
+                unknown.split("=", 1)[0], options, n=2, cutoff=_OPTION_SUGGESTION_CUTOFF
+            )
+            message = f"unrecognized argument {unknown!r}."
+            if len(matches) == 1:
+                message += f" Did you mean {matches[0]}?"
+        else:
+            numeric = re.fullmatch(
+                r"argument (.+?): invalid (int|float) value: .*", message
+            )
+            if numeric:
+                kind = "integer" if numeric[2] == "int" else "number"
+                message = f"{numeric[1]} requires a valid {kind}."
+        self.exit(2, f"error: {message}\nRun with --help for all options.\n")
+
+
+def _validation_message(error: ValidationError) -> str:
+    """Translate the first model validation failure into public CLI guidance.
+
+    Returns:
+        A concise explanation using command-line option names.
+    """
+    detail = error.errors(include_url=False, include_input=False)[0]
+    location = detail["loc"]
+    if location and location[0] in _NUMERIC_FIELDS:
+        option = "--" + str(location[0]).replace("_", "-")
+        match detail["type"]:
+            case "greater_than":
+                return f"{option} must be greater than {detail['ctx']['gt']}."
+            case "greater_than_equal":
+                return f"{option} must be at least {detail['ctx']['ge']}."
+            case "finite_number":
+                return f"{option} must be finite."
+        return f"invalid value for {option}; check --help for its expected value."
+    cause = detail.get("ctx", {}).get("error")
+    return _SEMANTIC_ERRORS.get(
+        str(cause), "invalid option combination; check --help for supported options."
+    )
 
 
 class OrderedAction(argparse.Action):
@@ -69,7 +172,7 @@ def parse_config(argv: Sequence[str], /) -> HarnessConfig:
             instructions_file_path=args.instructions_file_path,
         )
     except ValidationError as error:
-        parser.error(str(error))
+        parser.error(_validation_message(error))
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -78,7 +181,7 @@ def _parser() -> argparse.ArgumentParser:
     Returns:
         The argument parser used for one invocation.
     """
-    parser = argparse.ArgumentParser(
+    parser = _ArgumentParser(
         description="Run a frozen evaluation matrix.",
         epilog=(
             "Exit codes: 0 success, 1 failure, 2 invalid arguments, "

@@ -702,3 +702,46 @@ def add_capacity_instructions(repo: Path) -> Path:
     git(repo, "add", "instructions.txt")
     git(repo, "commit", "-qm", "instructions")
     return instructions
+
+
+@pytest.mark.parametrize(
+    ("arguments", "message"),
+    [
+        (
+            ["-m", "gpt-6-luna", "-e", "low", "-n"],
+            "provide at least one -d/--directory",
+        ),
+        (
+            ["-d", "missing", "-m", "model", "-e", "low", "-n", "--concurency", "2"],
+            "Did you mean --concurrency?",
+        ),
+    ],
+    ids=["missing-directory", "unknown-option"],
+)
+def test_invalid_command_exits_before_preparation(
+    tmp_path: Path, arguments: list[str], message: str
+) -> None:
+    # Given
+    env = environment(tmp_path)
+    marker = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(marker)
+    output = tmp_path / "evidence"
+
+    # When
+    result = subprocess.run(
+        [sys.executable, "-m", "script.eval", *arguments, "-o", str(output)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 2
+    assert message in result.stderr
+    assert "usage:" not in result.stderr
+    assert "input_value" not in result.stderr
+    assert result.stdout == ""
+    assert not output.exists()
+    assert not marker.exists()
