@@ -1,0 +1,1054 @@
+{
+  "c-r1-booking-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "booking_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        66,
+        75
+      ],
+      [
+        162,
+        190
+      ]
+    ]
+  },
+  "c-r1-claim-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "claim_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        150,
+        159
+      ],
+      [
+        384,
+        410
+      ]
+    ]
+  },
+  "c-r1-consignment-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "consignment_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        102,
+        111
+      ],
+      [
+        268,
+        294
+      ]
+    ]
+  },
+  "c-r1-delivery-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "delivery_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        138,
+        147
+      ],
+      [
+        355,
+        381
+      ]
+    ]
+  },
+  "c-r1-invoice-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "invoice_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        126,
+        135
+      ],
+      [
+        326,
+        352
+      ]
+    ]
+  },
+  "c-r1-quote-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "quote_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        78,
+        87
+      ],
+      [
+        193,
+        219
+      ]
+    ]
+  },
+  "c-r1-route-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "route_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        114,
+        123
+      ],
+      [
+        297,
+        323
+      ]
+    ]
+  },
+  "c-r1-vehicle-record": {
+    "target": {
+      "rule_id": "R1",
+      "file_id": "r1/dispatch.py.txt",
+      "qualified_function_name": "vehicle_record"
+    },
+    "ranges": [
+      [
+        1,
+        12
+      ],
+      [
+        14,
+        14
+      ],
+      [
+        15,
+        15
+      ],
+      [
+        18,
+        19
+      ],
+      [
+        22,
+        30
+      ],
+      [
+        33,
+        41
+      ],
+      [
+        44,
+        52
+      ],
+      [
+        55,
+        63
+      ],
+      [
+        90,
+        99
+      ],
+      [
+        222,
+        265
+      ]
+    ]
+  },
+  "c-r3-allocate": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "allocate"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        81,
+        86
+      ],
+      [
+        89,
+        94
+      ],
+      [
+        207,
+        223
+      ]
+    ]
+  },
+  "c-r3-assignment": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "assignment"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        15,
+        24
+      ],
+      [
+        27,
+        35
+      ],
+      [
+        38,
+        44
+      ],
+      [
+        57,
+        63
+      ],
+      [
+        97,
+        104
+      ],
+      [
+        107,
+        116
+      ],
+      [
+        130,
+        154
+      ]
+    ]
+  },
+  "c-r3-load-sequence": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "load_sequence"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        15,
+        24
+      ],
+      [
+        226,
+        235
+      ]
+    ]
+  },
+  "c-r3-next-stops": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "next_stops"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        38,
+        44
+      ],
+      [
+        247,
+        257
+      ]
+    ]
+  },
+  "c-r3-reschedule": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "reschedule"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        15,
+        24
+      ],
+      [
+        38,
+        44
+      ],
+      [
+        66,
+        71
+      ],
+      [
+        286,
+        301
+      ]
+    ]
+  },
+  "c-r3-route-estimate": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "route_estimate"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        38,
+        44
+      ],
+      [
+        66,
+        71
+      ],
+      [
+        107,
+        116
+      ],
+      [
+        176,
+        193
+      ]
+    ]
+  },
+  "c-r3-select-offer": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "select_offer"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        15,
+        24
+      ],
+      [
+        47,
+        54
+      ],
+      [
+        157,
+        173
+      ]
+    ]
+  },
+  "c-r3-urgency": {
+    "target": {
+      "rule_id": "R3",
+      "file_id": "r3/planning.py.txt",
+      "qualified_function_name": "urgency"
+    },
+    "ranges": [
+      [
+        1,
+        9
+      ],
+      [
+        11,
+        11
+      ],
+      [
+        12,
+        12
+      ],
+      [
+        15,
+        24
+      ],
+      [
+        74,
+        78
+      ],
+      [
+        196,
+        204
+      ]
+    ]
+  },
+  "c-r4-ledger-add-booking": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.add_booking"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        34,
+        39
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        116,
+        135
+      ]
+    ]
+  },
+  "c-r4-ledger-add-payment": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.add_payment"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        42,
+        46
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        155,
+        168
+      ]
+    ]
+  },
+  "c-r4-ledger-allocate": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.allocate"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        49,
+        53
+      ],
+      [
+        56,
+        60
+      ],
+      [
+        79,
+        91
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        221,
+        240
+      ]
+    ]
+  },
+  "c-r4-ledger-allocation": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.allocation"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        56,
+        60
+      ],
+      [
+        75,
+        76
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        202,
+        219
+      ]
+    ]
+  },
+  "c-r4-ledger-booking": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.booking"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        34,
+        39
+      ],
+      [
+        63,
+        64
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        98,
+        114
+      ]
+    ]
+  },
+  "c-r4-ledger-events": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.events"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        30,
+        31
+      ],
+      [
+        49,
+        53
+      ],
+      [
+        67,
+        68
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        170,
+        185
+      ]
+    ]
+  },
+  "c-r4-ledger-payment": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.payment"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        26,
+        27
+      ],
+      [
+        42,
+        46
+      ],
+      [
+        71,
+        72
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        137,
+        153
+      ]
+    ]
+  },
+  "c-r4-ledger-set-state": {
+    "target": {
+      "rule_id": "R4",
+      "file_id": "r4/ledger.py.txt",
+      "qualified_function_name": "Ledger.set_state"
+    },
+    "ranges": [
+      [
+        1,
+        18
+      ],
+      [
+        20,
+        20
+      ],
+      [
+        21,
+        21
+      ],
+      [
+        22,
+        22
+      ],
+      [
+        23,
+        23
+      ],
+      [
+        94,
+        96
+      ],
+      [
+        291,
+        305
+      ]
+    ]
+  }
+}
