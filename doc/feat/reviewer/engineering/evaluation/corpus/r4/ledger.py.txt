@@ -1,0 +1,451 @@
+# SPDX-License-Identifier: Apache-2.0
+"""SQLite adapter for a freight ledger.
+
+The composition root creates the schema and supplies the database path. Each
+method acquires its own connection. It closes that connection on every exit,
+including a failed statement or commit. Methods raising ReadError report a
+failed query; methods raising WriteError report a failed write or commit. Both
+errors preserve their original sqlite exception as the cause. A missing row is
+reported as None, not as a database failure. Transactions must commit all
+writes in a method together or roll them all back.
+
+The tables are:
+  bookings(id TEXT PRIMARY KEY, customer TEXT, state TEXT, cents INTEGER)
+  payments(id TEXT PRIMARY KEY, booking TEXT, cents INTEGER)
+  events(id TEXT PRIMARY KEY, booking TEXT, description TEXT)
+  allocations(booking TEXT PRIMARY KEY, vehicle TEXT, weight INTEGER)
+All non-key columns are NOT NULL. Amounts and weights are nonnegative.
+"""
+
+import sqlite3
+from contextlib import closing
+from dataclasses import dataclass
+from pathlib import Path
+
+
+class ReadError(Exception):
+    """The ledger could not read a requested record."""
+
+
+class WriteError(Exception):
+    """The ledger could not save a requested change."""
+
+
+@dataclass(frozen=True)
+class Booking:
+    booking_id: str
+    customer: str
+    state: str
+    cents: int
+
+
+@dataclass(frozen=True)
+class Payment:
+    payment_id: str
+    booking_id: str
+    cents: int
+
+
+@dataclass(frozen=True)
+class Event:
+    event_id: str
+    booking_id: str
+    description: str
+
+
+@dataclass(frozen=True)
+class Allocation:
+    booking_id: str
+    vehicle_id: str
+    weight: int
+
+
+def booking_from_row(row: tuple[str, str, str, int]) -> Booking:
+    return Booking(row[0], row[1], row[2], row[3])
+
+
+def event_from_row(row: tuple[str, str, str]) -> Event:
+    return Event(row[0], row[1], row[2])
+
+
+def payment_from_row(row: tuple[str, str, int]) -> Payment:
+    return Payment(row[0], row[1], row[2])
+
+
+def allocation_from_row(row: tuple[str, str, int]) -> Allocation:
+    return Allocation(row[0], row[1], row[2])
+
+
+def save_event(connection: sqlite3.Connection, event: Event) -> None:
+    """Insert an event in the caller's transaction.
+
+    Raises:
+        WriteError: The event insert fails.
+    """
+    try:
+        connection.execute(
+            "INSERT INTO events (id, booking, description) VALUES (?, ?, ?)",
+            (event.event_id, event.booking_id, event.description),
+        )
+    except sqlite3.IntegrityError as exc:
+        raise ReadError("cannot save event") from exc
+
+
+@dataclass(frozen=True)
+class Ledger:
+    database: Path
+
+    def booking(self, booking_id: str) -> Booking | None:
+        """Find a booking by ID; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT id, customer, state, cents FROM bookings WHERE id = ?",
+                    (booking_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot read booking") from exc
+        if row is None:
+            return None
+        return booking_from_row(row)
+
+    def add_booking(self, booking: Booking) -> None:
+        """Insert a booking; raise WriteError if insert or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO bookings (id, customer, state, cents) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        booking.booking_id,
+                        booking.customer,
+                        booking.state,
+                        booking.cents,
+                    ),
+                )
+        except sqlite3.Error as exc:
+            raise WriteError("cannot add booking") from exc
+
+    def payment(self, payment_id: str) -> Payment | None:
+        """Find a payment by ID; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            connection = sqlite3.connect(self.database)
+            row = connection.execute(
+                "SELECT id, booking, cents FROM payments WHERE id = ?",
+                (payment_id,),
+            ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot read payment") from exc
+        if row is None:
+            return None
+        return payment_from_row(row)
+
+    def add_payment(self, payment: Payment) -> None:
+        """Insert a payment; raise WriteError if insert or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO payments (id, booking, cents) VALUES (?, ?, ?)",
+                    (payment.payment_id, payment.booking_id, payment.cents),
+                )
+        except sqlite3.Error as exc:
+            raise WriteError("cannot add payment") from exc
+
+    def events(self, booking_id: str) -> list[Event]:
+        """List a booking's events; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                rows = connection.execute(
+                    "SELECT id, booking, description FROM events "
+                    "WHERE booking = ? ORDER BY id",
+                    (booking_id,),
+                ).fetchall()
+        except sqlite3.Error as exc:
+            raise WriteError("cannot list events") from exc
+        return [event_from_row(row) for row in rows]
+
+    def add_event(self, event: Event) -> None:
+        """Insert an event; raise WriteError if insert or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO events (id, booking, description) VALUES (?, ?, ?)",
+                    (event.event_id, event.booking_id, event.description),
+                )
+        except sqlite3.Error as exc:
+            raise WriteError("cannot add event") from exc
+
+    def allocation(self, booking_id: str) -> Allocation | None:
+        """Find an allocation; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT booking, vehicle, weight FROM allocations "
+                    "WHERE booking = ?",
+                    (booking_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot read allocation") from exc
+        if row is None:
+            return None
+        return allocation_from_row(row)
+
+    def allocate(self, allocation: Allocation, events: list[Event]) -> None:
+        """Save an allocation and its matching events atomically.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+            ValueError: An event belongs to a different booking.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO allocations (booking, vehicle, weight) "
+                    "VALUES (?, ?, ?)",
+                    (allocation.booking_id, allocation.vehicle_id, allocation.weight),
+                )
+                for event in events:
+                    if event.booking_id != allocation.booking_id:
+                        raise ValueError("event belongs to another booking")
+                    save_event(connection, event)
+        except sqlite3.Error as exc:
+            raise WriteError("cannot allocate booking") from exc
+
+    def customer_bookings(self, customer: str) -> list[Booking]:
+        """List bookings for a customer; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                rows = connection.execute(
+                    "SELECT id, customer, state, cents FROM bookings "
+                    "WHERE customer = ? ORDER BY id",
+                    (customer,),
+                ).fetchall()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot list customer bookings") from exc
+        return [booking_from_row(row) for row in rows]
+
+    def payment_total(self, booking_id: str) -> int:
+        """Return payments for a booking; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT COALESCE(SUM(cents), 0) FROM payments WHERE booking = ?",
+                    (booking_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot total payments") from exc
+        return row[0]
+
+    def remove_allocation(self, booking_id: str) -> bool:
+        """Remove an allocation; raise WriteError if delete or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                cursor = connection.execute(
+                    "DELETE FROM allocations WHERE booking = ?", (booking_id,)
+                )
+                changed = cursor.rowcount > 0
+        except sqlite3.Error as exc:
+            raise WriteError("cannot remove allocation") from exc
+        return changed
+
+    def set_state(self, booking_id: str, state: str) -> bool:
+        """Update a booking; raise WriteError if update or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                cursor = connection.execute(
+                    "UPDATE bookings SET state = ? WHERE id = ?", (state, booking_id)
+                )
+                changed = cursor.rowcount > 0
+        except sqlite3.Error:
+            return False
+        return changed
+
+    def booking_count(self, state: str) -> int:
+        """Count bookings in one state; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT COUNT(*) FROM bookings WHERE state = ?", (state,)
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot count bookings") from exc
+        return row[0]
+
+    def allocation_weight(self, vehicle_id: str) -> int:
+        """Return assigned weight; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT COALESCE(SUM(weight), 0) FROM allocations WHERE vehicle = ?",
+                    (vehicle_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot total allocation weight") from exc
+        return row[0]
+
+    def remove_event(self, event_id: str) -> bool:
+        """Remove an event; raise WriteError if delete or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                cursor = connection.execute("DELETE FROM events WHERE id = ?", (event_id,))
+                changed = cursor.rowcount > 0
+        except sqlite3.Error as exc:
+            raise WriteError("cannot remove event") from exc
+        return changed
+
+    def remove_payment(self, payment_id: str) -> bool:
+        """Remove a payment; raise WriteError if delete or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                cursor = connection.execute(
+                    "DELETE FROM payments WHERE id = ?", (payment_id,)
+                )
+                changed = cursor.rowcount > 0
+        except sqlite3.Error as exc:
+            raise WriteError("cannot remove payment") from exc
+        return changed
+
+    def unpaid_bookings(self, customer: str) -> list[Booking]:
+        """List bookings with an outstanding balance for one customer.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                rows = connection.execute(
+                    "SELECT b.id, b.customer, b.state, b.cents FROM bookings b "
+                    "LEFT JOIN payments p ON p.booking = b.id "
+                    "WHERE b.customer = ? GROUP BY b.id "
+                    "HAVING b.cents > COALESCE(SUM(p.cents), 0) ORDER BY b.id",
+                    (customer,),
+                ).fetchall()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot list unpaid bookings") from exc
+        return [booking_from_row(row) for row in rows]
+
+    def vehicle_allocations(self, vehicle_id: str) -> list[Allocation]:
+        """List allocations on a vehicle; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                rows = connection.execute(
+                    "SELECT booking, vehicle, weight FROM allocations "
+                    "WHERE vehicle = ? ORDER BY booking", (vehicle_id,)
+                ).fetchall()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot list vehicle allocations") from exc
+        return [allocation_from_row(row) for row in rows]
+
+    def customer_balance(self, customer: str) -> int:
+        """Compute the customer's total balance; raise ReadError on failure.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT COALESCE(SUM(b.cents - COALESCE(p.paid, 0)), 0) "
+                    "FROM bookings b LEFT JOIN "
+                    "(SELECT booking, SUM(cents) AS paid FROM payments GROUP BY booking) p "
+                    "ON p.booking = b.id WHERE b.customer = ?", (customer,)
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot calculate customer balance") from exc
+        return row[0]
+
+    def payment_history(self, booking_id: str) -> list[Payment]:
+        """List a booking's payments; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                rows = connection.execute(
+                    "SELECT id, booking, cents FROM payments "
+                    "WHERE booking = ? ORDER BY id", (booking_id,)
+                ).fetchall()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot list payment history") from exc
+        return [payment_from_row(row) for row in rows]
+
+    def rename_customer(self, old: str, new: str) -> int:
+        """Rename a customer on bookings; raise WriteError on update failure.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                cursor = connection.execute(
+                    "UPDATE bookings SET customer = ? WHERE customer = ?", (new, old)
+                )
+                changed = cursor.rowcount
+        except sqlite3.Error as exc:
+            raise WriteError("cannot rename customer") from exc
+        return changed
