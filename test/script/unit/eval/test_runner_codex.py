@@ -2,6 +2,7 @@
 """Codex adapter wiring through the typed runner boundaries."""
 
 from dataclasses import replace
+import json
 from pathlib import Path
 import subprocess
 import tomllib
@@ -35,6 +36,7 @@ from script.process_supervisor import (
     Completed,
     InfrastructureFailure,
     OutputLimitExceeded,
+    SignalAttempt,
     TimedOut,
 )
 
@@ -952,3 +954,168 @@ def test_classifier_propagates_failure_without_retrying() -> None:
     assert raised.value is failure
     assert calls == [evidence]
     assert calls[0] is evidence
+
+
+_QUOTA_MESSAGE = (
+    "You\u2019ve hit your usage limit. Upgrade to Pro "
+    "(https://chatgpt.com/explore/pro), visit https://chatgpt.com/settings/usage "
+    "to purchase more credits or try again at 1:18 PM."
+)
+
+
+def quota_output(*, first: str | None = None, last: str | None = None) -> bytes:
+    """Build the reviewed operational event sequence with explicit variants."""
+    return (
+        "\n".join((
+            first
+            or (
+                '{"type":"thread.started",'
+                '"thread_id":"01a1781b-a54f-7763-9f82-74709e5e0fcf"}'
+            ),
+            '{"type":"turn.started"}',
+            json.dumps({"type": "error", "message": _QUOTA_MESSAGE}),
+            last
+            or json.dumps({
+                "type": "turn.failed",
+                "error": {"message": _QUOTA_MESSAGE},
+            }),
+        ))
+        + "\n"
+    ).encode()
+
+
+def quota_evidence(
+    outcome: Completed | TimedOut | OutputLimitExceeded,
+) -> AttemptEvidence:
+    """Associate a synthetic settled result with an existing request."""
+    base = settled_evidence(configuration())
+    return replace(base, outcome=outcome, control_flow="returned")
+
+
+def quota_observation(
+    stdout: bytes, *, stderr: bytes = b"", safe: bool = True
+) -> AttemptObservation:
+    """Provide captured output and safe or unsafe cleanup evidence."""
+    cleanup = CleanupEvidence(
+        "owned",
+        (SignalAttempt("SIGKILL", "sent", None),) if safe else (),
+        "reaped",
+        None,
+    )
+    return AttemptObservation(CapturedOutput(stdout, stderr), 1.0, cleanup)
+
+
+def test_classifier_recognizes_supported_complete_quota_failure() -> None:
+    # Given
+    evidence = quota_evidence(Completed(quota_observation(quota_output()), 1))
+    classifier = CodexOutcomeClassifier(cli_version="codex-cli 0.164.0")
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "quota"
+    assert assessment.no_result_basis == "confident_absence"
+
+
+@pytest.mark.parametrize(
+    ("version", "outcome"),
+    [
+        ("codex-cli 0.165.0", Completed(quota_observation(quota_output()), 1)),
+        ("codex-cli 0.164.0", Completed(quota_observation(quota_output()), 0)),
+        ("codex-cli 0.164.0", Completed(quota_observation(quota_output()), -1)),
+        ("codex-cli 0.164.0", TimedOut(quota_observation(quota_output()), -9)),
+        (
+            "codex-cli 0.164.0",
+            OutputLimitExceeded(quota_observation(quota_output()), -9),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(quota_observation(quota_output(), safe=False), 1),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(quota_observation(quota_output(), stderr=b"error"), 1),
+        ),
+        ("codex-cli 0.164.0", Completed(quota_observation(b"not json"), 1)),
+        (
+            "codex-cli 0.164.0",
+            Completed(quota_observation(quota_output() + b'{"type":"extra"}\n'), 1),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(
+                quota_observation(quota_output(first='{ "type":"item.completed" }')), 1
+            ),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(
+                quota_observation(
+                    quota_output(
+                        last='{ "type":"turn.failed", "error":{"message":"different"} }'
+                    )
+                ),
+                1,
+            ),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(
+                quota_observation(
+                    quota_output(
+                        first=(
+                            '{"type":"item.completed", "type":"thread.started",'
+                            '"thread_id":"01a1781b-a54f-7763-9f82-74709e5e0fcf"}'
+                        )
+                    )
+                ),
+                1,
+            ),
+        ),
+        (
+            "codex-cli 0.164.0",
+            Completed(
+                quota_observation(
+                    quota_output(
+                        last=(
+                            '{"type":"turn.failed", "error":{"message":"different",'
+                            '"message":'
+                        )
+                        + json.dumps(_QUOTA_MESSAGE)
+                        + "} }"
+                    )
+                ),
+                1,
+            ),
+        ),
+    ],
+    ids=[
+        "version",
+        "zero",
+        "negative",
+        "timeout",
+        "overflow",
+        "cleanup",
+        "stderr",
+        "malformed",
+        "extra",
+        "item",
+        "mismatch",
+        "duplicate-top-level",
+        "duplicate-nested",
+    ],
+)
+def test_classifier_rejects_ambiguous_quota_evidence(
+    version: str, outcome: Completed | TimedOut | OutputLimitExceeded
+) -> None:
+    # Given
+    evidence = quota_evidence(outcome)
+    classifier = CodexOutcomeClassifier(cli_version=version)
+
+    # When
+    assessment = classifier.assess(evidence)
+
+    # Then
+    assert assessment.retry_class == "unknown"
+    assert assessment.no_result_basis == "present_or_unknown"

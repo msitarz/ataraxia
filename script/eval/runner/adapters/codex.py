@@ -203,12 +203,32 @@ def _quota_failure(evidence: AttemptEvidence) -> bool:
     ):
         return False
     try:
-        rows = [json.loads(line) for line in output.stdout.decode("utf-8").splitlines()]
-    except UnicodeDecodeError, json.JSONDecodeError:
+        rows = [
+            json.loads(line, object_pairs_hook=_unique_object)
+            for line in output.stdout.decode("utf-8").splitlines()
+        ]
+    except UnicodeDecodeError, ValueError:
         return False
     if len(rows) != 4 or not all(isinstance(row, dict) for row in rows):
         return False
     return _quota_event_sequence(rows)
+
+
+def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate JSON keys at every level of the quota envelope.
+
+    Returns:
+        The object with its unique keys.
+
+    Raises:
+        ValueError: An object repeats a key.
+    """
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON object key")
+        result[key] = value
+    return result
 
 
 def _quota_event_sequence(rows: list[dict[str, object]]) -> bool:
