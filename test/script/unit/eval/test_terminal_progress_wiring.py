@@ -72,9 +72,9 @@ class Presentation:
         interval: float,
         tty_columns: int,
         /,
-    ) -> str | None:
+    ) -> tuple[str, bool] | None:
         self.events.append(("prepare", value, now, is_tty, interval, tty_columns))
-        return self.message
+        return None if self.message is None else (self.message, False)
 
     def settle(self, value: ProgressSnapshot, now: float, result: Admission, /) -> None:
         self.events.append(("settle", value, now, result))
@@ -633,3 +633,131 @@ def test_dropped_tty_transition_is_reoffered_with_details() -> None:
     ]
     assert len(offers) == 2
     assert all("Status: quota_paused" in event[1] for event in offers)
+
+
+def test_admission_prioritizes_transitions_against_last_accepted_frame() -> None:
+    # Given
+    events: list[tuple[str, bool]] = []
+    clock = Clock([])
+    results: list[Admission] = [
+        "dropped",
+        "accepted",
+        "accepted",
+        "accepted",
+        "accepted",
+        "accepted",
+    ]
+
+    def admit(text: str, /, *, important: bool = False) -> Admission:
+        events.append((text, important))
+        return results.pop(0)
+
+    sink = TerminalProgressSink(admit, True, clock, 1.0)
+    initial = snapshot()
+    paused = replace(initial, phase="quota_paused")
+    wait = replace(paused, call_waits=(CallWait("call", "capacity", 1, 1.0, 2.0),))
+    counted = replace(wait, counts=replace(wait.counts, attempts_active=1))
+
+    # When
+    sink.publish(initial)
+    clock.now += 1
+    sink.publish(initial)
+    sink.publish(paused)
+    sink.publish(wait)
+    clock.now += 1
+    sink.publish(counted)
+    sink.publish(replace(counted, phase="final", final_status="success"))
+
+    # Then
+    assert [important for _, important in events] == [
+        True,
+        True,
+        True,
+        True,
+        False,
+        True,
+    ]
+
+
+@pytest.mark.parametrize(
+    "error",
+    [asyncio.CancelledError(), KeyboardInterrupt(), SystemExit()],
+    ids=["cancellation", "keyboard-interrupt", "system-exit"],
+)
+def test_default_presentation_propagates_interrupt_identity(
+    error: BaseException,
+) -> None:
+    # Given
+    sink = TerminalProgressSink(Writer([], error=error), False, Clock([]), 1.0)
+
+    # When
+    with pytest.raises(type(error)) as caught:
+        sink.publish(snapshot())
+
+    # Then
+    assert caught.value is error
+
+
+def test_non_tty_never_uses_color_even_if_requested() -> None:
+    # Given
+    events: list[object] = []
+    sink = TerminalProgressSink(Writer(events), False, Clock(events), 1.0, color=True)
+
+    # When
+    sink.publish(snapshot())
+
+    # Then
+    event = events[1]
+    assert isinstance(event, tuple)
+    assert "\x1b" not in event[1]
+
+
+def test_large_unicode_colored_frame_preserves_reset_and_byte_limit() -> None:
+    # Given
+    events: list[object] = []
+    presentation = Presentation(events, "é" * 20000)
+    sink = TerminalProgressSink(
+        Writer(events), True, Clock(events), 1.0, presentation=presentation, color=True
+    )
+
+    # When
+    sink.publish(snapshot())
+
+    # Then
+    event = events[2]
+    assert isinstance(event, tuple)
+    message = event[1]
+    assert len(message.encode("utf-8")) <= 16000
+    assert message.startswith("\x1b[36m") and message.endswith("\x1b[0m\n")
+    assert "[truncated]" in message
+
+
+def test_quota_change_is_important_but_age_refresh_is_routine() -> None:
+    # Given
+    priorities: list[bool] = []
+    clock = Clock([])
+
+    def admit(text: str, /, *, important: bool = False) -> Admission:
+        priorities.append(important)
+        return "accepted"
+
+    observation = QuotaObservation(
+        scope=None,
+        read_at_utc="2026-01-01T00:00:00Z",
+        source_coordinate=None,
+        windows=(),
+        diagnostic=None,
+        valid_until_utc=None,
+    )
+    value = replace(snapshot(), quota_observation=observation)
+    aged = replace(value, quota_window_ages_seconds=((QuotaWindowId("weekly"), 2.0),))
+    sink = TerminalProgressSink(admit, True, clock, 1.0)
+
+    # When
+    sink.publish(snapshot())
+    sink.publish(value)
+    clock.now += 1
+    sink.publish(aged)
+
+    # Then
+    assert priorities == [True, True, False]

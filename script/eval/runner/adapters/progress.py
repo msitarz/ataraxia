@@ -23,6 +23,9 @@ from script.eval.runner.ports import (
 MAX_DETAILS = 8
 MAX_REPORT_CHARS = 12000
 MAX_REPORT_BYTES = 16000
+TRUNCATION_MARKER = "... [truncated]"
+COLOR_PREFIX = "\x1b[36m"
+COLOR_SUFFIX = "\x1b[0m\n"
 
 type Admission = Literal["accepted", "dropped", "unavailable"]
 
@@ -46,8 +49,8 @@ class Presentation(Protocol):
         interval_seconds: float,
         tty_columns: int,
         /,
-    ) -> str | None:
-        """Select and render an update, or skip it."""
+    ) -> tuple[str, bool] | None:
+        """Select a rendered update and its admission priority, or skip it."""
         ...
 
     def settle(
@@ -103,16 +106,20 @@ class TerminalProgressSink:
         bypass routine throttling; a skipped update makes no write attempt.
         """
         now = self.runtime.monotonic()
-        message = self._presentation.prepare(
+        prepared = self._presentation.prepare(
             snapshot, now, self.is_tty, self.interval_seconds, self.tty_columns
         )
-        if message is None:
+        if prepared is None:
             return
-        message = _bounded(message)
-        if self.color:
-            message = "\x1b[36m" + message.removesuffix("\n") + "\x1b[0m\n"
+        message, important = prepared
+        if self.is_tty and self.color:
+            budget = MAX_REPORT_BYTES - len(COLOR_PREFIX) - len(COLOR_SUFFIX)
+            message = COLOR_PREFIX + _bounded(message.removesuffix("\n"), budget)
+            message = message.removesuffix("\n") + COLOR_SUFFIX
+        else:
+            message = _bounded(message, MAX_REPORT_BYTES)
         try:
-            result = self.admit(_bounded(message), important=snapshot.phase == "final")
+            result = self.admit(message, important=important)
         except OSError:
             result = "unavailable"
         self._presentation.settle(snapshot, now, result)
@@ -135,11 +142,11 @@ class _TerminalPresentation:
         interval_seconds: float,
         tty_columns: int,
         /,
-    ) -> str | None:
+    ) -> tuple[str, bool] | None:
         """Render transitions immediately and routine updates at the interval.
 
         Returns:
-            The next message, or None when no write is due.
+            The next message and its priority, or None when no write is due.
         """
         if self.disabled:
             return None
@@ -150,7 +157,10 @@ class _TerminalPresentation:
             and now - self.last_attempt < interval_seconds
         ):
             return None
-        return _render(snapshot, is_tty, tty_columns)
+        important = snapshot.phase == "final" or _detail_changed(
+            self.last_admitted, transition
+        )
+        return _render(snapshot, is_tty, tty_columns), important
 
     def settle(
         self, snapshot: ProgressSnapshot, now: float, result: Admission, /
@@ -291,7 +301,7 @@ def _render(snapshot: ProgressSnapshot, is_tty: bool, tty_columns: int) -> str:
     lines.extend(_details(snapshot))
     text = "\n".join(lines)
     if len(text) > MAX_REPORT_CHARS:
-        text = text[: MAX_REPORT_CHARS - 16] + "... [truncated]"
+        text = text[: MAX_REPORT_CHARS - len(TRUNCATION_MARKER)] + TRUNCATION_MARKER
     return text + "\n"
 
 
@@ -401,15 +411,14 @@ def _safe(value: str) -> str:
     )
 
 
-def _bounded(message: str) -> str:
+def _bounded(message: str, limit: int) -> str:
     """Bound UTF-8 output with a visible truncation marker.
 
     Returns:
         The original message or a complete UTF-8 prefix with a marker.
     """
     data = message.encode("utf-8")
-    limit = MAX_REPORT_BYTES
     if len(data) <= limit:
         return message
-    marker = "... [truncated]\n"
+    marker = TRUNCATION_MARKER + "\n"
     return data[: limit - len(marker)].decode("utf-8", errors="ignore") + marker

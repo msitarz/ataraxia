@@ -376,20 +376,44 @@ Codex, quota, and runtime adapters.
   local backoff never masks active work on other calls. The snapshot carries
   existing scoped quota observations and producer-based per-window ages; it
   performs no quota reads, model calls, or input reads.
-- The progress adapter renders bounded, readable snapshots. A single daemon
-  writer owns the duplicated stderr descriptor, with one claimed frame and one
-  replaceable pending frame. Admission is not delivery. It does not hold its
-  state lock across I/O; partial writes and output errors disable presentation.
-- On a capable terminal the writer replaces a fitting live panel only after a
-  previous frame was fully delivered. Narrow, short, resized, or detailed output
-  falls back to complete multiline blocks. Redirected output has no terminal
-  controls. Quiet and dry runs construct no writer.
-- After a successful coordinator return, standalone seals admission and gives
-  the worker a bounded asynchronous opportunity to drain. It then closes
-  admission without joining. Cancellation and errors close promptly. Pending
-  output may be lost, and one already claimed write may finish after shutdown;
-  a blocked or partial terminal write can therefore disrupt later output.
-  Progress does not change evidence, outcomes, or cancellation semantics.
+- The progress adapter renders bounded, readable snapshots and offers meaningful
+  transitions immediately. The synchronous sink never waits for stderr or its
+  writer. Frames and terminal controls are bounded to 16 KiB, with an explicit
+  truncation marker. Quiet and dry runs construct no writer.
+- The writer owns a non-inheritable duplicate of stderr without changing the
+  inherited descriptor or its file-status flags. Reusing the caller's
+  descriptor cannot redirect a delayed write. Only the worker closes its owned
+  duplicate. Duplication, thread startup, and ordinary presentation errors
+  degrade to silence without changing the run result; cancellation and process
+  interrupts still propagate. A startup handoff assigns closure to the creator
+  or worker, so a late worker cannot use a revoked duplicate.
+- Admission is distinct from delivery. An accepted frame entered bounded state;
+  it may still be lost. Dropped means no admission, and unavailable means no
+  further frames can be accepted. The presenter does not infer display from
+  admission. An important transition can replace pending output, while a routine
+  refresh cannot replace a pending important transition.
+- State is bounded to one frame claimed for writing and one pending frame; no
+  per-update threads or unbounded executor backlog are allowed. The writer owns
+  only rendered text and its descriptor, and reads no inputs, quota, models, or
+  evidence. Each claimed frame gets one write attempt, which may block, fail, or
+  write a prefix. Partial writes and output errors disable later presentation;
+  no remainder is queued or retried. A partial TTY write may leave a fragment
+  or incomplete control sequence.
+- On a capable terminal the worker replaces a fitting live panel only after the
+  preceding frame was fully delivered. Narrow, short, resized, or detailed
+  output falls back to complete multiline blocks. Redirected output has no
+  terminal controls. The worker tracks geometry after successful writes, not
+  admission.
+- Submission uses bounded, nonwaiting state operations without holding locks
+  across I/O, dropping frames on contention. After a successful coordinator
+  return, standalone seals admission and gives the worker a bounded asynchronous
+  opportunity to drain, then closes without joining. Cancellation and errors
+  close promptly; close prevents new claims and discards unclaimed frames even
+  when pending state cannot immediately be cleared. At most one already claimed
+  write can remain after shutdown. An abandoned daemon may finish that attempt
+  and close its descriptor if the destination unblocks. Final progress may be
+  lost; a blocked or partial write can disrupt later stdout. This design covers
+  the standalone one-run process, not an unlimited sequence of blocked runs.
 - This lossy progress lifecycle does not apply to `EvidenceStore`: required
   evidence remains authoritative, retained and settled through cancellation,
   with recording failure reflected in run status. A progress writer cannot

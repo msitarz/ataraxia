@@ -6,6 +6,7 @@ from collections.abc import Callable, Coroutine
 from contextlib import AbstractContextManager
 from pathlib import Path
 import signal
+import tempfile
 from types import TracebackType
 
 import pytest
@@ -232,3 +233,43 @@ async def test_progress_close_failure_preserves_original_run_failure() -> None:
 
     # Then
     assert caught.value is error
+
+
+async def test_cancellation_during_progress_finish_closes_writer_and_assets(
+    tmp_path: Path,
+) -> None:
+    # Given
+    finishing = asyncio.Event()
+
+    class Writer:
+        closed = False
+
+        def finish(self) -> None:
+            finishing.set()
+
+        @property
+        def finished(self) -> bool:
+            return False
+
+        def close(self) -> None:
+            self.closed = True
+
+    class Coordinator:
+        async def run(self) -> RunRecord:
+            return record()
+
+    writer = Writer()
+    assets = tempfile.TemporaryDirectory(dir=tmp_path)
+    asset_path = Path(assets.name)
+    run = ProgressRun(Coordinator(), writer, assets)
+
+    # When
+    task = asyncio.create_task(run.run())
+    await finishing.wait()
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    # Then
+    assert writer.closed
+    assert not asset_path.exists()

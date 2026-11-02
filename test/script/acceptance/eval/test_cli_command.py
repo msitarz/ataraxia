@@ -806,12 +806,19 @@ def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
 
 
 @pytest.mark.parametrize(
-    ("term", "no_color", "colored"),
-    [("xterm", False, True), ("xterm", True, False), ("dumb", False, False)],
+    ("settings", "colored", "forbidden"),
+    [
+        ({"TERM": "xterm"}, True, ()),
+        ({"TERM": "xterm", "NO_COLOR": "1"}, False, ()),
+        ({"TERM": "dumb"}, False, (b"\x1b",)),
+    ],
     ids=["color", "no-color", "dumb"],
 )
 def test_shared_terminal_keeps_final_result_separate(
-    tmp_path: Path, term: str, no_color: bool, colored: bool
+    tmp_path: Path,
+    settings: dict[str, str],
+    colored: bool,
+    forbidden: tuple[bytes, ...],
 ) -> None:
     # Given
     import fcntl
@@ -822,10 +829,8 @@ def test_shared_terminal_keeps_final_result_separate(
     repo = make_repository(tmp_path / "repo")
     output = tmp_path / "evidence"
     env = environment(tmp_path)
-    env["TERM"] = term
     env.pop("NO_COLOR", None)
-    if no_color:
-        env["NO_COLOR"] = "1"
+    env.update(settings)
     read_fd, target = pty.openpty()
     fcntl.ioctl(target, termios.TIOCSWINSZ, struct.pack("HHHH", 24, 80, 0, 0))
 
@@ -837,8 +842,7 @@ def test_shared_terminal_keeps_final_result_separate(
     assert b"Status: success" in text and b"Completed: 1" in text
     assert b"\r\nrun " in text and b"; 1 scheduled calls" in text
     assert (b"\x1b[36m" in text) == colored
-    if term == "dumb":
-        assert b"\x1b" not in text
+    assert all(marker not in text for marker in forbidden)
     assert json.loads((output / "run.json").read_text())["state"] == "complete"
 
 
