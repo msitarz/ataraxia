@@ -19,6 +19,7 @@ from script.eval.model import (
 
 # Require one close option to avoid suggesting an ambiguous correction.
 _OPTION_SUGGESTION_CUTOFF = 0.75
+_OPTION_SUGGESTION_CANDIDATE_COUNT = 2
 
 _NUMERIC_FIELDS = frozenset({
     "concurrency",
@@ -64,58 +65,6 @@ _SEMANTIC_ERRORS = {
         "--capacity-backoff-base-seconds."
     ),
 }
-
-
-class _ArgumentParser(argparse.ArgumentParser):
-    """Render argument failures without repeating the full help text."""
-
-    @override
-    def error(self, message: str) -> NoReturn:
-        """Exit with concise guidance for an invalid command line."""
-        prefix = "unrecognized arguments: "
-        if message.startswith(prefix):
-            unknown = message.removeprefix(prefix).split()[0]
-            options = [
-                name for name in self._option_string_actions if name.startswith("--")
-            ]
-            matches = difflib.get_close_matches(
-                unknown.split("=", 1)[0], options, n=2, cutoff=_OPTION_SUGGESTION_CUTOFF
-            )
-            message = f"unrecognized argument {unknown!r}."
-            if len(matches) == 1:
-                message += f" Did you mean {matches[0]}?"
-        else:
-            numeric = re.fullmatch(
-                r"argument (.+?): invalid (int|float) value: .*", message
-            )
-            if numeric:
-                kind = "integer" if numeric[2] == "int" else "number"
-                message = f"{numeric[1]} requires a valid {kind}."
-        self.exit(2, f"error: {message}\nRun with --help for all options.\n")
-
-
-def _validation_message(error: ValidationError) -> str:
-    """Translate the first model validation failure into public CLI guidance.
-
-    Returns:
-        A concise explanation using command-line option names.
-    """
-    detail = error.errors(include_url=False, include_input=False)[0]
-    location = detail["loc"]
-    if location and location[0] in _NUMERIC_FIELDS:
-        option = "--" + str(location[0]).replace("_", "-")
-        match detail["type"]:
-            case "greater_than":
-                return f"{option} must be greater than {detail['ctx']['gt']}."
-            case "greater_than_equal":
-                return f"{option} must be at least {detail['ctx']['ge']}."
-            case "finite_number":
-                return f"{option} must be finite."
-        return f"invalid value for {option}; check --help for its expected value."
-    cause = detail.get("ctx", {}).get("error")
-    return _SEMANTIC_ERRORS.get(
-        str(cause), "invalid option combination; check --help for supported options."
-    )
 
 
 class OrderedAction(argparse.Action):
@@ -173,6 +122,68 @@ def parse_config(argv: Sequence[str], /) -> HarnessConfig:
         )
     except ValidationError as error:
         parser.error(_validation_message(error))
+
+
+class _ArgumentParser(argparse.ArgumentParser):
+    """Render argument failures without repeating the full help text."""
+
+    @override
+    def error(self, message: str) -> NoReturn:
+        """Exit with concise guidance for an invalid command line."""
+        prefix = "unrecognized arguments: "
+        if message.startswith(prefix):
+            words = message.removeprefix(prefix).split()
+            if not words:
+                self.exit(
+                    2,
+                    "error: remove the empty or whitespace argument.\n"
+                    "Run with --help for all options.\n",
+                )
+            unknown = words[0]
+            options = [
+                name for name in self._option_string_actions if name.startswith("--")
+            ]
+            matches = difflib.get_close_matches(
+                unknown.split("=", 1)[0],
+                options,
+                n=_OPTION_SUGGESTION_CANDIDATE_COUNT,
+                cutoff=_OPTION_SUGGESTION_CUTOFF,
+            )
+            message = f"unrecognized argument {unknown!r}."
+            if len(matches) == 1:
+                message += f" Did you mean {matches[0]}?"
+        else:
+            numeric = re.fullmatch(
+                r"argument (.+?): invalid (int|float) value: .*", message
+            )
+            if numeric:
+                kind = "integer" if numeric[2] == "int" else "number"
+                message = f"{numeric[1]} requires a valid {kind}."
+        self.exit(2, f"error: {message}\nRun with --help for all options.\n")
+
+
+def _validation_message(error: ValidationError) -> str:
+    """Translate the first model validation failure into public CLI guidance.
+
+    Returns:
+        A concise explanation using command-line option names.
+    """
+    detail = error.errors(include_url=False, include_input=False)[0]
+    location = detail["loc"]
+    if location and location[0] in _NUMERIC_FIELDS:
+        option = "--" + str(location[0]).replace("_", "-")
+        match detail["type"]:
+            case "greater_than":
+                return f"{option} must be greater than {detail['ctx']['gt']}."
+            case "greater_than_equal":
+                return f"{option} must be at least {detail['ctx']['ge']}."
+            case "finite_number":
+                return f"{option} must be finite."
+        return f"invalid value for {option}; check --help for its expected value."
+    cause = detail.get("ctx", {}).get("error")
+    return _SEMANTIC_ERRORS.get(
+        str(cause), "invalid option combination; check --help for supported options."
+    )
 
 
 def _parser() -> argparse.ArgumentParser:

@@ -715,8 +715,9 @@ def add_capacity_instructions(repo: Path) -> Path:
             ["-d", "missing", "-m", "model", "-e", "low", "-n", "--concurency", "2"],
             "Did you mean --concurrency?",
         ),
+        ([""], "remove the empty or whitespace argument"),
     ],
-    ids=["missing-directory", "unknown-option"],
+    ids=["missing-directory", "unknown-option", "empty-argument"],
 )
 def test_invalid_command_exits_before_preparation(
     tmp_path: Path, arguments: list[str], message: str
