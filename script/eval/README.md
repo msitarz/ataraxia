@@ -9,9 +9,61 @@ make setup
 ```
 
 You need Python 3.14 or newer, `uv`, Git, and the Codex CLI on `PATH`, with an
-authenticated Codex subscription session. Setup installs the locked development
-dependencies. The harness calls Codex CLI; it has no direct provider
-API implementation.
+authenticated Codex subscription session for execution. Setup installs the
+locked development dependencies.
+
+### Supplied reviewer smoke example
+
+Start from a clean repository root. Choose a fresh persistent output path and
+create only its parent:
+
+```sh
+mkdir -p "$HOME/ataraxia-eval-results"
+```
+
+Preview the full example matrix first. This dry run does not start Codex or
+create output:
+
+```sh
+uv run --no-sync python -m script.eval \
+  -d script/eval/example/rules \
+  -d script/eval/example/sources \
+  -i script/eval/example/instructions.md \
+  -m gpt-6-luna -e none -e low -c 1 \
+  --timeout-seconds 120 --cleanup-timeout-seconds 10 \
+  --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
+  -o "$HOME/ataraxia-eval-results/reviewer-smoke12-001" -n
+```
+
+Confirm it reports 12 calls, then run the same command without `-n`. The
+output directory must be new; choose another name if it already exists.
+
+The matrix contains two rule files, three synthetic source files, one model,
+and two efforts: 12 calls. The rule file comes first, followed by the source
+file, joined by two LF characters.
+
+- Each call has one harness attempt; retry limits are zero and quota waiting
+  is off.
+- The 12 calls exclude Codex's internal retries and the harness's local Codex
+  version query.
+- The dry run makes no model call and may download tokenizer vocabulary on
+  first use.
+- Retain failed and interrupted attempts; do not automatically rerun them.
+- Inspect `plan.json`, `run.json`, `events.jsonl`, and per-attempt records under
+  `attempts/`. Attempt `.stdout` files contain raw Codex JSONL; response text
+  appears in `agent_message` items, not in `events.jsonl`.
+- The two rule prompts adapt
+  [pure-decision and nested-`try` guidance](../../doc/engineering.md#pure-typed-decisions)
+  from source revision `25958a82242e4c89a269cbd5c8f1b4d43543b234`.
+- The three Python excerpts are controlled synthetic inputs. There is no
+  answer key or scoring, so the smoke cannot establish accuracy or support
+  model, strategy, quality, or resource conclusions.
+- The instructions request input-only behavior, but the
+  [accepted CLI limitation](../../doc/feat/reviewer/engineering/evaluation/protocol.md#cli-invocation-boundary-and-accepted-limitation)
+  remains; this smoke does not establish tool isolation or change the primary
+  comparison protocol.
+
+### Compose your own inputs
 
 Preview a small matrix without making model calls or creating output:
 
