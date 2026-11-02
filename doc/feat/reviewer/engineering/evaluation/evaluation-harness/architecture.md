@@ -16,9 +16,10 @@ final record projection for a prepared bound run. CLI composition wiring is
 implemented with injected collaborators; argument parsing, default adapter
 construction, signal handling, and standalone invocation are implemented.
 Progress uses a bounded best-effort background writer for non-quiet execution.
-Opt-in quota waiting pins a scope from correlated evaluation telemetry; capacity
-recognition remains unsupported. Shared consumer-owned runner ports and accepted
-runtime configuration are implemented in
+Opt-in quota waiting pins a scope from correlated evaluation telemetry; narrow
+capacity recognition uses the settled event envelope described below. Shared
+consumer-owned runner ports and accepted runtime configuration are implemented
+in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -32,8 +33,8 @@ amendments are owned by
 and
 [AC-8](README.md#ac-8-todo-standalone-invocation-supports-external-execution).
 The runtime uses the reviewed narrow quota inference and correlated session
-telemetry below. The supplied capture does not alone prove that inference, and
-capacity recognition remains unsupported. All ACs remain TODO.
+telemetry below. The supplied capture does not alone prove that inference.
+Capacity recognition uses the same conservative envelope. All ACs remain TODO.
 
 ## TL;DR
 
@@ -282,10 +283,9 @@ supervisor request.
   so unknown values remain distinct from observed values. It excludes run and
   scheduled position, evidence artifact locations, output destination,
   concurrency, and retry policy.
-  [Quota recognition](#quota-connection-and-recognition) is narrowly supported;
-  model-capacity recognition remains unsupported. Ordinary completion and
-  ambiguous process outcomes remain unknown except for supervisor-confirmed
-  prelaunch infrastructure failure.
+  [Quota and capacity recognition](#quota-connection-and-recognition) are
+  narrowly supported. Ordinary completion and ambiguous process outcomes remain
+  unknown except for supervisor-confirmed prelaunch infrastructure failure.
 - When runtime binding is unavailable during dry run, the report marks its
   binding and effective-call identity unknown. It may show a plan identity,
   clearly labeled as such, but never as the effective invocation identity.
@@ -442,9 +442,9 @@ Codex, quota, and runtime adapters.
   uses the read-only sandbox and `approval_policy="never"`, and places the
   literal prompt after `--`. No verified tool-disable setting is available in
   this implementation, so it does not claim tool-free execution or private-data
-  isolation. The classifier recognizes the narrow quota sequence below and
-  supervisor-confirmed prelaunch failure; other outcomes remain unknown. It
-  never parses answer content.
+  isolation. The classifier recognizes the narrow quota and capacity sequences
+  below and supervisor-confirmed prelaunch failure; other outcomes remain
+  unknown. It never parses answer content.
 - `runner.adapters.codex_quota` implements a version-bounded adapter around the
   provider-neutral quota-reader port. It extracts exactly one canonical
   `thread.started.thread_id` from captured `codex exec --json` JSONL. The
@@ -501,7 +501,7 @@ Codex, quota, and runtime adapters.
   and runtime ports. The default leaves now resolve and probe the executable,
   retain requested settings with native values marked unknown, construct a
   request and effective identity, and classify prelaunch failure or the narrow
-  quota sequence. Capacity recognition remains unsupported. The Codex and quota
+  quota or capacity sequence. The Codex and quota
   signature sketches in `design/eval/runner/adapters/` are historical; runtime
   code is authoritative. The CLI composition root and progress adapter are
   implemented. The quota adapter implements its bounded source, normalization,
@@ -580,6 +580,23 @@ reports the failure even in quiet mode.
 AC-6 distinguishes unknown numeric window values from an unrecognized quota
 state. A scoped recognized exhaustion can support a wait without window values;
 unknown scope or state still stops recovery. AC-6 remains TODO.
+
+**Capacity inference:** The same version and settled-envelope conditions apply
+when both messages equal
+`Selected model is at capacity. Please try a different model.` The source-shaped
+sequence is synthetic; no capacity call was made for this implementation. The
+official CLI's
+[overload mapping](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/codex-api/src/sse/responses_error.rs#L87-L89),
+[message](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/protocol/src/error.rs#L164-L165),
+and
+[exec event schema](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/exec/src/exec_events.rs#L10-L55)
+support this narrow recognition; exec exposes the message rather than the
+internal structured overload code. Any prior item or other extra event refuses
+retry. This is an operational inference, not proof that upstream produced no
+semantic output or tool side effect. Codex can perform its own
+[automatic retries](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/core/tests/suite/retry_after.rs#L502-L573)
+within one supervisor invocation; the harness retry allowance does not bound
+those upstream requests.
 
 ### Standalone invocation
 
@@ -682,8 +699,8 @@ evidence.
 [`script/eval/cli.py`](../../../../../../script/eval/cli.py) sequences injected
 preparation and execution collaborators. The standalone command supplies
 argument parsing, concrete factories, signal handling, and best-effort progress.
-It verifies quota scope from correlated invocations when waiting is enabled;
-capacity recognition is unsupported. No acceptance criterion is complete.
+It verifies quota scope from correlated invocations when waiting is enabled.
+No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 

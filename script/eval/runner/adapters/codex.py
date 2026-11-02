@@ -2,7 +2,7 @@
 """Bounded Codex CLI binding, request construction, and outcome classification.
 
 Native settings that cannot be observed without reading private user state are
-reported as unknown. Quota recognition accepts only a bounded JSONL sequence.
+reported as unknown. Failure recognition accepts only a bounded JSONL sequence.
 """
 
 from collections.abc import Callable
@@ -15,6 +15,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+from typing import Literal
 from uuid import UUID
 
 from script.eval.model import (
@@ -37,6 +38,9 @@ from script.eval.runner.ports import (
     OutcomeClassifier,
 )
 from script.process_supervisor import AttemptRequest, Completed, InfrastructureFailure
+
+CAPACITY_ERROR_MESSAGE = "Selected model is at capacity. Please try a different model."
+FAILURE_EVENT_COUNT = 4
 
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
@@ -157,11 +161,11 @@ class CodexOutcomeClassifier(OutcomeClassifier):
     """Pass one settled supervisor observation to a classifier operation.
 
     This boundary assesses captured output after settlement and never parses answers.
-    Its supported quota sequence establishes a provisional no-result candidate;
-    the correlated scope must be verified before recovery. Capacity remains unknown.
+    Supported failure sequences establish provisional no-result candidates;
+    quota recovery also requires verification of the correlated scope.
 
     Attributes:
-        cli_version: Observed version governing supported quota recognition.
+        cli_version: Observed version governing supported failure recognition.
         assess_settled_evidence: Classify other settled supervisor evidence.
     """
 
@@ -176,25 +180,47 @@ class CodexOutcomeClassifier(OutcomeClassifier):
         Returns:
             The injected classifier result.
         """
-        if supports_quota_version(self.cli_version) and _quota_failure(evidence):
-            return RetryAssessment(
-                retry_class="quota",
-                classification_basis="supported Codex quota failure event sequence",
-                no_result_basis="confident_absence",
-                diagnostic=None,
-            )
+        if supports_quota_version(self.cli_version):
+            message = _settled_failure_message(evidence)
+            if _quota_message(message):
+                return _failure_assessment("quota")
+            if message == CAPACITY_ERROR_MESSAGE:
+                return _failure_assessment("capacity")
         return self.assess_settled_evidence(evidence)
 
 
-def _quota_failure(evidence: AttemptEvidence) -> bool:
-    """Recognize the reviewed complete no-result Codex event sequence.
+def _failure_assessment(retry_class: Literal["quota", "capacity"]) -> RetryAssessment:
+    """Describe a supported no-result operational failure.
 
     Returns:
-        Whether the complete supported sequence proves the narrow candidate.
+        The assessment for the recognized failure.
+    """
+    return RetryAssessment(
+        retry_class=retry_class,
+        classification_basis=f"supported Codex {retry_class} failure event sequence",
+        no_result_basis="confident_absence",
+        diagnostic=None,
+    )
+
+
+def _quota_failure(evidence: AttemptEvidence) -> bool:
+    """Recognize the reviewed complete no-result quota sequence.
+
+    Returns:
+        Whether the evidence matches the supported quota sequence.
+    """
+    return _quota_message(_settled_failure_message(evidence))
+
+
+def _settled_failure_message(evidence: AttemptEvidence) -> str | None:
+    """Extract a message only from a complete, safely settled failure envelope.
+
+    Returns:
+        The matching message, or None when evidence is ambiguous.
     """
     outcome = evidence.outcome
     if evidence.control_flow != "returned" or not isinstance(outcome, Completed):
-        return False
+        return None
     output = outcome.observation.output
     if (
         outcome.exit_status <= 0
@@ -202,21 +228,23 @@ def _quota_failure(evidence: AttemptEvidence) -> bool:
         or output is None
         or output.stderr != b""
     ):
-        return False
+        return None
     try:
         rows = [
             json.loads(line, object_pairs_hook=_unique_object)
             for line in output.stdout.decode("utf-8").splitlines()
         ]
     except UnicodeDecodeError, ValueError:
-        return False
-    if len(rows) != 4 or not all(isinstance(row, dict) for row in rows):
-        return False
-    return _quota_event_sequence(rows)
+        return None
+    if len(rows) != FAILURE_EVENT_COUNT or not all(
+        isinstance(row, dict) for row in rows
+    ):
+        return None
+    return _failure_event_message(rows)
 
 
 def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
-    """Reject duplicate JSON keys at every level of the quota envelope.
+    """Reject duplicate JSON keys at every level of the failure envelope.
 
     Returns:
         The object with its unique keys.
@@ -232,32 +260,41 @@ def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     return result
 
 
-def _quota_event_sequence(rows: list[dict[str, object]]) -> bool:
-    """Validate the complete supported operational failure events.
+def _failure_event_message(rows: list[dict[str, object]]) -> str | None:
+    """Extract the matching message from the supported operational events.
 
     Returns:
-        Whether the sequence matches the supported quota failure.
+        The matching message, or None when the events do not match.
     """
     first, second, third, fourth = rows
     if set(first) != {"type", "thread_id"} or first["type"] != "thread.started":
-        return False
+        return None
     try:
         thread_id = first["thread_id"]
         if not isinstance(thread_id, str) or str(UUID(thread_id)) != thread_id:
-            return False
+            return None
     except ValueError:
-        return False
+        return None
     if second != {"type": "turn.started"} or set(third) != {"type", "message"}:
-        return False
+        return None
     if third["type"] != "error" or set(fourth) != {"type", "error"}:
-        return False
+        return None
     error = fourth["error"]
     if fourth["type"] != "turn.failed" or not isinstance(error, dict):
-        return False
+        return None
     if set(error) != {"message"} or error["message"] != third["message"]:
-        return False
+        return None
     message = third["message"]
-    return isinstance(message, str) and bool(
+    return message if isinstance(message, str) else None
+
+
+def _quota_message(message: str | None) -> bool:
+    """Recognize the reviewed quota message form.
+
+    Returns:
+        Whether the message matches the supported quota form.
+    """
+    return message is not None and bool(
         re.fullmatch(
             r"You\u2019ve hit your usage limit\. Upgrade to Pro "
             r"\(https://chatgpt\.com/explore/pro\), visit "
