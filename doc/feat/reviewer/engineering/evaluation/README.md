@@ -195,12 +195,13 @@ isolation.
 The supporting protocol starts with a bounded static PASS/VIOLATION comparison
 of all three A/B/C strategies at medium effort, with a separate matched
 none/low/medium/high effort analysis on the same inputs. Function/context
-extraction happens during preparation and requires no production reviewer. The
-initial corpus does not complete the historical/diversity evidence required
-above or support a production granularity decision. Actual prepared sources,
-private labels, runtime binding, retained boundary evidence, and matched input
-baselines remain unprepared and require the protocol's later authorization and
-freeze gates. The accepted CLI limitation is not evidence that these
-requirements have been satisfied. This definition executes no telemetry
-preparation, experimental wrapper, trial,
-production architecture or implementation. All acceptance criteria remain TODO.
+extraction happens during preparation and requires no production reviewer.
+Authored source and rule files are prepared in the
+[draft corpus](corpus/manifest.md), with a separately held draft reference
+index. Independent owner validation of that index, freeze, packets, prompts,
+runtime binding, matched input baselines, and retained boundary checks remain
+outstanding. The initial corpus does not complete the historical/diversity
+evidence required above or support a production granularity decision. The
+accepted CLI limitation is not evidence that the retained boundary requirements
+have been satisfied. All acceptance criteria remain TODO; this preparation does
+not authorize trials or production implementation.
