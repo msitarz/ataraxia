@@ -43,8 +43,9 @@ from script.eval.runner.adapters import (
     TerminalProgressSink,
     open_progress_writer,
 )
+from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.coordinator import Coordinator
-from script.eval.runner.ports import QuotaStatusReader
+from script.eval.runner.ports import QuotaStatusReader, QuotaTelemetryError
 from script.eval.tokens import tiktoken_estimator
 from script.process_supervisor import (
     AttemptRequest,
@@ -53,6 +54,9 @@ from script.process_supervisor import (
     call_supervisor,
     run_attempt,
 )
+
+_QUOTA_MINIMUM_AGE_SECONDS = 60.0
+_QUOTA_POLL_AGE_MARGIN_SECONDS = 60.0
 
 
 async def _attempt(request: AttemptRequest, stop: DispatchStop, /) -> AttemptResult:
@@ -155,8 +159,8 @@ def _quota_reader(
     config = bound.plan.configuration
     if not config.quota_wait_enabled:
         return UnavailableQuota(), None
-    if bound.binding.cli_version != "codex-cli 0.164.0":
-        raise ValueError("quota waiting requires Codex CLI 0.164.0")
+    if not supports_quota_version(bound.binding.cli_version):
+        raise ValueError("quota waiting requires Codex CLI 0.164.0 or later")
     sessions = _sessions_directory()
     assets = tempfile.TemporaryDirectory(prefix="ataraxia-quota-")
     try:
@@ -168,7 +172,8 @@ def _quota_reader(
             attempt_call=_attempt,
             runtime=runtime,
             max_observation_age_seconds=max(
-                60.0, config.quota_poll_interval_seconds + 60.0
+                _QUOTA_MINIMUM_AGE_SECONDS,
+                config.quota_poll_interval_seconds + _QUOTA_POLL_AGE_MARGIN_SECONDS,
             ),
         )
     except BaseException:
@@ -290,7 +295,12 @@ async def _settled_status(
         return 130
     except Exception as error:
         sys.stderr.write(f"evaluation failed: {error}\n")
-        return 3 if status.started and (status.failed or not status.finalized) else 1
+        return (
+            3
+            if isinstance(error, QuotaTelemetryError)
+            or (status.started and (status.failed or not status.finalized))
+            else 1
+        )
     _print_result(result)
     return _exit_status(result)
 

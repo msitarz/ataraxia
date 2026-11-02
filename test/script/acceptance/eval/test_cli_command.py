@@ -405,6 +405,7 @@ def test_quota_wait_resumes_after_two_separate_probes(tmp_path: Path) -> None:
     home.mkdir()
     env["CODEX_HOME"] = str(home)
     env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
+    env["FAKE_CLI_VERSION"] = "0.165.0"
 
     # When
     result = subprocess.run(
@@ -454,8 +455,8 @@ def test_quota_wait_resumes_after_two_separate_probes(tmp_path: Path) -> None:
         ("wrong-version", 3, {"eval": 1, "probe": 0}),
         ("out-of-order", 3, {"eval": 1, "probe": 0}),
         ("mismatch", 3, {"eval": 1, "probe": 1}),
-        ("extra-event", 1, {"eval": 1, "probe": 0}),
-        ("stderr", 1, {"eval": 1, "probe": 0}),
+        ("extra-event", 3, {"eval": 1, "probe": 0}),
+        ("stderr", 3, {"eval": 1, "probe": 0}),
     ],
 )
 def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
@@ -473,12 +474,14 @@ def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
     env["CODEX_HOME"] = str(home)
     env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
     env["FAKE_QUOTA_MODE"] = mode
+    env["FAKE_CLI_VERSION"] = "0.165.0"
 
     # When
     result = subprocess.run(
         [
             *command(repo, output),
             "--wait-for-quota",
+            "--quiet",
             "--quota-poll-interval-seconds",
             "0.01",
         ],
@@ -492,6 +495,16 @@ def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
     # Then
     assert result.returncode == exit_status, result.stderr
     assert json.loads(Path(env["FAKE_QUOTA_STATE"]).read_text()) == counts
+    if mode == "mismatch":
+        assert "quota recovery failed" in result.stderr
+    else:
+        assert "quota telemetry is unavailable or unsupported" in result.stderr
+        events = [
+            json.loads(line)
+            for line in (output / "events.jsonl").read_text().splitlines()
+        ]
+        assert any(event["kind"] == "quota_telemetry" for event in events)
+        assert json.loads((output / "run.json").read_text())["state"] == "incomplete"
 
 
 def test_quota_probe_budget_zero_stops_without_probe(tmp_path: Path) -> None:

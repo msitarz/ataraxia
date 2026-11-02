@@ -31,6 +31,10 @@ type ProgressFinalStatus = Literal[
 ]
 
 
+class QuotaTelemetryError(RuntimeError):
+    """A sanitized quota read failure that leaves the run incomplete."""
+
+
 @dataclass(frozen=True)
 class ProgressCounts:
     """Disjoint call states and separate attempt and probe counts.

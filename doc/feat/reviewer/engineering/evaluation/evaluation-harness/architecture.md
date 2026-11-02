@@ -455,22 +455,23 @@ Codex, quota, and runtime adapters.
   `token_count` quota rows; transcript messages and local paths are not
   retained. The source validates consumed metadata and `rate_limits` fields
   during the read and returns a typed projection. The normalizer accepts the
-  observed CLI 0.164.0 metadata, validates matching session/thread IDs and
-  provider plus account/user identity, requires both 300-minute and 10080-minute
-  windows, and maps their numeric usage and optional reset hints. Missing or
-  malformed reset hints do not invalidate usage state. It rejects malformed,
-  incomplete, stale, future-dated, out-of-order, or unsupported records as
-  unknown while retaining valid usage, producer timestamp, and ordinal facts for
-  stale or future snapshots. The reader's positive age limit is configurable;
-  standalone uses at least 60 seconds and one polling interval plus 60 seconds.
-  Each reader and its synchronous ordering state are confined to one event loop.
-  Per-reader ordering retains the latest producer timestamp globally and the
-  latest record per sanitized source coordinate. An identical repeated record is
-  idempotent, changed facts at the same ordinal become unknown, and a delayed
-  older snapshot cannot replace newer state. The domain-separated scope helper
-  hashes provider, account, and user identity without logging or persisting raw
-  identifiers. The first validated evaluation session pins the scope when the
-  binding supplies none; later sessions must match it.
+  reviewed metadata for CLI 0.164.0 or later, validates matching session/thread
+  IDs and provider plus account/user identity, requires both 300-minute and
+  10080-minute windows, and maps their numeric usage and optional reset hints.
+  Missing or malformed reset hints do not invalidate usage state. It rejects
+  malformed, incomplete, stale, future-dated, out-of-order, or unsupported
+  records as unknown while retaining valid usage, producer timestamp, and
+  ordinal facts for stale or future snapshots. The reader's positive age limit
+  is configurable; standalone uses at least 60 seconds and one polling interval
+  plus 60 seconds. Each reader and its synchronous ordering state are confined
+  to one event loop. Per-reader ordering retains the latest producer timestamp
+  globally and the latest record per sanitized source coordinate. An identical
+  repeated record is idempotent, changed facts at the same ordinal become
+  unknown, and a delayed older snapshot cannot replace newer state. The
+  domain-separated scope helper hashes provider, account, and user identity
+  without logging or persisting raw identifiers. The first validated evaluation
+  session pins the scope when the binding supplies none; later sessions must
+  match it.
 - Active quota polling builds one fixed Luna/`none` supervised request with a
   caller-staged nonempty instruction path, minimal argv prompt, JSONL output,
   read-only empty cwd, and the available explicit CLI feature/config disables,
@@ -535,8 +536,9 @@ fresh positive probe evidence required to resume.
   with the binding scope when the latter is present.
 - An absent binding scope does not prevent invocation-correlated pinning.
 
-**Operational inference:** For CLI `0.164.0` only, the classifier
-identifies a quota candidate and confident absence using all these conditions:
+**Operational inference:** For stable CLI versions `0.164.0` or later, the
+classifier identifies a quota candidate and confident absence using all these
+conditions:
 
 - The supervisor reports a safely cleaned up `Completed` process with nonzero
   exit, complete captured stdout, and empty captured stderr.
@@ -556,7 +558,9 @@ describes `--json` as emitted events and identifies agent messages as item
 events. This and the supplied capture support the proposed conservative
 inference; neither proves historical CLI behavior or the absence of all other
 semantic output. The capture alone remains insufficient proof. Unrecognized
-`0.164.0` metadata or JSON variants and all other versions fail closed.
+metadata or JSON variants, malformed versions, and prereleases fail closed. A
+failed quota read stops dispatch, records sanitized diagnostic evidence, and
+reports the failure even in quiet mode.
 
 - The coordinator closes dispatch on the candidate, drains active work, and
   persists the attempt and correlated scope before publishing a trigger.
@@ -798,23 +802,24 @@ second store/process. This storage layer raises recording errors; stopping
 dispatch and preserving not-started accounting remain runner responsibilities.
 AC-9 remains incomplete: coordinator progress projection, terminal presentation,
 and standalone best-effort stderr transport are implemented; full acceptance
-remains outstanding. Pure runner policy
-calculations, accepted shared runner configuration, and consumer-owned runtime
-ports are implemented. The shared base preserves flat attempt fields while
-permitting probes to reuse the process projection. `plan.pyi` remains a
-historical planner reference. The active implementations are
+remains outstanding. Pure runner policy calculations, accepted shared runner
+configuration, and consumer-owned runtime ports are implemented. The shared base
+preserves flat attempt fields while permitting probes to reuse the process
+projection. `plan.pyi` remains a historical planner reference. The active
+implementations are
 [`script/eval/model.py`](../../../../../../script/eval/model.py) and
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
 storage/projection and standalone CLI composition are implemented. Remaining
-harness behavior and acceptance verification are planned. Do not add a
-parallel runtime model or change supervisor types. Private helpers and concrete
+harness behavior and acceptance verification are planned. Do not add a parallel
+runtime model or change supervisor types. Private helpers and concrete
 persistence formats remain flexible; supervisor outcomes and requests continue
 to use the existing public types. Codex quota recognition is implemented against
 the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
-freshness checks; later CLI schemas require separate review. The reader pins the
-expected scope from an evaluation when the binding does not supply one.
+freshness checks; later versions are attempted but unsupported shapes fail
+closed. The reader pins the expected scope from an evaluation when the binding
+does not supply one.
 
 | Proposed module | Responsibility |
 | --- | --- |

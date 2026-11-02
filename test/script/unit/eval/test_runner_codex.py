@@ -1021,7 +1021,7 @@ def test_classifier_recognizes_supported_complete_quota_failure() -> None:
 @pytest.mark.parametrize(
     ("version", "outcome"),
     [
-        ("codex-cli 0.165.0", Completed(quota_observation(quota_output()), 1)),
+        ("codex-cli 0.163.0", Completed(quota_observation(quota_output()), 1)),
         ("codex-cli 0.164.0", Completed(quota_observation(quota_output()), 0)),
         ("codex-cli 0.164.0", Completed(quota_observation(quota_output()), -1)),
         ("codex-cli 0.164.0", TimedOut(quota_observation(quota_output()), -9)),

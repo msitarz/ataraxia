@@ -33,7 +33,7 @@ from script.eval.runner.policy import (
     quota_probe_allowed,
     quota_wait_remaining,
 )
-from script.eval.runner.ports import QuotaStatusReader, Runtime
+from script.eval.runner.ports import QuotaStatusReader, QuotaTelemetryError, Runtime
 from script.eval.runner.quota_evidence import quota_probe_evidence
 
 from .control import RunControl
@@ -721,7 +721,7 @@ class QuotaOwner:
             self._observed(waiting.observation)
         if waiting.end_record is not None and waiting.end_record.end == "unknown":
             self._control.latch_stop(
-                RuntimeError("probe did not establish quota state")
+                QuotaTelemetryError("probe did not establish quota state")
             )
         if self._pending is not None:
             self._pending = replace(self._pending, waiting=waiting, probe=None)

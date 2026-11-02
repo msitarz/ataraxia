@@ -2075,3 +2075,60 @@ async def test_leaf_supervisor_cancellation_precedes_write_leaf_cancellation() -
     assert control.reason.cancellation_origin == "leaf"
     assert control.reason.recording_failure is later
     assert attempt.calls == 1
+
+
+class FailingQuotaReader(QuotaReader):
+    """Fail the passive read with an identifying source error."""
+
+    @override
+    async def observe_settled_attempt(
+        self, evidence: AttemptEvidence, /
+    ) -> QuotaObservation:
+        """Raise a source error that must not enter the diagnostic."""
+        raise OSError("private source path")
+
+
+class FailingQuotaTelemetryStore(QuotaStore):
+    """Fail a quota event write after a read failure."""
+
+    @override
+    async def record_quota_telemetry(self, event: QuotaTelemetryEvent, /) -> None:
+        """Reject the write while retaining the attempted event."""
+        self.telemetry = event
+        raise OSError("write failed")
+
+
+@pytest.mark.parametrize("write_failure", [False, True])
+async def test_quota_read_failure_stops_and_retains_diagnostic(
+    write_failure: bool,
+) -> None:
+    """Read failure remains primary even if recording also fails."""
+    slots = Semaphore(1)
+    control = RunControl()
+    store = (
+        FailingQuotaTelemetryStore(control, slots)
+        if write_failure
+        else QuotaStore(control, slots)
+    )
+    subject = CallOwner(
+        Queued(CallHistory(call(), (), ())),
+        config(quota_wait_enabled=True),
+        control,
+        slots,
+        QuotaAttempt(slots, control),
+        QuotaClassifier(),
+        FailingQuotaReader(),
+        store,
+        Clock(),
+    )
+
+    with pytest.raises(RuntimeError, match="quota telemetry read failed") as raised:
+        await subject.run()
+
+    assert isinstance(raised.value.__cause__, OSError)
+    assert str(raised.value.__cause__) == "private source path"
+    assert store.telemetry is not None
+    assert store.telemetry.observation.diagnostic == "quota telemetry read failed"
+    assert control.reason is not None and control.reason.first is raised.value
+    assert (control.reason.recording_failure is not None) == write_failure
+    assert not control.dispatch_allowed()

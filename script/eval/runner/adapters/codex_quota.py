@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 """Codex quota telemetry and supervised polling for the evaluation runner.
 
-This adapter supports the reviewed CLI 0.164.0 source shape and fails closed
-when runtime identity, completeness, freshness, or scope cannot be verified.
+This adapter supports the reviewed source shape for CLI 0.164.0 and later. It
+fails closed when identity, completeness, freshness, or scope cannot be verified.
 """
 
 import asyncio
@@ -41,6 +41,7 @@ from script.eval.model import (
     QuotaWindowObservation,
 )
 from script.eval.runner.adapters.codex import _quota_failure, _toml_string
+from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.ports import (
     AttemptCall,
     QuotaStatusReader,
@@ -366,9 +367,9 @@ class CodexQuotaStatusReader(QuotaStatusReader):
 
     Thread IDs remain private to this adapter. The local source opens only the
     exact UUID-suffixed rollout candidate. The source validates consumed fields;
-    the normalizer accepts CLI 0.164.0 and fails closed on unrecognized or incomplete
-    input. The probe uses the caller's frozen nonempty instruction file and
-    receives a fixed minimal prompt. Use each reader and its ordering state
+    the normalizer accepts CLI 0.164.0 and later and fails closed on unrecognized
+    or incomplete input. The probe uses the caller's frozen nonempty instruction
+    file and receives a fixed minimal prompt. Use each reader and its ordering state
     only from one event loop; it is not thread-safe.
     """
 
@@ -482,6 +483,7 @@ class CodexQuotaStatusReader(QuotaStatusReader):
 
         Returns:
             The source-backed observation.
+
         """
         thread_id = _extract_thread_id(attempt.usage_telemetry)
         snapshot = (
@@ -1153,7 +1155,7 @@ def _session_scope(
         or metadata.session_id != requested_thread_id
     ):
         return None, "session identity does not match the invocation"
-    if metadata.cli_version != "0.164.0":
+    if not supports_quota_version(metadata.cli_version):
         return None, "session CLI version is unsupported"
     try:
         observed_scope = codex_quota_scope_from_identity(

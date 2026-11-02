@@ -28,6 +28,7 @@ from script.eval.model import (
     SeparatorOption,
     SettingValue,
 )
+from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.ports import (
     AttemptRequestBuilder,
     CliBinding,
@@ -175,7 +176,7 @@ class CodexOutcomeClassifier(OutcomeClassifier):
         Returns:
             The injected classifier result.
         """
-        if self.cli_version == "codex-cli 0.164.0" and _quota_failure(evidence):
+        if supports_quota_version(self.cli_version) and _quota_failure(evidence):
             return RetryAssessment(
                 retry_class="quota",
                 classification_basis="supported Codex quota failure event sequence",

@@ -10,7 +10,9 @@ import sys
 from uuid import uuid4
 
 if sys.argv[1:] == ["--version"]:
-    sys.stdout.write("codex-cli 0.164.0\n")
+    sys.stdout.write(
+        "codex-cli " + os.environ.get("FAKE_CLI_VERSION", "0.164.0") + "\n"
+    )
     raise SystemExit(0)
 
 state = Path(os.environ["FAKE_QUOTA_STATE"])
@@ -29,13 +31,13 @@ metadata = {
     "id": thread,
     "session_id": thread,
     "model_provider": "openai",
-    "cli_version": "0.164.0",
+    "cli_version": os.environ.get("FAKE_CLI_VERSION", "0.164.0"),
     "creator_account_id": "fixture-account",
     "creator_user_id": "fixture-user",
 }
 mode = os.environ.get("FAKE_QUOTA_MODE", "")
 if mode == "wrong-version":
-    metadata["cli_version"] = "0.165.0"
+    metadata["cli_version"] = "0.163.0"
 if mode == "mismatch" and kind == "probe":
     metadata["creator_account_id"] = "another-account"
 rows: list[dict[str, object]] = [{"type": "session_meta", "payload": metadata}]

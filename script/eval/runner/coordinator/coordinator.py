@@ -14,6 +14,7 @@ from script.eval.runner.ports import (
     ProgressRunPhase,
     ProgressSink,
     QuotaStatusReader,
+    QuotaTelemetryError,
     Runtime,
 )
 
@@ -289,9 +290,18 @@ class Coordinator:
         if error is not None:
             raise error
         if not isinstance(owner.state, Open):
-            self._control.latch_stop(
-                RuntimeError("quota recovery ended without availability")
-            )
+            self._note_quota_recovery_failure()
+
+    def _note_quota_recovery_failure(self) -> None:
+        """Retain the original failure behind a sanitized recovery diagnostic."""
+        self._control.latch_stop(
+            QuotaTelemetryError("quota recovery ended without availability")
+        )
+        reason = self._control.reason
+        if reason is not None and isinstance(reason.first, Exception):
+            failure = QuotaTelemetryError("quota recovery failed")
+            failure.__cause__ = reason.first
+            self._error = failure
 
     def _capture_error(
         self, error: BaseException, origin: Literal["owner", "leaf"]
@@ -358,6 +368,12 @@ class Coordinator:
             if reason is not None and reason.cancellation is not None
             else self._error
         )
+        if (
+            primary is None
+            and reason is not None
+            and isinstance(reason.first, QuotaTelemetryError)
+        ):
+            primary = reason.first
         if primary is None or primary.__cause__ is not None:
             return primary
         failure = None if reason is None else reason.recording_failure
@@ -428,9 +444,13 @@ def _is_initiating_failure(
     Returns:
         Whether the retained reason belongs to this internally stopped call.
     """
-    if not isinstance(error, asyncio.CancelledError) or reason is None:
+    if reason is None:
         return False
     first = reason.first
+    if error is first and invocation_error is first:
+        return True
+    if not isinstance(error, asyncio.CancelledError):
+        return False
     if not isinstance(first, BaseException) or first is reason.recording_failure:
         return False
     return error.__cause__ is first or invocation_error is first

@@ -609,7 +609,7 @@ async def test_local_reader_distinguishes_source_and_telemetry_failures(
             "2026-10-27T09:59:59Z",
             35,
         ),
-        ({"cli_version": "0.165.0"}, True, "2026-10-27T09:59:59Z", 35),
+        ({"cli_version": "0.163.0"}, True, "2026-10-27T09:59:59Z", 35),
         (
             {"creator_user_id": "different-synthetic-user"},
             True,
