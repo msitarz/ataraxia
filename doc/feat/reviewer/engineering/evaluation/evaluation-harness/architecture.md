@@ -281,9 +281,11 @@ supervisor request.
 - Call identity includes the sanitized binding settings in ordered, typed form
   so unknown values remain distinct from observed values. It excludes run and
   scheduled position, evidence artifact locations, output destination,
-  concurrency, and retry policy. Quota and model-capacity output recognition
-  is unsupported; ordinary completion and ambiguous process outcomes remain
-  unknown except for supervisor-confirmed prelaunch infrastructure failure.
+  concurrency, and retry policy.
+  [Quota recognition](#quota-connection-and-recognition) is narrowly supported;
+  model-capacity recognition remains unsupported. Ordinary completion and
+  ambiguous process outcomes remain unknown except for supervisor-confirmed
+  prelaunch infrastructure failure.
 - When runtime binding is unavailable during dry run, the report marks its
   binding and effective-call identity unknown. It may show a plan identity,
   clearly labeled as such, but never as the effective invocation identity.
