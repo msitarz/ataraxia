@@ -304,6 +304,8 @@ class QuotaObservation(StrictModel):
 
     ``valid_until_utc`` is inclusive: equality remains fresh. Missing expiry
     cannot establish availability. Rereading a source does not extend it.
+    ``state`` records an independently recognized exhaustion without inventing
+    a numeric window; unknown means no independent state was recognized.
     """
 
     scope: QuotaScope | None
@@ -312,6 +314,7 @@ class QuotaObservation(StrictModel):
     windows: tuple[QuotaWindowObservation, ...]
     diagnostic: str | None
     valid_until_utc: str | None = None
+    state: QuotaState = "unknown"
 
 
 class RetryAssessment(StrictModel):

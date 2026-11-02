@@ -16,9 +16,9 @@ final record projection for a prepared bound run. CLI composition wiring is
 implemented with injected collaborators; argument parsing, default adapter
 construction, signal handling, and standalone invocation are implemented.
 Progress uses a bounded best-effort background writer for non-quiet execution.
-Quota waiting is refused until its scope is verified; capacity recognition
-remains unsupported. Shared consumer-owned runner ports and accepted runtime
-configuration are implemented in
+Opt-in quota waiting pins a scope from correlated evaluation telemetry; capacity
+recognition remains unsupported. Shared consumer-owned runner ports and accepted
+runtime configuration are implemented in
 [`script/eval/runner/ports.py`](../../../../../../script/eval/runner/ports.py)
 and `script/eval/model.py`. No implementation authorizes model calls. The
 sibling [process supervisor](../process-supervisor/README.md) is implemented and
@@ -31,13 +31,9 @@ amendments are owned by
 [AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff),
 and
 [AC-8](README.md#ac-8-todo-standalone-invocation-supports-external-execution).
-The typed sketches below describe the proposed policy boundary for those
-amendments; they do not establish recognition rules, a Codex reset API, or
-implemented behavior. The captured exec quota observation does not identify a
-machine-readable source for reset times, and the capacity report does not
-establish a CLI recognition signal. Until investigation verifies those sources,
-adapters return explicit unknown or unavailable results and the coordinator
-fails closed. All ACs remain TODO.
+The runtime uses the reviewed narrow quota inference and correlated session
+telemetry below. The supplied capture does not alone prove that inference, and
+capacity recognition remains unsupported. All ACs remain TODO.
 
 ## TL;DR
 
@@ -56,8 +52,8 @@ fails closed. All ACs remain TODO.
   stderr; durable evidence writes remain authoritative for reported facts.
 - Call identity describes effective inputs. Run identity and scheduled
   positions preserve repeated entries and manually selected reruns.
-- Proposed quota connection pins scope from invocation-correlated sessions and
-  reuses the current recovery flow; it is not implemented.
+- Opt-in quota waiting pins scope from invocation-correlated sessions and
+  reuses the current recovery flow.
 - This boundary stores observations and generic usage telemetry only. The
   caller owns experiment protocol, budgets across runs, ordering claims, and
   interpretation.
@@ -444,9 +440,9 @@ Codex, quota, and runtime adapters.
   uses the read-only sandbox and `approval_policy="never"`, and places the
   literal prompt after `--`. No verified tool-disable setting is available in
   this implementation, so it does not claim tool-free execution or private-data
-  isolation. The classifier returns confident absence only when supervisor
-  evidence confirms the process never launched; quota, capacity, nonzero exit,
-  and all other outcomes remain unknown. It never parses answer content.
+  isolation. The classifier recognizes the narrow quota sequence below and
+  supervisor-confirmed prelaunch failure; other outcomes remain unknown. It
+  never parses answer content.
 - `runner.adapters.codex_quota` implements a version-bounded adapter around the
   provider-neutral quota-reader port. It extracts exactly one canonical
   `thread.started.thread_id` from captured `codex exec --json` JSONL. The
@@ -463,56 +459,51 @@ Codex, quota, and runtime adapters.
   malformed reset hints do not invalidate usage state. It rejects malformed,
   incomplete, stale, future-dated, out-of-order, or unsupported records as
   unknown while retaining valid usage, producer timestamp, and ordinal facts for
-  stale or future snapshots. A 60-second positive age limit is configurable on
-  the reader. Each reader and its synchronous ordering state are confined to one
-  event loop. Per-reader ordering retains the latest producer timestamp globally
-  and the latest record per sanitized source coordinate. An identical repeated
-  record is idempotent, changed facts at the same ordinal become unknown, and a
-  delayed older snapshot cannot replace newer state. The domain-separated scope
-  helper hashes provider, account, and user identity without logging or
-  persisting raw identifiers; observations remain unscoped unless their derived
-  identity matches a caller-supplied expected binding scope. The current Codex
-  binding still supplies no scope.
+  stale or future snapshots. The reader's positive age limit is configurable;
+  standalone uses at least 60 seconds and one polling interval plus 60 seconds.
+  Each reader and its synchronous ordering state are confined to one event loop.
+  Per-reader ordering retains the latest producer timestamp globally and the
+  latest record per sanitized source coordinate. An identical repeated record is
+  idempotent, changed facts at the same ordinal become unknown, and a delayed
+  older snapshot cannot replace newer state. The domain-separated scope helper
+  hashes provider, account, and user identity without logging or persisting raw
+  identifiers. The first validated evaluation session pins the scope when the
+  binding supplies none; later sessions must match it.
 - Active quota polling builds one fixed Luna/`none` supervised request with a
   caller-staged nonempty instruction path, minimal argv prompt, JSONL output,
   read-only empty cwd, and the available explicit CLI feature/config disables,
-  including approval never, web search disabled, and request-user-input off.
-  It ignores user config and does not use `--ephemeral`, because the rollout is
-  needed for telemetry. The CLI has no verified global MCP-server clear, and
-  the maintainer accepted the CLI 0.164.0 tool/context limitation: those
-  controls do not prove that the outer `functions.exec` wrapper or injected
-  context is absent. See [quota-capture](quota-capture.md) for the inspection
-  scope and remaining correlation limits. Both quota outcomes require a safely
-  settled Completed probe and complete scoped windows whose producer timestamp
-  falls within that probe. Availability additionally requires exit status zero;
-  fresh exhaustion remains conclusive after a nonzero exit. Timeouts, output
-  overflow, cancellation, and unsafe cleanup remain unknown. Unknown telemetry
-  cannot resume dispatch. The reader invokes the
-  existing `AttemptCall` once with the exact request and stop callback and
-  retains the process outcome, captured output, and normalized observation in
+  including approval never, web search disabled, and request-user-input off. It
+  ignores user config and does not use `--ephemeral`, because the rollout is
+  needed for telemetry. The CLI has no verified global MCP-server clear, and the
+  maintainer accepted the CLI 0.164.0 tool/context limitation: those controls do
+  not prove that the outer `functions.exec` wrapper or injected context is
+  absent. See [quota-capture](quota-capture.md) for the inspection scope and
+  remaining correlation limits. Availability requires a safely settled zero-exit
+  probe and complete scoped windows produced during that probe. A recognized
+  scoped quota failure may establish exhaustion without numeric rows. Timeouts,
+  output overflow, cancellation, and unsafe cleanup remain unknown. Unknown
+  telemetry cannot resume dispatch. The reader invokes the existing
+  `AttemptCall` once with the exact request and stop callback and retains the
+  process outcome, captured output, and normalized observation in
   `QuotaProbeEvidence`. If cancellation or another exception escapes after
   dispatch, the adapter attaches available probe evidence to that same exception
-  and re-raises it. This adapter implementation does not wire the CLI
-  composition root or coordinator, issue live probes, or authorize resumption.
-  The generic `quota_probe_evidence` accessor matches by the exact original
-  request object, so a coordinator must retain that object; no match means
-  incomplete evidence.
+  and re-raises it. The generic `quota_probe_evidence` accessor matches by the
+  exact original request object, so a coordinator must retain that object; no
+  match means incomplete evidence.
 - `runner.adapters.runtime` implements the runtime port with UTC and monotonic
   clocks, cancellable `asyncio` waits, and uniform jitter sampling.
 - The adapter package exports `SystemRuntime` and the typed Codex binding,
   request, classifier, and quota-reader adapters. Codex request and classifier
   operations remain injectable; the quota reader uses its source, supervisor,
-  and runtime ports. The default leaves now resolve
-  and probe the executable, retain requested settings with native values marked
-  unknown, construct a request and effective identity, and classify only
-  confirmed prelaunch failure. Quota and model-capacity recognition remain
-  unsupported because the supplied captures do not establish reliable structured
-  signals. The Codex and quota signature sketches in
-  `design/eval/runner/adapters/` are historical; runtime code is authoritative.
-  The CLI composition root and progress adapter are implemented. The quota
-  adapter implements its bounded source, normalization, polling request,
-  and assessment behavior, but is not yet wired into CLI composition. The
-  coordinator accepts the quota port and owns awaited recovery.
+  and runtime ports. The default leaves now resolve and probe the executable,
+  retain requested settings with native values marked unknown, construct a
+  request and effective identity, and classify prelaunch failure or the narrow
+  quota sequence. Capacity recognition remains unsupported. The Codex and quota
+  signature sketches in `design/eval/runner/adapters/` are historical; runtime
+  code is authoritative. The CLI composition root and progress adapter are
+  implemented. The quota adapter implements its bounded source, normalization,
+  polling request, and assessment behavior and is wired into opt-in CLI
+  composition. The coordinator accepts the quota port and owns awaited recovery.
   Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
   implements the reviewed pure policy calculations; it does not own effects or
   coordinator gates. The shared runner values and ports are implemented. The
@@ -522,11 +513,10 @@ Codex, quota, and runtime adapters.
   and quota adapters own their stated external reads; the runtime adapter owns
   clock, wait, and random effects.
 
-### Proposed quota connection and recognition
+### Quota connection and recognition
 
 **TL;DR:** Pin invocation-correlated scope and reuse existing recovery, with
-fresh positive probe evidence required to resume. This is proposed for review;
-the implemented adapter and coordinator behavior remains as described above.
+fresh positive probe evidence required to resume.
 
 - The reader validates each invocation's `thread.started` ID against its exact
   rollout filename and supported metadata IDs, version, provider, and identity.
@@ -543,7 +533,7 @@ the implemented adapter and coordinator behavior remains as described above.
   with the binding scope when the latter is present.
 - An absent binding scope does not prevent invocation-correlated pinning.
 
-**Proposed operational inference:** For CLI `0.164.0` only, the classifier
+**Operational inference:** For CLI `0.164.0` only, the classifier
 identifies a quota candidate and confident absence using all these conditions:
 
 - The supervisor reports a safely cleaned up `Completed` process with nonzero
@@ -581,11 +571,9 @@ semantic output. The capture alone remains insufficient proof. Unrecognized
 - The [intent scenarios](quota-connection-scenarios.md) are not executable
   acceptance evidence.
 
-AC-6 needs a clarification before implementation: its rule that unknown
-observations end recovery must distinguish unknown numeric window values from
-an unrecognized quota state. A scoped recognized exhaustion can support a wait
-without window values; unknown scope or state still stops recovery. AC-6 remains
-TODO and this proposal does not change the Work contract.
+AC-6 distinguishes unknown numeric window values from an unrecognized quota
+state. A scoped recognized exhaustion can support a wait without window values;
+unknown scope or state still stops recovery. AC-6 remains TODO.
 
 ### Standalone invocation
 
@@ -688,8 +676,8 @@ evidence.
 [`script/eval/cli.py`](../../../../../../script/eval/cli.py) sequences injected
 preparation and execution collaborators. The standalone command supplies
 argument parsing, concrete factories, signal handling, and best-effort progress.
-It refuses quota waiting without verified scope; capacity recognition is
-unsupported. No acceptance criterion is complete.
+It verifies quota scope from correlated invocations when waiting is enabled;
+capacity recognition is unsupported. No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
@@ -718,7 +706,7 @@ unsupported. No acceptance criterion is complete.
   the caller's stderr settings.
 - Effects: connects the effects listed above and exposes the CLI entry point.
 
-**Proposed opt-in quota composition:**
+**Opt-in quota composition:**
 
 - Select the same inherited Codex home as the evaluation and probe processes.
 - If `CODEX_HOME` is set, require an existing absolute directory and reject an
@@ -823,9 +811,8 @@ parallel runtime model or change supervisor types. Private helpers and concrete
 persistence formats remain flexible; supervisor outcomes and requests continue
 to use the existing public types. Codex quota recognition is implemented against
 the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
-freshness checks; later CLI schemas require separate review. The quota binding
-still does not supply an expected identity scope, so the CLI cannot yet enable
-scoped quota availability.
+freshness checks; later CLI schemas require separate review. The reader pins the
+expected scope from an evaluation when the binding does not supply one.
 
 | Proposed module | Responsibility |
 | --- | --- |

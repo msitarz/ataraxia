@@ -541,17 +541,51 @@ def probe_eligible(
 ) -> bool:
     """Check a normalized trigger without interpreting provider-specific windows.
 
-    The adapter owns completeness and source ordering. All supplied windows
-    must be known and at least one exhausted; equality with expiry is fresh.
+    The adapter owns completeness and source ordering. A recognized exhausted
+    state may omit numeric windows; otherwise known windows establish exhaustion.
+    Equality with expiry is fresh.
 
     Returns:
         Whether the observation authorizes considering a paid probe.
     """
-    return (
-        _fresh(observation, expected_scope, now_utc)
-        and observation is not None
-        and any(window.state == "exhausted" for window in observation.windows)
+    return observation is not None and (
+        (
+            _fresh_scope(observation, expected_scope, now_utc)
+            and observation.state == "exhausted"
+        )
+        or (
+            _fresh(observation, expected_scope, now_utc)
+            and any(window.state == "exhausted" for window in observation.windows)
+        )
     )
+
+
+def _fresh_scope(
+    observation: QuotaObservation | None,
+    expected_scope: QuotaScope | None,
+    now_utc: str,
+    /,
+) -> bool:
+    """Check scope and producer expiry without assuming numeric windows.
+
+    Returns:
+        Whether the scoped observation is still fresh.
+    """
+    if (
+        observation is None
+        or expected_scope is None
+        or observation.scope != expected_scope
+        or observation.valid_until_utc is None
+    ):
+        return False
+    try:
+        expiry = datetime.fromisoformat(
+            observation.valid_until_utc.replace("Z", "+00:00")
+        )
+        now = datetime.fromisoformat(now_utc.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return expiry.tzinfo is not None and now.tzinfo is not None and now <= expiry
 
 
 def _fresh(
@@ -595,16 +629,14 @@ def _probe_end(
         return "unknown"
     if record.cleanup is None or record.cleanup.process != "owned":
         return "unknown"
-    if not safe_process_cleanup(record) or not _fresh(
+    if not safe_process_cleanup(record) or observation is None:
+        return "unknown"
+    if record.quota_state == "exhausted" and probe_eligible(
         observation, waiting.context.quota_observation.scope, now_utc
     ):
-        return "unknown"
-    if observation is None:
-        return "unknown"
-    if record.quota_state == "exhausted" and any(
-        window.state == "exhausted" for window in observation.windows
-    ):
         return None
+    if not _fresh(observation, waiting.context.quota_observation.scope, now_utc):
+        return "unknown"
     if (
         record.quota_state == "available"
         and record.exit_status == 0

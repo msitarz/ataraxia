@@ -1130,7 +1130,16 @@ async def test_mismatched_binding_scope_never_authorizes_quota_probe(
 ) -> None:
     # Given
     original, store = await prepare(tmp_path, 1, quota_wait_enabled=True)
-    bound = replace(original, binding=replace(original.binding, quota_scope=None))
+    bound = replace(
+        original,
+        binding=replace(
+            original.binding,
+            quota_scope=QuotaScope.model_validate({
+                "provider_id": "other",
+                "allowance_id": "other",
+            }),
+        ),
+    )
     reader = RecoveryReader()
 
     # When

@@ -5,7 +5,7 @@ import asyncio
 from typing import Literal, Never
 
 from script.eval.evidence import EvidenceStore
-from script.eval.model import QuotaObservation, QuotaWaitContext, RunRecord
+from script.eval.model import QuotaObservation, QuotaScope, QuotaWaitContext, RunRecord
 from script.eval.runner.ports import (
     AttemptCall,
     BoundRun,
@@ -226,18 +226,29 @@ class Coordinator:
             for task, owner in self._tasks.items()
         )
 
+    def _scope_matches(
+        self, scope: QuotaScope | None, observed: QuotaScope | None
+    ) -> bool:
+        """Check optional binding against a verified reader and trigger scope.
+
+        Returns:
+            Whether every present scope matches.
+        """
+        binding = self._bound_run.binding.quota_scope
+        return (
+            scope is not None
+            and observed == scope
+            and (binding is None or binding == scope)
+        )
+
     async def _recover_quota(self) -> None:
         """Await recovery only after active attempt evidence has drained."""
         trigger = self._control.quota_trigger
         if trigger is None:
             self._control.latch_stop(RuntimeError("missing durable quota trigger"))
             return
-        scope = self._bound_run.binding.quota_scope
-        if (
-            scope is None
-            or scope != self._quota_status.expected_scope
-            or trigger.observation.scope != scope
-        ):
+        scope = self._quota_status.expected_scope
+        if not self._scope_matches(scope, trigger.observation.scope):
             self._control.latch_stop(RuntimeError("quota scope does not match binding"))
             return
         context = QuotaWaitContext(

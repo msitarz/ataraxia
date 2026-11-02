@@ -40,7 +40,7 @@ from script.eval.model import (
     QuotaWindowId,
     QuotaWindowObservation,
 )
-from script.eval.runner.adapters.codex import _toml_string
+from script.eval.runner.adapters.codex import _quota_failure, _toml_string
 from script.eval.runner.ports import (
     AttemptCall,
     QuotaStatusReader,
@@ -265,7 +265,30 @@ class LocalCodexQuotaStatusSource:
             The selected rollout rows, or ``None`` when lookup is ambiguous,
             unavailable, malformed, or unsafe.
         """
-        return await asyncio.to_thread(self._read_session_for_thread, thread_id)
+        task = asyncio.create_task(
+            asyncio.to_thread(self._read_session_for_thread, thread_id)
+        )
+        cancellation: CancelledError | None = None
+        result: CodexSessionSnapshot | None = None
+        while True:
+            try:
+                result = await asyncio.shield(task)
+                break
+            except CancelledError as error:
+                cancellation = error
+                if task.done():
+                    break
+            except BaseException as error:
+                if cancellation is not None:
+                    raise cancellation from error
+                raise
+        if cancellation is not None:
+            try:
+                task.result()
+            except BaseException as error:
+                raise cancellation from error
+            raise cancellation
+        return result
 
     def _read_session_for_thread(
         self, thread_id: str, /
@@ -323,6 +346,13 @@ class CodexQuotaSettings:
             raise ValueError("probe_instructions_file must be absolute")
 
 
+@dataclass
+class _PinnedScope:
+    """Mutable event-loop-confined scope for a single reader."""
+
+    value: QuotaScope | None = None
+
+
 @dataclass(frozen=True, kw_only=True)
 class CodexQuotaStatusReader(QuotaStatusReader):
     """Read passive telemetry and expose separate, supervised quota polls.
@@ -348,6 +378,9 @@ class CodexQuotaStatusReader(QuotaStatusReader):
     attempt_call: AttemptCall
     runtime: Runtime
     max_observation_age_seconds: float = 60.0
+    _pinned: _PinnedScope = field(
+        default_factory=_PinnedScope, compare=False, repr=False
+    )
     _ordering: _ObservationOrdering = field(
         default_factory=lambda: _ObservationOrdering(), compare=False, repr=False
     )
@@ -366,8 +399,8 @@ class CodexQuotaStatusReader(QuotaStatusReader):
 
     @property
     def expected_scope(self) -> QuotaScope | None:
-        """The verified scope paired with this reader, when known."""
-        return self.quota_scope
+        """The configured or invocation-pinned scope, when known."""
+        return self.quota_scope or self._pinned.value
 
     async def observe_settled_attempt(
         self, evidence: AttemptEvidence, /
@@ -456,13 +489,49 @@ class CodexQuotaStatusReader(QuotaStatusReader):
             if thread_id is not None
             else None
         )
+        expected = self.expected_scope
+        if snapshot is not None and snapshot.telemetry is not None:
+            scope, issue = _session_scope(
+                snapshot.telemetry.metadata, snapshot, expected
+            )
+            if issue is None and scope is not None and expected is None:
+                self._pinned.value = scope
         observation = _normalize_session(
             snapshot,
             self.expected_scope,
             self.runtime.utc_now(),
             self.max_observation_age_seconds,
         )
-        return self._ordering.accept(observation, self.expected_scope)
+        observation = self._ordering.accept(observation, self.expected_scope)
+        if (
+            observation.scope is not None
+            and observation.diagnostic in (None, "session telemetry is incomplete")
+            and _quota_failure(attempt)
+        ):
+            ended = _parse_timestamp(attempt.ended_at_utc)
+            read_at = _parse_timestamp(observation.read_at_utc)
+            if (
+                ended is not None
+                and read_at is not None
+                and 0
+                <= (read_at - ended).total_seconds()
+                <= self.max_observation_age_seconds
+            ):
+                try:
+                    expires = ended + timedelta(
+                        seconds=self.max_observation_age_seconds
+                    )
+                except OverflowError:
+                    return _as_unknown(
+                        observation, "quota freshness expiry is out of range"
+                    )
+                return observation.model_copy(
+                    update={
+                        "state": "exhausted",
+                        "valid_until_utc": _format_timestamp(expires),
+                    }
+                )
+        return observation
 
 
 @dataclass(frozen=True)
@@ -788,7 +857,7 @@ def _collect_selected_rows(
     if collector.metadata_count != 1:
         return None
     metadata = collector.metadata
-    if collector.invalid or metadata is None or not collector.token_counts:
+    if collector.invalid or metadata is None:
         return _SelectedRows(None)
     return _SelectedRows(_SessionTelemetry(metadata, tuple(collector.token_counts)))
 
@@ -1094,9 +1163,9 @@ def _session_scope(
         )
     except ValueError:
         return None, "session provider is unsupported"
-    if expected_scope is None or observed_scope != expected_scope:
+    if expected_scope is not None and observed_scope != expected_scope:
         return None, "session quota scope is not verified"
-    return expected_scope, None
+    return observed_scope, None
 
 
 def _latest_rate_limit_record(
@@ -1261,6 +1330,12 @@ def _assess_probe(
     Returns:
         The conservative state and its classification basis.
     """
+    if (
+        observation is not None
+        and observation.scope is not None
+        and observation.state == "exhausted"
+    ):
+        return "exhausted", "supported Codex quota failure event sequence"
     if observation is None or observation.scope is None or not observation.windows:
         return "unknown", "probe has no complete scoped quota observation"
     required_windows = set(_CODEX_WINDOW_IDS)
@@ -1270,6 +1345,17 @@ def _assess_probe(
         window.state in {"unknown", "unavailable"} for window in observation.windows
     ):
         return "unknown", "probe quota observation is incomplete"
+    return _assess_complete_probe(attempt, observation)
+
+
+def _assess_complete_probe(
+    attempt: AttemptEvidence, observation: QuotaObservation, /
+) -> tuple[QuotaState, str | None]:
+    """Assess complete windows against the probe process and time bounds.
+
+    Returns:
+        The conservative state and classification basis.
+    """
     outcome = attempt.outcome
     if (
         attempt.control_flow != "returned"
