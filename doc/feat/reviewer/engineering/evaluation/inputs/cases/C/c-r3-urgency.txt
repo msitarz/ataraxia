@@ -1,0 +1,188 @@
+Session: {SESSION_ID}; strategy: C; input: c-r3-urgency
+
+Expected assessments:
+[
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "urgency"
+  }
+]
+Rules:
+
+--- R3 ---
+### Pure typed decisions
+
+A pure decision is a pure function over valid typed domain values; its result
+is determined by those explicit inputs.
+
+- It performs no I/O.
+- It reads no environment, clock, random source, or global state.
+- It does not mutate its arguments.
+- It does not reparse raw input, repeat defensive checks on validated children,
+  or probe files or processes; validation belongs at the
+  [owning boundary](#validate-at-boundaries-and-construction).
+- A newly constructed domain result enforces its own invariants.
+
+Calling an effectful collaborator remains an effect even when its contract is
+a `typing.Protocol`.
+Stateful runners may orchestrate pure decisions while retaining execution state
+or coordinating effects; orchestration does not make the runner itself pure.
+
+The illustrative `scheduled_time` decision uses only its validated plan and
+returns either its explicit schedule or `None`.
+
+- Separate a substantial per-item decision from collection traversal and
+  cross-item state when that clarifies the contract.
+- Keep accumulators visible in a loop instead of hiding them in a comprehension.
+- Prefer standard Python protocols such as iteration and `collections.abc.Sized`
+  when their semantics fit.
+- Retain named methods when they express distinct domain meaning.
+
+--- BEGIN REFERENCED CONTEXT: engineering.md lines 144–180 ---
+
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created.
+
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+--- BEGIN ILLUSTRATIVE CONTEXT: engineering.md lines 182–235 ---
+
+For example, a proposed transfer record can own its positive-amount and
+different-account invariants. A raw request adapter checks incoming field
+types and required fields before constructing it; an internal caller with typed
+arguments uses the constructor's own semantic checks. This is an illustration
+of guidance, not an Ataraxia API:
+
+```py
+from dataclasses import dataclass
+from datetime import datetime
+from typing import assert_never
+
+
+@dataclass(frozen=True)
+class Transfer:
+    owner_id: str
+    recipient_id: str
+    cents: int
+
+    def __post_init__(self) -> None:
+        if not self.owner_id or not self.recipient_id:
+            raise ValueError("account IDs must not be empty")
+        if self.owner_id == self.recipient_id:
+            raise ValueError("transfer accounts must differ")
+        if isinstance(self.cents, bool) or self.cents <= 0:
+            raise ValueError("cents must be a positive integer")
+
+
+@dataclass(frozen=True)
+class ImmediateTransfer:
+    details: Transfer
+
+
+@dataclass(frozen=True)
+class ScheduledTransfer:
+    details: Transfer
+    execute_at: datetime
+
+
+type TransferPlan = ImmediateTransfer | ScheduledTransfer
+
+
+def scheduled_time(plan: TransferPlan) -> datetime | None:
+    match plan:
+        case ImmediateTransfer():
+            return None
+        case ScheduledTransfer(execute_at=execute_at):
+            return execute_at
+        case unexpected:
+            assert_never(unexpected)
+
+
+def schedule(plan: ImmediateTransfer, execute_at: datetime) -> ScheduledTransfer:
+    return ScheduledTransfer(details=plan.details, execute_at=execute_at)
+```
+
+--- END REFERENCED CONTEXT ---
+
+Context:
+
+--- r3/planning.py.txt original lines 1-9 ---
+# SPDX-License-Identifier: Apache-2.0
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt original lines 11-11 ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt original lines 12-12 ---
+from time import time
+
+--- r3/planning.py.txt original lines 15-24 ---
+@dataclass(frozen=True)
+class Order:
+    order_id: str
+    customer_id: str
+    origin: str
+    destination: str
+    weight: int
+    ready_at: int
+    due_at: int
+    priority: int
+
+--- r3/planning.py.txt original lines 74-78 ---
+@dataclass(frozen=True)
+class Alert:
+    order_id: str
+    kind: str
+    remaining: int
+
+--- r3/planning.py.txt original lines 196-204 ---
+def urgency(order: Order, travel: int, now: int) -> Alert | None:
+    """Flag orders whose remaining time is insufficient or getting short."""
+    remaining = order.due_at - int(time()) - travel
+    if remaining < 0:
+        return Alert(order.order_id, "late", remaining)
+    threshold = 3600 if order.priority > 1 else 1800
+    if remaining <= threshold:
+        return Alert(order.order_id, "at-risk", remaining)
+    return None

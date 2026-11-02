@@ -2,6 +2,7 @@
 """Consistency of draft engineering review prompts and their public sources."""
 
 import ast
+from hashlib import sha256
 import json
 from pathlib import Path
 import re
@@ -9,9 +10,18 @@ import re
 from pydantic import BaseModel, TypeAdapter
 import pytest
 
+from script.eval.model import (
+    DirectoryOption,
+    FrozenInputs,
+    HarnessConfig,
+    SourceSnapshot,
+)
+from script.eval.plan import PurePlanBuilder
+
 ROOT = Path(__file__).resolve().parents[4]
 EVALUATION = ROOT / "doc/feat/reviewer/engineering/evaluation"
 INPUTS = EVALUATION / "inputs"
+SHARED = INPUTS / "shared" / "review-instructions-and-schema.txt"
 CORPUS = EVALUATION / "corpus"
 RULES = ("R1", "R3", "R4")
 SOURCES = ("r1/dispatch.py.txt", "r3/planning.py.txt", "r4/ledger.py.txt")
@@ -49,6 +59,15 @@ def manifest_keys() -> set[AssessmentKey]:
     }
 
 
+def context_bytes(packet: Packet) -> bytes:
+    lines = (CORPUS / packet.target.file_id).read_bytes().splitlines(keepends=True)
+    return b"".join(
+        f"\n--- {packet.target.file_id} original lines {start}-{end} ---\n".encode()
+        + b"".join(lines[start - 1 : end])
+        for start, end in packet.ranges
+    )
+
+
 def rule_bytes(rules: tuple[str, ...]) -> bytes:
     return b"".join(
         f"\n--- {rule} ---\n".encode()
@@ -66,35 +85,30 @@ def whole_bundle() -> bytes:
     )
 
 
-def context_bytes(packet: Packet) -> bytes:
-    lines = (CORPUS / packet.target.file_id).read_bytes().splitlines(keepends=True)
-    return b"".join(
-        f"\n--- {packet.target.file_id} original lines {start}-{end} ---\n".encode()
-        + b"".join(lines[start - 1 : end])
-        for start, end in packet.ranges
+def expected_case(strategy: str, ident: str) -> bytes:
+    """Derive variable case bytes from the public target and corpus records."""
+    keys = (
+        list(KEYS)
+        if strategy == "A"
+        else [key for key in KEYS if key.rule_id == ident.upper()]
+        if strategy == "B"
+        else [PACKETS[ident].target]
     )
-
-
-def expected_prompt(
-    strategy: str,
-    ident: str,
-    keys: list[AssessmentKey],
-    rules: tuple[str, ...],
-    context: bytes,
-) -> bytes:
-    template = (
-        (INPUTS / "prompt-template.txt")
-        .read_text()
-        .format(strategy=strategy, input_id=ident)
-        .encode()
+    rules = RULES if strategy == "A" else (keys[0].rule_id,)
+    case_directory = INPUTS / "cases" / strategy
+    case_path = case_directory / f"{ident}.txt"
+    input_id = f"b-{case_path.stem}" if strategy == "B" else case_path.stem
+    session = (
+        f"Session: {{SESSION_ID}}; strategy: {strategy}; input: {input_id}"
+    ).encode()
+    context = (
+        whole_bundle() if strategy in {"A", "B"} else context_bytes(PACKETS[ident])
     )
     assessments = json.dumps([key.model_dump() for key in keys], indent=2).encode()
     return (
-        template
-        + b"\nExpected assessments:\n"
+        session
+        + b"\n\nExpected assessments:\n"
         + assessments
-        + b"\nResponse JSON contract:\n"
-        + (INPUTS / "response.schema.json").read_bytes()
         + b"\nRules:\n"
         + rule_bytes(rules)
         + b"\nContext:\n"
@@ -173,51 +187,107 @@ def test_expected_keys_match_public_manifest() -> None:
     }
 
 
-def test_shared_schema_is_json_object() -> None:
-    # Given
-    schema_bytes = (INPUTS / "response.schema.json").read_bytes()
-
-    # When
-    schema = json.loads(schema_bytes)
-
-    # Then
-    assert isinstance(schema, dict)
-
-
 def test_exact_prompt_inventory() -> None:
     # Given
-    expected = {"a.txt", "r1.txt", "r3.txt", "r4.txt"} | {
-        f"c/{ident}.txt" for ident in PACKETS
+    expected = {"A/a.txt", *(f"B/{rule.lower()}.txt" for rule in RULES)} | {
+        f"C/{ident}.txt" for ident in PACKETS
     }
 
     # When
-    actual = {str(path.relative_to(INPUTS)) for path in INPUTS.glob("*.txt")} | {
-        str(path.relative_to(INPUTS)) for path in (INPUTS / "c").glob("*.txt")
+    actual = {
+        str(path.relative_to(INPUTS / "cases"))
+        for path in (INPUTS / "cases").glob("*/*.txt")
     }
 
     # Then
     assert len(PACKETS) == 24
-    assert actual == expected | {"prompt-template.txt"}
+    assert actual == expected
+    assert {path.name for path in (INPUTS / "cases").iterdir()} == {"A", "B", "C"}
+    assert {
+        f"{directory.name}/{path.name}"
+        for directory in (INPUTS / "cases").iterdir()
+        for path in directory.iterdir()
+        if path.is_file()
+    } == expected
+    assert all(
+        path.is_file()
+        for directory in (INPUTS / "cases").iterdir()
+        for path in directory.iterdir()
+    )
+    assert [path.name for path in (INPUTS / "shared").iterdir()] == [
+        "review-instructions-and-schema.txt"
+    ]
+    assert isinstance(
+        json.loads(SHARED.read_bytes().split(b"Response JSON contract:\n", 1)[1]),
+        dict,
+    )
     assert {packet.target for packet in PACKETS.values()} == set(KEYS)
 
 
 @pytest.mark.parametrize(
-    "strategy,ident,rules",
-    [("A", "a", RULES), *(("B", f"b-{rule.lower()}", (rule,)) for rule in RULES)],
-    ids=["A", "B-R1", "B-R3", "B-R4"],
+    "strategy,ident",
+    [
+        ("A", "a"),
+        *(("B", rule.lower()) for rule in RULES),
+        *(("C", ident) for ident in PACKETS),
+    ],
+    ids=["A", "B-R1", "B-R3", "B-R4", *PACKETS],
 )
-def test_whole_bundle_prompt_bytes(
-    strategy: str, ident: str, rules: tuple[str, ...]
+def test_case_bytes_preserve_keys_rules_and_original_context(
+    strategy: str, ident: str
 ) -> None:
     # Given
-    path = INPUTS / ("a.txt" if strategy == "A" else f"{rules[0].lower()}.txt")
-    keys = [key for key in KEYS if key.rule_id in rules]
+    actual = (INPUTS / "cases" / strategy / f"{ident}.txt").read_bytes()
 
     # When
-    actual = path.read_bytes()
+    expected = expected_case(strategy, ident)
 
     # Then
-    assert actual == expected_prompt(strategy, ident, keys, rules, whole_bundle())
+    assert actual == expected
+
+
+def test_case_inputs_compose_through_the_public_plan_builder() -> None:
+    # Given
+    shared = SHARED.read_bytes()
+    cases = sorted((INPUTS / "cases").glob("*/*.txt"))
+    sources = tuple(
+        SourceSnapshot(
+            directory_position=position,
+            repository_path=str(path.relative_to(ROOT)),
+            commit_blob_sha="0" * 40,
+            content_sha256=sha256(path.read_bytes()).hexdigest(),
+            content=path.read_bytes(),
+        )
+        for position, paths in ((0, [SHARED]), (2, cases))
+        for path in paths
+    )
+    config = HarnessConfig(
+        ordered_options=(
+            DirectoryOption(position=0, path=Path("shared")),
+            DirectoryOption(position=2, path=Path("case")),
+        ),
+        models=("model",),
+        efforts=("medium",),
+        concurrency=1,
+        output_directory=None,
+        dry_run=True,
+        timeout_seconds=1.0,
+        cleanup_timeout_seconds=2.0,
+        grace_seconds=0.0,
+        output_limit_bytes=1000,
+        instructions_file_path=None,
+    )
+    inputs = FrozenInputs(ROOT, "0" * 40, sources, None)
+
+    # When
+    calls = PurePlanBuilder("review-contexts").plan(inputs, config).calls
+
+    # Then
+    assert len(calls) == len(cases) == 28
+    assert {call.prompt for call in calls} == {
+        shared + b"\n\n" + path.read_bytes() for path in cases
+    }
+    assert all(call.context_indices[0] == 0 for call in calls)
 
 
 @pytest.mark.parametrize("ident,packet", list(PACKETS.items()), ids=list(PACKETS))
@@ -226,7 +296,7 @@ def test_focused_packet_preserves_source_bytes(ident: str, packet: Packet) -> No
     lines = (CORPUS / packet.target.file_id).read_bytes().splitlines(keepends=True)
 
     # When
-    actual = (INPUTS / "c" / f"{ident}.txt").read_bytes()
+    actual = (INPUTS / "cases" / "C" / f"{ident}.txt").read_bytes()
 
     # Then
     assert packet.ranges == sorted(packet.ranges)
@@ -235,8 +305,12 @@ def test_focused_packet_preserves_source_bytes(ident: str, packet: Packet) -> No
         left[1] < right[0]
         for left, right in zip(packet.ranges, packet.ranges[1:], strict=False)
     )
-    assert actual == expected_prompt(
-        "C", ident, [packet.target], (packet.target.rule_id,), context_bytes(packet)
+    expected = json.dumps([packet.target.model_dump()], indent=2).encode()
+    assert b"\nExpected assessments:\n" + expected + b"\nRules:\n" in actual
+    assert b"\nRules:\n\n--- " + packet.target.rule_id.encode() + b" ---\n" in actual
+    assert (
+        b"\nContext:\n" + context_bytes(packet)
+        == actual[actual.index(b"\nContext:\n") :]
     )
 
 

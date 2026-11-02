@@ -198,10 +198,11 @@ none/low/medium/high effort analysis on the same inputs. Function/context
 extraction happens during preparation and requires no production reviewer.
 Authored source and rule files are prepared in the
 [draft corpus](corpus/manifest.md), with a separately held draft reference
-index. [Draft packets and prompts](inputs/preparation.md) are prepared for
-review. Independent owner validation of the index and packets, freeze, runtime
-binding, matched input baselines, and retained boundary checks remain
-outstanding. The initial corpus does not complete the historical/diversity
+index. [Draft packets and prompts](inputs/preparation.md) use one shared
+instruction/schema file followed by the A/B/C case directory. Independent owner
+validation of the index and packets, freeze, runtime binding, matched input
+baselines, and retained boundary checks remain outstanding. The initial corpus
+does not complete the historical/diversity
 evidence required above or support a production granularity decision. The
 accepted CLI limitation is not evidence that the retained boundary requirements
 have been satisfied. All acceptance criteria remain TODO; this preparation does

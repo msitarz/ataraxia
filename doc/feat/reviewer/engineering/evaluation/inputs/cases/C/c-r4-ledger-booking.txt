@@ -1,0 +1,192 @@
+Session: {SESSION_ID}; strategy: C; input: c-r4-ledger-booking
+
+Expected assessments:
+[
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.booking"
+  }
+]
+Rules:
+
+--- R4 ---
+- Do not nest `try` statements within the same execution scope, including
+  through branches or loops and inside `except`, `else`, or `finally`; this
+  applies equally to `async` functions and `except*`.
+- Sequential `try` statements are allowed when they protect distinct operations.
+- Separate nested function or method scopes with `try` statements are allowed.
+- Use context managers for resource cleanup and extract cohesive helpers that
+  preserve operation-specific catches, exception causes, cleanup, and resource
+  ownership.
+- Do not split code into tiny helpers merely to avoid nesting.
+- Use context managers for files/providers, preserving source/provider lifecycle
+  delegation and cleanup on success/failure.
+
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+### Effects and live resource safety belong to adapters
+
+Adapters own effectful operations, expected failure translation, and the
+lifecycle of resources they acquire.
+
+- Normalize untyped inputs once at their ingress boundary, then reuse the
+  adapted values and observations.
+- Rely on a documented typed API's guarantees instead of repeating them or
+  routinely preflighting an operation.
+- Follow the existing
+  [boundary error guidance](#validate-at-boundaries-and-construction) for
+  context and causes.
+- Follow the [resource handling conventions](#code-style) for cleanup on success
+  and failure.
+- Keep essential current ownership, authorization, lifecycle, and safety checks
+  at the operation that needs them.
+- Use transactions or synchronization to make state-dependent checks and writes
+  atomic where required; a valid persisted record alone does not prove that
+  current access or resource state is safe.
+- When validation or control flow changes, preserve supported inputs, documented
+  errors and causes, state invariants, persistence compatibility, and necessary
+  effect ordering.
+
+Incidental check order and defensive branch layout remain implementation
+choices.
+
+--- BEGIN REFERENCED CONTEXT: engineering.md lines 19, 102–112, 144–180 ---
+
+## Code style
+
+- Do not nest `try` statements within the same execution scope, including
+  through branches or loops and inside `except`, `else`, or `finally`; this
+  applies equally to `async` functions and `except*`.
+- Sequential `try` statements are allowed when they protect distinct operations.
+- Separate nested function or method scopes with `try` statements are allowed.
+- Use context managers for resource cleanup and extract cohesive helpers that
+  preserve operation-specific catches, exception causes, cleanup, and resource
+  ownership.
+- Do not split code into tiny helpers merely to avoid nesting.
+- Use context managers for files/providers, preserving source/provider lifecycle
+  delegation and cleanup on success/failure.
+
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created.
+
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+--- END REFERENCED CONTEXT ---
+
+Context:
+
+--- r4/ledger.py.txt original lines 1-18 ---
+# SPDX-License-Identifier: Apache-2.0
+"""SQLite adapter for a freight ledger.
+
+The composition root creates the schema and supplies the database path. Each
+method acquires its own connection. It closes that connection on every exit,
+including a failed statement or commit. Methods raising ReadError report a
+failed query; methods raising WriteError report a failed write or commit. Both
+errors preserve their original sqlite exception as the cause. A missing row is
+reported as None, not as a database failure. Transactions must commit all
+writes in a method together or roll them all back.
+
+The tables are:
+  bookings(id TEXT PRIMARY KEY, customer TEXT, state TEXT, cents INTEGER)
+  payments(id TEXT PRIMARY KEY, booking TEXT, cents INTEGER)
+  events(id TEXT PRIMARY KEY, booking TEXT, description TEXT)
+  allocations(booking TEXT PRIMARY KEY, vehicle TEXT, weight INTEGER)
+All non-key columns are NOT NULL. Amounts and weights are nonnegative.
+"""
+
+--- r4/ledger.py.txt original lines 20-20 ---
+import sqlite3
+
+--- r4/ledger.py.txt original lines 21-21 ---
+from contextlib import closing
+
+--- r4/ledger.py.txt original lines 22-22 ---
+from dataclasses import dataclass
+
+--- r4/ledger.py.txt original lines 23-23 ---
+from pathlib import Path
+
+--- r4/ledger.py.txt original lines 26-27 ---
+class ReadError(Exception):
+    """The ledger could not read a requested record."""
+
+--- r4/ledger.py.txt original lines 34-39 ---
+@dataclass(frozen=True)
+class Booking:
+    booking_id: str
+    customer: str
+    state: str
+    cents: int
+
+--- r4/ledger.py.txt original lines 63-64 ---
+def booking_from_row(row: tuple[str, str, str, int]) -> Booking:
+    return Booking(row[0], row[1], row[2], row[3])
+
+--- r4/ledger.py.txt original lines 94-96 ---
+@dataclass(frozen=True)
+class Ledger:
+    database: Path
+
+--- r4/ledger.py.txt original lines 98-114 ---
+    def booking(self, booking_id: str) -> Booking | None:
+        """Find a booking by ID; raise ReadError if the query fails.
+
+        Raises:
+            ReadError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection:
+                row = connection.execute(
+                    "SELECT id, customer, state, cents FROM bookings WHERE id = ?",
+                    (booking_id,),
+                ).fetchone()
+        except sqlite3.Error as exc:
+            raise ReadError("cannot read booking") from exc
+        if row is None:
+            return None
+        return booking_from_row(row)
