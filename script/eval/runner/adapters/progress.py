@@ -7,7 +7,6 @@ from itertools import islice
 from typing import Literal, Protocol
 
 from script.eval.model import (
-    QuotaObservation,
     QuotaScope,
     QuotaWindowId,
     QuotaWindowObservation,
@@ -20,6 +19,13 @@ from script.eval.runner.ports import (
     ProgressSnapshot,
     Runtime,
 )
+
+MAX_DETAILS = 8
+MAX_REPORT_CHARS = 12000
+MAX_REPORT_BYTES = 16000
+TRUNCATION_MARKER = "... [truncated]"
+COLOR_PREFIX = "\x1b[36m"
+COLOR_SUFFIX = "\x1b[0m\n"
 
 type Admission = Literal["accepted", "dropped", "unavailable"]
 
@@ -43,8 +49,8 @@ class Presentation(Protocol):
         interval_seconds: float,
         tty_columns: int,
         /,
-    ) -> str | None:
-        """Select and render an update, or skip it."""
+    ) -> tuple[str, bool] | None:
+        """Select a rendered update and its admission priority, or skip it."""
         ...
 
     def settle(
@@ -74,6 +80,7 @@ class TerminalProgressSink:
         *,
         presentation: Presentation | None = None,
         tty_columns: int = 80,
+        color: bool = False,
     ) -> None:
         """Retain the composition dependencies for synchronous publication.
 
@@ -82,6 +89,7 @@ class TerminalProgressSink:
         """
         if tty_columns < 2:
             raise ValueError("tty_columns must be at least 2")
+        self.color = color
         self.tty_columns = tty_columns
         self.admit = admit
         self.is_tty = is_tty
@@ -98,15 +106,20 @@ class TerminalProgressSink:
         bypass routine throttling; a skipped update makes no write attempt.
         """
         now = self.runtime.monotonic()
-        message = self._presentation.prepare(
+        prepared = self._presentation.prepare(
             snapshot, now, self.is_tty, self.interval_seconds, self.tty_columns
         )
-        if message is None:
+        if prepared is None:
             return
+        message, important = prepared
+        if self.is_tty and self.color:
+            budget = MAX_REPORT_BYTES - len(COLOR_PREFIX) - len(COLOR_SUFFIX)
+            message = COLOR_PREFIX + _bounded(message.removesuffix("\n"), budget)
+            message = message.removesuffix("\n") + COLOR_SUFFIX
+        else:
+            message = _bounded(message, MAX_REPORT_BYTES)
         try:
-            result = self.admit(
-                _bounded(message), important=self.is_tty and "\n" in message
-            )
+            result = self.admit(message, important=important)
         except OSError:
             result = "unavailable"
         self._presentation.settle(snapshot, now, result)
@@ -129,11 +142,11 @@ class _TerminalPresentation:
         interval_seconds: float,
         tty_columns: int,
         /,
-    ) -> str | None:
+    ) -> tuple[str, bool] | None:
         """Render transitions immediately and routine updates at the interval.
 
         Returns:
-            The next message, or None when no write is due.
+            The next message and its priority, or None when no write is due.
         """
         if self.disabled:
             return None
@@ -144,15 +157,10 @@ class _TerminalPresentation:
             and now - self.last_attempt < interval_seconds
         ):
             return None
-        if is_tty and snapshot.phase != "final":
-            if _detail_changed(self.last_admitted, transition):
-                return (
-                    "\r\x1b[2K"
-                    + _render(snapshot, False, tty_columns)
-                    + _live_line(snapshot, tty_columns)
-                )
-            return _live_line(snapshot, tty_columns)
-        return _render(snapshot, is_tty, tty_columns)
+        important = snapshot.phase == "final" or _detail_changed(
+            self.last_admitted, transition
+        )
+        return _render(snapshot, is_tty, tty_columns), important
 
     def settle(
         self, snapshot: ProgressSnapshot, now: float, result: Admission, /
@@ -208,7 +216,7 @@ def _transition(snapshot: ProgressSnapshot) -> _Transition:
 
 
 def _detail_changed(previous: _Transition | None, current: _Transition) -> bool:
-    """Detect changes that warrant a permanent TTY detail line.
+    """Detect changes that warrant an immediate detailed update.
 
     Returns:
         Whether phase, quota, or wait identity changed since the prior fact.
@@ -222,67 +230,10 @@ def _detail_changed(previous: _Transition | None, current: _Transition) -> bool:
 
 
 def _render(snapshot: ProgressSnapshot, is_tty: bool, tty_columns: int) -> str:
-    """Produce one short display line, with explicit truncation when needed.
+    """Render distinct evidence-backed metrics as readable complete lines.
 
     Returns:
-        A complete terminal or redirected message.
-    """
-    if is_tty and snapshot.phase != "final":
-        return _live_line(snapshot, tty_columns)
-    c = snapshot.counts
-    remaining = (
-        c.calls_queued
-        + c.calls_stopped_not_started
-        + c.calls_active
-        + c.calls_retry_wait
-        + c.calls_evidence_pending
-    )
-    calls = (
-        f"calls completed={c.calls_succeeded + c.calls_failed + c.calls_cancelled} "
-        f"success={c.calls_succeeded} failed={c.calls_failed} "
-        f"cancelled={c.calls_cancelled} remaining={remaining} "
-        f"(queued={c.calls_queued} active={c.calls_active} "
-        f"retry-wait={c.calls_retry_wait} "
-        f"not-started={c.calls_stopped_not_started} "
-        f"evidence-pending={c.calls_evidence_pending})"
-    )
-    attempts = (
-        f"attempts started={c.attempts_started} active={c.attempts_active} "
-        f"success={c.attempts_succeeded} failed={c.attempts_failed} "
-        f"cancelled={c.attempts_cancelled} "
-        f"evidence-pending={c.attempts_evidence_pending} "
-        f"retries={c.retries_started}"
-    )
-    probes = (
-        f"probes started={c.probes_started} active={c.probes_active} "
-        f"completed={c.probes_completed} failed={c.probes_failed} "
-        f"cancelled={c.probes_cancelled} evidence-pending={c.probes_evidence_pending}"
-    )
-    waits = _waits(snapshot)
-    reasons = (
-        ",".join(f"{reason}={count}" for reason, count in snapshot.retry_reasons)
-        or "none"
-    )
-    status = snapshot.final_status or "none"
-    line = (
-        f"run={_safe(snapshot.run_id)} phase={snapshot.phase} final={status} | "
-        f"{calls} | "
-        f"{attempts} reasons={reasons} | {probes} | waits={waits} | {_quota(snapshot)}"
-    )
-    if len(line) > 4000:
-        line = line[:3986] + "... [truncated]"
-    return (
-        ("\r\x1b[2K" + line + ("\n" if snapshot.phase == "final" else ""))
-        if is_tty
-        else line + "\n"
-    )
-
-
-def _live_line(snapshot: ProgressSnapshot, columns: int) -> str:
-    """Render a single ASCII row, reserving the last column against wrapping.
-
-    Returns:
-        A carriage-return refresh bounded to the caller-supplied width.
+        A newline-terminated report.
     """
     c = snapshot.counts
     completed = c.calls_succeeded + c.calls_failed + c.calls_cancelled
@@ -293,35 +244,115 @@ def _live_line(snapshot: ProgressSnapshot, columns: int) -> str:
         + c.calls_retry_wait
         + c.calls_evidence_pending
     )
-    text = (
-        f"{_safe(snapshot.run_id)} {snapshot.phase} "
-        f"done={completed} fail={c.calls_failed} left={remaining} "
-        f"a={c.attempts_active} r={c.retries_started} p={c.probes_active}"
+    status = snapshot.final_status or snapshot.phase
+    lines = [
+        f"Run: {_safe(snapshot.run_id)}",
+        f"Status: {status} — This is execution status, not a verdict.",
+        "Calls",
+        f"  Completed: {completed} — Includes failed and cancelled calls.",
+        f"  Succeeded: {c.calls_succeeded} — Processes completed successfully.",
+        f"  Failed: {c.calls_failed} — Calls settled unsuccessfully.",
+        f"  Cancelled: {c.calls_cancelled} — Calls ended by cancellation.",
+        f"  Remaining: {remaining} — Calls not yet settled.",
+        "Attempts",
+        f"  Started: {c.attempts_started} — Attempt invocations dispatched.",
+        f"  Active: {c.attempts_active} — Attempts still in progress.",
+        f"  Retries: {c.retries_started} — Additional attempts dispatched.",
+        "Quota probes",
+        f"  Started: {c.probes_started} — Separate quota checks dispatched.",
+    ]
+    extra = [
+        ("Queued calls", c.calls_queued, "Awaiting dispatch."),
+        ("Active calls", c.calls_active, "Calls with work in progress."),
+        ("Calls waiting to retry", c.calls_retry_wait, "Calls in retry backoff."),
+        ("Calls not started", c.calls_stopped_not_started, "Stopped before dispatch."),
+        (
+            "Calls with evidence pending",
+            c.calls_evidence_pending,
+            "Required evidence failed.",
+        ),
+        ("Successful attempts", c.attempts_succeeded, "Processes completed safely."),
+        ("Failed attempts", c.attempts_failed, "Attempts settled unsuccessfully."),
+        ("Cancelled attempts", c.attempts_cancelled, "Attempts ended by cancellation."),
+        (
+            "Attempts with evidence pending",
+            c.attempts_evidence_pending,
+            "Required evidence failed.",
+        ),
+        ("Active probes", c.probes_active, "Quota checks still in progress."),
+        ("Completed probes", c.probes_completed, "Quota checks settled conclusively."),
+        ("Failed probes", c.probes_failed, "Quota checks failed or were inconclusive."),
+        ("Cancelled probes", c.probes_cancelled, "Quota checks ended by cancellation."),
+        (
+            "Probes with evidence pending",
+            c.probes_evidence_pending,
+            "Required evidence failed.",
+        ),
+    ]
+    lines.extend(
+        f"{label}: {value} — {description}"
+        for label, value, description in extra
+        if value
     )
-    width = columns - 1
-    if len(text) > width:
-        text = text[: max(0, width - 1)] + "~"
-    return "\r\x1b[2K" + text
+    for reason, count in snapshot.retry_reasons:
+        lines.append(
+            f"Retries for {reason}: {count} — Attempts dispatched for this reason."
+        )
+    lines.extend(_details(snapshot))
+    text = "\n".join(lines)
+    if len(text) > MAX_REPORT_CHARS:
+        text = text[: MAX_REPORT_CHARS - len(TRUNCATION_MARKER)] + TRUNCATION_MARKER
+    return text + "\n"
 
 
-def _waits(snapshot: ProgressSnapshot) -> str:
-    """Render a bounded number of waits with an omission marker.
+def _details(snapshot: ProgressSnapshot) -> list[str]:
+    """Render bounded retry and quota details.
 
     Returns:
-        The wait summaries, or none when no calls are waiting.
+        Complete lines describing observed details.
     """
-    text = (
-        ",".join(
-            f"{_safe(wait.call_id)}:{wait.reason}:attempt={wait.attempt_number}:"
-            f"elapsed={wait.elapsed_seconds:.1f}s:"
-            f"remaining={_number(wait.remaining_seconds, 's')}"
-            for wait in islice(snapshot.call_waits, 8)
+    lines: list[str] = []
+    for wait in islice(snapshot.call_waits, MAX_DETAILS):
+        label = _safe(wait.call_id)
+        lines.extend([
+            f"Waiting call: {label} — This call is in retry backoff.",
+            f"  Reason: {wait.reason} — This caused the retry wait.",
+            f"  Attempt: {wait.attempt_number} — This attempt precedes the wait.",
+            f"  Elapsed: {wait.elapsed_seconds:.1f}s — Time spent waiting.",
+            f"  Remaining: {_number(wait.remaining_seconds, 's')} — Backoff remaining.",
+        ])
+    if len(snapshot.call_waits) > MAX_DETAILS:
+        lines.append("Further retry waits: omitted — The report is bounded.")
+    observation = snapshot.quota_observation
+    if observation is None:
+        lines.append("Quota: unknown — No validated observation is available.")
+    else:
+        scope = observation.scope
+        scope_text = (
+            "unknown"
+            if scope is None
+            else (f"{_safe(scope.provider_id)}/{_safe(scope.allowance_id)}")
         )
-        or "none"
-    )
-    if len(snapshot.call_waits) > 8:
-        text += ",... [truncated]"
-    return text
+        lines.append(f"Quota scope: {scope_text} — Scope of the observation.")
+        if not observation.windows:
+            lines.append("Quota windows: unknown — No window was observed.")
+        for window in islice(observation.windows, MAX_DETAILS):
+            age = _age_for(snapshot, window.window_id)
+            reset = _safe(window.reset_at_utc) if window.reset_at_utc else "unknown"
+            freshness = _freshness(
+                window.source_observed_at_utc, age, observation.valid_until_utc
+            )
+            lines.extend([
+                f"Quota window: {_safe(window.window_id)} — Identifies this window.",
+                f"  State: {window.state} — Observed availability.",
+                f"  Usage: {_number(window.usage_percent, '%')} — Observed usage.",
+                f"  Reset hint: {reset} — Availability is not guaranteed.",
+                f"  Age: {_number(age, 's')} — Age of the observation.",
+                f"  {freshness} — Observation freshness.",
+            ])
+        if len(observation.windows) > MAX_DETAILS:
+            lines.append("Further quota windows: omitted — The report is bounded.")
+    return lines
 
 
 def _age_for(snapshot: ProgressSnapshot, window_id: QuotaWindowId) -> float | None:
@@ -337,52 +368,6 @@ def _age_for(snapshot: ProgressSnapshot, window_id: QuotaWindowId) -> float | No
             if identity == window_id
         ),
         None,
-    )
-
-
-def _quota(snapshot: ProgressSnapshot) -> str:
-    """Format the supplied observation, preserving unknowns and source age.
-
-    Returns:
-        A quota status summary.
-    """
-    observation = snapshot.quota_observation
-    if observation is None:
-        return "quota=unknown"
-    scope = observation.scope
-    scope_text = (
-        "unknown"
-        if scope is None
-        else f"{_safe(scope.provider_id)}/{_safe(scope.allowance_id)}"
-    )
-    windows = (
-        ";".join(
-            _window(observation, window, _age_for(snapshot, window.window_id))
-            for window in islice(observation.windows, 8)
-        )
-        or "unknown"
-    )
-    if len(observation.windows) > 8:
-        windows += ";... [truncated]"
-    return f"quota scope={scope_text} windows={windows}"
-
-
-def _window(
-    observation: QuotaObservation, window: QuotaWindowObservation, age: float | None
-) -> str:
-    """Describe one quota window using only the supplied producer-based age.
-
-    Returns:
-        The window status and freshness summary.
-    """
-    freshness = _freshness(
-        window.source_observed_at_utc, age, observation.valid_until_utc
-    )
-    reset = _safe(window.reset_at_utc) if window.reset_at_utc is not None else "unknown"
-    return (
-        f"{_safe(window.window_id)}:state={window.state}:"
-        f"usage={_number(window.usage_percent, '%')}:"
-        f"reset-hint={reset}:age={_number(age, 's')}:{freshness}"
     )
 
 
@@ -426,15 +411,14 @@ def _safe(value: str) -> str:
     )
 
 
-def _bounded(message: str) -> str:
+def _bounded(message: str, limit: int) -> str:
     """Bound UTF-8 output with a visible truncation marker.
 
     Returns:
         The original message or a complete UTF-8 prefix with a marker.
     """
     data = message.encode("utf-8")
-    limit = 16 * 1024
     if len(data) <= limit:
         return message
-    marker = "... [truncated]\n"
+    marker = TRUNCATION_MARKER + "\n"
     return data[: limit - len(marker)].decode("utf-8", errors="ignore") + marker

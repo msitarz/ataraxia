@@ -56,6 +56,8 @@ from script.process_supervisor import (
     run_attempt,
 )
 
+_PROGRESS_FINISH_SECONDS = 0.2
+_PROGRESS_FINISH_POLL_SECONDS = 0.01
 _QUOTA_MINIMUM_AGE_SECONDS = 60.0
 _QUOTA_POLL_AGE_MARGIN_SECONDS = 60.0
 
@@ -344,6 +346,15 @@ class ProgressResource(Protocol):
         """Stop accepting progress without waiting for output."""
         ...
 
+    def finish(self) -> None:
+        """Seal admission and drain pending output."""
+        ...
+
+    @property
+    def finished(self) -> bool:
+        """Whether the writer has stopped."""
+        ...
+
 
 class ProgressRun:
     """Close progress admission when the coordinator settles."""
@@ -366,11 +377,26 @@ class ProgressRun:
             The coordinator's final record.
         """
         try:
-            return await self.coordinator.run()
+            result = await self.coordinator.run()
+            await _finish_progress(self.writer)
+            return result
         finally:
             _close_progress(self.writer)
             if self.assets is not None:
                 self.assets.cleanup()
+
+
+async def _finish_progress(writer: ProgressResource | None) -> None:
+    """Give responsive output a bounded opportunity to drain."""
+    if writer is None:
+        return
+    try:
+        writer.finish()
+        async with asyncio.timeout(_PROGRESS_FINISH_SECONDS):
+            while not writer.finished:
+                await asyncio.sleep(_PROGRESS_FINISH_POLL_SECONDS)
+    except Exception:
+        pass
 
 
 def _sessions_directory() -> Path:
@@ -417,11 +443,13 @@ def _start_progress(
     """
     fd = sys.stderr.fileno()
     is_tty = os.isatty(fd)
+    capable_tty = is_tty and os.environ.get("TERM") != "dumb"
+    color = capable_tty and "NO_COLOR" not in os.environ
     try:
         columns = max(2, os.get_terminal_size(fd).columns) if is_tty else 80
     except OSError:
         columns = 80
-    writer = open_progress_writer(fd)
+    writer = open_progress_writer(fd, panel=capable_tty)
     if writer is None:
         return SilentProgressSink(), None
     try:
@@ -431,6 +459,7 @@ def _start_progress(
             runtime,
             config.progress_interval_seconds,
             tty_columns=columns,
+            color=color,
         )
     except BaseException:
         _close_progress(writer)

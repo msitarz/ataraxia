@@ -376,52 +376,44 @@ Codex, quota, and runtime adapters.
   local backoff never masks active work on other calls. The snapshot carries
   existing scoped quota observations and producer-based per-window ages; it
   performs no quota reads, model calls, or input reads.
-- **Implemented:** `runner.adapters.progress` supplies silent and terminal
-  sinks. The terminal presenter renders evidence-backed snapshots, throttles
-  routine updates, and offers meaningful transitions immediately. A single
-  daemon writer handles best-effort progress
-  output for one standalone execution. The synchronous progress sink formats a
-  UTF-8 message bounded to 16 KiB, including terminal controls and an explicit
-  truncation marker when needed, and promptly offers it to the writer. It never
-  waits for stderr or for the writer. Terminal width and TTY status are captured
-  at composition. TTY output uses compact refresh; redirected output uses plain
-  status lines. `--quiet` and dry run construct no writer and emit no progress.
-- The writer owns a duplicate of stderr, marked non-inheritable, without
-  changing the inherited descriptor or its file-status flags. Closing or reusing
-  the caller's descriptor cannot redirect a delayed write. The writer alone
-  closes its duplicate when it exits. Duplication, thread startup, and ordinary
-  presentation errors degrade to silence without changing the run result;
-  cancellation and process interrupts still propagate. An explicit handoff
-  determines whether the creator or worker owns closure if startup fails or is
-  interrupted; a late worker cannot access a revoked duplicate.
-- Admission is distinct from delivery. `accepted` means only that a complete,
-  byte-bounded message entered the writer's bounded state; it does not say any
-  bytes were written. `dropped` means no admission, and `unavailable` means no
-  further messages can be accepted. The presenter may throttle on admission but
-  must not infer that an admitted message was displayed. Rendered TTY updates
-  keeps routine TTY refreshes on one cleared row. A transition's detailed
-  message remains pending ahead of a later routine refresh; an admitted message
-  can still be lost, so admission does not assert it appeared on screen.
-- State is bounded to one message claimed for writing and one pending message. A
-  new important transition may replace pending output; a routine refresh cannot
-  replace a pending important transition. No per-update threads or unbounded
-  executor backlog are allowed. The writer owns only rendered text and its
-  descriptor: it does not read input, quota, models, or evidence. One write
-  attempt per claimed message may block, fail, or write a prefix. A partial
-  write or output error disables later presentation; no remainder is queued or
-  retried, and the accepted message was never a delivery claim. A partial TTY
-  write may leave a visible fragment or incomplete control sequence.
-- Submission and shutdown use only bounded, nonwaiting state operations; no lock
-  is held across I/O. Submission drops the update if state coordination is
-  contended. A shutdown latch stops admission and prevents new claims even if
-  pending state cannot be cleared immediately. Shutdown discards unclaimed
-  pending output and does not join a writer blocked in I/O. It permits at most
-  one already claimed write to remain after the run. A daemon writer that cannot
-  finish before process exit can be abandoned; if the destination unblocks
-  first, it finishes that one attempt and closes its own descriptor. Final
-  progress is best effort and may be lost. The design is for the standalone
-  one-run process, not an unlimited in-process sequence of independently blocked
-  runs.
+- The progress adapter renders bounded, readable snapshots and offers meaningful
+  transitions immediately. The synchronous sink never waits for stderr or its
+  writer. Frames and terminal controls are bounded to 16 KiB, with an explicit
+  truncation marker. Quiet and dry runs construct no writer.
+- The writer owns a non-inheritable duplicate of stderr without changing the
+  inherited descriptor or its file-status flags. Reusing the caller's
+  descriptor cannot redirect a delayed write. Only the worker closes its owned
+  duplicate. Duplication, thread startup, and ordinary presentation errors
+  degrade to silence without changing the run result; cancellation and process
+  interrupts still propagate. A startup handoff assigns closure to the creator
+  or worker, so a late worker cannot use a revoked duplicate.
+- Admission is distinct from delivery. An accepted frame entered bounded state;
+  it may still be lost. Dropped means no admission, and unavailable means no
+  further frames can be accepted. The presenter does not infer display from
+  admission. An important transition can replace pending output, while a routine
+  refresh cannot replace a pending important transition.
+- State is bounded to one frame claimed for writing and one pending frame; no
+  per-update threads or unbounded executor backlog are allowed. The writer owns
+  only rendered text and its descriptor, and reads no inputs, quota, models, or
+  evidence. Each claimed frame gets one write attempt, which may block, fail, or
+  write a prefix. Partial writes and output errors disable later presentation;
+  no remainder is queued or retried. A partial TTY write may leave a fragment
+  or incomplete control sequence.
+- On a capable terminal the worker replaces a fitting live panel only after the
+  preceding frame was fully delivered. Narrow, short, resized, or detailed
+  output falls back to complete multiline blocks. Redirected output has no
+  terminal controls. The worker tracks geometry after successful writes, not
+  admission.
+- Submission uses bounded, nonwaiting state operations without holding locks
+  across I/O, dropping frames on contention. After a successful coordinator
+  return, standalone seals admission and gives the worker a bounded asynchronous
+  opportunity to drain, then closes without joining. Cancellation and errors
+  close promptly; close prevents new claims and discards unclaimed frames even
+  when pending state cannot immediately be cleared. At most one already claimed
+  write can remain after shutdown. An abandoned daemon may finish that attempt
+  and close its descriptor if the destination unblocks. Final progress may be
+  lost; a blocked or partial write can disrupt later stdout. This design covers
+  the standalone one-run process, not an unlimited sequence of blocked runs.
 - This lossy progress lifecycle does not apply to `EvidenceStore`: required
   evidence remains authoritative, retained and settled through cancellation,
   with recording failure reflected in run status. A progress writer cannot
@@ -724,7 +716,7 @@ It verifies quota scope from correlated invocations when waiting is enabled.
   consumer-facing ports. No generic plugin registry or scheduler framework is
   proposed.
 - The standalone composition supplies a terminal sink for non-quiet execution
-  and closes its writer's admission when the run settles. It supplies a silent
+  and bounds its writer's final drain when the run settles. It supplies a silent
   sink for quiet execution. The writer does not write run evidence or mutate
   the caller's stderr settings.
 - Effects: connects the effects listed above and exposes the CLI entry point.

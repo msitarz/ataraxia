@@ -206,8 +206,17 @@ For example, one dry-run row can look like:
   summarizes the run. Opt-in quota probes also leave evidence.
 - These files are execution evidence. The harness does not turn them into a
   scored evaluation report.
-- Progress is best effort: terminal output updates in place; redirected output
-  uses newline-delimited updates. Quiet mode suppresses progress, not errors.
+- Progress is best effort. A capable terminal replaces a live panel; narrow,
+  short, resized, or detailed reports use multiline blocks, as does redirected
+  output. Colors supplement labels and respect `NO_COLOR` and `TERM=dumb`.
+  Quiet mode suppresses progress, not errors. After execution a short bounded
+  drain lets a responsive writer show its final frame. Blocked or partial
+  output can lose that frame or arrive after the stdout result.
+- The panel separates scheduled calls, attempt invocations, and quota probes.
+  Completed calls include successes, failures, and cancellations; remaining
+  calls have not settled. Retries are additional attempts, not extra scheduled
+  calls. Process success is not a reviewer verdict. Quota values stay unknown
+  unless a validated observation supplies them.
 - Supported cancellation requests cooperative shutdown and records settled
   evidence when possible. Forced operating-system termination cannot be
   cleaned up by the process.
@@ -219,6 +228,26 @@ For example, one dry-run row can look like:
 
 For the full option list, run `make eval CLI_ARGS='--help'` or
 `uv run --no-sync python -m script.eval --help`.
+
+For example, a running panel can include:
+
+```text
+Run: 5a9a9c88-0753-4423-a62c-b30601c90001
+Status: running — This is execution status, not a verdict.
+Calls
+  Completed: 11 — Includes failed and cancelled calls.
+  Succeeded: 11 — Processes completed successfully.
+  Failed: 0 — Calls settled unsuccessfully.
+  Cancelled: 0 — Calls ended by cancellation.
+  Remaining: 1 — Calls not yet settled.
+Attempts
+  Started: 12 — Attempt invocations dispatched.
+  Active: 1 — Attempts still in progress.
+  Retries: 0 — Additional attempts dispatched.
+Quota probes
+  Started: 0 — Separate quota checks dispatched.
+Quota: unknown — No validated observation is available.
+```
 
 ## Top-level architecture
 
