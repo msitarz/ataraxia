@@ -759,6 +759,7 @@ def test_invalid_command_exits_before_preparation(
 def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
     tmp_path: Path,
 ) -> None:
+    # Given
     repo = make_repository(tmp_path / "repo")
     first_output = tmp_path / "first"
     second_output = tmp_path / "subset"
@@ -779,6 +780,7 @@ def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
     }
     first_run = json.loads(before[Path("run.json")])
 
+    # When
     second = subprocess.run(
         command(repo, second_output),
         cwd=ROOT,
@@ -787,6 +789,7 @@ def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
         text=True,
         timeout=20,
     )
+    # Then
     assert second.returncode == 0, second.stderr
     after = {
         path.relative_to(first_output): path.read_bytes()

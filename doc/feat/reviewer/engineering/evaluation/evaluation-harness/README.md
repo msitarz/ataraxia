@@ -519,21 +519,23 @@ text without keeping an agent conversation alive.
 
 ## Additional context
 
-The generic runner, evidence store, Codex CLI adapter, quota recovery, capacity
-retry, standalone command, and progress reporting are implemented. Acceptance
-verification remains in progress; these criteria remain TODO until independently
-reviewed. The [architecture](architecture.md) and typed boundary files preserve
-historical design context alongside the current implementation.
-
-Codex quota recognition uses validated runtime session shape and scope with
-Codex CLI 0.164.0 or newer; unsupported or ambiguous observations fail closed.
-The [quota capture](quota-capture.md) and [capacity report](capacity-report.md)
-retain the original evidence and motivation. The controlled checks do not prove
-live availability, authentication, tool-free execution, or context isolation.
-The accepted CLI limitations remain in the parent
-[preparation record](../preparation.md#combined-step-1-candidate-and-stopping-point).
-Progress is best effort and separate from durable evidence; cooperative signal
-cancellation and the supervisor lifecycle limits apply. No restart recovery is
-provided. The caller owns experiment authorization, protocol, budgets, corpus,
-and interpretation; completion of this child does not complete the parent
-Evaluation.
+- The generic runner, evidence store, Codex CLI adapter, quota recovery,
+  capacity retry, standalone command, and progress reporting are implemented.
+- Acceptance verification remains in progress; these criteria remain TODO until
+  independently reviewed.
+- The [architecture](architecture.md) and typed boundary files preserve
+  historical design context alongside the current implementation.
+- Codex quota recognition uses validated runtime session shape and scope with
+  Codex CLI 0.164.0 or newer; unsupported or ambiguous observations fail closed.
+- The [quota capture](quota-capture.md) and
+  [capacity report](capacity-report.md) retain the original evidence and
+  motivation.
+- Controlled checks do not prove live availability, authentication, tool-free
+  execution, or context isolation. Accepted CLI limitations remain in the parent
+  [preparation record](../preparation.md#combined-step-1-candidate-and-stopping-point).
+- Progress is best effort and separate from durable evidence.
+- Cooperative signal cancellation and supervisor lifecycle limits apply; no
+  restart recovery is provided.
+- The caller owns experiment authorization, protocol, budgets, corpus, and
+  interpretation. Completion of this child does not complete the parent
+  Evaluation.

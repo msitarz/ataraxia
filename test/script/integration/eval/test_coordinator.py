@@ -83,6 +83,7 @@ class HeldSupervisedAttempts:
     async def __call__(
         self, request: AttemptRequest, stop: DispatchStop, /
     ) -> AttemptResult:
+        """Retain the completed supervisor call until the test releases it."""
         self.started.append(request.argv[-1])
         outcome = await supervised(request, stop)
         assert outcome.observation.cleanup.dispatch_permitted
@@ -94,14 +95,18 @@ class HeldSupervisedAttempts:
 
 
 async def test_real_supervisor_slot_is_held_until_settlement(tmp_path: Path) -> None:
+    # Given
     bound, store = await prepare(tmp_path, 3, concurrency=2)
     bound = process_calls(bound, tmp_path, "print('done')", 0)
     held = HeldSupervisedAttempts()
+    # When
     task = asyncio.create_task(
         Coordinator(bound, store, held, Classifier(), NoQuota(), Clock(), Sink()).run()
     )
     try:
         await asyncio.wait_for(held.two_settled.wait(), 10)
+
+        # Then
         assert set(held.started) == {"0", "1"}
         held.release.set()
         record = await asyncio.wait_for(task, 10)
@@ -114,67 +119,90 @@ async def test_real_supervisor_slot_is_held_until_settlement(tmp_path: Path) -> 
     assert record.state == "complete"
 
 
-@pytest.mark.parametrize("limit", [0, 8], ids=["unbounded", "overflow"])
+@pytest.mark.parametrize(
+    ("limit", "expected_bytes", "outcome", "run_state", "second_state"),
+    [
+        (0, b"abcdefghijklmnop", "completed", "complete", "complete"),
+        (8, b"abcdefgh", "output_limit_exceeded", "incomplete", "not_started"),
+    ],
+    ids=["unbounded", "overflow"],
+)
 async def test_real_supervisor_output_cap_stops_or_captures(
-    tmp_path: Path, limit: int
+    tmp_path: Path,
+    limit: int,
+    expected_bytes: bytes,
+    outcome: str,
+    run_state: str,
+    second_state: str,
 ) -> None:
+    # Given
     bound, store = await prepare(tmp_path, 2, concurrency=1, retry_limit=1)
     bound = process_calls(
         bound, tmp_path, "import sys; sys.stdout.write('abcdefghijklmnop')", limit
     )
+
+    # When
     record = await asyncio.wait_for(
         Coordinator(
             bound, store, supervised, Classifier(), NoQuota(), Clock(), Sink()
         ).run(),
         10,
     )
+
+    # Then
     first = record.calls[0].attempts[0]
     assert first.stdout_artifact is not None
-    assert Path(first.stdout_artifact).read_bytes() == (
-        b"abcdefgh" if limit else b"abcdefghijklmnop"
-    )
+    assert Path(first.stdout_artifact).read_bytes() == expected_bytes
     assert len(record.calls[0].attempts) == 1
-    if limit:
-        assert first.outcome_kind == "output_limit_exceeded"
-        assert record.calls[1].state == "not_started"
-    else:
-        assert record.state == "complete"
-        assert record.calls[1].state == "complete"
+    assert first.outcome_kind == outcome
+    assert record.state == run_state
+    assert record.calls[1].state == second_state
+
+
+class FailingSupervisedAttempt:
+    """Raise after a real child settles and record its supervisor stop hook."""
+
+    def __init__(self) -> None:
+        self.stopped: list[BaseException] = []
+        self.failure = RuntimeError("controlled supervisor failure")
+
+    async def __call__(
+        self, request: AttemptRequest, stop: DispatchStop, /
+    ) -> AttemptResult:
+        async def completed_then_fail(request: AttemptRequest, /) -> AttemptResult:
+            result = await run_attempt(request)
+            assert result.observation.cleanup.dispatch_permitted
+            raise self.failure
+
+        def observe_stop(reason: BaseException | AttemptResult, /) -> None:
+            """Observe and forward the supervisor's stop request."""
+            if isinstance(reason, BaseException):
+                self.stopped.append(reason)
+            stop(reason)
+
+        return await call_supervisor(request, completed_then_fail, observe_stop)
 
 
 async def test_supervisor_stop_hook_precedes_failed_recording(tmp_path: Path) -> None:
-    stopped: list[BaseException] = []
-    failure = RuntimeError("controlled supervisor failure")
+    # Given
+    attempt = FailingSupervisedAttempt()
 
     def fail_write(prepared: PreparedEvidence, record: AttemptRecord) -> None:
-        assert stopped == [failure]
+        """Verify the stop hook has run before simulating a failed write."""
+        assert attempt.stopped == [attempt.failure]
         raise OSError("controlled evidence failure")
 
     store = create_evidence_store(append_attempt=fail_write)
     bound, store = await prepare(tmp_path, 2, store=store, concurrency=1)
     bound = process_calls(bound, tmp_path, "print('done')", 0)
 
-    async def supervised_failure(
-        request: AttemptRequest, stop: DispatchStop, /
-    ) -> AttemptResult:
-        async def completed_then_fail(request: AttemptRequest, /) -> AttemptResult:
-            result = await run_attempt(request)
-            assert result.observation.cleanup.dispatch_permitted
-            raise failure
-
-        def observe_stop(reason: BaseException | AttemptResult, /) -> None:
-            if isinstance(reason, BaseException):
-                stopped.append(reason)
-            stop(reason)
-
-        return await call_supervisor(request, completed_then_fail, observe_stop)
-
+    # When
     with pytest.raises(RuntimeError, match="controlled supervisor failure") as raised:
         await asyncio.wait_for(
             Coordinator(
                 bound,
                 store,
-                supervised_failure,
+                attempt,
                 Classifier(),
                 NoQuota(),
                 Clock(),
@@ -182,11 +210,12 @@ async def test_supervisor_stop_hook_precedes_failed_recording(tmp_path: Path) ->
             ).run(),
             10,
         )
+    # Then
     assert isinstance(raised.value.__cause__, OSError)
     record = RunRecord.model_validate_json(
         (bound.evidence.output_directory / "run.json").read_bytes()
     )
-    assert stopped == [failure]
+    assert attempt.stopped == [attempt.failure]
     assert record.state == "incomplete"
     assert [call.state for call in record.calls] == ["failed", "not_started"]
     assert not record.calls[0].attempts
