@@ -135,9 +135,9 @@ def test_dry_run_requires_no_provider_or_output(tmp_path: Path) -> None:
     # Given
     repo = make_repository(tmp_path / "repo")
     output = tmp_path / "evidence"
-    env = git_test_environment()
-    env["PYTHONPATH"] = str(ROOT)
-    env["PATH"] = "/usr/bin:/bin"
+    env = environment(tmp_path)
+    marker = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(marker)
     arguments = [
         sys.executable,
         "-m",
@@ -149,6 +149,8 @@ def test_dry_run_requires_no_provider_or_output(tmp_path: Path) -> None:
         "-e",
         "low",
         "-n",
+        "-o",
+        str(output),
     ]
 
     # When
@@ -158,9 +160,15 @@ def test_dry_run_requires_no_provider_or_output(tmp_path: Path) -> None:
 
     # Then
     assert result.returncode == 0, result.stderr
-    assert "scheduled calls: 1" in result.stdout
+    assert "Dry run: 1 calls; no Codex calls or output directory" in result.stdout
+    assert (
+        "0: model=unsupported-model effort=low context tokens=UNKNOWN" in result.stdout
+    )
+    assert "source: 'context/" in result.stdout
     assert "compatibility=unknown" in result.stdout
+    assert result.stderr == ""
     assert not output.exists()
+    assert not marker.exists()
 
 
 def run_signalled(

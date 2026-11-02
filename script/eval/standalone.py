@@ -13,6 +13,7 @@ from typing import Protocol
 from uuid import uuid4
 
 from script.eval.cli import Composition, RunCoordinator
+from script.eval.dry_run import format_dry_run
 from script.eval.evidence import EvidenceStore, create_evidence_store
 from script.eval.evidence_status import EvidenceStatus
 from script.eval.inputs import GitRepositoryReader
@@ -326,27 +327,14 @@ def _print_result(result: DryRunReport | RunRecord) -> None:
             f"{len(result.calls)} scheduled calls\n"
         )
         return
-    sys.stdout.write(
-        "Estimates exclude unavailable automatic CLI and system context; "
-        "default system instructions remain when no override is supplied.\n"
-    )
-    for call in result.estimates:
-        for estimate in (call.context, call.instructions_file):
-            if estimate is not None:
-                sys.stdout.write(
-                    f"{call.position}: {estimate.basis} model={estimate.model} "
-                    f"tokens={estimate.token_count} method={estimate.method} "
-                    f"library={estimate.library_version} "
-                    f"tokenizer={estimate.tokenizer_version} "
-                    f"compatibility={estimate.compatibility} "
-                    f"diagnostic={estimate.diagnostic}\n"
-                )
+    sys.stdout.write(format_dry_run(result))
 
 
 def _announce_plan(plan: FrozenPlan) -> None:
     """Display the frozen matrix size before any binding or dispatch."""
-    sys.stdout.write(f"scheduled calls: {len(plan.calls)}\n")
-    sys.stdout.flush()
+    if not plan.configuration.dry_run:
+        sys.stdout.write(f"scheduled calls: {len(plan.calls)}\n")
+        sys.stdout.flush()
 
 
 class ProgressResource(Protocol):
