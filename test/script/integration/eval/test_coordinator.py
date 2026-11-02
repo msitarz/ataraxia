@@ -99,6 +99,7 @@ async def test_real_supervisor_slot_is_held_until_settlement(tmp_path: Path) -> 
     bound, store = await prepare(tmp_path, 3, concurrency=2)
     bound = process_calls(bound, tmp_path, "print('done')", 0)
     held = HeldSupervisedAttempts()
+
     # When
     task = asyncio.create_task(
         Coordinator(bound, store, held, Classifier(), NoQuota(), Clock(), Sink()).run()
@@ -210,6 +211,7 @@ async def test_supervisor_stop_hook_precedes_failed_recording(tmp_path: Path) ->
             ).run(),
             10,
         )
+
     # Then
     assert isinstance(raised.value.__cause__, OSError)
     record = RunRecord.model_validate_json(

@@ -789,6 +789,7 @@ def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
         text=True,
         timeout=20,
     )
+
     # Then
     assert second.returncode == 0, second.stderr
     after = {

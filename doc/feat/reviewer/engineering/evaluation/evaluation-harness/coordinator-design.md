@@ -9,19 +9,19 @@ passive telemetry through the shared control and settlement boundaries. A quota
 owner awaits bounded probe recovery and persists its wait and probe transitions
 through the shared control and settlement boundaries. The run owner composes
 bounded invocations, awaited recovery, shutdown, progress, and final record
-projection for a prepared run. CLI composition and concrete presentation remain
-planned. All Work acceptance criteria remain TODO. The
+projection for a prepared run. CLI composition and concrete presentation are
+implemented. The
 [Work contract](README.md) owns behavior and the
 [current architecture](architecture.md) describes implemented components.
 [PR 405](https://github.com/msitarz/ataraxia/pull/405) is a superseded approach
 with known lifecycle bugs, not a validated alternative.
 
-The maintainer accepts a known shared-owner limitation: a `KeyboardInterrupt`
-or `SystemExit` raised inside a nested evidence or runtime task can escape the
-event loop before retained settlement completes. This limitation does not
-block acceptance. Retaining coordinator-owned worker tasks does not repair the
-nested submission boundary. Cooperative `task.cancel()` and the planned CLI
-signal path remain separate from this limitation.
+The maintainer accepts a known shared-owner limitation: a `KeyboardInterrupt` or
+`SystemExit` raised inside a nested evidence or runtime task can escape the
+event loop before retained settlement completes. This limitation does not block
+acceptance. Retaining coordinator-owned worker tasks does not repair the nested
+submission boundary. Cooperative `task.cancel()` and the CLI signal path remain
+separate from this limitation.
 
 ## TL;DR
 

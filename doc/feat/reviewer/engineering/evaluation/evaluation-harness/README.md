@@ -72,7 +72,7 @@ isolation.
 
 ## Acceptance criteria
 
-### **AC-1 TODO** Ordered inputs define a deterministic matrix
+### **AC-1 DONE** Ordered inputs define a deterministic matrix
 
 A caller can inspect the complete scheduled matrix before any model call.
 
@@ -143,7 +143,7 @@ A caller can inspect the complete scheduled matrix before any model call.
 - Unsupported model-effort combinations fail explicitly without silently
   substituting either value, and runtime rejection remains a failed attempt.
 
-### **AC-2 TODO** Frozen inputs and execution metadata identify every call
+### **AC-2 DONE** Frozen inputs and execution metadata identify every call
 
 Retained evidence identifies the exact supplied bytes and execution settings.
 
@@ -183,7 +183,7 @@ Retained evidence identifies the exact supplied bytes and execution settings.
   instructions and records no override, with automatic system bytes marked
   unavailable rather than reporting zero system context.
 
-### **AC-3 TODO** Raw evidence survives without replacement or interpretation
+### **AC-3 DONE** Raw evidence survives without replacement or interpretation
 
 Every scheduled call and launched attempt has inspectable evidence.
 
@@ -209,7 +209,7 @@ Every scheduled call and launched attempt has inspectable evidence.
   fabricating a successful record or losing the frozen plan's not-started
   status.
 
-### **AC-4 TODO** Bounded dispatch respects cleanup and stop signals
+### **AC-4 DONE** Bounded dispatch respects cleanup and stop signals
 
 Concurrency never permits a later attempt to bypass required cleanup.
 
@@ -244,7 +244,7 @@ Concurrency never permits a later attempt to bypass required cleanup.
   stop-before-recording, output limits, retries, and failure accounting without
   making model calls.
 
-### **AC-5 TODO** Explicit subset reruns preserve experiment ownership
+### **AC-5 DONE** Explicit subset reruns preserve experiment ownership
 
 A caller can rerun a manually selected subset as a new run.
 
@@ -259,7 +259,7 @@ A caller can rerun a manually selected subset as a new run.
   experiment retry and budget limits and must not count reruns or cached answers
   as independent trials without its declared protocol.
 
-### **AC-6 TODO** Optional quota waiting preserves the active run
+### **AC-6 DONE** Optional quota waiting preserves the active run
 
 A caller can opt into waiting for recognized Codex quota exhaustion without
 restarting the runner or repeating completed calls.
@@ -382,7 +382,7 @@ restarting the runner or repeating completed calls.
   release, probe cleanup and recovery settlement, and fresh-confirmation-only
   resumption without making model calls.
 
-### **AC-7 TODO** Optional model-capacity retries use bounded backoff
+### **AC-7 DONE** Optional model-capacity retries use bounded backoff
 
 A caller can opt into finite retries for recognized transient model-capacity
 failures while preserving the original call and its evidence.
@@ -432,7 +432,7 @@ failures while preserving the original call and its evidence.
   invocations, quota gating, and cancellation without model calls; the eventual
   design exposes time and randomness dependencies for deterministic checks.
 
-### **AC-8 TODO** Standalone invocation supports external execution
+### **AC-8 DONE** Standalone invocation supports external execution
 
 A caller can launch the harness from a terminal or external cron or launchd
 job without keeping an agent conversation alive.
@@ -460,7 +460,7 @@ job without keeping an agent conversation alive.
   behavior and exit meanings without model calls; usage guidance distinguishes
   checked behavior from live CLI and availability prerequisites.
 
-### **AC-9 TODO** Progress reports evidence-backed execution state
+### **AC-9 DONE** Progress reports evidence-backed execution state
 
 A caller can follow a standalone run's progress from a terminal or redirected
 text without keeping an agent conversation alive.
@@ -521,8 +521,8 @@ text without keeping an agent conversation alive.
 
 - The generic runner, evidence store, Codex CLI adapter, quota recovery,
   capacity retry, standalone command, and progress reporting are implemented.
-- Acceptance verification remains in progress; these criteria remain TODO until
-  independently reviewed.
+- The generic harness criteria are independently verified within this Work’s
+  controlled scope.
 - The [architecture](architecture.md) and typed boundary files preserve
   historical design context alongside the current implementation.
 - Codex quota recognition uses validated runtime session shape and scope with

@@ -1,7 +1,7 @@
 # Proposed standalone quota connection scenarios
 
-These intent-only scenarios accompany the proposed architecture. They are not
-runtime behavior or acceptance evidence. AC-6 remains TODO.
+These historical intent-only scenarios accompanied the proposed architecture.
+They are not runtime behavior or acceptance evidence.
 
 ## An exhausted invocation with no quota rows
 
