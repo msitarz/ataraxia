@@ -4,12 +4,18 @@
 from collections.abc import Callable
 from contextlib import suppress
 import os
+import re
 import threading
 import time
 
 from script.eval.runner.adapters.progress import Admission
 
 MAX_MESSAGE_BYTES = 16 * 1024
+PANEL_CONTROL_RESERVE = 128
+WORKER_POLL_SECONDS = 0.01
+PANEL_MIN_COLUMNS = 60
+PANEL_HEIGHT_MARGIN = 2
+_ANSI = re.compile(rb"\x1b\[[0-9;]*m")
 
 
 class ProgressWriter:
@@ -24,8 +30,17 @@ class ProgressWriter:
         fd: int,
         write: Callable[[int, bytes], int],
         close_fd: Callable[[int], None],
+        *,
+        panel: bool = False,
+        terminal_size: Callable[[int], os.terminal_size] = os.get_terminal_size,
     ) -> None:
         """Retain an already duplicated descriptor and explicit I/O leaves."""
+        self._panel = panel
+        self._terminal_size = terminal_size
+        self._panel_size: os.terminal_size | None = None
+        self._panel_rows = 0
+        self._finishing = False
+        self._done = threading.Event()
         self._fd = fd
         self._write = write
         self._close_fd = close_fd
@@ -40,15 +55,17 @@ class ProgressWriter:
         Returns:
             Admission status, which does not indicate bytes were written.
         """
-        if self._closed or self._failed:
+        if self._closed or self._failed or self._finishing:
             return "unavailable"
         if len(text) > MAX_MESSAGE_BYTES:
             return "dropped"
         data = text.encode("utf-8")
-        if len(data) > MAX_MESSAGE_BYTES or not self._lock.acquire(blocking=False):
+        if len(data) > MAX_MESSAGE_BYTES - (
+            PANEL_CONTROL_RESERVE if self._panel else 0
+        ) or not self._lock.acquire(blocking=False):
             return "dropped"
         try:
-            if self._closed or self._failed:
+            if self._closed or self._failed or self._finishing:
                 return "unavailable"
             if self._pending is not None and self._pending[1] and not important:
                 return "dropped"
@@ -61,6 +78,15 @@ class ProgressWriter:
         """Stop admission without waiting for I/O or joining the worker."""
         self._closed = True
 
+    def finish(self) -> None:
+        """Seal admission and let the worker drain its pending frame."""
+        self._finishing = True
+
+    @property
+    def finished(self) -> bool:
+        """Whether the worker has stopped and released its descriptor."""
+        return self._done.is_set()
+
     def work(self) -> None:
         """Own the descriptor and write claimed messages until stopped."""
         try:
@@ -69,14 +95,18 @@ class ProgressWriter:
             self._failed = True
             with suppress(Exception):
                 self._close_fd(self._fd)
+            self._done.set()
 
     def _work_loop(self) -> None:
         """Claim pending messages without holding state locks across I/O."""
         while not self._closed:
             message = self._claim()
             if message is None:
-                time.sleep(0.01)
+                if self._finishing and self._drained():
+                    return
+                time.sleep(WORKER_POLL_SECONDS)
                 continue
+            message, size, rows = self._frame(message)
             try:
                 count = self._write(self._fd, message)
             except Exception:
@@ -85,6 +115,45 @@ class ProgressWriter:
             if count != len(message):
                 self._failed = True
                 return
+            self._panel_size, self._panel_rows = size, rows
+
+    def _drained(self) -> bool:
+        """Check pending state without waiting on admission.
+
+        Returns:
+            Whether no pending frame remains.
+        """
+        if not self._lock.acquire(blocking=False):
+            return False
+        try:
+            return self._pending is None
+        finally:
+            self._lock.release()
+
+    def _frame(self, message: bytes) -> tuple[bytes, os.terminal_size | None, int]:
+        """Prepare replacement only for a fully delivered, fitting previous panel.
+
+        Returns:
+            The write bytes and resulting panel geometry.
+        """
+        if not self._panel:
+            return message, None, 0
+        try:
+            size = self._terminal_size(self._fd)
+        except OSError:
+            return message, None, 0
+        lines = message.splitlines()
+        fits = (
+            size.columns >= PANEL_MIN_COLUMNS
+            and len(lines) + PANEL_HEIGHT_MARGIN <= size.lines
+            and all(len(_ANSI.sub(b"", line)) < size.columns for line in lines)
+        )
+        if not fits:
+            return message, None, 0
+        prefix = b""
+        if size == self._panel_size and self._panel_rows:
+            prefix = f"\x1b[{self._panel_rows}A\x1b[J".encode()
+        return prefix + message, size, len(lines)
 
     def _claim(self) -> bytes | None:
         """Claim one pending message, or return promptly on contention.
@@ -111,6 +180,8 @@ def open_progress_writer(
     write: Callable[[int, bytes], int] = os.write,
     close_fd: Callable[[int], None] = os.close,
     thread_factory: Callable[[Callable[[], None]], threading.Thread] | None = None,
+    panel: bool = False,
+    terminal_size: Callable[[int], os.terminal_size] = os.get_terminal_size,
 ) -> ProgressWriter | None:
     """Start one daemon worker with its own non-inheritable stderr duplicate.
 
@@ -121,7 +192,9 @@ def open_progress_writer(
         owned = duplicate(stderr_fd)
     except Exception:
         return None
-    writer = ProgressWriter(owned, write, close_fd)
+    writer = ProgressWriter(
+        owned, write, close_fd, panel=panel, terminal_size=terminal_size
+    )
     handoff = _DescriptorHandoff(writer, owned, close_fd)
     return handoff.start(thread_factory or _thread)
 

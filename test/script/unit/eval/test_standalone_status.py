@@ -189,6 +189,13 @@ class BrokenProgress:
     def close(self) -> None:
         raise OSError("close failed")
 
+    def finish(self) -> None:
+        raise OSError("finish failed")
+
+    @property
+    def finished(self) -> bool:
+        return False
+
 
 async def test_progress_close_failure_does_not_change_success() -> None:
     # Given

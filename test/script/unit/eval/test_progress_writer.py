@@ -4,6 +4,7 @@
 import asyncio
 from collections.abc import Callable
 from contextlib import suppress
+import os
 import threading
 from typing import override
 
@@ -295,3 +296,112 @@ def test_unexpected_worker_exit_disables_admission() -> None:
     # Then
     assert result == "unavailable"
     assert io.closed_fds == [73]
+
+
+def test_finish_drains_latest_frame_before_worker_stops() -> None:
+    # Given
+    io = ControlledWrite()
+    writer = open_progress_writer(
+        1, duplicate=io.duplicate, write=io.write, close_fd=io.close
+    )
+    assert writer is not None
+
+    # When
+    try:
+        assert writer("first\n") == "accepted" and io.started.wait(5)
+        assert writer("old\n") == "accepted"
+        assert writer("final\n", important=True) == "accepted"
+        writer.finish()
+        assert writer("late\n") == "unavailable"
+        io.release.set()
+        assert io.closed.wait(5)
+    finally:
+        io.release.set()
+        writer.close()
+
+    # Then
+    assert io.messages == [b"first\n", b"final\n"]
+    assert writer.finished
+
+
+def test_panel_replaces_only_a_delivered_frame_and_falls_back_on_resize() -> None:
+    # Given
+    io = ControlledWrite()
+    sizes = iter([
+        os.terminal_size((80, 24)),
+        os.terminal_size((80, 24)),
+        os.terminal_size((40, 24)),
+    ])
+    delivered = threading.Event()
+
+    def write(fd: int, data: bytes) -> int:
+        io.messages.append(data)
+        delivered.set()
+        return len(data)
+
+    writer = open_progress_writer(
+        1,
+        duplicate=io.duplicate,
+        write=write,
+        close_fd=io.close,
+        panel=True,
+        terminal_size=lambda fd: next(sizes),
+    )
+    assert writer is not None
+
+    # When
+    try:
+        for frame in ("first\n", "second\n", "resized\n"):
+            delivered.clear()
+            assert writer(frame) == "accepted"
+            assert delivered.wait(5)
+        writer.finish()
+        assert io.closed.wait(5)
+    finally:
+        writer.close()
+
+    # Then
+    assert io.messages[0] == b"first\n"
+    assert io.messages[1].endswith(b"second\n") and b"\x1b[" in io.messages[1]
+    assert io.messages[2] == b"resized\n"
+
+
+def test_coalesced_first_panel_does_not_erase_undelivered_output() -> None:
+    # Given
+    io = ControlledWrite()
+    enter = threading.Event()
+
+    def factory(target: Callable[[], None]) -> threading.Thread:
+        def delayed() -> None:
+            if enter.wait(5):
+                target()
+
+        return threading.Thread(target=delayed)
+
+    writer = open_progress_writer(
+        1,
+        duplicate=io.duplicate,
+        write=io.write,
+        close_fd=io.close,
+        thread_factory=factory,
+        panel=True,
+        terminal_size=lambda fd: os.terminal_size((80, 24)),
+    )
+    assert writer is not None
+
+    # When
+    try:
+        assert writer("old\n") == "accepted"
+        assert writer("latest\n") == "accepted"
+        writer.finish()
+        enter.set()
+        assert io.started.wait(5)
+        io.release.set()
+        assert io.closed.wait(5)
+    finally:
+        enter.set()
+        io.release.set()
+        writer.close()
+
+    # Then
+    assert io.messages == [b"latest\n"]

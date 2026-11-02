@@ -460,7 +460,7 @@ job without keeping an agent conversation alive.
   behavior and exit meanings without model calls; usage guidance distinguishes
   checked behavior from live CLI and availability prerequisites.
 
-### **AC-9 DONE** Progress reports evidence-backed execution state
+### **AC-9 TODO** Progress reports evidence-backed execution state
 
 A caller can follow a standalone run's progress from a terminal or redirected
 text without keeping an agent conversation alive.
@@ -521,8 +521,9 @@ text without keeping an agent conversation alive.
 
 - The generic runner, evidence store, Codex CLI adapter, quota recovery,
   capacity retry, standalone command, and progress reporting are implemented.
-- The generic harness criteria are independently verified within this Work’s
-  controlled scope.
+- The previously completed generic harness criteria were independently verified
+  within this Work’s controlled scope; the revised progress criterion awaits
+  verification.
 - The [architecture](architecture.md) and typed boundary files preserve
   historical design context alongside the current implementation.
 - Codex quota recognition uses validated runtime session shape and scope with

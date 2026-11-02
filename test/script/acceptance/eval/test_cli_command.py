@@ -294,8 +294,8 @@ def test_command_reports_live_progress_to_stderr(tmp_path: Path, tty: bool) -> N
     # Then
     assert code == 130
     assert b"scheduled calls: 1" in stdout
-    assert b"phase=running" in progress
-    assert (b"\x1b" in progress) == tty
+    assert b"Status: running" in progress
+    assert progress.endswith(b"\n")
 
 
 def test_blocked_stderr_does_not_delay_signal_cleanup(tmp_path: Path) -> None:
@@ -803,3 +803,74 @@ def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
     assert len(second_run["calls"]) == 1
     assert first_run["calls"][0]["call_id"] == second_run["calls"][0]["call_id"]
     assert len(second_run["calls"][0]["attempts"]) == 1
+
+
+@pytest.mark.parametrize(
+    ("term", "no_color", "colored"),
+    [("xterm", False, True), ("xterm", True, False), ("dumb", False, False)],
+    ids=["color", "no-color", "dumb"],
+)
+def test_shared_terminal_keeps_final_result_separate(
+    tmp_path: Path, term: str, no_color: bool, colored: bool
+) -> None:
+    # Given
+    import fcntl
+    import pty
+    import struct
+    import termios
+
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    env["TERM"] = term
+    env.pop("NO_COLOR", None)
+    if no_color:
+        env["NO_COLOR"] = "1"
+    read_fd, target = pty.openpty()
+    fcntl.ioctl(target, termios.TIOCSWINSZ, struct.pack("HHHH", 24, 80, 0, 0))
+
+    # When
+    code, text = shared_terminal_output(repo, output, env, read_fd, target)
+
+    # Then
+    assert code == 0
+    assert b"Status: success" in text and b"Completed: 1" in text
+    assert b"\r\nrun " in text and b"; 1 scheduled calls" in text
+    assert (b"\x1b[36m" in text) == colored
+    if term == "dumb":
+        assert b"\x1b" not in text
+    assert json.loads((output / "run.json").read_text())["state"] == "complete"
+
+
+def shared_terminal_output(
+    repo: Path, output: Path, env: dict[str, str], read_fd: int, target: int
+) -> tuple[int, bytes]:
+    """Run the controlled command with both streams on a drained terminal.
+
+    Returns:
+        The exit code and terminal transcript.
+    """
+    process = subprocess.Popen(
+        command(repo, output), cwd=ROOT, env=env, stdout=target, stderr=target
+    )
+    os.close(target)
+    chunks: list[bytes] = []
+    try:
+        while True:
+            empty: list[int] = []
+            ready, _, _ = select.select([read_fd], empty, empty, 15)
+            assert ready, "terminal output timed out"
+            try:
+                data = os.read(read_fd, 65536)
+            except OSError:
+                break
+            if not data:
+                break
+            chunks.append(data)
+        code = process.wait(timeout=15)
+    finally:
+        os.close(read_fd)
+        if process.poll() is None:
+            process.kill()
+            process.wait(timeout=5)
+    return code, b"".join(chunks)
