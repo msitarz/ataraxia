@@ -87,23 +87,27 @@ def whole_bundle() -> bytes:
 
 def expected_case(strategy: str, ident: str) -> bytes:
     """Derive variable case bytes from the public target and corpus records."""
-    keys = (
-        list(KEYS)
-        if strategy == "A"
-        else [key for key in KEYS if key.rule_id == ident.upper()]
-        if strategy == "B"
-        else [PACKETS[ident].target]
-    )
-    rules = RULES if strategy == "A" else (keys[0].rule_id,)
+    match strategy:
+        case "A":
+            keys = list(KEYS)
+            rules = RULES
+            context = whole_bundle()
+        case "B":
+            keys = [key for key in KEYS if key.rule_id == ident.upper()]
+            rules = (keys[0].rule_id,)
+            context = whole_bundle()
+        case "C":
+            keys = [PACKETS[ident].target]
+            rules = (keys[0].rule_id,)
+            context = context_bytes(PACKETS[ident])
+        case _:
+            raise ValueError(f"unknown strategy: {strategy}")
     case_directory = INPUTS / "cases" / strategy
     case_path = case_directory / f"{ident}.txt"
     input_id = f"b-{case_path.stem}" if strategy == "B" else case_path.stem
     session = (
         f"Session: {{SESSION_ID}}; strategy: {strategy}; input: {input_id}"
     ).encode()
-    context = (
-        whole_bundle() if strategy in {"A", "B"} else context_bytes(PACKETS[ident])
-    )
     assessments = json.dumps([key.model_dump() for key in keys], indent=2).encode()
     return (
         session
@@ -246,10 +250,19 @@ def test_case_bytes_preserve_keys_rules_and_original_context(
     assert actual == expected
 
 
-def test_case_inputs_compose_through_the_public_plan_builder() -> None:
+@pytest.mark.parametrize(
+    "strategy,expected_count",
+    [("A", 1), ("B", 3), ("C", 24)],
+    ids=["A", "B", "C"],
+)
+def test_strategy_directory_composes_through_the_public_plan_builder(
+    strategy: str, expected_count: int
+) -> None:
     # Given
     shared = SHARED.read_bytes()
-    cases = sorted((INPUTS / "cases").glob("*/*.txt"))
+    shared_directory = INPUTS / "shared"
+    case_directory = INPUTS / "cases" / strategy
+    case_paths = sorted(case_directory.glob("*.txt"))
     sources = tuple(
         SourceSnapshot(
             directory_position=position,
@@ -258,13 +271,13 @@ def test_case_inputs_compose_through_the_public_plan_builder() -> None:
             content_sha256=sha256(path.read_bytes()).hexdigest(),
             content=path.read_bytes(),
         )
-        for position, paths in ((0, [SHARED]), (2, cases))
+        for position, paths in ((0, [SHARED]), (2, case_paths))
         for path in paths
     )
     config = HarnessConfig(
         ordered_options=(
-            DirectoryOption(position=0, path=Path("shared")),
-            DirectoryOption(position=2, path=Path("case")),
+            DirectoryOption(position=0, path=shared_directory),
+            DirectoryOption(position=2, path=case_directory),
         ),
         models=("model",),
         efforts=("medium",),
@@ -283,10 +296,10 @@ def test_case_inputs_compose_through_the_public_plan_builder() -> None:
     calls = PurePlanBuilder("review-contexts").plan(inputs, config).calls
 
     # Then
-    assert len(calls) == len(cases) == 28
-    assert {call.prompt for call in calls} == {
-        shared + b"\n\n" + path.read_bytes() for path in cases
-    }
+    assert len(calls) == len(case_paths) == expected_count
+    assert tuple(call.prompt for call in calls) == tuple(
+        shared + b"\n\n" + path.read_bytes() for path in case_paths
+    )
     assert all(call.context_indices[0] == 0 for call in calls)
 
 

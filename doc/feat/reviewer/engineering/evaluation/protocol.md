@@ -241,26 +241,12 @@ the secondary effort control.
 - Do not select a strategy/effort from these outcomes and claim an independent
   confirmation study.
 
-Supply one shared instruction/schema file followed by the applicable case
-directory. The harness default separator is exactly two LF bytes (`\n\n`), so
-the shared prefix appears before the strategy and input metadata. The cases
-contain only session metadata, expected assessment keys, rules, and context.
-This changes the original ordering by placing the common instructions and JSON
-contract before the case header; that ordering is intentional and must be
-reviewed before freeze. Use the fixed 1/3/24 case counts for A/B/C:
-
-```sh
--d doc/feat/reviewer/engineering/evaluation/inputs/shared \
--d doc/feat/reviewer/engineering/evaluation/inputs/cases/A
--d doc/feat/reviewer/engineering/evaluation/inputs/shared \
--d doc/feat/reviewer/engineering/evaluation/inputs/cases/B
--d doc/feat/reviewer/engineering/evaluation/inputs/shared \
--d doc/feat/reviewer/engineering/evaluation/inputs/cases/C
-```
-
-The first directory has exactly one common file; each case directory contains
-only files that are meant to expand into calls for that strategy. Assemble
-prompt bytes once with only this declared substitution in each case:
+Supply the shared instruction/schema directory first, followed by one selected
+strategy case directory. The default separator is two LF bytes (`\n\n`), so the
+shared instructions and schema precede each case's session metadata, expected
+assessment keys, rules, and context. The prepared files and directory usage are
+documented in [input preparation](inputs/preparation.md). Preserve the fixed
+1/3/24 A/B/C case counts and make only this declared substitution in each case:
 
 ```text
 Assess the listed function/rule pairs using only the supplied rules and context.
@@ -277,9 +263,9 @@ Rules: {all three exact rule files for A; one for B/C}
 Context: {whole prepared bundle for A/B; frozen function/context packet for C}
 ```
 
-The shared file owns the common wording above and the response JSON schema;
-case files own the variable metadata and sections below it. No case duplicates
-the shared wording or schema.
+One shared file owns the common wording and response JSON schema; case files
+own the variable metadata and sections. No case duplicates the shared wording
+or schema.
 
 The frozen JSON contract requires session, strategy and input IDs, a completion
 flag, and exactly one assessment per expected function/rule pair. The wrapper

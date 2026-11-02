@@ -18,7 +18,8 @@ permission to run trials.
   imports, referenced local types and helpers, and enclosing class context where
   needed.
 
-Supply the one shared file first, followed by exactly one strategy case file.
+Supply the one shared directory first, followed by exactly one strategy case
+directory.
 The generic harness's default `\n\n` separator places the shared instructions
 and schema before the case metadata and variable content:
 
@@ -66,9 +67,10 @@ root:
 make test ARGS=test/script/integration/eval/test_prepared_reviewer_inputs.py
 ```
 
-The tests compose inputs through the public pure plan builder, reconstruct case
-bytes from the shared file, public rules, expected keys and source ranges,
-resolve the 24 targets with Python's AST, and check the public sets. They do not
+The tests reconstruct case bytes from public keys, rules, and source ranges,
+resolve the 24 targets with Python's AST, and check the public sets. They also
+compose the shared file and each strategy directory through the public pure
+plan builder and verify the ordered 1/3/24 prompt matrices. They do not
 establish semantic sufficiency, label correctness, or runtime isolation.
 Independent owner review must assess those properties and the private reference
 index before freeze. No private answers are needed for this check.
