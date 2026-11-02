@@ -26,8 +26,7 @@ sibling [process supervisor](../process-supervisor/README.md) is implemented and
 owns one attempt's process lifecycle; this harness owns plans, dispatch policy,
 and run evidence around that boundary.
 
-The planned quota wait, model-capacity retry, and standalone-invocation
-amendments are owned by
+Quota wait, model-capacity retry, and standalone invocation are owned by
 [AC-6](README.md#ac-6-todo-optional-quota-waiting-preserves-the-active-run),
 [AC-7](README.md#ac-7-todo-optional-model-capacity-retries-use-bounded-backoff),
 and
@@ -773,7 +772,7 @@ flowchart LR
     STORE --> RUN[Immutable run evidence]
 ```
 
-The diagram shows proposed harness boundaries. The existing supervisor, input
+The diagram shows the harness boundaries. The existing supervisor, input
 freezer, pure planner, and token-estimation wiring are implemented. The
 runtime coordinator implements bounded invocations, quota recovery, settlement,
 progress projection, and final accounting. Injected CLI composition wiring is
@@ -832,15 +831,14 @@ implementations are
 [`script/eval/plan.py`](../../../../../../script/eval/plan.py). Shared validated
 values, persisted record shapes, pure context composition, scheduling,
 token-estimation adapter, evidence adapter wiring, and filesystem evidence
-storage/projection and standalone CLI composition are implemented. Remaining
-harness behavior and acceptance verification are planned. Do not add a parallel
-runtime model or change supervisor types. Private helpers and concrete
-persistence formats remain flexible; supervisor outcomes and requests continue
-to use the existing public types. Codex quota recognition is implemented against
-the reviewed CLI 0.164.0 rollout shape with runtime identity, completeness, and
-freshness checks; later versions are attempted but unsupported shapes fail
-closed. The reader pins the expected scope from an evaluation when the binding
-does not supply one.
+storage/projection and standalone CLI composition are implemented. Acceptance
+verification remains in progress. Do not add a parallel runtime model or change
+supervisor types. Private helpers and concrete persistence formats remain
+flexible; supervisor outcomes and requests continue to use the existing public
+types. Codex quota recognition is implemented against the reviewed CLI 0.164.0
+rollout shape with runtime identity, completeness, and freshness checks; later
+versions are attempted but unsupported shapes fail closed. The reader pins the
+expected scope from an evaluation when the binding does not supply one.
 
 | Proposed module | Responsibility |
 | --- | --- |
@@ -877,7 +875,7 @@ flowchart LR
     CLI --> QUOTA[runner/adapters/codex_quota.py]
     CLI --> PROGRESS_ADAPTER[runner/adapters/progress.py]
     CLI --> EVIDENCE[evidence.py]
-    RUNNER --> COORD[proposed runner/coordinator package]
+    RUNNER --> COORD[runner/coordinator package]
     RUNNER --> CODEX[runner/adapters/codex.py]
     RUNNER --> RUNTIME[runner/adapters/runtime.py]
     COORD --> POLICY[runner/policy.py]

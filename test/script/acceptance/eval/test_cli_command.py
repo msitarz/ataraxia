@@ -754,3 +754,48 @@ def test_invalid_command_exits_before_preparation(
     assert result.stdout == ""
     assert not output.exists()
     assert not marker.exists()
+
+
+def test_explicit_subset_rerun_preserves_prior_evidence_and_identity(
+    tmp_path: Path,
+) -> None:
+    repo = make_repository(tmp_path / "repo")
+    first_output = tmp_path / "first"
+    second_output = tmp_path / "subset"
+    env = environment(tmp_path)
+    first = subprocess.run(
+        [*command(repo, first_output), "-m", "another-model"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert first.returncode == 0, first.stderr
+    before = {
+        path.relative_to(first_output): path.read_bytes()
+        for path in first_output.rglob("*")
+        if path.is_file()
+    }
+    first_run = json.loads(before[Path("run.json")])
+
+    second = subprocess.run(
+        command(repo, second_output),
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    assert second.returncode == 0, second.stderr
+    after = {
+        path.relative_to(first_output): path.read_bytes()
+        for path in first_output.rglob("*")
+        if path.is_file()
+    }
+    second_run = json.loads((second_output / "run.json").read_bytes())
+    assert after == before
+    assert len(first_run["calls"]) == 2
+    assert len(second_run["calls"]) == 1
+    assert first_run["calls"][0]["call_id"] == second_run["calls"][0]["call_id"]
+    assert len(second_run["calls"][0]["attempts"]) == 1

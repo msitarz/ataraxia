@@ -519,50 +519,21 @@ text without keeping an agent conversation alive.
 
 ## Additional context
 
-The original Work definition authorized no runner implementation, typed
-architecture, corpus preparation, or model calls. Later bounded assignments
-authorized the architecture proposal and typed boundary, shared model records,
-the input boundary, and the pure planning wiring. A subsequent bounded
-implementation assignment delivered grouping, exact-byte context composition,
-and deterministic call-matrix expansion through the public pure planner. The
-current bounded assignment implements local `tiktoken` token counting and
-its development dependency behind the provider-neutral port. Its approved
-first-use vocabulary download and native cache write are documented in the
-current architecture. These assignments do not establish CLI integration,
-other runner components, corpus preparation, or model calls.
-All acceptance criteria remain TODO, and completion of this generic runner
-cannot establish the parent experiment's integrated protections or results.
+The generic runner, evidence store, Codex CLI adapter, quota recovery, capacity
+retry, standalone command, and progress reporting are implemented. Acceptance
+verification remains in progress; these criteria remain TODO until independently
+reviewed. The [architecture](architecture.md) and typed boundary files preserve
+historical design context alongside the current implementation.
 
-Quota monitoring is a contract amendment only. The maintainer supplied an
-[exhausted five-hour quota capture and session telemetry excerpt](quota-capture.md).
-The excerpt identifies a candidate numeric reset source, but file correlation,
-account and allowance association, freshness, and failure handling still require
-review. The authorized future probe condition is recorded there; its unattended
-recipe and positive availability evidence also remain prerequisites. An
-app-server schema does not establish the exec schema. The architecture, proposed
-typed boundaries, and intent-only BDD scenarios describe the earlier polling
-amendment; they establish no runtime behavior. No live probes, quota
-implementation, or model calls are authorized by this amendment.
-
-The [third-party capacity report](capacity-report.md) supplies motivation for
-AC-7, not direct CLI evidence or proof of retry eligibility. Capacity
-recognition also remains an unresolved implementation prerequisite. The
-architecture records consumer-owned classifier and quota-status ports with
-explicit unknown outcomes; their concrete recognition and reset adapters remain
-undefined until evidence verifies their sources. No runner implementation or
-model calls are authorized by this contract amendment.
-
-Progress reporting remains in this generic harness Work rather than a separate
-child Work. Its bounded amendment defines AC-9 before evidence persistence is
-implemented; the delivery stage covers this contract, a separately reviewed
-typed design, and intent-only BDD scenarios, not runtime implementation. The
-contract alone establishes no reporting behavior. It adds no logger, event bus,
-adapter framework, monitoring service, scheduler integration, or dependency on
-an agent session. All acceptance criteria remain TODO.
-
-The current quota contract limits probes to the awaited recovery flow after
-recognized exhaustion and active-attempt settlement. Passive after-attempt
-telemetry remains enabled by the quota-wait opt-in. Earlier architecture and
-intent-only scenarios describing active-period monitoring require alignment
-before they can support implementation review; this amendment establishes no
-runtime behavior and authorizes no live probes or model calls.
+Codex quota recognition uses validated runtime session shape and scope with
+Codex CLI 0.164.0 or newer; unsupported or ambiguous observations fail closed.
+The [quota capture](quota-capture.md) and [capacity report](capacity-report.md)
+retain the original evidence and motivation. The controlled checks do not prove
+live availability, authentication, tool-free execution, or context isolation.
+The accepted CLI limitations remain in the parent
+[preparation record](../preparation.md#combined-step-1-candidate-and-stopping-point).
+Progress is best effort and separate from durable evidence; cooperative signal
+cancellation and the supervisor lifecycle limits apply. No restart recovery is
+provided. The caller owns experiment authorization, protocol, budgets, corpus,
+and interpretation; completion of this child does not complete the parent
+Evaluation.
