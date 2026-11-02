@@ -317,8 +317,7 @@ and one global quota recovery flow from authoritative typed lifecycles.
   [PR 405](https://github.com/msitarz/ataraxia/pull/405), which is a superseded
   reference with known lifecycle bugs, not a validated alternative.
 - One coordinator owns one provider and one frozen run without restart recovery.
-- The Work contract remains authoritative and every acceptance criterion is
-  TODO.
+- The [Work contract](README.md) remains authoritative.
 
 ### Runner policy, ports, and adapters
 
@@ -702,7 +701,6 @@ evidence.
 preparation and execution collaborators. The standalone command supplies
 argument parsing, concrete factories, signal handling, and best-effort progress.
 It verifies quota scope from correlated invocations when waiting is enabled.
-No acceptance criterion is complete.
 
 **TL;DR:** Wire adapters once and keep policy in the coordinator.
 
