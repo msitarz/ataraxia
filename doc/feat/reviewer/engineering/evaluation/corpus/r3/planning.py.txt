@@ -1,0 +1,365 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+from dataclasses import dataclass
+from time import time
+
+
+@dataclass(frozen=True)
+class Order:
+    order_id: str
+    customer_id: str
+    origin: str
+    destination: str
+    weight: int
+    ready_at: int
+    due_at: int
+    priority: int
+
+
+@dataclass(frozen=True)
+class Vehicle:
+    vehicle_id: str
+    carrier_id: str
+    location: str
+    capacity: int
+    available_at: int
+    inspection_due: int
+    cost_per_hour: int
+
+
+@dataclass(frozen=True)
+class Leg:
+    origin: str
+    destination: str
+    duration: int
+    distance: int
+    toll: int
+
+
+@dataclass(frozen=True)
+class Offer:
+    carrier_id: str
+    amount: int
+    capacity: int
+    expires_at: int
+    transit: int
+    reliability: int
+
+
+@dataclass(frozen=True)
+class Assignment:
+    order_id: str
+    vehicle_id: str
+    depart_at: int
+    arrive_at: int
+    cost: int
+
+
+@dataclass(frozen=True)
+class Estimate:
+    distance: int
+    duration: int
+    cost: int
+    arrival: int
+
+
+@dataclass(frozen=True)
+class Alert:
+    order_id: str
+    kind: str
+    remaining: int
+
+
+@dataclass(frozen=True)
+class Slot:
+    start: int
+    end: int
+    reserved: int
+    capacity: int
+
+
+@dataclass(frozen=True)
+class Allocation:
+    start: int
+    end: int
+    quantity: int
+    remaining: int
+
+
+def compatible(order: Order, vehicle: Vehicle, now: int) -> bool:
+    """Check the vehicle constraints used by the scheduling decisions."""
+    return (
+        vehicle.location == order.origin
+        and vehicle.capacity >= order.weight
+        and vehicle.available_at <= order.due_at
+        and vehicle.inspection_due > now
+    )
+
+
+def route_totals(legs: list[Leg]) -> tuple[int, int, int]:
+    """Return distance, duration and toll for a continuous journey."""
+    distance = 0
+    duration = 0
+    toll = 0
+    for leg in legs:
+        distance += leg.distance
+        duration += leg.duration
+        toll += leg.toll
+    return distance, duration, toll
+
+
+def choose_vehicle(order: Order, vehicles: list[Vehicle], now: int) -> Vehicle | None:
+    """Choose the earliest compatible vehicle, then the lowest identifier."""
+    eligible = []
+    for vehicle in vehicles:
+        if compatible(order, vehicle, now):
+            eligible.append(vehicle)
+    if not eligible:
+        return None
+    return min(eligible, key=lambda vehicle: (vehicle.available_at, vehicle.vehicle_id))
+
+
+def assignment(order: Order, vehicle: Vehicle, legs: list[Leg], now: int) -> Assignment | None:
+    """Plan a single vehicle journey within the order's delivery window."""
+    if not legs or not compatible(order, vehicle, now):
+        return None
+    if legs[0].origin != order.origin or legs[-1].destination != order.destination:
+        return None
+    previous = legs[0].origin
+    for leg in legs:
+        if leg.origin != previous:
+            return None
+        previous = leg.destination
+    _, duration, toll = route_totals(legs)
+    departure = max(now, order.ready_at, vehicle.available_at)
+    arrival = departure + duration
+    if arrival > order.due_at or arrival >= vehicle.inspection_due:
+        return None
+    hours = (duration + 3599) // 3600
+    cost = hours * vehicle.cost_per_hour + toll
+    return Assignment(
+        order_id=order.order_id,
+        vehicle_id=vehicle.vehicle_id,
+        depart_at=departure,
+        arrive_at=arrival,
+        cost=cost,
+    )
+
+
+def select_offer(order: Order, offers: list[Offer], now: int) -> Offer | None:
+    """Choose the least expensive feasible offer with stable tie breaking."""
+    candidates = []
+    for offer in offers:
+        if offer.expires_at <= now:
+            continue
+        if offer.capacity < order.weight:
+            continue
+        if max(now, order.ready_at) + offer.transit > order.due_at:
+            continue
+        candidates.append(offer)
+    if not candidates:
+        return None
+    return min(
+        candidates,
+        key=lambda offer: (offer.amount, -offer.reliability, offer.carrier_id),
+    )
+
+
+def route_estimate(legs: list[Leg], start: int, rate: int) -> Estimate | None:
+    """Estimate a continuous journey using the supplied start and rate."""
+    if not legs:
+        return None
+    previous = legs[0].origin
+    for leg in legs:
+        if leg.origin != previous:
+            return None
+        previous = leg.destination
+    distance, duration, toll = route_totals(legs)
+    cost = distance * rate + toll
+    arrival = start + duration
+    return Estimate(
+        distance=distance,
+        duration=duration,
+        cost=cost,
+        arrival=arrival,
+    )
+
+
+def urgency(order: Order, travel: int, now: int) -> Alert | None:
+    """Flag orders whose remaining time is insufficient or getting short."""
+    remaining = order.due_at - int(time()) - travel
+    if remaining < 0:
+        return Alert(order.order_id, "late", remaining)
+    threshold = 3600 if order.priority > 1 else 1800
+    if remaining <= threshold:
+        return Alert(order.order_id, "at-risk", remaining)
+    return None
+
+
+def allocate(slots: list[Slot], quantity: int, earliest: int, latest: int) -> Allocation | None:
+    """Select the first fitting slot in its input order."""
+    for slot in slots:
+        if slot.start < earliest:
+            continue
+        if slot.end > latest:
+            continue
+        remaining = slot.capacity - slot.reserved
+        if remaining < quantity:
+            continue
+        return Allocation(
+            start=slot.start,
+            end=slot.end,
+            quantity=quantity,
+            remaining=remaining - quantity,
+        )
+    return None
+
+
+def load_sequence(orders: list[Order], capacity: int) -> list[Order]:
+    """Load urgent orders first while respecting the available capacity."""
+    orders.sort(key=lambda order: (-order.priority, order.due_at, order.order_id))
+    result = []
+    used = 0
+    for order in orders:
+        if used + order.weight <= capacity:
+            result.append(order)
+            used += order.weight
+    return result
+
+
+def available_window(vehicle: Vehicle, start: int, duration: int) -> tuple[int, int] | None:
+    """Find a usable window that ends before the next inspection."""
+    opening = max(start, vehicle.available_at)
+    closing = opening + duration
+    if closing >= vehicle.inspection_due:
+        return None
+    return opening, closing
+
+
+def next_stops(legs: list[Leg], current: str, limit: int) -> list[str]:
+    """List subsequent stops in route order, up to the supplied limit."""
+    found = False
+    result = []
+    while legs and len(result) < limit:
+        leg = legs.pop(0)
+        if leg.origin == current:
+            found = True
+        if found:
+            result.append(leg.destination)
+    return result
+
+
+def quote_ceiling(order: Order, distance: int, rate: int, surcharge: int) -> int:
+    """Compute a customer's maximum offer, including priority surcharge."""
+    base = distance * rate
+    if order.priority > 1:
+        base += surcharge
+    return base
+
+
+def offers_within_budget(offers: list[Offer], budget: int) -> list[Offer]:
+    """Keep offers no greater than the customer's budget."""
+    result = []
+    for offer in offers:
+        if offer.amount <= budget:
+            result.append(offer)
+    return result
+
+
+def preferred_carrier(offers: list[Offer], minimum_reliability: int) -> str | None:
+    """Select the best qualifying reliability, then the lowest carrier ID."""
+    eligible = [offer for offer in offers if offer.reliability >= minimum_reliability]
+    if not eligible:
+        return None
+    eligible.sort(key=lambda offer: (-offer.reliability, offer.carrier_id))
+    return eligible[0].carrier_id
+
+
+def reschedule(order: Order, alternatives: list[Leg], now: int) -> Estimate | None:
+    """Choose the earliest direct alternative that can meet the due time."""
+    best = None
+    for leg in alternatives:
+        if leg.origin != order.origin or leg.destination != order.destination:
+            continue
+        departure = max(now, order.ready_at)
+        arrival = departure + leg.duration
+        if arrival > order.due_at:
+            continue
+        estimate = Estimate(leg.distance, leg.duration, leg.toll, arrival)
+        if best is None or estimate.arrival < best.arrival:
+            if order.priority > 1:
+                alternatives.remove(leg)
+            best = estimate
+    return best
+
+
+def schedule_cost(assignments: list[Assignment]) -> int:
+    """Sum planned transport costs without booking any work."""
+    total = 0
+    for item in assignments:
+        total += item.cost
+    return total
+
+
+def overdue_orders(orders: list[Order], now: int) -> list[str]:
+    """Return identifiers whose delivery windows have elapsed."""
+    overdue = []
+    for order in orders:
+        if order.due_at < now:
+            overdue.append(order.order_id)
+    return overdue
+
+
+def remaining_capacity(vehicle: Vehicle, orders: list[Order]) -> int:
+    """Return spare capacity after loading a set of orders."""
+    used = sum(order.weight for order in orders)
+    return max(0, vehicle.capacity - used)
+
+
+def busiest_vehicle(assignments: list[Assignment]) -> str | None:
+    """Return the vehicle assigned the most work, breaking ties by identifier."""
+    counts: dict[str, int] = {}
+    for item in assignments:
+        counts[item.vehicle_id] = counts.get(item.vehicle_id, 0) + 1
+    if not counts:
+        return None
+    return min(counts, key=lambda vehicle_id: (-counts[vehicle_id], vehicle_id))
+
+
+def order_distance(order: Order, legs: list[Leg]) -> int | None:
+    """Return the distance of a route that connects an order's endpoints."""
+    if not legs or legs[0].origin != order.origin:
+        return None
+    if legs[-1].destination != order.destination:
+        return None
+    for left, right in zip(legs, legs[1:]):
+        if left.destination != right.origin:
+            return None
+    return sum(leg.distance for leg in legs)
+
+
+def priority_count(orders: list[Order], threshold: int) -> int:
+    """Count orders meeting the requested service priority."""
+    count = 0
+    for order in orders:
+        if order.priority >= threshold:
+            count += 1
+    return count
+
+
+def carrier_costs(offers: list[Offer]) -> dict[str, int]:
+    """Return the cheapest quoted amount for each carrier."""
+    result: dict[str, int] = {}
+    for offer in offers:
+        previous = result.get(offer.carrier_id)
+        if previous is None or offer.amount < previous:
+            result[offer.carrier_id] = offer.amount
+    return result
