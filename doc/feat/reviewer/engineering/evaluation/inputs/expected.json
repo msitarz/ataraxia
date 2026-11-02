@@ -1,0 +1,122 @@
+[
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "booking_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "claim_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "consignment_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "delivery_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "invoice_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "quote_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "route_record"
+  },
+  {
+    "rule_id": "R1",
+    "file_id": "r1/dispatch.py.txt",
+    "qualified_function_name": "vehicle_record"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "allocate"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "assignment"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "load_sequence"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "next_stops"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "reschedule"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "route_estimate"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "select_offer"
+  },
+  {
+    "rule_id": "R3",
+    "file_id": "r3/planning.py.txt",
+    "qualified_function_name": "urgency"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.add_booking"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.add_payment"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.allocate"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.allocation"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.booking"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.events"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.payment"
+  },
+  {
+    "rule_id": "R4",
+    "file_id": "r4/ledger.py.txt",
+    "qualified_function_name": "Ledger.set_state"
+  }
+]
