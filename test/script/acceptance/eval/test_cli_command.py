@@ -840,7 +840,8 @@ def test_shared_terminal_keeps_final_result_separate(
     # Then
     assert code == 0
     assert b"Status: success" in text and b"Completed: 1" in text
-    assert b"\r\nrun " in text and b"; 1 scheduled calls" in text
+    assert text.index(b"Status: success") < text.index(b"\r\nrun ")
+    assert text.endswith(b"; 1 scheduled calls\r\n")
     assert (b"\x1b[36m" in text) == colored
     assert all(marker not in text for marker in forbidden)
     assert json.loads((output / "run.json").read_text())["state"] == "complete"
