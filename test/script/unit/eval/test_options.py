@@ -132,3 +132,209 @@ def test_custom_runner_options_are_forwarded_to_validated_config() -> None:
         "capacity_backoff_cap_seconds": 9.0,
         "instructions_file_path": Path("instructions"),
     }
+
+
+@pytest.mark.parametrize(
+    ("argv", "message"),
+    [
+        (["-m", "model", "-e", "low", "-n"], "provide at least one -d/--directory"),
+        (["-d", "context", "-e", "low", "-n"], "provide at least one -m/--model"),
+        (["-d", "context", "-m", "model", "-n"], "provide at least one -e/--effort"),
+        (
+            ["-d", "context", "-m", "model", "-e", "low"],
+            "execution requires -o/--output-directory",
+        ),
+        (
+            ["-d", "context", "-m", "model", "-e", "low", "-n", "--concurency", "2"],
+            "Did you mean --concurrency?",
+        ),
+        (["-d", "context", "-m"], "expected one argument"),
+        (
+            ["-d", "context", "-m", "model", "-e", "low", "-n", "-c", "no"],
+            "-c/--concurrency requires a valid integer",
+        ),
+        (
+            ["-d", "context", "-m", "model", "-e", "low", "-n", "-c", "0"],
+            "--concurrency must be greater than 0",
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+                "--timeout-seconds",
+                "nan",
+            ],
+            "--timeout-seconds must be finite",
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+                "--grace-seconds",
+                "10",
+            ],
+            "--grace-seconds must be less than --cleanup-timeout-seconds",
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            "--capacity-retry-limit requires --capacity-backoff-base-seconds",
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+                "--quota-probe-budget",
+                "-1",
+            ],
+            "--quota-probe-budget must be at least 0",
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+                "--capacity-backoff-base-seconds",
+                "2",
+                "--capacity-backoff-cap-seconds",
+                "1",
+            ],
+            (
+                "--capacity-backoff-cap-seconds must be at least "
+                "--capacity-backoff-base-seconds"
+            ),
+        ),
+        (
+            [
+                "-d",
+                "context",
+                "-s",
+                r"\q",
+                "-d",
+                "other",
+                "-m",
+                "model",
+                "-e",
+                "low",
+                "-n",
+            ],
+            "-s/--separator supports only",
+        ),
+        (
+            ["-d", "context", "-s", "x", "-m", "model", "-e", "low", "-n"],
+            "place each -s/--separator between",
+        ),
+    ],
+    ids=[
+        "directory",
+        "model",
+        "effort",
+        "output",
+        "typo",
+        "missing-value",
+        "numeric",
+        "bound",
+        "finite",
+        "grace",
+        "capacity",
+        "quota-budget",
+        "capacity-cap",
+        "escape",
+        "separator",
+    ],
+)
+def test_invalid_options_explain_how_to_fix(
+    argv: list[str], message: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Given an invalid command line
+
+    # When
+    with pytest.raises(SystemExit) as caught:
+        parse_config(argv)
+
+    # Then
+    captured = capsys.readouterr()
+    assert caught.value.code == 2
+    assert message in captured.err
+    assert "Run with --help for all options." in captured.err
+    assert "usage:" not in captured.err
+    assert "input_value" not in captured.err
+    assert captured.out == ""
+
+
+@pytest.mark.parametrize("argument", ["", "   "], ids=["empty", "whitespace"])
+def test_blank_unrecognized_argument_is_reported(
+    argument: str, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # Given an unexpected blank argument
+
+    # When
+    with pytest.raises(SystemExit) as caught:
+        parse_config([argument])
+
+    # Then
+    captured = capsys.readouterr()
+    assert caught.value.code == 2
+    assert "remove the empty or whitespace argument" in captured.err
+    assert "Did you mean" not in captured.err
+    assert "Run with --help for all options." in captured.err
+    assert captured.out == ""
+
+
+def test_unrelated_option_has_no_suggestion(capsys: pytest.CaptureFixture[str]) -> None:
+    # Given an unknown option with no close match
+    argv = ["--xyzzy"]
+
+    # When
+    with pytest.raises(SystemExit) as caught:
+        parse_config(argv)
+
+    # Then
+    captured = capsys.readouterr()
+    assert caught.value.code == 2
+    assert "unrecognized argument '--xyzzy'" in captured.err
+    assert "Did you mean" not in captured.err
+    assert "Run with --help for all options." in captured.err
+
+
+def test_help_remains_available(capsys: pytest.CaptureFixture[str]) -> None:
+    # Given a request for help
+
+    # When
+    with pytest.raises(SystemExit) as caught:
+        parse_config(["--help"])
+
+    # Then
+    captured = capsys.readouterr()
+    assert caught.value.code == 0
+    assert "usage:" in captured.out
+    assert "--directory" in captured.out
+    assert captured.err == ""
