@@ -449,18 +449,43 @@ def test_quota_wait_resumes_after_two_separate_probes(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    ("mode", "exit_status", "counts"),
+    ("mode", "exit_status", "counts", "diagnostic"),
     [
-        ("missing-session", 3, {"eval": 1, "probe": 0}),
-        ("wrong-version", 3, {"eval": 1, "probe": 0}),
-        ("out-of-order", 3, {"eval": 1, "probe": 0}),
-        ("mismatch", 3, {"eval": 1, "probe": 1}),
-        ("extra-event", 3, {"eval": 1, "probe": 0}),
-        ("stderr", 3, {"eval": 1, "probe": 0}),
+        (
+            "missing-session",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "wrong-version",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "out-of-order",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        ("mismatch", 3, {"eval": 1, "probe": 1}, "quota recovery failed"),
+        (
+            "extra-event",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "stderr",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
     ],
 )
 def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
-    tmp_path: Path, mode: str, exit_status: int, counts: dict[str, int]
+    tmp_path: Path, mode: str, exit_status: int, counts: dict[str, int], diagnostic: str
 ) -> None:
     # Given
     repo = make_repository(tmp_path / "repo")
@@ -495,16 +520,12 @@ def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
     # Then
     assert result.returncode == exit_status, result.stderr
     assert json.loads(Path(env["FAKE_QUOTA_STATE"]).read_text()) == counts
-    if mode == "mismatch":
-        assert "quota recovery failed" in result.stderr
-    else:
-        assert "quota telemetry is unavailable or unsupported" in result.stderr
-        events = [
-            json.loads(line)
-            for line in (output / "events.jsonl").read_text().splitlines()
-        ]
-        assert any(event["kind"] == "quota_telemetry" for event in events)
-        assert json.loads((output / "run.json").read_text())["state"] == "incomplete"
+    assert diagnostic in result.stderr
+    events = [
+        json.loads(line) for line in (output / "events.jsonl").read_text().splitlines()
+    ]
+    assert any(event["kind"] == "quota_telemetry" for event in events)
+    assert json.loads((output / "run.json").read_text())["state"] == "incomplete"
 
 
 def test_quota_probe_budget_zero_stops_without_probe(tmp_path: Path) -> None:

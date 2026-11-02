@@ -23,4 +23,11 @@ from script.eval.runner.adapters.codex_version import supports_quota_version
     ],
 )
 def test_quota_version(version: str | None, supported: bool) -> None:
-    assert supports_quota_version(version) is supported
+    # Given
+    candidate = version
+
+    # When
+    result = supports_quota_version(candidate)
+
+    # Then
+    assert result is supported

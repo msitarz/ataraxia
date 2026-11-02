@@ -2103,6 +2103,7 @@ async def test_quota_read_failure_stops_and_retains_diagnostic(
     write_failure: bool,
 ) -> None:
     """Read failure remains primary even if recording also fails."""
+    # Given
     slots = Semaphore(1)
     control = RunControl()
     store = (
@@ -2122,9 +2123,11 @@ async def test_quota_read_failure_stops_and_retains_diagnostic(
         Clock(),
     )
 
+    # When
     with pytest.raises(RuntimeError, match="quota telemetry read failed") as raised:
         await subject.run()
 
+    # Then
     assert isinstance(raised.value.__cause__, OSError)
     assert str(raised.value.__cause__) == "private source path"
     assert store.telemetry is not None
