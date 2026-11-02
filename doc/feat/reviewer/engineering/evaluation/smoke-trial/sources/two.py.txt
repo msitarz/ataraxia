@@ -1,0 +1,17 @@
+# Assess top-level functions: select_gamma, select_delta.
+# Both are pure typed decisions over valid inputs.
+def select_gamma(value: int) -> int:
+    try:
+        return 100 // value
+    except ZeroDivisionError:
+        return 0
+
+
+def select_delta(value: int) -> int:
+    try:
+        try:
+            return 100 // value
+        except ZeroDivisionError:
+            return 0
+    except ArithmeticError:
+        return -1

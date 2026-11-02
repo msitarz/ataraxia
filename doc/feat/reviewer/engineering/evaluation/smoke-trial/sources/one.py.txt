@@ -1,0 +1,9 @@
+# Assess top-level functions: select_alpha, select_beta.
+# Both are pure typed decisions over valid inputs.
+def select_alpha(value: int) -> bool:
+    return value > 10
+
+
+def select_beta(value: int) -> bool:
+    print(value)
+    return value > 10
