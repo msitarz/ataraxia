@@ -2,6 +2,59 @@
 
 ## Examples
 
+### Supplied reviewer smoke example
+
+After these inputs are merged, start at a clean repository root with the
+locked setup already installed, Codex CLI on `PATH`, and an authenticated
+subscription session. The harness calls Codex CLI; it does not use a direct
+provider API. Choose a fresh persistent output path. Create only its parent:
+
+```sh
+mkdir -p "$HOME/ataraxia-eval-results"
+```
+
+Preview the full example matrix first. This dry run does not start Codex or
+create output:
+
+```sh
+uv run --no-sync python -m script.eval \
+  -d script/eval/example/rules \
+  -d script/eval/example/sources \
+  -i script/eval/example/instructions.md \
+  -m gpt-6-luna -e none -e low -c 1 \
+  --timeout-seconds 120 --cleanup-timeout-seconds 10 \
+  --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
+  -o "$HOME/ataraxia-eval-results/reviewer-smoke12-001" -n
+```
+
+Confirm it reports 12 calls, then run the same command without `-n`. The
+output directory must be new; choose another name if it already exists.
+
+The matrix is two rule files × three synthetic source files × one model × two
+efforts. Each call has one harness attempt; both retry limits are zero and
+quota waiting is off. The count excludes Codex's internal retries and the
+harness's local Codex version query. The dry run uses the real tokenizer, may
+download vocabulary on first use, and makes no model call.
+
+Completion requires accounting for all 12 calls and retaining their artifacts.
+Keep failures and interruptions; do not automatically rerun them. Inspect
+`plan.json`, `run.json`, `events.jsonl`, and the per-attempt records under
+`attempts/`. Attempt `.stdout` files contain raw Codex JSONL; model response
+text appears in `agent_message` items, not in `events.jsonl`.
+
+The rule prompts adapt the
+[pure-decision and nested-`try` guidance](../../doc/engineering.md#pure-typed-decisions)
+from engineering source revision `25958a82242e4c89a269cbd5c8f1b4d43543b234`. The
+three short Python excerpts are controlled synthetic inputs. There is no answer
+key or scoring, so this smoke cannot establish accuracy, select a model or
+strategy, or support quality or resource generalizations. The separate
+instructions request input-only behavior but do not establish tool isolation;
+Codex may expose residual tools and add automatic context. The accepted CLI
+limitation in the
+[evaluation protocol](../../doc/feat/reviewer/engineering/evaluation/protocol.md#cli-invocation-boundary-and-accepted-limitation)
+remains. This smoke does not change the primary comparison protocol or complete
+the parent Evaluation.
+
 From the repository root, prepare the locked environment once:
 
 ```sh
