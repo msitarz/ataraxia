@@ -43,7 +43,7 @@ make test ARGS=test/script/integration/eval/test_prepared_reviewer_inputs.py
 ```
 
 The tests reconstruct all prompts from the template, schema, public rules and
-source ranges, resolves the 24 targets with Python's AST, and checks the public
-sets. It does not establish semantic sufficiency, label correctness, or runtime
+source ranges, resolve the 24 targets with Python's AST, and check the public
+sets. They do not establish semantic sufficiency, label correctness, or runtime
 isolation. Independent owner review must assess those properties and the private
 reference index before freeze. No private answers are needed for this check.
