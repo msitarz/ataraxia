@@ -29,7 +29,8 @@ code.
 | R4 | [Ledger](r4/ledger.py.txt) | 381 | `Ledger.add_booking`, `Ledger.add_payment`, `Ledger.allocate`, `Ledger.allocation`, `Ledger.booking`, `Ledger.events`, `Ledger.payment`, `Ledger.set_state` |
 
 Owner review must check realism, applicability, context sufficiency, and the
-separately held reference rationales before any freeze. C packets, prompts, call
-lists, runtime binding, invocation protections, and model trials remain outside
-this draft. These authored examples do not complete any Evaluation acceptance
-criterion or support a production granularity decision.
+separately held reference rationales before any freeze.
+[Draft packets and prompts](../inputs/preparation.md) are prepared separately.
+Call lists, runtime binding, invocation protections, and model trials remain
+outside this draft. These authored examples do not complete any Evaluation
+acceptance criterion or support a production granularity decision.
