@@ -15,14 +15,13 @@ itself adopt a production granularity decision.
 
 ## Authorization and preparation
 
-The maintainer authorized preparation of A/B inputs in this PR. This protocol
-amendment precedes their alignment; existing draft prompts are not a frozen
-findings-based invocation. No model trials, further neutral calls, freeze, or
-production implementation are authorized. Later execution requires independent
-owner review and authorization within the existing Work; these stages are
-assignments, not new Work children. Before any revised comparison runs, require
-a newly reviewed freeze of the amended protocol and aligned inputs, even though
-no corpus trials have run.
+The maintainer authorized preparation of A/B inputs in this PR. The prepared
+draft inputs are not a frozen findings-based invocation. No model trials,
+further neutral calls, freeze, or production implementation are authorized.
+Later execution requires independent owner review and authorization within the
+existing Work; these stages are assignments, not new Work children. Before any
+revised comparison runs, require a newly reviewed freeze of the amended protocol
+and aligned inputs, even though no corpus trials have run.
 
 Within the authorized preparation scope and before later execution:
 
@@ -213,9 +212,10 @@ the secondary effort control:
 - Do not claim an independent confirmation of an outcome-selected winner.
 
 Supply the shared instruction/schema directory first, followed by one selected
-strategy case directory. The default separator is two LF bytes (`\n\n`).
-The shared instructions and schema precede the case's rules and whole corpus.
-[input preparation](inputs/preparation.md) will describe aligned artifacts.
+strategy case directory and the common corpus directory. The default separator
+is two LF bytes (`\n\n`) at both boundaries. The shared instructions and
+schema precede the case's rules and the whole corpus.
+[Input preparation](inputs/preparation.md) describes the draft artifacts.
 Keep one A case and three B cases. The common task has this intent:
 
 ```text
@@ -230,7 +230,8 @@ Context: {the same whole three-file prepared bundle for A and every B call}
 ```
 
 One shared file owns the common wording and response JSON schema; case files
-own only the supplied rule text and corpus. No case duplicates the shared
+own only the supplied rule text, and the corpus directory owns the whole source
+bundle. No case duplicates the shared
 wording or schema. Do not inject session, strategy, input, effort, target keys,
 or expected assessments into model-visible task material.
 

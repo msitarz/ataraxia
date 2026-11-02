@@ -201,8 +201,8 @@ in this PR. Final A/B/C and historical requirements above remain unchanged.
 
 Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
 with a separately held draft reference index. Existing
-[draft prompts](inputs/preparation.md) require alignment with the amended
-protocol before independent review and a new freeze. Owner validation, runtime
+[draft A/B inputs](inputs/preparation.md) are prepared for independent review
+and a new freeze. Owner validation, runtime
 binding, matched input baselines, and retained boundary checks remain
 outstanding. The initial corpus does not complete historical/diversity evidence
 or support a production granularity decision. The accepted CLI limitation does
