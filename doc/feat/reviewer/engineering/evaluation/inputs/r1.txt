@@ -5,6 +5,9 @@ Use PASS, VIOLATION, NOT_APPLICABLE or UNCERTAIN.
 Missing context or unresolved ambiguity requires UNCERTAIN, never PASS.
 Explain each judgment with concrete source evidence and consequences.
 Explain NOT_APPLICABLE. Keep optional correction suggestions separate.
+Echo the issued session, strategy and input identifiers in the response.
+Use the original file and line numbers shown in the context for locations.
+For non-violations, use empty locations and null consequence and severity.
 Return only the supplied JSON contract. Declare incomplete output explicitly.
 Session: {SESSION_ID}; strategy: B; input: b-r1
 

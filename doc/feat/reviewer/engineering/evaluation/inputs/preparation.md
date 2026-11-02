@@ -1,6 +1,8 @@
 # Draft review inputs
 
-These static inputs prepare the initial comparison in the
+The source corpus comes from revision
+`75f8f278753984604805341e1e94acb668d58c4e`. These static inputs prepare the
+initial comparison in the
 [protocol](../protocol.md). They are drafts for owner review, not a freeze or
 permission to run trials.
 
@@ -37,10 +39,10 @@ To check the prepared bytes against the public corpus, run from the repository
 root:
 
 ```sh
-python3 doc/feat/reviewer/engineering/evaluation/inputs/check.py.txt
+make test ARGS=test/script/integration/eval/test_prepared_reviewer_inputs.py
 ```
 
-The check reconstructs all prompts from the template, schema, public rules and
+The tests reconstruct all prompts from the template, schema, public rules and
 source ranges, resolves the 24 targets with Python's AST, and checks the public
 sets. It does not establish semantic sufficiency, label correctness, or runtime
 isolation. Independent owner review must assess those properties and the private
