@@ -1,5 +1,5 @@
 # Assess top-level functions: select_epsilon, select_zeta.
-# Both are pure typed decisions over valid inputs.
+# Both are intended to be pure typed decisions over valid inputs.
 def select_epsilon(value: int) -> int:
     def calculate() -> int:
         try:

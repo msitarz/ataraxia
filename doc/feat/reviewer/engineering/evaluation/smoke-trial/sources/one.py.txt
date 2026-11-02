@@ -1,5 +1,5 @@
 # Assess top-level functions: select_alpha, select_beta.
-# Both are pure typed decisions over valid inputs.
+# Both are intended to be pure typed decisions over valid inputs.
 def select_alpha(value: int) -> bool:
     return value > 10
 

@@ -1,5 +1,5 @@
 # Assess top-level functions: select_gamma, select_delta.
-# Both are pure typed decisions over valid inputs.
+# Both are intended to be pure typed decisions over valid inputs.
 def select_gamma(value: int) -> int:
     try:
         return 100 // value
