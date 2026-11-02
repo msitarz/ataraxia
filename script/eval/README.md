@@ -8,165 +8,181 @@ From the repository root, prepare the locked environment once:
 make setup
 ```
 
-You need `uv`, Git, and the Codex CLI available on `PATH`, with an authenticated
-Codex subscription session. The harness invokes the CLI; it does not implement
-direct provider API calls.
+You need `uv`, Git, and the Codex CLI on `PATH`, with an authenticated Codex
+subscription session. The harness calls Codex CLI; it has no direct provider
+API implementation.
 
-Preview the smallest matrix without making model calls or creating output:
+Preview a small matrix without making model calls or creating output:
 
 ```sh
 make eval CLI_ARGS='-d path/to/contexts -m gpt-6-luna -e low -n'
 ```
 
-For a real run, give it a fresh output directory:
+The same CLI can be run directly from a terminal or scheduler:
+
+```sh
+uv run --no-sync python -m script.eval -d path/to/contexts -m gpt-6-luna -e low -n
+```
+
+For execution, supply a fresh output directory:
 
 ```sh
 make eval CLI_ARGS='-d path/to/rules -d path/to/examples -m gpt-6-luna -e low -c 6 -o /tmp/eval-run-001'
 ```
 
 Each directory contributes one immediate regular file per composed context.
-With two files in each directory, two models, and two efforts, the harness
-schedules `2 × 2 × 2 × 2 = 16` calls:
+With two files in each directory, two models, and two efforts, there are
+`2 × 2 × 2 × 2 = 16` calls. For the first context selection, call order is:
 
-| Context selection order | Model | Effort |
+| Context | Model | Effort |
 | --- | --- | --- |
 | rules/a + examples/x | gpt-6-luna | low |
 | rules/a + examples/x | gpt-6-luna | medium |
 | rules/a + examples/x | gpt-6.1-sol | low |
 | rules/a + examples/x | gpt-6.1-sol | medium |
-| rules/a + examples/y | gpt-6-luna | low |
-| … | … | … |
 
-The final directory varies fastest, followed by model and effort in their
-argument order. The complete context product is followed by each model and
-effort combination. Add repeated options to request the full product:
+The last directory varies fastest while forming context selections. For each
+selection, models and then efforts follow their argument order, with effort
+varying fastest. Repeated `-d`, `-m`, and `-e` options request the full product.
+
+Use `-s` between adjacent directories to choose their join text. This example
+passes literal `\n` escapes through Make, which the harness decodes as newline
+bytes:
 
 ```sh
-make eval CLI_ARGS='-d path/to/rules -d path/to/examples -m gpt-6-luna -m gpt-6.1-sol -e low -e medium -c 6 -o /tmp/eval-run-001'
+make eval CLI_ARGS='-d path/to/rules -s \n---\n -d path/to/examples -m gpt-6-luna -e low -n'
 ```
 
-Use `-s` between adjacent directories to set their join text. For example,
-`-s \n---\n` inserts a newline, marker, and newline between the selected
-files; without `-s`, the join is two LF characters. The supported escapes are
-`\n`, `\r`, `\t`, and `\\`.
+Without `-s`, the join is two LF characters. Supported escapes are `\n`,
+`\r`, `\t`, and `\\`.
 
-An optional `-i path/to/instructions.txt` supplies a separate Codex
-`model_instructions_file`. It replaces Codex's default system instructions;
-directory files remain ordinary supplied context.
+An optional `-i path/to/instructions.txt` supplies Codex's
+`model_instructions_file` setting. It replaces Codex's default system
+instructions; directory files remain ordinary supplied context.
 
-Quota waiting and capacity retries are optional controls. For example, quota
-waiting can be enabled with a bounded wait and a count of quota-probe CLI
-invocations:
+Quota waiting and capacity retries are optional. Quota waiting can use a
+duration limit and a count of quota-probe CLI invocations:
 
 ```sh
 make eval CLI_ARGS='-d path/to/contexts -m gpt-6-luna -e low -o /tmp/eval-run-002 --wait-for-quota --quota-wait-limit-seconds 1800 --quota-probe-budget 3'
 ```
 
-Capacity retry allowances are separate from infrastructure retry allowances
-and also require backoff durations, for example
+Capacity retries have a separate allowance from infrastructure retries and
+require backoff durations, such as
 `--capacity-retry-limit 1 --capacity-backoff-base-seconds 30
---capacity-backoff-cap-seconds 60`. Quota waiting is off by default, and the
-capacity retry allowance defaults to zero.
+--capacity-backoff-cap-seconds 60`. Quota waiting is off by default, as are
+capacity retries.
 
-Every invocation requires at least one `-d`, `-m`, and `-e`. `-o` is required
-for execution and must name a new output directory. Re-run a subset with a new
-output directory; the harness does not resume or overwrite a prior run.
+Every invocation requires at least one `-d`, `-m`, and `-e`. Execution also
+requires `-o` naming a new output directory. Rerun a subset with another new
+directory; the harness does not resume a previous run.
 
-## What the harness does
+## Responsibilities
 
-The harness accepts context directories and run settings, composes ordered
-contexts, expands them over the requested model and reasoning-effort matrix,
-and runs each call through Codex CLI. It retains the plan, inputs, process
-observations, and run summary in the chosen output directory.
+- The harness validates and freezes supplied files, composes contexts, expands
+  the requested model and effort matrix, runs Codex CLI calls, and records
+  execution evidence.
+- It knows **nothing** about evaluation protocols, rules, labels, expected
+  answers, or scoring. Separate preparation tools and the caller provide
+  context files and settings, then interpret, validate, and score artifacts.
+- It does not set an experiment's block order or repetitions.
+- Calls use Codex CLI and its subscription session. There is no direct provider
+  API implementation.
+- When quota waiting is enabled, the harness reads local session metadata for
+  the active invocation only. It does not read unrelated session history,
+  authentication files, or personal configuration itself. Codex CLI still
+  applies its own settings and context.
+- Quota telemetry requires Codex CLI 0.164.0 or later and a recognized,
+  validated runtime session shape. It fails closed when identity, freshness,
+  completeness, or quota scope cannot be verified.
+- The harness requests Codex's read-only sandbox. It cannot establish the
+  effective tool set or isolate context that Codex itself may add; its
+  invocation controls do not prove tool-free execution or personal-context
+  isolation.
 
-It knows **nothing** about an evaluation protocol, rules, labels, expected
-answers, or scoring. Separate preparation tools and the caller supply suitable
-context files and configuration, then interpret, validate, and score the
-resulting artifacts. The harness does not own those steps or impose an
-experiment's order, repetitions, or budgets.
+## Inputs and limits
 
-All calls currently use Codex CLI and its subscription session. There is no
-direct provider API implementation. The harness does not read personal
-configuration, authentication files, or session history. Optional quota
-telemetry is limited to the active invocation's supported local Codex session
-data; support currently recognizes the Codex CLI 0.164.0 session shape and
-fails closed when required identity, freshness, completeness, or scope cannot
-be established. Recognition may need updating as the CLI changes.
-
-## Inputs and execution limits
-
-- Inputs must be inside one Git repository with a clean tracked and untracked
-  working tree. Selected files must be tracked, regular, non-symbolic-link
-  files; directory selection is immediate and non-recursive, in lexical file
-  order.
-- The harness freezes input bytes before dispatch and composes one selected
-  file from each directory in argument order. Repeated directories remain
-  distinct positions. Each directory boundary defaults to two LF bytes or
-  uses its corresponding `-s` value.
-- `-c` limits concurrent attempts. Per-attempt timeout and cleanup timeout
-  bound process work. Infrastructure retry allowances and capacity retry
-  allowances are separate controls.
-- Optional quota waiting has a cumulative wait-duration limit. Its
-  `--quota-probe-budget` counts separate quota-check CLI invocations. It is not
-  a money or token budget.
-- Token estimates describe supplied context only and are informational. They
-  do not enforce a token or monetary budget. Codex may retry requests within
-  one CLI invocation; those internal retries are not counted as harness
-  attempts. Other sessions can share and consume the same subscription quota.
-- The output directory can be inside or outside the repository. A new output
-  directory inside the repository creates untracked files and makes the
-  working tree dirty for a later run.
-- Dry run validates and displays the planned matrix and informational token
-  estimates. It does not start Codex or create output. A first token-estimator
-  lookup may download and cache tokenizer data.
+- Inputs must be within one Git repository whose tracked and untracked working
+  tree is clean. Selected files must be tracked regular files, not symbolic
+  links. Directory selection is immediate, non-recursive, and lexical.
+- The harness freezes input bytes before dispatch. Each context combines one
+  selected file from each directory in argument order. Repeated directories
+  remain separate positions.
+- `-c` limits concurrent attempts. Per-attempt and cleanup timeouts bound
+  process work. Infrastructure retry and capacity retry allowances are
+  separate.
+- Quota waiting is opt-in. A supplied wait-duration limit bounds total waiting;
+  if omitted, the harness sets no cumulative duration bound. The optional
+  `--quota-probe-budget` counts separate quota-check CLI invocations. Neither
+  option is a money or token budget.
+- Token estimates cover supplied context only. They exclude automatic CLI and
+  system context; a configured instructions file is estimated separately.
+  Estimates are informational and enforce no token or monetary budget. Codex
+  may retry requests within one CLI invocation, and those retries are not
+  counted as harness attempts. Other sessions can share the subscription
+  quota.
+- Output may be inside or outside the repository. If it is inside and not
+  ignored by Git, it leaves untracked files and makes the checkout dirty.
+- Dry run reports the scheduled call count and token estimates, not a listing
+  of every matrix row. It validates and freezes inputs, but does not start
+  Codex or create harness output. A first tokenizer lookup may download and
+  cache vocabulary data.
 
 ## Artifacts and control
 
-The output directory contains a frozen `plan.json`, optional staged
-`instructions.bin`, per-call attempt directories under `attempts/`, an
-append-only `events.jsonl`, and a final `run.json`. Raw stdout and stderr and
-process lifecycle records are retained with attempt evidence. Quota probes,
-when enabled, also leave evidence. This is execution evidence, not a scored
-evaluation report.
+- `plan.json` records the frozen plan; `instructions.bin` is present when an
+  instructions file was supplied.
+- Per-call attempt directories under `attempts/` retain process records and
+  raw stdout and stderr. `events.jsonl` records lifecycle events, and `run.json`
+  summarizes the run. Opt-in quota probes also leave evidence.
+- These files are execution evidence. The harness does not turn them into a
+  scored evaluation report.
+- Progress is best effort: terminal output updates in place; redirected output
+  uses newline-delimited updates. Quiet mode suppresses progress, not errors.
+- Supported cancellation requests cooperative shutdown and records settled
+  evidence when possible. Forced operating-system termination cannot be
+  cleaned up by the process.
+- Standalone shell scripts or schedulers can launch the CLI; no agent
+  conversation or installed scheduler service is required.
+- Exit codes: `0` success; `1` failed run or invalid prerequisites; `2` invalid
+  arguments; `3` incomplete run (including quota telemetry) or evidence
+  setup/recording; `130` cancellation.
 
-Progress is best effort: terminal runs update in place, while redirected output
-uses newline-delimited updates. Quiet mode suppresses progress, but errors are
-still reported. On supported cancellation signals, the harness requests
-cooperative shutdown and records settled evidence when possible; forced
-termination by the operating system cannot be cleaned up by the process.
-Standalone shell scripts or schedulers can launch the CLI; no agent
-conversation or installed scheduler service is required. Exit codes are `0`
-for success, `1` for run failure, `2` for invalid arguments, `3` when evidence
-setup or recording is incomplete, and `130` for cancellation.
+For the full option list, run `make eval CLI_ARGS='--help'` or
+`uv run --no-sync python -m script.eval --help`.
 
 ## Top-level architecture
 
 ```text
-ordered inputs + CLI settings
+ordered inputs + settings
           │
           ▼
-validate Git inputs and freeze bytes ──► optional token estimates
+validate Git inputs and freeze bytes
           │
           ▼
-compose ordered contexts and model/effort matrix
+compose contexts and schedule model/effort matrix
+          ├──────────────► dry run: call count + estimates, then exit
           │
           ▼
-bounded async coordinator ──► Codex CLI process supervisor
+bounded coordinator ─────► Codex CLI process supervisor
           │                              │
           └──────── evidence store ◄─────┘
                          │
                          ▼
-                output directory
+                  output directory
 ```
 
-The CLI parses settings; input handling validates and snapshots files; the
-planner composes contexts and schedules calls; the coordinator applies
-concurrency, timeout, retry, and optional quota-wait policy. The existing
-process supervisor owns process acquisition, capture, and cleanup. The
-evidence adapter persists the plan and observed outcomes. Token estimation is
-informational and separate from dispatch policy.
+The CLI parses settings; input handling snapshots files; the planner composes
+contexts and schedules calls. The coordinator applies concurrency, timeout,
+retry, and optional quota-wait policy. The existing process supervisor owns
+process acquisition, capture, and cleanup. The evidence adapter persists the
+plan and observed outcomes. Token estimation is a dry-run report step, separate
+from dispatch policy.
 
-For implementation boundaries and lower-level flow, see the
+For implementation detail, see the [CLI](cli.py), [input reader](inputs.py),
+[planner](plan.py), [coordinator](runner/coordinator/coordinator.py),
+[Codex adapter](runner/adapters/codex.py), [evidence store](evidence.py),
+[token estimator](tokens.py),
 [harness architecture](../../doc/feat/reviewer/engineering/evaluation/evaluation-harness/architecture.md),
-[process supervisor guidance](../../doc/feat/reviewer/engineering/evaluation/process-supervisor/README.md),
-and the [current system architecture](../../doc/architecture.md).
+and
+[process supervisor guidance](../../doc/feat/reviewer/engineering/evaluation/process-supervisor/README.md).
