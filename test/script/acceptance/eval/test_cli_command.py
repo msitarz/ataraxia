@@ -601,9 +601,48 @@ def test_quota_wait_rejects_unsupported_codex_home(
     ("mode", "retry_options", "expected_exit", "attempts", "state"),
     [
         ("success", [], 1, 1, "failed"),
-        ("success", ["--capacity-retry-limit", "1"], 0, 2, "complete"),
-        ("exhaust", ["--capacity-retry-limit", "1"], 1, 2, "failed"),
-        ("ambiguous", ["--capacity-retry-limit", "1"], 1, 1, "failed"),
+        (
+            "success",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            0,
+            2,
+            "complete",
+        ),
+        (
+            "exhaust",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            1,
+            2,
+            "failed",
+        ),
+        (
+            "ambiguous",
+            [
+                "--capacity-backoff-base-seconds",
+                "0.001",
+                "--capacity-backoff-cap-seconds",
+                "0.001",
+                "--capacity-retry-limit",
+                "1",
+            ],
+            1,
+            1,
+            "failed",
+        ),
     ],
     ids=["default-zero", "retry-success", "exhausted", "ambiguous"],
 )
@@ -626,15 +665,7 @@ def test_capacity_retries_use_the_same_frozen_invocation(
     log = tmp_path / "invocations.jsonl"
     env["FAKE_CAPACITY_LOG"] = str(log)
     env["FAKE_CAPACITY_MODE"] = mode
-    settings = ["--instructions-file", str(instructions)]
-    if retry_options:
-        settings += [
-            "--capacity-backoff-base-seconds",
-            "0.001",
-            "--capacity-backoff-cap-seconds",
-            "0.001",
-            *retry_options,
-        ]
+    settings = ["--instructions-file", str(instructions), *retry_options]
 
     # When
     result = subprocess.run(

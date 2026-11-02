@@ -501,17 +501,17 @@ Codex, quota, and runtime adapters.
   and runtime ports. The default leaves now resolve and probe the executable,
   retain requested settings with native values marked unknown, construct a
   request and effective identity, and classify prelaunch failure or the narrow
-  quota or capacity sequence. The Codex and quota
-  signature sketches in `design/eval/runner/adapters/` are historical; runtime
-  code is authoritative. The CLI composition root and progress adapter are
-  implemented. The quota adapter implements its bounded source, normalization,
-  polling request, and assessment behavior and is wired into opt-in CLI
-  composition. The coordinator accepts the quota port and owns awaited recovery.
-  Runtime [`policy.py`](../../../../../../script/eval/runner/policy.py)
-  implements the reviewed pure policy calculations; it does not own effects or
-  coordinator gates. The shared runner values and ports are implemented. The
-  neighboring [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a
-  historical signature reference; runtime code is authoritative.
+  quota or capacity sequence. The Codex and quota signature sketches in
+  `design/eval/runner/adapters/` are historical; runtime code is authoritative.
+  The CLI composition root and progress adapter are implemented. The quota
+  adapter implements its bounded source, normalization, polling request, and
+  assessment behavior and is wired into opt-in CLI composition. The coordinator
+  accepts the quota port and owns awaited recovery. Runtime
+  [`policy.py`](../../../../../../script/eval/runner/policy.py) implements the
+  reviewed pure policy calculations; it does not own effects or coordinator
+  gates. The shared runner values and ports are implemented. The neighboring
+  [`policy.pyi`](design/eval/runner/policy.pyi) is retained as a historical
+  signature reference; runtime code is authoritative.
 - Effects: the coordinator owns async scheduling and effect ordering. The Codex
   and quota adapters own their stated external reads; the runtime adapter owns
   clock, wait, and random effects.
@@ -581,22 +581,26 @@ AC-6 distinguishes unknown numeric window values from an unrecognized quota
 state. A scoped recognized exhaustion can support a wait without window values;
 unknown scope or state still stops recovery. AC-6 remains TODO.
 
-**Capacity inference:** The same version and settled-envelope conditions apply
-when both messages equal
-`Selected model is at capacity. Please try a different model.` The source-shaped
-sequence is synthetic; no capacity call was made for this implementation. The
-official CLI's
-[overload mapping](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/codex-api/src/sse/responses_error.rs#L87-L89),
-[message](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/protocol/src/error.rs#L164-L165),
-and
-[exec event schema](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/exec/src/exec_events.rs#L10-L55)
-support this narrow recognition; exec exposes the message rather than the
-internal structured overload code. Any prior item or other extra event refuses
-retry. This is an operational inference, not proof that upstream produced no
-semantic output or tool side effect. Codex can perform its own
-[automatic retries](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/core/tests/suite/retry_after.rs#L502-L573)
-within one supervisor invocation; the harness retry allowance does not bound
-those upstream requests.
+**Capacity inference:**
+
+- The same version and settled-envelope conditions apply when both messages
+  equal `Selected model is at capacity. Please try a different model.`
+- The source-shaped sequence is synthetic; no capacity call was made for this
+  implementation.
+- The official CLI's
+  [overload mapping](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/codex-api/src/sse/responses_error.rs#L87-L89),
+  [message](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/protocol/src/error.rs#L164-L165),
+  and
+  [exec event schema](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/exec/src/exec_events.rs#L10-L55)
+  support this narrow recognition.
+- Exec exposes the message rather than the internal structured overload code.
+- Any prior item or other extra event refuses retry.
+- This operational inference does not prove that upstream produced no semantic
+  output or tool side effect.
+- Codex can perform its own
+  [automatic retries](https://github.com/openai/codex/blob/6aaac694803004a63c6f393d153c96d22521a6b9/codex-rs/core/tests/suite/retry_after.rs#L502-L573)
+  within one supervisor invocation.
+- The harness retry allowance does not bound those upstream requests.
 
 ### Standalone invocation
 
