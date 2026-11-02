@@ -31,6 +31,10 @@ type ProgressFinalStatus = Literal[
 ]
 
 
+class QuotaTelemetryError(RuntimeError):
+    """A sanitized quota read failure that leaves the run incomplete."""
+
+
 @dataclass(frozen=True)
 class ProgressCounts:
     """Disjoint call states and separate attempt and probe counts.
@@ -242,7 +246,7 @@ class QuotaStatusReader(Protocol):
 
     @property
     def expected_scope(self) -> QuotaScope | None:
-        """Verified scope paired with this reader, if known."""
+        """Configured or invocation-pinned verified scope, if known."""
         ...
 
     async def observe_settled_attempt(
@@ -251,8 +255,8 @@ class QuotaStatusReader(Protocol):
         """Return source-backed observation or unknown for settled evidence.
 
         Preserve sanitized source coordinates and producer provenance. The
-        coordinator retains call/attempt association and checks scope against
-        its binding.
+        coordinator retains call/attempt association, checks the pinned scope,
+        and requires any present binding scope to match.
         """
         ...
 

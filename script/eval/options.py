@@ -140,10 +140,7 @@ def _parser() -> argparse.ArgumentParser:
         "--wait-for-quota",
         dest="quota_wait_enabled",
         action="store_true",
-        help=(
-            "enable potentially billable probes; unavailable until quota "
-            "scope is verified"
-        ),
+        help=("enable potentially billable supervised quota probes"),
     )
     parser.add_argument("--quota-wait-limit-seconds", type=float)
     parser.add_argument("--quota-poll-interval-seconds", type=float, default=60.0)

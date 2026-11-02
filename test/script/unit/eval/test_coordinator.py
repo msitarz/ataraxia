@@ -32,7 +32,12 @@ from script.eval.runner.coordinator.coordinator import (
 )
 from script.eval.runner.coordinator.settlement import SettledFailure, SettledValue
 from script.eval.runner.coordinator.state import StopReason
-from script.eval.runner.ports import BoundRun, CliBinding, ProgressSnapshot
+from script.eval.runner.ports import (
+    BoundRun,
+    CliBinding,
+    ProgressSnapshot,
+    QuotaTelemetryError,
+)
 from script.process_supervisor import (
     AttemptObservation,
     AttemptRequest,
@@ -990,11 +995,15 @@ async def test_stale_quota_trigger_cannot_authorize_a_probe(tmp_path: Path) -> N
     reader = StaleRecoveryReader()
 
     # When
-    record = await Coordinator(
-        bound, store, nonzero_attempt, QuotaClassifier(), reader, Clock(), Sink()
-    ).run()
+    with pytest.raises(QuotaTelemetryError, match="quota recovery failed"):
+        await Coordinator(
+            bound, store, nonzero_attempt, QuotaClassifier(), reader, Clock(), Sink()
+        ).run()
 
     # Then
+    record = RunRecord.model_validate_json(
+        (bound.evidence.output_directory / "run.json").read_bytes()
+    )
     assert record.state == "incomplete"
     assert not reader.probed.is_set()
     assert len(record.calls[0].attempts) == 1
@@ -1130,15 +1139,28 @@ async def test_mismatched_binding_scope_never_authorizes_quota_probe(
 ) -> None:
     # Given
     original, store = await prepare(tmp_path, 1, quota_wait_enabled=True)
-    bound = replace(original, binding=replace(original.binding, quota_scope=None))
+    bound = replace(
+        original,
+        binding=replace(
+            original.binding,
+            quota_scope=QuotaScope.model_validate({
+                "provider_id": "other",
+                "allowance_id": "other",
+            }),
+        ),
+    )
     reader = RecoveryReader()
 
     # When
-    record = await Coordinator(
-        bound, store, nonzero_attempt, QuotaClassifier(), reader, Clock(), Sink()
-    ).run()
+    with pytest.raises(QuotaTelemetryError, match="quota scope does not match binding"):
+        await Coordinator(
+            bound, store, nonzero_attempt, QuotaClassifier(), reader, Clock(), Sink()
+        ).run()
 
     # Then
+    record = RunRecord.model_validate_json(
+        (bound.evidence.output_directory / "run.json").read_bytes()
+    )
     assert record.state == "incomplete"
     assert not reader.probed.is_set()
     assert len(record.calls[0].attempts) == 1
@@ -1505,6 +1527,7 @@ _other = ValueError("unrelated")
 _caused_cancel = asyncio.CancelledError("internal")
 _caused_cancel.__cause__ = _first
 _internal_cancel = asyncio.CancelledError("internal")
+_quota_failure = QuotaTelemetryError("quota")
 
 
 @pytest.mark.parametrize(
@@ -1517,6 +1540,12 @@ _internal_cancel = asyncio.CancelledError("internal")
         (_internal_cancel, _first, StopReason(result(), None, None, None), False),
         (_internal_cancel, _other, StopReason(_first, None, None, None), False),
         (_first, _first, StopReason(_first, None, None, None), False),
+        (
+            _quota_failure,
+            _quota_failure,
+            StopReason(_quota_failure, None, None, None),
+            True,
+        ),
         (_caused_cancel, _first, StopReason(_first, None, None, _first), False),
     ],
     ids=[
@@ -1527,6 +1556,7 @@ _internal_cancel = asyncio.CancelledError("internal")
         "supervisor-result",
         "other-call",
         "not-cancellation",
+        "quota-failure",
         "recording-failure",
     ],
 )

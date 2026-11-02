@@ -26,6 +26,7 @@ from script.eval.runner.ports import (
     AttemptCall,
     OutcomeClassifier,
     QuotaStatusReader,
+    QuotaTelemetryError,
     Runtime,
 )
 from script.process_supervisor import (
@@ -395,7 +396,27 @@ class CallOwner:
 
     async def _observe(self, state: ObservingQuota) -> None:
         """Read passive quota only after the attempt is durable."""
-        observation = await self._quota_status.observe_settled_attempt(state.evidence)
+        try:
+            observation = await self._quota_status.observe_settled_attempt(
+                state.evidence
+            )
+        except Exception as error:
+            failure = QuotaTelemetryError("quota telemetry read failed")
+            failure.__cause__ = error
+            self._invocation_error = failure
+            self._control.latch_stop(failure)
+            observation = QuotaObservation(
+                scope=None,
+                read_at_utc=self._runtime.utc_now(),
+                source_coordinate=None,
+                windows=(),
+                diagnostic="quota telemetry read failed",
+            )
+        if _invalid_quota_observation(observation) and self._invocation_error is None:
+            self._invocation_error = QuotaTelemetryError(
+                "quota telemetry is unavailable or unsupported"
+            )
+            self._control.latch_stop(self._invocation_error)
         call = state.history.call
         self._state = state.capture(
             QuotaTelemetryEvent(
@@ -422,19 +443,36 @@ class CallOwner:
             case SettledValue(_, cancellation):
                 if self._observed is not None:
                     self._observed(state.event.observation)
-                origin = self._control.quota_origin
-                observation = state.event.observation
-                if observation.scope is not None and self._control.reason is None:
-                    self._publish_trigger(state, origin)
+                self._accept_observation(state)
                 self._advance_telemetry(state)
-        if cancellation is not None:
+        self._finish_telemetry_settlement(settled, cancellation)
+
+    def _finish_telemetry_settlement(
+        self, settled: Settlement[None], cancellation: CancelledError | None
+    ) -> None:
+        """Propagate the initiating failure after the event write settles."""
+        if cancellation is not None and not self._internally_cancelled:
             if isinstance(settled, SettledFailure):
                 raise cancellation from settled.error
+            raise cancellation
+        if self._invocation_error is not None:
+            error = self._invocation_error
+            raise error
+        if cancellation is not None:
             raise cancellation
         if isinstance(settled, SettledFailure) and isinstance(
             settled.error, CancelledError
         ):
             raise settled.error
+
+    def _accept_observation(self, state: RecordingTelemetry) -> None:
+        """Stop on unverified scope or publish its durable trigger."""
+        if state.event.observation.scope is None:
+            self._control.latch_stop(
+                RuntimeError("quota identity unavailable or mismatched")
+            )
+        elif self._control.reason is None:
+            self._publish_trigger(state, self._control.quota_origin)
 
     def _advance_telemetry(self, state: RecordingTelemetry) -> None:
         """Advance durable telemetry while retaining history on preparation failure."""
@@ -453,12 +491,15 @@ class CallOwner:
     ) -> None:
         """Publish only the durable observation associated with the pause."""
         observation = state.event.observation
+        exhausted = observation.state == "exhausted" or any(
+            window.state == "exhausted" for window in observation.windows
+        )
         if (
             origin is not None
             and origin.call == state.history.call
             and origin.attempt_number == state.event.attempt_number
             and observation.scope == self._quota_status.expected_scope
-            and any(window.state == "exhausted" for window in observation.windows)
+            and exhausted
         ):
             self._control.publish_quota_trigger(PauseTrigger(origin, observation))
 
@@ -645,6 +686,22 @@ class CallOwner:
             raise settled.cancellation from settled.error
         if isinstance(settled.error, CancelledError):
             raise settled.error
+
+
+def _invalid_quota_observation(observation: QuotaObservation) -> bool:
+    """Reject unknown telemetry except recognized exhaustion without numeric rows.
+
+    Returns:
+        Whether the observation cannot safely support continued execution.
+    """
+    if observation.scope is None:
+        return True
+    if observation.diagnostic is None:
+        return False
+    return not (
+        observation.diagnostic == "session telemetry is incomplete"
+        and observation.state == "exhausted"
+    )
 
 
 def _diagnostic(error: BaseException, /) -> str:

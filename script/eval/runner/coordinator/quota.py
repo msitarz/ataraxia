@@ -33,7 +33,7 @@ from script.eval.runner.policy import (
     quota_probe_allowed,
     quota_wait_remaining,
 )
-from script.eval.runner.ports import QuotaStatusReader, Runtime
+from script.eval.runner.ports import QuotaStatusReader, QuotaTelemetryError, Runtime
 from script.eval.runner.quota_evidence import quota_probe_evidence
 
 from .control import RunControl
@@ -296,7 +296,7 @@ class QuotaOwner:
             self._reader.expected_scope is None
             or waiting.observation.scope != self._reader.expected_scope
         ):
-            self._control.latch_stop(RuntimeError("quota scope changed"))
+            self._control.latch_stop(QuotaTelemetryError("quota scope changed"))
         elapsed = waiting.context.cumulative_waited_before_seconds + max(
             0.0, self._runtime.monotonic() - waiting.started_monotonic
         )
@@ -431,7 +431,7 @@ class QuotaOwner:
             if end is None and not waiting.probe_eligible(
                 self._reader.expected_scope, self._runtime.utc_now()
             ):
-                self._control.latch_stop(RuntimeError("invalid quota trigger"))
+                self._control.latch_stop(QuotaTelemetryError("invalid quota trigger"))
                 end = "unknown"
             if end is not None:
                 return await self._finish_wait(waiting, end)
@@ -475,7 +475,7 @@ class QuotaOwner:
         )
         if isinstance(gate, ProbeNotDispatched):
             if gate.cause == "unknown":
-                self._control.latch_stop(RuntimeError("invalid quota trigger"))
+                self._control.latch_stop(QuotaTelemetryError("invalid quota trigger"))
             await self._journal(
                 state,
                 QuotaProbeNotDispatched(
@@ -671,7 +671,7 @@ class QuotaOwner:
             )
             await self._journal(state, event)
             if captured.cause == "unknown":
-                self._control.latch_stop(RuntimeError("invalid quota trigger"))
+                self._control.latch_stop(QuotaTelemetryError("invalid quota trigger"))
             return self._ending(state.waiting, captured.cause)
         probing, evidence, error = captured
         probe = probing.capture(evidence, error)
@@ -721,7 +721,7 @@ class QuotaOwner:
             self._observed(waiting.observation)
         if waiting.end_record is not None and waiting.end_record.end == "unknown":
             self._control.latch_stop(
-                RuntimeError("probe did not establish quota state")
+                QuotaTelemetryError("probe did not establish quota state")
             )
         if self._pending is not None:
             self._pending = replace(self._pending, waiting=waiting, probe=None)
@@ -775,7 +775,13 @@ class QuotaOwner:
                 if self._local_cancellation is None:
                     self._local_cancellation = error
                 self._control.note_cancellation(error, "leaf")
-        elif not (self._probe_interrupted and isinstance(error, TimeoutError)):
+        elif self._probe_interrupted and isinstance(error, TimeoutError):
+            return
+        elif isinstance(error, Exception):
+            failure = QuotaTelemetryError("quota probe failed")
+            failure.__cause__ = error
+            self._control.latch_stop(failure)
+        else:
             self._control.latch_stop(error)
 
     def _probe_request(

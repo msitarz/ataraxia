@@ -565,9 +565,8 @@ async def test_local_source_projects_one_rollout_through_public_reader(
     [
         ([], False),
         (session_rows(primary_used=True), True),
-        (session_rows()[:1], True),
     ],
-    ids=["missing-metadata", "invalid-consumed-field", "missing-token-count"],
+    ids=["missing-metadata", "invalid-consumed-field"],
 )
 async def test_local_reader_distinguishes_source_and_telemetry_failures(
     tmp_path: Path, rows: list[dict[str, object]], source_available: bool
@@ -610,7 +609,7 @@ async def test_local_reader_distinguishes_source_and_telemetry_failures(
             "2026-10-27T09:59:59Z",
             35,
         ),
-        ({"cli_version": "0.165.0"}, True, "2026-10-27T09:59:59Z", 35),
+        ({"cli_version": "0.163.0"}, True, "2026-10-27T09:59:59Z", 35),
         (
             {"creator_user_id": "different-synthetic-user"},
             True,
@@ -1616,3 +1615,56 @@ async def test_untrusted_or_unrepresentable_observation_has_no_expiry(
     # Then
     assert result.valid_until_utc is None
     assert all(window.state == "unknown" for window in result.windows)
+
+
+async def test_metadata_without_windows_pins_scope_and_rejects_account_switch(
+    tmp_path: Path,
+) -> None:
+    # Given
+    sessions = tmp_path / "sessions"
+    rows = session_rows()[:1]
+    rollout = write_rollout(sessions, SYNTHETIC_THREAD_ID, rows)
+    reader = make_local_reader(sessions, None)
+    attempt = make_attempt_evidence(thread_started())
+
+    # When
+    first = await reader.observe_settled_attempt(attempt)
+    changed_rows = session_rows(metadata_overrides={"creator_account_id": "other"})
+    rollout.write_text("".join(json.dumps(row) + "\n" for row in changed_rows))
+    second = await reader.observe_settled_attempt(attempt)
+
+    # Then
+    assert reader.expected_scope == make_identity_scope()
+    assert first.scope == make_identity_scope()
+    assert all(window.state == "unknown" for window in first.windows)
+    assert second.scope is None
+
+
+async def test_cancelled_local_read_settles_its_worker(tmp_path: Path) -> None:
+    # Given
+    entered = Event()
+    release = Event()
+
+    class BlockingSource(LocalCodexQuotaStatusSource):
+        @override
+        def _read_session_for_thread(
+            self, thread_id: str, /
+        ) -> CodexSessionSnapshot | None:
+            del thread_id
+            entered.set()
+            assert release.wait(2.0)
+            return None
+
+    source = BlockingSource(tmp_path)
+    pending = asyncio.create_task(source.read_session_for_thread(SYNTHETIC_THREAD_ID))
+    assert await asyncio.wait_for(asyncio.to_thread(entered.wait), timeout=1.0)
+
+    # When
+    pending.cancel()
+    await asyncio.sleep(0)
+
+    # Then
+    assert not pending.done()
+    release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await pending

@@ -2,17 +2,20 @@
 """Bounded Codex CLI binding, request construction, and outcome classification.
 
 Native settings that cannot be observed without reading private user state are
-reported as unknown. Outcome text is not parsed for quota or capacity signals.
+reported as unknown. Quota recognition accepts only a bounded JSONL sequence.
 """
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
 import hashlib
 from importlib.metadata import version
+import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
+from uuid import UUID
 
 from script.eval.model import (
     AttemptEvidence,
@@ -25,6 +28,7 @@ from script.eval.model import (
     SeparatorOption,
     SettingValue,
 )
+from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.ports import (
     AttemptRequestBuilder,
     CliBinding,
@@ -32,7 +36,7 @@ from script.eval.runner.ports import (
     EffectiveCall,
     OutcomeClassifier,
 )
-from script.process_supervisor import AttemptRequest, InfrastructureFailure
+from script.process_supervisor import AttemptRequest, Completed, InfrastructureFailure
 
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
@@ -152,14 +156,16 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
 class CodexOutcomeClassifier(OutcomeClassifier):
     """Pass one settled supervisor observation to a classifier operation.
 
-    This boundary receives no stream events and has no semantic answer parser.
-    Only supervisor-confirmed prelaunch failure establishes confident absence;
-    quota and capacity recognition remain unsupported.
+    This boundary assesses captured output after settlement and never parses answers.
+    Its supported quota sequence establishes a provisional no-result candidate;
+    the correlated scope must be verified before recovery. Capacity remains unknown.
 
     Attributes:
-        assess_settled_evidence: Classify one settled supervisor evidence value.
+        cli_version: Observed version governing supported quota recognition.
+        assess_settled_evidence: Classify other settled supervisor evidence.
     """
 
+    cli_version: str | None = field(default=None, kw_only=True)
     assess_settled_evidence: AssessSettledEvidence = field(
         default_factory=lambda: _assess_settled_evidence
     )
@@ -170,7 +176,96 @@ class CodexOutcomeClassifier(OutcomeClassifier):
         Returns:
             The injected classifier result.
         """
+        if supports_quota_version(self.cli_version) and _quota_failure(evidence):
+            return RetryAssessment(
+                retry_class="quota",
+                classification_basis="supported Codex quota failure event sequence",
+                no_result_basis="confident_absence",
+                diagnostic=None,
+            )
         return self.assess_settled_evidence(evidence)
+
+
+def _quota_failure(evidence: AttemptEvidence) -> bool:
+    """Recognize the reviewed complete no-result Codex event sequence.
+
+    Returns:
+        Whether the complete supported sequence proves the narrow candidate.
+    """
+    outcome = evidence.outcome
+    if evidence.control_flow != "returned" or not isinstance(outcome, Completed):
+        return False
+    output = outcome.observation.output
+    if (
+        outcome.exit_status <= 0
+        or not outcome.observation.cleanup.dispatch_permitted
+        or output is None
+        or output.stderr != b""
+    ):
+        return False
+    try:
+        rows = [
+            json.loads(line, object_pairs_hook=_unique_object)
+            for line in output.stdout.decode("utf-8").splitlines()
+        ]
+    except UnicodeDecodeError, ValueError:
+        return False
+    if len(rows) != 4 or not all(isinstance(row, dict) for row in rows):
+        return False
+    return _quota_event_sequence(rows)
+
+
+def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    """Reject duplicate JSON keys at every level of the quota envelope.
+
+    Returns:
+        The object with its unique keys.
+
+    Raises:
+        ValueError: An object repeats a key.
+    """
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON object key")
+        result[key] = value
+    return result
+
+
+def _quota_event_sequence(rows: list[dict[str, object]]) -> bool:
+    """Validate the complete supported operational failure events.
+
+    Returns:
+        Whether the sequence matches the supported quota failure.
+    """
+    first, second, third, fourth = rows
+    if set(first) != {"type", "thread_id"} or first["type"] != "thread.started":
+        return False
+    try:
+        thread_id = first["thread_id"]
+        if not isinstance(thread_id, str) or str(UUID(thread_id)) != thread_id:
+            return False
+    except ValueError:
+        return False
+    if second != {"type": "turn.started"} or set(third) != {"type", "message"}:
+        return False
+    if third["type"] != "error" or set(fourth) != {"type", "error"}:
+        return False
+    error = fourth["error"]
+    if fourth["type"] != "turn.failed" or not isinstance(error, dict):
+        return False
+    if set(error) != {"message"} or error["message"] != third["message"]:
+        return False
+    message = third["message"]
+    return isinstance(message, str) and bool(
+        re.fullmatch(
+            r"You\u2019ve hit your usage limit\. Upgrade to Pro "
+            r"\(https://chatgpt\.com/explore/pro\), visit "
+            r"https://chatgpt\.com/settings/usage to purchase more credits "
+            r"or try again at (?:1[0-2]|[1-9]):[0-5][0-9] [AP]M\.",
+            message,
+        )
+    )
 
 
 def _resolve_codex_executable() -> Path:

@@ -77,7 +77,7 @@ def test_command_records_fake_attempt_and_maps_outcome(
     assert record["calls"][0]["state"] == expected_state
 
 
-def test_quota_wait_fails_before_provider_binding(tmp_path: Path) -> None:
+def test_quota_wait_refuses_unsupported_cli_version(tmp_path: Path) -> None:
     # Given
     repo = make_repository(tmp_path / "repo")
     output = tmp_path / "evidence"
@@ -96,10 +96,10 @@ def test_quota_wait_fails_before_provider_binding(tmp_path: Path) -> None:
     )
 
     # Then
-    assert result.returncode == 1
-    assert "scope is not verified" in result.stderr
-    assert not output.exists()
-    assert not marker.exists()
+    assert result.returncode == 3
+    assert "requires Codex CLI 0.164.0" in result.stderr
+    assert output.exists()
+    assert marker.read_text().strip() == "--version"
 
 
 @pytest.mark.parametrize(
@@ -391,3 +391,203 @@ def test_blocked_stderr_does_not_delay_successful_exit(tmp_path: Path) -> None:
     record = json.loads((output / "run.json").read_text())
     assert record["state"] == "complete"
     assert record["calls"][0]["state"] == "complete"
+
+
+def test_quota_wait_resumes_after_two_separate_probes(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    binary = tmp_path / "bin" / "codex"
+    shutil.copyfile(ROOT / "test/script/fixtures/eval/fake_quota_codex.py", binary)
+    binary.chmod(0o755)
+    home = tmp_path / "codex-home"
+    home.mkdir()
+    env["CODEX_HOME"] = str(home)
+    env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
+    env["FAKE_CLI_VERSION"] = "0.165.0"
+
+    # When
+    result = subprocess.run(
+        [
+            *command(repo, output),
+            "--wait-for-quota",
+            "--quota-poll-interval-seconds",
+            "0.01",
+            "--quota-probe-budget",
+            "2",
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 0, result.stderr
+    assert json.loads(Path(env["FAKE_QUOTA_STATE"]).read_text()) == {
+        "eval": 2,
+        "probe": 2,
+    }
+    record = json.loads((output / "run.json").read_text())
+    assert record["calls"][0]["state"] == "complete"
+    assert len(record["calls"][0]["attempts"]) == 2
+    prompts = (
+        Path(env["FAKE_QUOTA_STATE"]).with_suffix(".prompts").read_text().splitlines()
+    )
+    assert len(prompts) == 2 and prompts[0] == prompts[1]
+    events = [
+        json.loads(line)["event"]
+        for line in (output / "events.jsonl").read_text().splitlines()
+    ]
+    assert [
+        event["record"]["quota_state"]
+        for event in events
+        if event.get("kind") == "settled"
+    ] == ["exhausted", "available"]
+
+
+@pytest.mark.parametrize(
+    ("mode", "exit_status", "counts", "diagnostic"),
+    [
+        (
+            "missing-session",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "wrong-version",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "out-of-order",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        ("mismatch", 3, {"eval": 1, "probe": 1}, "quota recovery failed"),
+        (
+            "extra-event",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+        (
+            "stderr",
+            3,
+            {"eval": 1, "probe": 0},
+            "quota telemetry is unavailable or unsupported",
+        ),
+    ],
+)
+def test_quota_wait_refuses_unverified_or_ambiguous_evidence(
+    tmp_path: Path, mode: str, exit_status: int, counts: dict[str, int], diagnostic: str
+) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    binary = tmp_path / "bin" / "codex"
+    shutil.copyfile(ROOT / "test/script/fixtures/eval/fake_quota_codex.py", binary)
+    binary.chmod(0o755)
+    home = tmp_path / "codex-home"
+    home.mkdir()
+    env["CODEX_HOME"] = str(home)
+    env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
+    env["FAKE_QUOTA_MODE"] = mode
+    env["FAKE_CLI_VERSION"] = "0.165.0"
+
+    # When
+    result = subprocess.run(
+        [
+            *command(repo, output),
+            "--wait-for-quota",
+            "--quiet",
+            "--quota-poll-interval-seconds",
+            "0.01",
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == exit_status, result.stderr
+    assert json.loads(Path(env["FAKE_QUOTA_STATE"]).read_text()) == counts
+    assert diagnostic in result.stderr
+    events = [
+        json.loads(line) for line in (output / "events.jsonl").read_text().splitlines()
+    ]
+    assert any(event["kind"] == "quota_telemetry" for event in events)
+    assert json.loads((output / "run.json").read_text())["state"] == "incomplete"
+
+
+def test_quota_probe_budget_zero_stops_without_probe(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    binary = tmp_path / "bin" / "codex"
+    shutil.copyfile(ROOT / "test/script/fixtures/eval/fake_quota_codex.py", binary)
+    binary.chmod(0o755)
+    home = tmp_path / "codex-home"
+    home.mkdir()
+    env["CODEX_HOME"] = str(home)
+    env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--wait-for-quota", "--quota-probe-budget", "0"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 3, result.stderr
+    assert json.loads(Path(env["FAKE_QUOTA_STATE"]).read_text()) == {
+        "eval": 1,
+        "probe": 0,
+    }
+    record = json.loads((output / "run.json").read_text())
+    assert record["waits"][0]["end"] == "bound"
+
+
+@pytest.mark.parametrize("codex_home", ["", "relative", "missing"])
+def test_quota_wait_rejects_unsupported_codex_home(
+    tmp_path: Path, codex_home: str
+) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    binary = tmp_path / "bin" / "codex"
+    shutil.copyfile(ROOT / "test/script/fixtures/eval/fake_quota_codex.py", binary)
+    binary.chmod(0o755)
+    env["CODEX_HOME"] = (
+        str(tmp_path / "missing") if codex_home == "missing" else codex_home
+    )
+    env["FAKE_QUOTA_STATE"] = str(tmp_path / "counts.json")
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--wait-for-quota"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 3, result.stderr
+    assert "Codex home" in result.stderr or "CODEX_HOME" in result.stderr
+    assert not Path(env["FAKE_QUOTA_STATE"]).exists()
