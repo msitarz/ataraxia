@@ -547,16 +547,23 @@ to the harness.
 - Usage guidance makes the caller responsible for preparing a fresh independent
   workspace for each independent experiment and explains shared-workspace
   contamination; the harness promises no hidden per-call isolation.
-- Conflicting concurrent write dispatch into the same workspace is rejected
-  before evaluation calls launch; serial execution does not establish
-  experimental independence.
+- `workspace-write` with concurrency greater than one is refused before
+  evaluation calls launch, even when tools are disabled; the shared per-run
+  workspace otherwise runs serially, without establishing experimental
+  independence.
+- With `workspace-write`, an output directory equal to or inside the workspace
+  is rejected before dispatch to protect retained evidence from authorized
+  agent writes; validation resolves existing symbolic-link ancestors.
+- `read-only` has no workspace/output overlap restriction.
 - Dry run validates and displays workspace selection without creating or
   changing any workspace or output directory and without launching a CLI or
   model call; an omitted directory is displayed as a future owned empty
   directory rather than allocated for the report.
 - Controlled checks cover omitted and supplied directories, nonempty and clone
   acceptance, invalid-directory refusal, ownership-preserving cleanup, shared
-  workspace dispatch, and dry-run nonmutation without model calls.
+  workspace dispatch, write-concurrency refusal, workspace/output overlap
+  refusal including symbolic-link ancestors, and dry-run nonmutation without
+  model calls.
 
 ### **AC-11 TODO** Explicit execution controls have inspectable provenance
 
@@ -571,6 +578,9 @@ broadening unrelated capabilities.
 - The enabled profile names the tool capabilities it requests and preserves
   ignored personal user configuration and disabled unrelated hooks and plugins;
   it does not blindly enable all Codex features.
+- Enabled tools retain the supervisor's [owned-group and direct-child
+  observation limits](../process-supervisor/README.md#additional-context);
+  tool-launched descendants are not guaranteed to be contained or cleaned up.
 - The adapter keeps unattended approval behavior explicit and never responds to
   missing prerequisites by silently broadening permissions.
 - The run plan records requested sandbox and tool controls and workspace
