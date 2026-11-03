@@ -24,6 +24,8 @@ component split; this Work contract remains authoritative.
   preserving frozen inputs, completed outcomes, and caller experiment limits.
 - Report execution progress and observed quota state in terminal and redirected
   output without changing retained evidence or experiment ownership.
+- Let callers select an existing working directory and explicit sandbox and
+  tool controls while retaining conservative defaults and truthful provenance.
 
 ## Non-Goals
 
@@ -517,6 +519,94 @@ text without keeping an agent conversation alive.
   isolation without model calls; these checks verify the local reporting
   guarantee and establish no scored experiment result.
 
+### **AC-10 TODO** Working-directory selection preserves ownership
+
+A caller can choose the starting directory without transferring its ownership
+to the harness.
+
+- `--working-directory PATH` selects an existing directory, including a nonempty
+  directory or caller-prepared clone; an invalid or unavailable directory
+  refuses dispatch before any model call.
+- With no option, execution retains a fresh harness-owned empty directory
+  external to the prompt-input repository and evidence directory.
+- The harness borrows a supplied directory: it never creates, replaces, changes
+  permissions on, deletes, or cleans that directory or its contents as workspace
+  preparation or cleanup.
+- Authorized model activity may change a borrowed directory under the selected
+  controls; harness cleanup remains limited to harness-owned resources.
+- The selected directory is a starting directory, not a chroot or a guarantee
+  that files outside it cannot be read.
+- AC-1 and AC-2 continue to validate and freeze prompt inputs independently of
+  the workspace; workspace files need not all be committed unless the unchanged
+  clean prompt-input repository rule applies to their location, and the harness
+  neither cleans the workspace nor automatically clones it.
+- Selecting a workspace within the prompt-input repository grants no exception
+  to AC-1's repository-wide clean-checkout requirement.
+- A supplied directory is shared by the run's evaluation calls, including
+  retries; earlier writes can affect later calls even when calls run serially.
+- Usage guidance makes the caller responsible for preparing a fresh independent
+  workspace for each independent experiment and explains shared-workspace
+  contamination; the harness promises no hidden per-call isolation.
+- `workspace-write` with concurrency greater than one is refused before
+  evaluation calls launch, even when tools are disabled; the shared per-run
+  workspace otherwise runs serially, without establishing experimental
+  independence.
+- With `workspace-write`, an output directory equal to or inside the workspace
+  is rejected before dispatch to protect retained evidence from authorized
+  agent writes; validation resolves existing symbolic-link ancestors.
+- `read-only` has no workspace/output overlap restriction.
+- Dry run validates and displays workspace selection without creating or
+  changing any workspace or output directory and without launching a CLI or
+  model call; an omitted directory is displayed as a future owned empty
+  directory rather than allocated for the report.
+- Controlled checks cover omitted and supplied directories, nonempty and clone
+  acceptance, invalid-directory refusal, ownership-preserving cleanup, shared
+  workspace dispatch, write-concurrency refusal, workspace/output overlap
+  refusal including symbolic-link ancestors, and dry-run nonmutation without
+  model calls.
+
+### **AC-11 TODO** Explicit execution controls have inspectable provenance
+
+A caller can select bounded permission and tool profiles without silently
+broadening unrelated capabilities.
+
+- `--sandbox-mode read-only|workspace-write` defaults to `read-only`;
+  unsupported values refuse dispatch, and no unsafe full-access option is
+  provided.
+- Tools remain disabled by default; `--enable-tools` selects an explicit,
+  documented Codex adapter tool profile rather than arbitrary CLI arguments.
+- The enabled profile names the tool capabilities it requests and preserves
+  ignored personal user configuration and disabled unrelated hooks and plugins;
+  it does not blindly enable all Codex features.
+- Enabled tools retain the supervisor's [owned-group and direct-child
+  observation limits](../process-supervisor/README.md#additional-context);
+  tool-launched descendants are not guaranteed to be contained or cleaned up.
+- The adapter keeps unattended approval behavior explicit and never responds to
+  missing prerequisites by silently broadening permissions.
+- The run plan records requested sandbox and tool controls and workspace
+  selection as either the omitted owned-directory policy or an explicit path;
+  planning and dry run do not allocate a future temporary directory.
+- Runtime evidence records the resolved actual working directory alongside the
+  requested controls and workspace selection.
+- Stable call identity includes sandbox and tool profiles and either the logical
+  owned-directory policy or the resolved caller-supplied absolute directory.
+- Changing a supplied directory or requested controls changes call identity;
+  changing only the random owned temporary path does not.
+- Requested settings remain distinct from observed effective runtime settings;
+  unavailable effective sandbox or tool state is explicitly unknown, and a
+  request alone establishes neither tool-free execution nor isolation.
+- Existing evidence, including legacy v1 and v2 invocation profiles, remains
+  readable with its original meaning and identity behavior; missing historical
+  controls are not retroactively represented as observed effective settings.
+- Quota probes retain their separate fixed read-only, tool-disabled, isolated
+  empty-directory profile regardless of evaluation-call controls.
+- Dry run validates and displays requested controls under AC-10 without CLI or
+  model calls, output writes, or workspace mutation.
+- Controlled checks cover defaults, each supported selection, invalid values,
+  exact adapter requests, ignored personal configuration, preserved unrelated
+  feature disables, identity changes, unknown effective state, historical
+  evidence compatibility, and unchanged probe controls without model calls.
+
 ## Dependencies
 
 - DONE [Experimental CLI process supervisor](../process-supervisor/README.md):
@@ -528,8 +618,9 @@ text without keeping an agent conversation alive.
 
 - The generic runner, evidence store, Codex CLI adapter, quota recovery,
   capacity retry, standalone command, and progress reporting are implemented.
-- The generic harness criteria are independently verified within this Work’s
-  controlled scope.
+- AC-1 through AC-9 were independently verified within this Work’s controlled
+  scope; AC-10 and AC-11 are planned extensions awaiting architecture,
+  implementation, and independent verification.
 - The [architecture](architecture.md) and typed boundary files preserve
   historical design context alongside the current implementation.
 - Codex quota recognition uses validated runtime session shape and scope with
