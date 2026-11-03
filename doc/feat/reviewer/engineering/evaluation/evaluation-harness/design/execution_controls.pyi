@@ -1,9 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
 """PROPOSED AC-10/11 boundary additions, not an implemented module.
 
 These sketches extend the runtime owners named in architecture.md. They do not
 replace the historical design/eval package or define another public framework.
 """
 
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -11,21 +13,26 @@ from typing import Literal
 from script.eval.model import FrozenPlan, HarnessConfig, PlannedCall, PreparedEvidence
 from script.eval.runner.ports import CliBinding, EffectiveCall
 
-SandboxMode = Literal["read-only", "workspace-write"]
-ToolProfile = Literal["local-tools-disabled-v1", "local-tools-enabled-v1"]
+type SandboxMode = Literal["read-only", "workspace-write"]
+type ToolProfile = Literal["local-tools-disabled-v1", "local-tools-enabled-v1"]
 
-@dataclass(frozen=True)
-class RequestedControls:
-    """Fields added to HarnessConfig and retained once via FrozenPlan.configuration.
+class ProposedHarnessConfig(HarnessConfig):
+    """Proposed config fields retained once via FrozenPlan.configuration.
 
     None selects one future owned empty directory for the run. An explicit
     path is retained as requested, including a relative path. For example,
-    RequestedControls(Path("clone"), "workspace-write", True) borrows clone.
+    working_directory=Path("clone"), sandbox_mode="workspace-write", and
+    enable_tools=True select a borrowed clone with local tools requested.
     """
 
     working_directory: Path | None = None
     sandbox_mode: SandboxMode = "read-only"
     enable_tools: bool = False
+
+class ProposedFrozenPlan(FrozenPlan):
+    """The existing plan with its configuration typed for the new fields."""
+
+    configuration: ProposedHarnessConfig
 
 @dataclass(frozen=True)
 class PreparedWorkspace:
@@ -55,7 +62,7 @@ class InvocationControls:
     cwd: Path
 
 def validate_workspace_selection(
-    config: HarnessConfig, launch_cwd: Path, /
+    config: ProposedHarnessConfig, launch_cwd: Path, /
 ) -> Path | None:
     """Resolve and check an explicit existing directory, including in dry run.
 
@@ -66,14 +73,26 @@ def validate_workspace_selection(
     """
     ...
 
+def acquire_workspace(
+    config: ProposedHarnessConfig, resolved_path: Path | None, /
+) -> AbstractAsyncContextManager[PreparedWorkspace]:
+    """Borrow the checked path or acquire one owned directory for the run.
+
+    Enter only for execution after validation. Keep the context open until the
+    coordinator and all retained call tasks settle, including on cancellation.
+    Exit releases only owned resources. The caller passes None for the owned
+    policy and must not enter this context during dry run.
+    """
+    ...
+
 def bind_invocation_controls(
-    config: HarnessConfig, workspace: PreparedWorkspace, /
+    config: ProposedHarnessConfig, workspace: PreparedWorkspace, /
 ) -> InvocationControls:
     """Select the profile and stable workspace identity for this execution."""
     ...
 
 def build_controlled_attempt(
-    plan: FrozenPlan,
+    plan: ProposedFrozenPlan,
     call: PlannedCall,
     binding: CliBinding,
     evidence: PreparedEvidence,

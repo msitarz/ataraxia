@@ -327,21 +327,34 @@ supervisor request.
   request construction.
 
 **Proposed AC-10/11:** The new `execution-controls-v3` invocation profile
-retains v2's exact `PROFILE_ARGS` policy, except that `shell_tool` is selected
-by the tool profile. Both profiles retain `--ignore-user-config`,
-`--skip-git-repo-check`, `approval_policy="never"`, and v2's configuration and
-feature disables, including hooks, plugins, apps, multi-agent, web search,
-browser, computer use, image generation, code mode, skills, and memories.
-`local-tools-disabled-v1` requests `--disable shell_tool` as v2 does.
-`local-tools-enabled-v1` instead requests `--enable shell_tool` and
-`--enable unified_exec`, allowing local command execution and file inspection;
-file editing uses the CLI's available local editing capabilities, subject to
-sandbox permissions. No other feature is enabled by this selection. The profile
-is an exact requested policy, not proof of every tool exposed or removed; in
-particular it does not assert complete MCP removal. The adapter maps the two
-sandbox values directly to `--sandbox read-only` and
-`--sandbox workspace-write`. Missing code-host or other runtime prerequisites
-fail without permission fallback. No full-access profile is offered.
+retains v2's exact `PROFILE_ARGS` policy with the following profile-specific
+feature requests. Both retain `--ignore-user-config`, `--skip-git-repo-check`,
+`approval_policy="never"`, and v2's configuration and other feature disables,
+including hooks, plugins, apps, multi-agent, web search, browser, computer use,
+image generation, skills, and memories. `local-tools-disabled-v1` retains v2's
+`--disable shell_tool`, `--disable code_mode`, and `--disable code_mode_host`.
+`local-tools-enabled-v1` replaces those three disables with
+`--enable shell_tool`, `--enable code_mode`, and `--enable code_mode_host`. It
+requests local command execution and file inspection; file editing uses
+available local editing capabilities subject to sandbox permissions. No other
+feature is explicitly enabled by this selection.
+
+The installed CLI's public feature list and the tagged Codex
+[`rust-v0.166.0` features](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/features/src/lib.rs)
+show that shell tools and the code-mode host have separate feature controls. The
+[tool-mode selection](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/core/src/tools/mod.rs)
+permits a model to request code mode independently of the feature default, and
+the
+[thread manager](https://github.com/openai/codex/blob/rust-v0.166.0/codex-rs/core/src/thread_manager.rs)
+selects a host provider when `code_mode_host` is enabled. The tag lists
+`unified_exec` as stable and enabled by default; this profile does not add a
+redundant toggle. The host executable is present in the installed 0.166.0
+package. These static observations do not prove that a model exposes or
+successfully invokes the requested tools, nor that every unrelated tool is
+absent. In particular the profile does not assert complete MCP removal. Runtime
+prerequisites fail without permission fallback. The adapter maps the two sandbox
+values directly to `--sandbox read-only` and `--sandbox workspace-write`; no
+full-access profile is offered.
 
 The v3 identity includes the profile and its exact recipe, requested sandbox,
 and either `owned-empty-per-run-v1` or the resolved absolute supplied path.
