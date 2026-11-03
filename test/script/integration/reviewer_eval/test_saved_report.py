@@ -15,11 +15,6 @@ from script.eval.model import (
     RunRecord,
 )
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
-from script.eval.runner.adapters.codex import (
-    INVOCATION_PROFILE,
-    PROFILE_DIGEST,
-    PROFILE_SETTING,
-)
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.ports import CliBinding
 from script.process_supervisor import (
@@ -29,7 +24,7 @@ from script.process_supervisor import (
     Completed,
     SignalAttempt,
 )
-from script.reviewer_eval.report import _bound_error, inspect_run
+from script.reviewer_eval.report import inspect_run
 from test.script.integration.eval.support import attempt_evidence
 from test.script.integration.reviewer_eval.support import (
     create_run,
@@ -62,58 +57,55 @@ async def test_complete_saved_run_and_evidence_unchanged(tmp_path: Path):
     assert snapshot(root) == before
 
 
-async def test_profile_record_checks_actual_request_without_temp_assets(tmp_path: Path):
+@pytest.mark.parametrize("tamper", ["none", "control", "cwd", "profile"])
+async def test_persisted_profile_validates_request_without_assets(
+    tmp_path: Path, tamper: str
+) -> None:
+    # Given
     root = tmp_path / "run"
-    old = await create_run(root)
-    frozen = plan()
-    settings = (
-        (PROFILE_SETTING, INVOCATION_PROFILE),
-        ("invocation_profile_sha256", PROFILE_DIGEST),
-    )
-    binding = CliBinding(Path("/synthetic/codex"), None, "synthetic", settings, None)
     cwd = tmp_path / "ataraxia-eval-gone" / "empty"
-    from script.eval.model import PreparedEvidence
-
-    effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
-        frozen,
-        frozen.calls[0],
-        binding,
-        PreparedEvidence(root, root / "plan.json", None),
-        frozen.configuration,
-    )
-    attempt = (
-        old
-        .calls[0]
-        .attempts[0]
-        .model_copy(
-            update={
-                "call_id": effective.call_id,
-                "argv": effective.request.argv,
-                "cwd": str(cwd),
-            }
+    await create_run(root, invocation_cwd=cwd)
+    summary_path = root / "run.json"
+    summary = json.loads(summary_path.read_text())
+    attempt = summary["calls"][0]["attempts"][0]
+    if tamper == "control":
+        attempt["argv"][attempt["argv"].index("hooks")] = "apps"
+    elif tamper == "cwd":
+        attempt["cwd"] = "/unexpected/empty"
+    elif tamper == "profile":
+        summary["effective_settings"][0][1] = "unknown"
+        summary["calls"][0]["effective_settings_sha256"] = settings_digest(
+            tuple(tuple(item) for item in summary["effective_settings"])
         )
-    )
-    call = old.calls[0].model_copy(
-        update={"call_id": effective.call_id, "attempts": (attempt,)}
-    )
-    run = old.model_copy(update={"effective_settings": settings, "calls": (call,)})
-    assert _bound_error(root, frozen, run, call) is None
-    changed = attempt.model_copy(update={"argv": (*attempt.argv[:-1], "changed")})
-    assert "request mismatch" in (
-        _bound_error(
-            root, frozen, run, call.model_copy(update={"attempts": (changed,)})
-        )
-        or ""
-    )
-    unknown = run.model_copy(
-        update={"effective_settings": ((PROFILE_SETTING, "future"),)}
-    )
-    assert _bound_error(root, frozen, unknown, call) == "unsupported invocation profile"
+    if tamper in ("control", "cwd"):
+        metadata = next((root / "attempts").rglob("attempt-1.json"))
+        metadata.write_text(json.dumps(attempt))
+    if tamper != "none":
+        summary_path.write_text(json.dumps(summary))
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    if tamper == "none":
+        assert result.evidence_state == "complete"
+        assert result.counts is not None and result.counts.complete == 1
+        assert result.calls[0].state == "complete"
+    else:
+        assert result.evidence_state == "invalid"
 
 
-def test_archived_stopped_series_remains_readable():
+def test_archived_stopped_series_remains_readable() -> None:
+    # Given
     root = Path("output/reviewer-evaluation/ab-001/runs/rep-1-high-A")
-    assert inspect_run(root).evidence_state != "invalid"
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "complete"
+    assert result.counts is not None and result.counts.invalid == 1
+    assert result.calls[0].state == "invalid"
 
 
 @pytest.mark.parametrize(

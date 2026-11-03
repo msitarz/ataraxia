@@ -273,11 +273,11 @@ supervisor request.
 - The standalone execution owner creates a fresh empty external working
   directory for the whole run and removes it after coordinator settlement,
   including cancellation. The v2 profile requests known feature and context
-  disables and `--skip-git-repo-check`; its digest and logical directory policy
-  participate in call identity. Evidence records the actual argv and cwd.
-  Random directory names do not change logical identity. Saved reports verify
-  the recorded paths and settings without requiring temporary files; records
-  without a profile retain the legacy request interpretation.
+  disables, including hooks, and `--skip-git-repo-check`; its digest and logical
+  directory policy participate in call identity. Evidence records the actual
+  argv and cwd. Random directory names do not change logical identity. Saved
+  reports verify the recorded paths and settings without requiring temporary
+  files; records without a profile retain the legacy request interpretation.
 - No deny hook is installed. In Codex 0.166.0, ignoring user config still
   leaves an adjacent user `hooks.json` discoverable, so a blanket hook-trust
   bypass could also enable unrelated hooks. The requested controls do not

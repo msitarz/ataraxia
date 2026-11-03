@@ -19,6 +19,7 @@ from script.eval.model import (
     PreparedEvidence,
     RetryAssessment,
     SeparatorOption,
+    SettingValue,
     SourceSnapshot,
 )
 from script.eval.runner import CliBinding
@@ -26,6 +27,7 @@ from script.eval.runner.adapters import (
     CodexAttemptRequestBuilder,
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
+    codex,
 )
 from script.eval.runner.adapters.codex import (
     INVOCATION_PROFILE,
@@ -882,7 +884,9 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
 
 
 def test_hardened_profile_binds_controls_and_logical_identity() -> None:
+    # Given
     config, plan, call, binding, evidence = plan_and_inputs()
+    legacy = CodexAttemptRequestBuilder().build(plan, call, binding, evidence, config)
     binding = replace(
         binding,
         effective_settings=(
@@ -896,17 +900,96 @@ def test_hardened_profile_binds_controls_and_logical_identity() -> None:
     second = CodexAttemptRequestBuilder(
         invocation_cwd=Path("/tmp/ataraxia-eval-b/empty")
     )
+    # When
     a = first.build(plan, call, binding, evidence, config)
     b = second.build(plan, call, binding, evidence, config)
+
+    # Then
     assert a.call_id == b.call_id
+    assert a.call_id != legacy.call_id
     assert a.request.cwd != b.request.cwd
-    assert "--skip-git-repo-check" in a.request.argv
-    assert "shell_tool" in a.request.argv
-    assert 'web_search="disabled"' in a.request.argv
+    assert a.request.argv == (
+        *legacy.request.argv[:-2],
+        "--skip-git-repo-check",
+        "-c",
+        "agents.enabled=false",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "memories.use_memories=false",
+        "-c",
+        'web_search="disabled"',
+        "-c",
+        "tools.experimental_request_user_input.enabled=false",
+        *(
+            part
+            for feature in (
+                "plugins",
+                "apps",
+                "shell_tool",
+                "multi_agent",
+                "browser_use",
+                "browser_use_external",
+                "in_app_browser",
+                "computer_use",
+                "image_generation",
+                "view_image",
+                "sleep_tool",
+                "code_mode",
+                "code_mode_host",
+                "artifact",
+                "hooks",
+                "skill_search",
+            )
+            for part in ("--disable", feature)
+        ),
+        *legacy.request.argv[-2:],
+    )
     with pytest.raises(ValueError, match="external"):
         CodexAttemptRequestBuilder(invocation_cwd=Path("/repo/empty")).build(
             plan, call, binding, evidence, config
         )
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        ((PROFILE_SETTING, "unknown"),),
+        ((PROFILE_SETTING, INVOCATION_PROFILE),),
+        (("invocation_profile_sha256", PROFILE_DIGEST),),
+        ((PROFILE_SETTING, INVOCATION_PROFILE), ("invocation_profile_sha256", "bad")),
+    ],
+)
+def test_builder_rejects_invalid_declared_profile(
+    settings: tuple[tuple[str, SettingValue], ...],
+) -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    binding = replace(binding, effective_settings=settings)
+
+    # When / Then
+    with pytest.raises(ValueError, match="profile"):
+        CodexAttemptRequestBuilder().build(plan, call, binding, evidence, config)
+
+
+def test_builder_rejects_profile_control_drift(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    binding = replace(
+        binding,
+        effective_settings=(
+            (PROFILE_SETTING, INVOCATION_PROFILE),
+            ("invocation_profile_sha256", PROFILE_DIGEST),
+        ),
+    )
+    monkeypatch.setattr(codex, "PROFILE_ARGS", (*codex.PROFILE_ARGS, "--changed"))
+    builder = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-a/empty")
+    )
+
+    # When / Then
+    with pytest.raises(ValueError, match="controls have changed"):
+        builder.build(plan, call, binding, evidence, config)
 
 
 def test_version_timeout_leaves_version_unknown(

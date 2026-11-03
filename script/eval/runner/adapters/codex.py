@@ -73,6 +73,7 @@ PROFILE_ARGS = (
             "code_mode",
             "code_mode_host",
             "artifact",
+            "hooks",
             "skill_search",
         )
         for item in ("--disable", feature)
@@ -150,6 +151,7 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
     argument-size limits and NUL's inability to appear in an argument apply.
 
     Attributes:
+        invocation_cwd: Owned external cwd for v2, or None for legacy records.
         effective_call_id: Derive an identity from frozen plan/call inputs,
             binding, staged instruction path, and config without opening files.
         build_attempt_request: Build argv and supervisor limits from the same
@@ -185,10 +187,7 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
         """
         staged_instructions_path = evidence.model_instructions_file
         settings = dict(binding.effective_settings)
-        if (settings.get(PROFILE_SETTING) == INVOCATION_PROFILE) != (
-            self.invocation_cwd is not None
-        ):
-            raise ValueError("invocation profile and working directory mismatch")
+        _validate_profile(settings, binding.effective_settings, self.invocation_cwd)
         call_id = self.effective_call_id(
             plan, call, binding, staged_instructions_path, config
         )
@@ -218,6 +217,33 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
             planned_call=call,
             request=request,
         )
+
+
+def _validate_profile(
+    settings: dict[str, SettingValue],
+    entries: tuple[tuple[str, SettingValue], ...],
+    cwd: Path | None,
+) -> None:
+    """Reject drift and ambiguous profile metadata before constructing requests.
+
+    Raises:
+        ValueError: Settings, digest, or working directory do not match.
+    """
+    if len(settings) != len(entries):
+        raise ValueError("duplicate invocation settings")
+    profile = settings.get(PROFILE_SETTING)
+    digest = settings.get("invocation_profile_sha256")
+    if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
+        if cwd is not None:
+            raise ValueError("legacy profile cannot use an invocation cwd")
+        return
+    actual_digest = hashlib.sha256(json.dumps(PROFILE_ARGS).encode()).hexdigest()
+    if profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
+        raise ValueError("unsupported or incomplete invocation profile")
+    if actual_digest != PROFILE_DIGEST:
+        raise ValueError("invocation profile controls have changed")
+    if cwd is None:
+        raise ValueError("invocation profile requires a working directory")
 
 
 @dataclass(frozen=True)

@@ -328,6 +328,14 @@ def _bound_error(
 def _recorded_instructions(
     root: Path, plan: FrozenPlan, call: CallRecord
 ) -> Path | None:
+    """Validate the recorded staged path without opening its original location.
+
+    Returns:
+        The recorded path, or None when instructions are absent.
+
+    Raises:
+        ValueError: The recorded path cannot match the frozen output location.
+    """
     if plan.instructions_file is None:
         return None
     if not call.attempts:
@@ -361,6 +369,14 @@ def _recorded_instructions(
 def _recorded_cwd(
     root: Path, plan: FrozenPlan, run: RunRecord, call: CallRecord
 ) -> Path | None:
+    """Select the recorded profile and validate its physical cwd policy.
+
+    Returns:
+        The recorded v2 cwd, a placeholder for an unstarted call, or None for v1.
+
+    Raises:
+        ValueError: The profile or recorded cwd is invalid.
+    """
     settings = dict(run.effective_settings)
     profile = settings.get(PROFILE_SETTING)
     if profile is None:
@@ -388,6 +404,11 @@ def _recorded_cwd(
 
 
 def _settings_error(run: RunRecord) -> str | None:
+    """Check unique settings and the single run-owned v2 working directory.
+
+    Returns:
+        A diagnostic when inconsistent, otherwise None.
+    """
     keys = [key for key, _ in run.effective_settings]
     if len(keys) != len(set(keys)):
         return "duplicate effective settings"
