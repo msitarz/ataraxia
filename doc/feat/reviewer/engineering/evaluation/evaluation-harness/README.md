@@ -519,7 +519,7 @@ text without keeping an agent conversation alive.
   isolation without model calls; these checks verify the local reporting
   guarantee and establish no scored experiment result.
 
-### **AC-10 TODO** Working-directory selection preserves ownership
+### **AC-10 DONE** Working-directory selection preserves ownership
 
 A caller can choose the starting directory without transferring its ownership
 to the harness.
@@ -565,7 +565,7 @@ to the harness.
   refusal including symbolic-link ancestors, and dry-run nonmutation without
   model calls.
 
-### **AC-11 TODO** Explicit execution controls have inspectable provenance
+### **AC-11 DONE** Explicit execution controls have inspectable provenance
 
 A caller can select bounded permission and tool profiles without silently
 broadening unrelated capabilities.
@@ -618,9 +618,8 @@ broadening unrelated capabilities.
 
 - The generic runner, evidence store, Codex CLI adapter, quota recovery,
   capacity retry, standalone command, and progress reporting are implemented.
-- AC-1 through AC-9 were independently verified within this Work’s controlled
-  scope; AC-10 and AC-11 are planned extensions awaiting architecture,
-  implementation, and independent verification.
+- AC-1 through AC-11 were independently verified within this Work's controlled
+  scope.
 - The [architecture](architecture.md) and typed boundary files preserve
   historical design context alongside the current implementation.
 - Codex quota recognition uses validated runtime session shape and scope with
