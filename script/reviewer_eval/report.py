@@ -7,7 +7,9 @@ from hashlib import sha256
 import os
 from pathlib import Path
 import stat
-from typing import Any
+from typing import Literal
+
+from pydantic import BaseModel, ConfigDict
 
 from script.eval.model import (
     AttemptRecord,
@@ -24,13 +26,126 @@ from script.eval.runner.policy import safe_process_cleanup
 from script.eval.runner.ports import CliBinding
 from script.reviewer_eval.context import review_context
 from script.reviewer_eval.transcript import extract_response, parse_json
-from script.reviewer_eval.validation import InvalidResponse, validate_response
+from script.reviewer_eval.validation import Finding, InvalidResponse, validate_response
 
-STATES = ("complete", "incomplete", "invalid", "failed", "not_started")
+type Outcome = Literal["complete", "incomplete", "invalid", "failed", "not_started"]
+type EvidenceState = Literal["complete", "incomplete", "invalid"]
+
+
+class CallOutcome(BaseModel):
+    """One planned call and its retained evidence."""
+
+    model_config = ConfigDict(frozen=True)
+    position: int
+    model: str
+    effort: str
+    call_id: str | None = None
+    state: Outcome
+    diagnostic: str | None = None
+    attempts: tuple[AttemptRecord, ...] = ()
+    selected_attempt: int | None = None
+    findings: tuple[Finding, ...] = ()
+    thread_id: str | None = None
+
+
+class Counts(BaseModel):
+    """Disjoint counts for the known planned inventory."""
+
+    model_config = ConfigDict(frozen=True)
+    complete: int
+    incomplete: int
+    invalid: int
+    failed: int
+    not_started: int
+
+
+class Report(BaseModel):
+    """Deterministic results based on internally consistent retained artifacts."""
+
+    model_config = ConfigDict(frozen=True)
+    version: Literal[1] = 1
+    evidence_state: EvidenceState
+    diagnostic: str | None
+    run_id: str | None
+    head_commit: str | None
+    planned_count: int | None
+    counts: Counts | None
+    calls: tuple[CallOutcome, ...]
+    scope: str = (
+        "Internal artifact consistency and correspondence to frozen source "
+        "bytes only; not authenticated lineage, safe-read verification, "
+        "semantic truth, or quality readiness."
+    )
 
 
 class MissingBinding(ValueError):
     """The saved summary does not contain the executable binding."""
+
+
+def inspect_run(run_root: Path) -> Report:
+    """Inspect one original run directory without reading its repository root.
+
+    Returns:
+        Deterministic accounting and retained validation observations.
+    """
+    root = run_root.resolve(strict=True)
+    try:
+        plan = _plan(root)
+    except (OSError, ValueError, IndexError) as exc:
+        return _report(None, "invalid", f"invalid plan: {exc}", [])
+    try:
+        run: RunRecord = _load(root, Path("run.json"), RunRecord)
+    except FileNotFoundError:
+        message = "run summary missing"
+        return _report(
+            plan,
+            "incomplete",
+            message,
+            _uniform_with_retained(root, plan, "incomplete", message),
+        )
+    except (OSError, ValueError) as exc:
+        message = f"invalid run: {exc}"
+        return _report(
+            plan,
+            "invalid",
+            message,
+            _uniform_with_retained(root, plan, "invalid", message),
+        )
+    try:
+        results = _inspect_records(root, plan, run)
+    except (FileNotFoundError, MissingBinding) as exc:
+        message = f"missing evidence: {exc}"
+        return _report(
+            plan,
+            "incomplete",
+            message,
+            _uniform_with_retained(root, plan, "incomplete", message, run),
+        )
+    except (OSError, ValueError, IndexError) as exc:
+        message = str(exc)
+        return _report(
+            plan,
+            "invalid",
+            message,
+            _uniform_with_retained(root, plan, "invalid", message, run),
+        )
+    if run.codex_path is None:
+        message = "missing bound executable"
+        results = [
+            result
+            if result.state == "not_started"
+            else result.model_copy(
+                update={
+                    "state": "incomplete",
+                    "diagnostic": message,
+                    "selected_attempt": None,
+                    "findings": (),
+                }
+            )
+            for result in results
+        ]
+        return _report(plan, "incomplete", message, results)
+    return _report(plan, run.state, None, results)
 
 
 def _read(root: Path, relative: Path) -> bytes:
@@ -64,7 +179,7 @@ def _read(root: Path, relative: Path) -> bytes:
         return stream.read()
 
 
-def _load(root: Path, relative: Path, model: type[Any]) -> Any:
+def _load[T: BaseModel](root: Path, relative: Path, model: type[T]) -> T:
     raw = _read(root, relative)
     parse_json(raw)  # Reject duplicate keys before pydantic parses the bytes.
     return model.model_validate_json(raw)
@@ -125,7 +240,32 @@ def _call_error(
         return f"call {call.position} attempt sequence mismatch"
     if call.state == "not_started" and call.attempts:
         return f"call {call.position} has attempts but is not started"
+    error = _history_error(plan, call)
+    if error:
+        return error
+    if run.codex_path is None:
+        return None
     return _bound_error(root, plan, run, call)
+
+
+def _history_error(plan: FrozenPlan, call: CallRecord) -> str | None:
+    for attempt in call.attempts:
+        if (attempt.run_id, attempt.call_id, attempt.position) != (
+            plan.run_id,
+            call.call_id,
+            call.position,
+        ):
+            return f"call {call.position} attempt identity mismatch"
+    for attempt in call.attempts[:-1]:
+        if not safe_process_cleanup(attempt):
+            return f"call {call.position} continued after unsafe cleanup"
+        if (
+            attempt.control_flow == "returned"
+            and attempt.outcome_kind == "completed"
+            and attempt.exit_status == 0
+        ):
+            return f"call {call.position} continued after successful attempt"
+    return None
 
 
 def _bound_error(
@@ -244,26 +384,30 @@ def _inventory(root: Path) -> set[Path]:
     return result
 
 
-def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> dict[str, Any]:
-    result: dict[str, Any] = {
-        "position": call.position,
-        "call_id": call.call_id,
-        "state": "failed",
-        "diagnostic": None,
-        "attempts": [a.model_dump(mode="json") for a in call.attempts],
-        "selected_attempt": None,
-        "findings": [],
-    }
+def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOutcome:
+    planned = plan.calls[call.position]
+    result = CallOutcome(
+        position=call.position,
+        model=planned.model,
+        effort=planned.effort,
+        call_id=call.call_id,
+        state="failed",
+        attempts=call.attempts,
+    )
     if not call.attempts:
-        result["state"] = "not_started" if call.state == "not_started" else "incomplete"
-        result["diagnostic"] = (
-            None if call.state == "not_started" else "no durable attempt"
+        return result.model_copy(
+            update={
+                "state": "not_started" if call.state == "not_started" else "incomplete",
+                "diagnostic": None
+                if call.state == "not_started"
+                else "no durable attempt",
+            }
         )
-        return result
     attempt = call.attempts[-1]
     if call.state == "running":
-        result.update(state="incomplete", diagnostic="call is still running")
-        return result
+        return result.model_copy(
+            update={"state": "incomplete", "diagnostic": "call is still running"}
+        )
     if (
         call.state != "complete"
         or attempt.control_flow != "returned"
@@ -271,71 +415,86 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> dict[st
         or attempt.exit_status != 0
         or not safe_process_cleanup(attempt)
     ):
-        result["diagnostic"] = "terminal call or attempt did not complete successfully"
-        return result
+        return result.model_copy(
+            update={
+                "diagnostic": "terminal call or attempt did not complete successfully"
+            }
+        )
     if stdout is None:
-        result.update(state="incomplete", diagnostic="terminal stdout is unavailable")
-        return result
+        return result.model_copy(
+            update={
+                "state": "incomplete",
+                "diagnostic": "terminal stdout is unavailable",
+            }
+        )
     try:
         thread_id, response = extract_response(stdout)
-        rules, sources = review_context(plan, plan.calls[call.position])
+        rules, sources = review_context(plan, planned)
         validated = validate_response(response, allowed_rules=rules, sources=sources)
     except ValueError as exc:
-        result.update(state="invalid", diagnostic=str(exc))
-        return result
-    result["thread_id"] = thread_id
-    result["selected_attempt"] = attempt.attempt_number
+        return result.model_copy(update={"state": "invalid", "diagnostic": str(exc)})
     if isinstance(validated, InvalidResponse):
-        result.update(state="invalid", diagnostic=validated.diagnostic)
-    else:
-        result.update(
-            state="complete" if validated.complete else "incomplete",
-            diagnostic=None if validated.complete else "reviewer reported incomplete",
-            findings=[f.model_dump(mode="json") for f in validated.findings],
+        return result.model_copy(
+            update={
+                "state": "invalid",
+                "diagnostic": validated.diagnostic,
+                "thread_id": thread_id,
+                "selected_attempt": attempt.attempt_number,
+            }
         )
-    return result
+    return result.model_copy(
+        update={
+            "state": "complete" if validated.complete else "incomplete",
+            "diagnostic": None
+            if validated.complete
+            else "reviewer reported incomplete",
+            "findings": validated.findings,
+            "thread_id": thread_id,
+            "selected_attempt": attempt.attempt_number,
+        }
+    )
 
 
 def _report(
     plan: FrozenPlan | None,
-    state: str,
+    state: EvidenceState,
     diagnostic: str | None,
-    calls: list[dict[str, Any]],
-) -> dict[str, Any]:
-    counts = Counter(call["state"] for call in calls)
-    return {
-        "version": 1,
-        "evidence_state": state,
-        "diagnostic": diagnostic,
-        "planned_count": len(plan.calls) if plan else None,
-        "counts": {key: counts[key] for key in STATES} if plan else None,
-        "calls": calls,
-        "scope": (
-            "Internal artifact consistency and correspondence to frozen source "
-            "bytes only; not authenticated lineage, safe-read verification, "
-            "semantic truth, or quality readiness."
-        ),
-    }
+    calls: list[CallOutcome],
+) -> Report:
+    counts = Counter(call.state for call in calls)
+    return Report(
+        evidence_state=state,
+        diagnostic=diagnostic,
+        run_id=plan.run_id if plan else None,
+        head_commit=plan.head_commit if plan else None,
+        planned_count=len(plan.calls) if plan else None,
+        counts=Counts(
+            complete=counts["complete"],
+            incomplete=counts["incomplete"],
+            invalid=counts["invalid"],
+            failed=counts["failed"],
+            not_started=counts["not_started"],
+        )
+        if plan
+        else None,
+        calls=tuple(calls),
+    )
 
 
-def _uniform(plan: FrozenPlan, state: str, diagnostic: str) -> list[dict[str, Any]]:
+def _uniform(plan: FrozenPlan, state: Outcome, diagnostic: str) -> list[CallOutcome]:
     return [
-        {
-            "position": c.position,
-            "call_id": None,
-            "state": state,
-            "diagnostic": diagnostic,
-            "attempts": [],
-            "selected_attempt": None,
-            "findings": [],
-        }
+        CallOutcome(
+            position=c.position,
+            model=c.model,
+            effort=c.effort,
+            state=state,
+            diagnostic=diagnostic,
+        )
         for c in plan.calls
     ]
 
 
-def _inspect_records(
-    root: Path, plan: FrozenPlan, run: RunRecord
-) -> list[dict[str, Any]]:
+def _inspect_records(root: Path, plan: FrozenPlan, run: RunRecord) -> list[CallOutcome]:
     error = _run_error(root, plan, run)
     if error:
         raise ValueError(error)
@@ -351,8 +510,20 @@ def _inspect_records(
         for attempt in call.attempts:
             stdout, paths = _artifacts(root, call, attempt)
             expected.update(paths)
-        results.append(_result(plan, call, stdout))
-    thread_ids = [r["thread_id"] for r in results if "thread_id" in r]
+        results.append(
+            _result(plan, call, stdout)
+            if run.codex_path is not None or not call.attempts
+            else CallOutcome(
+                position=call.position,
+                model=plan.calls[call.position].model,
+                effort=plan.calls[call.position].effort,
+                call_id=call.call_id,
+                state="incomplete",
+                diagnostic="missing bound executable",
+                attempts=call.attempts,
+            )
+        )
+    thread_ids = [r.thread_id for r in results if r.thread_id is not None]
     if len(thread_ids) != len(set(thread_ids)):
         raise ValueError("completed calls reuse a thread identity")
     if _inventory(root) != expected:
@@ -360,7 +531,7 @@ def _inspect_records(
     return results
 
 
-def _retained(root: Path, calls: list[dict[str, Any]]) -> None:
+def _retained(root: Path, calls: list[CallOutcome]) -> None:
     """Attach individually readable attempts without asserting their identity."""
     try:
         paths = sorted(_inventory(root))
@@ -374,73 +545,27 @@ def _retained(root: Path, calls: list[dict[str, Any]]) -> None:
         except OSError, ValueError:
             continue
         if attempt.position < len(calls):
-            calls[attempt.position]["attempts"].append(attempt.model_dump(mode="json"))
+            previous = calls[attempt.position]
+            calls[attempt.position] = previous.model_copy(
+                update={"attempts": (*previous.attempts, attempt)}
+            )
 
 
 def _uniform_with_retained(
     root: Path,
     plan: FrozenPlan,
-    state: str,
+    state: Outcome,
     diagnostic: str,
     run: RunRecord | None = None,
-) -> list[dict[str, Any]]:
+) -> list[CallOutcome]:
     calls = _uniform(plan, state, diagnostic)
     if run is None:
         _retained(root, calls)
     else:
         for call in run.calls:
             if call.position < len(calls):
-                calls[call.position]["attempts"].extend(
-                    attempt.model_dump(mode="json") for attempt in call.attempts
+                previous = calls[call.position]
+                calls[call.position] = previous.model_copy(
+                    update={"attempts": (*previous.attempts, *call.attempts)}
                 )
     return calls
-
-
-def inspect_run(run_root: Path) -> dict[str, Any]:
-    """Inspect one original run directory without reading its repository root.
-
-    Returns:
-        Deterministic accounting and retained validation observations.
-    """
-    root = run_root.resolve(strict=True)
-    try:
-        plan = _plan(root)
-    except (OSError, ValueError, IndexError) as exc:
-        return _report(None, "invalid", f"invalid plan: {exc}", [])
-    try:
-        run: RunRecord = _load(root, Path("run.json"), RunRecord)
-    except FileNotFoundError:
-        message = "run summary missing"
-        return _report(
-            plan,
-            "incomplete",
-            message,
-            _uniform_with_retained(root, plan, "incomplete", message),
-        )
-    except (OSError, ValueError) as exc:
-        message = f"invalid run: {exc}"
-        return _report(
-            plan,
-            "invalid",
-            message,
-            _uniform_with_retained(root, plan, "invalid", message),
-        )
-    try:
-        results = _inspect_records(root, plan, run)
-    except (FileNotFoundError, MissingBinding) as exc:
-        message = f"missing evidence: {exc}"
-        return _report(
-            plan,
-            "incomplete",
-            message,
-            _uniform_with_retained(root, plan, "incomplete", message, run),
-        )
-    except (OSError, ValueError, IndexError) as exc:
-        message = str(exc)
-        return _report(
-            plan,
-            "invalid",
-            message,
-            _uniform_with_retained(root, plan, "invalid", message, run),
-        )
-    return _report(plan, run.state, None, results)

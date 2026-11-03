@@ -96,3 +96,16 @@ def test_duplicate_event_keys_are_rejected() -> None:
     # When / Then
     with pytest.raises(ValueError, match="duplicate JSON key"):
         extract_response(raw)
+
+
+def test_unpaired_surrogate_in_message_is_rejected() -> None:
+    # Given
+    records = events()
+    records[2] = {
+        "type": "item.completed",
+        "item": {"type": "agent_message", "id": "a", "text": "\ud800"},
+    }
+
+    # When / Then
+    with pytest.raises(ValueError, match="UTF-8"):
+        extract_response(encoded(records))

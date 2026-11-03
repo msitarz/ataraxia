@@ -58,7 +58,11 @@ def extract_response(raw: bytes) -> tuple[str, bytes]:
         phase, response, thread_id = _advance(event, phase, response, thread_id)
     if phase != 3 or response is None:
         raise ValueError("JSONL turn is incomplete")
-    return thread_id, response.encode("utf-8")
+    try:
+        encoded = response.encode("utf-8")
+    except UnicodeEncodeError as exc:
+        raise ValueError("agent message is not valid UTF-8") from exc
+    return thread_id, encoded
 
 
 def _advance(
