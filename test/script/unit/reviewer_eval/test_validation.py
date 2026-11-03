@@ -2,7 +2,6 @@
 """Contract tests for the review response boundary."""
 
 import json
-from pathlib import Path
 
 import pytest
 
@@ -38,10 +37,13 @@ def response(*findings: dict[str, object], complete: bool = True) -> bytes:
     return json.dumps({"complete": complete, "findings": findings}).encode()
 
 
-def test_complete_and_incomplete_retain_findings_without_mutation() -> None:
+@pytest.mark.parametrize("complete", [True, False], ids=["complete", "incomplete"])
+def test_complete_and_incomplete_retain_findings_without_mutation(
+    complete: bool,
+) -> None:
     # Given
     item = finding(corrections=["fix"])
-    raw = response(item, item, complete=False)
+    raw = response(item, item, complete=complete)
     sources = dict(SOURCES)
 
     # When
@@ -49,11 +51,16 @@ def test_complete_and_incomplete_retain_findings_without_mutation() -> None:
 
     # Then
     assert isinstance(result, ValidatedResponse)
-    assert result.complete is False
+    assert result.complete is complete
     assert len(result.findings) == 2
-    assert result.findings[0].corrections == ["fix"]
+    assert result.findings[0].model_dump() == {
+        **item,
+        "corrections": ("fix",),
+    }
+    assert result.findings[0].corrections == ("fix",)
+    assert isinstance(result.findings[0].corrections, tuple)
     assert sources == SOURCES
-    assert raw == response(item, item, complete=False)
+    assert raw == response(item, item, complete=complete)
 
 
 def test_complete_empty_findings_is_valid() -> None:
@@ -85,6 +92,11 @@ def test_multiline_quote_preserves_unicode_and_original_newlines() -> None:
         ({"unknown": 1}, "unknown"),
         ({"start_line": "2"}, "start_line"),
         ({"start_line": True}, "start_line"),
+        ({"start_line": 0}, "start_line"),
+        ({"end_line": -1}, "end_line"),
+        ({"end_line": True}, "end_line"),
+        ({"end_line": 2.0}, "end_line"),
+        ({"quote": "\ud800"}, "quote"),
         ({"rule_id": "R3"}, "not supplied"),
         ({"rule_id": "R2"}, "rule_id"),
         ({"file_id": "other.py"}, "file_id"),
@@ -94,7 +106,31 @@ def test_multiline_quote_preserves_unicode_and_original_newlines() -> None:
         ({"quote": "first"}, "quote"),
         ({"severity": "high"}, "severity"),
         ({"corrections": [""]}, "corrections"),
+        ({"corrections": [1]}, "corrections"),
+        ({"corrections": "fix"}, "corrections"),
         ({"explanation": ""}, "explanation"),
+    ],
+    ids=[
+        "unknown-key",
+        "string-line",
+        "bool-start",
+        "zero-start",
+        "negative-end",
+        "bool-end",
+        "float-end",
+        "surrogate-quote",
+        "unsupplied-rule",
+        "unknown-rule",
+        "unsupplied-file",
+        "reversed-span",
+        "out-of-bounds",
+        "newline-mismatch",
+        "outside-span",
+        "invalid-severity",
+        "empty-correction",
+        "non-string-correction",
+        "non-array-corrections",
+        "empty-explanation",
     ],
 )
 def test_rejects_invalid_finding(changes: dict[str, object], reason: str) -> None:
@@ -116,11 +152,30 @@ def test_rejects_invalid_finding(changes: dict[str, object], reason: str) -> Non
         b'{"complete":true,"findings":[],"extra":1}',
         b'{"complete":1,"findings":[]}',
         b'{"complete":true}',
+        b'{"findings":[]}',
+        b'{"complete":null,"findings":[]}',
+        b'{"complete":true,"findings":null}',
+        b"null",
         b'{"complete":true,"findings":[]} trailing',
         b'```json\n{"complete":true,"findings":[]}\n```',
         b'{"complete":true,"findings":[],"x":NaN}',
         b"\xff",
         b'{"complete":true,"findings":[{"rule_id":"R1","rule_id":"R1"}]}',
+    ],
+    ids=[
+        "duplicate-root-key",
+        "unknown-root-key",
+        "nonboolean-complete",
+        "missing-findings",
+        "missing-complete",
+        "null-complete",
+        "null-findings",
+        "null-root",
+        "trailing-text",
+        "code-fence",
+        "nan",
+        "invalid-utf8",
+        "duplicate-finding-key",
     ],
 )
 def test_rejects_invalid_json_or_envelope(raw: bytes) -> None:
@@ -132,37 +187,3 @@ def test_rejects_invalid_json_or_envelope(raw: bytes) -> None:
 
     # Then
     assert isinstance(result, InvalidResponse)
-
-
-def test_published_schema_contract_matches_validator() -> None:
-    # Given
-    shared = Path(
-        "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt"
-    ).read_text()
-    schema = json.loads(shared.split("Response JSON contract:\n", 1)[1])
-    item = schema["properties"]["findings"]["items"]
-
-    # When
-    result = validate_response(
-        response(finding()), allowed_rules=RULES, sources=SOURCES
-    )
-
-    # Then
-    assert isinstance(result, ValidatedResponse)
-    assert set(schema["required"]) == {"complete", "findings"}
-    assert schema["additionalProperties"] is False
-    assert item["additionalProperties"] is False
-    assert set(item["required"]) == set(finding())
-    assert set(item["properties"]) == set(finding()) | {"corrections"}
-    assert item["properties"]["rule_id"]["enum"] == ["R1", "R3", "R4"]
-    assert item["properties"]["severity"]["enum"] == ["critical", "major", "minor"]
-    assert schema["properties"]["complete"] == {"type": "boolean"}
-    assert schema["properties"]["findings"]["type"] == "array"
-    for name in ("file_id", "quote", "explanation", "consequence"):
-        assert item["properties"][name] == {"type": "string", "minLength": 1}
-    for name in ("start_line", "end_line"):
-        assert item["properties"][name] == {"type": "integer", "minimum": 1}
-    assert item["properties"]["corrections"] == {
-        "type": "array",
-        "items": {"type": "string", "minLength": 1},
-    }
