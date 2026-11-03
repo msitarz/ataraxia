@@ -70,6 +70,7 @@ async def test_invocation_directory_survives_cancellation_until_settlement(
             frozen_plan().configuration, EvidenceStatus(create_evidence_store)
         )
     )
+
     # When
     await started.wait()
     task.cancel()
@@ -78,40 +79,70 @@ async def test_invocation_directory_survives_cancellation_until_settlement(
     release.set()
     with pytest.raises(asyncio.CancelledError):
         await task
+
     # Then
     assert not paths[0].exists()
 
 
-@pytest.mark.parametrize("fail", [False, True])
-async def test_invocation_directory_removed_after_settlement(
-    monkeypatch: pytest.MonkeyPatch, fail: bool
-) -> None:
-    # Given
-    paths: list[Path] = []
+def _settlement_composition(
+    paths: list[Path], outcome: Callable[[], RunRecord]
+) -> Callable[[EvidenceStatus, Path | None], object]:
+    """Provide a controlled composition that observes the owned cwd."""
 
     class FakeComposition:
         async def execute(self, config: HarnessConfig) -> RunRecord:
             assert paths[0].is_dir() and not list(paths[0].iterdir())
-            if fail:
-                raise ValueError("failed")
-            return record()
+            return outcome()
 
     def composition(status: EvidenceStatus, cwd: Path | None = None) -> FakeComposition:
         assert cwd is not None
         paths.append(cwd)
         return FakeComposition()
 
-    monkeypatch.setattr(standalone, "create_composition", composition)
+    return composition
+
+
+def _failed_outcome() -> RunRecord:
+    """Produce a controlled execution error."""
+    raise ValueError("failed")
+
+
+async def test_invocation_directory_removed_after_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    paths: list[Path] = []
+    monkeypatch.setattr(
+        standalone, "create_composition", _settlement_composition(paths, record)
+    )
     status = EvidenceStatus(create_evidence_store)
 
     # When
-    if fail:
-        with pytest.raises(ValueError, match="failed"):
-            await standalone.execute(frozen_plan().configuration, status)
-    else:
-        assert await standalone.execute(frozen_plan().configuration, status) == record()
+    result = await standalone.execute(frozen_plan().configuration, status)
 
     # Then
+    assert result == record()
+    assert not paths[0].exists()
+
+
+async def test_invocation_directory_removed_after_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    paths: list[Path] = []
+    monkeypatch.setattr(
+        standalone,
+        "create_composition",
+        _settlement_composition(paths, _failed_outcome),
+    )
+    status = EvidenceStatus(create_evidence_store)
+
+    # When
+    with pytest.raises(ValueError) as error:
+        await standalone.execute(frozen_plan().configuration, status)
+
+    # Then
+    assert str(error.value) == "failed"
     assert not paths[0].exists()
 
 

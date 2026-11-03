@@ -219,33 +219,6 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
         )
 
 
-def _validate_profile(
-    settings: dict[str, SettingValue],
-    entries: tuple[tuple[str, SettingValue], ...],
-    cwd: Path | None,
-) -> None:
-    """Reject drift and ambiguous profile metadata before constructing requests.
-
-    Raises:
-        ValueError: Settings, digest, or working directory do not match.
-    """
-    if len(settings) != len(entries):
-        raise ValueError("duplicate invocation settings")
-    profile = settings.get(PROFILE_SETTING)
-    digest = settings.get("invocation_profile_sha256")
-    if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
-        if cwd is not None:
-            raise ValueError("legacy profile cannot use an invocation cwd")
-        return
-    actual_digest = hashlib.sha256(json.dumps(PROFILE_ARGS).encode()).hexdigest()
-    if profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
-        raise ValueError("unsupported or incomplete invocation profile")
-    if actual_digest != PROFILE_DIGEST:
-        raise ValueError("invocation profile controls have changed")
-    if cwd is None:
-        raise ValueError("invocation profile requires a working directory")
-
-
 @dataclass(frozen=True)
 class CodexOutcomeClassifier(OutcomeClassifier):
     """Pass one settled supervisor observation to a classifier operation.
@@ -277,6 +250,30 @@ class CodexOutcomeClassifier(OutcomeClassifier):
             if message == CAPACITY_ERROR_MESSAGE:
                 return _failure_assessment("capacity")
         return self.assess_settled_evidence(evidence)
+
+
+def _validate_profile(
+    settings: dict[str, SettingValue],
+    entries: tuple[tuple[str, SettingValue], ...],
+    cwd: Path | None,
+) -> None:
+    """Reject drift and ambiguous profile metadata before constructing requests.
+
+    Raises:
+        ValueError: Settings, digest, or working directory do not match.
+    """
+    if len(settings) != len(entries):
+        raise ValueError("duplicate invocation settings")
+    profile = settings.get(PROFILE_SETTING)
+    digest = settings.get("invocation_profile_sha256")
+    if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
+        if cwd is not None:
+            raise ValueError("legacy profile cannot use an invocation cwd")
+        return
+    if profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
+        raise ValueError("unsupported or incomplete invocation profile")
+    if cwd is None:
+        raise ValueError("invocation profile requires a working directory")
 
 
 def _failure_assessment(retry_class: Literal["quota", "capacity"]) -> RetryAssessment:

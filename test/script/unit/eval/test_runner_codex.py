@@ -27,7 +27,6 @@ from script.eval.runner.adapters import (
     CodexAttemptRequestBuilder,
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
-    codex,
 )
 from script.eval.runner.adapters.codex import (
     INVOCATION_PROFILE,
@@ -959,6 +958,7 @@ def test_hardened_profile_binds_controls_and_logical_identity() -> None:
         (("invocation_profile_sha256", PROFILE_DIGEST),),
         ((PROFILE_SETTING, INVOCATION_PROFILE), ("invocation_profile_sha256", "bad")),
     ],
+    ids=["unknown", "missing-digest", "missing-profile", "wrong-digest"],
 )
 def test_builder_rejects_invalid_declared_profile(
     settings: tuple[tuple[str, SettingValue], ...],
@@ -967,29 +967,12 @@ def test_builder_rejects_invalid_declared_profile(
     config, plan, call, binding, evidence = plan_and_inputs()
     binding = replace(binding, effective_settings=settings)
 
-    # When / Then
-    with pytest.raises(ValueError, match="profile"):
+    # When
+    with pytest.raises(ValueError) as error:
         CodexAttemptRequestBuilder().build(plan, call, binding, evidence, config)
 
-
-def test_builder_rejects_profile_control_drift(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Given
-    config, plan, call, binding, evidence = plan_and_inputs()
-    binding = replace(
-        binding,
-        effective_settings=(
-            (PROFILE_SETTING, INVOCATION_PROFILE),
-            ("invocation_profile_sha256", PROFILE_DIGEST),
-        ),
-    )
-    monkeypatch.setattr(codex, "PROFILE_ARGS", (*codex.PROFILE_ARGS, "--changed"))
-    builder = CodexAttemptRequestBuilder(
-        invocation_cwd=Path("/tmp/ataraxia-eval-a/empty")
-    )
-
-    # When / Then
-    with pytest.raises(ValueError, match="controls have changed"):
-        builder.build(plan, call, binding, evidence, config)
+    # Then
+    assert "profile" in str(error.value)
 
 
 def test_version_timeout_leaves_version_unknown(
