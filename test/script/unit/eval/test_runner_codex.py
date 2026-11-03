@@ -32,7 +32,6 @@ from script.eval.runner.adapters.codex import (
     INVOCATION_PROFILE,
     PROFILE_DIGEST,
     PROFILE_SETTING,
-    control_args,
     requested_settings,
 )
 from script.process_supervisor import (
@@ -1262,9 +1261,13 @@ def test_classifier_refuses_capacity_text_in_an_ambiguous_envelope() -> None:
     assert assessment.no_result_basis == "present_or_unknown"
 
 
-@pytest.mark.parametrize("sandbox", ["read-only", "workspace-write"])
 @pytest.mark.parametrize(
-    ("enabled", "toggle"), [(False, "--disable"), (True, "--enable")]
+    "sandbox", ["read-only", "workspace-write"], ids=["read-only", "workspace-write"]
+)
+@pytest.mark.parametrize(
+    ("enabled", "toggle"),
+    [(False, "--disable"), (True, "--enable")],
+    ids=["tools-disabled", "tools-enabled"],
 )
 def test_v3_builder_requests_selected_controls(
     sandbox: str, enabled: bool, toggle: str
@@ -1288,7 +1291,52 @@ def test_v3_builder_requests_selected_controls(
     argv = effective.request.argv
     assert effective.request.cwd == cwd
     assert argv[argv.index("--sandbox") + 1] == sandbox
-    assert argv[-2 - len(control_args(enabled)) : -2] == control_args(enabled)
+    expected = (
+        "--skip-git-repo-check",
+        "-c",
+        "agents.enabled=false",
+        "-c",
+        "skills.bundled.enabled=false",
+        "-c",
+        "memories.use_memories=false",
+        "-c",
+        'web_search="disabled"',
+        "-c",
+        "tools.experimental_request_user_input.enabled=false",
+        "--disable",
+        "plugins",
+        "--disable",
+        "apps",
+        toggle,
+        "shell_tool",
+        "--disable",
+        "multi_agent",
+        "--disable",
+        "browser_use",
+        "--disable",
+        "browser_use_external",
+        "--disable",
+        "in_app_browser",
+        "--disable",
+        "computer_use",
+        "--disable",
+        "image_generation",
+        "--disable",
+        "view_image",
+        "--disable",
+        "sleep_tool",
+        toggle,
+        "code_mode",
+        toggle,
+        "code_mode_host",
+        "--disable",
+        "artifact",
+        "--disable",
+        "hooks",
+        "--disable",
+        "skill_search",
+    )
+    assert argv[-2 - len(expected) : -2] == expected
     assert argv[argv.index("shell_tool") - 1] == toggle
     assert argv[argv.index("code_mode") - 1] == toggle
     assert argv[argv.index("code_mode_host") - 1] == toggle
@@ -1385,3 +1433,66 @@ def test_v3_rejects_incomplete_metadata() -> None:
     # When / Then
     with pytest.raises(ValueError, match="incomplete or inconsistent"):
         builder.build(plan, call, binding, evidence, config)
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"working_directory": Path("clone")},
+        {"sandbox_mode": "workspace-write"},
+        {"enable_tools": True},
+    ],
+    ids=["workspace", "sandbox", "tools"],
+)
+@pytest.mark.parametrize(
+    ("settings", "cwd"),
+    [
+        ((), None),
+        (
+            (
+                (PROFILE_SETTING, INVOCATION_PROFILE),
+                ("invocation_profile_sha256", PROFILE_DIGEST),
+            ),
+            Path("/tmp/ataraxia-eval-a/empty"),
+        ),
+    ],
+    ids=["v1", "v2"],
+)
+def test_legacy_builder_rejects_nondefault_controls(
+    changes: dict[str, object],
+    settings: tuple[tuple[str, SettingValue], ...],
+    cwd: Path | None,
+) -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    config = config.model_copy(update=changes)
+    binding = replace(binding, effective_settings=settings)
+
+    # When / Then
+    with pytest.raises(ValueError, match="legacy invocation profile requires default"):
+        CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
+            plan, call, binding, evidence, config
+        )
+
+
+def test_v3_borrowed_identity_ignores_equivalent_launch_paths() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    cwd = Path("/launch/clone")
+    relative = config.model_copy(update={"working_directory": Path("clone")})
+    absolute = config.model_copy(update={"working_directory": cwd})
+    relative_binding = replace(
+        binding, effective_settings=requested_settings(relative, Path("/launch"), cwd)
+    )
+    absolute_binding = replace(
+        binding, effective_settings=requested_settings(absolute, Path("/other"), cwd)
+    )
+    builder = CodexAttemptRequestBuilder(invocation_cwd=cwd)
+
+    # When
+    a = builder.build(plan, call, relative_binding, evidence, relative)
+    b = builder.build(plan, call, absolute_binding, evidence, absolute)
+
+    # Then
+    assert a.call_id == b.call_id
+    assert a.request == b.request

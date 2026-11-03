@@ -711,3 +711,58 @@ async def test_v3_borrowed_relative_workspace_survives_archiving(
     # Then
     assert result.evidence_state == "complete"
     assert result.calls[0].state == "complete"
+
+
+@pytest.mark.parametrize(
+    ("key", "value"),
+    [
+        ("working_directory", "clone"),
+        ("sandbox_mode", "workspace-write"),
+        ("enable_tools", True),
+    ],
+    ids=["workspace", "sandbox", "tools"],
+)
+@pytest.mark.parametrize(
+    "cwd", [None, Path("/tmp/ataraxia-eval-gone/empty")], ids=["v1", "v2"]
+)
+async def test_legacy_saved_report_rejects_nondefault_plan_controls(
+    tmp_path: Path, key: str, value: object, cwd: Path | None
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(root, invocation_cwd=cwd)
+    path = root / "plan.json"
+    frozen = json.loads(path.read_text())
+    frozen["configuration"][key] = value
+    path.write_text(json.dumps(frozen))
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "invalid"
+    assert result.calls[0].state == "invalid"
+
+
+async def test_v3_borrowed_launch_provenance_tampering_is_rejected(
+    tmp_path: Path,
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root, invocation_cwd=Path("/resolved/clone"), v3=True, borrowed=True
+    )
+    path = root / "run.json"
+    summary = json.loads(path.read_text())
+    summary["effective_settings"][4][1] = "/another-launch"
+    summary["calls"][0]["effective_settings_sha256"] = settings_digest(
+        tuple(tuple(item) for item in summary["effective_settings"])
+    )
+    path.write_text(json.dumps(summary))
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "invalid"
+    assert result.calls[0].state == "invalid"

@@ -99,6 +99,46 @@ def control_digest(enable_tools: bool) -> str:
     return hashlib.sha256(json.dumps(control_args(enable_tools)).encode()).hexdigest()
 
 
+def requested_settings(
+    config: HarnessConfig, launch_cwd: Path, workspace: Path | None
+) -> tuple[tuple[str, SettingValue], ...]:
+    """Record controls with the already resolved workspace and launch anchor.
+
+    Returns:
+        Requested controls and unavailable effective settings.
+    """
+    identity = "owned-empty-per-run-v1" if workspace is None else str(workspace)
+    return (
+        (PROFILE_SETTING, CONTROL_PROFILE),
+        ("invocation_profile_sha256", control_digest(config.enable_tools)),
+        (
+            "requested_tool_profile",
+            "local-tools-enabled-v1"
+            if config.enable_tools
+            else "local-tools-disabled-v1",
+        ),
+        ("requested_workspace_identity", identity),
+        (
+            "requested_launch_cwd",
+            str(launch_cwd) if config.working_directory is not None else None,
+        ),
+        (
+            "requested_workspace_path",
+            os.path.normpath(str(launch_cwd / config.working_directory))
+            if config.working_directory is not None
+            else None,
+        ),
+        ("requested_approval_policy", "never"),
+        ("requested_ignore_user_config", True),
+        ("requested_sandbox_mode", config.sandbox_mode),
+        ("effective_approval_policy", None),
+        ("effective_model_reasoning_effort", None),
+        ("effective_sandbox_mode", None),
+        ("effective_tool_controls", None),
+        ("automatic_system_instructions", None),
+    )
+
+
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
 type ReadEffectiveSettings = Callable[
@@ -310,16 +350,19 @@ def _validate_profile(
         raise ValueError("duplicate invocation settings")
     profile = settings.get(PROFILE_SETTING)
     digest = settings.get("invocation_profile_sha256")
+    if profile != CONTROL_PROFILE:
+        _validate_legacy_controls(config)
+    control_metadata = any(
+        key in settings
+        for key in (
+            "requested_tool_profile",
+            "requested_workspace_identity",
+            "requested_launch_cwd",
+            "requested_workspace_path",
+        )
+    )
     if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
-        if any(
-            key in settings
-            for key in (
-                "requested_tool_profile",
-                "requested_workspace_identity",
-                "requested_launch_cwd",
-                "requested_workspace_path",
-            )
-        ):
+        if control_metadata:
             raise ValueError("incomplete invocation profile")
         if cwd is not None:
             raise ValueError("legacy profile cannot use an invocation cwd")
@@ -328,18 +371,26 @@ def _validate_profile(
         _validate_controls(settings, digest, cwd, config)
     elif profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
         raise ValueError("unsupported or incomplete invocation profile")
-    elif any(
-        key in settings
-        for key in (
-            "requested_tool_profile",
-            "requested_workspace_identity",
-            "requested_launch_cwd",
-            "requested_workspace_path",
-        )
-    ):
+    elif control_metadata:
         raise ValueError("unexpected execution control metadata")
     if cwd is None:
         raise ValueError("invocation profile requires a working directory")
+
+
+def _validate_legacy_controls(config: HarnessConfig) -> None:
+    """Reject new controls that historical recipes could not apply.
+
+    Raises:
+        ValueError: A nondefault execution control was requested.
+    """
+    if (
+        config.working_directory is not None
+        or config.sandbox_mode != "read-only"
+        or config.enable_tools
+    ):
+        raise ValueError(
+            "legacy invocation profile requires default execution controls"
+        )
 
 
 def _validate_controls(
@@ -585,46 +636,6 @@ def _read_effective_settings(
     return requested_settings(config, launch_cwd, workspace)
 
 
-def requested_settings(
-    config: HarnessConfig, launch_cwd: Path, workspace: Path | None
-) -> tuple[tuple[str, SettingValue], ...]:
-    """Record controls with the already resolved workspace and launch anchor.
-
-    Returns:
-        Requested controls and unavailable effective settings.
-    """
-    identity = "owned-empty-per-run-v1" if workspace is None else str(workspace)
-    return (
-        (PROFILE_SETTING, CONTROL_PROFILE),
-        ("invocation_profile_sha256", control_digest(config.enable_tools)),
-        (
-            "requested_tool_profile",
-            "local-tools-enabled-v1"
-            if config.enable_tools
-            else "local-tools-disabled-v1",
-        ),
-        ("requested_workspace_identity", identity),
-        (
-            "requested_launch_cwd",
-            str(launch_cwd) if config.working_directory is not None else None,
-        ),
-        (
-            "requested_workspace_path",
-            os.path.normpath(str(launch_cwd / config.working_directory))
-            if config.working_directory is not None
-            else None,
-        ),
-        ("requested_approval_policy", "never"),
-        ("requested_ignore_user_config", True),
-        ("requested_sandbox_mode", config.sandbox_mode),
-        ("effective_approval_policy", None),
-        ("effective_model_reasoning_effort", None),
-        ("effective_sandbox_mode", None),
-        ("effective_tool_controls", None),
-        ("automatic_system_instructions", None),
-    )
-
-
 def _runner_version() -> str:
     """Return the installed harness distribution version."""
     return version("ataraxia")
@@ -652,6 +663,23 @@ def _effective_call_id(
         _encode_identity_component(label, value) for label, value in components
     )
     return hashlib.sha256(payload).hexdigest()
+
+
+def _identity_settings(
+    entries: tuple[tuple[str, SettingValue], ...],
+) -> tuple[tuple[str, SettingValue], ...]:
+    """Exclude v3 path provenance that does not change a resolved invocation.
+
+    Returns:
+        Settings participating in effective call identity.
+    """
+    if dict(entries).get(PROFILE_SETTING) != CONTROL_PROFILE:
+        return entries
+    return tuple(
+        entry
+        for entry in entries
+        if entry[0] not in ("requested_launch_cwd", "requested_workspace_path")
+    )
 
 
 def _effective_call_components(
@@ -701,16 +729,7 @@ def _effective_call_components(
     setting_fields = tuple(
         component
         for key, value in sorted(
-            (
-                setting
-                for setting in binding.effective_settings
-                if not (
-                    dict(binding.effective_settings).get(PROFILE_SETTING)
-                    == CONTROL_PROFILE
-                    and setting[0]
-                    in ("requested_launch_cwd", "requested_workspace_path")
-                )
-            ),
+            _identity_settings(binding.effective_settings),
             key=lambda setting: (setting[0], _encode_setting_value(setting[1])),
         )
         for component in (
