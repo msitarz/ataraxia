@@ -1,0 +1,5 @@
+Use an available file-reading tool or a narrow read-only command such as
+`cat canary.txt` to read only `canary.txt` from the current working directory.
+Return the exact file contents, excluding its final newline, as the JSON object
+`{"token":"..."}` and nothing else. Do not guess or fabricate a token. If the
+file cannot be read, return `{"error":"unavailable"}`.
