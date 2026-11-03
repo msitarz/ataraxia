@@ -1,0 +1,306 @@
+{
+  "authorization": "Maintainer authorized exactly 11 remaining A calls as exploratory; no additional calls or retries.",
+  "head_commit": "7042991bc876a84a608f81bbf24be38c435f504d",
+  "input_sha256": {
+    "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt": "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477",
+    "doc/feat/reviewer/engineering/evaluation/inputs/cases/A/a.txt": "496f29907509b97a20e67f502ceb6828933cbf63670d5648cf544cc3b1314342",
+    "doc/feat/reviewer/engineering/evaluation/inputs/corpus/source.txt": "27a1972f0c79684682a3fb164a4776bd203f00cbf24aed4ced8278ba55fe1f66"
+  },
+  "instructions_file": "doc/feat/reviewer/engineering/evaluation/preparation/min.md",
+  "instructions_sha256": "e6a735386f908f03c35bbe65be9e786d7c23ab471ce112b6d0b7f6f198be1cdd",
+  "cli_path": "/usr/local/bin/codex",
+  "cli_version": "codex-cli 0.166.0",
+  "runtime_binding": "not verified beyond local CLI path/version; actual provider/model/effort binding unverified",
+  "tool_context_isolation": "unverified",
+  "baseline": "not remeasured; no adjusted claims",
+  "protocol_deviation": "A-only execution departs from protocol A/B interleaving; report as exploratory.",
+  "existing_slot": {
+    "repetition": 1,
+    "effort": "none",
+    "strategy": "A",
+    "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-none-A",
+    "status": "existing_invalid_retained_not_retried"
+  },
+  "planned_slots": [
+    {
+      "repetition": 1,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-none-A",
+      "status": "existing_invalid_retained_not_retried"
+    },
+    {
+      "repetition": 1,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-low-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-low-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-low-A",
+      "status": "candidate_not_authorized"
+    }
+  ],
+  "dispatch_policy": "Sequential fresh harness/Codex invocation per slot; one call each; concurrency 1; timeout 300s; cleanup 10s; output cap 1048576 bytes; retry 0; capacity retry 0; quota wait disabled. Stop on cancellation, drift, unsafe/unknown cleanup, unsupported binding, or three consecutive infrastructure failures.",
+  "started_at_utc": "2026-11-03T11:44:13.469882+00:00",
+  "calls": [
+    {
+      "repetition": 1,
+      "effort": "low",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-low-A",
+      "status": "failed_infrastructure_before_model_turn",
+      "run_id": "73103af3-b722-4afd-a112-65fa6669b79c",
+      "elapsed_seconds": 0.178289371,
+      "cleanup_complete": true,
+      "retry_count": 0,
+      "reason": "Codex failed during app-server initialization: Operation not permitted; stdout empty; no tool event metadata present."
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-medium-A",
+      "status": "complete_process_success",
+      "run_id": "829a4e0d-a2ae-4b02-b9b5-de08d63d4379",
+      "started_at_utc": "2026-11-03T11:45:10.840344Z",
+      "ended_at_utc": "2026-11-03T11:45:29.750217Z",
+      "elapsed_seconds": 18.91,
+      "attempt_count": 1,
+      "retry_count": 0,
+      "stdout_event_kinds": [
+        "thread.started",
+        "turn.started",
+        "item.completed(agent_message)",
+        "turn.completed"
+      ],
+      "usage_telemetry_present": true
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-high-A",
+      "status": "complete_process_success_boundary_breach_detected",
+      "run_id": "ced39b2c-18e4-4abe-99fd-c65012d04e11",
+      "started_at_utc": "2026-11-03T11:46:36.710384Z",
+      "ended_at_utc": "2026-11-03T11:48:09.159063Z",
+      "elapsed_seconds": 92.447726,
+      "attempt_count": 1,
+      "retry_count": 0,
+      "cleanup_complete": true,
+      "stdout_event_kinds": [
+        "thread.started",
+        "turn.started",
+        "item.started(command_execution)",
+        "item.completed(command_execution)",
+        "item.completed(agent_message)",
+        "turn.completed"
+      ],
+      "boundary_breach": {
+        "event_kinds": [
+          "thread.started",
+          "turn.started",
+          "item.started(command_execution)",
+          "item.completed(command_execution)",
+          "item.completed(agent_message)",
+          "turn.completed"
+        ],
+        "observed_command": "/bin/zsh -lc ls",
+        "command_exit_status": 0,
+        "command_cwd": "/Users/nzs/Code/ataraxia",
+        "observation": "The command output was a directory listing that included unsupplied repository entries.",
+        "file_contents_read": "No evidence that any file contents or private answers were read; only directory listing activity is observed.",
+        "agent_message_body": "not inspected"
+      }
+    }
+  ],
+  "status": "stopped_after_boundary_breach",
+  "stop_reason": "Observed rep-1-high-A command_execution event: /bin/zsh -lc ls, exit 0, cwd repository root; output listed unsupplied repository entries. Evidence shows directory listing only, not file-content or private-answer reads. Stop required by protocol.",
+  "remaining_slots_not_started": [
+    {
+      "repetition": 2,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-low-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-low-A",
+      "status": "candidate_not_authorized"
+    }
+  ],
+  "report_paths": [
+    "output/reviewer-evaluation/ab-001/reports/rep-1-low-A.json",
+    "output/reviewer-evaluation/ab-001/reports/rep-1-medium-A.json",
+    "output/reviewer-evaluation/ab-001/reports/rep-1-high-A.json"
+  ],
+  "report_summary": {
+    "rep-1-low-A": {
+      "failed": 1,
+      "invalid": 0,
+      "complete": 0,
+      "thread_id": null
+    },
+    "rep-1-medium-A": {
+      "failed": 0,
+      "invalid": 1,
+      "complete": 0,
+      "thread_id": "01a1a13a-3d70-7b22-a021-fb8ea3cbbf12"
+    },
+    "rep-1-high-A": {
+      "failed": 0,
+      "invalid": 1,
+      "complete": 0,
+      "thread_id": null
+    }
+  },
+  "thread_id_scan": {
+    "method": "Read only thread.started event metadata from available raw stdout streams.",
+    "existing_rep_1_none_A": "01a1a121-e114-73d0-ba6f-fa2aafe0c889",
+    "new_rep_1_low_A": null,
+    "new_rep_1_medium_A": "01a1a13a-3d70-7b22-a021-fb8ea3cbbf12",
+    "new_rep_1_high_A": "01a1a13b-8cdc-7f00-bee4-552abfc1a3ee",
+    "observed_known_unique_ids": 3,
+    "duplicates_observed": false,
+    "low_slot_scope": "No thread.started event in retained stdout; call failed before model turn, so ID unknown/not observed.",
+    "remaining_unstarted_slots_have_no_thread_id": "No stream exists for unstarted calls."
+  },
+  "usage_summary": {
+    "rep-1-low-A": "unavailable (failed before model turn)",
+    "rep-1-medium-A": {
+      "input_tokens": 23690,
+      "cached_input_tokens": 7168,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 1577,
+      "reasoning_output_tokens": 481
+    },
+    "rep-1-high-A": {
+      "input_tokens": 49844,
+      "cached_input_tokens": 31616,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 9632,
+      "reasoning_output_tokens": 7603
+    }
+  },
+  "operator_deviation": {
+    "description": "During operational metadata extraction after rep-1-medium-A, the encoded usage_telemetry blob was accidentally printed. It was not decoded or semantically reviewed. No response content was injected into any later prompt; no inputs or settings changed.",
+    "disposition": "Retained and disclosed; no retry/refill."
+  },
+  "final_counts": {
+    "candidate_slots_authorized": 11,
+    "new_slots_settled": 3,
+    "startup_failure_before_model_turn": 1,
+    "process_exit_0_but_report_invalid": 2,
+    "not_started": 8,
+    "original_rep_1_none_A": "preexisting invalid; unchanged and not retried"
+  }
+}
