@@ -195,17 +195,19 @@ isolation.
 
 ## Additional context
 
-The supporting protocol now prepares a bounded findings-based A/B stage:
-A reviews all three rules and the whole three-file corpus; each independent B
-call reviews one rule and that same whole corpus. Targets and expected labels
-remain private. The primary medium comparison reuses its observations in a
-separate none/low/medium/high effort analysis. C is deferred and is not prepared
-in this PR. Final A/B/C and historical requirements above remain unchanged.
+The supporting protocol now prepares a bounded findings-based A/B stage: A
+reviews all three rules and the whole three-file corpus; each independent B call
+reviews one rule and that same whole corpus. All 12 planned A calls are
+completed or accounted for before any of the 36 planned B calls. Targets and
+expected labels remain private. The primary medium comparison reuses its
+observations in a separate none/low/medium/high effort analysis. C preparation
+and execution require later authorization after A/B comparison and review. Final
+A/B/C and historical requirements above remain unchanged.
 
 Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
 with a separately held draft reference index. Existing
 [draft A/B inputs](inputs/preparation.md) are prepared for independent review
-and a new freeze. Owner validation, runtime
+and a new freeze under `execution-controls-v3`. Owner validation, runtime
 binding, matched input baselines, and retained boundary checks remain
 outstanding. The initial corpus does not complete historical/diversity evidence
 or support a production granularity decision. The accepted CLI limitation does

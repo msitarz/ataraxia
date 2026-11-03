@@ -12,11 +12,16 @@ model dispatch. The fourth returned the requested neutral greeting under
 invocation. It returned 7,983 input tokens and 15 output tokens; server-internal
 binding details remain unavailable.
 
-**Current Step 1 status: maintainer-accepted known issue; boundary unverified.**
-The maintainer decided to continue with `codex exec`, accepting the remaining
-tool declarations and injected permission, collaboration, and environment
-context, and to subtract measured configuration-specific input baselines in
-final reporting. The combined fourth static candidate still declares
+**Historical 0.164.0 Step 1 status: accepted limitation; boundary unverified.**
+The current [protocol](protocol.md#candidate-invocation-and-input-overhead) uses
+`execution-controls-v3` and requires newly reviewed matched baselines and
+runtime binding before scored execution. This record supplies neither those
+prerequisites nor new preparation budget. Later 0.166.0 smoke/canary
+observations likewise do not establish matched baselines for the new series. The
+maintainer decided to continue with `codex exec`, accepting the remaining tool
+declarations and injected permission, collaboration, and environment context,
+and to subtract measured configuration-specific input baselines in final
+reporting. The combined fourth static candidate still declares
 `functions.exec`/`functions.wait`, MCP resource readers, and `apply_patch`.
 Their presence alone no longer blocks preparation. This is acceptance of a
 limitation, not verified tool-free operation or authenticated runtime isolation.
@@ -28,9 +33,9 @@ retain immutable-input, read-only-source, withheld-label and prior-answer
 separation, bounded-resource, and failure/stop protections. Token subtraction
 cannot undo possible tool/context influence on judgments. Other preparation
 requirements remain unresolved; neither all bounded preparation nor the
-Evaluation is complete. All acceptance criteria remain TODO. No additional
-calls, fixtures, wrapper implementation, corpus trials, or production delivery
-are authorized by this amendment.
+Evaluation is complete. All acceptance criteria remain TODO. This historical
+record authorizes no additional calls or production delivery. The existing
+harness and saved-result validator do not establish trial readiness.
 
 ## Proposed neutral inputs
 

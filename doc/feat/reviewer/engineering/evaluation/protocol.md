@@ -1,13 +1,13 @@
 # Engineering review comparison protocol
 
 Read when preparing, executing, or interpreting the [Evaluation](README.md).
-This is a proposed protocol for owner review, with no Evaluation trial results
-or production-policy decision. All Evaluation criteria remain TODO.
+This is a proposed protocol for owner review, with no completed Evaluation or
+production-policy decision. All Evaluation criteria remain TODO.
 
 Prepare an initial A/B comparison on a bounded static corpus: does reviewing
 one rule at a time improve spontaneous finding detection over reviewing all
 three rules together? Both strategies review the entire same corpus. C is
-deferred and is not prepared in this PR.
+deferred until after A/B comparison and review.
 
 The initial comparison has limited source diversity. Final Evaluation completion
 still requires the historical-change evidence in its contract and does not
@@ -15,13 +15,21 @@ itself adopt a production granularity decision.
 
 ## Authorization and preparation
 
-The maintainer authorized preparation of A/B inputs in this PR. The prepared
+The maintainer authorized alignment of the A/B protocol. The prepared
 draft inputs are not a frozen findings-based invocation. No model trials,
 further neutral calls, freeze, or production implementation are authorized.
 Later execution requires independent owner review and authorization within the
 existing Work; these stages are assignments, not new Work children. Before any
 revised comparison runs, require a newly reviewed freeze of the amended protocol
-and aligned inputs, even though no corpus trials have run.
+and aligned inputs.
+
+The
+[stopped exploratory A series](../../../../../output/reviewer-evaluation/ab-001/a-series-execution.json),
+retained in [PR 439](https://github.com/msitarz/ataraxia/pull/439), contains an
+initial A/none observation, three additional attempted low/medium/high calls,
+and eight unstarted slots. The high attempt includes an `ls` repository listing.
+Preserve those outcomes and deviations as historical A-only evidence. The fresh
+`execution-controls-v3` series is separate; do not resume or refill that series.
 
 Within the authorized preparation scope and before later execution:
 
@@ -37,8 +45,8 @@ wrapper and scorer are sufficient. No production rule discovery, dynamic context
 assembly, plugin framework, or general planner is required. Python owns the
 wrapper's limits, result validation, and accounting under the inherited
 constraints; the model supplies semantic judgments. This amendment defines
-those future responsibilities and does not authorize implementing a scorer or
-validator in the input-preparation increment.
+those responsibilities; the existing harness and saved-result validator provide
+bounded execution and structural inspection, not owner semantic adjudication.
 
 Freeze and retain these items before outcomes:
 
@@ -128,7 +136,9 @@ C remains part of the final Evaluation contract, with independent one-rule,
 changed-function sessions and reviewed sufficient context from the same source.
 Its packets, target eligibility, prompts, call list, and readiness are deferred.
 Do not author C packets or require C readiness for this A/B preparation stage.
-A later authorized extension must define and independently review those inputs,
+Only after the A/B results have been compared and reviewed may a newly
+authorized extension prepare or execute C. That extension must define and
+independently review those inputs,
 common eligible denominators, exclusions, and resource bounds before a new
 freeze. No C calls are included in the initial matrix below.
 
@@ -181,28 +191,27 @@ B uses three independent one-rule sessions. Both review all supplied code for
 applicable violations of their supplied rules; the private controls do not
 restrict the review scope. Source and reference access is identical.
 
-At each effort, use three fresh independent repetitions:
+Run the full A scenario before the full B scenario:
 
-- Run sequentially and finish each complete strategy before starting the next.
-- Within B, order rule IDs lexically.
+- Complete or explicitly account for all 12 planned A calls before any B call.
+- Then complete or explicitly account for all 36 planned B calls.
+- Use three fresh independent repetitions at each effort in each scenario.
+- Within each scenario, run repetition 1, then 2, then 3.
+- Within each repetition, run efforts in the order none, low, medium, high.
+- Within each B effort, order rule IDs lexically: R1, R3, R4.
+- Run sequentially with concurrency one.
 - Never resume a prior session or supply hints or prior answers.
+- Retained stop conditions take precedence over progressing to B.
 
-For each effort, three repetitions use 3 × (1 + 3) = 12 trial calls.
-Across four efforts, the matrix uses 48 unique trial calls. Each complete
+A uses 4 efforts × 3 repetitions = 12 planned calls. B uses 4 efforts ×
+3 repetitions × 3 rules = 36 planned calls. The initial matrix therefore has
+48 unique planned calls, 12 per effort. Each complete
 strategy/effort/repetition has the same 12 private violation opportunities and
 12 compliant controls. Repetitions add no source diversity.
 
-Use this predetermined effort-block and strategy order:
-
-| Repetition | Effort order | Strategy order within each effort |
-| --- | --- | --- |
-| 1 | none, low, medium, high | A, B |
-| 2 | low, medium, high, none | B, A |
-| 3 | medium, high, none, low | A, B |
-
-Finish both strategies in an effort block before moving to the next block.
-Three repetitions cannot balance two strategy orders or four effort positions
-perfectly. Retain order, load, and caching as confounds.
+This fixed A-first/B-second order retains provider-load, time, cache, and order
+confounds. It is not counterbalanced. Record actual order and gaps; compare
+results only after both scenarios have been accounted for.
 
 Reuse the medium slice's 12 session observations for primary A/B reporting and
 the secondary effort control:
@@ -302,7 +311,8 @@ Disabling `shell_tool` is a candidate control for command execution, as
 described in
 [configuration guidance](https://learn.chatgpt.com/docs/config-file/config-basic);
 it does not alone prove that every reading surface or automatic instruction has
-been removed. This protocol prescribes no unverified exact CLI recipe.
+been removed. The current requested profile is specified below; its effective
+isolation remains unverified.
 
 Before trials, verify immutable-input and read-only-source protections and
 separation from withheld labels and prior answers at the actual invocation
@@ -315,51 +325,38 @@ or context drift outside the frozen limitation still requires review.
 
 ### Candidate invocation and input overhead
 
-The maintainer supplied this candidate configuration, shown with shell quoting
-that preserves TOML string values. This is an unverified recipe, not proof of
-tool-free or input-only operation:
+Use the implemented generic harness's `execution-controls-v3` profile, as
+specified in the [harness guide](../../../../../script/eval/README.md).
 
-```sh
-codex exec --model gpt-6-luna \
-  -c 'model_reasoning_effort="none"' \
-  -c 'model_instructions_file="min.md"' \
-  -c 'skills.bundled.enabled=false' \
-  -c 'web_search="disabled"' \
-  -c 'features.multi_agent=false' \
-  -c 'features.unified_exec=false' \
-  -c 'features.shell_tool=false' \
-  -c 'tools.experimental_request_user_input.enabled=false' \
-  --disable apps --disable artifact "hi how are you" --json
-```
+- Use the default fresh harness-owned empty working directory outside the
+  repository.
+- Request the read-only sandbox and disabled local tools.
+- Ignore user configuration and request approval policy `never`.
+- Supply the exact frozen nonempty `min.md` bytes through the native instruction
+  override.
+- Keep those instruction bytes identical across strategies and efforts.
+- Vary effort only as declared in the fixed call list.
+- Record the resolved CLI executable, version, profile, requested settings, and
+  retained invocation evidence.
+- Leave unknown effective settings unknown.
+- Do not enable tools or select a user workspace for this comparison.
+- Do not use quota probes or `--allow-extra`; they are outside the initial
+  budget.
 
-During authorized preparation:
+The native instruction override replaces default model instructions, but does
+not prove removal of every automatic instruction or tool. Requested disables do
+not establish effective tool removal or absolute read isolation. The read-only
+sandbox permits reads; it does not satisfy the retained private-label,
+prior-answer, and source-access protections by itself. Their verification
+remains a readiness gap, not a waived requirement.
 
-- Replace the greeting with the frozen generated prompt text.
-- Vary only the declared effort.
-- Freeze a nonempty reviewed `min.md` before all conditions; this definition
-  creates no such file.
-- Use the same exact instruction-file bytes for primary and secondary
-  conditions.
-
-The
-[official configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
-explains the relevant controls and their limits:
-
-- `model_instructions_file` replaces built-in instructions; it does not
-  establish that every other model-visible instruction or tool declaration is
-  absent.
-- Supported reasoning levels depend on the model and client.
-- `shell_tool` controls command-execution tools.
-- A false `unified_exec` user opt-out is ignored in the documented runtime;
-  managed disabling still leaves one-shot execution available.
-- `web_search="disabled"` removes that tool.
-- Local image attachment has its own `tools.view_image` control.
-
-The public reference did not establish the candidate's `skills.bundled.enabled`
-or `tools.experimental_request_user_input.enabled` behavior. Validate support
-and effect on the actual system CLI rather than assuming these settings are
-invalid or effective. Inspect every surfaced tool, including local image/file
-readers, under the accepted limitation and retained protections above.
+The 0.164.0 preparation record and later 0.166.0 smoke/canary observations are
+historical evidence for their own configurations. Neither supplies matched
+per-configuration/per-effort baselines or runtime binding for this fresh series.
+Before scored execution, require newly reviewed matched baselines and runtime
+binding, within separately authorized preparation. Existing exhausted or
+unresolved preparation allowances are not replenished by this alignment.
+No baseline measurement or user trial is authorized here.
 
 The maintainer reports 7,380 `input_tokens` for one none/greeting invocation
 using this configuration. No raw event stream was supplied or independently

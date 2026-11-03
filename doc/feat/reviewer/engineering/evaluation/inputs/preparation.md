@@ -12,7 +12,10 @@ owner review, not a freeze or permission to run trials.
   [R4](cases/B/r4.txt). All calls use the same
   [whole corpus](corpus/source.txt).
 - Private controls and rationales are held separately and are not supplied to
-  the model. C preparation is deferred.
+  the model. Complete or account for all 12 A calls before any of the 36 B
+  calls.
+- C preparation and execution follow A/B comparison, review, and new
+  authorization.
 
 Supply the shared directory first, followed by one case directory and the common
 corpus directory. The generic harness's default `\n\n` separator places the
