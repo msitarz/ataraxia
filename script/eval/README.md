@@ -14,13 +14,16 @@ locked development dependencies.
 
 ### Random-token canary
 
-This one-call comparison asks the model to read one unpredictable token from
-its working directory. The prompt and instructions are static; each condition
-gets a fresh workspace and token. Run the commands from a clean repository
-root. Create a temporary parent for retained outputs and token evidence:
+This two-condition comparison submits two harness calls total, one per
+condition, with harness retries disabled. Each asks the model to read one
+unpredictable token from its working directory. The prompt and instructions
+are static; each condition gets a fresh workspace and token. Run the commands
+from a clean repository root. Create a fresh persistent parent for retained
+outputs and token evidence:
 
 ```sh
-results_root=$(mktemp -d "${TMPDIR:-/tmp}/ataraxia-token-canary-results.XXXXXX")
+mkdir -p "$HOME/ataraxia-eval-results"
+canary_results_root=$(mktemp -d "$HOME/ataraxia-eval-results/token-canary.XXXXXX")
 ```
 
 #### Tools disabled
@@ -31,8 +34,14 @@ comparison; it is not placed in a command argument or environment variable.
 
 ```sh
 no_tools_workspace=$(mktemp -d "${TMPDIR:-/tmp}/ataraxia-token-canary-work.XXXXXX")
-openssl rand -hex 32 > "$no_tools_workspace/canary.txt"
-cp "$no_tools_workspace/canary.txt" "$results_root/no-tools-token.txt"
+python3 - "$no_tools_workspace/canary.txt" <<'PY'
+from pathlib import Path
+import secrets
+import sys
+
+Path(sys.argv[1]).write_text(secrets.token_hex(32) + "\n")
+PY
+cp "$no_tools_workspace/canary.txt" "$canary_results_root/no-tools-token.txt"
 ```
 
 Preview exactly one call. This dry run does not start Codex or create output:
@@ -45,7 +54,7 @@ uv run --no-sync python -m script.eval \
   --working-directory "$no_tools_workspace" --sandbox-mode read-only \
   --timeout-seconds 120 --cleanup-timeout-seconds 10 \
   --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
-  -o "$results_root/no-tools-run" -n
+  -o "$canary_results_root/no-tools-run" -n
 ```
 
 Confirm the dry run reports one call, then run the same command without its
@@ -59,8 +68,14 @@ result state from the first one:
 
 ```sh
 tools_workspace=$(mktemp -d "${TMPDIR:-/tmp}/ataraxia-token-canary-work.XXXXXX")
-openssl rand -hex 32 > "$tools_workspace/canary.txt"
-cp "$tools_workspace/canary.txt" "$results_root/tools-token.txt"
+python3 - "$tools_workspace/canary.txt" <<'PY'
+from pathlib import Path
+import secrets
+import sys
+
+Path(sys.argv[1]).write_text(secrets.token_hex(32) + "\n")
+PY
+cp "$tools_workspace/canary.txt" "$canary_results_root/tools-token.txt"
 ```
 
 Preview exactly one call and confirm the one-call plan:
@@ -73,14 +88,17 @@ uv run --no-sync python -m script.eval \
   --working-directory "$tools_workspace" --sandbox-mode read-only \
   --timeout-seconds 120 --cleanup-timeout-seconds 10 \
   --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
-  -o "$results_root/tools-run" -n
+  -o "$canary_results_root/tools-run" -n
 ```
 
 Run the same command without its final `-n`. The positive control requests
 available read-only tools for the one permitted file-reading task; it does not
 authorize writes. Preserve its raw output and token file as well. Only the
-temporary workspaces may be removed after validation; keep `results_root` and
-its contents as evidence.
+temporary workspaces may be removed after validation; keep `canary_results_root`
+and its contents as evidence. The enabled condition permits exactly the same
+single read operation: a file-reading tool or narrow command that reads only
+`canary.txt`, such as `cat canary.txt`; the instructions prohibit unrelated
+commands and all writes.
 
 For each completed run, compare the local token with the model's actual
 `agent_message` text in the attempt's raw `stdout` JSONL. This small local check
@@ -88,7 +106,7 @@ prints only a verdict, never the token. Run it once per condition, substituting
 that condition's token and output paths:
 
 ```sh
-python3 - "$results_root/no-tools-token.txt" "$results_root/no-tools-run" <<'PY'
+python3 - "$canary_results_root/no-tools-token.txt" "$canary_results_root/no-tools-run" <<'PY'
 import json
 from pathlib import Path
 import sys
