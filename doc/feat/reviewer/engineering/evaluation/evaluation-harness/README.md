@@ -70,6 +70,13 @@ non-interruptible process creation, and inability to clean up after `SIGKILL`.
 Generic prompts establish neither tool-free execution nor private-data
 isolation.
 
+The standalone Codex request now uses a fresh external empty cwd and requests
+known feature disables. These controls have not been verified by a live
+canary. No deny hook is installed: Codex 0.166.0 may discover user hooks even
+when user config is ignored, making a blanket trust bypass unsuitable without
+source isolation. The changed profile requires a separately reviewed series;
+it does not authorize resuming the stopped exploratory series.
+
 ## Acceptance criteria
 
 ### **AC-1 DONE** Ordered inputs define a deterministic matrix

@@ -270,6 +270,18 @@ supervisor request.
   a permission-bypass flag. It returns an effective-call identity and
   `AttemptRequest`. No verified flag recipe currently disables all tools or
   features, so their availability is not asserted.
+- The standalone execution owner creates a fresh empty external working
+  directory for the whole run and removes it after coordinator settlement,
+  including cancellation. The v2 profile requests known feature and context
+  disables and `--skip-git-repo-check`; its digest and logical directory policy
+  participate in call identity. Evidence records the actual argv and cwd.
+  Random directory names do not change logical identity. Saved reports verify
+  the recorded paths and settings without requiring temporary files; records
+  without a profile retain the legacy request interpretation.
+- No deny hook is installed. In Codex 0.166.0, ignoring user config still
+  leaves an adjacent user `hooks.json` discoverable, so a blanket hook-trust
+  bypass could also enable unrelated hooks. The requested controls do not
+  establish tool-free execution, hook coverage, or absolute read isolation.
 - The builder is pure: the plan supplies run identity and ordered frozen
   inputs, the binding supplies runtime settings, and the evidence result
   supplies the staged path. It hashes those effective inputs without opening
@@ -429,11 +441,11 @@ Codex, quota, and runtime adapters.
   bytes, requested model and effort, plus the staged native instructions path
   when configured. Its current argv uses `codex exec --json`, disables color,
   uses the read-only sandbox and `approval_policy="never"`, and places the
-  literal prompt after `--`. No verified tool-disable setting is available in
-  this implementation, so it does not claim tool-free execution or private-data
-  isolation. The classifier recognizes the narrow quota and capacity sequences
-  below and supervisor-confirmed prelaunch failure; other outcomes remain
-  unknown. It never parses answer content.
+  literal prompt after `--`. The v2 profile requests known feature disables;
+  their runtime effect remains unverified, so it does not claim tool-free
+  execution or private-data isolation. The classifier recognizes the narrow
+  quota and capacity sequences below and supervisor-confirmed prelaunch failure;
+  other outcomes remain unknown. It never parses answer content.
 - `runner.adapters.codex_quota` implements a version-bounded adapter around the
   provider-neutral quota-reader port. It extracts exactly one canonical
   `thread.started.thread_id` from captured `codex exec --json` JSONL. The

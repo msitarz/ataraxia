@@ -15,6 +15,11 @@ from script.eval.model import (
     RunRecord,
 )
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
+from script.eval.runner.adapters.codex import (
+    INVOCATION_PROFILE,
+    PROFILE_DIGEST,
+    PROFILE_SETTING,
+)
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.ports import CliBinding
 from script.process_supervisor import (
@@ -24,7 +29,7 @@ from script.process_supervisor import (
     Completed,
     SignalAttempt,
 )
-from script.reviewer_eval.report import inspect_run
+from script.reviewer_eval.report import _bound_error, inspect_run
 from test.script.integration.eval.support import attempt_evidence
 from test.script.integration.reviewer_eval.support import (
     create_run,
@@ -55,6 +60,60 @@ async def test_complete_saved_run_and_evidence_unchanged(tmp_path: Path):
     }
     assert result.calls[0].selected_attempt == 1
     assert snapshot(root) == before
+
+
+async def test_profile_record_checks_actual_request_without_temp_assets(tmp_path: Path):
+    root = tmp_path / "run"
+    old = await create_run(root)
+    frozen = plan()
+    settings = (
+        (PROFILE_SETTING, INVOCATION_PROFILE),
+        ("invocation_profile_sha256", PROFILE_DIGEST),
+    )
+    binding = CliBinding(Path("/synthetic/codex"), None, "synthetic", settings, None)
+    cwd = tmp_path / "ataraxia-eval-gone" / "empty"
+    from script.eval.model import PreparedEvidence
+
+    effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
+        frozen,
+        frozen.calls[0],
+        binding,
+        PreparedEvidence(root, root / "plan.json", None),
+        frozen.configuration,
+    )
+    attempt = (
+        old
+        .calls[0]
+        .attempts[0]
+        .model_copy(
+            update={
+                "call_id": effective.call_id,
+                "argv": effective.request.argv,
+                "cwd": str(cwd),
+            }
+        )
+    )
+    call = old.calls[0].model_copy(
+        update={"call_id": effective.call_id, "attempts": (attempt,)}
+    )
+    run = old.model_copy(update={"effective_settings": settings, "calls": (call,)})
+    assert _bound_error(root, frozen, run, call) is None
+    changed = attempt.model_copy(update={"argv": (*attempt.argv[:-1], "changed")})
+    assert "request mismatch" in (
+        _bound_error(
+            root, frozen, run, call.model_copy(update={"attempts": (changed,)})
+        )
+        or ""
+    )
+    unknown = run.model_copy(
+        update={"effective_settings": ((PROFILE_SETTING, "future"),)}
+    )
+    assert _bound_error(root, frozen, unknown, call) == "unsupported invocation profile"
+
+
+def test_archived_stopped_series_remains_readable():
+    root = Path("output/reviewer-evaluation/ab-001/runs/rep-1-high-A")
+    assert inspect_run(root).evidence_state != "invalid"
 
 
 @pytest.mark.parametrize(

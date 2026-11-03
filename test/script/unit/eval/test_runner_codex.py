@@ -27,6 +27,11 @@ from script.eval.runner.adapters import (
     CodexCliBindingResolver,
     CodexOutcomeClassifier,
 )
+from script.eval.runner.adapters.codex import (
+    INVOCATION_PROFILE,
+    PROFILE_DIGEST,
+    PROFILE_SETTING,
+)
 from script.process_supervisor import (
     AttemptCancelled,
     AttemptObservation,
@@ -863,6 +868,8 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
     assert probed_paths == [executable_path]
     assert probed_paths[0] is executable_path
     assert binding.effective_settings == (
+        (PROFILE_SETTING, INVOCATION_PROFILE),
+        ("invocation_profile_sha256", PROFILE_DIGEST),
         ("requested_approval_policy", "never"),
         ("requested_ignore_user_config", True),
         ("requested_sandbox_mode", "read-only"),
@@ -872,6 +879,34 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
         ("effective_tool_controls", None),
         ("automatic_system_instructions", None),
     )
+
+
+def test_hardened_profile_binds_controls_and_logical_identity() -> None:
+    config, plan, call, binding, evidence = plan_and_inputs()
+    binding = replace(
+        binding,
+        effective_settings=(
+            (PROFILE_SETTING, INVOCATION_PROFILE),
+            ("invocation_profile_sha256", PROFILE_DIGEST),
+        ),
+    )
+    first = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-a/empty")
+    )
+    second = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-b/empty")
+    )
+    a = first.build(plan, call, binding, evidence, config)
+    b = second.build(plan, call, binding, evidence, config)
+    assert a.call_id == b.call_id
+    assert a.request.cwd != b.request.cwd
+    assert "--skip-git-repo-check" in a.request.argv
+    assert "shell_tool" in a.request.argv
+    assert 'web_search="disabled"' in a.request.argv
+    with pytest.raises(ValueError, match="external"):
+        CodexAttemptRequestBuilder(invocation_cwd=Path("/repo/empty")).build(
+            plan, call, binding, evidence, config
+        )
 
 
 def test_version_timeout_leaves_version_unknown(

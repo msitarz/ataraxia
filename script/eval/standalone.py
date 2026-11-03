@@ -106,7 +106,7 @@ class UnavailableQuota:
         raise RuntimeError("quota scope unavailable")
 
 
-def create_composition(status: EvidenceStatus) -> Composition:
+def create_composition(status: EvidenceStatus, cwd: Path | None = None) -> Composition:
     """Assemble the concrete one-run dependencies without provider effects.
 
     Returns:
@@ -141,7 +141,7 @@ def create_composition(status: EvidenceStatus) -> Composition:
         PurePlanBuilder(str(uuid4())),
         tiktoken_estimator(),
         CodexCliBindingResolver(),
-        CodexAttemptRequestBuilder(),
+        CodexAttemptRequestBuilder(invocation_cwd=cwd),
         lambda: status,
         coordinator,
         _announce_plan,
@@ -215,7 +215,12 @@ async def execute(
     Returns:
         A dry-run report or final run record.
     """
-    return await create_composition(status).execute(config)
+    if config.dry_run:
+        return await create_composition(status).execute(config)
+    with tempfile.TemporaryDirectory(prefix="ataraxia-eval-") as directory:
+        cwd = Path(directory).resolve() / "empty"
+        cwd.mkdir(mode=0o555)
+        return await create_composition(status, cwd).execute(config)
 
 
 def main() -> int:

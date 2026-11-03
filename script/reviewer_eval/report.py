@@ -7,6 +7,7 @@ from hashlib import sha256
 import os
 from pathlib import Path
 import stat
+import tomllib
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
@@ -21,6 +22,11 @@ from script.eval.model import (
 )
 from script.eval.plan import PurePlanBuilder
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
+from script.eval.runner.adapters.codex import (
+    INVOCATION_PROFILE,
+    PROFILE_DIGEST,
+    PROFILE_SETTING,
+)
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.policy import safe_process_cleanup
 from script.eval.runner.ports import CliBinding
@@ -281,9 +287,13 @@ def _bound_error(
         run.effective_settings,
         None,
     )
-    staged = root / "instructions.bin" if plan.instructions_file else None
+    try:
+        staged = _recorded_instructions(root, plan, call)
+        cwd = _recorded_cwd(root, plan, run, call)
+    except ValueError as error:
+        return str(error)
     prepared = PreparedEvidence(root, root / "plan.json", staged)
-    effective = CodexAttemptRequestBuilder().build(
+    effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
         plan, planned, binding, prepared, plan.configuration
     )
     if call.call_id != effective.call_id:
@@ -315,7 +325,82 @@ def _bound_error(
     return None
 
 
+def _recorded_instructions(
+    root: Path, plan: FrozenPlan, call: CallRecord
+) -> Path | None:
+    if plan.instructions_file is None:
+        return None
+    if not call.attempts:
+        return root / "instructions.bin"
+    argv = call.attempts[0].argv
+    values = [
+        argv[i + 1]
+        for i, arg in enumerate(argv[:-1])
+        if arg == "-c" and argv[i + 1].startswith("model_instructions_file=")
+    ]
+    try:
+        staged = Path(tomllib.loads(values[0])["model_instructions_file"])
+    except (IndexError, KeyError, TypeError, ValueError) as error:
+        raise ValueError(f"call {call.position} invalid staged instructions") from error
+    output = plan.configuration.output_directory
+    assert output is not None
+    valid_output = (
+        staged.parent == output
+        if output.is_absolute()
+        else staged.parent.parts[-len(output.parts) :] == output.parts
+    )
+    if (
+        not staged.is_absolute()
+        or staged.name != "instructions.bin"
+        or not valid_output
+    ):
+        raise ValueError(f"call {call.position} invalid staged instructions")
+    return staged
+
+
+def _recorded_cwd(
+    root: Path, plan: FrozenPlan, run: RunRecord, call: CallRecord
+) -> Path | None:
+    settings = dict(run.effective_settings)
+    profile = settings.get(PROFILE_SETTING)
+    if profile is None:
+        if "invocation_profile_sha256" in settings:
+            raise ValueError("incomplete invocation profile")
+        return None
+    if (
+        profile != INVOCATION_PROFILE
+        or settings.get("invocation_profile_sha256") != PROFILE_DIGEST
+    ):
+        raise ValueError("unsupported invocation profile")
+    if not call.attempts:
+        return Path("/ataraxia-unused/empty")
+    cwd = Path(call.attempts[0].cwd)
+    if (
+        not cwd.is_absolute()
+        or cwd.name != "empty"
+        or not cwd.parent.name.startswith("ataraxia-eval-")
+        or cwd != Path(os.path.normpath(cwd))
+    ):
+        raise ValueError(f"call {call.position} invalid invocation cwd")
+    if cwd.is_relative_to(plan.repository_root) or cwd.is_relative_to(root):
+        raise ValueError(f"call {call.position} invalid invocation cwd")
+    return cwd
+
+
+def _settings_error(run: RunRecord) -> str | None:
+    keys = [key for key, _ in run.effective_settings]
+    if len(keys) != len(set(keys)):
+        return "duplicate effective settings"
+    if dict(run.effective_settings).get(PROFILE_SETTING) == INVOCATION_PROFILE:
+        cwds = {attempt.cwd for call in run.calls for attempt in call.attempts}
+        if len(cwds) > 1:
+            return "inconsistent invocation cwd"
+    return None
+
+
 def _run_error(root: Path, plan: FrozenPlan, run: RunRecord) -> str | None:
+    if error := _settings_error(run):
+        return error
     if (run.run_id, run.repository_root, run.head_commit) != (
         plan.run_id,
         str(plan.repository_root),
@@ -344,7 +429,7 @@ def _base(call: CallRecord, attempt: AttemptRecord) -> Path:
 
 
 def _artifacts(
-    root: Path, call: CallRecord, attempt: AttemptRecord
+    root: Path, plan: FrozenPlan, call: CallRecord, attempt: AttemptRecord
 ) -> tuple[bytes | None, set[Path]]:
     base = _base(call, attempt)
     metadata = base.with_suffix(".json")
@@ -361,7 +446,15 @@ def _artifacts(
         if reference is None:
             streams.append(None)
             continue
-        if reference != str(root / path):
+        recorded = Path(reference)
+        output = plan.configuration.output_directory
+        assert output is not None
+        suffix_path = output / path
+        if not recorded.is_absolute() or (
+            recorded != suffix_path
+            if output.is_absolute()
+            else recorded.parts[-len(suffix_path.parts) :] != suffix_path.parts
+        ):
             raise ValueError(f"attempt stream path mismatch: {path}")
         expected.add(path)
         streams.append(_read(root, path))
@@ -508,7 +601,7 @@ def _inspect_records(root: Path, plan: FrozenPlan, run: RunRecord) -> list[CallO
     for call in run.calls:
         stdout = None
         for attempt in call.attempts:
-            stdout, paths = _artifacts(root, call, attempt)
+            stdout, paths = _artifacts(root, plan, call, attempt)
             expected.update(paths)
         results.append(
             _result(plan, call, stdout)
