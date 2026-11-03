@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Saved reviewer reporting with real evidence persistence and synthetic inputs."""
 
+from collections.abc import Callable
 from dataclasses import replace
 import json
 import os
@@ -55,6 +56,88 @@ async def test_complete_saved_run_and_evidence_unchanged(tmp_path: Path):
     }
     assert result.calls[0].selected_attempt == 1
     assert snapshot(root) == before
+
+
+def unchanged(root: Path) -> None:
+    """Retain the complete evidence as written."""
+
+
+def _tamper_attempt(root: Path, key: str, value: object) -> None:
+    """Alter one process field in both retained records."""
+    summary_path = root / "run.json"
+    summary = json.loads(summary_path.read_text())
+    attempt = summary["calls"][0]["attempts"][0]
+    attempt[key] = value
+    metadata = next((root / "attempts").rglob("attempt-1.json"))
+    metadata.write_text(json.dumps(attempt))
+    summary_path.write_text(json.dumps(summary))
+
+
+def tamper_control(root: Path) -> None:
+    """Alter a recorded control in both retained process records."""
+    summary = json.loads((root / "run.json").read_text())
+    argv = summary["calls"][0]["attempts"][0]["argv"]
+    argv[argv.index("hooks")] = "apps"
+    _tamper_attempt(root, "argv", argv)
+
+
+def tamper_cwd(root: Path) -> None:
+    """Replace the recorded invocation directory."""
+    _tamper_attempt(root, "cwd", "/unexpected/empty")
+
+
+def tamper_profile(root: Path) -> None:
+    """Change profile metadata and its settings digest."""
+    path = root / "run.json"
+    summary = json.loads(path.read_text())
+    summary["effective_settings"][0][1] = "unknown"
+    summary["calls"][0]["effective_settings_sha256"] = settings_digest(
+        tuple(tuple(item) for item in summary["effective_settings"])
+    )
+    path.write_text(json.dumps(summary))
+
+
+@pytest.mark.parametrize(
+    ("prepare", "evidence_state", "call_state"),
+    [
+        (unchanged, "complete", "complete"),
+        (tamper_control, "invalid", "invalid"),
+        (tamper_cwd, "invalid", "invalid"),
+        (tamper_profile, "invalid", "invalid"),
+    ],
+    ids=["unchanged", "changed-control", "changed-cwd", "unknown-profile"],
+)
+async def test_persisted_profile_validates_request_without_assets(
+    tmp_path: Path,
+    prepare: Callable[[Path], None],
+    evidence_state: str,
+    call_state: str,
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    cwd = tmp_path / "ataraxia-eval-gone" / "empty"
+    await create_run(root, invocation_cwd=cwd)
+    prepare(root)
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == evidence_state
+    assert result.calls[0].state == call_state
+
+
+def test_archived_stopped_series_remains_readable() -> None:
+    # Given
+    root = Path("output/reviewer-evaluation/ab-001/runs/rep-1-high-A")
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "complete"
+    assert result.counts is not None and result.counts.invalid == 1
+    assert result.calls[0].state == "invalid"
 
 
 @pytest.mark.parametrize(

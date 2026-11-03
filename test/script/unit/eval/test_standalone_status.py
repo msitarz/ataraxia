@@ -11,6 +11,7 @@ from types import TracebackType
 
 import pytest
 
+from script.eval import standalone
 from script.eval.evidence import CreateEvidence, FinalizeEvidence, create_evidence_store
 from script.eval.evidence_status import EvidenceStatus
 from script.eval.model import (
@@ -36,6 +37,113 @@ def record() -> RunRecord:
         effective_settings=(),
         calls=(),
     )
+
+
+async def test_invocation_directory_survives_cancellation_until_settlement(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    started = asyncio.Event()
+    release = asyncio.Event()
+    paths: list[Path] = []
+
+    class FakeComposition:
+        async def execute(self, config: HarnessConfig) -> RunRecord:
+            assert paths[0].is_dir() and not list(paths[0].iterdir())
+            started.set()
+            try:
+                await asyncio.Future()
+            finally:
+                assert paths[0].is_dir()
+                await release.wait()
+                assert paths[0].is_dir()
+            raise AssertionError("unexpected completion")
+
+    def composition(status: EvidenceStatus, cwd: Path | None = None) -> FakeComposition:
+        assert cwd is not None
+        paths.append(cwd)
+        return FakeComposition()
+
+    monkeypatch.setattr(standalone, "create_composition", composition)
+    task = asyncio.create_task(
+        standalone.execute(
+            frozen_plan().configuration, EvidenceStatus(create_evidence_store)
+        )
+    )
+
+    # When
+    await started.wait()
+    task.cancel()
+    await asyncio.sleep(0)
+    assert paths[0].is_dir()
+    release.set()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+    # Then
+    assert not paths[0].exists()
+
+
+def _settlement_composition(
+    paths: list[Path], outcome: Callable[[], RunRecord]
+) -> Callable[[EvidenceStatus, Path | None], object]:
+    """Provide a controlled composition that observes the owned cwd."""
+
+    class FakeComposition:
+        async def execute(self, config: HarnessConfig) -> RunRecord:
+            assert paths[0].is_dir() and not list(paths[0].iterdir())
+            return outcome()
+
+    def composition(status: EvidenceStatus, cwd: Path | None = None) -> FakeComposition:
+        assert cwd is not None
+        paths.append(cwd)
+        return FakeComposition()
+
+    return composition
+
+
+def _failed_outcome() -> RunRecord:
+    """Produce a controlled execution error."""
+    raise ValueError("failed")
+
+
+async def test_invocation_directory_removed_after_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    paths: list[Path] = []
+    monkeypatch.setattr(
+        standalone, "create_composition", _settlement_composition(paths, record)
+    )
+    status = EvidenceStatus(create_evidence_store)
+
+    # When
+    result = await standalone.execute(frozen_plan().configuration, status)
+
+    # Then
+    assert result == record()
+    assert not paths[0].exists()
+
+
+async def test_invocation_directory_removed_after_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given
+    paths: list[Path] = []
+    monkeypatch.setattr(
+        standalone,
+        "create_composition",
+        _settlement_composition(paths, _failed_outcome),
+    )
+    status = EvidenceStatus(create_evidence_store)
+
+    # When
+    with pytest.raises(ValueError) as error:
+        await standalone.execute(frozen_plan().configuration, status)
+
+    # Then
+    assert str(error.value) == "failed"
+    assert not paths[0].exists()
 
 
 def prepared(output: Path, plan: FrozenPlan) -> PreparedEvidence:

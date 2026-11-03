@@ -18,6 +18,11 @@ from script.eval.model import (
 )
 from script.eval.plan import PurePlanBuilder
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
+from script.eval.runner.adapters.codex import (
+    INVOCATION_PROFILE,
+    PROFILE_DIGEST,
+    PROFILE_SETTING,
+)
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.ports import CliBinding
 from script.process_supervisor import (
@@ -99,13 +104,22 @@ async def create_run(
     response: dict[str, object] | None = None,
     status: int = 0,
     finalize: bool = True,
+    invocation_cwd: Path | None = None,
 ) -> RunRecord:
     """Persist a controlled plan, process and final summary through the real store."""
     frozen = plan()
     store = create_evidence_store()
     prepared = await store.create(root, frozen)
-    binding = CliBinding(Path("/synthetic/codex"), None, "synthetic", (), None)
-    effective = CodexAttemptRequestBuilder().build(
+    settings = (
+        ()
+        if invocation_cwd is None
+        else (
+            (PROFILE_SETTING, INVOCATION_PROFILE),
+            ("invocation_profile_sha256", PROFILE_DIGEST),
+        )
+    )
+    binding = CliBinding(Path("/synthetic/codex"), None, "synthetic", settings, None)
+    effective = CodexAttemptRequestBuilder(invocation_cwd=invocation_cwd).build(
         frozen, frozen.calls[0], binding, prepared, frozen.configuration
     )
     output = transcript(
@@ -134,7 +148,7 @@ async def create_run(
         prompt_sha256=planned.prompt_sha256,
         model=planned.model,
         effort=planned.effort,
-        effective_settings_sha256=settings_digest(()),
+        effective_settings_sha256=settings_digest(settings),
         attempts=(attempt,),
     )
     record = RunRecord(
@@ -145,7 +159,7 @@ async def create_run(
         runner_version="synthetic",
         codex_path="/synthetic/codex",
         cli_version=None,
-        effective_settings=(),
+        effective_settings=settings,
         calls=(call,),
     )
     if finalize:

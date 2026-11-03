@@ -6,7 +6,7 @@ reported as unknown. Failure recognition accepts only a bounded JSONL sequence.
 """
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import hashlib
 from importlib.metadata import version
 import json
@@ -41,6 +41,45 @@ from script.process_supervisor import AttemptRequest, Completed, InfrastructureF
 
 CAPACITY_ERROR_MESSAGE = "Selected model is at capacity. Please try a different model."
 FAILURE_EVENT_COUNT = 4
+
+INVOCATION_PROFILE = "external-cwd-controls-v2"
+PROFILE_SETTING = "invocation_profile"
+PROFILE_ARGS = (
+    "--skip-git-repo-check",
+    "-c",
+    "agents.enabled=false",
+    "-c",
+    "skills.bundled.enabled=false",
+    "-c",
+    "memories.use_memories=false",
+    "-c",
+    'web_search="disabled"',
+    "-c",
+    "tools.experimental_request_user_input.enabled=false",
+    *(
+        item
+        for feature in (
+            "plugins",
+            "apps",
+            "shell_tool",
+            "multi_agent",
+            "browser_use",
+            "browser_use_external",
+            "in_app_browser",
+            "computer_use",
+            "image_generation",
+            "view_image",
+            "sleep_tool",
+            "code_mode",
+            "code_mode_host",
+            "artifact",
+            "hooks",
+            "skill_search",
+        )
+        for item in ("--disable", feature)
+    ),
+)
+PROFILE_DIGEST = hashlib.sha256(json.dumps(PROFILE_ARGS).encode()).hexdigest()
 
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
@@ -112,6 +151,7 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
     argument-size limits and NUL's inability to appear in an argument apply.
 
     Attributes:
+        invocation_cwd: Owned external cwd for v2, or None for legacy records.
         effective_call_id: Derive an identity from frozen plan/call inputs,
             binding, staged instruction path, and config without opening files.
         build_attempt_request: Build argv and supervisor limits from the same
@@ -119,6 +159,7 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
             is passed through without reading it.
     """
 
+    invocation_cwd: Path | None = None
     effective_call_id: EffectiveCallId = field(
         default_factory=lambda: _effective_call_id
     )
@@ -140,14 +181,36 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
         Returns:
             The plan's run identity, calculated call identity, and request.
 
+        Raises:
+            ValueError: Profile, cwd, staged instructions, or prompt is invalid.
+
         """
         staged_instructions_path = evidence.model_instructions_file
+        settings = dict(binding.effective_settings)
+        _validate_profile(settings, binding.effective_settings, self.invocation_cwd)
         call_id = self.effective_call_id(
             plan, call, binding, staged_instructions_path, config
         )
         request = self.build_attempt_request(
             plan, call, binding, staged_instructions_path, config
         )
+        if self.invocation_cwd is not None:
+            if (
+                not self.invocation_cwd.is_absolute()
+                or self.invocation_cwd.is_relative_to(plan.repository_root)
+                or self.invocation_cwd.is_relative_to(evidence.output_directory)
+            ):
+                raise ValueError(
+                    "invocation cwd must be external to repository and evidence"
+                )
+            call_id = hashlib.sha256(
+                f"{call_id}:{INVOCATION_PROFILE}:{PROFILE_DIGEST}".encode()
+            ).hexdigest()
+            request = replace(
+                request,
+                argv=(*request.argv[:-2], *PROFILE_ARGS, *request.argv[-2:]),
+                cwd=self.invocation_cwd,
+            )
         return EffectiveCall(
             run_id=plan.run_id,
             call_id=call_id,
@@ -187,6 +250,30 @@ class CodexOutcomeClassifier(OutcomeClassifier):
             if message == CAPACITY_ERROR_MESSAGE:
                 return _failure_assessment("capacity")
         return self.assess_settled_evidence(evidence)
+
+
+def _validate_profile(
+    settings: dict[str, SettingValue],
+    entries: tuple[tuple[str, SettingValue], ...],
+    cwd: Path | None,
+) -> None:
+    """Reject drift and ambiguous profile metadata before constructing requests.
+
+    Raises:
+        ValueError: Settings, digest, or working directory do not match.
+    """
+    if len(settings) != len(entries):
+        raise ValueError("duplicate invocation settings")
+    profile = settings.get(PROFILE_SETTING)
+    digest = settings.get("invocation_profile_sha256")
+    if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
+        if cwd is not None:
+            raise ValueError("legacy profile cannot use an invocation cwd")
+        return
+    if profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
+        raise ValueError("unsupported or incomplete invocation profile")
+    if cwd is None:
+        raise ValueError("invocation profile requires a working directory")
 
 
 def _failure_assessment(retry_class: Literal["quota", "capacity"]) -> RetryAssessment:
@@ -354,6 +441,8 @@ def _read_effective_settings(
     """
     del executable_path, config
     return (
+        (PROFILE_SETTING, INVOCATION_PROFILE),
+        ("invocation_profile_sha256", PROFILE_DIGEST),
         ("requested_approval_policy", "never"),
         ("requested_ignore_user_config", True),
         ("requested_sandbox_mode", "read-only"),
