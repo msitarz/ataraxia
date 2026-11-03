@@ -181,8 +181,8 @@ isolation.
 
 ## Links
 
-- [Comparison protocol](protocol.md) compares A/B/C on fixed static
-  inputs, including prepared function/context packets, with the declared CLI
+- [Comparison protocol](protocol.md) starts with A/B on the same whole static
+  corpus and defers C, with the declared CLI
   limitation, retained boundary protections, raw and adjusted token accounting,
   budgets and thresholds for owner review; a separately reported
   effort analysis reuses the common-medium primary observations.
@@ -192,16 +192,20 @@ isolation.
 
 ## Additional context
 
-The supporting protocol starts with a bounded static PASS/VIOLATION comparison
-of all three A/B/C strategies at medium effort, with a separate matched
-none/low/medium/high effort analysis on the same inputs. Function/context
-extraction happens during preparation and requires no production reviewer.
-Authored source and rule files are prepared in the
-[draft corpus](corpus/manifest.md), with a separately held draft reference
-index. Independent owner validation of that index, freeze, packets, prompts,
-runtime binding, matched input baselines, and retained boundary checks remain
-outstanding. The initial corpus does not complete the historical/diversity
-evidence required above or support a production granularity decision. The
-accepted CLI limitation is not evidence that the retained boundary requirements
-have been satisfied. All acceptance criteria remain TODO; this preparation does
-not authorize trials or production implementation.
+The supporting protocol now prepares a bounded findings-based A/B stage:
+A reviews all three rules and the whole three-file corpus; each independent B
+call reviews one rule and that same whole corpus. Targets and expected labels
+remain private. The primary medium comparison reuses its observations in a
+separate none/low/medium/high effort analysis. C is deferred and is not prepared
+in this PR. Final A/B/C and historical requirements above remain unchanged.
+
+Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
+with a separately held draft reference index. Existing
+[draft A/B inputs](inputs/preparation.md) are prepared for independent review
+and a new freeze. Owner validation, runtime
+binding, matched input baselines, and retained boundary checks remain
+outstanding. The initial corpus does not complete historical/diversity evidence
+or support a production granularity decision. The accepted CLI limitation does
+not establish boundary verification. All acceptance criteria remain TODO;
+preparation does not authorize trials, additional neutral calls, or production
+implementation.
