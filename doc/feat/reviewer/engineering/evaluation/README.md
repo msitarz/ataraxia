@@ -181,6 +181,9 @@ isolation.
 
 ## Links
 
+- [Stopped exploratory A slice](../../../../../output/reviewer-evaluation/ab-001/a-series-execution.json)
+  retains one initial A observation, three additional attempted calls, and
+  eight unstarted slots; it does not complete or adjudicate the Evaluation.
 - [Comparison protocol](protocol.md) starts with A/B on the same whole static
   corpus and defers C, with the declared CLI
   limitation, retained boundary protections, raw and adjusted token accounting,

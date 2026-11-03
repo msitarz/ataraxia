@@ -1,0 +1,131 @@
+{
+  "kind": "preflight_only",
+  "recorded_at_local_date": "2026-11-03",
+  "head_commit": "7042991bc876a84a608f81bbf24be38c435f504d",
+  "existing_plan_head": "7042991bc876a84a608f81bbf24be38c435f504d",
+  "existing_plan_matches_head": true,
+  "input_digests": {
+    "existing_plan_sha256": {
+      "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt": "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477",
+      "doc/feat/reviewer/engineering/evaluation/inputs/cases/A/a.txt": "496f29907509b97a20e67f502ceb6828933cbf63670d5648cf544cc3b1314342",
+      "doc/feat/reviewer/engineering/evaluation/inputs/corpus/source.txt": "27a1972f0c79684682a3fb164a4776bd203f00cbf24aed4ced8278ba55fe1f66"
+    },
+    "current_sha256": {
+      "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt": "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477",
+      "doc/feat/reviewer/engineering/evaluation/inputs/cases/A/a.txt": "496f29907509b97a20e67f502ceb6828933cbf63670d5648cf544cc3b1314342",
+      "doc/feat/reviewer/engineering/evaluation/inputs/corpus/source.txt": "27a1972f0c79684682a3fb164a4776bd203f00cbf24aed4ced8278ba55fe1f66"
+    },
+    "match": true
+  },
+  "instructions_file": {
+    "path": "doc/feat/reviewer/engineering/evaluation/preparation/min.md",
+    "sha256": "e6a735386f908f03c35bbe65be9e786d7c23ab471ce112b6d0b7f6f198be1cdd"
+  },
+  "runtime": {
+    "codex_path": "/usr/local/bin/codex",
+    "codex_version": "codex-cli 0.166.0",
+    "protocol_reference_version": "0.164.0",
+    "binding": "not_verified; no model calls made",
+    "limitations": "CLI version/version output only; no provider/model/effort runtime binding, context isolation, or tool-surface verification was performed."
+  },
+  "dry_run": {
+    "command": "uv run --no-sync python -m script.eval [three protocol input dirs, min.md, gpt-6-luna, efforts none/low/medium/high, c=1, timeout=300, cleanup=10, output cap=1048576, retries=0, capacity retries=0, -n]",
+    "calls": 4,
+    "efforts": [
+      "none",
+      "low",
+      "medium",
+      "high"
+    ],
+    "supplied_context_tokens_each": 12164,
+    "instructions_tokens_each": 50,
+    "known_context_total_tokens": 48656,
+    "candidate_11_context_tokens_estimate": 133804,
+    "candidate_11_instructions_tokens_estimate": 550,
+    "estimator": "tiktoken o200k_base compatibility approximate; not authoritative for gpt-6-luna; excludes automatic CLI/system context and framing",
+    "model_calls": 0
+  },
+  "candidate_calls": [
+    {
+      "repetition": 1,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-low-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-1-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-low-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-2-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-medium-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-high-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-none-A",
+      "status": "candidate_not_authorized"
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "strategy": "A",
+      "output_directory": "output/reviewer-evaluation/ab-001/runs/rep-3-low-A",
+      "status": "candidate_not_authorized"
+    }
+  ],
+  "candidate_count": 11,
+  "existing_observation": "rep-1-none-A retained as the already existing first scheduled A slot; no raw output was inspected or retried.",
+  "git_exclude_entry": "/output/reviewer-evaluation/ab-001/",
+  "worktree_status_after_exclude": ""
+}
