@@ -519,3 +519,32 @@ async def test_missing_binding_does_not_credit_attempted_call(tmp_path: Path) ->
     assert result.counts.incomplete == 1
     assert result.calls[0].selected_attempt is None
     assert len(result.calls[0].attempts) == 1
+
+
+@pytest.mark.parametrize("artifact", ["plan", "run", "stdout"])
+async def test_decoder_limit_produces_invalid_report(
+    tmp_path: Path, artifact: str
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    record = await create_run(root)
+    stdout = record.calls[0].attempts[0].stdout_artifact
+    assert stdout is not None
+    paths = {
+        "plan": root / "plan.json",
+        "run": root / "run.json",
+        "stdout": Path(stdout),
+    }
+    paths[artifact].write_bytes(b"[" * 400_000 + b"]" * 400_000)
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    if artifact == "plan":
+        assert result.evidence_state == "invalid"
+        assert result.planned_count is None
+    else:
+        assert result.planned_count == 1
+        assert result.counts is not None
+        assert result.counts.invalid == 1

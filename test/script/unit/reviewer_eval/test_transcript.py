@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Exercise the supported saved Codex turn lifecycle."""
 
+from collections.abc import Callable
 import json
 
 import pytest
 
-from script.reviewer_eval.transcript import extract_response
+from script.reviewer_eval.transcript import extract_response, parse_json
 
 
 def encoded(events: list[dict[str, object]]) -> bytes:
@@ -109,3 +110,30 @@ def test_unpaired_surrogate_in_message_is_rejected() -> None:
     # When / Then
     with pytest.raises(ValueError, match="UTF-8"):
         extract_response(encoded(records))
+
+
+@pytest.mark.parametrize(
+    "decoder", [parse_json, extract_response], ids=["json", "jsonl"]
+)
+def test_decoder_limit_is_reported_as_invalid(
+    decoder: Callable[[bytes], object],
+) -> None:
+    # Given
+    raw = b"[" * 400_000 + b"]" * 400_000
+
+    # When / Then
+    with pytest.raises(
+        ValueError, match="invalid JSON: nesting exceeds decoder limit"
+    ) as error:
+        decoder(raw)
+    assert isinstance(error.value.__cause__, RecursionError)
+
+
+def test_invalid_json_encoding_is_reported_with_its_cause() -> None:
+    # Given
+    raw = b"\xff"
+
+    # When / Then
+    with pytest.raises(ValueError, match="invalid Unicode encoding") as error:
+        parse_json(raw)
+    assert isinstance(error.value.__cause__, UnicodeDecodeError)

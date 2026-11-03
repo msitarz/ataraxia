@@ -26,14 +26,22 @@ def parse_json(raw: bytes) -> object:
 
     Returns:
         The decoded value.
+
+    Raises:
+        ValueError: The JSON is invalid or exceeds the decoder nesting limit.
     """
 
     def reject_constant(value: str) -> None:
         raise ValueError(f"invalid JSON constant: {value}")
 
-    return json.loads(
-        raw, object_pairs_hook=unique_object, parse_constant=reject_constant
-    )
+    try:
+        return json.loads(
+            raw, object_pairs_hook=unique_object, parse_constant=reject_constant
+        )
+    except RecursionError as exc:
+        raise ValueError("invalid JSON: nesting exceeds decoder limit") from exc
+    except UnicodeDecodeError as exc:
+        raise ValueError("invalid JSON: invalid Unicode encoding") from exc
 
 
 def extract_response(raw: bytes) -> tuple[str, bytes]:
