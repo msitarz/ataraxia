@@ -307,3 +307,59 @@ async def test_cancellation_retains_failed_preparation_and_prevents_dispatch() -
     assert caught.value.args == ("first",)
     assert caught.value.__cause__ is failure
     assert harness.events == []
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [{"sandbox_mode": "workspace-write"}, {"enable_tools": True}],
+    ids=["writable", "tools"],
+)
+async def test_nondefault_live_controls_fail_before_binding_or_output(
+    changes: dict[str, object],
+) -> None:
+    # Given
+    harness = Harness()
+    configuration = config(dry_run=False).model_copy(update=changes)
+
+    # When
+    with pytest.raises(ValueError, match="only with --dry-run"):
+        await harness.composition().execute(configuration)
+
+    # Then
+    assert harness.events == []
+
+
+async def test_dry_run_reports_resolved_workspace_without_mutation(
+    tmp_path: Path,
+) -> None:
+    # Given
+    harness = Harness()
+    marker = tmp_path / "marker"
+    marker.write_text("keep")
+    configuration = config(dry_run=True).model_copy(
+        update={"working_directory": tmp_path, "enable_tools": True}
+    )
+
+    # When
+    result = await harness.composition().execute(configuration)
+
+    # Then
+    assert isinstance(result, DryRunReport)
+    assert result.resolved_working_directory == tmp_path.resolve()
+    assert marker.read_text() == "keep"
+    assert "bind" not in harness.events
+
+
+async def test_supplied_workspace_live_execution_is_gated(tmp_path: Path) -> None:
+    # Given
+    harness = Harness()
+    configuration = config(dry_run=False).model_copy(
+        update={"working_directory": tmp_path}
+    )
+
+    # When
+    with pytest.raises(ValueError, match="only with --dry-run"):
+        await harness.composition().execute(configuration)
+
+    # Then
+    assert harness.events == []

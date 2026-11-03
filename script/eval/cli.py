@@ -6,7 +6,8 @@ Standalone parsing and lifecycle are supplied by the command adapters.
 
 import asyncio
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Protocol
 
 from script.eval.evidence import EvidenceStore
@@ -17,6 +18,10 @@ from script.eval.plan import PlanBuilder
 from script.eval.runner import AttemptRequestBuilder, BoundRun, CliBindingResolver
 from script.eval.runner.coordinator.settlement import SettledFailure, settle
 from script.eval.tokens import TokenEstimator, build_dry_run_report
+from script.eval.workspace import (
+    require_supported_execution,
+    validate_workspace_selection,
+)
 
 
 class RunCoordinator(Protocol):
@@ -64,12 +69,16 @@ class Composition:
             The dry-run report or the coordinator's final record.
 
         """
+        resolved = await _run_blocking(validate_workspace_selection, config, Path.cwd())
+        if not config.dry_run:
+            require_supported_execution(config)
         inputs = await _run_blocking(self.repository.freeze, config)
         plan = self.planner.plan(inputs, config)
         if self.on_plan is not None:
             self.on_plan(plan)
         if config.dry_run:
-            return await _run_blocking(build_dry_run_report, plan, self.estimator)
+            report = await _run_blocking(build_dry_run_report, plan, self.estimator)
+            return replace(report, resolved_working_directory=resolved)
         binding = await _run_blocking(self.binding_resolver.resolve, config)
         output = config.output_directory
         assert output is not None  # Validated execution configuration.

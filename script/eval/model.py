@@ -115,6 +115,9 @@ class HarnessConfig(StrictModel):
     capacity_backoff_base_seconds: PositiveSeconds | None = None
     capacity_backoff_cap_seconds: PositiveSeconds | None = None
     instructions_file_path: Path | None
+    working_directory: Path | None = None
+    sandbox_mode: Literal["read-only", "workspace-write"] = "read-only"
+    enable_tools: bool = False
 
     @model_validator(mode="after")
     def validate_relationships(self) -> HarnessConfig:
@@ -165,6 +168,8 @@ class HarnessConfig(StrictModel):
         Raises:
             ValueError: A capacity retry relationship is invalid.
         """
+        if self.sandbox_mode == "workspace-write" and self.concurrency > 1:
+            raise ValueError("workspace-write requires concurrency of one")
         if self.capacity_retry_limit > 0 and (
             self.capacity_backoff_base_seconds is None
             or self.capacity_backoff_cap_seconds is None
@@ -268,6 +273,7 @@ class DryRunReport:
     estimates: tuple[CallEstimate, ...]
     cli_binding_known: Literal[False]
     effective_call_identities_known: Literal[False]
+    resolved_working_directory: Path | None = None
 
 
 @dataclass(frozen=True)

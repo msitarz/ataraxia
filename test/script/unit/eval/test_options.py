@@ -131,6 +131,9 @@ def test_custom_runner_options_are_forwarded_to_validated_config() -> None:
         "capacity_backoff_base_seconds": 2.0,
         "capacity_backoff_cap_seconds": 9.0,
         "instructions_file_path": Path("instructions"),
+        "working_directory": None,
+        "sandbox_mode": "read-only",
+        "enable_tools": False,
     }
 
 
