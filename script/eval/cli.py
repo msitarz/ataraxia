@@ -18,10 +18,7 @@ from script.eval.plan import PlanBuilder
 from script.eval.runner import AttemptRequestBuilder, BoundRun, CliBindingResolver
 from script.eval.runner.coordinator.settlement import SettledFailure, settle
 from script.eval.tokens import TokenEstimator, build_dry_run_report
-from script.eval.workspace import (
-    require_supported_execution,
-    validate_workspace_selection,
-)
+from script.eval.workspace import validate_workspace_selection
 
 
 class RunCoordinator(Protocol):
@@ -58,6 +55,7 @@ class Composition:
     evidence_factory: Callable[[], EvidenceStore]
     coordinator_factory: CoordinatorFactory
     on_plan: Callable[[FrozenPlan], None] | None = None
+    workspace_validated: bool = False
 
     async def execute(self, config: HarnessConfig, /) -> DryRunReport | RunRecord:
         """Prepare a plan, then estimate it or run its bound requests.
@@ -69,9 +67,11 @@ class Composition:
             The dry-run report or the coordinator's final record.
 
         """
-        resolved = await _run_blocking(validate_workspace_selection, config, Path.cwd())
-        if not config.dry_run:
-            require_supported_execution(config)
+        resolved = None
+        if not self.workspace_validated:
+            resolved = await _run_blocking(
+                validate_workspace_selection, config, Path.cwd()
+            )
         inputs = await _run_blocking(self.repository.freeze, config)
         plan = self.planner.plan(inputs, config)
         if self.on_plan is not None:

@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
-"""PROPOSED AC-10/11 boundary additions, not an implemented module.
+"""AC-10/11 design sketch, not an implemented module.
 
-Configuration fields, workspace validation, and workspace ownership now exist
-in runtime; nondefault live execution remains gated. The invocation-control and
-request-builder sketches remain proposed. These sketches do not
-replace the historical design/eval package or define another public framework.
+Runtime implements the controls through existing workspace and Codex adapters;
+this sketch documents the design rather than their exact runtime signatures.
 """
 
 from contextlib import AbstractAsyncContextManager

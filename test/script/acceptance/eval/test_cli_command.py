@@ -12,6 +12,8 @@ import sys
 
 import pytest
 
+from script.reviewer_eval.context import CASES, CORPUS, SHARED
+from script.reviewer_eval.report import inspect_run
 from test.script.integration.eval.support import (
     git,
     git_test_environment,
@@ -177,6 +179,7 @@ def run_signalled(
     env: dict[str, str],
     directory: Path,
     sent_signal: signal.Signals,
+    controls: tuple[str, ...] = (),
 ) -> tuple[int | None, bytes, bytes]:
     """Wait for the fake child to start, then signal the command and join it."""
     fifo = directory / "ready"
@@ -184,7 +187,7 @@ def run_signalled(
     fd = os.open(fifo, os.O_RDONLY | os.O_NONBLOCK)
     env["FAKE_READY_FIFO"] = str(fifo)
     process = subprocess.Popen(
-        command(repo, output),
+        [*command(repo, output), *controls],
         cwd=ROOT,
         env=env,
         stdout=subprocess.PIPE,
@@ -920,29 +923,29 @@ def test_dry_run_displays_controls_without_mutating_borrowed_workspace(
     assert not provider_log.exists()
 
 
-@pytest.mark.parametrize(
-    "controls",
-    [
-        ["--working-directory", "workspace"],
-        ["--sandbox-mode", "workspace-write"],
-        ["--enable-tools"],
-    ],
-    ids=["workspace", "sandbox", "tools"],
-)
-def test_nondefault_live_controls_fail_before_provider_or_output(
-    tmp_path: Path, controls: list[str]
-) -> None:
+def test_nondefault_controls_reach_the_fake_codex(tmp_path: Path) -> None:
     # Given
     repo = make_repository(tmp_path / "repo")
     output = tmp_path / "evidence"
-    (tmp_path / "workspace").mkdir()
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    marker = workspace / "marker"
+    marker.write_bytes(b"unchanged")
+    permissions = workspace.stat().st_mode
     env = environment(tmp_path)
     provider_log = tmp_path / "provider-invocations"
     env["FAKE_ARGV_LOG"] = str(provider_log)
 
     # When
     result = subprocess.run(
-        [*command(repo, output), *controls],
+        [
+            *command(repo, output),
+            "--working-directory",
+            "workspace",
+            "--sandbox-mode",
+            "workspace-write",
+            "--enable-tools",
+        ],
         cwd=tmp_path,
         env=env,
         capture_output=True,
@@ -951,7 +954,219 @@ def test_nondefault_live_controls_fail_before_provider_or_output(
     )
 
     # Then
+    assert result.returncode == 0, result.stderr
+    record = json.loads((output / "run.json").read_text())
+    attempt = record["calls"][0]["attempts"][0]
+    assert record["effective_settings"][0] == [
+        "invocation_profile",
+        "execution-controls-v3",
+    ]
+    assert provider_log.read_text().count("\n") == 2
+    assert attempt["cwd"] == str(workspace.resolve())
+    assert attempt["argv"][attempt["argv"].index("--sandbox") + 1] == "workspace-write"
+    assert attempt["argv"][attempt["argv"].index("shell_tool") - 1] == "--enable"
+    assert marker.read_bytes() == b"unchanged"
+    assert workspace.stat().st_mode == permissions
+
+
+def test_borrowed_workspace_survives_failed_attempt(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    marker = workspace / "marker"
+    marker.write_bytes(b"unchanged")
+    permissions = workspace.stat().st_mode
+    env = environment(tmp_path)
+    env["FAKE_EXIT"] = "7"
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--working-directory", str(workspace)],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 1, result.stderr
+    assert marker.read_bytes() == b"unchanged"
+    assert workspace.stat().st_mode == permissions
+
+
+def test_borrowed_workspace_survives_cancellation(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    marker = workspace / "marker"
+    marker.write_bytes(b"unchanged")
+    permissions = workspace.stat().st_mode
+    env = environment(tmp_path)
+
+    # When
+    code, _, stderr = run_signalled(
+        repo,
+        output,
+        env,
+        tmp_path,
+        signal.SIGTERM,
+        ("--working-directory", str(workspace)),
+    )
+
+    # Then
+    assert code == 130, stderr.decode()
+    assert marker.read_bytes() == b"unchanged"
+    assert workspace.stat().st_mode == permissions
+
+
+def copy_reviewer_input(repo: Path, name: str) -> None:
+    """Copy one real prepared input into the controlled Git repository."""
+    target = repo / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes((ROOT / name).read_bytes())
+
+
+def test_controlled_standalone_evidence_is_read_by_saved_report(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    case = next(iter(CASES))
+    copy_reviewer_input(repo, SHARED)
+    copy_reviewer_input(repo, case)
+    copy_reviewer_input(repo, CORPUS)
+    git(repo, "add", "--all")
+    git(repo, "commit", "-qm", "reviewer inputs")
+    workspace = tmp_path / "clone"
+    workspace.mkdir()
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    arguments = [
+        sys.executable,
+        "-m",
+        "script.eval",
+        "-d",
+        str((repo / SHARED).parent),
+        "-d",
+        str((repo / case).parent),
+        "-d",
+        str((repo / CORPUS).parent),
+        "-m",
+        "model",
+        "-e",
+        "low",
+        "-o",
+        str(output),
+        "--working-directory",
+        str(workspace),
+        "--sandbox-mode",
+        "workspace-write",
+        "--enable-tools",
+    ]
+
+    # When
+    command_result = subprocess.run(
+        arguments,
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+    result = inspect_run(output)
+
+    # Then
+    assert command_result.returncode == 0, command_result.stderr
+    assert result.evidence_state == "complete"
+    assert result.calls[0].state == "invalid"  # Fake transcript has no answer.
+
+
+def test_writable_overlap_refused_before_provider_or_output(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    (tmp_path / "alias").symlink_to(workspace, target_is_directory=True)
+    output = tmp_path / "alias" / "nested" / "evidence"
+    env = environment(tmp_path)
+    log = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(log)
+
+    # When
+    result = subprocess.run(
+        [
+            *command(repo, output),
+            "--working-directory",
+            str(workspace),
+            "--sandbox-mode",
+            "workspace-write",
+        ],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
     assert result.returncode == 1
-    assert "only with --dry-run" in result.stderr
+    assert "--output-directory must be outside" in result.stderr
     assert not output.exists()
-    assert not provider_log.exists()
+    assert not log.exists()
+
+
+def test_writable_concurrency_refused_before_provider_or_output(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+    log = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(log)
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--sandbox-mode", "workspace-write", "-c", "2"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 2
+    assert "--concurrency 1" in result.stderr
+    assert not output.exists()
+    assert not log.exists()
+
+
+def test_existing_git_workspace_is_shared_by_calls(tmp_path: Path) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    workspace = make_repository(tmp_path / "workspace")
+    marker = workspace / "context" / "input.txt"
+    permissions = workspace.stat().st_mode
+    output = tmp_path / "evidence"
+    env = environment(tmp_path)
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), "--working-directory", str(workspace), "-m", "other"],
+        cwd=ROOT,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 0, result.stderr
+    calls = json.loads((output / "run.json").read_text())["calls"]
+    assert len(calls) == 2
+    assert calls[0]["attempts"][0]["cwd"] == str(workspace.resolve())
+    assert calls[1]["attempts"][0]["cwd"] == str(workspace.resolve())
+    assert marker.read_bytes() == b"context"
+    assert workspace.stat().st_mode == permissions

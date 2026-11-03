@@ -80,6 +80,64 @@ PROFILE_ARGS = (
     ),
 )
 PROFILE_DIGEST = hashlib.sha256(json.dumps(PROFILE_ARGS).encode()).hexdigest()
+CONTROL_PROFILE = "execution-controls-v3"
+
+
+def control_args(enable_tools: bool) -> tuple[str, ...]:
+    """Return the versioned feature recipe for the requested local tools."""
+    if not enable_tools:
+        return PROFILE_ARGS
+    args = list(PROFILE_ARGS)
+    for feature in ("shell_tool", "code_mode", "code_mode_host"):
+        index = args.index(feature)
+        args[index - 1] = "--enable"
+    return tuple(args)
+
+
+def control_digest(enable_tools: bool) -> str:
+    """Return the digest of the exact requested feature recipe."""
+    return hashlib.sha256(json.dumps(control_args(enable_tools)).encode()).hexdigest()
+
+
+def requested_settings(
+    config: HarnessConfig, launch_cwd: Path, workspace: Path | None
+) -> tuple[tuple[str, SettingValue], ...]:
+    """Record controls with the already resolved workspace and launch anchor.
+
+    Returns:
+        Requested controls and unavailable effective settings.
+    """
+    identity = "owned-empty-per-run-v1" if workspace is None else str(workspace)
+    return (
+        (PROFILE_SETTING, CONTROL_PROFILE),
+        ("invocation_profile_sha256", control_digest(config.enable_tools)),
+        (
+            "requested_tool_profile",
+            "local-tools-enabled-v1"
+            if config.enable_tools
+            else "local-tools-disabled-v1",
+        ),
+        ("requested_workspace_identity", identity),
+        (
+            "requested_launch_cwd",
+            str(launch_cwd) if config.working_directory is not None else None,
+        ),
+        (
+            "requested_workspace_path",
+            os.path.normpath(str(launch_cwd / config.working_directory))
+            if config.working_directory is not None
+            else None,
+        ),
+        ("requested_approval_policy", "never"),
+        ("requested_ignore_user_config", True),
+        ("requested_sandbox_mode", config.sandbox_mode),
+        ("effective_approval_policy", None),
+        ("effective_model_reasoning_effort", None),
+        ("effective_sandbox_mode", None),
+        ("effective_tool_controls", None),
+        ("automatic_system_instructions", None),
+    )
+
 
 type ResolveExecutable = Callable[[], Path]
 type ProbeVersion = Callable[[Path], str | None]
@@ -187,14 +245,39 @@ class CodexAttemptRequestBuilder(AttemptRequestBuilder):
         """
         staged_instructions_path = evidence.model_instructions_file
         settings = dict(binding.effective_settings)
-        _validate_profile(settings, binding.effective_settings, self.invocation_cwd)
+        _validate_profile(
+            settings, binding.effective_settings, self.invocation_cwd, config
+        )
         call_id = self.effective_call_id(
             plan, call, binding, staged_instructions_path, config
         )
         request = self.build_attempt_request(
             plan, call, binding, staged_instructions_path, config
         )
-        if self.invocation_cwd is not None:
+        if settings.get(PROFILE_SETTING) == CONTROL_PROFILE:
+            assert self.invocation_cwd is not None
+            if not self.invocation_cwd.is_absolute() or self.invocation_cwd != Path(
+                os.path.normpath(self.invocation_cwd)
+            ):
+                raise ValueError("invalid invocation cwd")
+            if config.working_directory is None and (
+                self.invocation_cwd.is_relative_to(plan.repository_root)
+                or self.invocation_cwd.is_relative_to(evidence.output_directory)
+            ):
+                raise ValueError("owned invocation cwd must be external")
+            workspace_identity = settings["requested_workspace_identity"]
+            call_id = hashlib.sha256(
+                f"{call_id}:{CONTROL_PROFILE}:{control_digest(config.enable_tools)}:"
+                f"{config.sandbox_mode}:{workspace_identity}".encode()
+            ).hexdigest()
+            argv = list(request.argv)
+            argv[argv.index("--sandbox") + 1] = config.sandbox_mode
+            request = replace(
+                request,
+                argv=(*argv[:-2], *control_args(config.enable_tools), *argv[-2:]),
+                cwd=self.invocation_cwd,
+            )
+        elif self.invocation_cwd is not None:
             if (
                 not self.invocation_cwd.is_absolute()
                 or self.invocation_cwd.is_relative_to(plan.repository_root)
@@ -256,6 +339,7 @@ def _validate_profile(
     settings: dict[str, SettingValue],
     entries: tuple[tuple[str, SettingValue], ...],
     cwd: Path | None,
+    config: HarnessConfig,
 ) -> None:
     """Reject drift and ambiguous profile metadata before constructing requests.
 
@@ -266,14 +350,117 @@ def _validate_profile(
         raise ValueError("duplicate invocation settings")
     profile = settings.get(PROFILE_SETTING)
     digest = settings.get("invocation_profile_sha256")
+    if profile != CONTROL_PROFILE:
+        _validate_legacy_controls(config)
+    control_metadata = any(
+        key in settings
+        for key in (
+            "requested_tool_profile",
+            "requested_workspace_identity",
+            "requested_launch_cwd",
+            "requested_workspace_path",
+        )
+    )
     if PROFILE_SETTING not in settings and "invocation_profile_sha256" not in settings:
+        if control_metadata:
+            raise ValueError("incomplete invocation profile")
         if cwd is not None:
             raise ValueError("legacy profile cannot use an invocation cwd")
         return
-    if profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
+    if profile == CONTROL_PROFILE:
+        _validate_controls(settings, digest, cwd, config)
+    elif profile != INVOCATION_PROFILE or digest != PROFILE_DIGEST:
         raise ValueError("unsupported or incomplete invocation profile")
+    elif control_metadata:
+        raise ValueError("unexpected execution control metadata")
     if cwd is None:
         raise ValueError("invocation profile requires a working directory")
+
+
+def _validate_legacy_controls(config: HarnessConfig) -> None:
+    """Reject new controls that historical recipes could not apply.
+
+    Raises:
+        ValueError: A nondefault execution control was requested.
+    """
+    if (
+        config.working_directory is not None
+        or config.sandbox_mode != "read-only"
+        or config.enable_tools
+    ):
+        raise ValueError(
+            "legacy invocation profile requires default execution controls"
+        )
+
+
+def _validate_controls(
+    settings: dict[str, SettingValue],
+    digest: SettingValue,
+    cwd: Path | None,
+    config: HarnessConfig,
+) -> None:
+    """Validate v3 metadata against requested controls and workspace.
+
+    Raises:
+        ValueError: The requested settings or workspace are inconsistent.
+    """
+    enabled = settings.get("requested_tool_profile")
+    if enabled not in ("local-tools-disabled-v1", "local-tools-enabled-v1"):
+        raise ValueError("unsupported tool profile")
+    if digest != control_digest(enabled == "local-tools-enabled-v1"):
+        raise ValueError("unsupported or incomplete invocation profile")
+    expected_tool = (
+        "local-tools-enabled-v1" if config.enable_tools else "local-tools-disabled-v1"
+    )
+    if (
+        enabled != expected_tool
+        or settings.get("requested_sandbox_mode") != config.sandbox_mode
+    ):
+        raise ValueError("requested controls mismatch")
+    _validate_workspace_controls(settings, cwd, config)
+
+
+def _validate_workspace_controls(
+    settings: dict[str, SettingValue], cwd: Path | None, config: HarnessConfig
+) -> None:
+    """Validate retained workspace provenance and complete settings.
+
+    Raises:
+        ValueError: Workspace metadata or the complete settings do not match.
+    """
+    identity = settings.get("requested_workspace_identity")
+    launch = settings.get("requested_launch_cwd")
+    requested_path = settings.get("requested_workspace_path")
+    if config.working_directory is None:
+        if (
+            identity != "owned-empty-per-run-v1"
+            or launch is not None
+            or requested_path is not None
+        ):
+            raise ValueError("invalid owned workspace identity")
+    elif not isinstance(identity, str) or not isinstance(launch, str):
+        raise ValueError("missing workspace provenance")
+    elif not _absolute_normalized(identity) or not _absolute_normalized(launch):
+        raise ValueError("workspace provenance must be absolute and normalized")
+    elif requested_path != os.path.normpath(
+        str(Path(launch) / config.working_directory)
+    ):
+        raise ValueError("workspace launch provenance mismatch")
+    elif cwd != Path(identity):
+        raise ValueError("borrowed workspace cwd mismatch")
+    launch_path = Path(launch) if isinstance(launch, str) else Path("/")
+    workspace = (
+        Path(identity)
+        if config.working_directory is not None and isinstance(identity, str)
+        else None
+    )
+    if settings != dict(requested_settings(config, launch_path, workspace)):
+        raise ValueError("incomplete or inconsistent execution controls")
+
+
+def _absolute_normalized(value: str) -> bool:
+    """Return whether a recorded path is absolute and normalized."""
+    return Path(value).is_absolute() and Path(value) == Path(os.path.normpath(value))
 
 
 def _failure_assessment(retry_class: Literal["quota", "capacity"]) -> RetryAssessment:
@@ -439,19 +626,14 @@ def _read_effective_settings(
     Returns:
         Requested explicit controls and unknown native effective settings.
     """
-    del executable_path, config
-    return (
-        (PROFILE_SETTING, INVOCATION_PROFILE),
-        ("invocation_profile_sha256", PROFILE_DIGEST),
-        ("requested_approval_policy", "never"),
-        ("requested_ignore_user_config", True),
-        ("requested_sandbox_mode", "read-only"),
-        ("effective_approval_policy", None),
-        ("effective_model_reasoning_effort", None),
-        ("effective_sandbox_mode", None),
-        ("effective_tool_controls", None),
-        ("automatic_system_instructions", None),
+    del executable_path
+    launch_cwd = Path.cwd().resolve()
+    workspace = (
+        None
+        if config.working_directory is None
+        else (launch_cwd / config.working_directory).resolve()
     )
+    return requested_settings(config, launch_cwd, workspace)
 
 
 def _runner_version() -> str:
@@ -481,6 +663,23 @@ def _effective_call_id(
         _encode_identity_component(label, value) for label, value in components
     )
     return hashlib.sha256(payload).hexdigest()
+
+
+def _identity_settings(
+    entries: tuple[tuple[str, SettingValue], ...],
+) -> tuple[tuple[str, SettingValue], ...]:
+    """Exclude v3 path provenance that does not change a resolved invocation.
+
+    Returns:
+        Settings participating in effective call identity.
+    """
+    if dict(entries).get(PROFILE_SETTING) != CONTROL_PROFILE:
+        return entries
+    return tuple(
+        entry
+        for entry in entries
+        if entry[0] not in ("requested_launch_cwd", "requested_workspace_path")
+    )
 
 
 def _effective_call_components(
@@ -530,7 +729,7 @@ def _effective_call_components(
     setting_fields = tuple(
         component
         for key, value in sorted(
-            binding.effective_settings,
+            _identity_settings(binding.effective_settings),
             key=lambda setting: (setting[0], _encode_setting_value(setting[1])),
         )
         for component in (

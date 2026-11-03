@@ -19,10 +19,12 @@ from script.eval.model import (
     FrozenPlan,
     PreparedEvidence,
     RunRecord,
+    SettingValue,
 )
 from script.eval.plan import PurePlanBuilder
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
 from script.eval.runner.adapters.codex import (
+    CONTROL_PROFILE,
     INVOCATION_PROFILE,
     PROFILE_DIGEST,
     PROFILE_SETTING,
@@ -293,9 +295,12 @@ def _bound_error(
     except ValueError as error:
         return str(error)
     prepared = PreparedEvidence(root, root / "plan.json", staged)
-    effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
-        plan, planned, binding, prepared, plan.configuration
-    )
+    try:
+        effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
+            plan, planned, binding, prepared, plan.configuration
+        )
+    except ValueError as error:
+        return str(error)
     if call.call_id != effective.call_id:
         return f"call {call.position} effective identity mismatch"
     request = effective.request
@@ -383,6 +388,8 @@ def _recorded_cwd(
         if "invocation_profile_sha256" in settings:
             raise ValueError("incomplete invocation profile")
         return None
+    if profile == CONTROL_PROFILE:
+        return _recorded_control_cwd(root, plan, settings, call)
     if (
         profile != INVOCATION_PROFILE
         or settings.get("invocation_profile_sha256") != PROFILE_DIGEST
@@ -403,6 +410,51 @@ def _recorded_cwd(
     return cwd
 
 
+def _recorded_control_cwd(
+    root: Path, plan: FrozenPlan, settings: dict[str, SettingValue], call: CallRecord
+) -> Path:
+    """Reconstruct the recorded workspace without accessing its old location.
+
+    Returns:
+        The retained or placeholder workspace path.
+
+    Raises:
+        ValueError: Workspace metadata is invalid.
+    """
+    identity = settings.get("requested_workspace_identity")
+    if plan.configuration.working_directory is not None:
+        if not isinstance(identity, str):
+            raise ValueError("missing workspace provenance")
+        cwd = Path(identity)
+    else:
+        cwd = _recorded_owned_cwd(root, plan, call)
+    if not cwd.is_absolute() or cwd != Path(os.path.normpath(cwd)):
+        raise ValueError(f"call {call.position} invalid invocation cwd")
+    return cwd
+
+
+def _recorded_owned_cwd(root: Path, plan: FrozenPlan, call: CallRecord) -> Path:
+    """Validate an owned physical path or provide an unstarted placeholder.
+
+    Returns:
+        The retained or placeholder path.
+
+    Raises:
+        ValueError: The recorded owned path is invalid.
+    """
+    if not call.attempts:
+        return Path("/ataraxia-unused/empty")
+    cwd = Path(call.attempts[0].cwd)
+    if (
+        cwd.name != "empty"
+        or not cwd.parent.name.startswith("ataraxia-eval-")
+        or cwd.is_relative_to(plan.repository_root)
+        or cwd.is_relative_to(root)
+    ):
+        raise ValueError(f"call {call.position} invalid invocation cwd")
+    return cwd
+
+
 def _settings_error(run: RunRecord) -> str | None:
     """Check unique settings and the single run-owned v2 working directory.
 
@@ -412,7 +464,10 @@ def _settings_error(run: RunRecord) -> str | None:
     keys = [key for key, _ in run.effective_settings]
     if len(keys) != len(set(keys)):
         return "duplicate effective settings"
-    if dict(run.effective_settings).get(PROFILE_SETTING) == INVOCATION_PROFILE:
+    if dict(run.effective_settings).get(PROFILE_SETTING) in (
+        INVOCATION_PROFILE,
+        CONTROL_PROFILE,
+    ):
         cwds = {attempt.cwd for call in run.calls for attempt in call.attempts}
         if len(cwds) > 1:
             return "inconsistent invocation cwd"

@@ -44,11 +44,12 @@ from script.eval.runner.adapters import (
     TerminalProgressSink,
     open_progress_writer,
 )
+from script.eval.runner.adapters.codex import requested_settings
 from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.coordinator import Coordinator
 from script.eval.runner.ports import QuotaStatusReader, QuotaTelemetryError
 from script.eval.tokens import tiktoken_estimator
-from script.eval.workspace import acquire_workspace, require_supported_execution
+from script.eval.workspace import acquire_workspace, validate_workspace_selection
 from script.process_supervisor import (
     AttemptRequest,
     AttemptResult,
@@ -107,7 +108,12 @@ class UnavailableQuota:
         raise RuntimeError("quota scope unavailable")
 
 
-def create_composition(status: EvidenceStatus, cwd: Path | None = None) -> Composition:
+def create_composition(
+    status: EvidenceStatus,
+    cwd: Path | None = None,
+    launch_cwd: Path | None = None,
+    resolved_workspace: Path | None = None,
+) -> Composition:
     """Assemble the concrete one-run dependencies without provider effects.
 
     Returns:
@@ -141,11 +147,18 @@ def create_composition(status: EvidenceStatus, cwd: Path | None = None) -> Compo
         GitRepositoryReader(),
         PurePlanBuilder(str(uuid4())),
         tiktoken_estimator(),
-        CodexCliBindingResolver(),
+        CodexCliBindingResolver()
+        if launch_cwd is None
+        else CodexCliBindingResolver(
+            read_effective_settings=lambda _executable, config: requested_settings(
+                config, launch_cwd, resolved_workspace
+            )
+        ),
         CodexAttemptRequestBuilder(invocation_cwd=cwd),
         lambda: status,
         coordinator,
         _announce_plan,
+        workspace_validated=launch_cwd is not None,
     )
 
 
@@ -218,9 +231,12 @@ async def execute(
     """
     if config.dry_run:
         return await create_composition(status).execute(config)
-    require_supported_execution(config)
-    async with acquire_workspace(config, None) as workspace:
-        return await create_composition(status, workspace.cwd).execute(config)
+    launch_cwd = Path.cwd().resolve()
+    resolved = validate_workspace_selection(config, launch_cwd)
+    async with acquire_workspace(config, resolved) as workspace:
+        return await create_composition(
+            status, workspace.cwd, launch_cwd, resolved
+        ).execute(config)
 
 
 def main() -> int:

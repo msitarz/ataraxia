@@ -39,10 +39,9 @@ Capacity recognition uses the same conservative envelope.
 
 - The CLI turns ordered options into one validated, frozen plan before any
   Codex process can start.
-- **Proposed AC-10/11:** The plan retains requested workspace, sandbox, and
-  tool controls; execution resolves and borrows a supplied directory or owns
-  one empty directory per run. The [typed sketch](design/execution_controls.pyi)
-  describes this extension, not current behavior.
+- The plan retains requested workspace, sandbox, and tool controls; execution
+  resolves and borrows a supplied directory or owns one empty directory per run.
+  The [typed sketch](design/execution_controls.pyi) records the design.
 - The harness composes exact tracked source bytes and estimates them through an
   implemented provider-neutral port and `tiktoken` adapter.
 - An async coordinator owns run order, concurrency, stop latching, separate
@@ -88,7 +87,7 @@ Capacity recognition uses the same conservative envelope.
 - Effects: argument parsing and diagnostic output only; it does not perform
   Git, source, process, or evidence effects itself.
 
-**Proposed AC-10/11:** Add `--working-directory PATH`, `--sandbox-mode`
+The CLI accepts `--working-directory PATH`, `--sandbox-mode`
 (`read-only` or `workspace-write`), and `--enable-tools`. Their defaults are
 omitted directory, `read-only`, and tools disabled. The configuration retained
 in the plan owns these requested values; no duplicate public plan fields are
@@ -214,7 +213,7 @@ evidence-pending state separately. The binding-settings digest is SHA-256 of
 the ordered settings tuple encoded as compact UTF-8 JSON, preserving scalar
 types and order; non-finite floats are rejected. It is not a call identity.
 
-**Proposed AC-10/11:** The existing configuration carries the requested path
+The existing configuration carries the requested path
 and controls into `FrozenPlan`; validators enforce value shape without I/O.
 Preparation checks the supplied existing directory, path relationships, and
 concurrency before dispatch. Relative paths resolve against the caller's launch
@@ -275,7 +274,7 @@ supervisor request.
   probing the CLI during dry run.
 - The resolver reports explicitly requested execution controls separately
   from native effective values. Its default reader does not inspect private
-  user configuration or authentication state: requested read-only sandbox,
+  user configuration or authentication state: requested sandbox,
   unattended approval policy, and ignored user config are recorded as
   requested, while native effective values and automatic instruction bytes
   remain unknown unless independently observed. Tool/feature availability and
@@ -288,18 +287,17 @@ supervisor request.
   `-c model_instructions_file=PATH`; when omitted, it adds no override and
   leaves Codex's native system instructions in place, whose automatic bytes
   remain unavailable. The request uses JSONL output, no color, the requested
-  model and effort, read-only sandboxing, and approval policy `never`, without
+  model and effort, the requested sandbox, and approval policy `never`, without
   a permission-bypass flag. It returns an effective-call identity and
   `AttemptRequest`. No verified flag recipe currently disables all tools or
   features, so their availability is not asserted.
-- The standalone execution owner creates a fresh empty external working
-  directory for the whole run and removes it after coordinator settlement,
-  including cancellation. The v2 profile requests known feature and context
-  disables, including hooks, and `--skip-git-repo-check`; its digest and logical
-  directory policy participate in call identity. Evidence records the actual
-  argv and cwd. Random directory names do not change logical identity. Saved
-  reports verify the recorded paths and settings without requiring temporary
-  files; records without a profile retain the legacy request interpretation.
+- The standalone execution owner borrows the selected directory or creates a
+  fresh empty external directory for the whole run. It releases owned resources
+  after coordinator settlement, including cancellation. The v3 profile records
+  its requested controls and recipe digest; evidence records actual argv and
+  cwd. Random owned directory names do not change logical identity. Saved
+  reports validate retained paths and settings without reopening the old
+  workspace; v1 and v2 retain their historical interpretation.
 - No deny hook is installed. In Codex 0.166.0, ignoring user config still
   leaves an adjacent user `hooks.json` discoverable, so a blanket hook-trust
   bypass could also enable unrelated hooks. The requested controls do not
@@ -326,7 +324,7 @@ supervisor request.
   probes. Request construction has no I/O. Dry run uses neither probe nor
   request construction.
 
-**Proposed AC-10/11:** The new `execution-controls-v3` invocation profile
+The `execution-controls-v3` invocation profile
 retains v2's exact `PROFILE_ARGS` policy with the following profile-specific
 feature requests. Both retain `--ignore-user-config`, `--skip-git-repo-check`,
 `approval_policy="never"`, and v2's configuration and other feature disables,
@@ -392,7 +390,7 @@ and one global quota recovery flow from authoritative typed lifecycles.
 - One coordinator owns one provider and one frozen run without restart recovery.
 - The [Work contract](README.md) remains authoritative.
 
-**Proposed AC-10/11:** Before any evaluation call launches, reject
+Before any evaluation call launches, reject
 `workspace-write` with concurrency greater than one, even with tools disabled:
 the shared workspace may be writable despite requested tool controls. This is a
 conservative run-level refusal rather than an attempt to predict individual
@@ -503,13 +501,13 @@ Codex, quota, and runtime adapters.
   ownership, TTY and redirected output, quiet mode, and evidence independence.
 - `runner.adapters.codex` resolves one absolute executable from `PATH` and
   probes that same path with a bounded `--version` command. It records the
-  requested read-only sandbox, `approval_policy="never"`, and ignored user
+  requested sandbox, `approval_policy="never"`, and ignored user
   config as explicit invocation settings; native effective settings and
   automatic instruction bytes remain unknown. The builder passes frozen prompt
   bytes, requested model and effort, plus the staged native instructions path
   when configured. Its current argv uses `codex exec --json`, disables color,
-  uses the read-only sandbox and `approval_policy="never"`, and places the
-  literal prompt after `--`. The v2 profile requests known feature disables;
+  uses the requested sandbox and `approval_policy="never"`, and places the
+  literal prompt after `--`. The v3 profile requests known feature controls;
   their runtime effect remains unverified, so it does not claim tool-free
   execution or private-data isolation. The classifier recognizes the narrow
   quota and capacity sequences below and supervisor-confirmed prelaunch failure;
@@ -699,14 +697,7 @@ unknown scope or state still stops recovery.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or separate daemon process.
 
-**Partially implemented AC-10/11:** Configuration and dry runs validate supplied
-paths and writable overlap. Live execution currently accepts only default
-controls; nondefault controls fail before binding or output creation. The
-workspace owner can borrow a supplied path or allocate an owned directory, but
-the Codex request builder still needs controlled profiles before nondefault
-execution is enabled.
-
-**Proposed AC-10/11:** The standalone owner resolves a supplied directory once
+The standalone owner resolves a supplied directory once
 and borrows it without creating, replacing, chmodding, cleaning, or deleting it
 or its contents, including on failure and cancellation. Otherwise it allocates
 one external empty directory per run: read-only mode retains the current 0555
@@ -787,11 +778,11 @@ evidence.
 - Effects: exclusive directory creation and evidence writes. It never scans
   prior runs or overwrites them.
 
-**Proposed AC-10/11:** Resolve the output destination and workspace paths,
+Resolve the output destination and workspace paths,
 including existing symlinked ancestors, before creating evidence. Reject an
 output destination equal to or inside a `workspace-write` workspace before
 launch: authorized writes could otherwise alter retained evidence. This narrow
-constraint is proposed for contract alignment; it does not introduce a general
+constraint does not introduce a general
 permission manager or a read-only workspace overlap restriction.
 
 ### Entry point composition
