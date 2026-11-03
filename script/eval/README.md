@@ -12,6 +12,55 @@ You need Python 3.14 or newer, `uv`, Git, and the Codex CLI on `PATH`, with an
 authenticated Codex subscription session for execution. Setup installs the
 locked development dependencies.
 
+### Disabled-tool smoke example
+
+This separate two-call example asks the model to run a fixed `printf` command
+and list only its current directory's names. Its own instructions file
+intentionally permits those harmless tool requests; the supplied reviewer
+smoke below continues to request no tools.
+
+Choose a fresh persistent output path and create only its parent:
+
+```sh
+mkdir -p "$HOME/ataraxia-eval-results"
+```
+
+Preview the two calls:
+
+```sh
+uv run --no-sync python -m script.eval \
+  -d script/eval/example/tool-disable/requests \
+  -i script/eval/example/tool-disable/instructions.md \
+  -m gpt-6-luna -e low -c 1 \
+  --timeout-seconds 120 --cleanup-timeout-seconds 10 \
+  --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
+  -o "$HOME/ataraxia-eval-results/tool-disable-001" -n
+```
+
+Then run the same command without `-n` to make exactly two calls. The output
+directory must be new; choose another name if it already exists. Do not enable
+tools to silence a warning. Keep emitted error items, including a code-mode-host
+disabled item that can appear before a normal response. Inspect each raw
+attempt's `stdout` JSONL and `run.json` for the invocation controls, working
+directory, and observed tool events; response text alone is not evidence of
+execution or blocking.
+
+Interpret the observations cautiously:
+
+- No callable tool offered means **tool unavailable**.
+- An attempted call explicitly denied in the runtime trace means **observed
+  attempt denied**.
+- Any requested operation that actually runs is a **boundary failure** for a
+  disabled-tool profile.
+- A refusal, model self-report, or absence of tool events alone is
+  **inconclusive**; no events can also mean the model refused or chose not to
+  attempt a tool.
+
+An empty working directory does not provide absolute read isolation. The example
+demonstrates requests under a disabled-tool profile; it does not prove that all
+tools are blocked until observations support that conclusion. It is not a
+reviewer-quality evaluation.
+
 ### Supplied reviewer smoke example
 
 Start from a clean repository root. Choose a fresh persistent output path and
