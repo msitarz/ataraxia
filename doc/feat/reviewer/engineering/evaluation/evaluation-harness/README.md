@@ -537,8 +537,11 @@ to the harness.
 - The selected directory is a starting directory, not a chroot or a guarantee
   that files outside it cannot be read.
 - AC-1 and AC-2 continue to validate and freeze prompt inputs independently of
-  the workspace; workspace files need not all be committed, and the harness
+  the workspace; workspace files need not all be committed unless the unchanged
+  clean prompt-input repository rule applies to their location, and the harness
   neither cleans the workspace nor automatically clones it.
+- Selecting a workspace within the prompt-input repository grants no exception
+  to AC-1's repository-wide clean-checkout requirement.
 - A supplied directory is shared by the run's evaluation calls, including
   retries; earlier writes can affect later calls even when calls run serially.
 - Usage guidance makes the caller responsible for preparing a fresh independent
@@ -570,16 +573,21 @@ broadening unrelated capabilities.
   it does not blindly enable all Codex features.
 - The adapter keeps unattended approval behavior explicit and never responds to
   missing prerequisites by silently broadening permissions.
-- The run plan, retained execution evidence, and stable call identity record
-  the requested sandbox and tool profile and resolved absolute working
-  directory; changed requested controls or directory produce a distinct call
-  identity.
+- The run plan records requested sandbox and tool controls and workspace
+  selection as either the omitted owned-directory policy or an explicit path;
+  planning and dry run do not allocate a future temporary directory.
+- Runtime evidence records the resolved actual working directory alongside the
+  requested controls and workspace selection.
+- Stable call identity includes sandbox and tool profiles and either the logical
+  owned-directory policy or the resolved caller-supplied absolute directory.
+- Changing a supplied directory or requested controls changes call identity;
+  changing only the random owned temporary path does not.
 - Requested settings remain distinct from observed effective runtime settings;
   unavailable effective sandbox or tool state is explicitly unknown, and a
   request alone establishes neither tool-free execution nor isolation.
 - Existing evidence, including legacy v1 and v2 invocation profiles, remains
-  readable with its original meaning; missing historical controls are not
-  retroactively represented as observed effective settings.
+  readable with its original meaning and identity behavior; missing historical
+  controls are not retroactively represented as observed effective settings.
 - Quota probes retain their separate fixed read-only, tool-disabled, isolated
   empty-directory profile regardless of evaluation-call controls.
 - Dry run validates and displays requested controls under AC-10 without CLI or
