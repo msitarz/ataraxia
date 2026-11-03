@@ -4,10 +4,16 @@
 import json
 from pathlib import Path
 
-from script.reviewer_eval.validation import ValidatedResponse, validate_response
+import pytest
+
+from script.reviewer_eval.validation import (
+    InvalidResponse,
+    ValidatedResponse,
+    validate_response,
+)
 
 
-def test_published_schema_contract_matches_validator() -> None:
+def test_published_schema_shape() -> None:
     # Given
     shared = Path(
         "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt"
@@ -66,3 +72,102 @@ def test_published_schema_contract_matches_validator() -> None:
         "type": "array",
         "items": {"type": "string", "minLength": 1},
     }
+
+
+@pytest.mark.parametrize("rule", ["R1", "R3", "R4"], ids=["R1", "R3", "R4"])
+@pytest.mark.parametrize(
+    "severity", ["critical", "major", "minor"], ids=["critical", "major", "minor"]
+)
+def test_published_rule_and_severity_members_are_accepted(
+    rule: str, severity: str
+) -> None:
+    # Given
+    finding = {
+        "rule_id": rule,
+        "file_id": "file.py",
+        "start_line": 1,
+        "end_line": 1,
+        "quote": "source",
+        "explanation": "reason",
+        "consequence": "effect",
+        "severity": severity,
+    }
+    raw = json.dumps({"complete": True, "findings": [finding]}).encode()
+
+    # When
+    result = validate_response(
+        raw, allowed_rules=frozenset({rule}), sources={"file.py": b"source\n"}
+    )
+
+    # Then
+    assert isinstance(result, ValidatedResponse)
+    assert result.complete
+    assert result.findings[0].rule_id == rule
+    assert result.findings[0].severity == severity
+
+
+@pytest.mark.parametrize(
+    "missing",
+    [
+        "rule_id",
+        "file_id",
+        "start_line",
+        "end_line",
+        "quote",
+        "explanation",
+        "consequence",
+        "severity",
+    ],
+    ids=[
+        "rule-id",
+        "file-id",
+        "start-line",
+        "end-line",
+        "quote",
+        "explanation",
+        "consequence",
+        "severity",
+    ],
+)
+def test_each_published_required_finding_field_is_enforced(missing: str) -> None:
+    # Given
+    finding = {
+        "rule_id": "R1",
+        "file_id": "file.py",
+        "start_line": 1,
+        "end_line": 1,
+        "quote": "source",
+        "explanation": "reason",
+        "consequence": "effect",
+        "severity": "minor",
+    }
+    del finding[missing]
+    raw = json.dumps({"complete": True, "findings": [finding]}).encode()
+
+    # When
+    result = validate_response(
+        raw, allowed_rules=frozenset({"R1"}), sources={"file.py": b"source\n"}
+    )
+
+    # Then
+    assert isinstance(result, InvalidResponse)
+    assert missing in result.diagnostic
+
+
+@pytest.mark.parametrize(
+    ("raw", "missing"),
+    [(b'{"findings":[]}', "complete"), (b'{"complete":true}', "findings")],
+    ids=["complete", "findings"],
+)
+def test_each_published_required_envelope_field_is_enforced(
+    raw: bytes, missing: str
+) -> None:
+    # Given
+    # The parameter supplies an envelope missing one published required field.
+
+    # When
+    result = validate_response(raw, allowed_rules=frozenset(), sources={})
+
+    # Then
+    assert isinstance(result, InvalidResponse)
+    assert missing in result.diagnostic

@@ -187,3 +187,15 @@ def test_rejects_invalid_json_or_envelope(raw: bytes) -> None:
 
     # Then
     assert isinstance(result, InvalidResponse)
+
+
+def test_excessively_nested_json_is_invalid() -> None:
+    # Given
+    raw = b"[" * 400000 + b"]" * 400000
+
+    # When
+    result = validate_response(raw, allowed_rules=RULES, sources=SOURCES)
+
+    # Then
+    assert isinstance(result, InvalidResponse)
+    assert "nest" in result.diagnostic

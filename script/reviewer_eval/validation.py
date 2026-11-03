@@ -65,9 +65,14 @@ def validate_response(
         data = json.loads(
             decoded, object_pairs_hook=_unique_object, parse_constant=_reject_constant
         )
-        response = _Response.model_validate(data)
+    except RecursionError:
+        return InvalidResponse("invalid response JSON: nesting exceeds decoder limit")
     except (UnicodeDecodeError, ValueError) as exc:
-        return InvalidResponse(f"invalid response JSON or schema: {exc}")
+        return InvalidResponse(f"invalid response JSON: {exc}")
+    try:
+        response = _Response.model_validate(data)
+    except ValueError as exc:
+        return InvalidResponse(f"invalid response schema: {exc}")
     for index, finding in enumerate(response.findings):
         problem = _source_problem(finding, allowed_rules, sources)
         if problem is not None:
