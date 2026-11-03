@@ -197,11 +197,22 @@ Run the full A scenario before the full B scenario:
 - Then complete or explicitly account for all 36 planned B calls.
 - Use three fresh independent repetitions at each effort in each scenario.
 - Within each scenario, run repetition 1, then 2, then 3.
-- Within each repetition, run efforts in the order none, low, medium, high.
+- Within each scenario, use the repetition-specific effort order below.
 - Within each B effort, order rule IDs lexically: R1, R3, R4.
 - Run sequentially with concurrency one.
 - Never resume a prior session or supply hints or prior answers.
 - Retained stop conditions take precedence over progressing to B.
+
+Use this deterministic schedule for the two complete scenario blocks:
+
+| Scenario block | Repetition | Effort order | Calls |
+| --- | --- | --- | --- |
+| A first | 1 | none, low, medium, high | 4 |
+| A first | 2 | low, medium, high, none | 4 |
+| A first | 3 | medium, high, none, low | 4 |
+| B second | 1 | none, low, medium, high | 12 |
+| B second | 2 | low, medium, high, none | 12 |
+| B second | 3 | medium, high, none, low | 12 |
 
 A uses 4 efforts × 3 repetitions = 12 planned calls. B uses 4 efforts ×
 3 repetitions × 3 rules = 36 planned calls. The initial matrix therefore has
@@ -328,8 +339,8 @@ or context drift outside the frozen limitation still requires review.
 Use the implemented generic harness's `execution-controls-v3` profile, as
 specified in the [harness guide](../../../../../script/eval/README.md).
 
-- Use the default fresh harness-owned empty working directory outside the
-  repository.
+- Use the default fresh harness-owned empty working directory outside both the
+  prompt repository and the evidence directory.
 - Request the read-only sandbox and disabled local tools.
 - Ignore user configuration and request approval policy `never`.
 - Supply the exact frozen nonempty `min.md` bytes through the native instruction
@@ -340,8 +351,7 @@ specified in the [harness guide](../../../../../script/eval/README.md).
   retained invocation evidence.
 - Leave unknown effective settings unknown.
 - Do not enable tools or select a user workspace for this comparison.
-- Do not use quota probes or `--allow-extra`; they are outside the initial
-  budget.
+- Do not use quota probes or additional calls outside the authorized budget.
 
 The native instruction override replaces default model instructions, but does
 not prove removal of every automatic instruction or tool. Requested disables do
@@ -359,10 +369,11 @@ unresolved preparation allowances are not replenished by this alignment.
 No baseline measurement or user trial is authorized here.
 
 The maintainer reports 7,380 `input_tokens` for one none/greeting invocation
-using this configuration. No raw event stream was supplied or independently
-verified. Treat this as a reported whole-input observation for one setup. It is
-not a universal system-instruction count or an estimate for other efforts and
-prompts.
+using the historical maintainer-supplied candidate recorded in
+[bounded preparation](preparation.md), not `execution-controls-v3`. No raw event
+stream was supplied or independently verified. Treat this as a reported
+whole-input observation for one setup. It is not a universal system-instruction
+count or an estimate for other efforts and prompts.
 
 Use measured fixed input baselines for each exact CLI configuration, including
 reasoning effort, in final reporting. Before trials, declare and freeze each
