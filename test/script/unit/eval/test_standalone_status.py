@@ -59,7 +59,12 @@ async def test_invocation_directory_survives_cancellation_until_settlement(
                 assert paths[0].is_dir()
             raise AssertionError("unexpected completion")
 
-    def composition(status: EvidenceStatus, cwd: Path | None = None) -> FakeComposition:
+    def composition(
+        status: EvidenceStatus,
+        cwd: Path | None = None,
+        launch_cwd: Path | None = None,
+        resolved_workspace: Path | None = None,
+    ) -> FakeComposition:
         assert cwd is not None
         paths.append(cwd)
         return FakeComposition()
@@ -86,7 +91,7 @@ async def test_invocation_directory_survives_cancellation_until_settlement(
 
 def _settlement_composition(
     paths: list[Path], outcome: Callable[[], RunRecord]
-) -> Callable[[EvidenceStatus, Path | None], object]:
+) -> Callable[[EvidenceStatus, Path | None, Path | None, Path | None], object]:
     """Provide a controlled composition that observes the owned cwd."""
 
     class FakeComposition:
@@ -94,7 +99,12 @@ def _settlement_composition(
             assert paths[0].is_dir() and not list(paths[0].iterdir())
             return outcome()
 
-    def composition(status: EvidenceStatus, cwd: Path | None = None) -> FakeComposition:
+    def composition(
+        status: EvidenceStatus,
+        cwd: Path | None = None,
+        launch_cwd: Path | None = None,
+        resolved_workspace: Path | None = None,
+    ) -> FakeComposition:
         assert cwd is not None
         paths.append(cwd)
         return FakeComposition()

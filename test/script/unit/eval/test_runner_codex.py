@@ -32,6 +32,8 @@ from script.eval.runner.adapters.codex import (
     INVOCATION_PROFILE,
     PROFILE_DIGEST,
     PROFILE_SETTING,
+    control_args,
+    requested_settings,
 )
 from script.process_supervisor import (
     AttemptCancelled,
@@ -869,8 +871,12 @@ def test_default_settings_reader_runs_after_version_probe() -> None:
     assert probed_paths == [executable_path]
     assert probed_paths[0] is executable_path
     assert binding.effective_settings == (
-        (PROFILE_SETTING, INVOCATION_PROFILE),
+        (PROFILE_SETTING, "execution-controls-v3"),
         ("invocation_profile_sha256", PROFILE_DIGEST),
+        ("requested_tool_profile", "local-tools-disabled-v1"),
+        ("requested_workspace_identity", "owned-empty-per-run-v1"),
+        ("requested_launch_cwd", None),
+        ("requested_workspace_path", None),
         ("requested_approval_policy", "never"),
         ("requested_ignore_user_config", True),
         ("requested_sandbox_mode", "read-only"),
@@ -1254,3 +1260,128 @@ def test_classifier_refuses_capacity_text_in_an_ambiguous_envelope() -> None:
     # Then
     assert assessment.retry_class == "unknown"
     assert assessment.no_result_basis == "present_or_unknown"
+
+
+@pytest.mark.parametrize("sandbox", ["read-only", "workspace-write"])
+@pytest.mark.parametrize(
+    ("enabled", "toggle"), [(False, "--disable"), (True, "--enable")]
+)
+def test_v3_builder_requests_selected_controls(
+    sandbox: str, enabled: bool, toggle: str
+) -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    config = config.model_copy(
+        update={"sandbox_mode": sandbox, "enable_tools": enabled}
+    )
+    cwd = Path("/tmp/ataraxia-eval-test/empty")
+    binding = replace(
+        binding, effective_settings=requested_settings(config, Path("/launch"), None)
+    )
+
+    # When
+    effective = CodexAttemptRequestBuilder(invocation_cwd=cwd).build(
+        plan, call, binding, evidence, config
+    )
+
+    # Then
+    argv = effective.request.argv
+    assert effective.request.cwd == cwd
+    assert argv[argv.index("--sandbox") + 1] == sandbox
+    assert argv[-2 - len(control_args(enabled)) : -2] == control_args(enabled)
+    assert argv[argv.index("shell_tool") - 1] == toggle
+    assert argv[argv.index("code_mode") - 1] == toggle
+    assert argv[argv.index("code_mode_host") - 1] == toggle
+    assert argv[argv.index("hooks") - 1] == "--disable"
+    assert argv[argv.index("plugins") - 1] == "--disable"
+    assert "--ignore-user-config" in argv
+    assert "--skip-git-repo-check" in argv
+
+
+def test_v3_owned_identity_ignores_random_cwd() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    binding = replace(
+        binding, effective_settings=requested_settings(config, Path("/launch"), None)
+    )
+    first = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-a/empty")
+    )
+    second = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-b/empty")
+    )
+
+    # When
+    a = first.build(plan, call, binding, evidence, config)
+    b = second.build(plan, call, binding, evidence, config)
+
+    # Then
+    assert a.call_id == b.call_id
+    assert a.request.cwd != b.request.cwd
+
+
+def test_v3_borrowed_identity_changes_with_resolved_path() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    config = config.model_copy(update={"working_directory": Path("clone")})
+    first = Path("/launch/clone")
+    second = Path("/other/clone")
+    binding_a = replace(
+        binding, effective_settings=requested_settings(config, Path("/launch"), first)
+    )
+    binding_b = replace(
+        binding, effective_settings=requested_settings(config, Path("/other"), second)
+    )
+
+    # When
+    a = CodexAttemptRequestBuilder(invocation_cwd=first).build(
+        plan, call, binding_a, evidence, config
+    )
+    b = CodexAttemptRequestBuilder(invocation_cwd=second).build(
+        plan, call, binding_b, evidence, config
+    )
+
+    # Then
+    assert a.call_id != b.call_id
+    assert a.request.cwd == first
+    assert b.request.cwd == second
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [{"enable_tools": True}, {"sandbox_mode": "workspace-write"}],
+    ids=["tools", "sandbox"],
+)
+def test_v3_controls_change_identity(changes: dict[str, object]) -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    changed = config.model_copy(update=changes)
+    cwd = Path("/tmp/ataraxia-eval-test/empty")
+    binding_a = replace(
+        binding, effective_settings=requested_settings(config, Path("/launch"), None)
+    )
+    binding_b = replace(
+        binding, effective_settings=requested_settings(changed, Path("/launch"), None)
+    )
+    builder = CodexAttemptRequestBuilder(invocation_cwd=cwd)
+
+    # When
+    a = builder.build(plan, call, binding_a, evidence, config)
+    b = builder.build(plan, call, binding_b, evidence, changed)
+
+    # Then
+    assert a.call_id != b.call_id
+
+
+def test_v3_rejects_incomplete_metadata() -> None:
+    # Given
+    config, plan, call, binding, evidence = plan_and_inputs()
+    settings = requested_settings(config, Path("/launch"), None)
+    binding = replace(binding, effective_settings=settings[:-1])
+    builder = CodexAttemptRequestBuilder(
+        invocation_cwd=Path("/tmp/ataraxia-eval-test/empty")
+    )
+
+    # When / Then
+    with pytest.raises(ValueError, match="incomplete or inconsistent"):
+        builder.build(plan, call, binding, evidence, config)

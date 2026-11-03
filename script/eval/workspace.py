@@ -78,20 +78,3 @@ async def acquire_workspace(
         cwd = Path(directory).resolve() / "empty"
         cwd.mkdir(mode=0o555 if config.sandbox_mode == "read-only" else 0o700)
         yield PreparedWorkspace(cwd, True)
-
-
-def require_supported_execution(config: HarnessConfig, /) -> None:
-    """Refuse controls the current request builder cannot yet apply.
-
-    Raises:
-        ValueError: The requested controls require the future request builder.
-    """
-    if (
-        config.working_directory is not None
-        or config.sandbox_mode != "read-only"
-        or config.enable_tools
-    ):
-        raise ValueError(
-            "nondefault workspace, sandbox, and tool controls are available "
-            "only with --dry-run; execution currently supports defaults only"
-        )

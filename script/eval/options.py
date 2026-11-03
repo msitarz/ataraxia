@@ -275,18 +275,18 @@ def _add_workspace_options(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--working-directory",
         type=Path,
-        help="existing workspace (dry-run only for now)",
+        help="existing workspace",
     )
     parser.add_argument(
         "--sandbox-mode",
         choices=("read-only", "workspace-write"),
         default="read-only",
-        help="requested sandbox (nondefault is dry-run only for now)",
+        help="requested sandbox",
     )
     parser.add_argument(
         "--enable-tools",
         action="store_true",
-        help="request local tools (dry-run only for now)",
+        help="request local tools",
     )
 
 

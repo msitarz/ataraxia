@@ -631,3 +631,83 @@ async def test_decoder_limit_produces_invalid_report(
         assert result.planned_count == 1
         assert result.counts is not None
         assert result.counts.invalid == 1
+
+
+async def test_v3_saved_report_reads_removed_owned_workspace(tmp_path: Path) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root, invocation_cwd=Path("/tmp/ataraxia-eval-gone/empty"), v3=True
+    )
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.calls[0].state == "complete"
+
+
+async def test_v3_saved_report_rejects_tampered_cwd(tmp_path: Path) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root, invocation_cwd=Path("/tmp/ataraxia-eval-gone/empty"), v3=True
+    )
+    tamper_cwd(root)
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.calls[0].state == "invalid"
+
+
+def tamper_digest(root: Path) -> None:
+    """Change the recipe digest while updating its enclosing settings digest."""
+    path = root / "run.json"
+    summary = json.loads(path.read_text())
+    summary["effective_settings"][1][1] = "0" * 64
+    summary["calls"][0]["effective_settings_sha256"] = settings_digest(
+        tuple(tuple(item) for item in summary["effective_settings"])
+    )
+    path.write_text(json.dumps(summary))
+
+
+@pytest.mark.parametrize(
+    "prepare",
+    [tamper_control, tamper_profile, tamper_digest],
+    ids=["argv", "profile", "digest"],
+)
+async def test_v3_saved_report_rejects_changed_recipe(
+    tmp_path: Path, prepare: Callable[[Path], None]
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root, invocation_cwd=Path("/tmp/ataraxia-eval-gone/empty"), v3=True
+    )
+    prepare(root)
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "invalid"
+    assert result.calls[0].state == "invalid"
+
+
+async def test_v3_borrowed_relative_workspace_survives_archiving(
+    tmp_path: Path,
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root, invocation_cwd=Path("/resolved/clone"), v3=True, borrowed=True
+    )
+
+    # When
+    result = inspect_run(root)
+
+    # Then
+    assert result.evidence_state == "complete"
+    assert result.calls[0].state == "complete"

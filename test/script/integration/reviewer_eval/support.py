@@ -22,6 +22,7 @@ from script.eval.runner.adapters.codex import (
     INVOCATION_PROFILE,
     PROFILE_DIGEST,
     PROFILE_SETTING,
+    requested_settings,
 )
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.ports import CliBinding
@@ -105,9 +106,16 @@ async def create_run(
     status: int = 0,
     finalize: bool = True,
     invocation_cwd: Path | None = None,
+    v3: bool = False,
+    borrowed: bool = False,
 ) -> RunRecord:
     """Persist a controlled plan, process and final summary through the real store."""
     frozen = plan()
+    if borrowed:
+        configuration = frozen.configuration.model_copy(
+            update={"working_directory": Path("clone")}
+        )
+        frozen = frozen.model_copy(update={"configuration": configuration})
     store = create_evidence_store()
     prepared = await store.create(root, frozen)
     settings = (
@@ -118,6 +126,10 @@ async def create_run(
             ("invocation_profile_sha256", PROFILE_DIGEST),
         )
     )
+    if v3:
+        settings = requested_settings(
+            frozen.configuration, Path("/launch"), invocation_cwd if borrowed else None
+        )
     binding = CliBinding(Path("/synthetic/codex"), None, "synthetic", settings, None)
     effective = CodexAttemptRequestBuilder(invocation_cwd=invocation_cwd).build(
         frozen, frozen.calls[0], binding, prepared, frozen.configuration

@@ -64,6 +64,35 @@ absolute read isolation. The example demonstrates requests under a disabled-
 tool profile; it does not prove that all tools are blocked until observations
 support that conclusion. It is not a reviewer-quality evaluation.
 
+### Caller-prepared workspace
+
+Use an existing directory as the starting workspace, for example a clone you
+prepared independently. This preview makes no model call or workspace change:
+
+```sh
+uv run --no-sync python -m script.eval \
+  -d script/eval/example/rules -d script/eval/example/sources \
+  -m gpt-6-luna -e low -c 1 \
+  --working-directory /path/to/prepared-clone \
+  --sandbox-mode workspace-write --enable-tools \
+  -o /path/to/results/run-001 -n
+```
+
+Remove `-n` to execute. The output must be outside a writable workspace, and
+workspace-write requires concurrency one. The harness borrows the directory and
+does not clean, chmod, or delete it. Codex activity can modify it under the
+requested permissions. Calls and retries share this workspace, so earlier writes
+can affect later calls; prepare a fresh independent workspace for each
+independent experiment. The working directory is not a chroot. Prompt inputs
+still require a clean Git repository; workspace bytes are not frozen by the
+input freezer.
+
+The default is a fresh harness-owned empty directory, read-only sandbox, and a
+request to disable local tools. `--enable-tools` requests shell and code-mode
+features while retaining unrelated feature disables, ignored user configuration,
+and approval policy `never`. These are requests, not observations of effective
+tool availability, complete MCP isolation, or access to other files.
+
 ### Supplied reviewer smoke example
 
 Start from a clean repository root. Choose a fresh persistent output path and
@@ -205,7 +234,7 @@ that protocol or enforce its budgets.
 - Quota telemetry requires Codex CLI 0.164.0 or later and a recognized,
   validated runtime session shape. It fails closed when identity, freshness,
   completeness, or quota scope cannot be verified.
-- Execution requests Codex's read-only sandbox and `approval_policy="never"`,
+- Execution requests the selected Codex sandbox and `approval_policy="never"`,
   using `--ignore-user-config`. Controlled tests exercise the local invocation,
   not live authentication or provider availability. The harness cannot establish
   the effective tool set or isolate context that Codex itself may add; its

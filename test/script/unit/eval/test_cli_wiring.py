@@ -314,7 +314,7 @@ async def test_cancellation_retains_failed_preparation_and_prevents_dispatch() -
     [{"sandbox_mode": "workspace-write"}, {"enable_tools": True}],
     ids=["writable", "tools"],
 )
-async def test_nondefault_live_controls_fail_before_binding_or_output(
+async def test_nondefault_live_controls_flow_to_binding(
     changes: dict[str, object],
 ) -> None:
     # Given
@@ -322,11 +322,11 @@ async def test_nondefault_live_controls_fail_before_binding_or_output(
     configuration = config(dry_run=False).model_copy(update=changes)
 
     # When
-    with pytest.raises(ValueError, match="only with --dry-run"):
-        await harness.composition().execute(configuration)
+    await harness.composition().execute(configuration)
 
     # Then
-    assert harness.events == []
+    assert "bind" in harness.events
+    assert harness.configs[-1] == configuration
 
 
 async def test_dry_run_reports_resolved_workspace_without_mutation(
@@ -350,7 +350,7 @@ async def test_dry_run_reports_resolved_workspace_without_mutation(
     assert "bind" not in harness.events
 
 
-async def test_supplied_workspace_live_execution_is_gated(tmp_path: Path) -> None:
+async def test_supplied_workspace_flows_to_binding(tmp_path: Path) -> None:
     # Given
     harness = Harness()
     configuration = config(dry_run=False).model_copy(
@@ -358,8 +358,8 @@ async def test_supplied_workspace_live_execution_is_gated(tmp_path: Path) -> Non
     )
 
     # When
-    with pytest.raises(ValueError, match="only with --dry-run"):
-        await harness.composition().execute(configuration)
+    await harness.composition().execute(configuration)
 
     # Then
-    assert harness.events == []
+    assert "bind" in harness.events
+    assert harness.configs[-1] == configuration
