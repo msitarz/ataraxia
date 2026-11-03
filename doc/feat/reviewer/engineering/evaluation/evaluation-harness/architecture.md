@@ -699,6 +699,13 @@ unknown scope or state still stops recovery.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or separate daemon process.
 
+**Partially implemented AC-10/11:** Configuration and dry runs validate supplied
+paths and writable overlap. Live execution currently accepts only default
+controls; nondefault controls fail before binding or output creation. The
+workspace owner can borrow a supplied path or allocate an owned directory, but
+the Codex request builder still needs controlled profiles before nondefault
+execution is enabled.
+
 **Proposed AC-10/11:** The standalone owner resolves a supplied directory once
 and borrows it without creating, replacing, chmodding, cleaning, or deleting it
 or its contents, including on failure and cancellation. Otherwise it allocates

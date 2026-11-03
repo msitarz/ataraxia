@@ -56,6 +56,9 @@ _SEMANTIC_ERRORS = {
     "separator contains an unknown or dangling escape": (
         r"-s/--separator supports only \n, \r, \t, and \\ escapes."
     ),
+    "workspace-write requires concurrency of one": (
+        "--sandbox-mode workspace-write requires --concurrency 1."
+    ),
     "capacity retries require backoff base and cap durations": (
         "--capacity-retry-limit requires --capacity-backoff-base-seconds "
         "and --capacity-backoff-cap-seconds."
@@ -119,6 +122,9 @@ def parse_config(argv: Sequence[str], /) -> HarnessConfig:
             capacity_backoff_base_seconds=args.capacity_backoff_base_seconds,
             capacity_backoff_cap_seconds=args.capacity_backoff_cap_seconds,
             instructions_file_path=args.instructions_file_path,
+            working_directory=args.working_directory,
+            sandbox_mode=args.sandbox_mode,
+            enable_tools=args.enable_tools,
         )
     except ValidationError as error:
         parser.error(_validation_message(error))
@@ -237,6 +243,7 @@ def _parser() -> argparse.ArgumentParser:
             "Codex default system instructions; directory files remain context"
         ),
     )
+    _add_workspace_options(parser)
     parser.add_argument("--quiet", action="store_true", help="suppress progress")
     parser.add_argument("--timeout-seconds", type=float, default=300.0)
     parser.add_argument("--cleanup-timeout-seconds", type=float, default=10.0)
@@ -259,6 +266,32 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--quota-wait-limit-seconds", type=float)
     parser.add_argument("--quota-poll-interval-seconds", type=float, default=60.0)
     parser.add_argument("--quota-probe-budget", type=int)
+    _add_capacity_options(parser)
+    return parser
+
+
+def _add_workspace_options(parser: argparse.ArgumentParser) -> None:
+    """Add requested workspace and local tool controls."""
+    parser.add_argument(
+        "--working-directory",
+        type=Path,
+        help="existing workspace (dry-run only for now)",
+    )
+    parser.add_argument(
+        "--sandbox-mode",
+        choices=("read-only", "workspace-write"),
+        default="read-only",
+        help="requested sandbox (nondefault is dry-run only for now)",
+    )
+    parser.add_argument(
+        "--enable-tools",
+        action="store_true",
+        help="request local tools (dry-run only for now)",
+    )
+
+
+def _add_capacity_options(parser: argparse.ArgumentParser) -> None:
+    """Add bounded capacity retry settings."""
     parser.add_argument(
         "--capacity-retry-limit",
         type=int,
@@ -267,4 +300,3 @@ def _parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--capacity-backoff-base-seconds", type=float)
     parser.add_argument("--capacity-backoff-cap-seconds", type=float)
-    return parser

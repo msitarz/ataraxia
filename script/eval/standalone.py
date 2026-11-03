@@ -48,6 +48,7 @@ from script.eval.runner.adapters.codex_version import supports_quota_version
 from script.eval.runner.coordinator import Coordinator
 from script.eval.runner.ports import QuotaStatusReader, QuotaTelemetryError
 from script.eval.tokens import tiktoken_estimator
+from script.eval.workspace import acquire_workspace, require_supported_execution
 from script.process_supervisor import (
     AttemptRequest,
     AttemptResult,
@@ -217,10 +218,9 @@ async def execute(
     """
     if config.dry_run:
         return await create_composition(status).execute(config)
-    with tempfile.TemporaryDirectory(prefix="ataraxia-eval-") as directory:
-        cwd = Path(directory).resolve() / "empty"
-        cwd.mkdir(mode=0o555)
-        return await create_composition(status, cwd).execute(config)
+    require_supported_execution(config)
+    async with acquire_workspace(config, None) as workspace:
+        return await create_composition(status, workspace.cwd).execute(config)
 
 
 def main() -> int:

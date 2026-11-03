@@ -28,6 +28,16 @@ def format_dry_run(report: DryRunReport) -> str:
         lines.append(f"  {str(directory.path)!r}: {count} selected files")
         if index < len(plan.boundary_bytes):
             lines.append(f"  separator: {plan.boundary_bytes[index].decode('utf-8')!r}")
+    config = plan.configuration
+    workspace = (
+        str(report.resolved_working_directory)
+        if report.resolved_working_directory is not None
+        else "future owned empty directory per run"
+    )
+    lines.append(f"Working directory: {workspace}")
+    lines.append(
+        f"Sandbox: {config.sandbox_mode}; tools enabled: {config.enable_tools}"
+    )
     lines.append(f"Models: {', '.join(plan.configuration.models)}")
     lines.append(f"Efforts: {', '.join(plan.configuration.efforts)}")
     if plan.instructions_file is not None:

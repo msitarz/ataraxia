@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """PROPOSED AC-10/11 boundary additions, not an implemented module.
 
-These sketches extend the runtime owners named in architecture.md. They do not
+Configuration fields, workspace validation, and workspace ownership now exist
+in runtime; nondefault live execution remains gated. The invocation-control and
+request-builder sketches remain proposed. These sketches do not
 replace the historical design/eval package or define another public framework.
 """
 
