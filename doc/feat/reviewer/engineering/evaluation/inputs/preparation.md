@@ -33,9 +33,19 @@ shared file before each case and the corpus after it:
 The response has a boolean `complete` and a findings list. A completed review
 may have no findings. Each finding identifies the rule and original file, line
 span and quotation, explanation, consequence, and severity; optional corrections
-are separate. A later validator must enforce supplied-rule membership, ordered
-line spans, and source correspondence in addition to the schema. Trusted call
-records bind runtime identity and settings outside model-visible material.
+are separate. The
+[response validator](../../../../../../script/reviewer_eval/validation.py)
+checks the schema, supplied-rule and file membership, ordered in-bounds line
+spans, and exact UTF-8 quote bytes within the original span. LF separates source
+lines; CRLF and other original bytes are preserved for matching. It retains
+duplicate findings for owner adjudication and incomplete findings for inspection
+without quality credit.
+
+This pure core does not extract CLI JSONL, verify process status, provenance,
+settings or immutable reads, judge findings, match private answers, score, or
+deduplicate. Callers and owner adjudication must provide those guarantees. It
+is an initial increment, not a trial-readiness gate. Trusted call records bind
+runtime identity and settings outside model-visible material.
 
 Check the prepared bytes from the repository root:
 
