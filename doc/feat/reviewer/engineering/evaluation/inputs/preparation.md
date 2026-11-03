@@ -41,6 +41,10 @@ lines; CRLF and other original bytes are preserved for matching. It retains
 duplicate findings for owner adjudication and incomplete findings for inspection
 without quality credit.
 
+[Saved reviewer results](../../../../../../script/reviewer_eval/README.md)
+provides a separate inspection command for retained initial A/B harness runs.
+Its consistency checks do not replace owner adjudication or the pending freeze.
+
 This pure core does not extract CLI JSONL, verify process status, provenance,
 settings or immutable reads, judge findings, match private answers, score, or
 deduplicate. Callers and owner adjudication must provide those guarantees. It
