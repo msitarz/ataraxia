@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[4]
 FIXTURE = ROOT / "test/script/fixtures/eval/fake_codex.py"
 
 
-def command(repository: Path, output: Path) -> list[str]:
+def command(repository: Path, output: Path, model: str = "model") -> list[str]:
     return [
         sys.executable,
         "-m",
@@ -30,7 +30,7 @@ def command(repository: Path, output: Path) -> list[str]:
         "-d",
         str(repository / "context"),
         "-m",
-        "model",
+        model,
         "-e",
         "low",
         "-o",
@@ -879,3 +879,79 @@ def shared_terminal_output(
             process.kill()
             process.wait(timeout=5)
     return code, b"".join(chunks)
+
+
+def test_dry_run_displays_controls_without_mutating_borrowed_workspace(
+    tmp_path: Path,
+) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    workspace = tmp_path / "workspace"
+    workspace.mkdir(mode=0o750)
+    marker = workspace / "keep"
+    marker.write_text("unchanged")
+    permissions = workspace.stat().st_mode
+    env = environment(tmp_path)
+    provider_log = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(provider_log)
+    arguments = [
+        *command(repo, output, "unsupported-model"),
+        "-n",
+        "--working-directory",
+        "workspace",
+        "--sandbox-mode",
+        "workspace-write",
+        "--enable-tools",
+    ]
+
+    # When
+    result = subprocess.run(
+        arguments, cwd=tmp_path, env=env, capture_output=True, text=True, timeout=20
+    )
+
+    # Then
+    assert result.returncode == 0, result.stderr
+    assert f"Working directory: {workspace.resolve()}" in result.stdout
+    assert "Sandbox: workspace-write; tools enabled: True" in result.stdout
+    assert marker.read_text() == "unchanged"
+    assert workspace.stat().st_mode == permissions
+    assert not output.exists()
+    assert not provider_log.exists()
+
+
+@pytest.mark.parametrize(
+    "controls",
+    [
+        ["--working-directory", "workspace"],
+        ["--sandbox-mode", "workspace-write"],
+        ["--enable-tools"],
+    ],
+    ids=["workspace", "sandbox", "tools"],
+)
+def test_nondefault_live_controls_fail_before_provider_or_output(
+    tmp_path: Path, controls: list[str]
+) -> None:
+    # Given
+    repo = make_repository(tmp_path / "repo")
+    output = tmp_path / "evidence"
+    (tmp_path / "workspace").mkdir()
+    env = environment(tmp_path)
+    provider_log = tmp_path / "provider-invocations"
+    env["FAKE_ARGV_LOG"] = str(provider_log)
+
+    # When
+    result = subprocess.run(
+        [*command(repo, output), *controls],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=20,
+    )
+
+    # Then
+    assert result.returncode == 1
+    assert "only with --dry-run" in result.stderr
+    assert not output.exists()
+    assert not provider_log.exists()

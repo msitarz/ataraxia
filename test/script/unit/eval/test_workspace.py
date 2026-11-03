@@ -163,3 +163,56 @@ async def test_owned_writable_workspace_is_removed_on_success() -> None:
 
     # Then
     assert not path.exists()
+
+
+def test_existing_regular_file_is_not_a_workspace(tmp_path: Path) -> None:
+    # Given
+    file = tmp_path / "file"
+    file.write_text("keep")
+    selected = config("--working-directory", str(file))
+
+    # When / Then
+    with pytest.raises(
+        ValueError, match="--working-directory must be an existing directory"
+    ):
+        validate_workspace_selection(selected, tmp_path)
+
+
+async def test_borrowed_workspace_is_preserved_on_error(tmp_path: Path) -> None:
+    # Given
+    workspace = tmp_path / "borrowed"
+    workspace.mkdir(mode=0o750)
+    marker = workspace / "file"
+    marker.write_text("keep")
+    permissions = stat.S_IMODE(workspace.stat().st_mode)
+    selected = config("--working-directory", str(workspace))
+
+    # When
+    with pytest.raises(RuntimeError, match="failure"):
+        async with acquire_workspace(selected, workspace):
+            raise RuntimeError("failure")
+
+    # Then
+    assert workspace.is_dir()
+    assert marker.read_text() == "keep"
+    assert stat.S_IMODE(workspace.stat().st_mode) == permissions
+
+
+async def test_borrowed_workspace_is_preserved_on_cancellation(tmp_path: Path) -> None:
+    # Given
+    workspace = tmp_path / "borrowed"
+    workspace.mkdir(mode=0o750)
+    marker = workspace / "file"
+    marker.write_text("keep")
+    permissions = stat.S_IMODE(workspace.stat().st_mode)
+    selected = config("--working-directory", str(workspace))
+
+    # When
+    with pytest.raises(asyncio.CancelledError):
+        async with acquire_workspace(selected, workspace):
+            raise asyncio.CancelledError
+
+    # Then
+    assert workspace.is_dir()
+    assert marker.read_text() == "keep"
+    assert stat.S_IMODE(workspace.stat().st_mode) == permissions

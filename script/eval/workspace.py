@@ -12,7 +12,11 @@ from script.eval.model import HarnessConfig
 
 @dataclass(frozen=True)
 class PreparedWorkspace:
-    """An absolute working directory and whether the harness owns it."""
+    """An absolute working directory and whether the harness owns it.
+
+    Borrowed directories remain untouched by the owner; owned directories are
+    removed on exit after the caller has settled all retained work.
+    """
 
     cwd: Path
     owned: bool
@@ -60,6 +64,9 @@ async def acquire_workspace(
     config: HarnessConfig, resolved_path: Path | None, /
 ) -> AsyncGenerator[PreparedWorkspace]:
     """Borrow a supplied directory or clean up an owned directory on exit.
+
+    Borrowed paths are never created, chmodded, cleaned, or removed. The caller
+    must await all retained tasks and their settlement before leaving the context.
 
     Yields:
         The workspace path and ownership.

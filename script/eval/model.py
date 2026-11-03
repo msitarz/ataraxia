@@ -160,13 +160,13 @@ class HarnessConfig(StrictModel):
 
     @model_validator(mode="after")
     def validate_runner_relationships(self) -> HarnessConfig:
-        """Enforce quota and capacity relationships before dispatch.
+        """Enforce workspace concurrency and capacity relationships before dispatch.
 
         Returns:
             The validated configuration.
 
         Raises:
-            ValueError: A capacity retry relationship is invalid.
+            ValueError: Workspace concurrency or capacity retry settings are invalid.
         """
         if self.sandbox_mode == "workspace-write" and self.concurrency > 1:
             raise ValueError("workspace-write requires concurrency of one")
