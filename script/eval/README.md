@@ -88,7 +88,7 @@ prints only a verdict, never the token. Run it once per condition, substituting
 that condition's token and output paths:
 
 ```sh
-python - "$results_root/no-tools-token.txt" "$results_root/no-tools-run" <<'PY'
+python3 - "$results_root/no-tools-token.txt" "$results_root/no-tools-run" <<'PY'
 import json
 from pathlib import Path
 import sys
