@@ -28,22 +28,21 @@ mkdir -p "$HOME/ataraxia-eval-results"
 Preview the two calls:
 
 ```sh
-uv run --no-sync python -m script.eval \
-  -d script/eval/example/tool-disable/requests \
-  -i script/eval/example/tool-disable/instructions.md \
-  -m gpt-6-luna -e low -c 1 \
-  --timeout-seconds 120 --cleanup-timeout-seconds 10 \
-  --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 \
-  -o "$HOME/ataraxia-eval-results/tool-disable-001" -n
+make eval CLI_ARGS="-d script/eval/example/tool-disable/requests -i script/eval/example/tool-disable/instructions.md -m gpt-6-luna -e low -c 1 --timeout-seconds 120 --cleanup-timeout-seconds 10 --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 -o $HOME/ataraxia-eval-results/tool-disable-001 -n"
 ```
 
-Then run the same command without `-n` to make exactly two calls. The output
-directory must be new; choose another name if it already exists. Do not enable
-tools to silence a warning. Keep emitted error items, including a code-mode-host
-disabled item that can appear before a normal response. Inspect each raw
-attempt's `stdout` JSONL and `run.json` for the invocation controls, working
-directory, and observed tool events; response text alone is not evidence of
-execution or blocking.
+Then run the same command without `-n` to make exactly two calls:
+
+```sh
+make eval CLI_ARGS="-d script/eval/example/tool-disable/requests -i script/eval/example/tool-disable/instructions.md -m gpt-6-luna -e low -c 1 --timeout-seconds 120 --cleanup-timeout-seconds 10 --output-limit-bytes 65536 --retry-limit 0 --capacity-retry-limit 0 -o $HOME/ataraxia-eval-results/tool-disable-001"
+```
+
+The output directory must be new; choose another name if it already exists. Do
+not enable tools to silence a warning. Keep emitted error items, including a
+code-mode-host disabled item that can appear before a normal response. Inspect
+each raw attempt's `stdout` JSONL and `run.json` for the invocation controls,
+working directory, and observed tool events; response text alone is not evidence
+of execution or blocking.
 
 Interpret the observations cautiously:
 
