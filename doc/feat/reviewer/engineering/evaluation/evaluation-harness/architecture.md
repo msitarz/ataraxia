@@ -39,6 +39,10 @@ Capacity recognition uses the same conservative envelope.
 
 - The CLI turns ordered options into one validated, frozen plan before any
   Codex process can start.
+- **Proposed AC-10/11:** The plan retains requested workspace, sandbox, and
+  tool controls; execution resolves and borrows a supplied directory or owns
+  one empty directory per run. The [typed sketch](design/execution_controls.pyi)
+  describes this extension, not current behavior.
 - The harness composes exact tracked source bytes and estimates them through an
   implemented provider-neutral port and `tiktoken` adapter.
 - An async coordinator owns run order, concurrency, stop latching, separate
@@ -83,6 +87,15 @@ Capacity recognition uses the same conservative envelope.
   method and compatibility.
 - Effects: argument parsing and diagnostic output only; it does not perform
   Git, source, process, or evidence effects itself.
+
+**Proposed AC-10/11:** Add `--working-directory PATH`, `--sandbox-mode`
+(`read-only` or `workspace-write`), and `--enable-tools`. Their defaults are
+omitted directory, `read-only`, and tools disabled. The configuration retained
+in the plan owns these requested values; no duplicate public plan fields are
+needed. Strict parsing rejects unsupported values. Dry run resolves and checks
+a supplied directory against the caller's launch cwd and displays the selected
+controls; for an omitted directory it displays the future owned-empty policy.
+It allocates neither a workspace nor output, and launches no CLI or model.
 
 ### Input freezer
 
@@ -201,6 +214,15 @@ evidence-pending state separately. The binding-settings digest is SHA-256 of
 the ordered settings tuple encoded as compact UTF-8 JSON, preserving scalar
 types and order; non-finite floats are rejected. It is not a call identity.
 
+**Proposed AC-10/11:** The existing configuration carries the requested path
+and controls into `FrozenPlan`; validators enforce value shape without I/O.
+Preparation checks the supplied existing directory, path relationships, and
+concurrency before dispatch. Relative paths resolve against the caller's launch
+cwd. The freezer's repository-wide clean check, tracked-input checks, and byte
+snapshots are unchanged even when the workspace overlaps the repository. It
+neither hashes nor freezes borrowed workspace contents. A resolved path in call
+identity does not establish reproducibility of those contents.
+
 ### Token estimate port
 
 **TL;DR:** Keep estimation separate from planning and execution.
@@ -304,6 +326,32 @@ supervisor request.
   probes. Request construction has no I/O. Dry run uses neither probe nor
   request construction.
 
+**Proposed AC-10/11:** The new `execution-controls-v3` invocation profile
+retains v2's exact `PROFILE_ARGS` policy, except that `shell_tool` is selected
+by the tool profile. Both profiles retain `--ignore-user-config`,
+`--skip-git-repo-check`, `approval_policy="never"`, and v2's configuration and
+feature disables, including hooks, plugins, apps, multi-agent, web search,
+browser, computer use, image generation, code mode, skills, and memories.
+`local-tools-disabled-v1` requests `--disable shell_tool` as v2 does.
+`local-tools-enabled-v1` instead requests `--enable shell_tool` and
+`--enable unified_exec`, allowing local command execution and file inspection;
+file editing uses the CLI's available local editing capabilities, subject to
+sandbox permissions. No other feature is enabled by this selection. The profile
+is an exact requested policy, not proof of every tool exposed or removed; in
+particular it does not assert complete MCP removal. The adapter maps the two
+sandbox values directly to `--sandbox read-only` and
+`--sandbox workspace-write`. Missing code-host or other runtime prerequisites
+fail without permission fallback. No full-access profile is offered.
+
+The v3 identity includes the profile and its exact recipe, requested sandbox,
+and either `owned-empty-per-run-v1` or the resolved absolute supplied path.
+The actual cwd stays in runtime process evidence; it is not an identity input
+for the random owned path. Requested controls remain distinct from unknown
+effective sandbox and tool state. Strict version-specific decoding preserves
+legacy v1 and v2 records and their original identities without requiring their
+old cwd or temporary files to exist. Quota probes retain their separate fixed
+read-only, tool-disabled, isolated empty-directory request.
+
 ### Async dispatch coordinator
 
 **TL;DR:** One run owner coordinates bounded invocations, call-local retries,
@@ -330,6 +378,13 @@ and one global quota recovery flow from authoritative typed lifecycles.
   reference with known lifecycle bugs, not a validated alternative.
 - One coordinator owns one provider and one frozen run without restart recovery.
 - The [Work contract](README.md) remains authoritative.
+
+**Proposed AC-10/11:** Before any evaluation call launches, reject
+`workspace-write` with concurrency greater than one, even with tools disabled:
+the shared workspace may be writable despite requested tool controls. This is a
+conservative run-level refusal rather than an attempt to predict individual
+writes. Serial calls and retries still share state and may contaminate later
+calls; callers prepare independent fresh workspaces for independent experiments.
 
 ### Runner policy, ports, and adapters
 
@@ -631,6 +686,20 @@ unknown scope or state still stops recovery.
 - Effects: an external process invocation and the same effects as CLI execution;
   there is no scheduler service or separate daemon process.
 
+**Proposed AC-10/11:** The standalone owner resolves a supplied directory once
+and borrows it without creating, replacing, chmodding, cleaning, or deleting it
+or its contents, including on failure and cancellation. Otherwise it allocates
+one external empty directory per run: read-only mode retains the current 0555
+policy, while workspace-write gives the owned directory appropriate owner write
+permission. Cleanup of owned resources waits for the coordinator's retained
+tasks and their settlement. With tools enabled, the existing supervisor still
+observes only owned POSIX group signalling and direct-child reaping; it does not
+contain escaped descendants or recover after runner death. Tool-launched work
+therefore cannot be assumed cleaned up merely because a request settled. The
+working directory is a starting directory, not a chroot or an absolute read
+boundary. No automatic clone or per-call copy is
+created.
+
 ### Evidence store
 
 **TL;DR:** Preserve each run, planned call, and attempt without replacing prior
@@ -697,6 +766,13 @@ evidence.
   verdicts, inspect labels, or score results.
 - Effects: exclusive directory creation and evidence writes. It never scans
   prior runs or overwrites them.
+
+**Proposed AC-10/11:** Resolve the output destination and workspace paths,
+including existing symlinked ancestors, before creating evidence. Reject an
+output destination equal to or inside a `workspace-write` workspace before
+launch: authorized writes could otherwise alter retained evidence. This narrow
+constraint is proposed for contract alignment; it does not introduce a general
+permission manager or a read-only workspace overlap restriction.
 
 ### Entry point composition
 
