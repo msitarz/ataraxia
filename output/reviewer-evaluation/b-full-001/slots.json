@@ -1,0 +1,647 @@
+{
+  "version": 1,
+  "slots": [
+    {
+      "repetition": 1,
+      "effort": "none",
+      "rule": "R1",
+      "run": "rep1-none-r1",
+      "state": "failed",
+      "diagnostic": "terminal call or attempt did not complete successfully",
+      "elapsed_seconds": 0.17027196334674954,
+      "termination_reason": "exited",
+      "usage": null,
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "none",
+      "rule": "R3",
+      "run": "rep1-none-r3",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 111.03519386192784,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13932,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5956,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "none",
+      "rule": "R4",
+      "run": "rep1-none-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r3/planning.py.txt', function_name='compatible')",
+      "elapsed_seconds": 34.257148132659495,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13978,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1730,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "low",
+      "rule": "R1",
+      "run": "rep1-low-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r3/planning.py.txt', function_name='compatible')",
+      "elapsed_seconds": 34.61683678999543,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13302,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1740,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "low",
+      "rule": "R3",
+      "run": "rep1-low-r3",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R4', file_id='r4/ledger.py.txt', function_name='booking_from_row')",
+      "elapsed_seconds": 37.02694830298424,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13934,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1756,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "low",
+      "rule": "R4",
+      "run": "rep1-low-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 109.94048015261069,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13976,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5883,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "rule": "R1",
+      "run": "rep1-medium-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 107.23844610899687,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13300,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5753,
+        "reasoning_output_tokens": 607
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "rule": "R3",
+      "run": "rep1-medium-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 43.56471114885062,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13932,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2209,
+        "reasoning_output_tokens": 246
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "medium",
+      "rule": "R4",
+      "run": "rep1-medium-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 45.608710476662964,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13980,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2273,
+        "reasoning_output_tokens": 426
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "rule": "R1",
+      "run": "rep1-high-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 122.35680952761322,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13300,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6591,
+        "reasoning_output_tokens": 953
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "rule": "R3",
+      "run": "rep1-high-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 55.96594523778185,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13932,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2879,
+        "reasoning_output_tokens": 916
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 1,
+      "effort": "high",
+      "rule": "R4",
+      "run": "rep1-high-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 53.05095602106303,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13980,
+        "cached_input_tokens": 2688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2697,
+        "reasoning_output_tokens": 836
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "low",
+      "rule": "R1",
+      "run": "rep2-low-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 104.86407637735829,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13300,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5606,
+        "reasoning_output_tokens": 434
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "low",
+      "rule": "R3",
+      "run": "rep2-low-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 39.8571221861057,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 27916,
+        "cached_input_tokens": 13696,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1948,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": true
+    },
+    {
+      "repetition": 2,
+      "effort": "low",
+      "rule": "R4",
+      "run": "rep2-low-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 102.22929851477966,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13980,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5507,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "rule": "R1",
+      "run": "rep2-medium-r1",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 44.4944044938311,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13296,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2288,
+        "reasoning_output_tokens": 430
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "rule": "R3",
+      "run": "rep2-medium-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 46.77474423404783,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13934,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2411,
+        "reasoning_output_tokens": 450
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "medium",
+      "rule": "R4",
+      "run": "rep2-medium-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 46.67006641998887,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13978,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2312,
+        "reasoning_output_tokens": 465
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "rule": "R1",
+      "run": "rep2-high-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 117.02435434702784,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13298,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6309,
+        "reasoning_output_tokens": 1157
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "rule": "R3",
+      "run": "rep2-high-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 51.92882527504116,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13934,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2619,
+        "reasoning_output_tokens": 658
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "high",
+      "rule": "R4",
+      "run": "rep2-high-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 56.65891591273248,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13978,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2950,
+        "reasoning_output_tokens": 982
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "rule": "R1",
+      "run": "rep2-none-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 109.60245273821056,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13300,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5889,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "rule": "R3",
+      "run": "rep2-none-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 38.222306901123375,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13936,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1921,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 2,
+      "effort": "none",
+      "rule": "R4",
+      "run": "rep2-none-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 109.64727256912738,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13976,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5881,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "rule": "R1",
+      "run": "rep3-medium-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 114.32916655577719,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13302,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6131,
+        "reasoning_output_tokens": 486
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "rule": "R3",
+      "run": "rep3-medium-r3",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 109.87784959375858,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13936,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5863,
+        "reasoning_output_tokens": 240
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "medium",
+      "rule": "R4",
+      "run": "rep3-medium-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 39.484699743799865,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13980,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2014,
+        "reasoning_output_tokens": 290
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "rule": "R1",
+      "run": "rep3-high-r1",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 59.62195651512593,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13302,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3142,
+        "reasoning_output_tokens": 1199
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "rule": "R3",
+      "run": "rep3-high-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 51.58405216084793,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13938,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2631,
+        "reasoning_output_tokens": 670
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "high",
+      "rule": "R4",
+      "run": "rep3-high-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 119.34809578815475,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13980,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6474,
+        "reasoning_output_tokens": 945
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "rule": "R1",
+      "run": "rep3-none-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='RecordError')",
+      "elapsed_seconds": 41.75180832576007,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13302,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1953,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "rule": "R3",
+      "run": "rep3-none-r3",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='RecordError')",
+      "elapsed_seconds": 48.78479474503547,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13932,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2498,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "none",
+      "rule": "R4",
+      "run": "rep3-none-r4",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 104.26596465799958,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13978,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5625,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "rule": "R1",
+      "run": "rep3-low-r1",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R3', file_id='r1/dispatch.py.txt', function_name='text')",
+      "elapsed_seconds": 62.256683873943985,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13298,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3251,
+        "reasoning_output_tokens": 304
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "rule": "R3",
+      "run": "rep3-low-r3",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 37.995116197969764,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13934,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1836,
+        "reasoning_output_tokens": 0
+      },
+      "boundary_deviation": false
+    },
+    {
+      "repetition": 3,
+      "effort": "low",
+      "rule": "R4",
+      "run": "rep3-low-r4",
+      "state": "complete",
+      "diagnostic": null,
+      "elapsed_seconds": 41.69263736624271,
+      "termination_reason": "exited",
+      "usage": {
+        "input_tokens": 13978,
+        "cached_input_tokens": 2688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 2021,
+        "reasoning_output_tokens": 174
+      },
+      "boundary_deviation": false
+    }
+  ]
+}
