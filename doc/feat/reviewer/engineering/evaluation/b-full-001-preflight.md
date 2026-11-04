@@ -47,7 +47,7 @@ directory. Run the following once per scheduled slot, substituting `RULE`,
 starting the next slot.
 
 ```sh
-uv run --no-sync python doc/feat/reviewer/engineering/evaluation/preparation/run_b_case.py RULE -m gpt-6-luna -e EFFORT -c 1 --timeout-seconds 300 --cleanup-timeout-seconds 10 --output-limit-bytes 1048576 --retry-limit 0 --capacity-retry-limit 0 -o OUTPUT
+uv run --cache-dir .cache/uv --no-sync python -m doc.feat.reviewer.engineering.evaluation.preparation.run_b_case RULE -m gpt-6-luna -e EFFORT -c 1 --timeout-seconds 300 --cleanup-timeout-seconds 10 --output-limit-bytes 1048576 --retry-limit 0 --capacity-retry-limit 0 -o OUTPUT
 ```
 
 For a dry run replace `-o OUTPUT` with `-n`. The full-directory dry run
