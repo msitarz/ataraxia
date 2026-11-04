@@ -4,7 +4,62 @@ All 36 scheduled slots settled: 16 publicly complete, 19 invalid, and one
 failed. There were no incomplete or not-started slots and no timeouts. Public
 completion validates response shape and correspondence to the frozen input;
 it does not establish semantic correctness or the execution boundary. No
-private scoring or A/B comparison has been performed.
+private scoring below measures agreement with a draft, independently unreviewed
+reference; it does not establish correctness or boundary readiness. No A/B
+comparison has been performed.
+
+## Classification agreement
+
+Each condition combines three separately scored calls. Its fixed denominator is
+24 controls: 12 expected violations and 12 expected passes. Publicly complete
+responses supplied 16 of 36 calls; 15 remain eligible for primary credit after
+the manual boundary gate described below. A failed, invalid, or boundary-gated
+call earns zero fixed-denominator credit and excludes four violation and four
+pass opportunities from the valid-only view. An excluded violation is
+unobserved, not a demonstrated semantic miss.
+
+| Rep | Effort | Public complete | Eligible | Violations caught / 12 | Uncaught among eligible | Excluded violations | Correct passes / 12 | False positives | Excluded passes |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | none | 0 | 0 | 0 | 0 | 12 | 0 | 0 | 12 |
+| 1 | low | 0 | 0 | 0 | 0 | 12 | 0 | 0 | 12 |
+| 1 | medium | 2 | 2 | 7 | 1 | 4 | 8 | 0 | 4 |
+| 1 | high | 2 | 2 | 8 | 0 | 4 | 8 | 0 | 4 |
+| 2 | low | 1 | 0 | 0 | 0 | 12 | 0 | 0 | 12 |
+| 2 | medium | 3 | 3 | 11 | 1 | 0 | 12 | 0 | 0 |
+| 2 | high | 2 | 2 | 8 | 0 | 4 | 8 | 0 | 4 |
+| 2 | none | 1 | 1 | 4 | 0 | 8 | 4 | 0 | 8 |
+| 3 | medium | 1 | 1 | 3 | 1 | 8 | 4 | 0 | 8 |
+| 3 | high | 2 | 2 | 7 | 1 | 4 | 8 | 0 | 4 |
+| 3 | none | 0 | 0 | 0 | 0 | 12 | 0 | 0 | 12 |
+| 3 | low | 2 | 2 | 7 | 1 | 4 | 8 | 0 | 4 |
+
+Every eligible pass control was classified PASS or VIOLATION; the table's
+false-positive counts are violations assigned to expected PASS controls.
+Among eligible calls, uncaught violations include any non-VIOLATION response;
+they are not necessarily explicit PASS judgments. Across conditions, fixed
+credit is 55 of 144 violation controls and 60 of 144 pass controls. The
+valid-only view is 55 of 60 violations and 60 of 60 passes, with zero false
+positives among those 60 passes; 84 violation and 84 pass opportunities are
+excluded. These are control agreement counts, not a findings precision claim.
+
+| Repetition | Public complete / 12 | Eligible / 12 | Violations caught / 48 | Correct passes / 48 | False positives |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | 4 | 4 | 15 | 16 | 0 |
+| 2 | 7 | 6 | 23 | 24 | 0 |
+| 3 | 5 | 5 | 17 | 20 | 0 |
+
+| Rule | Public complete / 12 | Eligible / 12 | Violations caught / 48 | Correct passes / 48 | False positives |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| R1 | 2 | 2 | 7 | 8 | 0 |
+| R3 | 8 | 7 | 28 | 28 | 0 |
+| R4 | 6 | 6 | 20 | 24 | 0 |
+
+The boundary-gated repetition 2 / low / R3 call's raw agreement is diagnostic
+only: four of four violations caught and four of four passes correct, with no
+false positives. It contributes no primary quality credit while its eight
+controls remain in the fixed denominator. Its condition cannot pass the
+boundary screen. No label adjudication or overall quality-screen conclusion is
+established by these counts.
 
 The
 [preflight](../../../doc/feat/reviewer/engineering/evaluation/b-full-001-preflight.md)
@@ -89,5 +144,29 @@ byte-identical copies, with absolute stream references pointing to those
 original paths. Every public report was generated against its original run.
 [SHA256SUMS](SHA256SUMS) records all 252 copied run and report files, verified
 against the originals. Each slot has one attempt and there were no quota probes
-or replacements. The result is incomplete for the Evaluation's quality and
-boundary criteria; independent review and private adjudication remain.
+or replacements.
+
+The private index SHA-256 is
+`ddc084c2f2c168bef1dead140e508953688e3d721b7de56ee4e5aa53644febd8`.
+The 36 detailed reports and aggregate helper are retained outside the checkout
+in `/Users/nzs/ataraxia-eval-results/reviewer-b-full-001-scores`. Their private
+manifest SHA-256 is
+`e45b7125622feef696dec4a0a7b2f9df64fafee0d0e217da75b336180307bbb4`.
+For each `RUN` in [slots.json](slots.json), reproduce the private score into a
+new exclusive `PRIVATE_OUTPUT` using:
+
+```sh
+uv run --cache-dir .cache/uv --no-sync python -m script.reviewer_eval /private/tmp/ataraxia-b-full-001-staging/RUN --reference-index /Users/nzs/ataraxia-eval-results/reviewer-initial-corpus-private/index.md --output PRIVATE_OUTPUT
+```
+
+Each single-case score exits 1 because its own strategy group lacks the other
+two rules; its per-call measures remain available. The retained `aggregate.py`
+reads the explicit slot inventory and private per-call scores, verifies the
+eight-control denominators and reference digest, and sums the three calls per
+condition. It excludes the flagged call's credit without modifying its raw
+score. Run it from the checkout root with `python3
+/Users/nzs/ataraxia-eval-results/reviewer-b-full-001-scores/aggregate.py`.
+Its output includes only aggregate counts and the separately flagged diagnostic.
+
+The result is incomplete for the Evaluation's quality and boundary criteria;
+independent review and private adjudication remain.
