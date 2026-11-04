@@ -149,6 +149,21 @@ from dataclasses import dataclass
 --- r1/dispatch.py.txt lines 15-15 (context) ---
 from typing import Any
 
+--- r1/dispatch.py.txt lines 18-19 (context) ---
+class RecordError(ValueError):
+    """An inbound record cannot be used by dispatch."""
+
+--- r1/dispatch.py.txt lines 44-52 (context) ---
+def fields(value: object, name: str) -> dict[str, Any]:
+    """Validate a string-keyed object.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
+        raise RecordError(f"{name} must be an object with string keys")
+    return value
+
 --- r1/dispatch.py.txt lines 126-135 (context) ---
 @dataclass(frozen=True)
 class Invoice:

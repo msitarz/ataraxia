@@ -132,6 +132,17 @@ from typing import Any
 class RecordError(ValueError):
     """An inbound record cannot be used by dispatch."""
 
+--- r1/dispatch.py.txt lines 44-52 (context) ---
+def fields(value: object, name: str) -> dict[str, Any]:
+    """Validate a string-keyed object.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
+        raise RecordError(f"{name} must be an object with string keys")
+    return value
+
 --- r1/dispatch.py.txt lines 55-63 (target) ---
 def required(record: dict[str, Any], key: str) -> object:
     """Read a required field.

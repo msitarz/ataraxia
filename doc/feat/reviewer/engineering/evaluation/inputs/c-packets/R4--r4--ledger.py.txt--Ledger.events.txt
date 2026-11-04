@@ -140,6 +140,10 @@ from dataclasses import dataclass
 --- r4/ledger.py.txt lines 23-23 (context) ---
 from pathlib import Path
 
+--- r4/ledger.py.txt lines 26-27 (context) ---
+class ReadError(Exception):
+    """The ledger could not read a requested record."""
+
 --- r4/ledger.py.txt lines 30-31 (context) ---
 class WriteError(Exception):
     """The ledger could not save a requested change."""

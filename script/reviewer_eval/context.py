@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Derive initial A/B validation inputs solely from frozen snapshots."""
+"""Derive A/B/C validation inputs solely from frozen snapshots."""
 
 from hashlib import sha256
-import json
 import re
 from typing import Literal
 
 from script.eval.model import FrozenPlan, PlannedCall
+from script.reviewer_eval.transcript import parse_json
+from script.reviewer_eval.validation import PublicPair
 
 type ResponseFormat = Literal[
     "findings-v1", "function-assessments-v2", "function-assessments-c-v1"
@@ -101,7 +102,7 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
     return result
 
 
-def c_target(plan: FrozenPlan, call: PlannedCall):
+def c_target(plan: FrozenPlan, call: PlannedCall) -> PublicPair:
     """Read the singleton target from frozen C packet provenance.
 
     Returns:
@@ -110,8 +111,6 @@ def c_target(plan: FrozenPlan, call: PlannedCall):
     Raises:
         ValueError: The C packet or target provenance is invalid.
     """
-    from script.reviewer_eval.validation import PublicPair
-
     selected = tuple(plan.snapshots[index] for index in call.context_indices)
     if (
         len(selected) != 2
@@ -129,23 +128,14 @@ def c_target(plan: FrozenPlan, call: PlannedCall):
         or b"\nContext:\n" not in rest
     ):
         raise ValueError("invalid C packet envelope")
-    try:
-        pairs = json.loads(
-            header[len(b"Target: ") :], object_pairs_hook=lambda values: values
-        )
-    except (ValueError, UnicodeDecodeError) as exc:
-        raise ValueError("invalid C target JSON") from exc
+    data = parse_json(header[len(b"Target: ") :])
     if (
-        not isinstance(pairs, list)
-        or len(pairs) != 3
-        or any(not isinstance(pair, tuple) or len(pair) != 2 for pair in pairs)
+        not isinstance(data, dict)
+        or set(data) != {"rule_id", "file_id", "function_name"}
+        or any(not isinstance(value, str) for value in data.values())
     ):
         raise ValueError("invalid C target metadata")
-    if {k for k, _ in pairs} != {"rule_id", "file_id", "function_name"} or any(
-        not isinstance(v, str) for _, v in pairs
-    ):
-        raise ValueError("invalid C target fields")
-    target = PublicPair(**dict(pairs))
+    target = PublicPair(data["rule_id"], data["file_id"], data["function_name"])
     if (
         target.rule_id not in {"R1", "R3", "R4"}
         or target.file_id not in FILES

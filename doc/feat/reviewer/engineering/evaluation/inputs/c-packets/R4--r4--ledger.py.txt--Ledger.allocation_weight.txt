@@ -144,6 +144,10 @@ from pathlib import Path
 class ReadError(Exception):
     """The ledger could not read a requested record."""
 
+--- r4/ledger.py.txt lines 30-31 (context) ---
+class WriteError(Exception):
+    """The ledger could not save a requested change."""
+
 --- r4/ledger.py.txt lines 94-95 (context) ---
 @dataclass(frozen=True)
 class Ledger:

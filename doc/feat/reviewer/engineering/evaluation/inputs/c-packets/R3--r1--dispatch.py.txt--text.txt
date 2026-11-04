@@ -163,3 +163,14 @@ def text(value: object, field: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise RecordError(f"{field} must be a nonempty string")
     return value
+
+--- r1/dispatch.py.txt lines 44-52 (context) ---
+def fields(value: object, name: str) -> dict[str, Any]:
+    """Validate a string-keyed object.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
+        raise RecordError(f"{name} must be an object with string keys")
+    return value

@@ -10,11 +10,12 @@ The AST inventory selects all 62 functions and methods in the frozen three-file
 corpus and crosses them with R1, R3 and R4, producing 186 packets. Every packet
 contains one explicit target and exact rule bytes. Its context consists of
 original source spans: module contract and imports, lexical declarations,
-target, and statically referenced module declarations and transitive callees.
-Other functions are context, not assessment targets. The same source context is
-used for all three rules for a given function. For example, a packet targeting
-`Ledger.add_event` contains its original class declarations and the `save_event`
-helper; only `Ledger.add_event` is assessed.
+target, statically referenced module declarations and transitive callees, and
+declarations named in the supplied source contracts. Other functions are
+context, not assessment targets. The same source context is used for all three
+rules for a given function. For example, a packet targeting `Ledger.add_event`
+contains its original class declarations and the `save_event` helper; only
+`Ledger.add_event` is assessed.
 
 The [manifest](c-manifest.json) records whole-source byte counts and SHA-256
 hashes, rule and shared-prompt hashes, target identities, source spans, roles,
@@ -28,8 +29,8 @@ three rotated effort repetitions. Private controls do not enter generation.
 The manifest gives exact rendered prompt byte counts and a per-packet rough
 `utf8-bytes-divided-by-four-v1` token proxy, rounded up. This heuristic is not a
 provider tokenizer and may be substantially inaccurate. A full 186-call
-strategy at one effort and repetition contains 1,372,568 supplied prompt bytes,
-roughly 343,211 proxy tokens; the 12 blocks total 16,470,816 bytes and 4,118,532
+strategy at one effort and repetition contains 1,391,471 supplied prompt bytes,
+roughly 347,936 proxy tokens; the 12 blocks total 16,697,652 bytes and 4,175,232
 proxy tokens. Shared instructions and context are repeated in each packet total;
 the separate instruction file, automatic CLI/system framing, output, retries,
 actual usage and cost are excluded and remain unknown. Estimate quality cannot

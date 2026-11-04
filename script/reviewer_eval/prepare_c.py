@@ -5,6 +5,7 @@ import ast
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import TypedDict
 
 from script.reviewer_eval.context import FILES
@@ -55,10 +56,20 @@ class _Entry(TypedDict):
 
 
 def _digest(data: bytes) -> str:
+    """Hash exact source or prompt bytes.
+
+    Returns:
+        The SHA-256 hexadecimal digest.
+    """
     return sha256(data).hexdigest()
 
 
 def _span(node: ast.stmt) -> tuple[int, int]:
+    """Find a declaration span including decorators.
+
+    Returns:
+        The inclusive start and end line numbers.
+    """
     start = min([node.lineno, *(d.lineno for d in getattr(node, "decorator_list", []))])
     assert node.end_lineno is not None
     return start, node.end_lineno
@@ -71,6 +82,7 @@ def _add(
     *,
     selection: dict[tuple[int, int], _Selection],
 ) -> None:
+    """Record a source span and its selection reason."""
     start, end = _span(node)
     key = (start, end)
     if key in selection:
@@ -86,25 +98,45 @@ def _add(
         }
 
 
+def _references(child: ast.AST) -> list[tuple[str, str]]:
+    """Identify public declarations named by code or source contracts.
+
+    Returns:
+        Names paired with their context-selection reasons.
+    """
+    references: list[tuple[str, str]] = []
+    if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
+        references.append((child.id, "referenced module declaration or callee"))
+    if (
+        isinstance(child, ast.Expr)
+        and isinstance(child.value, ast.Constant)
+        and isinstance(child.value.value, str)
+    ):
+        references.extend(
+            (word, "named in supplied source contract")
+            for word in re.findall(r"\b[A-Za-z_]\w*\b", child.value.value)
+        )
+
+    return references
+
+
 def _add_dependencies(
     target: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef,
     module_names: dict[str, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef],
     selected: dict[tuple[int, int], _Selection],
+    globals_: list[ast.stmt],
 ) -> None:
-    queue = [target]
+    """Include declarations referenced in code and supplied contracts."""
+    queue: list[ast.stmt] = [target, *globals_]
     visited = set()
     while queue:
         node = queue.pop()
         for child in ast.walk(node):
-            if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
-                dep = module_names.get(child.id)
-                if dep is not None and dep is not target and child.id not in visited:
-                    visited.add(child.id)
-                    _add(
-                        dep,
-                        "referenced module declaration or callee",
-                        selection=selected,
-                    )
+            for name, reason in _references(child):
+                dep = module_names.get(name)
+                if dep is not None and dep is not target and name not in visited:
+                    visited.add(name)
+                    _add(dep, reason, selection=selected)
                     queue.append(dep)
 
 
@@ -115,6 +147,11 @@ def _select_context(
     globals_: list[ast.stmt],
     module_names: dict[str, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef],
 ) -> tuple[dict[tuple[int, int], _Selection], list[str]]:
+    """Select public source dependencies for one lexical target.
+
+    Returns:
+        Selected spans with reasons and review flags.
+    """
     target = defs[name]
     selected: dict[tuple[int, int], _Selection] = {}
     flags = ["independent rule-specific context review required"]
@@ -145,7 +182,7 @@ def _select_context(
                 "nested target includes enclosing function; review granularity"
             )
     _add(target, "explicit target", "target", selection=selected)
-    _add_dependencies(target, module_names, selected)
+    _add_dependencies(target, module_names, selected, globals_)
 
     return selected, flags
 
@@ -156,6 +193,11 @@ def _render_context(
     selected: dict[tuple[int, int], _Selection],
     flags: list[str],
 ) -> tuple[bytes, list[_Span]]:
+    """Render selected spans with original bytes and coordinates.
+
+    Returns:
+        The context bytes and source span manifest.
+    """
     spans: list[_Span] = []
     chunks = []
     for _, item in sorted(selected.items()):
@@ -187,6 +229,11 @@ def _definitions(
     dict[str, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef],
     dict[str, tuple[str, ...]],
 ]:
+    """Index lexical declarations and their enclosing scopes.
+
+    Returns:
+        Declaration and enclosing-scope mappings.
+    """
     defs: dict[str, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef] = {}
     parents: dict[str, tuple[str, ...]] = {}
 
@@ -214,6 +261,11 @@ def _definitions(
 def _packet_entries(
     sources: dict[str, bytes], rules: dict[str, bytes], shared: bytes
 ) -> tuple[list[_Entry], dict[str, bytes]]:
+    """Build public packets and their manifest entries.
+
+    Returns:
+        Entries and their corresponding packet bytes.
+    """
     entries: list[_Entry] = []
     artifacts = {}
     for file_id, source in sources.items():
