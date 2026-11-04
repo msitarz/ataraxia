@@ -840,3 +840,33 @@ async def test_unknown_frozen_format_is_invalid(tmp_path: Path) -> None:
     assert report.evidence_state == "invalid"
     assert report.diagnostic is not None
     assert "unsupported or inconsistent frozen response format" in report.diagnostic
+
+
+async def test_saved_report_recovers_assessments_after_reconnect(
+    tmp_path: Path,
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    rows = full_current_response()
+    record = await create_run(root, current=True, response=rows)
+    stdout = record.calls[0].attempts[0].stdout_artifact
+    assert stdout is not None
+    path = Path(stdout)
+    lines = path.read_bytes().splitlines(keepends=True)
+    notice = {
+        "type": "error",
+        "message": "Reconnecting... 5/5 (synthetic transport failure)",
+    }
+    path.write_bytes(
+        b"".join([*lines[:2], json.dumps(notice).encode() + b"\n", *lines[2:]])
+    )
+    before = snapshot(root)
+
+    # When
+    report = inspect_run(root)
+
+    # Then
+    assert report.calls[0].state == "complete"
+    assert len(report.calls[0].assessments) == 9
+    assert not report.calls[0].missing_pairs
+    assert snapshot(root) == before

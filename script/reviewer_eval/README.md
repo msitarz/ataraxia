@@ -57,9 +57,10 @@ safe reads, or semantic truth. Findings remain unadjudicated and undeduplicated.
 The accepted JSONL shape has one thread start, an optional known disabled Code
 Mode host error notice before the turn, one turn start, optional completed
 reasoning items with string IDs and text, one completed agent message, and one
-successful terminal turn. Only the exact known notice with a nonempty string ID
-is accepted; other errors and tool events are rejected. The raw stream retains
-the notice.
+successful terminal turn. Bounded transport reconnect notices before the answer
+are accepted only if the same turn later completes successfully. Only the exact
+known startup notice with a nonempty string ID is accepted; other errors and
+tool events are rejected. The raw stream retains the notices.
 The reader validates recorded stream references against the frozen output path
 and reads retained files beneath the supplied run directory. A relocated archive
 can be inspected when its recorded paths and retained artifacts remain
