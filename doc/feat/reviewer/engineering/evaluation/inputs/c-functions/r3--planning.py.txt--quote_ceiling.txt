@@ -1,0 +1,39 @@
+Function: {"file_id":"r3/planning.py.txt","function_name":"quote_ceiling"}
+
+Context:
+
+--- r3/planning.py.txt lines 2-9 (context) ---
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt lines 11-11 (context) ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt lines 12-12 (context) ---
+from time import time
+
+--- r3/planning.py.txt lines 15-24 (context) ---
+@dataclass(frozen=True)
+class Order:
+    order_id: str
+    customer_id: str
+    origin: str
+    destination: str
+    weight: int
+    ready_at: int
+    due_at: int
+    priority: int
+
+--- r3/planning.py.txt lines 260-265 (target) ---
+def quote_ceiling(order: Order, distance: int, rate: int, surcharge: int) -> int:
+    """Compute a customer's maximum offer, including priority surcharge."""
+    base = distance * rate
+    if order.priority > 1:
+        base += surcharge
+    return base

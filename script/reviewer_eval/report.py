@@ -33,7 +33,12 @@ from script.eval.runner.adapters.codex import (
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.policy import safe_process_cleanup
 from script.eval.runner.ports import CliBinding
-from script.reviewer_eval.context import ResponseFormat, response_format, review_context
+from script.reviewer_eval.context import (
+    ResponseFormat,
+    c_target,
+    response_format,
+    review_context,
+)
 from script.reviewer_eval.transcript import extract_response, parse_json
 from script.reviewer_eval.validation import (
     Assessment,
@@ -44,6 +49,7 @@ from script.reviewer_eval.validation import (
     ValidatedResponse,
     validate_assessments,
     validate_response,
+    validate_singleton,
 )
 
 type Outcome = Literal["complete", "incomplete", "invalid", "failed", "not_started"]
@@ -644,6 +650,8 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOut
         return result.model_copy(update={"state": "invalid", "diagnostic": str(exc)})
     if result.response_format == "findings-v1":
         validated = validate_response(response, allowed_rules=rules, sources=sources)
+    elif result.response_format == "function-assessments-c-v1":
+        validated = validate_singleton(response, target=c_target(plan, planned))
     else:
         validated = validate_assessments(response, allowed_rules=rules, sources=sources)
     if isinstance(validated, InvalidResponse):
@@ -655,7 +663,10 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOut
                 "selected_attempt": attempt.attempt_number,
             }
         )
-    if result.response_format == "function-assessments-v2":
+    if result.response_format in (
+        "function-assessments-v2",
+        "function-assessments-c-v1",
+    ):
         assert isinstance(validated, ValidatedAssessments)
         return result.model_copy(
             update={

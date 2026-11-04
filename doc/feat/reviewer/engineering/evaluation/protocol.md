@@ -6,8 +6,9 @@ production-policy decision. All Evaluation criteria remain TODO.
 
 Prepare an initial A/B comparison on a bounded static corpus: does reviewing
 one rule at a time improve function/rule classification over reviewing all
-three rules together? Both strategies review the entire same corpus. C is
-deferred until after A/B comparison and review.
+three rules together? Both strategies review the entire same corpus. The
+separately authorized static C preparation below follows A/B comparison and
+review; it adds no execution authorization.
 
 The initial comparison has limited source diversity. Final Evaluation completion
 still requires the historical-change evidence in its contract and does not
@@ -137,17 +138,151 @@ private as well. The model reviews guidance and code without a checklist of
 which functions are private controls. Unselected cross-rule code remains
 reviewable; absence of a private label never makes it compliant.
 
-### Deferred function/context comparison
+### Static C preparation extension
 
-C remains part of the final Evaluation contract, with independent one-rule,
-changed-function sessions and reviewed sufficient context from the same source.
-Its packets, target eligibility, prompts, call list, and readiness are deferred.
-Do not author C packets or require C readiness for this A/B preparation stage.
-Only after the A/B results have been compared and reviewed may a newly
-authorized extension prepare or execute C. That extension must define and
-independently review those inputs,
-common eligible denominators, exclusions, and resource bounds before a new
-freeze. No C calls are included in the initial matrix below.
+After A/B comparison and review, the maintainer authorized preparing C inputs,
+checks, schedule, estimates, and reproducible commands within this Evaluation.
+This extension prepares one explicit source-function/supplied-rule packet per
+public pair. It does not authorize model calls, neutral probes, execution,
+additional spending, or production implementation. The original A/B bounds and
+execution history remain unchanged. The historical changed-function expansion
+below remains separately deferred.
+
+Reuse the exact frozen three-file static corpus, R1/R3/R4 rule bytes, and
+withheld 24-control index used for the reviewed A/B comparison. No source,
+rule, label, or prior-answer repair is part of C preparation. Packet generation
+and public validation must operate without private-index or prior-answer access;
+reviewers must not tune prompts or context in response to A/B judgments.
+
+#### Public target and context contract
+
+Derive targets from every Python `FunctionDef` and `AsyncFunctionDef`, including
+methods and nested functions, using the lexical names and duplicate-name
+rejection defined in the response contract. Cross every target with all three
+rules, irrespective of predicted applicability or private membership. Public AST
+inspection counts 14 functions in dispatch, 22 in planning, and 26 in ledger: 62
+functions and 186 composed inputs. Do not select only the privately indexed
+controls. The generic matrix composes one shared instruction file, one of three
+rule files and one of 62 function-context files, in that order. These
+directories produce all 186 pairs without duplicating function contexts. Their
+envelopes differ from earlier prepared packets; original rule and source bytes
+remain unchanged.
+
+Each packet identifies exactly one target by original `file_id` and qualified
+`function_name`, and supplies one complete unchanged rule. Supply the target's
+unchanged body, signature, decorators, and source coordinates. Include necessary
+lexical declarations, imports, types, constants, and relevant helper/caller
+contracts and bodies from the same frozen permitted source. In particular,
+effectful helper calls and operation-specific cleanup/error ownership must
+remain assessable under R3/R4; a bare call name is insufficient evidence of a
+helper's behavior. Context functions remain context, not additional targets.
+
+Use deterministic AST-derived source spans and an explicit, retained context
+selection manifest. Record original file IDs, spans, dependency reasons, frozen
+source digests, and target/context roles; render identical bytes from the same
+manifest. Do not execute corpus code, rewrite function bodies, invent stubs,
+replace omitted behavior with answer-bearing summaries, or use private labels
+to decide context. Preserve nested bodies already present inside the target.
+For nested targets, retain the enclosing declarations and any enclosing state
+or control context needed to interpret them, identifying the inner target
+unambiguously.
+
+Static name inspection proposes dependencies; it cannot prove semantic
+sufficiency. Independently review every packet against its rule before freeze,
+recording context sufficiency and unresolved dependencies. Add explicit
+source-grounded context through the manifest when static inspection cannot
+resolve a dependency. Flag packets requiring unavailable context or so much
+surrounding code that function-level granularity becomes ambiguous. Return those
+cases for owner review before expanding scope; do not silently substitute an
+entire module/corpus, drop packets, or treat exclusions as PASS. Retain the
+planned public pairs and an explicit eligibility/exclusion reason. A changed
+inventory, context policy, or exclusion set requires a reviewed freeze.
+
+The explicit public target is intentionally visible in C. Private control
+membership, counts, expected labels, rationales, and answer-bearing paths remain
+withheld from model access. Context review and target eligibility are public
+source/rule judgments, distinct from later authorized private-reference review.
+
+#### C assessment and validation contract
+
+C returns a JSON array containing exactly one assessment with the same four
+fields and judgments defined below: `rule_id`, `file_id`, `function_name`, and
+`judgement` (`PASS`, `VIOLATION`, `UNKNOWN`, or `NOT_APPLICABLE`). The sole
+expected key is the supplied target/rule key, even when other functions occur
+in context. Helpers must not enlarge the expected response inventory. Reject
+extra, missing, duplicate, foreign, or malformed assessments; retain rejected
+output and give no successful coverage or quality credit.
+
+Freeze an explicit C prompt/schema discriminator and target metadata so saved
+validation selects this singleton-inventory contract from input provenance,
+never by guessing from response shape. Preserve existing `findings-v1` and
+whole-source `function-assessments-v2` readers and historical interpretation.
+The implementation may version the C contract separately; it must not change
+v2's exhaustive whole-source inventory silently. Prompt text must instruct the
+model to judge only the explicit target against its single supplied rule, using
+other functions solely as context. Do not require explanations or new response
+fields. Structural validation proves target accounting, not semantic truth.
+
+Reuse the fixed 24 controls for each C effort/repetition: 12 VIOLATION and
+12 PASS, four of each per rule. C has 288 indexed opportunities across four
+efforts and three repetitions; the other judgments remain retained and
+unscored. Apply the initial classification metrics and quality screen to C
+without changing denominators or turning UNKNOWN/NOT_APPLICABLE into passes.
+Before any execution freeze, independent authorized reference review must
+establish that all controls have sufficient C context and common eligibility
+with A/B. If that fails, retain the fixed-denominator operational report and
+report eligibility/exclusions separately; any reduced common-denominator
+comparison must be explicitly reviewed and frozen before C outcomes. Never
+silently remove a control or infer private correctness from unindexed output.
+
+#### Prepared schedule, estimates, and execution gate
+
+Prepare three fresh independent repetitions at each of none, low, medium, and
+high, using the same model binding, shared guidance, retained boundary
+protections, accepted CLI limitation, and `execution-controls-v3` default
+runtime profile as the reviewed A/B inputs. Use repetition effort orders
+none/low/medium/ high, low/medium/high/none, and medium/high/none/low
+respectively. Within each effort, sort rules lexically, then original file IDs
+and qualified function names lexically. Prepare sequential dispatch with
+concurrency one, new sessions, and no prior answers or resumed sessions. Retain
+binding gaps and not-started calls; never substitute or omit an effort. A/B
+observations remain historical matched comparators with time, order,
+provider-load, and cache confounds disclosed; preparing C does not authorize
+rerunning them.
+
+The complete static C schedule is 186 packets × four efforts × three
+repetitions = 2,232 planned calls, 558 per effort and one selected assessment
+per call. Together with the original A/B plan this is 2,280 calls and 6,696
+selected classification records; C preparation does not amend that original
+plan or authorize the combined total. The C matrix exceeds the original
+48-trial-call and 208-total-attempt bounds. Those ceilings cannot fund C.
+
+Prepare exact rendered-input byte/token estimates per packet and complete
+strategy totals, explicitly including repeated shared/context overhead. Label
+token estimates by method; unknown actual usage and cost remain unknown.
+Report no-retry and proposed bounded-retry attempt totals separately. At the
+existing 300-second call plus 10-second cleanup limit, 2,232 calls alone imply
+about 192.2 serial hours at the bound, excluding retry delays and preparation;
+this is a planning estimate, not observed latency or an authorized deadline.
+
+The preparation return must retain reproducible offline generation, validation,
+and estimation commands; ordered call list; packet/context manifest; prompt and
+schema bytes/digests; eligibility/readiness report; and tests of singleton
+target accounting, deterministic extraction/order, context preservation,
+malformed responses, and historical-format compatibility. Verification must use
+local fixtures/fake outputs and make no model calls. Commands for later
+execution must identify prerequisites, evidence destination, and budget refusal
+rather than dispatch during preparation.
+
+Before execution, obtain independent owner review, a newly reviewed C freeze,
+and explicit execution/budget authorization reconciling the complete matrix,
+attempt/retry ceilings, enforceable token/time/evidence/output limits, human
+reference/scoring effort, and stop handling. Existing retained protections and
+stops remain prerequisites; the known tool-activity deviation is not reference
+approval or proof of tool-free operation. If finite reviewed bounds cannot fit
+the matrix, return the conflict for decision; do not silently shrink coverage.
+This preparation establishes neither measured C results nor Evaluation
+completion.
 
 ### Fixed calls and output
 

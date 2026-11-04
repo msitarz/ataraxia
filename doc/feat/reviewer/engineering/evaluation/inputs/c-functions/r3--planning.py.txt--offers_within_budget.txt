@@ -1,0 +1,38 @@
+Function: {"file_id":"r3/planning.py.txt","function_name":"offers_within_budget"}
+
+Context:
+
+--- r3/planning.py.txt lines 2-9 (context) ---
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt lines 11-11 (context) ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt lines 12-12 (context) ---
+from time import time
+
+--- r3/planning.py.txt lines 47-54 (context) ---
+@dataclass(frozen=True)
+class Offer:
+    carrier_id: str
+    amount: int
+    capacity: int
+    expires_at: int
+    transit: int
+    reliability: int
+
+--- r3/planning.py.txt lines 268-274 (target) ---
+def offers_within_budget(offers: list[Offer], budget: int) -> list[Offer]:
+    """Keep offers no greater than the customer's budget."""
+    result = []
+    for offer in offers:
+        if offer.amount <= budget:
+            result.append(offer)
+    return result

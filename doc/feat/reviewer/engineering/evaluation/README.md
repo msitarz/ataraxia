@@ -185,9 +185,9 @@ isolation.
   retains one initial A observation, three additional attempted calls, and
   eight unstarted slots; it does not complete or adjudicate the Evaluation.
 - [Comparison protocol](protocol.md) starts with A/B on the same whole static
-  corpus and defers C, with the declared CLI
-  limitation, retained boundary protections, raw and adjusted token accounting,
-  budgets and thresholds for owner review; a separately reported
+  corpus and defines the separately authorized static C preparation, with the
+  declared CLI limitation, retained boundary protections, raw and adjusted token
+  accounting, budgets and thresholds for owner review; a separately reported
   effort analysis reuses the common-medium primary observations.
 - [Engineering review](../README.md) owns the recorded decision and integrated
   delivery; [Engineering reviewer delivery](../delivery/README.md) depends on
@@ -203,11 +203,19 @@ expected labels remain private. The implemented response uses exactly rule ID,
 file ID, qualified lexical function name, and one of PASS, VIOLATION, UNKNOWN,
 or NOT_APPLICABLE. Its scores measure classification rather than demonstrated
 reasoning or finding precision. The protocol defines the derived classification
-record bound and classification metrics.
-The primary medium comparison reuses its
-observations in a separate none/low/medium/high effort analysis. C preparation
-and execution require later authorization after A/B comparison and review. Final
-A/B/C and historical requirements above remain unchanged.
+record bound and classification metrics. The primary medium comparison reuses
+its observations in a separate none/low/medium/high effort analysis. Following
+A/B comparison and review, the maintainer authorized static C preparation only:
+one explicit function/rule target per composed input, using three rule files and
+62 function-context files, with sufficient frozen context and
+a single four-field assessment. The
+[C preparation contract](protocol.md#static-c-preparation-extension) requires
+all 186 public pairs, four efforts, and three repetitions, totaling 2,232
+prospective calls. It preserves private controls and A/B history; its inputs,
+local checks, schedule, estimates, and commands authorize no model calls.
+Independent review, a new C freeze, and explicit reconciled execution/budget
+authorization remain required. Final A/B/C and historical requirements above
+remain unchanged.
 
 Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
 with a separately held [frozen reference index](corpus/reference-freeze.md).

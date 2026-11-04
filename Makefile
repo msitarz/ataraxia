@@ -296,3 +296,7 @@ worktree-create: ## create a prepared branch worktree; requires WORKTREE=/path B
 .PHONY: work-review
 work-review: ## review Work sizing and remind owner to publish and deliver PR
 	@printf '%s\n' 'Before publication: does the actual diff preserve a coherent outcome and contract, including consequential details? The five-minute heuristic covers understanding the outcome and constraints; substantive implementation review has no time cap. For code or test changes, independently review design judgment on the exact final revision before publication. Then complete reviewed publication via the normal publisher flow and return the PR to the maintainer. doc/workflow.md#scope-and-sizing doc/workflow.md#decisions-and-new-splits doc/engineering-review.md doc/orchestrator.md#review-and-return'
+
+.PHONY: reviewer-c-prepare
+reviewer-c-prepare: ## generate or verify public static C artifacts; CLI_ARGS=--check verifies
+	uv run --no-sync python -m script.reviewer_eval.prepare_c $(_CLI_ARGS)

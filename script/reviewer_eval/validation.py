@@ -143,6 +143,23 @@ def validate_assessments(
         }
     except (SyntaxError, UnicodeDecodeError, ValueError, RecursionError) as exc:
         return InvalidResponse(f"invalid source context: {exc}")
+    return _validate_pairs(raw, inventory, singleton=False)
+
+
+def validate_singleton(
+    raw: bytes, *, target: PublicPair
+) -> ValidatedAssessments | InvalidResponse:
+    """Validate exactly one assessment of the supplied explicit target.
+
+    Returns:
+        The validated singleton or an invalid response diagnostic.
+    """
+    return _validate_pairs(raw, {target}, singleton=True)
+
+
+def _validate_pairs(
+    raw: bytes, inventory: set[PublicPair], *, singleton: bool
+) -> ValidatedAssessments | InvalidResponse:
     try:
         data = json.loads(
             raw.decode("utf-8"),
@@ -166,6 +183,8 @@ def validate_assessments(
         if pair in seen:
             return InvalidResponse(f"duplicate assessment pair: {pair}")
         seen.add(pair)
+    if singleton and seen != inventory:
+        return InvalidResponse("missing explicit target assessment")
     return ValidatedAssessments(tuple(assessments), tuple(sorted(inventory - seen)))
 
 

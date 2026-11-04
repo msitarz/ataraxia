@@ -1,15 +1,22 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Derive initial A/B validation inputs solely from frozen snapshots."""
+"""Derive A/B/C validation inputs solely from frozen snapshots."""
 
 from hashlib import sha256
 import re
 from typing import Literal
 
 from script.eval.model import FrozenPlan, PlannedCall
+from script.reviewer_eval.transcript import parse_json
+from script.reviewer_eval.validation import PublicPair
 
-type ResponseFormat = Literal["findings-v1", "function-assessments-v2"]
+type ResponseFormat = Literal[
+    "findings-v1", "function-assessments-v2", "function-assessments-c-v1"
+]
 
 FROZEN_FORMAT_DIGESTS: dict[str, ResponseFormat] = {
+    "e4c7d5af160bd566f35b165f20617724fdfac665b39c0bbd5653b114323e79e6": (
+        "function-assessments-c-v1"
+    ),
     "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477": "findings-v1",
     "2c464b98b96d562f3dbef2cc5e3d9515ebb0c7b58f9777fa5e1133f11f7c632f": (
         "function-assessments-v2"
@@ -39,6 +46,9 @@ def review_context(
         ValueError: The frozen prepared inputs have an unsupported shape.
     """
     selected = tuple(plan.snapshots[index] for index in call.context_indices)
+    if response_format(plan, call) == "function-assessments-c-v1":
+        target = c_target(plan, call)
+        return frozenset({target.rule_id}), {}
     if len(selected) != 3:
         raise ValueError("expected shared, case and corpus snapshots")
     shared, case, corpus = selected
@@ -90,3 +100,78 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
             raise ValueError(f"source line count mismatch: {expected}")
         result[expected] = source
     return result
+
+
+RULE_DIGESTS = {
+    "R1": "360b8eb6a305b79f8fc8894bf756f228eb2ccc4af3560c2ae6149f3a3d85d92d",
+    "R3": "923ce9aba269ac4590aa106053f406cd148833e97766396bd2d94b0028eb9531",
+    "R4": "bc9235e5533c2ec1b14e28e3213e497aabadd09eda6ddb14cd824b9ac4baebc0",
+}
+
+
+def _metadata(
+    content: bytes, marker: bytes, keys: set[str]
+) -> tuple[dict[str, str], bytes]:
+    """Parse a strict metadata header and return its original body.
+
+    Returns:
+        Validated string fields and remaining bytes.
+
+    Raises:
+        ValueError: The envelope or metadata is invalid.
+    """
+    header, separator, body = content.partition(b"\n\n")
+    if not separator or not header.startswith(marker):
+        raise ValueError("invalid C metadata envelope")
+    data = parse_json(header[len(marker) :])
+    if (
+        not isinstance(data, dict)
+        or set(data) != keys
+        or any(not isinstance(v, str) for v in data.values())
+    ):
+        raise ValueError("invalid C metadata fields")
+    return data, body
+
+
+def c_target(plan: FrozenPlan, call: PlannedCall) -> PublicPair:
+    """Read the singleton target from the frozen C input snapshots.
+
+    Returns:
+        The explicitly supplied rule and function pair.
+
+    Raises:
+        ValueError: The C input metadata, rule, or paths are invalid.
+    """
+    selected = tuple(plan.snapshots[index] for index in call.context_indices)
+    if (
+        len(selected) != 3
+        or selected[0].repository_path
+        != PREFIX + "c-shared/review-instructions-and-schema.txt"
+    ):
+        raise ValueError("unsupported C prepared input paths")
+    _, rule, function = selected
+    rule_data, rule_body = _metadata(rule.content, b"Rule: ", {"rule_id"})
+    function_data, function_body = _metadata(
+        function.content, b"Function: ", {"file_id", "function_name"}
+    )
+    target = PublicPair(
+        rule_data["rule_id"], function_data["file_id"], function_data["function_name"]
+    )
+    if (
+        target.rule_id not in RULE_DIGESTS
+        or target.file_id not in FILES
+        or not target.function_name
+    ):
+        raise ValueError("invalid C target")
+    if (
+        rule.repository_path != PREFIX + "c-rules/" + target.rule_id + ".txt"
+        or sha256(rule_body).hexdigest() != RULE_DIGESTS[target.rule_id]
+    ):
+        raise ValueError("C rule provenance mismatch")
+    filename = f"{target.file_id.replace('/', '--')}--{target.function_name}.txt"
+    if (
+        function.repository_path != PREFIX + "c-functions/" + filename
+        or not function_body.startswith(b"Context:\n")
+    ):
+        raise ValueError("C function provenance mismatch")
+    return target
