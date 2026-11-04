@@ -2,11 +2,9 @@
 
 The source corpus comes from revision
 `75f8f278753984604805341e1e94acb668d58c4e`. These static inputs prepare the
-initial A/B comparison in the [protocol](../protocol.md). They retain the legacy
-`findings-v1` format. The
-[proposed function-assessment contract](../protocol.md#function-assessment-response-contract)
-requires later prompt/schema and validator alignment, independent review, and a
-new freeze and series. These artifacts are not permission to run trials.
+initial A/B comparison in the [protocol](../protocol.md). The shared prompt and
+validator implement `function-assessments-v2`. A new independent review and
+freeze remain required. These artifacts are not permission to run trials.
 
 - [Shared instructions and response schema](shared/review-instructions-and-schema.txt)
   is the single common file supplied to every call.
@@ -36,26 +34,13 @@ shared file before each case and the corpus after it:
 -d doc/feat/reviewer/engineering/evaluation/inputs/corpus
 ```
 
-The currently implemented legacy response has a boolean `complete` and a
-findings list. A completed review may have no findings. Each finding identifies
-the rule and original file, line span and quotation, explanation, consequence,
-and severity; optional corrections are separate. The
-[response validator](../../../../../../script/reviewer_eval/validation.py)
-checks the schema, supplied-rule and file membership, ordered in-bounds line
-spans, and exact UTF-8 quote bytes within the original span. LF separates source
-lines; CRLF and other original bytes are preserved for matching. It retains
-duplicate findings for owner adjudication and incomplete findings for inspection
-without quality credit.
-
+The [response validator](../../../../../../script/reviewer_eval/validation.py)
+checks each assessment against the supplied rules and the public AST-derived
+function inventory. Missing pairs are retained as incomplete; labels are model
+classifications, not verified truth. Private grading is outside this increment.
 [Saved reviewer results](../../../../../../script/reviewer_eval/README.md)
-provides a separate inspection command for retained initial A/B harness runs.
-Its consistency checks do not replace owner adjudication or the pending freeze.
-
-This pure core does not extract CLI JSONL, verify process status, provenance,
-settings or immutable reads, judge findings, match private answers, score, or
-deduplicate. Callers and owner adjudication must provide those guarantees. It
-is an initial increment, not a trial-readiness gate. Trusted call records bind
-runtime identity and settings outside model-visible material.
+selects the response format from frozen shared prompt provenance and retains
+legacy findings interpretation for historical runs.
 
 Check the prepared bytes from the repository root:
 

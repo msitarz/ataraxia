@@ -16,9 +16,9 @@ itself adopt a production granularity decision.
 ## Authorization and preparation
 
 The maintainer authorized alignment of the A/B protocol. The prepared draft
-inputs still use the legacy findings format and are not aligned with the
-function-assessment contract below or frozen for a new invocation. No model
-trials, further neutral calls, freeze, or production implementation are
+inputs implement the function-assessment contract below but are not frozen for
+a new invocation. No model trials, further neutral calls, freeze, or production
+implementation are
 authorized. Later execution requires independent owner review and authorization
 within the existing Work; these stages are assignments, not new Work children.
 Before any revised comparison runs, require a newly reviewed freeze of the
@@ -31,7 +31,7 @@ initial A/none observation, three additional attempted low/medium/high calls,
 and eight unstarted slots. The high attempt includes an `ls` repository listing.
 Preserve those outcomes and deviations as historical A-only evidence. The fresh
 `execution-controls-v3` series is separate; do not resume or refill that series.
-The new response format requires aligned inputs, a newly reviewed freeze, and a
+The new response format requires a newly reviewed freeze and a
 new series; historical findings remain interpreted under their original format.
 
 Within the authorized preparation scope and before later execution:
@@ -667,8 +667,7 @@ A strategy/effort condition meets the initial quality screen only when:
 - Correct-PASS rate and label accuracy are each at least 80% in each repetition.
 
 Replacing the old finding-precision screen and comparison guard with label
-accuracy is a proposed change of measurement, not an equivalent precision
-claim. The owner must approve this interpretation before the new freeze.
+accuracy is a change of measurement, not an equivalent precision claim.
 UNKNOWN, NOT_APPLICABLE, and omissions cannot make a condition pass merely by
 reducing reported false positives.
 

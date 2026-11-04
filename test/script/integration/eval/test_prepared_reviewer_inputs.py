@@ -59,34 +59,23 @@ def test_exact_prompt_inventory_and_shared_schema() -> None:
     assert list((INPUTS / "shared").iterdir()) == [SHARED]
     assert list((INPUTS / "corpus").iterdir()) == [BUNDLE]
     assert BUNDLE.read_bytes() == b"Context:\n" + whole_bundle()
-    assert schema["type"] == "object"
-    assert schema["required"] == ["complete", "findings"]
-    assert set(schema["properties"]) == {"complete", "findings"}
-    assert schema["additionalProperties"] is False
-    assert schema["properties"]["complete"] == {"type": "boolean"}
-    assert schema["properties"]["findings"]["type"] == "array"
-    finding = schema["properties"]["findings"]["items"]
-    assert finding["type"] == "object"
-    assert set(finding["required"]) == {
+    assert b"Response format: function-assessments-v2" in shared
+    assert schema["type"] == "array"
+    record = schema["items"]
+    assert record["additionalProperties"] is False
+    assert set(record["required"]) == {
         "rule_id",
         "file_id",
-        "start_line",
-        "end_line",
-        "quote",
-        "explanation",
-        "consequence",
-        "severity",
+        "function_name",
+        "judgement",
     }
-    assert set(finding["properties"]) == set(finding["required"]) | {"corrections"}
-    assert finding["additionalProperties"] is False
-    assert finding["properties"]["rule_id"]["enum"] == list(RULES)
-    assert finding["properties"]["severity"]["enum"] == ["critical", "major", "minor"]
-    assert finding["properties"]["start_line"] == {"type": "integer", "minimum": 1}
-    assert finding["properties"]["end_line"] == {"type": "integer", "minimum": 1}
-    assert all(
-        finding["properties"][key]["minLength"] == 1
-        for key in ("file_id", "quote", "explanation", "consequence")
-    )
+    assert set(record["properties"]) == set(record["required"])
+    assert record["properties"]["judgement"]["enum"] == [
+        "PASS",
+        "VIOLATION",
+        "UNKNOWN",
+        "NOT_APPLICABLE",
+    ]
 
 
 @pytest.mark.parametrize(

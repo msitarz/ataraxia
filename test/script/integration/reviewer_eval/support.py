@@ -37,7 +37,9 @@ from script.reviewer_eval.context import CASES, CORPUS, SHARED
 from test.script.integration.eval.support import attempt_evidence
 
 
-def plan(*, repeat: bool = False) -> FrozenPlan:
+def plan(
+    *, repeat: bool = False, current: bool = False, unknown: bool = False
+) -> FrozenPlan:
     """Construct a tiny frozen A/B-shaped plan with no external source reads."""
     case = next(iter(CASES))
     bundle = (
@@ -45,8 +47,20 @@ def plan(*, repeat: bool = False) -> FrozenPlan:
         b"\n--- r3/planning.py.txt (original lines 1-1) ---\nsecond\n"
         b"\n--- r4/ledger.py.txt (original lines 1-1) ---\nthird\n"
     )
+    if current:
+        bundle = (
+            bundle
+            .replace(b"first\n", b"def a(): pass\n")
+            .replace(b"second\n", b"def b(): pass\n")
+            .replace(b"third\n", b"def c(): pass\n")
+        )
+    shared = (Path(__file__).parent / "fixtures/legacy-shared.txt").read_bytes()
+    if current:
+        shared = (Path(__file__).resolve().parents[4] / SHARED).read_bytes()
+    if unknown:
+        shared += b"unexpected change"
     entries = (
-        (SHARED, b"shared"),
+        (SHARED, shared),
         (case, b"Rules:\n\n--- R1 ---\na\n\n--- R3 ---\nb\n\n--- R4 ---\nc\n"),
         (CORPUS, bundle),
     )
@@ -81,7 +95,9 @@ def plan(*, repeat: bool = False) -> FrozenPlan:
     )
 
 
-def transcript(response: dict[str, object], thread: str = "thread") -> bytes:
+def transcript(
+    response: dict[str, object] | list[dict[str, str]], thread: str = "thread"
+) -> bytes:
     """Build a single synthetic successful transcript."""
     events = [
         {"type": "thread.started", "thread_id": thread},
@@ -102,7 +118,9 @@ def transcript(response: dict[str, object], thread: str = "thread") -> bytes:
 async def create_run(
     root: Path,
     *,
-    response: dict[str, object] | None = None,
+    response: dict[str, object] | list[dict[str, str]] | None = None,
+    current: bool = False,
+    unknown: bool = False,
     status: int = 0,
     finalize: bool = True,
     invocation_cwd: Path | None = None,
@@ -110,7 +128,7 @@ async def create_run(
     borrowed: bool = False,
 ) -> RunRecord:
     """Persist a controlled plan, process and final summary through the real store."""
-    frozen = plan()
+    frozen = plan(current=current, unknown=unknown)
     if borrowed:
         configuration = frozen.configuration.model_copy(
             update={"working_directory": Path("clone")}

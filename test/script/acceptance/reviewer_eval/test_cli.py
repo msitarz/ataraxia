@@ -26,6 +26,8 @@ def test_cli_creates_exclusive_report(saved_run: Path, tmp_path: Path) -> None:
 
     # Then
     assert first.returncode == 0
+    assert json.loads(before)["version"] == 2
+    assert json.loads(before)["calls"][0]["response_format"] == "findings-v1"
     assert json.loads(before)["counts"]["complete"] == 1
     assert second.returncode == 1
     assert output.read_bytes() == before

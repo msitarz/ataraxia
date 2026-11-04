@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """Derive initial A/B validation inputs solely from frozen snapshots."""
 
+from hashlib import sha256
 import re
+from typing import Literal
 
 from script.eval.model import FrozenPlan, PlannedCall
 
@@ -62,3 +64,23 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
             raise ValueError(f"source line count mismatch: {expected}")
         result[expected] = source
     return result
+
+
+def response_format(
+    plan: FrozenPlan, call: PlannedCall
+) -> Literal["findings-v1", "function-assessments-v2"]:
+    """Select a supported contract from the exact frozen shared prompt bytes.
+
+    Returns:
+        The supported response format.
+
+    Raises:
+        ValueError: The frozen prompt is unknown or inconsistent.
+    """
+    shared = plan.snapshots[call.context_indices[0]]
+    digest = sha256(shared.content).hexdigest()
+    if digest == "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477":
+        return "findings-v1"
+    if digest == "2cecffd71f68ef7decf15300f182daa93778f959d9de62996f76528693d61e87":
+        return "function-assessments-v2"
+    raise ValueError("unsupported or inconsistent frozen response format")

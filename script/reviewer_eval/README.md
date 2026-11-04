@@ -1,28 +1,12 @@
 # Saved reviewer results
 
-This command currently implements legacy `findings-v1` inspection. The proposed
-[function-assessment contract](../../doc/feat/reviewer/engineering/evaluation/protocol.md#function-assessment-response-contract)
-requires a separate format selected from frozen prompt provenance and later
-implementation. Existing evidence keeps its original format; structural
-completion does not establish private-control coverage or semantic accuracy.
+This command selects `function-assessments-v2` or historical `findings-v1`
+from the exact frozen shared prompt and schema. Unknown formats are invalid.
+A version 2 report identifies the format for each call and keeps current
+assessments and missing public pairs separate from historical findings. Public
+completeness does not establish private-control coverage or semantic accuracy.
 
-A report gives each planned call one outcome and disjoint counts, for example:
-
-```json
-{
-  "version": 1,
-  "evidence_state": "complete",
-  "diagnostic": null,
-  "run_id": "example-run",
-  "head_commit": "example-commit",
-  "planned_count": 1,
-  "counts": {"complete": 0, "incomplete": 0, "invalid": 0, "failed": 0, "not_started": 1},
-  "calls": [{"position": 0, "model": "example", "effort": "low", "call_id": "opaque", "state": "not_started", "diagnostic": null, "attempts": [], "selected_attempt": null, "findings": [], "thread_id": null}],
-  "scope": "Internal artifact consistency and correspondence to frozen source bytes only; not authenticated lineage, safe-read verification, semantic truth, or quality readiness."
-}
-```
-
-Completed calls include their persisted attempt records and validated findings.
+Completed calls include their persisted attempt records and validated response.
 
 - `complete` means a successful terminal attempt produced a valid complete
   response.
