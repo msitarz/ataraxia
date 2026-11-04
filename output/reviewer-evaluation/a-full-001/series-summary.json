@@ -1,0 +1,641 @@
+{
+  "original_root": "/private/tmp/ataraxia-a-full-001-stage",
+  "stored_root": "output/reviewer-evaluation/a-full-001",
+  "invocation_head": "06730474d79ec443ec65ad54c488e9d3607a7775",
+  "slots": [
+    {
+      "slot": "rep1-none",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='Booking.__init__')",
+      "started_at_utc": "2026-11-04T08:45:14.669176Z",
+      "ended_at_utc": "2026-11-04T08:47:35.567456Z",
+      "elapsed_seconds": 140.895,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 30831,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 7206,
+        "reasoning_output_tokens": 0
+      },
+      "candidate_adjusted_input": 27261,
+      "candidate_adjusted_complete": 34467
+    },
+    {
+      "slot": "rep1-low",
+      "state": "invalid",
+      "diagnostic": "assessment refers to an unknown public pair: PublicPair(rule_id='R1', file_id='r1/dispatch.py.txt', function_name='RecordError')",
+      "started_at_utc": "2026-11-04T08:48:18.058291Z",
+      "ended_at_utc": "2026-11-04T08:50:11.974426Z",
+      "elapsed_seconds": 113.914,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15400,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6164,
+        "reasoning_output_tokens": 0
+      },
+      "candidate_adjusted_input": 11832,
+      "candidate_adjusted_complete": 17996
+    },
+    {
+      "slot": "rep1-medium",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T08:50:30.999785Z",
+      "ended_at_utc": "2026-11-04T08:52:19.249178Z",
+      "elapsed_seconds": 108.247,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15398,
+        "cached_input_tokens": 2688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5638,
+        "reasoning_output_tokens": 372
+      },
+      "candidate_adjusted_input": 11828,
+      "candidate_adjusted_complete": 17466
+    },
+    {
+      "slot": "rep1-high",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T08:52:38.367992Z",
+      "ended_at_utc": "2026-11-04T08:54:50.281352Z",
+      "elapsed_seconds": 131.933,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15400,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 7134,
+        "reasoning_output_tokens": 1356
+      },
+      "candidate_adjusted_input": 11830,
+      "candidate_adjusted_complete": 18964
+    },
+    {
+      "slot": "rep2-low",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T08:55:12.182303Z",
+      "ended_at_utc": "2026-11-04T08:57:00.992550Z",
+      "elapsed_seconds": 108.809,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15400,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5810,
+        "reasoning_output_tokens": 231
+      },
+      "candidate_adjusted_input": 11832,
+      "candidate_adjusted_complete": 17642
+    },
+    {
+      "slot": "rep2-medium",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T08:57:18.285062Z",
+      "ended_at_utc": "2026-11-04T08:59:15.178310Z",
+      "elapsed_seconds": 116.892,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15402,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 6202,
+        "reasoning_output_tokens": 455
+      },
+      "candidate_adjusted_input": 11832,
+      "candidate_adjusted_complete": 18034
+    },
+    {
+      "slot": "rep2-high",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T08:59:30.949777Z",
+      "ended_at_utc": "2026-11-04T09:01:47.158018Z",
+      "elapsed_seconds": 136.206,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15400,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 7357,
+        "reasoning_output_tokens": 1599
+      },
+      "candidate_adjusted_input": 11830,
+      "candidate_adjusted_complete": 19187
+    },
+    {
+      "slot": "rep2-none",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T09:02:06.073169Z",
+      "ended_at_utc": "2026-11-04T09:03:53.895811Z",
+      "elapsed_seconds": 107.821,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15404,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5776,
+        "reasoning_output_tokens": 0
+      },
+      "candidate_adjusted_input": 11834,
+      "candidate_adjusted_complete": 17610
+    },
+    {
+      "slot": "rep3-medium",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T09:04:15.087882Z",
+      "ended_at_utc": "2026-11-04T09:06:04.027231Z",
+      "elapsed_seconds": 108.938,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15398,
+        "cached_input_tokens": 2688,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5713,
+        "reasoning_output_tokens": 305
+      },
+      "candidate_adjusted_input": 11828,
+      "candidate_adjusted_complete": 17541
+    },
+    {
+      "slot": "rep3-high",
+      "state": "complete",
+      "diagnostic": null,
+      "started_at_utc": "2026-11-04T09:06:27.301661Z",
+      "ended_at_utc": "2026-11-04T09:08:46.605854Z",
+      "elapsed_seconds": 139.302,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15398,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 7472,
+        "reasoning_output_tokens": 1707
+      },
+      "candidate_adjusted_input": 11828,
+      "candidate_adjusted_complete": 19300
+    },
+    {
+      "slot": "rep3-none",
+      "state": "invalid",
+      "diagnostic": "duplicate assessment pair: PublicPair(rule_id='R1', file_id='r4/ledger.py.txt', function_name='payment_from_row')",
+      "started_at_utc": "2026-11-04T09:09:06.017018Z",
+      "ended_at_utc": "2026-11-04T09:10:53.745269Z",
+      "elapsed_seconds": 107.727,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15396,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 5789,
+        "reasoning_output_tokens": 0
+      },
+      "candidate_adjusted_input": 11826,
+      "candidate_adjusted_complete": 17615
+    },
+    {
+      "slot": "rep3-low",
+      "state": "incomplete",
+      "diagnostic": "missing public pairs",
+      "started_at_utc": "2026-11-04T09:11:12.204798Z",
+      "ended_at_utc": "2026-11-04T09:12:14.863987Z",
+      "elapsed_seconds": 62.658,
+      "exit_status": 0,
+      "cleanup": {
+        "process": "owned",
+        "signals": [
+          {
+            "signal": "SIGKILL",
+            "outcome": "no_target",
+            "diagnostic": null
+          }
+        ],
+        "direct_wait": "reaped",
+        "wait_diagnostic": null
+      },
+      "event_types": [
+        [
+          "thread.started",
+          null
+        ],
+        [
+          "item.completed",
+          "error"
+        ],
+        [
+          "turn.started",
+          null
+        ],
+        [
+          "item.completed",
+          "agent_message"
+        ],
+        [
+          "turn.completed",
+          null
+        ]
+      ],
+      "usage": {
+        "input_tokens": 15400,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3246,
+        "reasoning_output_tokens": 181
+      },
+      "candidate_adjusted_input": 11832,
+      "candidate_adjusted_complete": 15078
+    }
+  ],
+  "totals": {
+    "input_tokens": 200227,
+    "cached_input_tokens": 20608,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 73507,
+    "reasoning_output_tokens": 6206,
+    "candidate_adjusted_input": 157393,
+    "candidate_adjusted_complete": 230900,
+    "elapsed_seconds": 1383.342
+  }
+}
