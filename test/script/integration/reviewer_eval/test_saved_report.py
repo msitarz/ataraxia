@@ -801,7 +801,7 @@ async def test_current_full_assessments_complete(tmp_path: Path) -> None:
     # Given
     root = tmp_path / "run"
     rows = full_current_response()
-    await create_run(root, current=True, response=rows)
+    await create_run(root, current=True, response=rows, notice=True)
 
     # When
     report = inspect_run(root)

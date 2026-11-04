@@ -3,6 +3,12 @@
 
 import json
 
+CODE_MODE_DISABLED_NOTICE = (
+    "Code Mode is unavailable because code-mode host is disabled. "
+    "Code mode will fail closed; enable `features.code_mode_host` and install "
+    "`codex-code-mode-host`."
+)
+
 
 def unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
     """Reject duplicate keys at every JSON nesting level.
@@ -48,7 +54,8 @@ def extract_response(raw: bytes) -> tuple[str, bytes]:
     """Extract exactly one agent message from a single successful turn.
 
     Reasoning metadata is accepted only as completed reasoning items with string
-    IDs and text. Other item kinds, including tool activity, are rejected.
+    IDs and text. One known disabled-host notice may precede the turn. Other
+    item kinds, including tool activity, are rejected.
 
     Returns:
         Thread identity and exact response bytes.
@@ -82,13 +89,33 @@ def _advance(
         if not isinstance(identity, str) or not identity:
             raise ValueError("invalid thread identity")
         return 1, response, identity
-    if kind == "turn.started" and phase == 1:
+    if kind == "item.completed" and phase == 1:
+        _startup_notice(event.get("item"))
+        return 4, response, thread_id
+    if kind == "turn.started" and phase in (1, 4):
         return 2, response, thread_id
     if kind == "item.completed" and phase == 2:
         return phase, _item(event.get("item"), response), thread_id
     if kind == "turn.completed" and phase == 2 and response is not None:
         return 3, response, thread_id
     raise ValueError(f"unexpected JSONL event or lifecycle: {kind}")
+
+
+def _startup_notice(item: object) -> None:
+    """Accept only the known disabled Code Mode host startup notice.
+
+    Raises:
+        ValueError: The item is not the known notice.
+    """
+    if not isinstance(item, dict):
+        raise ValueError("invalid startup notice")
+    if (
+        item.get("type") != "error"
+        or not isinstance(item.get("id"), str)
+        or not item["id"]
+        or item.get("message") != CODE_MODE_DISABLED_NOTICE
+    ):
+        raise ValueError("unsupported startup notice")
 
 
 def _item(item: object, response: str | None) -> str | None:

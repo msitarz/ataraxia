@@ -51,9 +51,12 @@ The adapter checks the retained records and frozen prepared A/B inputs for
 internal consistency and correspondence to original source bytes. It does not
 establish authenticated lineage, approved input authenticity, runtime binding,
 safe reads, or semantic truth. Findings remain unadjudicated and undeduplicated.
-The accepted JSONL shape has one thread start, one turn start, optional
-completed reasoning items with string IDs and text, one completed agent message,
-and one successful terminal turn. Other events, including tools, are rejected.
+The accepted JSONL shape has one thread start, an optional known disabled Code
+Mode host error notice before the turn, one turn start, optional completed
+reasoning items with string IDs and text, one completed agent message, and one
+successful terminal turn. Only the exact known notice with a nonempty string ID
+is accepted; other errors and tool events are rejected. The raw stream retains
+the notice.
 The reader validates recorded stream references against the frozen output path
 and reads retained files beneath the supplied run directory. A relocated archive
 can be inspected when its recorded paths and retained artifacts remain

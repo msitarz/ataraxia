@@ -80,7 +80,9 @@ async def test_current_complete_and_partial_reports(tmp_path: Path) -> None:
     partial_root.parent.mkdir()
     full_output = tmp_path / "full.json"
     partial_output = tmp_path / "partial.json"
-    await create_run(full_root, current=True, response=full_current_response())
+    await create_run(
+        full_root, current=True, response=full_current_response(), notice=True
+    )
     await create_run(partial_root, current=True, response=[])
     full_command = [
         sys.executable,

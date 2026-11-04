@@ -11,7 +11,7 @@ type ResponseFormat = Literal["findings-v1", "function-assessments-v2"]
 
 FROZEN_FORMAT_DIGESTS: dict[str, ResponseFormat] = {
     "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477": "findings-v1",
-    "8745263b68b9a86f207be04a796df3bd5dabc10864c3e53b218a49f9751d3956": (
+    "2c464b98b96d562f3dbef2cc5e3d9515ebb0c7b58f9777fa5e1133f11f7c632f": (
         "function-assessments-v2"
     ),
 }
@@ -55,6 +55,23 @@ def review_context(
     return allowed, _sources(corpus.content)
 
 
+def response_format(plan: FrozenPlan, call: PlannedCall) -> ResponseFormat:
+    """Select a supported contract from the exact frozen shared prompt bytes.
+
+    Returns:
+        The supported response format.
+
+    Raises:
+        ValueError: The frozen prompt is unknown or inconsistent.
+    """
+    shared = plan.snapshots[call.context_indices[0]]
+    digest = sha256(shared.content).hexdigest()
+    try:
+        return FROZEN_FORMAT_DIGESTS[digest]
+    except KeyError as exc:
+        raise ValueError("unsupported or inconsistent frozen response format") from exc
+
+
 def _sources(bundle: bytes) -> dict[str, bytes]:
     matches = list(HEADER.finditer(bundle))
     if not bundle.startswith(b"Context:\n") or len(matches) != len(FILES):
@@ -73,20 +90,3 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
             raise ValueError(f"source line count mismatch: {expected}")
         result[expected] = source
     return result
-
-
-def response_format(plan: FrozenPlan, call: PlannedCall) -> ResponseFormat:
-    """Select a supported contract from the exact frozen shared prompt bytes.
-
-    Returns:
-        The supported response format.
-
-    Raises:
-        ValueError: The frozen prompt is unknown or inconsistent.
-    """
-    shared = plan.snapshots[call.context_indices[0]]
-    digest = sha256(shared.content).hexdigest()
-    try:
-        return FROZEN_FORMAT_DIGESTS[digest]
-    except KeyError as exc:
-        raise ValueError("unsupported or inconsistent frozen response format") from exc

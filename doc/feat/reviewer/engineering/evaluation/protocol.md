@@ -314,6 +314,11 @@ malformed, or undispatched output never establishes successful coverage.
 Caller-owned records bind runtime identity, settings, and provenance outside
 model output.
 
+The saved reader accepts the exact known disabled Code Mode host startup error
+notice before the turn, with a nonempty string item ID. It retains the raw
+stream and rejects other errors, notices after the turn starts, tool activity,
+and failed or incomplete turns.
+
 Saved readers must select the response contract from retained frozen prompt and
 schema provenance, before interpreting model output. The amended shared prompt
 must contain the literal discriminator

@@ -62,6 +62,8 @@ def test_exact_prompt_inventory_and_shared_schema() -> None:
     assert list((INPUTS / "corpus").iterdir()) == [BUNDLE]
     assert BUNDLE.read_bytes() == b"Context:\n" + whole_bundle()
     assert b"Response format: function-assessments-v2" in shared
+    assert b"def and async def declaration" in shared
+    assert b"Exclude lambdas and implicit or generated methods" in shared
     assert schema["type"] == "array"
     record = schema["items"]
     assert record["additionalProperties"] is False

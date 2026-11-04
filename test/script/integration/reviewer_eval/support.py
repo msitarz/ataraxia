@@ -156,7 +156,10 @@ def full_current_response() -> list[dict[str, str]]:
 
 
 def transcript(
-    response: dict[str, object] | list[dict[str, str]], thread: str = "thread"
+    response: dict[str, object] | list[dict[str, str]],
+    thread: str = "thread",
+    *,
+    notice: bool = False,
 ) -> bytes:
     """Build a single synthetic successful transcript."""
     events = [
@@ -172,6 +175,23 @@ def transcript(
         },
         {"type": "turn.completed", "usage": {"future": True}},
     ]
+    if notice:
+        events.insert(
+            1,
+            {
+                "type": "item.completed",
+                "item": {
+                    "type": "error",
+                    "id": "notice",
+                    "message": (
+                        "Code Mode is unavailable because code-mode host is disabled. "
+                        "Code mode will fail closed; enable "
+                        "`features.code_mode_host` and install "
+                        "`codex-code-mode-host`."
+                    ),
+                },
+            },
+        )
     return b"".join(json.dumps(event).encode() + b"\n" for event in events)
 
 
@@ -181,6 +201,7 @@ async def create_run(
     response: dict[str, object] | list[dict[str, str]] | None = None,
     current: bool = False,
     unknown: bool = False,
+    notice: bool = False,
     status: int = 0,
     finalize: bool = True,
     invocation_cwd: Path | None = None,
@@ -213,7 +234,8 @@ async def create_run(
         frozen, frozen.calls[0], binding, prepared, frozen.configuration
     )
     output = transcript(
-        response if response is not None else {"complete": True, "findings": []}
+        response if response is not None else {"complete": True, "findings": []},
+        notice=notice,
     )
     cleanup = CleanupEvidence(
         "owned", (SignalAttempt("SIGKILL", "no_target", None),), "reaped", None
