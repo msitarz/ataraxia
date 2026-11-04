@@ -62,3 +62,36 @@ and reads retained files beneath the supplied run directory. A relocated archive
 can be inspected when its recorded paths and retained artifacts remain
 internally consistent; relocation does not authenticate provenance or repair
 missing data.
+
+## Private scoring
+
+Explicitly supply the private draft index to score one original run offline:
+
+```sh
+uv run --no-sync python -m script.reviewer_eval /path/to/original-run \
+  --reference-index /private/path/to/index.md \
+  --output /private/path/to/new-score.json
+```
+
+Keep the index and score report outside model-accessible inputs and version
+control. The report contains private classification information. The command
+reads the existing index only when requested, validates its initial 24-control
+inventory, and binds its source and rule digests to the same frozen plan used
+for inspection. A mismatch, unknown plan, or legacy response format is
+unscorable. The reference remains draft and independently unreviewed; scoring
+neither approves the labels nor establishes readiness or quality-screen success.
+
+Call scores use 24 controls for A and eight for each B case. A B strategy group
+uses all 24 controls even when a required case is absent; its missing case is
+not asserted to have been planned. Duplicate cases within a model and effort
+make the aggregate ambiguous, while individual calls remain visible. Repetition
+identity is not inferred. Primary rates retain fixed denominators and only
+complete, valid calls receive credit. Partial records contribute secondary
+coverage and uncertainty counts. Complete-valid-only rates have reduced,
+explicit denominators; an undefined rate is null. Unindexed records are
+unscored. UNKNOWN, NOT_APPLICABLE, and missing records are not passes.
+
+Exit status 0 means the scoring and accounting completed with complete evidence
+and unambiguous, complete strategy groups, not that a quality threshold passed.
+Status 1 includes incomplete or unscorable evidence and read or write failures;
+argument errors return 2. The output is exclusive and outside the run evidence.
