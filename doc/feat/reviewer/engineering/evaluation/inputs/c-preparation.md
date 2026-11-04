@@ -40,9 +40,9 @@ support a token-budget guarantee.
 
 A retained [offline dry run](c-token-estimates.txt) additionally records the
 existing harness estimator for each packet: tiktoken 0.14.0 `o200k_base`, using
-the GPT-5.6 mapping as an approximate GPT-6 surrogate. It estimates 297,174
-supplied-context tokens per 186-call effort/repetition block, range 886–2,386
-per call, and 3,566,088 across 12 blocks. The separate frozen instruction file
+the GPT-5.6 mapping as an approximate GPT-6 surrogate. It estimates 297,360
+supplied-context tokens per 186-call effort/repetition block, range 887–2,387
+per call, and 3,568,320 across 12 blocks. The separate frozen instruction file
 adds an estimated 50 per call, or 111,600 across the matrix. These estimates
 exclude automatic context, framing, output and retries and are not actual usage
 or a budget guarantee. The byte/4 figures above remain a reproducible offline
