@@ -1,0 +1,76 @@
+Target: {"file_id":"r1/dispatch.py.txt","function_name":"integer","rule_id":"R1"}
+
+Rule:
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created.
+
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+Context:
+
+--- r1/dispatch.py.txt lines 2-12 (context) ---
+"""Inbound records for a small freight dispatch service.
+
+The gateway receives JSON objects from customers and carriers. Each adapter
+below owns the complete record it returns. Identifiers are nonempty strings;
+quantities and times are JSON integers (booleans are not integers here).
+Amounts are in whole cents, weights in grams, and times in UTC epoch seconds.
+The caller persists all fields in the returned value and uses the identifiers
+for ownership checks before exposing a record to a customer. Record dataclasses
+are trusted internal representations: these adapters own and enforce the domain
+invariants when constructing them; internal callers supply validated values.
+"""
+
+--- r1/dispatch.py.txt lines 14-14 (context) ---
+from dataclasses import dataclass
+
+--- r1/dispatch.py.txt lines 15-15 (context) ---
+from typing import Any
+
+--- r1/dispatch.py.txt lines 18-19 (context) ---
+class RecordError(ValueError):
+    """An inbound record cannot be used by dispatch."""
+
+--- r1/dispatch.py.txt lines 33-41 (target) ---
+def integer(value: object, field: str, minimum: int = 0) -> int:
+    """Validate an integer at the stated minimum.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if type(value) is not int or value < minimum:
+        raise RecordError(f"{field} must be an integer at least {minimum}")
+    return value

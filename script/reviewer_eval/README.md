@@ -1,14 +1,17 @@
 # Saved reviewer results
 
-This command selects `function-assessments-v2` or historical `findings-v1`
-from the exact frozen shared prompt and schema. Unknown formats are invalid.
-A version 2 report identifies the format for each call and keeps current
-assessments and missing public pairs separate from historical findings. Public
-completeness does not establish private-control coverage or semantic accuracy.
-A complete response may contain UNKNOWN or NOT_APPLICABLE judgments; completion
-is not a quality PASS. The validator derives qualified lexical function names
-locally from source ASTs without generating line requirements for model output.
-Historical `findings-v1` responses retain their original interpretation.
+This command selects `function-assessments-c-v1`, `function-assessments-v2` or
+historical `findings-v1` from the exact frozen shared prompt and schema. Unknown
+formats are invalid. A version 2 report identifies the format for each call and
+keeps current assessments and missing public pairs separate from historical
+findings. Public completeness does not establish private-control coverage or
+semantic accuracy. A complete response may contain UNKNOWN or NOT_APPLICABLE
+judgments; completion is not a quality PASS. The validator derives qualified
+lexical function names locally from source ASTs without generating line
+requirements for model output. Historical `findings-v1` responses retain their
+original interpretation. C selects exactly its explicit target from frozen
+packet provenance; helper functions do not add assessments. Missing or extra C
+assessments are invalid.
 
 For example, this excerpt shows one incomplete current-format call:
 

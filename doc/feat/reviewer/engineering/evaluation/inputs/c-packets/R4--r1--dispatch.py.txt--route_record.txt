@@ -1,0 +1,218 @@
+Target: {"file_id":"r1/dispatch.py.txt","function_name":"route_record","rule_id":"R4"}
+
+Rule:
+- Do not nest `try` statements within the same execution scope, including
+  through branches or loops and inside `except`, `else`, or `finally`; this
+  applies equally to `async` functions and `except*`.
+- Sequential `try` statements are allowed when they protect distinct operations.
+- Separate nested function or method scopes with `try` statements are allowed.
+- Use context managers for resource cleanup and extract cohesive helpers that
+  preserve operation-specific catches, exception causes, cleanup, and resource
+  ownership.
+- Do not split code into tiny helpers merely to avoid nesting.
+- Use context managers for files/providers, preserving source/provider lifecycle
+  delegation and cleanup on success/failure.
+
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+### Effects and live resource safety belong to adapters
+
+Adapters own effectful operations, expected failure translation, and the
+lifecycle of resources they acquire.
+
+- Normalize untyped inputs once at their ingress boundary, then reuse the
+  adapted values and observations.
+- Rely on a documented typed API's guarantees instead of repeating them or
+  routinely preflighting an operation.
+- Follow the existing
+  [boundary error guidance](#validate-at-boundaries-and-construction) for
+  context and causes.
+- Follow the [resource handling conventions](#code-style) for cleanup on success
+  and failure.
+- Keep essential current ownership, authorization, lifecycle, and safety checks
+  at the operation that needs them.
+- Use transactions or synchronization to make state-dependent checks and writes
+  atomic where required; a valid persisted record alone does not prove that
+  current access or resource state is safe.
+- When validation or control flow changes, preserve supported inputs, documented
+  errors and causes, state invariants, persistence compatibility, and necessary
+  effect ordering.
+
+Incidental check order and defensive branch layout remain implementation
+choices.
+
+--- BEGIN REFERENCED CONTEXT: engineering.md lines 19, 102–112, 144–180 ---
+
+## Code style
+
+- Do not nest `try` statements within the same execution scope, including
+  through branches or loops and inside `except`, `else`, or `finally`; this
+  applies equally to `async` functions and `except*`.
+- Sequential `try` statements are allowed when they protect distinct operations.
+- Separate nested function or method scopes with `try` statements are allowed.
+- Use context managers for resource cleanup and extract cohesive helpers that
+  preserve operation-specific catches, exception causes, cleanup, and resource
+  ownership.
+- Do not split code into tiny helpers merely to avoid nesting.
+- Use context managers for files/providers, preserving source/provider lifecycle
+  delegation and cleanup on success/failure.
+
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created.
+
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+--- END REFERENCED CONTEXT ---
+
+Context:
+
+--- r1/dispatch.py.txt lines 2-12 (context) ---
+"""Inbound records for a small freight dispatch service.
+
+The gateway receives JSON objects from customers and carriers. Each adapter
+below owns the complete record it returns. Identifiers are nonempty strings;
+quantities and times are JSON integers (booleans are not integers here).
+Amounts are in whole cents, weights in grams, and times in UTC epoch seconds.
+The caller persists all fields in the returned value and uses the identifiers
+for ownership checks before exposing a record to a customer. Record dataclasses
+are trusted internal representations: these adapters own and enforce the domain
+invariants when constructing them; internal callers supply validated values.
+"""
+
+--- r1/dispatch.py.txt lines 14-14 (context) ---
+from dataclasses import dataclass
+
+--- r1/dispatch.py.txt lines 15-15 (context) ---
+from typing import Any
+
+--- r1/dispatch.py.txt lines 18-19 (context) ---
+class RecordError(ValueError):
+    """An inbound record cannot be used by dispatch."""
+
+--- r1/dispatch.py.txt lines 22-30 (context) ---
+def text(value: object, field: str) -> str:
+    """Validate a nonempty string.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if not isinstance(value, str) or not value.strip():
+        raise RecordError(f"{field} must be a nonempty string")
+    return value
+
+--- r1/dispatch.py.txt lines 33-41 (context) ---
+def integer(value: object, field: str, minimum: int = 0) -> int:
+    """Validate an integer at the stated minimum.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if type(value) is not int or value < minimum:
+        raise RecordError(f"{field} must be an integer at least {minimum}")
+    return value
+
+--- r1/dispatch.py.txt lines 44-52 (context) ---
+def fields(value: object, name: str) -> dict[str, Any]:
+    """Validate a string-keyed object.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if not isinstance(value, dict) or not all(isinstance(k, str) for k in value):
+        raise RecordError(f"{name} must be an object with string keys")
+    return value
+
+--- r1/dispatch.py.txt lines 55-63 (context) ---
+def required(record: dict[str, Any], key: str) -> object:
+    """Read a required field.
+
+    Raises:
+        RecordError: The input does not satisfy the requested condition.
+    """
+    if key not in record:
+        raise RecordError(f"missing {key}")
+    return record[key]
+
+--- r1/dispatch.py.txt lines 114-123 (context) ---
+@dataclass(frozen=True)
+class Route:
+    route_id: str
+    carrier_id: str
+    vehicle_id: str
+    origin: str
+    destination: str
+    depart_at: int
+    arrive_at: int
+    capacity: int
+
+--- r1/dispatch.py.txt lines 297-323 (target) ---
+def route_record(value: object) -> Route:
+    """Adapt a carrier route between different locations in time order.
+
+    Raises:
+        RecordError: The consumed record is missing or violates its contract.
+    """
+    record = fields(value, "route")
+    route_id = text(required(record, "route_id"), "route_id")
+    carrier_id = text(required(record, "carrier_id"), "carrier_id")
+    vehicle_id = text(required(record, "vehicle_id"), "vehicle_id")
+    origin = text(required(record, "origin"), "origin")
+    destination = text(required(record, "destination"), "destination")
+    departure = integer(required(record, "depart_at"), "depart_at")
+    arrival = integer(required(record, "arrive_at"), "arrive_at")
+    capacity = integer(required(record, "capacity"), "capacity", 1)
+    if origin == destination:
+        raise RecordError("route endpoints must differ")
+    return Route(
+        route_id=route_id,
+        carrier_id=carrier_id,
+        vehicle_id=vehicle_id,
+        origin=origin,
+        destination=destination,
+        depart_at=departure,
+        arrive_at=arrival,
+        capacity=capacity,
+    )

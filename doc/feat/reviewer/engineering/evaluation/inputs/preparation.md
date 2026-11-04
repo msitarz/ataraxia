@@ -55,3 +55,6 @@ directories through the pure plan builder. The
 Independent owner review of the inputs, runtime binding, baselines, boundary
 verification, call list, and a complete input freeze remain outstanding. No
 private answers are needed for this check.
+
+Static C preparation is described separately in
+[C preparation](c-preparation.md).

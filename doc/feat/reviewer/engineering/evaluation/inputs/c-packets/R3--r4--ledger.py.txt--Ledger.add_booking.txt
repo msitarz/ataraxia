@@ -1,0 +1,203 @@
+Target: {"file_id":"r4/ledger.py.txt","function_name":"Ledger.add_booking","rule_id":"R3"}
+
+Rule:
+### Pure typed decisions
+
+A pure decision is a pure function over valid typed domain values; its result
+is determined by those explicit inputs.
+
+- It performs no I/O.
+- It reads no environment, clock, random source, or global state.
+- It does not mutate its arguments.
+- It does not reparse raw input, repeat defensive checks on validated children,
+  or probe files or processes; validation belongs at the
+  [owning boundary](#validate-at-boundaries-and-construction).
+- A newly constructed domain result enforces its own invariants.
+
+Calling an effectful collaborator remains an effect even when its contract is
+a `typing.Protocol`.
+Stateful runners may orchestrate pure decisions while retaining execution state
+or coordinating effects; orchestration does not make the runner itself pure.
+
+The illustrative `scheduled_time` decision uses only its validated plan and
+returns either its explicit schedule or `None`.
+
+- Separate a substantial per-item decision from collection traversal and
+  cross-item state when that clarifies the contract.
+- Keep accumulators visible in a loop instead of hiding them in a comprehension.
+- Prefer standard Python protocols such as iteration and `collections.abc.Sized`
+  when their semantics fit.
+- Retain named methods when they express distinct domain meaning.
+
+--- BEGIN REFERENCED CONTEXT: engineering.md lines 144–180 ---
+
+### Validate at boundaries and construction
+
+Validation belongs where uncertainty enters or a value is created.
+
+- Define the consumed record as every field and relationship an operation relies
+  on, including ownership, persistence, and security requirements.
+- At raw or untyped ingress, including persisted data, validate the consumed
+  structure, runtime types, and relationships before adapting it to a project
+  type.
+- Check contract gaps and domain invariants around a documented typed library
+  API; rely on its documented guarantees instead of repeating them.
+- At trusted typed internal construction, rely on declared argument types and
+  already validated child domain values.
+- At trusted typed internal construction, enforce the invariants owned by the
+  new value, including semantic and cross-field rules, without revalidating
+  children or claiming arbitrary untyped-schema validation.
+- Check runtime types when the domain or storage contract requires it; for an
+  integer domain, exclude `bool` when it is not a valid value.
+
+Annotations alone never validate raw runtime data.
+
+- Keep consumed ownership, persistence, and security fields in the validated
+  record even when one pure decision does not read them.
+- Leave unused extension data opaque and preserve it when transport or
+  persistence compatibility requires it.
+- Keep internal invariant failures concise.
+- At external boundaries, give actionable context and distinguish failures when
+  callers need different
+  responses; rejecting at the first error is fine.
+- At Ataraxia library API boundaries, translate expected low-level library
+  failures into contextual
+  exceptions in `src/ataraxia/errors.py`.
+- For those exceptions, derive from `AtaraxiaError`, retain an appropriate
+  built-in base, and preserve causes, for example
+  `raise DomainError("Useful context") from exc`.
+- Document caller-handled domain errors in Google-style `Raises` sections.
+- Don't blanket-wrap programming errors or normal iteration termination.
+
+--- BEGIN ILLUSTRATIVE CONTEXT: engineering.md lines 182–235 ---
+
+For example, a proposed transfer record can own its positive-amount and
+different-account invariants. A raw request adapter checks incoming field
+types and required fields before constructing it; an internal caller with typed
+arguments uses the constructor's own semantic checks. This is an illustration
+of guidance, not an Ataraxia API:
+
+```py
+from dataclasses import dataclass
+from datetime import datetime
+from typing import assert_never
+
+
+@dataclass(frozen=True)
+class Transfer:
+    owner_id: str
+    recipient_id: str
+    cents: int
+
+    def __post_init__(self) -> None:
+        if not self.owner_id or not self.recipient_id:
+            raise ValueError("account IDs must not be empty")
+        if self.owner_id == self.recipient_id:
+            raise ValueError("transfer accounts must differ")
+        if isinstance(self.cents, bool) or self.cents <= 0:
+            raise ValueError("cents must be a positive integer")
+
+
+@dataclass(frozen=True)
+class ImmediateTransfer:
+    details: Transfer
+
+
+@dataclass(frozen=True)
+class ScheduledTransfer:
+    details: Transfer
+    execute_at: datetime
+
+
+type TransferPlan = ImmediateTransfer | ScheduledTransfer
+
+
+def scheduled_time(plan: TransferPlan) -> datetime | None:
+    match plan:
+        case ImmediateTransfer():
+            return None
+        case ScheduledTransfer(execute_at=execute_at):
+            return execute_at
+        case unexpected:
+            assert_never(unexpected)
+
+
+def schedule(plan: ImmediateTransfer, execute_at: datetime) -> ScheduledTransfer:
+    return ScheduledTransfer(details=plan.details, execute_at=execute_at)
+```
+
+--- END REFERENCED CONTEXT ---
+
+Context:
+
+--- r4/ledger.py.txt lines 2-18 (context) ---
+"""SQLite adapter for a freight ledger.
+
+The composition root creates the schema and supplies the database path. Each
+method acquires its own connection. It closes that connection on every exit,
+including a failed statement or commit. Methods raising ReadError report a
+failed query; methods raising WriteError report a failed write or commit. Both
+errors preserve their original sqlite exception as the cause. A missing row is
+reported as None, not as a database failure. Transactions must commit all
+writes in a method together or roll them all back.
+
+The tables are:
+  bookings(id TEXT PRIMARY KEY, customer TEXT, state TEXT, cents INTEGER)
+  payments(id TEXT PRIMARY KEY, booking TEXT, cents INTEGER)
+  events(id TEXT PRIMARY KEY, booking TEXT, description TEXT)
+  allocations(booking TEXT PRIMARY KEY, vehicle TEXT, weight INTEGER)
+All non-key columns are NOT NULL. Amounts and weights are nonnegative.
+"""
+
+--- r4/ledger.py.txt lines 20-20 (context) ---
+import sqlite3
+
+--- r4/ledger.py.txt lines 21-21 (context) ---
+from contextlib import closing
+
+--- r4/ledger.py.txt lines 22-22 (context) ---
+from dataclasses import dataclass
+
+--- r4/ledger.py.txt lines 23-23 (context) ---
+from pathlib import Path
+
+--- r4/ledger.py.txt lines 30-31 (context) ---
+class WriteError(Exception):
+    """The ledger could not save a requested change."""
+
+--- r4/ledger.py.txt lines 34-39 (context) ---
+@dataclass(frozen=True)
+class Booking:
+    booking_id: str
+    customer: str
+    state: str
+    cents: int
+
+--- r4/ledger.py.txt lines 94-95 (context) ---
+@dataclass(frozen=True)
+class Ledger:
+
+--- r4/ledger.py.txt lines 96-96 (context) ---
+    database: Path
+
+--- r4/ledger.py.txt lines 116-135 (target) ---
+    def add_booking(self, booking: Booking) -> None:
+        """Insert a booking; raise WriteError if insert or commit fails.
+
+        Raises:
+            WriteError: The database operation or connection fails.
+        """
+        try:
+            with closing(sqlite3.connect(self.database)) as connection, connection:
+                connection.execute(
+                    "INSERT INTO bookings (id, customer, state, cents) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        booking.booking_id,
+                        booking.customer,
+                        booking.state,
+                        booking.cents,
+                    ),
+                )
+        except sqlite3.Error as exc:
+            raise WriteError("cannot add booking") from exc
