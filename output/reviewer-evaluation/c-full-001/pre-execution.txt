@@ -1,0 +1,7 @@
+Scope: 2,046 new C calls at concurrency 25; 11 blocks of 186 calls.
+Base: 6d06876d1fa74d6db872c79f086fbf70293f93a6; worktree: /private/tmp/ataraxia-reviewer-c-full-terminal; model: gpt-6-luna.
+Each call: min instructions; timeout 300s; cleanup 10s; output cap 1048576 bytes; retry limits 0.
+Order: rep1 none,low,high; rep2 low,medium,high,none; rep3 medium,high,none,low.
+Rep1 medium is reused from /Users/nzs/ataraxia-eval-results/c-medium-c3-001 (completed pilot; counts as repetition 1).
+The schedule has this pilot reuse and ordered execution deviation; it is not a full protocol freeze or budget-compliance claim.
+No quota waiting, probes, skips, retries, refills, or automatic reruns.
