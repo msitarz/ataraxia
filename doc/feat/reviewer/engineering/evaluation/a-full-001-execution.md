@@ -20,9 +20,10 @@ isolation remain unverified.
 The public saved-result validator found eight structurally complete responses,
 three invalid responses, and one incomplete response. The first none and low
 responses included unknown public pairs; the final none response duplicated a
-pair; the final low response omitted public pairs. Those observations remain
-in the fixed schedule; none was replaced. Structural completeness says nothing
-about correctness. Private scoring and quality conclusions remain outstanding.
+pair; the final low response omitted public pairs. Those observations remain in
+the fixed schedule; none was replaced. Structural completeness says nothing
+about correctness. Offline private scoring is reported below; no overall quality
+conclusion follows.
 
 | Repetition | Effort | Public state | Input | Output | Reasoning subset | Seconds |
 | --- | --- | --- | ---: | ---: | ---: | ---: |
@@ -64,3 +65,73 @@ and the twelve actual invocations used `make eval UV_NO_SYNC=true` with the
 preflight arguments. This changes dependency synchronization, not model-visible
 inputs or the requested CLI profile. Public reports were generated from the
 saved runs without reading the private reference. No B or C calls ran.
+
+## Offline private scoring
+
+The existing scorer matched the frozen reference SHA-256
+`ddc084c2f2c168bef1dead140e508953688e3d721b7de56ee4e5aa53644febd8`
+and bound the same source and rule digests across all twelve saved plans.
+The [reference-only freeze](corpus/reference-freeze.md) records independent
+agent review and acceptance before this run; it is not a human review or a
+complete protocol freeze. The scorer conservatively labels the reference draft
+and unreviewed and does not itself verify that freeze. Detailed scoring reports
+remain outside the repository.
+
+Each call has 24 fixed controls: 12 violation and 12 PASS. Entries below are
+counts, not percentages. Accuracy is correct labels out of 24; recall is
+correct violations out of 12; PASS is correct PASS labels out of 12; FP is
+violations reported for PASS controls out of 12. Invalid and incomplete calls
+have zero primary credit, including zero observed FP; that zero is not evidence
+of clean passes. Complete-valid-only measures match the primary values for the
+eight complete calls and are undefined for the four other calls (zero valid
+denominators and 24 excluded opportunities each).
+
+| Slot | State | Correct / 24 | Recall / 12 | PASS / 12 | FP / 12 | Public / 186 | Indexed / 24 | Determinate / 24 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| rep1-none | invalid | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| rep1-low | invalid | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| rep1-medium | complete | 20 | 8 | 12 | 0 | 186 | 24 | 24 |
+| rep1-high | complete | 21 | 9 | 12 | 0 | 186 | 24 | 24 |
+| rep2-low | complete | 18 | 6 | 12 | 0 | 186 | 24 | 24 |
+| rep2-medium | complete | 21 | 9 | 12 | 0 | 186 | 24 | 24 |
+| rep2-high | complete | 22 | 10 | 12 | 0 | 186 | 24 | 24 |
+| rep2-none | complete | 20 | 8 | 12 | 0 | 186 | 24 | 24 |
+| rep3-medium | complete | 20 | 8 | 12 | 0 | 186 | 24 | 24 |
+| rep3-high | complete | 23 | 11 | 12 | 0 | 186 | 24 | 24 |
+| rep3-none | invalid | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| rep3-low | incomplete | 0 | 0 | 0 | 0 | 108 | 16 | 16 |
+
+Per-rule counts below use four violation and four PASS controls for each rule.
+Each cell is correct labels / 8, correct violations / 4, correct PASS / 4,
+and false positives / 4, in that order. The same zero-credit and valid-only
+limits apply to each rule.
+
+| Slot | R1 | R3 | R4 |
+| --- | --- | --- | --- |
+| rep1-none | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| rep1-low | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| rep1-medium | 7 / 3 / 4 / 0 | 8 / 4 / 4 / 0 | 5 / 1 / 4 / 0 |
+| rep1-high | 8 / 4 / 4 / 0 | 8 / 4 / 4 / 0 | 5 / 1 / 4 / 0 |
+| rep2-low | 5 / 1 / 4 / 0 | 8 / 4 / 4 / 0 | 5 / 1 / 4 / 0 |
+| rep2-medium | 5 / 1 / 4 / 0 | 8 / 4 / 4 / 0 | 8 / 4 / 4 / 0 |
+| rep2-high | 8 / 4 / 4 / 0 | 8 / 4 / 4 / 0 | 6 / 2 / 4 / 0 |
+| rep2-none | 7 / 3 / 4 / 0 | 8 / 4 / 4 / 0 | 5 / 1 / 4 / 0 |
+| rep3-medium | 5 / 1 / 4 / 0 | 8 / 4 / 4 / 0 | 7 / 3 / 4 / 0 |
+| rep3-high | 8 / 4 / 4 / 0 | 8 / 4 / 4 / 0 | 7 / 3 / 4 / 0 |
+| rep3-none | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+| rep3-low | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 | 0 / 0 / 0 / 0 |
+
+All indexed records in these results were determinate; UNKNOWN and
+NOT_APPLICABLE counts were zero. The incomplete final low response had 108 of
+186 public records and 16 of 24 indexed records; those partial records did not
+earn primary credit. Invalid responses have zero usable indexed records.
+Unindexed responses were not scored. Repetitions reuse the same authored
+controls and do not add incident diversity.
+
+No effort condition establishes the protocol quality screen: isolation remains
+unverified under the explicit override, and none and low also have incomplete
+coverage. Even with complete medium and high public responses, at least one
+repetition in each falls below the 80% violation-recall threshold. These are
+label-agreement observations, not evidence of sound reasoning, finding
+precision, authenticated isolation, or a strategy winner. No B comparison,
+B execution, or Evaluation acceptance criterion follows from these results.
