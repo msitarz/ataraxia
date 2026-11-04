@@ -3,6 +3,7 @@
 
 from collections import Counter
 from contextlib import ExitStack
+from dataclasses import dataclass
 from hashlib import sha256
 import os
 from pathlib import Path
@@ -102,17 +103,43 @@ class MissingBinding(ValueError):
     """The saved summary does not contain the executable binding."""
 
 
+@dataclass(frozen=True)
+class Inspection:
+    """The validated frozen plan and observations from one inspection."""
+
+    plan: FrozenPlan | None
+    report: Report
+
+
 def inspect_run(run_root: Path) -> Report:
     """Inspect one original run directory without reading its repository root.
 
     Returns:
         Deterministic accounting and retained validation observations.
     """
+    return inspect_evidence(run_root).report
+
+
+def inspect_evidence(run_root: Path) -> Inspection:
+    """Inspect a run and retain the exact validated plan used for its report.
+
+    Returns:
+        The plan, if valid, and its inspection report.
+    """
     root = run_root.resolve(strict=True)
     try:
         plan = _plan(root)
     except (OSError, ValueError, IndexError) as exc:
-        return _report(None, "invalid", f"invalid plan: {exc}", [])
+        return Inspection(None, _report(None, "invalid", f"invalid plan: {exc}", []))
+    return Inspection(plan, _inspect_plan(root, plan))
+
+
+def _inspect_plan(root: Path, plan: FrozenPlan) -> Report:
+    """Inspect saved results against the already validated plan.
+
+    Returns:
+        The retained evidence report.
+    """
     try:
         run: RunRecord = _load(root, Path("run.json"), RunRecord)
     except FileNotFoundError:

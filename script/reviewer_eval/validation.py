@@ -114,6 +114,18 @@ class ValidatedAssessments:
         return not self.missing
 
 
+def function_inventory(source: bytes) -> set[str]:
+    """Derive lexical names and reject ambiguous definitions.
+
+    Returns:
+        Qualified function and method names in the source.
+    """
+    tree = ast.parse(source)
+    visitor = _FunctionInventory()
+    visitor.visit(tree)
+    return visitor.names
+
+
 def validate_assessments(
     raw: bytes, *, allowed_rules: frozenset[str], sources: Mapping[str, bytes]
 ) -> ValidatedAssessments | InvalidResponse:
@@ -126,7 +138,7 @@ def validate_assessments(
         inventory = {
             PublicPair(rule, file, name)
             for file, source in sources.items()
-            for name in _functions(source)
+            for name in function_inventory(source)
             for rule in allowed_rules
         }
     except (SyntaxError, UnicodeDecodeError, ValueError, RecursionError) as exc:
@@ -219,18 +231,6 @@ def _source_problem(
     if quote not in span:
         return "quote does not match original source bytes within the claimed span"
     return None
-
-
-def _functions(source: bytes) -> set[str]:
-    """Derive lexical names and reject ambiguous definitions.
-
-    Returns:
-        Qualified function and method names in the source.
-    """
-    tree = ast.parse(source)
-    visitor = _FunctionInventory()
-    visitor.visit(tree)
-    return visitor.names
 
 
 class _FunctionInventory(ast.NodeVisitor):

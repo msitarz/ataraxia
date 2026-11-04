@@ -207,9 +207,10 @@ async def create_run(
     invocation_cwd: Path | None = None,
     v3: bool = False,
     borrowed: bool = False,
+    frozen_plan: FrozenPlan | None = None,
 ) -> RunRecord:
     """Persist a controlled plan, process and final summary through the real store."""
-    frozen = plan(current=current, unknown=unknown)
+    frozen = frozen_plan or plan(current=current, unknown=unknown)
     if borrowed:
         configuration = frozen.configuration.model_copy(
             update={"working_directory": Path("clone")}
