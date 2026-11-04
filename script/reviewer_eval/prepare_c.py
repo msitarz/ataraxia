@@ -155,6 +155,7 @@ def _select_context(
     target = defs[name]
     selected: dict[tuple[int, int], _Selection] = {}
     flags = ["independent rule-specific context review required"]
+    dependency_roots = list(globals_)
 
     for node in globals_:
         _add(node, "module contract, import, or global declaration", selection=selected)
@@ -178,11 +179,12 @@ def _select_context(
                     _add(item, "enclosing class declaration", selection=selected)
         else:
             _add(parent, "enclosing function and runtime control", selection=selected)
+            dependency_roots.append(parent)
             flags.append(
                 "nested target includes enclosing function; review granularity"
             )
     _add(target, "explicit target", "target", selection=selected)
-    _add_dependencies(target, module_names, selected, globals_)
+    _add_dependencies(target, module_names, selected, dependency_roots)
 
     return selected, flags
 
