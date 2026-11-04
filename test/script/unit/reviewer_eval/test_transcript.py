@@ -326,3 +326,63 @@ def test_malformed_json_after_reconnect_is_rejected() -> None:
     # When / Then
     with pytest.raises(ValueError):
         extract_response(raw)
+
+
+def fallback(
+    message: object = "Falling back from WebSockets to HTTPS transport. offline",
+    ident: object = "fallback",
+) -> dict[str, object]:
+    """Return a synthetic completed transport fallback notice."""
+    return {
+        "type": "item.completed",
+        "item": {"type": "error", "id": ident, "message": message},
+    }
+
+
+def test_reconnects_and_fallback_before_success_are_accepted() -> None:
+    # Given
+    records = [
+        *events()[:2],
+        reconnect(),
+        reconnect("Reconnecting... 5/5 (offline)"),
+        fallback(),
+        *events()[2:],
+    ]
+
+    # When / Then
+    assert extract_response(encoded(records)) == ("thread", b"{}")
+
+
+@pytest.mark.parametrize(
+    "records",
+    [
+        [*events()[:2], fallback()],
+        [*events()[:2], fallback(), {"type": "turn.failed"}],
+        [*events()[:3], fallback(), events()[3]],
+        [*events(), fallback()],
+        [events()[0], fallback(), *events()[1:]],
+        [*events()[:2], fallback("unknown error"), *events()[2:]],
+        [
+            *events()[:2],
+            fallback("Falling back from WebSockets to HTTPS transport. "),
+            *events()[2:],
+        ],
+        [*events()[:2], fallback(ident=""), *events()[2:]],
+        [*events()[:2], fallback(ident=3), *events()[2:]],
+    ],
+    ids=[
+        "incomplete",
+        "failed",
+        "after-answer",
+        "after-completion",
+        "before-turn",
+        "unknown",
+        "empty-diagnostic",
+        "empty-id",
+        "wrong-id-type",
+    ],
+)
+def test_fallback_does_not_relax_validation(records: list[dict[str, object]]) -> None:
+    # Given / When / Then
+    with pytest.raises(ValueError):
+        extract_response(encoded(records))

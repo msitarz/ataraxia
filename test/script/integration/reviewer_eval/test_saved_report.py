@@ -857,8 +857,21 @@ async def test_saved_report_recovers_assessments_after_reconnect(
         "type": "error",
         "message": "Reconnecting... 5/5 (synthetic transport failure)",
     }
+    fallback = {
+        "type": "item.completed",
+        "item": {
+            "type": "error",
+            "id": "synthetic-fallback",
+            "message": "Falling back from WebSockets to HTTPS transport. offline",
+        },
+    }
     path.write_bytes(
-        b"".join([*lines[:2], json.dumps(notice).encode() + b"\n", *lines[2:]])
+        b"".join([
+            *lines[:2],
+            json.dumps(notice).encode() + b"\n",
+            json.dumps(fallback).encode() + b"\n",
+            *lines[2:],
+        ])
     )
     before = snapshot(root)
 

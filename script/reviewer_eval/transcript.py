@@ -58,9 +58,9 @@ def extract_response(raw: bytes) -> tuple[str, bytes]:
 
     Reasoning metadata is accepted only as completed reasoning items with string
     IDs and text. One known disabled-host notice may precede the turn.
-    Recognized transport reconnect notices are accepted before the answer only
-    when the turn eventually succeeds. Other item kinds, including tool
-    activity, are rejected.
+    Recognized transport reconnect and fallback notices are accepted before the
+    answer only when the turn eventually succeeds. Other item kinds, including
+    tool activity, are rejected.
 
     Returns:
         Thread identity and exact response bytes.
@@ -143,6 +143,8 @@ def _startup_notice(item: object) -> None:
 def _item(item: object, response: str | None) -> str | None:
     if not isinstance(item, dict) or not isinstance(item.get("id"), str):
         raise ValueError("invalid completed item")
+    if response is None and _fallback(item):
+        return None
     if not item["id"] or not isinstance(item.get("text"), str):
         raise ValueError("invalid completed item content")
     if item.get("type") == "reasoning" and response is None:
@@ -150,3 +152,21 @@ def _item(item: object, response: str | None) -> str | None:
     if item.get("type") != "agent_message" or response is not None:
         raise ValueError("unsupported or conflicting completed item")
     return item["text"]
+
+
+def _fallback(item: dict[str, object]) -> bool:
+    """Recognize the completed WebSocket-to-HTTPS transport fallback notice.
+
+    Returns:
+        Whether the item has the supported fallback shape.
+    """
+    message = item.get("message")
+    prefix = "Falling back from WebSockets to HTTPS transport. "
+    return (
+        set(item) == {"type", "id", "message"}
+        and item.get("type") == "error"
+        and bool(item["id"])
+        and isinstance(message, str)
+        and message.startswith(prefix)
+        and len(message) > len(prefix)
+    )
