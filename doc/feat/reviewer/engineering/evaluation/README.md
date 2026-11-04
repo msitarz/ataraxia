@@ -210,12 +210,13 @@ and execution require later authorization after A/B comparison and review. Final
 A/B/C and historical requirements above remain unchanged.
 
 Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
-with a separately held draft reference index. Existing
-[draft A/B inputs](inputs/preparation.md) implement the new format and require
-independent review before a newly reviewed freeze and series. The saved-result
-implementation retains historical findings. Owner validation, runtime binding,
-matched input baselines, and retained boundary checks remain outstanding. The
-initial corpus does not complete historical/diversity evidence or support a
-production granularity decision. The accepted CLI limitation does not establish
-boundary verification. All acceptance criteria remain TODO; preparation does not
-authorize trials, additional neutral calls, or production implementation.
+with a separately held [frozen reference index](corpus/reference-freeze.md).
+Existing [draft A/B inputs](inputs/preparation.md) implement the new format and
+require independent review before a newly reviewed freeze and series. The
+saved-result implementation retains historical findings. Further input review,
+runtime binding, matched input baselines, and retained boundary checks remain
+outstanding. The initial corpus does not complete historical/diversity evidence
+or support a production granularity decision. The accepted CLI limitation does
+not establish boundary verification. All acceptance criteria remain TODO;
+preparation does not authorize trials, additional neutral calls, or production
+implementation.

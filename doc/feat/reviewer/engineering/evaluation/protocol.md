@@ -16,13 +16,14 @@ itself adopt a production granularity decision.
 ## Authorization and preparation
 
 The maintainer authorized alignment of the A/B protocol. The prepared draft
-inputs implement the function-assessment contract below but are not frozen for
-a new invocation. No model trials, further neutral calls, freeze, or production
-implementation are
-authorized. Later execution requires independent owner review and authorization
-within the existing Work; these stages are assignments, not new Work children.
-Before any revised comparison runs, require a newly reviewed freeze of the
-amended protocol and aligned inputs.
+inputs implement the function-assessment contract below but are not frozen for a
+new invocation. A [reference-only freeze](corpus/reference-freeze.md) has been
+accepted. No model trials, further neutral calls, complete protocol or input
+freeze, or production implementation are authorized. Later execution requires
+independent owner review and authorization within the existing Work; these
+stages are assignments, not new Work children. Before any revised comparison
+runs, require a newly reviewed freeze of the amended protocol and aligned
+inputs.
 
 The
 [stopped exploratory A series](../../../../../output/reviewer-evaluation/ab-001/a-series-execution.json),
