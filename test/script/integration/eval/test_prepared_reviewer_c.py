@@ -215,7 +215,7 @@ def test_nested_target_and_crlf_preserve_original_context(
         b"import math\r\n"
         b"def helper(x):\r\n    return x + 1\r\n"
         b"class C:\r\n    field: int\r\n"
-        b"    def method(self, value):\r\n"
+        b"    @classmethod\r\n    def method(self, value):\r\n"
         b"        def inner():\r\n            return helper(value)\r\n"
         b"        return inner()\r\n"
         b"    def unrelated(self):\r\n        pass\r\n"
@@ -229,7 +229,7 @@ def test_nested_target_and_crlf_preserve_original_context(
     monkeypatch.setattr(prepare_c, "INPUTS", inputs)
     artifacts = prepare_c.prepare()
     packet = artifacts["c-packets/R1--r1--dispatch.py.txt--C.method.inner.txt"]
-    assert b"def method(self, value):\r\n" in packet
+    assert b"@classmethod\r\n    def method(self, value):\r\n" in packet
     assert b"def inner():\r\n            return helper(value)\r\n" in packet
     assert b"def helper(x):\r\n    return x + 1\r\n" in packet
     assert b"def unrelated" not in packet
