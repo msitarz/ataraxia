@@ -3,6 +3,8 @@
 
 import json
 
+NOTICE_SEEN_PHASE = 4
+
 CODE_MODE_DISABLED_NOTICE = (
     "Code Mode is unavailable because code-mode host is disabled. "
     "Code mode will fail closed; enable `features.code_mode_host` and install "
@@ -91,8 +93,8 @@ def _advance(
         return 1, response, identity
     if kind == "item.completed" and phase == 1:
         _startup_notice(event.get("item"))
-        return 4, response, thread_id
-    if kind == "turn.started" and phase in (1, 4):
+        return NOTICE_SEEN_PHASE, response, thread_id
+    if kind == "turn.started" and phase in (1, NOTICE_SEEN_PHASE):
         return 2, response, thread_id
     if kind == "item.completed" and phase == 2:
         return phase, _item(event.get("item"), response), thread_id

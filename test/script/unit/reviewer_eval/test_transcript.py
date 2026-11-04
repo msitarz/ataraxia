@@ -3,6 +3,7 @@
 
 from collections.abc import Callable
 import json
+import re
 
 import pytest
 
@@ -168,30 +169,50 @@ def test_disabled_host_notice_before_turn_is_accepted() -> None:
 
 
 @pytest.mark.parametrize(
-    "records",
+    ("records", "diagnostic"),
     [
-        [
-            events()[0],
-            {
-                "type": "item.completed",
-                "item": {"type": "error", "id": "x", "message": "other"},
-            },
-            *events()[1:],
-        ],
-        [events()[0], disabled_host_notice(""), *events()[1:]],
-        [*events()[:2], disabled_host_notice(), *events()[2:]],
-        [events()[0], disabled_host_notice(), disabled_host_notice(), *events()[1:]],
-        [events()[0], disabled_host_notice(), {"type": "turn.failed"}],
-        [events()[0], disabled_host_notice()],
+        (
+            [
+                events()[0],
+                {
+                    "type": "item.completed",
+                    "item": {"type": "error", "id": "x", "message": "other"},
+                },
+                *events()[1:],
+            ],
+            "unsupported startup notice",
+        ),
+        (
+            [events()[0], disabled_host_notice(""), *events()[1:]],
+            "unsupported startup notice",
+        ),
+        (
+            [*events()[:2], disabled_host_notice(), *events()[2:]],
+            "invalid completed item content",
+        ),
+        (
+            [
+                events()[0],
+                disabled_host_notice(),
+                disabled_host_notice(),
+                *events()[1:],
+            ],
+            "unexpected JSONL event or lifecycle: item.completed",
+        ),
+        (
+            [events()[0], disabled_host_notice(), {"type": "turn.failed"}],
+            "unexpected JSONL event or lifecycle: turn.failed",
+        ),
+        ([events()[0], disabled_host_notice()], "JSONL turn is incomplete"),
     ],
     ids=["other-error", "invalid-id", "after-turn", "repeated", "failed", "incomplete"],
 )
 def test_unrecognized_notice_lifecycle_is_rejected(
-    records: list[dict[str, object]],
+    records: list[dict[str, object]], diagnostic: str
 ) -> None:
     # Given
     raw = encoded(records)
 
     # When / Then
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=f"^{re.escape(diagnostic)}$"):
         extract_response(raw)
