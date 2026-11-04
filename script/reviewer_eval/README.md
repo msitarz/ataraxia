@@ -1,5 +1,11 @@
 # Saved reviewer results
 
+This command currently implements legacy `findings-v1` inspection. The proposed
+[function-assessment contract](../../doc/feat/reviewer/engineering/evaluation/protocol.md#function-assessment-response-contract)
+requires a separate format selected from frozen prompt provenance and later
+implementation. Existing evidence keeps its original format; structural
+completion does not establish private-control coverage or semantic accuracy.
+
 A report gives each planned call one outcome and disjoint counts, for example:
 
 ```json

@@ -195,11 +195,16 @@ isolation.
 
 ## Additional context
 
-The supporting protocol now prepares a bounded findings-based A/B stage: A
+The supporting protocol proposes a bounded function-classification A/B stage: A
 reviews all three rules and the whole three-file corpus; each independent B call
 reviews one rule and that same whole corpus. All 12 planned A calls are
 completed or accounted for before any of the 36 planned B calls. Targets and
-expected labels remain private. The primary medium comparison reuses its
+expected labels remain private. The proposed response uses exactly rule ID,
+file ID, qualified lexical function name, and one of PASS, VIOLATION, UNKNOWN,
+or NOT_APPLICABLE. Its scores measure classification rather than demonstrated
+reasoning or finding precision. The protocol defines the derived classification
+record bound and proposed metric changes for independent owner review.
+The primary medium comparison reuses its
 observations in a separate none/low/medium/high effort analysis. C preparation
 and execution require later authorization after A/B comparison and review. Final
 A/B/C and historical requirements above remain unchanged.
@@ -207,8 +212,10 @@ A/B/C and historical requirements above remain unchanged.
 Authored source and rule files exist in the [draft corpus](corpus/manifest.md),
 with a separately held draft reference index. Existing
 [draft A/B inputs](inputs/preparation.md) are prepared for independent review
-and a new freeze under `execution-controls-v3`. Owner validation, runtime
-binding, matched input baselines, and retained boundary checks remain
+and alignment with the new format before a newly reviewed freeze and series. The
+existing inputs and saved-result implementation retain the legacy findings
+format until a separately reviewed implementation increment. Owner validation,
+runtime binding, matched input baselines, and retained boundary checks remain
 outstanding. The initial corpus does not complete historical/diversity evidence
 or support a production granularity decision. The accepted CLI limitation does
 not establish boundary verification. All acceptance criteria remain TODO;
