@@ -5,6 +5,8 @@ from hashlib import sha256
 import json
 from pathlib import Path
 
+import pytest
+
 from script.eval.model import (
     DirectoryOption,
     FrozenInputs,
@@ -196,3 +198,43 @@ async def test_saved_reader_uses_frozen_target(tmp_path: Path) -> None:
     assert len(report.calls[0].assessments) == 1
     await create_run(tmp_path / "missing", frozen_plan=plan, response=[])
     assert inspect_run(tmp_path / "missing").calls[0].state == "invalid"
+
+
+def test_nested_target_and_crlf_preserve_original_context(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from script.reviewer_eval import prepare_c
+
+    corpus = tmp_path / "corpus"
+    inputs = tmp_path / "inputs"
+    for folder in ("r1", "r3", "r4"):
+        (corpus / folder).mkdir(parents=True)
+        (corpus / folder / "rule.txt").write_bytes(b"unchanged rule\r\n")
+    source = (
+        b'"""Module contract."""\r\n'
+        b"import math\r\n"
+        b"def helper(x):\r\n    return x + 1\r\n"
+        b"class C:\r\n    field: int\r\n"
+        b"    def method(self, value):\r\n"
+        b"        def inner():\r\n            return helper(value)\r\n"
+        b"        return inner()\r\n"
+        b"    def unrelated(self):\r\n        pass\r\n"
+    )
+    for file_id in prepare_c.FILES:
+        (corpus / file_id).write_bytes(source)
+    shared = inputs / "c-shared/review-instructions-and-schema.txt"
+    shared.parent.mkdir(parents=True)
+    shared.write_bytes(b"schema")
+    monkeypatch.setattr(prepare_c, "CORPUS", corpus)
+    monkeypatch.setattr(prepare_c, "INPUTS", inputs)
+    artifacts = prepare_c.prepare()
+    packet = artifacts["c-packets/R1--r1--dispatch.py.txt--C.method.inner.txt"]
+    assert b"def method(self, value):\r\n" in packet
+    assert b"def inner():\r\n            return helper(value)\r\n" in packet
+    assert b"def helper(x):\r\n    return x + 1\r\n" in packet
+    assert b"def unrelated" not in packet
+    manifest = json.loads(artifacts["c-manifest.json"])
+    entry = next(
+        e for e in manifest["packets"] if e["packet"].endswith("--C.method.inner.txt")
+    )
+    assert any("nested target" in flag for flag in entry["flags"])
