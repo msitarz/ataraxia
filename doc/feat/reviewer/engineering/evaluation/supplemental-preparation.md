@@ -1,7 +1,7 @@
 # Supplemental neutral invocation verification
 
 On 2026-11-04 the maintainer authorized one supplemental neutral attempt at
- each of none, low, medium, and high, at concurrency one, with no retries or
+each of none, low, medium, and high, at concurrency one, with no retries or
 quota probes. This is a new four-attempt preparation allocation; it does not
 reset the historical none 4/4 or total 4/16 accounting. It does not authorize
 corpus trials or a complete input freeze.
@@ -54,20 +54,21 @@ allowed by the [protocol](protocol.md); no tool use was observed.
 Counts are the corresponding `turn.completed` usage fields, and elapsed time
 is supervisor-observed execution through settlement. Complete output is the
 reported output total, without adding the reasoning subset again. No cost,
-server-side model/provider identity, or effective effort was reported. These
+or server-attested model/provider identity or effort was reported. These
 four observations consumed the supplemental allocation in full; the original
 preparation counts remain unchanged. No further call is authorized.
 
-The observed input counts include the neutral prompt and automatic context;
-the two-token difference shows that treating this context as fixed has
-uncertainty. These are candidate per-effort measurements for this exact CLI,
-profile, instruction and prompt, not independently verified, frozen trial
-baselines. The effective provider/model and effort, authenticated runtime tool
-surface, source immutability, and separation from private labels and prior
-answers remain unverified. Static rendering is not authenticated runtime
-proof. A successful greeting establishes acceptance of the requested settings
-for that invocation only. It does not establish the effective settings or
-absolute read isolation.
+The observed input counts include the neutral prompt and automatic context; the
+two-token difference shows that treating this context as fixed has uncertainty.
+These are candidate per-effort measurements for this exact CLI, profile,
+instruction and prompt, not independently verified, frozen trial baselines.
+Server-side binding, the authenticated runtime tool surface, source
+immutability, and separation from private labels and prior answers remain
+unverified. Static rendering is not authenticated runtime proof. A successful
+greeting establishes acceptance of the requested settings for that invocation
+only. It does not by itself establish effective settings or absolute read
+isolation. The local session records described below provide additional binding
+evidence, not server attestation.
 
 The
 [retained evidence](../../../../../output/reviewer-evaluation/invocation-verification-001/)
@@ -85,3 +86,50 @@ mapping; the estimates exclude automatic context and framing.
 Independent review and a complete freeze, matched binding and baseline review,
 and actual boundary verification remain outstanding. This record does not
 complete any Evaluation criterion or authorize a scored trial.
+
+## Local runtime metadata
+
+Each returned thread ID identifies a local Codex session file under the native
+`sessions/2026/11/04` directory. Only those four session files were inspected.
+The retained `session-metadata.json` in each effort directory records the source
+basename, whole-file SHA-256, selected line numbers and line hashes, timestamps,
+and selected nonsecret fields. Line hashes exclude the terminating LF. Account
+identifiers, instructions, unrelated content, and absolute private paths are
+not retained. The source files remain untouched.
+
+For each session the local `session_meta` reports provider `openai`, CLI
+version `0.166.0`, and source `exec`. The `turn_context` reports model
+`gpt-6-luna`, the corresponding requested effort, approval `never`, and a
+read-only sandbox. Both recorded working directories equal that attempt's
+owned external working directory. The local token-count records match the raw
+JSONL usage above and report that output includes reasoning. These records
+establish what the local runtime recorded for these sessions; they are not
+server attestation of model, provider, effort, or resource isolation.
+
+The original harness outputs remain untouched in a temporary staging directory
+on the execution host. They are not a durable repository artifact and may be
+removed by normal temporary-file cleanup; retained sanitized records and raw
+streams are the durable review evidence. The original and retained digest
+manifest permits comparison while the originals remain available.
+
+## Invocation and chronology
+
+From the clean committed checkout, the four actual invocations used the same
+command below, with `EFFORT` and `OUTPUT` replaced by the corresponding values
+in the table. The temporary output parent was created before execution. This
+is a record of the completed calls, not permission to rerun them.
+
+```sh
+make eval CLI_ARGS='-d doc/feat/reviewer/engineering/evaluation/preparation/neutral -i doc/feat/reviewer/engineering/evaluation/preparation/min.md -m gpt-6-luna -e EFFORT -c 1 --timeout-seconds 300 --cleanup-timeout-seconds 10 --output-limit-bytes 1048576 --retry-limit 0 --capacity-retry-limit 0 -o OUTPUT'
+```
+
+| Effort | Output directory name | Start UTC | End UTC |
+| --- | --- | --- | --- |
+| none | `none` | 08:27:40.072881 | 08:27:44.774811 |
+| low | `low` | 08:27:57.634285 | 08:28:00.762540 |
+| medium | `medium` | 08:28:12.837162 | 08:28:16.451406 |
+| high | `high` | 08:28:28.767314 | 08:28:32.219859 |
+
+The paths in the retained records use `<run-output>` for each original output
+directory, `<repository>` for the checkout, and `<owned-empty-workspace>` for
+its invocation cwd. Times are supervisor timestamps on 2026-11-04.

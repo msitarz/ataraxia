@@ -1,0 +1,67 @@
+{
+  "source": "Codex CLI local session JSONL",
+  "source_basename": "rollout-2026-11-04T09-27-57-01a1a5ac-0a81-7c32-8a5a-e5a7029cf780.jsonl",
+  "source_sha256": "6c5fa964901b51f9a3a925699d7d4635187609f5c337fca2f79f2898e31d793a",
+  "thread_id": "01a1a5ac-0a81-7c32-8a5a-e5a7029cf780",
+  "extraction": "Selected nonsecret fields only; cwd retained as equality to attempt record. Line hashes exclude LF. Source includes unretained content.",
+  "records": [
+    {
+      "line": 1,
+      "line_sha256": "85fbaf70c65e26f26516e147ace4e09b18e562c8704c560f702e59a7fdfc181b",
+      "record_type": "session_meta",
+      "timestamp": "2026-11-04T08:27:58.694Z",
+      "fields": {
+        "id": "01a1a5ac-0a81-7c32-8a5a-e5a7029cf780",
+        "timestamp": "2026-11-04T08:27:57.959Z",
+        "source": "exec",
+        "originator": "Codex Desktop",
+        "cli_version": "0.166.0",
+        "model_provider": "openai",
+        "cwd_matches_attempt": true
+      }
+    },
+    {
+      "line": 8,
+      "line_sha256": "1efa0d96b5e9c033847e3ecf6dc7ca64bf47792548d5e91863082cd6c43bcca0",
+      "record_type": "turn_context",
+      "timestamp": "2026-11-04T08:27:59.484Z",
+      "fields": {
+        "model": "gpt-6-luna",
+        "effort": "low",
+        "approval_policy": "never",
+        "sandbox_policy": {
+          "type": "read-only"
+        },
+        "cwd_matches_attempt": true
+      }
+    },
+    {
+      "line": 15,
+      "line_sha256": "91d1db6560aa825fbfaf463d566c37bafb0ca9ad5b914eca1fd931de41d69ac3",
+      "record_type": "event_msg",
+      "timestamp": "2026-11-04T08:28:00.395Z",
+      "fields": {
+        "token_count": {
+          "total_token_usage": {
+            "input_tokens": 3568,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 3573
+          },
+          "last_token_usage": {
+            "input_tokens": 3568,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 3573
+          },
+          "last_usage_includes_reasoning": true,
+          "model_context_window": 258400
+        }
+      }
+    }
+  ]
+}
