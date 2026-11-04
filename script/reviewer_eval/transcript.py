@@ -2,6 +2,7 @@
 """Conservative extraction from one completed Codex JSONL turn."""
 
 import json
+import re
 
 NOTICE_SEEN_PHASE = 4
 
@@ -56,8 +57,10 @@ def extract_response(raw: bytes) -> tuple[str, bytes]:
     """Extract exactly one agent message from a single successful turn.
 
     Reasoning metadata is accepted only as completed reasoning items with string
-    IDs and text. One known disabled-host notice may precede the turn. Other
-    item kinds, including tool activity, are rejected.
+    IDs and text. One known disabled-host notice may precede the turn.
+    Recognized transport reconnect and fallback notices are accepted before the
+    answer only when the turn eventually succeeds. Other item kinds, including
+    tool activity, are rejected.
 
     Returns:
         Thread identity and exact response bytes.
@@ -96,11 +99,28 @@ def _advance(
         return NOTICE_SEEN_PHASE, response, thread_id
     if kind == "turn.started" and phase in (1, NOTICE_SEEN_PHASE):
         return 2, response, thread_id
+    if kind == "error" and phase == 2 and response is None and _reconnect(event):
+        return phase, response, thread_id
     if kind == "item.completed" and phase == 2:
         return phase, _item(event.get("item"), response), thread_id
     if kind == "turn.completed" and phase == 2 and response is not None:
         return 3, response, thread_id
     raise ValueError(f"unexpected JSONL event or lifecycle: {kind}")
+
+
+def _reconnect(event: dict[str, object]) -> bool:
+    """Recognize a bounded reconnect counter with a transport diagnostic.
+
+    Returns:
+        Whether the event has the supported reconnect shape.
+    """
+    message = event.get("message")
+    if set(event) != {"type", "message"} or not isinstance(message, str):
+        return False
+    match = re.fullmatch(
+        r"Reconnecting\.\.\. ([1-9][0-9]{0,2})/([1-9][0-9]{0,2}) \((.+)\)", message
+    )
+    return match is not None and int(match[1]) <= int(match[2])
 
 
 def _startup_notice(item: object) -> None:
@@ -123,6 +143,8 @@ def _startup_notice(item: object) -> None:
 def _item(item: object, response: str | None) -> str | None:
     if not isinstance(item, dict) or not isinstance(item.get("id"), str):
         raise ValueError("invalid completed item")
+    if response is None and _fallback(item):
+        return None
     if not item["id"] or not isinstance(item.get("text"), str):
         raise ValueError("invalid completed item content")
     if item.get("type") == "reasoning" and response is None:
@@ -130,3 +152,21 @@ def _item(item: object, response: str | None) -> str | None:
     if item.get("type") != "agent_message" or response is not None:
         raise ValueError("unsupported or conflicting completed item")
     return item["text"]
+
+
+def _fallback(item: dict[str, object]) -> bool:
+    """Recognize the completed WebSocket-to-HTTPS transport fallback notice.
+
+    Returns:
+        Whether the item has the supported fallback shape.
+    """
+    message = item.get("message")
+    prefix = "Falling back from WebSockets to HTTPS transport. "
+    return (
+        set(item) == {"type", "id", "message"}
+        and item.get("type") == "error"
+        and bool(item["id"])
+        and isinstance(message, str)
+        and message.startswith(prefix)
+        and len(message) > len(prefix)
+    )
