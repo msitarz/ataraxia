@@ -1,0 +1,5 @@
+The user explicitly authorized the prepared shared instructions, selected B rule,
+authored freight-code corpus, and minimal instructions to OpenAI via the
+installed Codex gpt-6-luna for the remaining 35 attempts, excluding the private
+index and prior answers, with no retry of the first failed slot.
+User response: "Authorize this payload to OpenAI for the remaining35 attempts"
