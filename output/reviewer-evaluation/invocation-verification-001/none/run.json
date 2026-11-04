@@ -1,0 +1,193 @@
+{
+  "run_id": "538cb4ca-e83b-4f54-9a32-992607fa9d82",
+  "repository_root": "<repository>",
+  "head_commit": "8c3c93363237b0cbc899315c4b34b933bf875975",
+  "state": "complete",
+  "runner_version": "0.1.0",
+  "codex_path": "/usr/local/Caskroom/codex/0.166.0/bin/codex",
+  "cli_version": "codex-cli 0.166.0",
+  "effective_settings": [
+    [
+      "invocation_profile",
+      "execution-controls-v3"
+    ],
+    [
+      "invocation_profile_sha256",
+      "cddce8e6396d9452f9908872f94c7e95edee12ef95ccb458df31e40dc9c6b7cd"
+    ],
+    [
+      "requested_tool_profile",
+      "local-tools-disabled-v1"
+    ],
+    [
+      "requested_workspace_identity",
+      "owned-empty-per-run-v1"
+    ],
+    [
+      "requested_launch_cwd",
+      null
+    ],
+    [
+      "requested_workspace_path",
+      null
+    ],
+    [
+      "requested_approval_policy",
+      "never"
+    ],
+    [
+      "requested_ignore_user_config",
+      true
+    ],
+    [
+      "requested_sandbox_mode",
+      "read-only"
+    ],
+    [
+      "effective_approval_policy",
+      null
+    ],
+    [
+      "effective_model_reasoning_effort",
+      null
+    ],
+    [
+      "effective_sandbox_mode",
+      null
+    ],
+    [
+      "effective_tool_controls",
+      null
+    ],
+    [
+      "automatic_system_instructions",
+      null
+    ]
+  ],
+  "calls": [
+    {
+      "run_id": "538cb4ca-e83b-4f54-9a32-992607fa9d82",
+      "call_id": "b849587280ecdeefc148ee5f029e7275205983b37df23cfb037949ab52a1fd26",
+      "position": 0,
+      "state": "complete",
+      "source_paths": [
+        "doc/feat/reviewer/engineering/evaluation/preparation/neutral/neutral-prompt.txt"
+      ],
+      "source_sha256": [
+        "d85762a537347daee213713bf21413e53fd0d0f5054793a41b0d113087438f7c"
+      ],
+      "boundary_bytes_hex": [],
+      "prompt_sha256": "d85762a537347daee213713bf21413e53fd0d0f5054793a41b0d113087438f7c",
+      "model": "gpt-6-luna",
+      "effort": "none",
+      "effective_settings_sha256": "4b4e85692589746cd6347d25d18d3ca5f15e49e2bd298d49ddeeb01b32420286",
+      "attempts": [
+        {
+          "control_flow": "returned",
+          "outcome_kind": "completed",
+          "started_at_utc": "2026-11-04T08:27:40.072881Z",
+          "ended_at_utc": "2026-11-04T08:27:44.774811Z",
+          "argv": [
+            "/usr/local/Caskroom/codex/0.166.0/bin/codex",
+            "exec",
+            "--ignore-user-config",
+            "--json",
+            "--color",
+            "never",
+            "--model=gpt-6-luna",
+            "-c",
+            "model_reasoning_effort=\"none\"",
+            "--sandbox",
+            "read-only",
+            "-c",
+            "approval_policy=\"never\"",
+            "-c",
+            "model_instructions_file=\"<run-output>/instructions.bin\"",
+            "--skip-git-repo-check",
+            "-c",
+            "agents.enabled=false",
+            "-c",
+            "skills.bundled.enabled=false",
+            "-c",
+            "memories.use_memories=false",
+            "-c",
+            "web_search=\"disabled\"",
+            "-c",
+            "tools.experimental_request_user_input.enabled=false",
+            "--disable",
+            "plugins",
+            "--disable",
+            "apps",
+            "--disable",
+            "shell_tool",
+            "--disable",
+            "multi_agent",
+            "--disable",
+            "browser_use",
+            "--disable",
+            "browser_use_external",
+            "--disable",
+            "in_app_browser",
+            "--disable",
+            "computer_use",
+            "--disable",
+            "image_generation",
+            "--disable",
+            "view_image",
+            "--disable",
+            "sleep_tool",
+            "--disable",
+            "code_mode",
+            "--disable",
+            "code_mode_host",
+            "--disable",
+            "artifact",
+            "--disable",
+            "hooks",
+            "--disable",
+            "skill_search",
+            "--",
+            "Return exactly this single word: READY\n"
+          ],
+          "cwd": "<owned-empty-workspace>",
+          "timeout_seconds": 300.0,
+          "cleanup_timeout_seconds": 10.0,
+          "grace_seconds": 0.0,
+          "output_limit_bytes": 1048576,
+          "elapsed_seconds": 4.701712378766388,
+          "elapsed_basis": "supervisor_observation",
+          "exit_status": 0,
+          "termination_reason": "exited",
+          "cleanup": {
+            "process": "owned",
+            "signals": [
+              {
+                "signal": "SIGKILL",
+                "outcome": "no_target",
+                "diagnostic": null
+              }
+            ],
+            "direct_wait": "reaped",
+            "wait_diagnostic": null
+          },
+          "stdout_artifact": "<run-output>/attempts/position-0/439cf89fe788ab91ba4cf99acb8fef311b391154612190be6221f8f7ae810881/attempt-1.stdout",
+          "stderr_artifact": "<run-output>/attempts/position-0/439cf89fe788ab91ba4cf99acb8fef311b391154612190be6221f8f7ae810881/attempt-1.stderr",
+          "usage_telemetry": "eyJ0eXBlIjoidGhyZWFkLnN0YXJ0ZWQiLCJ0aHJlYWRfaWQiOiIwMWExYTVhYi1jNjhmLTc3ZDMtYTBhYS0xOGRjYzJlNDA5MjYifQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzAiLCJ0eXBlIjoiZXJyb3IiLCJtZXNzYWdlIjoiQ29kZSBNb2RlIGlzIHVuYXZhaWxhYmxlIGJlY2F1c2UgY29kZS1tb2RlIGhvc3QgaXMgZGlzYWJsZWQuIENvZGUgbW9kZSB3aWxsIGZhaWwgY2xvc2VkOyBlbmFibGUgYGZlYXR1cmVzLmNvZGVfbW9kZV9ob3N0YCBhbmQgaW5zdGFsbCBgY29kZXgtY29kZS1tb2RlLWhvc3RgLiJ9fQp7InR5cGUiOiJ0dXJuLnN0YXJ0ZWQifQp7InR5cGUiOiJpdGVtLmNvbXBsZXRlZCIsIml0ZW0iOnsiaWQiOiJpdGVtXzEiLCJ0eXBlIjoiYWdlbnRfbWVzc2FnZSIsInRleHQiOiJSRUFEWSJ9fQp7InR5cGUiOiJ0dXJuLmNvbXBsZXRlZCIsInVzYWdlIjp7ImlucHV0X3Rva2VucyI6MzU3MCwiY2FjaGVkX2lucHV0X3Rva2VucyI6MCwiY2FjaGVfd3JpdGVfaW5wdXRfdG9rZW5zIjowLCJvdXRwdXRfdG9rZW5zIjo1LCJyZWFzb25pbmdfb3V0cHV0X3Rva2VucyI6MH19Cg==",
+          "error_type": null,
+          "diagnostic": null,
+          "run_id": "538cb4ca-e83b-4f54-9a32-992607fa9d82",
+          "call_id": "b849587280ecdeefc148ee5f029e7275205983b37df23cfb037949ab52a1fd26",
+          "position": 0,
+          "attempt_number": 1,
+          "retry_assessment": {
+            "retry_class": "unknown",
+            "classification_basis": null,
+            "no_result_basis": "present_or_unknown",
+            "diagnostic": "Codex outcome has no verified structured classification signal"
+          }
+        }
+      ]
+    }
+  ],
+  "waits": []
+}

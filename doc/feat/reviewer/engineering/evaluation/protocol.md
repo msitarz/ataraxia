@@ -18,8 +18,10 @@ itself adopt a production granularity decision.
 The maintainer authorized alignment of the A/B protocol. The prepared draft
 inputs implement the function-assessment contract below but are not frozen for a
 new invocation. A [reference-only freeze](corpus/reference-freeze.md) has been
-accepted. No model trials, further neutral calls, complete protocol or input
-freeze, or production implementation are authorized. Later execution requires
+accepted. The maintainer subsequently authorized four supplemental neutral
+attempts, recorded in [supplemental preparation](supplemental-preparation.md).
+No model trials, further neutral calls, complete protocol or input freeze, or
+production implementation are authorized. Later execution requires
 independent owner review and authorization within the existing Work; these
 stages are assignments, not new Work children. Before any revised comparison
 runs, require a newly reviewed freeze of the amended protocol and aligned
@@ -514,8 +516,11 @@ This amendment grants no new preparation allowance or calls.
 | Assessment records | At most 4,464 selected-attempt records for the fixed matrix, derived from the complete public pair inventory; one record per key per planned call |
 
 The optional retry ceiling does not enlarge time, token, evidence, or human
-budgets or authorize calls. Neutral preparation remains exhausted at 4/4 none
-attempts and 4/16 total used; no preparation retry or new call is authorized.
+budgets or authorize calls. The original neutral preparation allowance remains
+accounted for at 4/4 none attempts and 4/16 total used. The separately
+authorized four supplemental attempts are recorded in
+[supplemental preparation](supplemental-preparation.md); no preparation retry or
+additional call is authorized.
 
 At the per-attempt time bound, 48 planned trials use about 4.1 serial
 process-hours; 192 trial attempts would use about 16.5 hours. The unchanged

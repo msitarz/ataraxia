@@ -1,11 +1,12 @@
 # Bounded CLI preparation
 
-This record covers bounded preparation for the
-[comparison protocol](protocol.md). It does not change the Evaluation's
-acceptance criteria or authorize fixtures, corpus trials, or production
-reviewer delivery. The maintainer confirms that `gpt-6-luna` supports `none`.
-Four authorized neutral CLI invocations were made. The first two were refused
-because the external working directory was not trusted. The third failed
+This record covers the original bounded preparation for the
+[comparison protocol](protocol.md). Later authorized attempts are recorded in
+[supplemental preparation](supplemental-preparation.md). It does not change the
+Evaluation's acceptance criteria or authorize fixtures, corpus trials, or
+production reviewer delivery. The maintainer confirms that `gpt-6-luna` supports
+`none`. Four authorized neutral CLI invocations were made. The first two were
+refused because the external working directory was not trusted. The third failed
 during local app-server initialization with `Operation not permitted`, before
 model dispatch. The fourth returned the requested neutral greeting under
 `gpt-6-luna` with reasoning effort `none`, confirming acceptance for that
