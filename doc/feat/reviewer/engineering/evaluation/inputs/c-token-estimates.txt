@@ -1,0 +1,576 @@
+uv run python -m script.eval '-d' 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared' '-d' 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets' '-i' 'doc/feat/reviewer/engineering/evaluation/preparation/min.md' '-m' 'gpt-6-luna' '-e' 'medium' '-c' '1' '-n'
+Dry run: 186 calls; no Codex calls or output directory
+Inputs (in composition order):
+  'doc/feat/reviewer/engineering/evaluation/inputs/c-shared': 1 selected files
+  separator: '\n\n'
+  'doc/feat/reviewer/engineering/evaluation/inputs/c-packets': 186 selected files
+Working directory: future owned empty directory per run
+Sandbox: read-only; tools enabled: False
+Models: gpt-6-luna
+Efforts: medium
+Instructions file: 'doc/feat/reviewer/engineering/evaluation/preparation/min.md' (estimated separately)
+Calls (zero-based position; supplied-context tokens):
+  0: model=gpt-6-luna effort=medium context tokens=1574; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--booking_record.txt'
+  1: model=gpt-6-luna effort=medium context tokens=1549; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--claim_record.txt'
+  2: model=gpt-6-luna effort=medium context tokens=1571; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--consignment_record.txt'
+  3: model=gpt-6-luna effort=medium context tokens=1042; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--customer_can_view.txt'
+  4: model=gpt-6-luna effort=medium context tokens=1551; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--delivery_record.txt'
+  5: model=gpt-6-luna effort=medium context tokens=949; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--fields.txt'
+  6: model=gpt-6-luna effort=medium context tokens=946; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--integer.txt'
+  7: model=gpt-6-luna effort=medium context tokens=942; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--invoice_balance.txt'
+  8: model=gpt-6-luna effort=medium context tokens=1540; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--invoice_record.txt'
+  9: model=gpt-6-luna effort=medium context tokens=1554; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--quote_record.txt'
+  10: model=gpt-6-luna effort=medium context tokens=927; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--required.txt'
+  11: model=gpt-6-luna effort=medium context tokens=1543; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--route_record.txt'
+  12: model=gpt-6-luna effort=medium context tokens=935; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--text.txt'
+  13: model=gpt-6-luna effort=medium context tokens=1706; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r1--dispatch.py.txt--vehicle_record.txt'
+  14: model=gpt-6-luna effort=medium context tokens=992; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--allocate.txt'
+  15: model=gpt-6-luna effort=medium context tokens=1439; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--assignment.txt'
+  16: model=gpt-6-luna effort=medium context tokens=925; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--available_window.txt'
+  17: model=gpt-6-luna effort=medium context tokens=937; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--busiest_vehicle.txt'
+  18: model=gpt-6-luna effort=medium context tokens=926; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--carrier_costs.txt'
+  19: model=gpt-6-luna effort=medium context tokens=1093; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--choose_vehicle.txt'
+  20: model=gpt-6-luna effort=medium context tokens=989; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--compatible.txt'
+  21: model=gpt-6-luna effort=medium context tokens=946; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--load_sequence.txt'
+  22: model=gpt-6-luna effort=medium context tokens=929; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--next_stops.txt'
+  23: model=gpt-6-luna effort=medium context tokens=904; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--offers_within_budget.txt'
+  24: model=gpt-6-luna effort=medium context tokens=1009; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--order_distance.txt'
+  25: model=gpt-6-luna effort=medium context tokens=914; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--overdue_orders.txt'
+  26: model=gpt-6-luna effort=medium context tokens=937; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--preferred_carrier.txt'
+  27: model=gpt-6-luna effort=medium context tokens=911; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--priority_count.txt'
+  28: model=gpt-6-luna effort=medium context tokens=915; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--quote_ceiling.txt'
+  29: model=gpt-6-luna effort=medium context tokens=971; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--remaining_capacity.txt'
+  30: model=gpt-6-luna effort=medium context tokens=1098; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--reschedule.txt'
+  31: model=gpt-6-luna effort=medium context tokens=1114; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--route_estimate.txt'
+  32: model=gpt-6-luna effort=medium context tokens=920; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--route_totals.txt'
+  33: model=gpt-6-luna effort=medium context tokens=886; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--schedule_cost.txt'
+  34: model=gpt-6-luna effort=medium context tokens=1046; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--select_offer.txt'
+  35: model=gpt-6-luna effort=medium context tokens=1001; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r3--planning.py.txt--urgency.txt'
+  36: model=gpt-6-luna effort=medium context tokens=1191; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.add_booking.txt'
+  37: model=gpt-6-luna effort=medium context tokens=1172; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.add_event.txt'
+  38: model=gpt-6-luna effort=medium context tokens=1173; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.add_payment.txt'
+  39: model=gpt-6-luna effort=medium context tokens=1415; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.allocate.txt'
+  40: model=gpt-6-luna effort=medium context tokens=1233; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.allocation.txt'
+  41: model=gpt-6-luna effort=medium context tokens=1136; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.allocation_weight.txt'
+  42: model=gpt-6-luna effort=medium context tokens=1243; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.booking.txt'
+  43: model=gpt-6-luna effort=medium context tokens=1124; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.booking_count.txt'
+  44: model=gpt-6-luna effort=medium context tokens=1178; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.customer_balance.txt'
+  45: model=gpt-6-luna effort=medium context tokens=1248; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.customer_bookings.txt'
+  46: model=gpt-6-luna effort=medium context tokens=1233; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.events.txt'
+  47: model=gpt-6-luna effort=medium context tokens=1227; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.payment.txt'
+  48: model=gpt-6-luna effort=medium context tokens=1235; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.payment_history.txt'
+  49: model=gpt-6-luna effort=medium context tokens=1137; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.payment_total.txt'
+  50: model=gpt-6-luna effort=medium context tokens=1132; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.remove_allocation.txt'
+  51: model=gpt-6-luna effort=medium context tokens=1126; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.remove_event.txt'
+  52: model=gpt-6-luna effort=medium context tokens=1130; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.remove_payment.txt'
+  53: model=gpt-6-luna effort=medium context tokens=1134; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.rename_customer.txt'
+  54: model=gpt-6-luna effort=medium context tokens=1097; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.set_state.txt'
+  55: model=gpt-6-luna effort=medium context tokens=1291; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.unpaid_bookings.txt'
+  56: model=gpt-6-luna effort=medium context tokens=1237; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--Ledger.vehicle_allocations.txt'
+  57: model=gpt-6-luna effort=medium context tokens=1007; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--allocation_from_row.txt'
+  58: model=gpt-6-luna effort=medium context tokens=1017; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--booking_from_row.txt'
+  59: model=gpt-6-luna effort=medium context tokens=1007; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--event_from_row.txt'
+  60: model=gpt-6-luna effort=medium context tokens=1007; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--payment_from_row.txt'
+  61: model=gpt-6-luna effort=medium context tokens=1110; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R1--r4--ledger.py.txt--save_event.txt'
+  62: model=gpt-6-luna effort=medium context tokens=2208; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--booking_record.txt'
+  63: model=gpt-6-luna effort=medium context tokens=2183; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--claim_record.txt'
+  64: model=gpt-6-luna effort=medium context tokens=2205; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--consignment_record.txt'
+  65: model=gpt-6-luna effort=medium context tokens=1676; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--customer_can_view.txt'
+  66: model=gpt-6-luna effort=medium context tokens=2185; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--delivery_record.txt'
+  67: model=gpt-6-luna effort=medium context tokens=1583; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--fields.txt'
+  68: model=gpt-6-luna effort=medium context tokens=1580; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--integer.txt'
+  69: model=gpt-6-luna effort=medium context tokens=1576; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--invoice_balance.txt'
+  70: model=gpt-6-luna effort=medium context tokens=2174; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--invoice_record.txt'
+  71: model=gpt-6-luna effort=medium context tokens=2188; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--quote_record.txt'
+  72: model=gpt-6-luna effort=medium context tokens=1561; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--required.txt'
+  73: model=gpt-6-luna effort=medium context tokens=2177; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--route_record.txt'
+  74: model=gpt-6-luna effort=medium context tokens=1569; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--text.txt'
+  75: model=gpt-6-luna effort=medium context tokens=2340; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r1--dispatch.py.txt--vehicle_record.txt'
+  76: model=gpt-6-luna effort=medium context tokens=1626; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--allocate.txt'
+  77: model=gpt-6-luna effort=medium context tokens=2073; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--assignment.txt'
+  78: model=gpt-6-luna effort=medium context tokens=1559; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--available_window.txt'
+  79: model=gpt-6-luna effort=medium context tokens=1571; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--busiest_vehicle.txt'
+  80: model=gpt-6-luna effort=medium context tokens=1560; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--carrier_costs.txt'
+  81: model=gpt-6-luna effort=medium context tokens=1727; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--choose_vehicle.txt'
+  82: model=gpt-6-luna effort=medium context tokens=1623; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--compatible.txt'
+  83: model=gpt-6-luna effort=medium context tokens=1580; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--load_sequence.txt'
+  84: model=gpt-6-luna effort=medium context tokens=1563; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--next_stops.txt'
+  85: model=gpt-6-luna effort=medium context tokens=1538; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--offers_within_budget.txt'
+  86: model=gpt-6-luna effort=medium context tokens=1643; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--order_distance.txt'
+  87: model=gpt-6-luna effort=medium context tokens=1548; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--overdue_orders.txt'
+  88: model=gpt-6-luna effort=medium context tokens=1571; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--preferred_carrier.txt'
+  89: model=gpt-6-luna effort=medium context tokens=1545; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--priority_count.txt'
+  90: model=gpt-6-luna effort=medium context tokens=1549; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--quote_ceiling.txt'
+  91: model=gpt-6-luna effort=medium context tokens=1605; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--remaining_capacity.txt'
+  92: model=gpt-6-luna effort=medium context tokens=1732; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--reschedule.txt'
+  93: model=gpt-6-luna effort=medium context tokens=1748; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--route_estimate.txt'
+  94: model=gpt-6-luna effort=medium context tokens=1554; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--route_totals.txt'
+  95: model=gpt-6-luna effort=medium context tokens=1520; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--schedule_cost.txt'
+  96: model=gpt-6-luna effort=medium context tokens=1680; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--select_offer.txt'
+  97: model=gpt-6-luna effort=medium context tokens=1635; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r3--planning.py.txt--urgency.txt'
+  98: model=gpt-6-luna effort=medium context tokens=1825; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.add_booking.txt'
+  99: model=gpt-6-luna effort=medium context tokens=1806; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.add_event.txt'
+  100: model=gpt-6-luna effort=medium context tokens=1807; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.add_payment.txt'
+  101: model=gpt-6-luna effort=medium context tokens=2049; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.allocate.txt'
+  102: model=gpt-6-luna effort=medium context tokens=1867; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.allocation.txt'
+  103: model=gpt-6-luna effort=medium context tokens=1770; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.allocation_weight.txt'
+  104: model=gpt-6-luna effort=medium context tokens=1877; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.booking.txt'
+  105: model=gpt-6-luna effort=medium context tokens=1758; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.booking_count.txt'
+  106: model=gpt-6-luna effort=medium context tokens=1812; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.customer_balance.txt'
+  107: model=gpt-6-luna effort=medium context tokens=1882; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.customer_bookings.txt'
+  108: model=gpt-6-luna effort=medium context tokens=1867; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.events.txt'
+  109: model=gpt-6-luna effort=medium context tokens=1861; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.payment.txt'
+  110: model=gpt-6-luna effort=medium context tokens=1869; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.payment_history.txt'
+  111: model=gpt-6-luna effort=medium context tokens=1771; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.payment_total.txt'
+  112: model=gpt-6-luna effort=medium context tokens=1766; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.remove_allocation.txt'
+  113: model=gpt-6-luna effort=medium context tokens=1760; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.remove_event.txt'
+  114: model=gpt-6-luna effort=medium context tokens=1764; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.remove_payment.txt'
+  115: model=gpt-6-luna effort=medium context tokens=1768; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.rename_customer.txt'
+  116: model=gpt-6-luna effort=medium context tokens=1731; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.set_state.txt'
+  117: model=gpt-6-luna effort=medium context tokens=1925; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.unpaid_bookings.txt'
+  118: model=gpt-6-luna effort=medium context tokens=1871; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--Ledger.vehicle_allocations.txt'
+  119: model=gpt-6-luna effort=medium context tokens=1641; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--allocation_from_row.txt'
+  120: model=gpt-6-luna effort=medium context tokens=1651; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--booking_from_row.txt'
+  121: model=gpt-6-luna effort=medium context tokens=1641; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--event_from_row.txt'
+  122: model=gpt-6-luna effort=medium context tokens=1641; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--payment_from_row.txt'
+  123: model=gpt-6-luna effort=medium context tokens=1744; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R3--r4--ledger.py.txt--save_event.txt'
+  124: model=gpt-6-luna effort=medium context tokens=2254; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--booking_record.txt'
+  125: model=gpt-6-luna effort=medium context tokens=2229; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--claim_record.txt'
+  126: model=gpt-6-luna effort=medium context tokens=2251; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--consignment_record.txt'
+  127: model=gpt-6-luna effort=medium context tokens=1722; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--customer_can_view.txt'
+  128: model=gpt-6-luna effort=medium context tokens=2231; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--delivery_record.txt'
+  129: model=gpt-6-luna effort=medium context tokens=1629; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--fields.txt'
+  130: model=gpt-6-luna effort=medium context tokens=1626; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--integer.txt'
+  131: model=gpt-6-luna effort=medium context tokens=1622; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--invoice_balance.txt'
+  132: model=gpt-6-luna effort=medium context tokens=2220; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--invoice_record.txt'
+  133: model=gpt-6-luna effort=medium context tokens=2234; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--quote_record.txt'
+  134: model=gpt-6-luna effort=medium context tokens=1607; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--required.txt'
+  135: model=gpt-6-luna effort=medium context tokens=2223; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--route_record.txt'
+  136: model=gpt-6-luna effort=medium context tokens=1615; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--text.txt'
+  137: model=gpt-6-luna effort=medium context tokens=2386; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r1--dispatch.py.txt--vehicle_record.txt'
+  138: model=gpt-6-luna effort=medium context tokens=1672; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--allocate.txt'
+  139: model=gpt-6-luna effort=medium context tokens=2119; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--assignment.txt'
+  140: model=gpt-6-luna effort=medium context tokens=1605; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--available_window.txt'
+  141: model=gpt-6-luna effort=medium context tokens=1617; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--busiest_vehicle.txt'
+  142: model=gpt-6-luna effort=medium context tokens=1606; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--carrier_costs.txt'
+  143: model=gpt-6-luna effort=medium context tokens=1773; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--choose_vehicle.txt'
+  144: model=gpt-6-luna effort=medium context tokens=1669; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--compatible.txt'
+  145: model=gpt-6-luna effort=medium context tokens=1626; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--load_sequence.txt'
+  146: model=gpt-6-luna effort=medium context tokens=1609; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--next_stops.txt'
+  147: model=gpt-6-luna effort=medium context tokens=1584; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--offers_within_budget.txt'
+  148: model=gpt-6-luna effort=medium context tokens=1689; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--order_distance.txt'
+  149: model=gpt-6-luna effort=medium context tokens=1594; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--overdue_orders.txt'
+  150: model=gpt-6-luna effort=medium context tokens=1617; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--preferred_carrier.txt'
+  151: model=gpt-6-luna effort=medium context tokens=1591; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--priority_count.txt'
+  152: model=gpt-6-luna effort=medium context tokens=1595; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--quote_ceiling.txt'
+  153: model=gpt-6-luna effort=medium context tokens=1651; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--remaining_capacity.txt'
+  154: model=gpt-6-luna effort=medium context tokens=1778; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--reschedule.txt'
+  155: model=gpt-6-luna effort=medium context tokens=1794; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--route_estimate.txt'
+  156: model=gpt-6-luna effort=medium context tokens=1600; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--route_totals.txt'
+  157: model=gpt-6-luna effort=medium context tokens=1566; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--schedule_cost.txt'
+  158: model=gpt-6-luna effort=medium context tokens=1726; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--select_offer.txt'
+  159: model=gpt-6-luna effort=medium context tokens=1681; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r3--planning.py.txt--urgency.txt'
+  160: model=gpt-6-luna effort=medium context tokens=1871; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.add_booking.txt'
+  161: model=gpt-6-luna effort=medium context tokens=1852; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.add_event.txt'
+  162: model=gpt-6-luna effort=medium context tokens=1853; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.add_payment.txt'
+  163: model=gpt-6-luna effort=medium context tokens=2095; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.allocate.txt'
+  164: model=gpt-6-luna effort=medium context tokens=1913; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.allocation.txt'
+  165: model=gpt-6-luna effort=medium context tokens=1816; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.allocation_weight.txt'
+  166: model=gpt-6-luna effort=medium context tokens=1923; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.booking.txt'
+  167: model=gpt-6-luna effort=medium context tokens=1804; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.booking_count.txt'
+  168: model=gpt-6-luna effort=medium context tokens=1858; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.customer_balance.txt'
+  169: model=gpt-6-luna effort=medium context tokens=1928; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.customer_bookings.txt'
+  170: model=gpt-6-luna effort=medium context tokens=1913; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.events.txt'
+  171: model=gpt-6-luna effort=medium context tokens=1907; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.payment.txt'
+  172: model=gpt-6-luna effort=medium context tokens=1915; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.payment_history.txt'
+  173: model=gpt-6-luna effort=medium context tokens=1817; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.payment_total.txt'
+  174: model=gpt-6-luna effort=medium context tokens=1812; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.remove_allocation.txt'
+  175: model=gpt-6-luna effort=medium context tokens=1806; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.remove_event.txt'
+  176: model=gpt-6-luna effort=medium context tokens=1810; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.remove_payment.txt'
+  177: model=gpt-6-luna effort=medium context tokens=1814; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.rename_customer.txt'
+  178: model=gpt-6-luna effort=medium context tokens=1777; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.set_state.txt'
+  179: model=gpt-6-luna effort=medium context tokens=1971; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.unpaid_bookings.txt'
+  180: model=gpt-6-luna effort=medium context tokens=1917; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--Ledger.vehicle_allocations.txt'
+  181: model=gpt-6-luna effort=medium context tokens=1687; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--allocation_from_row.txt'
+  182: model=gpt-6-luna effort=medium context tokens=1697; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--booking_from_row.txt'
+  183: model=gpt-6-luna effort=medium context tokens=1687; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--event_from_row.txt'
+  184: model=gpt-6-luna effort=medium context tokens=1687; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--payment_from_row.txt'
+  185: model=gpt-6-luna effort=medium context tokens=1790; instructions tokens: 50
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-shared/review-instructions-and-schema.txt'
+    source: 'doc/feat/reviewer/engineering/evaluation/inputs/c-packets/R4--r4--ledger.py.txt--save_event.txt'
+Supplied-context total: 292581 tokens across 186 known calls; 0 unknown
+Supplied-context known range: 886-2386 tokens per call
+Estimates cover supplied context only; they exclude automatic CLI/system bytes, framing and overhead. They are not a billing guarantee.
+Default system instructions remain when no instructions file is supplied.
+Estimation methods:
+  gpt-6-luna: tiktoken:o200k_base; compatibility=approximate; library=0.14.0; tokenizer=unknown; GPT-6 model 'gpt-6-luna' uses GPT-5.6 tokenizer mapping 'gpt-5.6' as an approximate surrogate; this is not an authoritative GPT-6 tokenizer. Counts exclude model framing, other request overhead, and billing guarantees.

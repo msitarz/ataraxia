@@ -35,6 +35,16 @@ the separate instruction file, automatic CLI/system framing, output, retries,
 actual usage and cost are excluded and remain unknown. Estimate quality cannot
 support a token-budget guarantee.
 
+A retained [offline dry run](c-token-estimates.txt) additionally records the
+existing harness estimator for each packet: tiktoken 0.14.0 `o200k_base`, using
+the GPT-5.6 mapping as an approximate GPT-6 surrogate. It estimates 292,581
+supplied-context tokens per 186-call effort/repetition block, range 886–2,386
+per call, and 3,510,972 across 12 blocks. The separate frozen instruction file
+adds an estimated 50 per call, or 111,600 across the matrix. These estimates
+exclude automatic context, framing, output and retries and are not actual usage
+or a budget guarantee. The byte/4 figures above remain a reproducible offline
+proxy that does not depend on a tokenizer cache.
+
 The 2,232 prospective calls have 2,232 no-retry attempts. For planning only, the
 A/B per-call maximum of three additional attempts would imply up to 8,928
 attempts, subject to a new reviewed global ceiling; it is not authorization. At
