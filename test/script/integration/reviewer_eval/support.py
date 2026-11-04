@@ -95,6 +95,66 @@ def plan(
     )
 
 
+def full_current_response() -> list[dict[str, str]]:
+    """Return the complete synthetic public inventory as classifications."""
+    return [
+        {
+            "rule_id": "R1",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R1",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R1",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+    ]
+
+
 def transcript(
     response: dict[str, object] | list[dict[str, str]], thread: str = "thread"
 ) -> bytes:

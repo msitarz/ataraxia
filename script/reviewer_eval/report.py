@@ -32,7 +32,7 @@ from script.eval.runner.adapters.codex import (
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.policy import safe_process_cleanup
 from script.eval.runner.ports import CliBinding
-from script.reviewer_eval.context import response_format, review_context
+from script.reviewer_eval.context import ResponseFormat, response_format, review_context
 from script.reviewer_eval.transcript import extract_response, parse_json
 from script.reviewer_eval.validation import (
     Assessment,
@@ -61,7 +61,7 @@ class CallOutcome(BaseModel):
     diagnostic: str | None = None
     attempts: tuple[AttemptRecord, ...] = ()
     selected_attempt: int | None = None
-    response_format: Literal["findings-v1", "function-assessments-v2"] | None = None
+    response_format: ResponseFormat | None = None
     findings: tuple[Finding, ...] = ()
     assessments: tuple[Assessment, ...] = ()
     missing_pairs: tuple[PublicPair, ...] = ()

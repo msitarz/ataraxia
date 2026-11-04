@@ -14,6 +14,8 @@ from script.eval.model import (
     SourceSnapshot,
 )
 from script.eval.plan import PurePlanBuilder
+from script.reviewer_eval.context import review_context
+from script.reviewer_eval.validation import ValidatedAssessments, validate_assessments
 
 ROOT = Path(__file__).resolve().parents[4]
 EVALUATION = ROOT / "doc/feat/reviewer/engineering/evaluation"
@@ -143,9 +145,15 @@ def test_strategy_directory_composes_through_the_public_plan_builder(
     inputs = FrozenInputs(ROOT, "0" * 40, sources, None)
 
     # When
-    calls = PurePlanBuilder("review-contexts").plan(inputs, config).calls
+    plan = PurePlanBuilder("review-contexts").plan(inputs, config)
+    calls = plan.calls
+    rules, source_bytes = review_context(plan, calls[0])
+    response = validate_assessments(b"[]", allowed_rules=rules, sources=source_bytes)
 
     # Then
+    assert isinstance(response, ValidatedAssessments)
+    assert len(response.missing) == (186 if strategy == "A" else 62)
+    assert len({(pair.file_id, pair.function_name) for pair in response.missing}) == 62
     assert len(calls) == len(case_paths) == expected_count
     assert tuple(call.prompt for call in calls) == tuple(
         SHARED.read_bytes()

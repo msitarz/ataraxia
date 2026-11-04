@@ -5,6 +5,25 @@ from the exact frozen shared prompt and schema. Unknown formats are invalid.
 A version 2 report identifies the format for each call and keeps current
 assessments and missing public pairs separate from historical findings. Public
 completeness does not establish private-control coverage or semantic accuracy.
+A complete response may contain UNKNOWN or NOT_APPLICABLE judgments; completion
+is not a quality PASS. The validator derives qualified lexical function names
+locally from source ASTs without generating line requirements for model output.
+Historical `findings-v1` responses retain their original interpretation.
+
+For example, this excerpt shows one incomplete current-format call:
+
+```json
+{
+  "version": 2,
+  "calls": [{
+    "state": "incomplete",
+    "response_format": "function-assessments-v2",
+    "assessments": [{"rule_id": "R1", "file_id": "example.py", "function_name": "C.f", "judgement": "UNKNOWN"}],
+    "missing_pairs": [{"rule_id": "R1", "file_id": "example.py", "function_name": "C.g"}],
+    "findings": []
+  }]
+}
+```
 
 Completed calls include their persisted attempt records and validated response.
 
@@ -35,5 +54,8 @@ safe reads, or semantic truth. Findings remain unadjudicated and undeduplicated.
 The accepted JSONL shape has one thread start, one turn start, optional
 completed reasoning items with string IDs and text, one completed agent message,
 and one successful terminal turn. Other events, including tools, are rejected.
-Absolute stream references require inspection in the original run directory;
-relocated runs are not supported.
+The reader validates recorded stream references against the frozen output path
+and reads retained files beneath the supplied run directory. A relocated archive
+can be inspected when its recorded paths and retained artifacts remain
+internally consistent; relocation does not authenticate provenance or repair
+missing data.

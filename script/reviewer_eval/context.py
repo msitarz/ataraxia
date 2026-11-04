@@ -7,6 +7,15 @@ from typing import Literal
 
 from script.eval.model import FrozenPlan, PlannedCall
 
+type ResponseFormat = Literal["findings-v1", "function-assessments-v2"]
+
+FROZEN_FORMAT_DIGESTS: dict[str, ResponseFormat] = {
+    "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477": "findings-v1",
+    "8745263b68b9a86f207be04a796df3bd5dabc10864c3e53b218a49f9751d3956": (
+        "function-assessments-v2"
+    ),
+}
+
 PREFIX = "doc/feat/reviewer/engineering/evaluation/inputs/"
 SHARED = PREFIX + "shared/review-instructions-and-schema.txt"
 CORPUS = PREFIX + "corpus/source.txt"
@@ -66,9 +75,7 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
     return result
 
 
-def response_format(
-    plan: FrozenPlan, call: PlannedCall
-) -> Literal["findings-v1", "function-assessments-v2"]:
+def response_format(plan: FrozenPlan, call: PlannedCall) -> ResponseFormat:
     """Select a supported contract from the exact frozen shared prompt bytes.
 
     Returns:
@@ -79,8 +86,7 @@ def response_format(
     """
     shared = plan.snapshots[call.context_indices[0]]
     digest = sha256(shared.content).hexdigest()
-    if digest == "225cbbcd66d1cb8a2d7df16d7810d39a5b06e188ffd0ed4b5ac07d2627246477":
-        return "findings-v1"
-    if digest == "2cecffd71f68ef7decf15300f182daa93778f959d9de62996f76528693d61e87":
-        return "function-assessments-v2"
-    raise ValueError("unsupported or inconsistent frozen response format")
+    try:
+        return FROZEN_FORMAT_DIGESTS[digest]
+    except KeyError as exc:
+        raise ValueError("unsupported or inconsistent frozen response format") from exc

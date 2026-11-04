@@ -29,6 +29,7 @@ from script.reviewer_eval.report import inspect_run
 from test.script.integration.eval.support import attempt_evidence
 from test.script.integration.reviewer_eval.support import (
     create_run,
+    full_current_response,
     plan,
     snapshot,
     transcript,
@@ -799,62 +800,7 @@ async def test_current_partial_assessments_are_retained(tmp_path: Path) -> None:
 async def test_current_full_assessments_complete(tmp_path: Path) -> None:
     # Given
     root = tmp_path / "run"
-    rows = [
-        {
-            "rule_id": "R1",
-            "file_id": "r1/dispatch.py.txt",
-            "function_name": "a",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R1",
-            "file_id": "r3/planning.py.txt",
-            "function_name": "b",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R1",
-            "file_id": "r4/ledger.py.txt",
-            "function_name": "c",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R3",
-            "file_id": "r1/dispatch.py.txt",
-            "function_name": "a",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R3",
-            "file_id": "r3/planning.py.txt",
-            "function_name": "b",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R3",
-            "file_id": "r4/ledger.py.txt",
-            "function_name": "c",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R4",
-            "file_id": "r1/dispatch.py.txt",
-            "function_name": "a",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R4",
-            "file_id": "r3/planning.py.txt",
-            "function_name": "b",
-            "judgement": "PASS",
-        },
-        {
-            "rule_id": "R4",
-            "file_id": "r4/ledger.py.txt",
-            "function_name": "c",
-            "judgement": "PASS",
-        },
-    ]
+    rows = full_current_response()
     await create_run(root, current=True, response=rows)
 
     # When

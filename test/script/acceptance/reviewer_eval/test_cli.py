@@ -6,6 +6,11 @@ from pathlib import Path
 import subprocess
 import sys
 
+from test.script.integration.reviewer_eval.support import (
+    create_run,
+    full_current_response,
+)
+
 
 def test_cli_creates_exclusive_report(saved_run: Path, tmp_path: Path) -> None:
     # Given
@@ -65,3 +70,57 @@ def test_help_and_missing_plan_failure(tmp_path: Path) -> None:
     assert b"original harness run directory" in help_result.stdout
     assert failed.returncode == 1
     assert json.loads(output.read_bytes())["planned_count"] is None
+
+
+async def test_current_complete_and_partial_reports(tmp_path: Path) -> None:
+    # Given
+    full_root = tmp_path / "full" / "run"
+    partial_root = tmp_path / "partial" / "run"
+    full_root.parent.mkdir()
+    partial_root.parent.mkdir()
+    full_output = tmp_path / "full.json"
+    partial_output = tmp_path / "partial.json"
+    await create_run(full_root, current=True, response=full_current_response())
+    await create_run(partial_root, current=True, response=[])
+    full_command = [
+        sys.executable,
+        "-m",
+        "script.reviewer_eval",
+        str(full_root),
+        "--output",
+        str(full_output),
+    ]
+    partial_command = [
+        sys.executable,
+        "-m",
+        "script.reviewer_eval",
+        str(partial_root),
+        "--output",
+        str(partial_output),
+    ]
+
+    # When
+    full = subprocess.run(full_command, capture_output=True, timeout=10, check=False)
+    before = full_output.read_bytes()
+    repeated = subprocess.run(
+        full_command, capture_output=True, timeout=10, check=False
+    )
+    partial = subprocess.run(
+        partial_command, capture_output=True, timeout=10, check=False
+    )
+    full_report = json.loads(before)
+    partial_report = json.loads(partial_output.read_bytes())
+
+    # Then
+    assert full.returncode == 0
+    assert repeated.returncode == 1
+    assert full_output.read_bytes() == before
+    assert (full_report["version"], full_report["calls"][0]["response_format"]) == (
+        2,
+        "function-assessments-v2",
+    )
+    assert len(full_report["calls"][0]["assessments"]) == 9
+    assert full_report["calls"][0]["missing_pairs"] == []
+    assert partial.returncode == 1
+    assert partial_report["calls"][0]["state"] == "incomplete"
+    assert len(partial_report["calls"][0]["missing_pairs"]) == 9
