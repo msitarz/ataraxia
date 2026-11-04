@@ -1,12 +1,32 @@
 # B-only exploratory run: public accounting
 
-All 36 scheduled slots settled: 16 publicly complete, 19 invalid, and one
-failed. There were no incomplete or not-started slots and no timeouts. Public
-completion validates response shape and correspondence to the frozen input;
-it does not establish semantic correctness or the execution boundary. No
-private scoring below measures agreement with a draft, independently unreviewed
-reference; it does not establish correctness or boundary readiness. No A/B
-comparison has been performed.
+B often judged rules outside the one supplied: 19 of 36 calls were invalid,
+one failed at startup, and 16 were publicly complete. One complete call was
+excluded from primary credit after a boundary deviation. Among the 15 eligible
+calls, B caught 55 of 60 violation controls and correctly passed all 60 pass
+controls. Across the full fixed schedule, it received credit for 55 of 144
+violations; most of the remainder were excluded opportunities, not demonstrated
+semantic misses. No A/B comparison has been performed.
+
+All slots settled without timeouts. Public completion checks response shape and
+correspondence to the frozen input; it does not establish correctness or the
+execution boundary. The offline scores measure agreement with the
+[frozen, agent-reviewed reference](../../../doc/feat/reviewer/engineering/evaluation/corpus/reference-freeze.md).
+That review was not human review. The scorer conservatively labels the reference
+draft and unreviewed because it does not verify the separate freeze. Neither
+the scoring nor reference review proves server-side isolation.
+
+For high effort, fixed-credit violation recall falls below the protocol's 80%
+per-repetition threshold in each run:
+
+| Run | Credited violations / 12 | Valid calls / 3 | Unobserved violations |
+| --- | ---: | ---: | ---: |
+| 1 | 8 | 2 | 4 |
+| 2 | 8 | 2 | 4 |
+| 3 | 7 | 2 | 4 |
+
+In each run an invalid call accounts for four unobserved controls. The third
+run also had one uncaught violation among eligible calls.
 
 ## Classification agreement
 
@@ -34,7 +54,8 @@ unobserved, not a demonstrated semantic miss.
 | 3 | low | 2 | 2 | 7 | 1 | 4 | 8 | 0 | 4 |
 
 Every eligible pass control was classified PASS or VIOLATION; the table's
-false-positive counts are violations assigned to expected PASS controls.
+false-positive counts are violations assigned to expected PASS controls, with
+12 fixed pass controls per condition and 48 per repetition or rule.
 Among eligible calls, uncaught violations include any non-VIOLATION response;
 they are not necessarily explicit PASS judgments. Across conditions, fixed
 credit is 55 of 144 violation controls and 60 of 144 pass controls. The
@@ -58,8 +79,8 @@ The boundary-gated repetition 2 / low / R3 call's raw agreement is diagnostic
 only: four of four violations caught and four of four passes correct, with no
 false positives. It contributes no primary quality credit while its eight
 controls remain in the fixed denominator. Its condition cannot pass the
-boundary screen. No label adjudication or overall quality-screen conclusion is
-established by these counts.
+boundary screen. These counts do not establish an overall quality-screen
+conclusion.
 
 The
 [preflight](../../../doc/feat/reviewer/engineering/evaluation/b-full-001-preflight.md)
@@ -149,14 +170,13 @@ or replacements.
 The private index SHA-256 is
 `ddc084c2f2c168bef1dead140e508953688e3d721b7de56ee4e5aa53644febd8`.
 The 36 detailed reports and aggregate helper are retained outside the checkout
-in `/Users/nzs/ataraxia-eval-results/reviewer-b-full-001-scores`. Their private
-manifest SHA-256 is
+in `PRIVATE_SCORES`. Their private manifest SHA-256 is
 `e45b7125622feef696dec4a0a7b2f9df64fafee0d0e217da75b336180307bbb4`.
 For each `RUN` in [slots.json](slots.json), reproduce the private score into a
 new exclusive `PRIVATE_OUTPUT` using:
 
 ```sh
-uv run --cache-dir .cache/uv --no-sync python -m script.reviewer_eval /private/tmp/ataraxia-b-full-001-staging/RUN --reference-index /Users/nzs/ataraxia-eval-results/reviewer-initial-corpus-private/index.md --output PRIVATE_OUTPUT
+uv run --cache-dir .cache/uv --no-sync python -m script.reviewer_eval /private/tmp/ataraxia-b-full-001-staging/RUN --reference-index PRIVATE_REFERENCE --output PRIVATE_OUTPUT
 ```
 
 Each single-case score exits 1 because its own strategy group lacks the other
@@ -164,9 +184,8 @@ two rules; its per-call measures remain available. The retained `aggregate.py`
 reads the explicit slot inventory and private per-call scores, verifies the
 eight-control denominators and reference digest, and sums the three calls per
 condition. It excludes the flagged call's credit without modifying its raw
-score. Run it from the checkout root with `python3
-/Users/nzs/ataraxia-eval-results/reviewer-b-full-001-scores/aggregate.py`.
+score. Run it from the checkout root with `python3 PRIVATE_SCORES/aggregate.py`.
 Its output includes only aggregate counts and the separately flagged diagnostic.
 
-The result is incomplete for the Evaluation's quality and boundary criteria;
-independent review and private adjudication remain.
+The reference review and this label scoring are complete. The broader
+Evaluation's quality and boundary criteria and readiness review remain open.
