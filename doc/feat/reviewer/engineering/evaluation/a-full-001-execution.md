@@ -1,5 +1,20 @@
 # A-only exploratory run: execution record
 
+## Human-readable summary
+
+Across three high-effort runs, the reviewer caught 9, 10, and 11 of the 12
+seeded violations, and correctly passed all 12 compliant controls in every
+run. All missed violations were R4 resource-handling or error-translation
+violations; the indexed R1 validation and R3 pure-decision violations were all
+caught. Each run scored below the 80% violation-recall threshold. The results
+cover only 24 private controls per run, not the full corpus.
+
+| Run | Violations caught | Violations missed |
+| --- | ---: | ---: |
+| 1 | 9 of 12 | 3 |
+| 2 | 10 of 12 | 2 |
+| 3 | 11 of 12 | 1 |
+
 The [preflight](a-full-001-preflight.md) records the maintainer's explicit
 override of the isolation gate before dispatch. The source input revision was
 `15d44afad6f917cbc632a06688784a579e451535`; the clean invocation checkout was
