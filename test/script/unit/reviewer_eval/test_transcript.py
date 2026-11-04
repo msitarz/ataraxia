@@ -3,6 +3,7 @@
 
 from collections.abc import Callable
 import json
+import re
 
 import pytest
 
@@ -137,3 +138,81 @@ def test_invalid_json_encoding_is_reported_with_its_cause() -> None:
     with pytest.raises(ValueError, match="invalid Unicode encoding") as error:
         parse_json(raw)
     assert isinstance(error.value.__cause__, UnicodeDecodeError)
+
+
+def disabled_host_notice(ident: str = "notice") -> dict[str, object]:
+    """Return the known startup notice as a synthetic event."""
+    return {
+        "type": "item.completed",
+        "item": {
+            "type": "error",
+            "id": ident,
+            "message": (
+                "Code Mode is unavailable because code-mode host is disabled. "
+                "Code mode will fail closed; enable "
+                "`features.code_mode_host` and install "
+                "`codex-code-mode-host`."
+            ),
+        },
+    }
+
+
+def test_disabled_host_notice_before_turn_is_accepted() -> None:
+    # Given
+    records = [events()[0], disabled_host_notice(), *events()[1:]]
+
+    # When
+    result = extract_response(encoded(records))
+
+    # Then
+    assert result == ("thread", b"{}")
+
+
+@pytest.mark.parametrize(
+    ("records", "diagnostic"),
+    [
+        (
+            [
+                events()[0],
+                {
+                    "type": "item.completed",
+                    "item": {"type": "error", "id": "x", "message": "other"},
+                },
+                *events()[1:],
+            ],
+            "unsupported startup notice",
+        ),
+        (
+            [events()[0], disabled_host_notice(""), *events()[1:]],
+            "unsupported startup notice",
+        ),
+        (
+            [*events()[:2], disabled_host_notice(), *events()[2:]],
+            "invalid completed item content",
+        ),
+        (
+            [
+                events()[0],
+                disabled_host_notice(),
+                disabled_host_notice(),
+                *events()[1:],
+            ],
+            "unexpected JSONL event or lifecycle: item.completed",
+        ),
+        (
+            [events()[0], disabled_host_notice(), {"type": "turn.failed"}],
+            "unexpected JSONL event or lifecycle: turn.failed",
+        ),
+        ([events()[0], disabled_host_notice()], "JSONL turn is incomplete"),
+    ],
+    ids=["other-error", "invalid-id", "after-turn", "repeated", "failed", "incomplete"],
+)
+def test_unrecognized_notice_lifecycle_is_rejected(
+    records: list[dict[str, object]], diagnostic: str
+) -> None:
+    # Given
+    raw = encoded(records)
+
+    # When / Then
+    with pytest.raises(ValueError, match=f"^{re.escape(diagnostic)}$"):
+        extract_response(raw)

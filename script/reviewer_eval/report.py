@@ -32,9 +32,18 @@ from script.eval.runner.adapters.codex import (
 from script.eval.runner.coordinator.records import settings_digest
 from script.eval.runner.policy import safe_process_cleanup
 from script.eval.runner.ports import CliBinding
-from script.reviewer_eval.context import review_context
+from script.reviewer_eval.context import ResponseFormat, response_format, review_context
 from script.reviewer_eval.transcript import extract_response, parse_json
-from script.reviewer_eval.validation import Finding, InvalidResponse, validate_response
+from script.reviewer_eval.validation import (
+    Assessment,
+    Finding,
+    InvalidResponse,
+    PublicPair,
+    ValidatedAssessments,
+    ValidatedResponse,
+    validate_assessments,
+    validate_response,
+)
 
 type Outcome = Literal["complete", "incomplete", "invalid", "failed", "not_started"]
 type EvidenceState = Literal["complete", "incomplete", "invalid"]
@@ -52,7 +61,10 @@ class CallOutcome(BaseModel):
     diagnostic: str | None = None
     attempts: tuple[AttemptRecord, ...] = ()
     selected_attempt: int | None = None
+    response_format: ResponseFormat | None = None
     findings: tuple[Finding, ...] = ()
+    assessments: tuple[Assessment, ...] = ()
+    missing_pairs: tuple[PublicPair, ...] = ()
     thread_id: str | None = None
 
 
@@ -71,7 +83,7 @@ class Report(BaseModel):
     """Deterministic results based on internally consistent retained artifacts."""
 
     model_config = ConfigDict(frozen=True)
-    version: Literal[1] = 1
+    version: Literal[2] = 2
     evidence_state: EvidenceState
     diagnostic: str | None
     run_id: str | None
@@ -212,6 +224,7 @@ def _plan(root: Path) -> FrozenPlan:
         raise ValueError("plan has no calls")
     for call in plan.calls:
         review_context(plan, call)
+        response_format(plan, call)
     return plan
 
 
@@ -562,6 +575,7 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOut
         call_id=call.call_id,
         state="failed",
         attempts=call.attempts,
+        response_format=response_format(plan, planned),
     )
     if not call.attempts:
         return result.model_copy(
@@ -599,9 +613,12 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOut
     try:
         thread_id, response = extract_response(stdout)
         rules, sources = review_context(plan, planned)
-        validated = validate_response(response, allowed_rules=rules, sources=sources)
     except ValueError as exc:
         return result.model_copy(update={"state": "invalid", "diagnostic": str(exc)})
+    if result.response_format == "findings-v1":
+        validated = validate_response(response, allowed_rules=rules, sources=sources)
+    else:
+        validated = validate_assessments(response, allowed_rules=rules, sources=sources)
     if isinstance(validated, InvalidResponse):
         return result.model_copy(
             update={
@@ -611,6 +628,19 @@ def _result(plan: FrozenPlan, call: CallRecord, stdout: bytes | None) -> CallOut
                 "selected_attempt": attempt.attempt_number,
             }
         )
+    if result.response_format == "function-assessments-v2":
+        assert isinstance(validated, ValidatedAssessments)
+        return result.model_copy(
+            update={
+                "state": "complete" if validated.complete else "incomplete",
+                "diagnostic": None if validated.complete else "missing public pairs",
+                "assessments": validated.assessments,
+                "missing_pairs": validated.missing,
+                "thread_id": thread_id,
+                "selected_attempt": attempt.attempt_number,
+            }
+        )
+    assert isinstance(validated, ValidatedResponse)
     return result.model_copy(
         update={
             "state": "complete" if validated.complete else "incomplete",
@@ -658,6 +688,7 @@ def _uniform(plan: FrozenPlan, state: Outcome, diagnostic: str) -> list[CallOutc
             effort=c.effort,
             state=state,
             diagnostic=diagnostic,
+            response_format=response_format(plan, c),
         )
         for c in plan.calls
     ]
@@ -689,6 +720,7 @@ def _inspect_records(root: Path, plan: FrozenPlan, run: RunRecord) -> list[CallO
                 call_id=call.call_id,
                 state="incomplete",
                 diagnostic="missing bound executable",
+                response_format=response_format(plan, plan.calls[call.position]),
                 attempts=call.attempts,
             )
         )

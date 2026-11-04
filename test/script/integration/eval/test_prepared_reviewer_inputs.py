@@ -14,6 +14,8 @@ from script.eval.model import (
     SourceSnapshot,
 )
 from script.eval.plan import PurePlanBuilder
+from script.reviewer_eval.context import review_context
+from script.reviewer_eval.validation import ValidatedAssessments, validate_assessments
 
 ROOT = Path(__file__).resolve().parents[4]
 EVALUATION = ROOT / "doc/feat/reviewer/engineering/evaluation"
@@ -59,34 +61,25 @@ def test_exact_prompt_inventory_and_shared_schema() -> None:
     assert list((INPUTS / "shared").iterdir()) == [SHARED]
     assert list((INPUTS / "corpus").iterdir()) == [BUNDLE]
     assert BUNDLE.read_bytes() == b"Context:\n" + whole_bundle()
-    assert schema["type"] == "object"
-    assert schema["required"] == ["complete", "findings"]
-    assert set(schema["properties"]) == {"complete", "findings"}
-    assert schema["additionalProperties"] is False
-    assert schema["properties"]["complete"] == {"type": "boolean"}
-    assert schema["properties"]["findings"]["type"] == "array"
-    finding = schema["properties"]["findings"]["items"]
-    assert finding["type"] == "object"
-    assert set(finding["required"]) == {
+    assert b"Response format: function-assessments-v2" in shared
+    assert b"def and async def declaration" in shared
+    assert b"Exclude lambdas and implicit or generated methods" in shared
+    assert schema["type"] == "array"
+    record = schema["items"]
+    assert record["additionalProperties"] is False
+    assert set(record["required"]) == {
         "rule_id",
         "file_id",
-        "start_line",
-        "end_line",
-        "quote",
-        "explanation",
-        "consequence",
-        "severity",
+        "function_name",
+        "judgement",
     }
-    assert set(finding["properties"]) == set(finding["required"]) | {"corrections"}
-    assert finding["additionalProperties"] is False
-    assert finding["properties"]["rule_id"]["enum"] == list(RULES)
-    assert finding["properties"]["severity"]["enum"] == ["critical", "major", "minor"]
-    assert finding["properties"]["start_line"] == {"type": "integer", "minimum": 1}
-    assert finding["properties"]["end_line"] == {"type": "integer", "minimum": 1}
-    assert all(
-        finding["properties"][key]["minLength"] == 1
-        for key in ("file_id", "quote", "explanation", "consequence")
-    )
+    assert set(record["properties"]) == set(record["required"])
+    assert record["properties"]["judgement"]["enum"] == [
+        "PASS",
+        "VIOLATION",
+        "UNKNOWN",
+        "NOT_APPLICABLE",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -154,9 +147,15 @@ def test_strategy_directory_composes_through_the_public_plan_builder(
     inputs = FrozenInputs(ROOT, "0" * 40, sources, None)
 
     # When
-    calls = PurePlanBuilder("review-contexts").plan(inputs, config).calls
+    plan = PurePlanBuilder("review-contexts").plan(inputs, config)
+    calls = plan.calls
+    rules, source_bytes = review_context(plan, calls[0])
+    response = validate_assessments(b"[]", allowed_rules=rules, sources=source_bytes)
 
     # Then
+    assert isinstance(response, ValidatedAssessments)
+    assert len(response.missing) == (186 if strategy == "A" else 62)
+    assert len({(pair.file_id, pair.function_name) for pair in response.missing}) == 62
     assert len(calls) == len(case_paths) == expected_count
     assert tuple(call.prompt for call in calls) == tuple(
         SHARED.read_bytes()

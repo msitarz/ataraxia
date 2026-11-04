@@ -13,10 +13,10 @@ from script.reviewer_eval.validation import (
 )
 
 
-def test_published_schema_shape() -> None:
+def test_legacy_schema_shape() -> None:
     # Given
     shared = Path(
-        "doc/feat/reviewer/engineering/evaluation/inputs/shared/review-instructions-and-schema.txt"
+        "test/script/integration/reviewer_eval/fixtures/legacy-shared.txt"
     ).read_text()
     schema = json.loads(shared.split("Response JSON contract:\n", 1)[1])
     item = schema["properties"]["findings"]["items"]

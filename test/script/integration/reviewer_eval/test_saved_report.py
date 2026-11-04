@@ -29,6 +29,7 @@ from script.reviewer_eval.report import inspect_run
 from test.script.integration.eval.support import attempt_evidence
 from test.script.integration.reviewer_eval.support import (
     create_run,
+    full_current_response,
     plan,
     snapshot,
     transcript,
@@ -766,3 +767,76 @@ async def test_v3_borrowed_launch_provenance_tampering_is_rejected(
     # Then
     assert result.evidence_state == "invalid"
     assert result.calls[0].state == "invalid"
+
+
+async def test_current_partial_assessments_are_retained(tmp_path: Path) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(
+        root,
+        current=True,
+        response=[
+            {
+                "rule_id": "R1",
+                "file_id": "r1/dispatch.py.txt",
+                "function_name": "a",
+                "judgement": "UNKNOWN",
+            }
+        ],
+    )
+
+    # When
+    report = inspect_run(root)
+
+    # Then
+    call = report.calls[0]
+    assert call.response_format == "function-assessments-v2"
+    assert call.state == "incomplete"
+    assert len(call.assessments) == 1
+    assert len(call.missing_pairs) == 8
+    assert not call.findings
+
+
+async def test_current_full_assessments_complete(tmp_path: Path) -> None:
+    # Given
+    root = tmp_path / "run"
+    rows = full_current_response()
+    await create_run(root, current=True, response=rows, notice=True)
+
+    # When
+    report = inspect_run(root)
+
+    # Then
+    assert report.calls[0].state == "complete"
+    assert len(report.calls[0].assessments) == 9
+    assert not report.calls[0].missing_pairs
+
+
+async def test_current_invalid_response_does_not_fall_back_to_legacy(
+    tmp_path: Path,
+) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(root, current=True, response={"complete": True, "findings": []})
+
+    # When
+    report = inspect_run(root)
+
+    # Then
+    assert report.calls[0].response_format == "function-assessments-v2"
+    assert report.calls[0].state == "invalid"
+    assert not report.calls[0].findings
+
+
+async def test_unknown_frozen_format_is_invalid(tmp_path: Path) -> None:
+    # Given
+    root = tmp_path / "run"
+    await create_run(root, current=True, unknown=True, response=[])
+
+    # When
+    report = inspect_run(root)
+
+    # Then
+    assert report.evidence_state == "invalid"
+    assert report.diagnostic is not None
+    assert "unsupported or inconsistent frozen response format" in report.diagnostic

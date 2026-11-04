@@ -37,7 +37,9 @@ from script.reviewer_eval.context import CASES, CORPUS, SHARED
 from test.script.integration.eval.support import attempt_evidence
 
 
-def plan(*, repeat: bool = False) -> FrozenPlan:
+def plan(
+    *, repeat: bool = False, current: bool = False, unknown: bool = False
+) -> FrozenPlan:
     """Construct a tiny frozen A/B-shaped plan with no external source reads."""
     case = next(iter(CASES))
     bundle = (
@@ -45,8 +47,20 @@ def plan(*, repeat: bool = False) -> FrozenPlan:
         b"\n--- r3/planning.py.txt (original lines 1-1) ---\nsecond\n"
         b"\n--- r4/ledger.py.txt (original lines 1-1) ---\nthird\n"
     )
+    if current:
+        bundle = (
+            bundle
+            .replace(b"first\n", b"def a(): pass\n")
+            .replace(b"second\n", b"def b(): pass\n")
+            .replace(b"third\n", b"def c(): pass\n")
+        )
+    shared = (Path(__file__).parent / "fixtures/legacy-shared.txt").read_bytes()
+    if current:
+        shared = (Path(__file__).resolve().parents[4] / SHARED).read_bytes()
+    if unknown:
+        shared += b"unexpected change"
     entries = (
-        (SHARED, b"shared"),
+        (SHARED, shared),
         (case, b"Rules:\n\n--- R1 ---\na\n\n--- R3 ---\nb\n\n--- R4 ---\nc\n"),
         (CORPUS, bundle),
     )
@@ -81,7 +95,72 @@ def plan(*, repeat: bool = False) -> FrozenPlan:
     )
 
 
-def transcript(response: dict[str, object], thread: str = "thread") -> bytes:
+def full_current_response() -> list[dict[str, str]]:
+    """Return the complete synthetic public inventory as classifications."""
+    return [
+        {
+            "rule_id": "R1",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R1",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R1",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R3",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r1/dispatch.py.txt",
+            "function_name": "a",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r3/planning.py.txt",
+            "function_name": "b",
+            "judgement": "PASS",
+        },
+        {
+            "rule_id": "R4",
+            "file_id": "r4/ledger.py.txt",
+            "function_name": "c",
+            "judgement": "PASS",
+        },
+    ]
+
+
+def transcript(
+    response: dict[str, object] | list[dict[str, str]],
+    thread: str = "thread",
+    *,
+    notice: bool = False,
+) -> bytes:
     """Build a single synthetic successful transcript."""
     events = [
         {"type": "thread.started", "thread_id": thread},
@@ -96,13 +175,33 @@ def transcript(response: dict[str, object], thread: str = "thread") -> bytes:
         },
         {"type": "turn.completed", "usage": {"future": True}},
     ]
+    if notice:
+        events.insert(
+            1,
+            {
+                "type": "item.completed",
+                "item": {
+                    "type": "error",
+                    "id": "notice",
+                    "message": (
+                        "Code Mode is unavailable because code-mode host is disabled. "
+                        "Code mode will fail closed; enable "
+                        "`features.code_mode_host` and install "
+                        "`codex-code-mode-host`."
+                    ),
+                },
+            },
+        )
     return b"".join(json.dumps(event).encode() + b"\n" for event in events)
 
 
 async def create_run(
     root: Path,
     *,
-    response: dict[str, object] | None = None,
+    response: dict[str, object] | list[dict[str, str]] | None = None,
+    current: bool = False,
+    unknown: bool = False,
+    notice: bool = False,
     status: int = 0,
     finalize: bool = True,
     invocation_cwd: Path | None = None,
@@ -110,7 +209,7 @@ async def create_run(
     borrowed: bool = False,
 ) -> RunRecord:
     """Persist a controlled plan, process and final summary through the real store."""
-    frozen = plan()
+    frozen = plan(current=current, unknown=unknown)
     if borrowed:
         configuration = frozen.configuration.model_copy(
             update={"working_directory": Path("clone")}
@@ -135,7 +234,8 @@ async def create_run(
         frozen, frozen.calls[0], binding, prepared, frozen.configuration
     )
     output = transcript(
-        response if response is not None else {"complete": True, "findings": []}
+        response if response is not None else {"complete": True, "findings": []},
+        notice=notice,
     )
     cleanup = CleanupEvidence(
         "owned", (SignalAttempt("SIGKILL", "no_target", None),), "reaped", None
