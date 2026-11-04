@@ -38,21 +38,24 @@ class _Span(TypedDict):
     sha256: str
 
 
-class _Target(TypedDict):
-    rule_id: str
+class _Function(TypedDict):
     file_id: str
     function_name: str
+    function_file: str
+    sha256: str
+    spans: list[_Span]
+    flags: list[str]
 
 
-class _Entry(TypedDict):
-    packet: str
-    target: _Target
-    packet_sha256: str
+class _Combination(TypedDict):
+    rule_id: str
+    rule_file: str
+    function_file: str
+    file_id: str
+    function_name: str
     prompt_sha256: str
     prompt_bytes: int
     estimated_tokens: int
-    spans: list[_Span]
-    flags: list[str]
 
 
 def _digest(data: bytes) -> str:
@@ -260,15 +263,15 @@ def _definitions(
     return defs, parents
 
 
-def _packet_entries(
-    sources: dict[str, bytes], rules: dict[str, bytes], shared: bytes
-) -> tuple[list[_Entry], dict[str, bytes]]:
-    """Build public packets and their manifest entries.
+def _function_entries(
+    sources: dict[str, bytes],
+) -> tuple[list[_Function], dict[str, bytes]]:
+    """Build public function contexts and their manifest entries.
 
     Returns:
-        Entries and their corresponding packet bytes.
+        Entries and their corresponding function context bytes.
     """
-    entries: list[_Entry] = []
+    entries: list[_Function] = []
     artifacts = {}
     for file_id, source in sources.items():
         lines = source.splitlines(keepends=True)
@@ -295,33 +298,23 @@ def _packet_entries(
                 name, defs, parents, globals_, module_names
             )
             context, spans = _render_context(file_id, lines, selected, flags)
-            for rule in RULES:
-                meta: _Target = {
-                    "rule_id": rule,
-                    "file_id": file_id,
-                    "function_name": name,
-                }
-                packet_name = f"{rule}--{file_id.replace('/', '--')}--{name}.txt"
-                packet = (
-                    b"Target: "
-                    + json.dumps(meta, sort_keys=True, separators=(",", ":")).encode()
-                    + b"\n\nRule:\n"
-                    + rules[rule]
-                    + b"\nContext:\n"
-                    + context
-                )
-                artifacts["c-packets/" + packet_name] = packet
-                prompt = shared + b"\n\n" + packet
-                entries.append({
-                    "packet": packet_name,
-                    "target": meta,
-                    "packet_sha256": _digest(packet),
-                    "prompt_sha256": _digest(prompt),
-                    "prompt_bytes": len(prompt),
-                    "estimated_tokens": (len(prompt) + 3) // 4,
-                    "spans": spans,
-                    "flags": flags,
-                })
+            meta = {"file_id": file_id, "function_name": name}
+            filename = f"{file_id.replace('/', '--')}--{name}.txt"
+            content = (
+                b"Function: "
+                + json.dumps(meta, sort_keys=True, separators=(",", ":")).encode()
+                + b"\n\nContext:\n"
+                + context
+            )
+            artifacts["c-functions/" + filename] = content
+            entries.append({
+                "file_id": file_id,
+                "function_name": name,
+                "function_file": filename,
+                "sha256": _digest(content),
+                "spans": spans,
+                "flags": flags,
+            })
     return entries, artifacts
 
 
@@ -330,14 +323,36 @@ def prepare() -> dict[str, bytes]:
     sources = {name: (CORPUS / name).read_bytes() for name in FILES}
     rules = {r: (CORPUS / r.lower() / "rule.txt").read_bytes() for r in RULES}
     shared = (INPUTS / "c-shared/review-instructions-and-schema.txt").read_bytes()
-    entries, artifacts = _packet_entries(sources, rules, shared)
-    entries.sort(
-        key=lambda e: (
-            e["target"]["rule_id"],
-            e["target"]["file_id"],
-            e["target"]["function_name"],
-        )
-    )
+    functions, artifacts = _function_entries(sources)
+    functions.sort(key=lambda e: (e["file_id"], e["function_name"]))
+    rule_files = {
+        r: b"Rule: "
+        + json.dumps({"rule_id": r}, separators=(",", ":")).encode()
+        + b"\n\n"
+        + rules[r]
+        for r in RULES
+    }
+    artifacts.update({"c-rules/" + r + ".txt": data for r, data in rule_files.items()})
+    combinations: list[_Combination] = []
+    for rule in RULES:
+        for function in functions:
+            prompt = (
+                shared
+                + b"\n\n"
+                + rule_files[rule]
+                + b"\n\n"
+                + artifacts["c-functions/" + function["function_file"]]
+            )
+            combinations.append({
+                "rule_id": rule,
+                "rule_file": rule + ".txt",
+                "function_file": function["function_file"],
+                "file_id": function["file_id"],
+                "function_name": function["function_name"],
+                "prompt_sha256": _digest(prompt),
+                "prompt_bytes": len(prompt),
+                "estimated_tokens": (len(prompt) + 3) // 4,
+            })
     manifest = {
         "version": "static-c-context-v1",
         "sources": {
@@ -351,24 +366,27 @@ def prepare() -> dict[str, bytes]:
             "proxy, not observed usage; excludes instructions and model framing"
         ),
         "per_effort_repetition_estimated_tokens": sum(
-            e["estimated_tokens"] for e in entries
+            e["estimated_tokens"] for e in combinations
         ),
-        "matrix_estimated_tokens": 12 * sum(e["estimated_tokens"] for e in entries),
-        "packets": entries,
+        "matrix_estimated_tokens": 12
+        * sum(e["estimated_tokens"] for e in combinations),
+        "functions": functions,
+        "combinations": combinations,
     }
     schedule = [
         {
             "position": i,
             "repetition": rep,
             "effort": effort,
-            "packet": e["packet"],
+            "rule_file": e["rule_file"],
+            "function_file": e["function_file"],
             "prompt_sha256": e["prompt_sha256"],
         }
         for i, (rep, effort, e) in enumerate(
             (rep, effort, e)
             for rep, order in enumerate(ORDERS, 1)
             for effort in order
-            for e in entries
+            for e in combinations
         )
     ]
     artifacts["c-manifest.json"] = (
@@ -393,24 +411,28 @@ def main() -> None:
     args = parser.parse_args()
     artifacts = prepare()
     expected = {INPUTS / p for p in artifacts}
-    existing = set((INPUTS / "c-packets").glob("*.txt"))
+    existing = {
+        p
+        for directory in ("c-rules", "c-functions")
+        for p in (INPUTS / directory).iterdir()
+    }
+    selected = {p for p in expected if p.parent.name in {"c-rules", "c-functions"}}
     if args.check:
-        if existing != {p for p in expected if p.parent.name == "c-packets"} or any(
+        if existing != selected or any(
             not p.is_file() or p.read_bytes() != content
             for p, content in ((INPUTS / n, b) for n, b in artifacts.items())
         ):
             raise SystemExit("C artifacts differ from deterministic generation")
     else:
-        if existing - expected:
-            raise SystemExit("unexpected packet files; refusing to remove them")
+        if existing - selected:
+            raise SystemExit("unexpected selected files; refusing to remove them")
         for name, content in artifacts.items():
             path = INPUTS / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(content)
     print(  # ruff: ignore[print]
-        f"Verified {len(artifacts) - 2} packets and 2232 prospective calls"
-        if args.check
-        else f"Generated {len(artifacts) - 2} packets and 2232 prospective calls"
+        f"{'Verified' if args.check else 'Generated'} 3 rules, 62 functions and "
+        "2232 prospective calls"
     )
 
 

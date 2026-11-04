@@ -1,0 +1,54 @@
+Function: {"file_id":"r3/planning.py.txt","function_name":"allocate"}
+
+Context:
+
+--- r3/planning.py.txt lines 2-9 (context) ---
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt lines 11-11 (context) ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt lines 12-12 (context) ---
+from time import time
+
+--- r3/planning.py.txt lines 81-86 (context) ---
+@dataclass(frozen=True)
+class Slot:
+    start: int
+    end: int
+    reserved: int
+    capacity: int
+
+--- r3/planning.py.txt lines 89-94 (context) ---
+@dataclass(frozen=True)
+class Allocation:
+    start: int
+    end: int
+    quantity: int
+    remaining: int
+
+--- r3/planning.py.txt lines 207-223 (target) ---
+def allocate(slots: list[Slot], quantity: int, earliest: int, latest: int) -> Allocation | None:
+    """Select the first fitting slot in its input order."""
+    for slot in slots:
+        if slot.start < earliest:
+            continue
+        if slot.end > latest:
+            continue
+        remaining = slot.capacity - slot.reserved
+        if remaining < quantity:
+            continue
+        return Allocation(
+            start=slot.start,
+            end=slot.end,
+            quantity=quantity,
+            remaining=remaining - quantity,
+        )
+    return None

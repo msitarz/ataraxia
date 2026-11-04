@@ -28,7 +28,9 @@ from script.reviewer_eval.validation import (
 from test.script.integration.reviewer_eval.support import create_run
 
 ROOT = Path(__file__).resolve().parents[4]
-PACKETS = sorted((INPUTS / "c-packets").glob("*.txt"))
+RULE_FILES = sorted((INPUTS / "c-rules").glob("*.txt"))
+FUNCTIONS = sorted((INPUTS / "c-functions").glob("*.txt"))
+SHARED = INPUTS / "c-shared/review-instructions-and-schema.txt"
 TARGET = PublicPair("R4", "r4/ledger.py.txt", "Ledger.events")
 RECORD = {
     "rule_id": TARGET.rule_id,
@@ -45,34 +47,30 @@ def artifacts() -> dict[str, bytes]:
 
 
 def _plan(
-    paths: list[Path],
-    *,
-    packet_content: bytes | None = None,
-    packet_path: str | None = None,
+    groups: list[list[Path]], *, changed_group: int = -1, content: bytes | None = None
 ) -> FrozenPlan:
-    """Compose a pure plan from real shared bytes and selected packet snapshots."""
+    """Compose a pure plan from the selected frozen source groups."""
     snapshots = []
-    for index, path in enumerate(paths):
-        content = (
-            packet_content
-            if index == 1 and packet_content is not None
-            else path.read_bytes()
-        )
-        snapshots.append(
-            SourceSnapshot(
-                directory_position=0 if index == 0 else 2,
-                repository_path=packet_path
-                if index == 1 and packet_path is not None
-                else str(path.relative_to(ROOT)),
-                commit_blob_sha="0" * 40,
-                content_sha256=sha256(content).hexdigest(),
-                content=content,
+    for index, paths in enumerate(groups):
+        for path in paths:
+            data = (
+                content
+                if index == changed_group and content is not None
+                else path.read_bytes()
             )
-        )
+            snapshots.append(
+                SourceSnapshot(
+                    directory_position=index * 2,
+                    repository_path=str(path.relative_to(ROOT)),
+                    commit_blob_sha="0" * 40,
+                    content_sha256=sha256(data).hexdigest(),
+                    content=data,
+                )
+            )
     config = HarnessConfig(
-        ordered_options=(
-            DirectoryOption(position=0, path=paths[0].parent),
-            DirectoryOption(position=2, path=paths[1].parent),
+        ordered_options=tuple(
+            DirectoryOption(position=i * 2, path=paths[0].parent)
+            for i, paths in enumerate(groups)
         ),
         models=("model",),
         efforts=("low",),
@@ -93,7 +91,7 @@ def _plan(
 @pytest.fixture
 def plan() -> FrozenPlan:
     """Build one valid frozen packet plan for saved-reader tests."""
-    return _plan([INPUTS / "c-shared/review-instructions-and-schema.txt", PACKETS[0]])
+    return _plan([[SHARED], [RULE_FILES[0]], [FUNCTIONS[0]]])
 
 
 def test_generated_artifacts_are_reproducible(artifacts: dict[str, bytes]) -> None:
@@ -109,13 +107,10 @@ def test_schedule_retains_all_pairs_and_rotated_efforts(
     artifacts: dict[str, bytes],
 ) -> None:
     # Given the generated manifest and schedule.
-    entries = json.loads(artifacts["c-manifest.json"])["packets"]
+    entries = json.loads(artifacts["c-manifest.json"])["combinations"]
     schedule = json.loads(artifacts["c-schedule.json"])
     # When public identities and effort blocks are collected.
-    keys = {
-        (e["target"]["rule_id"], e["target"]["file_id"], e["target"]["function_name"])
-        for e in entries
-    }
+    keys = {(e["rule_id"], e["file_id"], e["function_name"]) for e in entries}
     # Then every public pair is present in the fixed rotated matrix.
     assert len(keys) == len(entries) == 186
     assert len(schedule) == 2232
@@ -135,36 +130,45 @@ def test_schedule_retains_all_pairs_and_rotated_efforts(
     ]
 
 
-@pytest.mark.parametrize("packet_path", PACKETS, ids=lambda path: path.stem)
-def test_packet_preserves_source_spans_and_rule(
-    packet_path: Path, artifacts: dict[str, bytes]
+@pytest.mark.parametrize("function_path", FUNCTIONS, ids=lambda path: path.stem)
+def test_function_preserves_source_spans(
+    function_path: Path, artifacts: dict[str, bytes]
 ) -> None:
-    # Given a generated packet and its manifest entry.
-    entries = json.loads(artifacts["c-manifest.json"])["packets"]
-    entry = next(e for e in entries if e["packet"] == packet_path.name)
-    source = (
-        (CORPUS / entry["target"]["file_id"]).read_bytes().splitlines(keepends=True)
-    )
-    packet = artifacts["c-packets/" + packet_path.name]
+    # Given a generated function and its manifest entry.
+    entries = json.loads(artifacts["c-manifest.json"])["functions"]
+    entry = next(e for e in entries if e["function_file"] == function_path.name)
+    source = (CORPUS / entry["file_id"]).read_bytes().splitlines(keepends=True)
+    context = artifacts["c-functions/" + function_path.name]
     # When the recorded source spans are reconstructed.
     spans = [(s, b"".join(source[s["start"] - 1 : s["end"]])) for s in entry["spans"]]
-    # Then their original bytes, hashes and supplied rule are retained.
+    # Then original bytes and hashes are retained.
     assert all(
-        sha256(data).hexdigest() == span["sha256"] and data in packet
+        sha256(data).hexdigest() == span["sha256"] and data in context
         for span, data in spans
     )
     assert any(span["role"] == "target" for span, _ in spans)
-    assert (
-        CORPUS / entry["target"]["rule_id"].lower() / "rule.txt"
-    ).read_bytes() in packet
 
 
-def test_generic_matrix_keeps_singleton_target_provenance() -> None:
-    # Given one shared input and the complete packet directory.
-    paths = [INPUTS / "c-shared/review-instructions-and-schema.txt", *PACKETS]
+@pytest.mark.parametrize("rule", ["R1", "R3", "R4"])
+def test_rule_file_preserves_original_bytes(
+    rule: str, artifacts: dict[str, bytes]
+) -> None:
+    # Given the original frozen rule.
+    original = (CORPUS / rule.lower() / "rule.txt").read_bytes()
+    # When its generated input is read.
+    content = artifacts["c-rules/" + rule + ".txt"]
+    # Then the original bytes follow the metadata envelope unchanged.
+    assert content.split(b"\n\n", 1)[1] == original
+
+
+def test_generic_matrix_keeps_singleton_target_provenance(
+    artifacts: dict[str, bytes],
+) -> None:
+    # Given one shared input, three rules and 62 functions.
+    groups = [[SHARED], RULE_FILES, FUNCTIONS]
     # When the existing pure planner composes the matrix.
-    frozen = _plan(paths)
-    # Then every call names exactly one target and selects the C contract.
+    frozen = _plan(groups)
+    # Then each call uses exact ordered source bytes and names one target.
     assert len(frozen.calls) == 186
     assert all(
         response_format(frozen, call) == "function-assessments-c-v1"
@@ -174,6 +178,16 @@ def test_generic_matrix_keeps_singleton_target_provenance() -> None:
         review_context(frozen, call)[0] == frozenset({c_target(frozen, call).rule_id})
         for call in frozen.calls
     )
+    assert all(
+        call.prompt
+        == b"\n\n".join(frozen.snapshots[i].content for i in call.context_indices)
+        for call in frozen.calls
+    )
+    assert len({c_target(frozen, call) for call in frozen.calls}) == 186
+    manifest = json.loads(artifacts["c-manifest.json"])
+    assert [call.prompt_sha256 for call in frozen.calls] == [
+        entry["prompt_sha256"] for entry in manifest["combinations"]
+    ]
 
 
 def test_singleton_accepts_target_only() -> None:
@@ -223,25 +237,49 @@ async def test_saved_reader_uses_frozen_target(
     assert len(report.calls[0].assessments) == 1
 
 
+async def test_saved_reader_rejects_changed_rule_bytes(tmp_path: Path) -> None:
+    # Given a valid rule header with altered rule bytes.
+    groups = [[SHARED], [RULE_FILES[0]], [FUNCTIONS[0]]]
+    frozen = _plan(
+        groups, changed_group=1, content=RULE_FILES[0].read_bytes() + b"altered"
+    )
+    await create_run(tmp_path / "run", frozen_plan=frozen, response=[])
+    # When the retained run is inspected.
+    report = inspect_run(tmp_path / "run")
+    # Then the rule digest mismatch is invalid.
+    assert report.evidence_state == "invalid"
+
+
 @pytest.mark.parametrize(
-    "header",
+    ("group", "header"),
     [
-        b'{"rule_id":"R1","rule_id":"R1"}',
-        b"[" * 1500 + b"]" * 1500,
-        b'{"rule_id":"R1","file_id":"r1/dispatch.py.txt","function_name":"foreign"}',
+        (1, b'{"rule_id":"R1","rule_id":"R1"}'),
+        (1, b"[" * 1500 + b"]" * 1500),
+        (1, b'{"rule_id":"R4"}'),
+        (2, b'{"file_id":"r1/dispatch.py.txt","function_name":"foreign"}'),
+        (
+            2,
+            b'{"file_id":"r1/dispatch.py.txt","file_id":"r1/dispatch.py.txt","function_name":"x"}',
+        ),
+        (2, b"[" * 1500 + b"]" * 1500),
     ],
-    ids=["duplicate-key", "deep-header", "path-mismatch"],
+    ids=[
+        "rule-duplicate",
+        "rule-deep",
+        "rule-path",
+        "function-path",
+        "function-duplicate",
+        "function-deep",
+    ],
 )
 async def test_saved_reader_rejects_invalid_frozen_metadata(
-    tmp_path: Path, header: bytes
+    tmp_path: Path, group: int, header: bytes
 ) -> None:
-    # Given an internally consistent plan with malformed or foreign target metadata.
-    packet = PACKETS[0]
-    _, rest = packet.read_bytes().split(b"\n\nRule:\n", 1)
-    frozen = _plan(
-        [INPUTS / "c-shared/review-instructions-and-schema.txt", packet],
-        packet_content=b"Target: " + header + b"\n\nRule:\n" + rest,
-    )
+    # Given an internally consistent plan with invalid selected metadata.
+    paths = [[SHARED], [RULE_FILES[0]], [FUNCTIONS[0]]]
+    _, rest = paths[group][0].read_bytes().split(b"\n\n", 1)
+    marker = b"Rule: " if group == 1 else b"Function: "
+    frozen = _plan(paths, changed_group=group, content=marker + header + b"\n\n" + rest)
     await create_run(tmp_path / "run", frozen_plan=frozen, response=[])
     # When inspected through the saved-reader boundary.
     report = inspect_run(tmp_path / "run")
@@ -285,16 +323,16 @@ def test_nested_target_preserves_crlf_and_decorator(
 ) -> None:
     # Given a nested target inside a decorated method.
     # When its packet is generated.
-    packet = synthetic_artifacts[
-        "c-packets/R1--r1--dispatch.py.txt--C.method.inner.txt"
-    ]
+    packet = synthetic_artifacts["c-functions/r1--dispatch.py.txt--C.method.inner.txt"]
     # Then the enclosing control, helper and original CRLF bytes remain intact.
     assert b"@classmethod\r\n    def method(self, value):\r\n" in packet
     assert b"def inner():\r\n            return helper(value)\r\n" in packet
     assert b"def helper(x):\r\n    return x + 1\r\n" in packet
     assert b"def unrelated" not in packet
-    entries = json.loads(synthetic_artifacts["c-manifest.json"])["packets"]
-    entry = next(e for e in entries if e["packet"].endswith("--C.method.inner.txt"))
+    entries = json.loads(synthetic_artifacts["c-manifest.json"])["functions"]
+    entry = next(
+        e for e in entries if e["function_file"].endswith("--C.method.inner.txt")
+    )
     assert any("nested target" in flag for flag in entry["flags"])
 
 
@@ -303,6 +341,6 @@ def test_documented_exception_declaration_is_context(
 ) -> None:
     # Given a method documenting an exception it never raises.
     # When the packet is generated from its source contract.
-    packet = synthetic_artifacts["c-packets/R4--r1--dispatch.py.txt--C.method.txt"]
+    packet = synthetic_artifacts["c-functions/r1--dispatch.py.txt--C.method.txt"]
     # Then the original exception declaration is supplied as context.
     assert b"class PromisedError(Exception):\r\n    pass\r\n" in packet

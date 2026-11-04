@@ -102,50 +102,76 @@ def _sources(bundle: bytes) -> dict[str, bytes]:
     return result
 
 
-def c_target(plan: FrozenPlan, call: PlannedCall) -> PublicPair:
-    """Read the singleton target from frozen C packet provenance.
+RULE_DIGESTS = {
+    "R1": "360b8eb6a305b79f8fc8894bf756f228eb2ccc4af3560c2ae6149f3a3d85d92d",
+    "R3": "923ce9aba269ac4590aa106053f406cd148833e97766396bd2d94b0028eb9531",
+    "R4": "bc9235e5533c2ec1b14e28e3213e497aabadd09eda6ddb14cd824b9ac4baebc0",
+}
+
+
+def _metadata(
+    content: bytes, marker: bytes, keys: set[str]
+) -> tuple[dict[str, str], bytes]:
+    """Parse a strict metadata header and return its original body.
 
     Returns:
-        The explicitly supplied public pair.
+        Validated string fields and remaining bytes.
 
     Raises:
-        ValueError: The C packet or target provenance is invalid.
+        ValueError: The envelope or metadata is invalid.
+    """
+    header, separator, body = content.partition(b"\n\n")
+    if not separator or not header.startswith(marker):
+        raise ValueError("invalid C metadata envelope")
+    data = parse_json(header[len(marker) :])
+    if (
+        not isinstance(data, dict)
+        or set(data) != keys
+        or any(not isinstance(v, str) for v in data.values())
+    ):
+        raise ValueError("invalid C metadata fields")
+    return data, body
+
+
+def c_target(plan: FrozenPlan, call: PlannedCall) -> PublicPair:
+    """Read the singleton target from the frozen C input snapshots.
+
+    Returns:
+        The explicitly supplied rule and function pair.
+
+    Raises:
+        ValueError: The C input metadata, rule, or paths are invalid.
     """
     selected = tuple(plan.snapshots[index] for index in call.context_indices)
     if (
-        len(selected) != 2
+        len(selected) != 3
         or selected[0].repository_path
         != PREFIX + "c-shared/review-instructions-and-schema.txt"
     ):
         raise ValueError("unsupported C prepared input paths")
-    packet = selected[1]
-    if not packet.repository_path.startswith(PREFIX + "c-packets/"):
-        raise ValueError("unsupported C packet path")
-    header, separator, rest = packet.content.partition(b"\n\nRule:\n")
+    _, rule, function = selected
+    rule_data, rule_body = _metadata(rule.content, b"Rule: ", {"rule_id"})
+    function_data, function_body = _metadata(
+        function.content, b"Function: ", {"file_id", "function_name"}
+    )
+    target = PublicPair(
+        rule_data["rule_id"], function_data["file_id"], function_data["function_name"]
+    )
     if (
-        not separator
-        or not header.startswith(b"Target: ")
-        or b"\nContext:\n" not in rest
-    ):
-        raise ValueError("invalid C packet envelope")
-    data = parse_json(header[len(b"Target: ") :])
-    if (
-        not isinstance(data, dict)
-        or set(data) != {"rule_id", "file_id", "function_name"}
-        or any(not isinstance(value, str) for value in data.values())
-    ):
-        raise ValueError("invalid C target metadata")
-    target = PublicPair(data["rule_id"], data["file_id"], data["function_name"])
-    if (
-        target.rule_id not in {"R1", "R3", "R4"}
+        target.rule_id not in RULE_DIGESTS
         or target.file_id not in FILES
         or not target.function_name
     ):
         raise ValueError("invalid C target")
-    filename = (
-        f"{target.rule_id}--{target.file_id.replace('/', '--')}--"
-        f"{target.function_name}.txt"
-    )
-    if packet.repository_path != PREFIX + "c-packets/" + filename:
-        raise ValueError("C target does not match packet path")
+    if (
+        rule.repository_path != PREFIX + "c-rules/" + target.rule_id + ".txt"
+        or sha256(rule_body).hexdigest() != RULE_DIGESTS[target.rule_id]
+    ):
+        raise ValueError("C rule provenance mismatch")
+    filename = f"{target.file_id.replace('/', '--')}--{target.function_name}.txt"
+    if (
+        function.repository_path != PREFIX + "c-functions/" + filename
+        or not function_body.startswith(b"Context:\n")
+    ):
+        raise ValueError("C function provenance mismatch")
     return target

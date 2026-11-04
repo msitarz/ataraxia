@@ -7,30 +7,32 @@ approved freeze and reconciled execution and budget authorization remain
 required. Evaluation acceptance criteria remain TODO.
 
 The AST inventory selects all 62 functions and methods in the frozen three-file
-corpus and crosses them with R1, R3 and R4, producing 186 packets. Every packet
-contains one explicit target and exact rule bytes. Its context consists of
-original source spans: module contract and imports, lexical declarations,
-target, statically referenced module declarations and transitive callees, and
-declarations named in the supplied source contracts. Other functions are
-context, not assessment targets. The same source context is used for all three
-rules for a given function. For example, a packet targeting `Ledger.add_event`
-contains its original class declarations and the `save_event` helper; only
-`Ledger.add_event` is assessed.
+corpus and crosses them with R1, R3 and R4, producing 186 composed inputs. The
+harness combines one shared file, one of three rule files, and one of 62
+function files, in that order. Each composed input identifies one target and
+contains exact rule bytes. Its context consists of original source spans: module
+contract and imports, lexical declarations, target, statically referenced module
+declarations and transitive callees, and declarations named in the supplied
+source contracts. Other functions are context, not assessment targets. The same
+source context is used for all three rules for a given function. For example, a
+packet targeting `Ledger.add_event` contains its original class declarations and
+the `save_event` helper; only `Ledger.add_event` is assessed.
 
 The [manifest](c-manifest.json) records whole-source byte counts and SHA-256
-hashes, rule and shared-prompt hashes, target identities, source spans, roles,
-reasons and span hashes. Every packet flags independent rule-specific context
-review: static names cannot prove sufficient context or resolve all dynamic
-calls or caller contracts. No current packet is flagged as approaching a whole
-module; this does not establish sufficiency or eligibility. The public
-[schedule](c-schedule.json) retains every pair in rule/file/function order with
-three rotated effort repetitions. Private controls do not enter generation.
+hashes, rule and shared-prompt hashes, function identities, source spans, roles,
+reasons and span hashes once per function, plus hashes and sizes per
+combination. Every packet flags independent rule-specific context review: static
+names cannot prove sufficient context or resolve all dynamic calls or caller
+contracts. No current packet is flagged as approaching a whole module; this does
+not establish sufficiency or eligibility. The public [schedule](c-schedule.json)
+retains every pair in rule/file/function order with three rotated effort
+repetitions. Private controls do not enter generation.
 
 The manifest gives exact rendered prompt byte counts and a per-packet rough
 `utf8-bytes-divided-by-four-v1` token proxy, rounded up. This heuristic is not a
 provider tokenizer and may be substantially inaccurate. A full 186-call
-strategy at one effort and repetition contains 1,391,471 supplied prompt bytes,
-roughly 347,936 proxy tokens; the 12 blocks total 16,697,652 bytes and 4,175,232
+strategy at one effort and repetition contains 1,392,587 supplied prompt bytes,
+roughly 348,219 proxy tokens; the 12 blocks total 16,711,044 bytes and 4,178,628
 proxy tokens. Shared instructions and context are repeated in each packet total;
 the separate instruction file, automatic CLI/system framing, output, retries,
 actual usage and cost are excluded and remain unknown. Estimate quality cannot
@@ -72,7 +74,7 @@ above, a newly reviewed freeze, explicit execution authorization, reconciled
 budgets, and a separately chosen evidence destination.
 
 ```sh
-make eval CLI_ARGS='-d doc/feat/reviewer/engineering/evaluation/inputs/c-shared -d doc/feat/reviewer/engineering/evaluation/inputs/c-packets -i doc/feat/reviewer/engineering/evaluation/preparation/min.md -m gpt-6-luna -e medium -c 1 -n'
+make eval CLI_ARGS='-d doc/feat/reviewer/engineering/evaluation/inputs/c-shared -d doc/feat/reviewer/engineering/evaluation/inputs/c-rules -d doc/feat/reviewer/engineering/evaluation/inputs/c-functions -i doc/feat/reviewer/engineering/evaluation/preparation/min.md -m gpt-6-luna -e medium -c 1 -n'
 ```
 
 The dry-run matrix has 186 calls, not the entire rotated schedule; run the

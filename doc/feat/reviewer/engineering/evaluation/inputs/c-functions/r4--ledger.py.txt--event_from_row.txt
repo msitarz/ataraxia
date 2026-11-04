@@ -1,0 +1,53 @@
+Function: {"file_id":"r4/ledger.py.txt","function_name":"event_from_row"}
+
+Context:
+
+--- r4/ledger.py.txt lines 2-18 (context) ---
+"""SQLite adapter for a freight ledger.
+
+The composition root creates the schema and supplies the database path. Each
+method acquires its own connection. It closes that connection on every exit,
+including a failed statement or commit. Methods raising ReadError report a
+failed query; methods raising WriteError report a failed write or commit. Both
+errors preserve their original sqlite exception as the cause. A missing row is
+reported as None, not as a database failure. Transactions must commit all
+writes in a method together or roll them all back.
+
+The tables are:
+  bookings(id TEXT PRIMARY KEY, customer TEXT, state TEXT, cents INTEGER)
+  payments(id TEXT PRIMARY KEY, booking TEXT, cents INTEGER)
+  events(id TEXT PRIMARY KEY, booking TEXT, description TEXT)
+  allocations(booking TEXT PRIMARY KEY, vehicle TEXT, weight INTEGER)
+All non-key columns are NOT NULL. Amounts and weights are nonnegative.
+"""
+
+--- r4/ledger.py.txt lines 20-20 (context) ---
+import sqlite3
+
+--- r4/ledger.py.txt lines 21-21 (context) ---
+from contextlib import closing
+
+--- r4/ledger.py.txt lines 22-22 (context) ---
+from dataclasses import dataclass
+
+--- r4/ledger.py.txt lines 23-23 (context) ---
+from pathlib import Path
+
+--- r4/ledger.py.txt lines 26-27 (context) ---
+class ReadError(Exception):
+    """The ledger could not read a requested record."""
+
+--- r4/ledger.py.txt lines 30-31 (context) ---
+class WriteError(Exception):
+    """The ledger could not save a requested change."""
+
+--- r4/ledger.py.txt lines 49-53 (context) ---
+@dataclass(frozen=True)
+class Event:
+    event_id: str
+    booking_id: str
+    description: str
+
+--- r4/ledger.py.txt lines 67-68 (target) ---
+def event_from_row(row: tuple[str, str, str]) -> Event:
+    return Event(row[0], row[1], row[2])

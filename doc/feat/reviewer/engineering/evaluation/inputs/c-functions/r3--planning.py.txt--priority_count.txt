@@ -1,0 +1,40 @@
+Function: {"file_id":"r3/planning.py.txt","function_name":"priority_count"}
+
+Context:
+
+--- r3/planning.py.txt lines 2-9 (context) ---
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt lines 11-11 (context) ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt lines 12-12 (context) ---
+from time import time
+
+--- r3/planning.py.txt lines 15-24 (context) ---
+@dataclass(frozen=True)
+class Order:
+    order_id: str
+    customer_id: str
+    origin: str
+    destination: str
+    weight: int
+    ready_at: int
+    due_at: int
+    priority: int
+
+--- r3/planning.py.txt lines 349-355 (target) ---
+def priority_count(orders: list[Order], threshold: int) -> int:
+    """Count orders meeting the requested service priority."""
+    count = 0
+    for order in orders:
+        if order.priority >= threshold:
+            count += 1
+    return count

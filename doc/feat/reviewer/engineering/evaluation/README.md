@@ -206,7 +206,8 @@ reasoning or finding precision. The protocol defines the derived classification
 record bound and classification metrics. The primary medium comparison reuses
 its observations in a separate none/low/medium/high effort analysis. Following
 A/B comparison and review, the maintainer authorized static C preparation only:
-one explicit function/rule target per packet, with sufficient frozen context and
+one explicit function/rule target per composed input, using three rule files and
+62 function-context files, with sufficient frozen context and
 a single four-field assessment. The
 [C preparation contract](protocol.md#static-c-preparation-extension) requires
 all 186 public pairs, four efforts, and three repetitions, totaling 2,232

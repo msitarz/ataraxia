@@ -160,8 +160,13 @@ Derive targets from every Python `FunctionDef` and `AsyncFunctionDef`, including
 methods and nested functions, using the lexical names and duplicate-name
 rejection defined in the response contract. Cross every target with all three
 rules, irrespective of predicted applicability or private membership. Public AST
-inspection counts 14 functions in dispatch, 22 in planning, and 26 in ledger:
-62 functions and 186 packets. Do not select only the privately indexed controls.
+inspection counts 14 functions in dispatch, 22 in planning, and 26 in ledger: 62
+functions and 186 composed inputs. Do not select only the privately indexed
+controls. The generic matrix composes one shared instruction file, one of three
+rule files and one of 62 function-context files, in that order. These
+directories produce all 186 pairs without duplicating function contexts. Their
+envelopes differ from earlier prepared packets; original rule and source bytes
+remain unchanged.
 
 Each packet identifies exactly one target by original `file_id` and qualified
 `function_name`, and supplies one complete unchanged rule. Supply the target's

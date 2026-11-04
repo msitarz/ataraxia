@@ -1,0 +1,68 @@
+Function: {"file_id":"r3/planning.py.txt","function_name":"route_estimate"}
+
+Context:
+
+--- r3/planning.py.txt lines 2-9 (context) ---
+"""Decisions for an already validated freight dispatch plan.
+
+Functions returning plans and decisions operate on typed, validated values.
+They are deterministic and must leave their inputs unchanged. The orchestrator
+supplies the observation time and makes any later reservation or notification.
+Durations and timestamps are seconds, capacities and weights are grams, and
+prices are cents. Routes, vehicles and orders are valid domain records.
+"""
+
+--- r3/planning.py.txt lines 11-11 (context) ---
+from dataclasses import dataclass
+
+--- r3/planning.py.txt lines 12-12 (context) ---
+from time import time
+
+--- r3/planning.py.txt lines 38-44 (context) ---
+@dataclass(frozen=True)
+class Leg:
+    origin: str
+    destination: str
+    duration: int
+    distance: int
+    toll: int
+
+--- r3/planning.py.txt lines 66-71 (context) ---
+@dataclass(frozen=True)
+class Estimate:
+    distance: int
+    duration: int
+    cost: int
+    arrival: int
+
+--- r3/planning.py.txt lines 107-116 (context) ---
+def route_totals(legs: list[Leg]) -> tuple[int, int, int]:
+    """Return distance, duration and toll for a continuous journey."""
+    distance = 0
+    duration = 0
+    toll = 0
+    for leg in legs:
+        distance += leg.distance
+        duration += leg.duration
+        toll += leg.toll
+    return distance, duration, toll
+
+--- r3/planning.py.txt lines 176-193 (target) ---
+def route_estimate(legs: list[Leg], start: int, rate: int) -> Estimate | None:
+    """Estimate a continuous journey using the supplied start and rate."""
+    if not legs:
+        return None
+    previous = legs[0].origin
+    for leg in legs:
+        if leg.origin != previous:
+            return None
+        previous = leg.destination
+    distance, duration, toll = route_totals(legs)
+    cost = distance * rate + toll
+    arrival = start + duration
+    return Estimate(
+        distance=distance,
+        duration=duration,
+        cost=cost,
+        arrival=arrival,
+    )
