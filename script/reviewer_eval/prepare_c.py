@@ -414,7 +414,7 @@ def main() -> None:
     existing = {
         p
         for directory in ("c-rules", "c-functions")
-        for p in (INPUTS / directory).iterdir()
+        for p in (INPUTS / directory).glob("*")
     }
     selected = {p for p in expected if p.parent.name in {"c-rules", "c-functions"}}
     if args.check:
