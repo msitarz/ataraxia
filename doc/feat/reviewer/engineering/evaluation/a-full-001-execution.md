@@ -6,8 +6,9 @@ Across three high-effort runs, the reviewer caught 9, 10, and 11 of the 12
 seeded violations, and correctly passed all 12 compliant controls in every
 run. All missed violations were R4 resource-handling or error-translation
 violations; the indexed R1 validation and R3 pure-decision violations were all
-caught. Each run scored below the 80% violation-recall threshold. The results
-cover only 24 private controls per run, not the full corpus.
+caught. The first run caught 75%, so high effort did not meet the requirement
+to catch at least 80% in every repetition. The results cover only 24 private
+controls per run, not the full corpus.
 
 | Run | Violations caught | Violations missed |
 | --- | ---: | ---: |
