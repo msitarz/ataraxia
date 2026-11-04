@@ -50,7 +50,8 @@ make test ARGS=test/script/integration/eval/test_prepared_reviewer_inputs.py
 
 The tests compare each case with the rule bytes and the shared bundle with the
 source bytes, inspect the shared schema and envelope, and compose the actual
-directories through the pure plan builder. Independent owner review of the
-inputs and private reference index, runtime binding, baselines, boundary
-verification, call list, and a new freeze remain outstanding. No private answers
-are needed for this check.
+directories through the pure plan builder. The
+[private reference alone has been frozen](../corpus/reference-freeze.md).
+Independent owner review of the inputs, runtime binding, baselines, boundary
+verification, call list, and a complete input freeze remain outstanding. No
+private answers are needed for this check.

@@ -1,7 +1,8 @@
-# Initial static corpus draft
+# Initial static corpus
 
-This authored draft awaits independent engineering-owner review. It is not
-frozen and does not authorize model trials. The three Python files are source
+The private reference has a [reference-only freeze](reference-freeze.md).
+The corpus and complete inputs have not been frozen for a trial; this record
+does not authorize model trials. The three Python files are source
 material stored as data, not runnable project modules. Private controls and
 their rationales are held separately from model-visible inputs.
 
@@ -28,8 +29,8 @@ code.
 | R3 | [Planning](r3/planning.py.txt) | 301 |
 | R4 | [Ledger](r4/ledger.py.txt) | 381 |
 
-Owner review must check realism, applicability, context sufficiency, and the
-separately held reference rationales before any freeze.
+The reference review assessed applicability, context sufficiency, and the
+separately held rationales. A complete input freeze requires further review.
 [Draft packets and prompts](../inputs/preparation.md) are prepared separately.
 Call lists, runtime binding, invocation protections, and model trials remain
 outside this draft. These authored examples do not complete any Evaluation
