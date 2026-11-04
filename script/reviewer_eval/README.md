@@ -87,7 +87,9 @@ not asserted to have been planned. Duplicate cases within a model and effort
 make the aggregate ambiguous, while individual calls remain visible. Repetition
 identity is not inferred. Primary rates retain fixed denominators and only
 complete, valid calls receive credit. Partial records contribute secondary
-coverage and uncertainty counts. Complete-valid-only rates have reduced,
+coverage and uncertainty counts. Missing public coverage is the expected public
+inventory minus observed valid records, including absent or failed calls.
+Complete-valid-only rates have reduced,
 explicit denominators; an undefined rate is null. Unindexed records are
 unscored. UNKNOWN, NOT_APPLICABLE, and missing records are not passes.
 

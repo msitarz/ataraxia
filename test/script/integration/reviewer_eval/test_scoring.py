@@ -85,6 +85,9 @@ def test_b_group_keeps_absent_rule_controls() -> None:
     assert group.measures is not None
     assert group.measures.accuracy.denominator == 3
     assert group.measures.excluded_opportunities == 2
+    assert group.measures.public_expected == 9
+    assert group.measures.public_records == 1
+    assert group.measures.public_missing == 8
     assert group.per_rule is not None
     assert group.per_rule[1].measures.missing_records == 1
     assert score.calls[0].measures.accuracy.denominator == 1
@@ -134,3 +137,124 @@ def test_missing_reference_function_is_unscorable() -> None:
 
     with pytest.raises(ValueError, match="reference function missing"):
         score_inspection(inspection, broken)
+
+
+def _complete_b_inventory() -> tuple[Inspection, Reference]:
+    from script.reviewer_eval.context import FILES, PREFIX
+
+    frozen = plan(current=True)
+    source = b"".join(f"def f{i}(): pass\n".encode() for i in range(8))
+    bundle = b"Context:\n" + b"".join(
+        f"\n--- {file} (original lines 1-8) ---\n".encode() + source for file in FILES
+    )
+    snapshots = list(frozen.snapshots)
+    snapshots[2] = snapshots[2].model_copy(
+        update={"content": bundle, "content_sha256": sha256(bundle).hexdigest()}
+    )
+    case_contents = (b"a\n", b"b\n", b"c\n")
+    rules = ("R1", "R3", "R4")
+    case_snapshots = tuple(
+        snapshots[1].model_copy(
+            update={
+                "repository_path": PREFIX + f"cases/B/{rule.lower()}.txt",
+                "content": b"Rules:\n\n--- " + rule.encode() + b" ---\n" + content,
+            }
+        )
+        for rule, content in zip(rules, case_contents, strict=True)
+    )
+    snapshots[1] = case_snapshots[0]
+    snapshots.extend(case_snapshots[1:])
+    calls = tuple(
+        frozen.calls[0].model_copy(
+            update={"position": i, "context_indices": (0, case, 2)}
+        )
+        for i, case in enumerate((1, 3, 4))
+    )
+    frozen = frozen.model_copy(update={"snapshots": tuple(snapshots), "calls": calls})
+    outcomes = tuple(
+        CallOutcome(
+            position=position,
+            model="model",
+            effort="low",
+            state="complete",
+            response_format="function-assessments-v2",
+            assessments=tuple(
+                Assessment(
+                    rule_id=rule,
+                    file_id=file,
+                    function_name=f"f{i}",
+                    judgement="PASS" if i < 4 else "VIOLATION",
+                )
+                for file in FILES
+                for i in range(8)
+            ),
+        )
+        for position, rule in enumerate(rules)
+    )
+    report = Report(
+        evidence_state="complete",
+        diagnostic=None,
+        run_id="run",
+        head_commit="head",
+        planned_count=3,
+        counts=None,
+        calls=outcomes,
+    )
+    controls = tuple(
+        Control(PublicPair(rule, file, f"f{i}"), "PASS" if i < 4 else "VIOLATION")
+        for rule, file in zip(rules, FILES, strict=True)
+        for i in range(8)
+    )
+    reference = Reference(
+        digest="synthetic",
+        controls=controls,
+        source_digests={file: sha256(source).hexdigest() for file in FILES},
+        rule_digests={
+            rule: sha256(content).hexdigest()
+            for rule, content in zip(rules, case_contents, strict=True)
+        },
+    )
+    return Inspection(frozen, report), reference
+
+
+def test_complete_b_strategy_aggregates_fixed_control_denominators() -> None:
+    """Given three distinct B cases, retain the complete strategy inventory."""
+    inspection, reference = _complete_b_inventory()
+
+    score = score_inspection(inspection, reference)
+
+    group = score.strategies[0]
+    assert group.missing_required_rules == ()
+    assert group.measures is not None
+    assert group.measures.accuracy.denominator == 24
+    assert group.measures.violation_recall.denominator == 12
+    assert group.measures.correct_pass_rate.denominator == 12
+    assert group.measures.pass_false_positive_rate.denominator == 12
+    assert group.measures.public_expected == 72
+    assert group.measures.public_missing == 0
+    assert group.per_rule is not None
+    assert tuple(item.measures.accuracy.denominator for item in group.per_rule) == (
+        8,
+        8,
+        8,
+    )
+
+
+def test_partial_b_strategy_counts_absent_public_inventory() -> None:
+    """Given one of three B cases, retain both missing public inventories."""
+    inspection, reference = _complete_b_inventory()
+    assert inspection.plan is not None
+    partial = Inspection(
+        inspection.plan.model_copy(update={"calls": inspection.plan.calls[:1]}),
+        inspection.report.model_copy(update={"calls": inspection.report.calls[:1]}),
+    )
+
+    score = score_inspection(partial, reference)
+
+    group = score.strategies[0]
+    assert group.missing_required_rules == ("R3", "R4")
+    assert group.measures is not None
+    assert group.measures.accuracy.denominator == 24
+    assert group.measures.public_expected == 72
+    assert group.measures.public_records == 24
+    assert group.measures.public_missing == 48

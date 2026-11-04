@@ -148,3 +148,23 @@ def test_reference_rejects_missing_rule_digest(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="digest inventory"):
         read_reference(reference)
+
+
+@pytest.mark.parametrize("state", ["failed", "not_started"])
+def test_unavailable_call_preserves_public_missing_coverage(
+    controls: tuple[Control, ...], state: str
+) -> None:
+    """Given an unobserved call, its entire public inventory is missing."""
+    call = CallOutcome.model_validate({
+        "position": 0,
+        "model": "m",
+        "effort": "e",
+        "state": state,
+    })
+
+    result = _measures(controls, ((controls, call),), public_expected=6)
+
+    assert result.public_records == 0
+    assert result.public_missing == 6
+    assert result.public_coverage is not None
+    assert result.public_coverage.value == 0

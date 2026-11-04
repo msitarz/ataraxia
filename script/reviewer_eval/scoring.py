@@ -67,7 +67,7 @@ class Measures(BaseModel):
     public_records: int
     public_expected: int | None
     public_coverage: Rate | None
-    public_missing: int
+    public_missing: int | None
     unindexed_records: int
     excluded_opportunities: int
 
@@ -410,7 +410,9 @@ def _measures(
         public_coverage=_rate(counts["public"], public_expected)
         if public_expected is not None
         else None,
-        public_missing=counts["public_missing"],
+        public_missing=public_expected - counts["public"]
+        if public_expected is not None
+        else None,
         unindexed_records=counts["unindexed"],
         excluded_opportunities=total - counts["valid_total"],
     )
@@ -430,7 +432,6 @@ def _count_calls(
                 c.expected == "VIOLATION" for c in selected
             )
         counts["public"] += len(call.assessments)
-        counts["public_missing"] += len(call.missing_pairs)
         for assessment in call.assessments:
             _count_assessment(assessment, selected_keys, expected, call.state, counts)
 
