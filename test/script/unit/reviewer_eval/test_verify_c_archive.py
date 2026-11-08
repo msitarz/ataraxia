@@ -8,27 +8,28 @@ import tarfile
 
 import pytest
 
+from script.reviewer_eval.c_models import InventoryRow
 from script.reviewer_eval.verify_c_archive import extract
 
 
-def archive(path: Path, names: tuple[str, ...]) -> tuple[list[dict[str, object]], str]:
+def archive(path: Path, names: tuple[str, ...]) -> tuple[list[InventoryRow], str]:
     """Create synthetic regular members and their inventory.
 
     Returns:
         Inventory and archive digest.
     """
-    rows: list[dict[str, object]] = []
+    rows: list[InventoryRow] = []
     with tarfile.open(path, "w:gz") as output:
         for name in names:
             data = b"synthetic"
             info = tarfile.TarInfo(name)
             info.size = len(data)
             output.addfile(info, BytesIO(data))
-            rows.append({
-                "relative_path": name,
-                "size": len(data),
-                "sha256": sha256(data).hexdigest(),
-            })
+            rows.append(
+                InventoryRow(
+                    relative_path=name, size=len(data), sha256=sha256(data).hexdigest()
+                )
+            )
     return rows, sha256(path.read_bytes()).hexdigest()
 
 

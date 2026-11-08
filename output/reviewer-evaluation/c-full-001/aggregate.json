@@ -55,7 +55,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 7105,
       "reasoning_output_tokens": 496,
-      "candidate_adjusted_input": 301308
+      "candidate_adjusted_input": 301308,
+      "candidate_adjusted_complete": 308413
     },
     "attempt_window_seconds": 138.28,
     "aggregate_attempt_seconds": 3200.66
@@ -116,7 +117,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6657,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 311461
+      "candidate_adjusted_input": 311461,
+      "candidate_adjusted_complete": 318118
     },
     "attempt_window_seconds": 177.11,
     "aggregate_attempt_seconds": 3258.5
@@ -181,7 +183,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6787,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 334105
+      "candidate_adjusted_input": 334105,
+      "candidate_adjusted_complete": 340892
     },
     "attempt_window_seconds": 143.31,
     "aggregate_attempt_seconds": 2387.25
@@ -239,7 +242,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 31580,
       "reasoning_output_tokens": 24594,
-      "candidate_adjusted_input": 295872
+      "candidate_adjusted_input": 295872,
+      "candidate_adjusted_complete": 327452
     },
     "attempt_window_seconds": 136.75,
     "aggregate_attempt_seconds": 3198.32
@@ -296,7 +300,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6626,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 306778
+      "candidate_adjusted_input": 306778,
+      "candidate_adjusted_complete": 313404
     },
     "attempt_window_seconds": 120.94,
     "aggregate_attempt_seconds": 2950.19
@@ -357,7 +362,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6911,
       "reasoning_output_tokens": 318,
-      "candidate_adjusted_input": 296244
+      "candidate_adjusted_input": 296244,
+      "candidate_adjusted_complete": 303155
     },
     "attempt_window_seconds": 142.48,
     "aggregate_attempt_seconds": 3238.36
@@ -413,7 +419,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 33252,
       "reasoning_output_tokens": 26275,
-      "candidate_adjusted_input": 295872
+      "candidate_adjusted_input": 295872,
+      "candidate_adjusted_complete": 329124
     },
     "attempt_window_seconds": 153.49,
     "aggregate_attempt_seconds": 3646.81
@@ -474,7 +481,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6629,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 310173
+      "candidate_adjusted_input": 310173,
+      "candidate_adjusted_complete": 316802
     },
     "attempt_window_seconds": 122.44,
     "aggregate_attempt_seconds": 2967.13
@@ -535,7 +543,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 7448,
       "reasoning_output_tokens": 815,
-      "candidate_adjusted_input": 301440
+      "candidate_adjusted_input": 301440,
+      "candidate_adjusted_complete": 308888
     },
     "attempt_window_seconds": 132.14,
     "aggregate_attempt_seconds": 3014.82
@@ -593,7 +602,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 34310,
       "reasoning_output_tokens": 27323,
-      "candidate_adjusted_input": 295500
+      "candidate_adjusted_input": 295500,
+      "candidate_adjusted_complete": 329810
     },
     "attempt_window_seconds": 161.58,
     "aggregate_attempt_seconds": 3805.44
@@ -650,7 +660,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6759,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 321640
+      "candidate_adjusted_input": 321640,
+      "candidate_adjusted_complete": 328399
     },
     "attempt_window_seconds": 119.96,
     "aggregate_attempt_seconds": 2898.85
@@ -707,7 +718,8 @@
       "cache_write_input_tokens": 0,
       "output_tokens": 6574,
       "reasoning_output_tokens": 0,
-      "candidate_adjusted_input": 296244
+      "candidate_adjusted_input": 296244,
+      "candidate_adjusted_complete": 302818
     },
     "attempt_window_seconds": 120.67,
     "aggregate_attempt_seconds": 2956.05

@@ -3,10 +3,10 @@
 
 import json
 from pathlib import Path
-from typing import Any
 
 import pytest
 
+from script.reviewer_eval.c_models import Manifest
 from script.reviewer_eval.report import CallOutcome, Inspection, Report
 from script.reviewer_eval.score_c import Detail, bind, summarize
 from script.reviewer_eval.scoring import Control, Reference
@@ -21,7 +21,7 @@ from test.script.integration.eval.test_prepared_reviewer_c import (
 
 
 @pytest.fixture
-def packet() -> tuple[Inspection, dict[str, Any], Reference]:
+def packet() -> tuple[Inspection, Manifest, Reference]:
     """Compose real public packet bytes with invented private labels."""
     manifest = json.loads((INPUTS / "c-manifest.json").read_bytes())
     plan = _plan([[SHARED], RULE_FILES, FUNCTIONS])
@@ -51,11 +51,11 @@ def packet() -> tuple[Inspection, dict[str, Any], Reference]:
         {k: v["sha256"] for k, v in manifest["sources"].items()},
         manifest["rules"],
     )
-    return Inspection(plan, report), manifest, ref
+    return Inspection(plan, report), Manifest.model_validate(manifest), ref
 
 
 def test_binding_accepts_complete_public_plan(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
 ) -> None:
     # Given a public plan and synthetic controls.
     inspection, manifest, reference = packet
@@ -68,7 +68,7 @@ def test_binding_accepts_complete_public_plan(
 
 
 def test_binding_rejects_duplicate_target(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
 ) -> None:
     # Given a plan containing a duplicated target and a missing target.
     inspection, manifest, reference = packet
@@ -89,11 +89,11 @@ def test_binding_rejects_duplicate_target(
 
 
 def test_binding_rejects_foreign_context(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
 ) -> None:
     # Given a manifest whose packet hash is foreign to the frozen plan.
     inspection, manifest, reference = packet
-    manifest["combinations"][0]["prompt_sha256"] = "0" * 64
+    manifest.combinations[0].prompt_sha256 = "0" * 64
 
     # When binding it, then no score can be returned.
     with pytest.raises(ValueError, match="provenance"):
@@ -101,7 +101,7 @@ def test_binding_rejects_foreign_context(
 
 
 def test_binding_rejects_missing_indexed_target(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
 ) -> None:
     # Given a synthetic reference key outside the public plan.
     inspection, manifest, reference = packet
@@ -169,7 +169,7 @@ def test_exclusions_keep_fixed_denominators_and_uncertainty_distinct() -> None:
 
 
 def test_binding_rejects_reference_digest_mismatch(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
 ) -> None:
     # Given a reference with different source provenance.
     inspection, manifest, reference = packet
@@ -183,7 +183,7 @@ def test_binding_rejects_reference_digest_mismatch(
 
 
 def test_block_excludes_invalid_and_denied_calls_before_credit(
-    packet: tuple[Inspection, dict[str, Any], Reference],
+    packet: tuple[Inspection, Manifest, Reference],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Given valid singleton outputs and two synthetic excluded controls.
@@ -236,3 +236,95 @@ def test_block_excludes_invalid_and_denied_calls_before_credit(
     assert result["correct_pass"] == 22
     assert result["pass_excluded"] == 2
     assert result["excluded_boundary"] == result["excluded_invalid"] == 1
+
+
+def test_identity_rejects_wrong_run_or_reordered_packets(
+    packet: tuple[Inspection, Manifest, Reference],
+) -> None:
+    # Given a complete public plan and synthetic identity.
+    from script.reviewer_eval.c_models import BlockIdentity
+    from script.reviewer_eval.c_resources import validate_identity
+
+    inspection, _, _ = packet
+    assert inspection.plan is not None
+    plan = inspection.plan
+    identity = BlockIdentity(
+        run_id=plan.run_id,
+        model="model",
+        effort="low",
+        concurrency=1,
+        thread_ids_sha256="unused",
+    )
+    order = [c.prompt_sha256 for c in plan.calls]
+
+    # When checking a copied run or reordered packets, then neither can score.
+    wrong = plan.model_copy(update={"run_id": "different"})
+    with pytest.raises(ValueError, match="run identity"):
+        validate_identity(Inspection(wrong, inspection.report), identity, order, set())
+    with pytest.raises(ValueError, match="order"):
+        validate_identity(inspection, identity, list(reversed(order)), set())
+
+
+def test_identity_rejects_foreign_model(
+    packet: tuple[Inspection, Manifest, Reference],
+) -> None:
+    # Given a valid plan but a foreign model identity.
+    from script.reviewer_eval.c_models import BlockIdentity
+    from script.reviewer_eval.c_resources import validate_identity
+
+    inspection, _, _ = packet
+    assert inspection.plan is not None
+    plan = inspection.plan
+    identity = BlockIdentity(
+        run_id=plan.run_id,
+        model="foreign",
+        effort="low",
+        concurrency=1,
+        thread_ids_sha256="unused",
+    )
+
+    # When binding it, then the model mismatch is rejected.
+    with pytest.raises(ValueError, match="model or effort"):
+        validate_identity(
+            inspection, identity, [c.prompt_sha256 for c in plan.calls], set()
+        )
+
+
+def test_identity_rejects_reused_thread(
+    packet: tuple[Inspection, Manifest, Reference],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given one synthetic attempt whose thread was already used in another block.
+    from script.eval.model import AttemptRecord
+    from script.reviewer_eval.c_models import BlockIdentity
+    from script.reviewer_eval.c_resources import validate_identity
+
+    inspection, _, _ = packet
+    assert inspection.plan is not None
+    plan = inspection.plan
+    attempt = AttemptRecord.model_construct()
+    first = inspection.report.calls[0].model_copy(update={"attempts": (attempt,)})
+    report = inspection.report.model_copy(
+        update={"calls": (first, *inspection.report.calls[1:])}
+    )
+    identity = BlockIdentity(
+        run_id=plan.run_id,
+        model="model",
+        effort="low",
+        concurrency=1,
+        thread_ids_sha256="unused",
+    )
+
+    def reused(_attempt: AttemptRecord) -> tuple[str, None]:
+        return "already-seen", None
+
+    monkeypatch.setattr("script.reviewer_eval.c_resources.telemetry", reused)
+
+    # When checking identity, then the reused thread is rejected.
+    with pytest.raises(ValueError, match="duplicate thread"):
+        validate_identity(
+            Inspection(plan, report),
+            identity,
+            [c.prompt_sha256 for c in plan.calls],
+            {"already-seen"},
+        )

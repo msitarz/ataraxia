@@ -6,12 +6,14 @@ from collections import Counter
 from hashlib import sha256
 import json
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Literal, TypedDict
 
 from script.eval.model import FrozenPlan, PlannedCall
+from script.reviewer_eval.c_models import Combination, Identities, Manifest, Policy
+from script.reviewer_eval.c_resources import resources, validate_identity
 from script.reviewer_eval.context import c_target
 from script.reviewer_eval.report import Inspection, Report, inspect_evidence
-from script.reviewer_eval.scoring import Reference, read_reference
+from script.reviewer_eval.scoring import Label, Reference, read_reference
 from script.reviewer_eval.validation import PublicPair
 
 
@@ -21,7 +23,7 @@ def digest(data: bytes) -> str:
 
 
 def bind(
-    inspection: Inspection, manifest: dict[str, Any], reference: Reference, effort: str
+    inspection: Inspection, manifest: Manifest, reference: Reference, effort: str
 ) -> FrozenPlan:
     """Bind all reviewed packets.
 
@@ -35,15 +37,15 @@ def bind(
     if plan is None or len(plan.calls) != 186 or len(inspection.report.calls) != 186:
         raise ValueError("unknown or incomplete plan inventory")
     if (
-        manifest["rules"] != reference.rule_digests
-        or {k: v["sha256"] for k, v in manifest["sources"].items()}
+        manifest.rules != reference.rule_digests
+        or {k: v.sha256 for k, v in manifest.sources.items()}
         != reference.source_digests
     ):
         raise ValueError("reference source or rule digest mismatch")
-    functions = {f["function_file"]: f["sha256"] for f in manifest["functions"]}
+    functions = {f.function_file: f.sha256 for f in manifest.functions}
     combinations = {
-        PublicPair(c["rule_id"], c["file_id"], c["function_name"]): c
-        for c in manifest["combinations"]
+        PublicPair(c.rule_id, c.file_id, c.function_name): c
+        for c in manifest.combinations
     }
     if len(functions) != 62 or len(combinations) != 186:
         raise ValueError("duplicate or incomplete manifest inventory")
@@ -62,9 +64,9 @@ def bind(
 def verify_packet(
     plan: FrozenPlan,
     call: PlannedCall,
-    combo: dict[str, Any],
+    combo: Combination,
     functions: dict[str, str],
-    manifest: dict[str, Any],
+    manifest: Manifest,
 ) -> None:
     """Validate the exact public input snapshots and composed prompt.
 
@@ -73,16 +75,16 @@ def verify_packet(
     """
     shared, rule, function = (plan.snapshots[i] for i in call.context_indices)
     if (
-        digest(shared.content) != manifest["shared_sha256"]
-        or digest(function.content) != functions[combo["function_file"]]
-        or Path(function.repository_path).name != combo["function_file"]
-        or Path(rule.repository_path).name != combo["rule_file"]
+        digest(shared.content) != manifest.shared_sha256
+        or digest(function.content) != functions[combo.function_file]
+        or Path(function.repository_path).name != combo.function_file
+        or Path(rule.repository_path).name != combo.rule_file
     ):
         raise ValueError("C packet provenance mismatch")
     if (
-        digest(call.prompt) != combo["prompt_sha256"]
-        or call.prompt_sha256 != combo["prompt_sha256"]
-        or len(call.prompt) != combo["prompt_bytes"]
+        digest(call.prompt) != combo.prompt_sha256
+        or call.prompt_sha256 != combo.prompt_sha256
+        or len(call.prompt) != combo.prompt_bytes
     ):
         raise ValueError("C packet provenance mismatch")
 
@@ -92,14 +94,16 @@ class Detail(TypedDict):
 
     position: int
     rule: str
-    expected: str
-    judgment: str | None
-    exclusion: str | None
+    expected: Label
+    judgment: Literal["PASS", "VIOLATION", "UNKNOWN", "NOT_APPLICABLE"] | None
+    exclusion: (
+        Literal["boundary", "incomplete", "invalid", "failed", "not_started"] | None
+    )
 
 
 def score_block(
     root: Path,
-    manifest: dict[str, Any],
+    manifest: Manifest,
     reference: Reference,
     effort: str,
     flags: set[int],
@@ -163,11 +167,38 @@ def summarize(details: list[Detail]) -> dict[str, int]:
     return dict(c)
 
 
+def public_block(
+    details: list[Detail],
+    report: Report,
+    flags: int,
+    effort: Literal["none", "low", "medium", "high"],
+) -> dict[str, object]:
+    """Generate the public aggregate from the bound private results.
+
+    Returns:
+        Aggregate classification, usage, and timing.
+    """
+    usage, window, elapsed = resources(report, effort)
+    return {
+        "summary": summarize(details),
+        "rules": {
+            r: summarize([d for d in details if d["rule"] == r])
+            for r in ("R1", "R3", "R4")
+        },
+        "public_counts": report.counts.model_dump() if report.counts else None,
+        "boundary_calls": flags,
+        "resources": usage,
+        "attempt_window_seconds": window,
+        "aggregate_attempt_seconds": elapsed,
+    }
+
+
 def write_scores(
     runs: Path,
     output: Path,
-    policy: dict[str, Any],
-    manifest: dict[str, Any],
+    policy: Policy,
+    identities: Identities,
+    manifest: Manifest,
     reference: Reference,
     manifest_digest: str,
 ) -> None:
@@ -176,22 +207,45 @@ def write_scores(
     Raises:
         ValueError: A block has invalid evidence.
     """
-    result: dict[str, Any] = {}
-    for name in policy["blocks"]:
+    result: dict[str, dict[str, object]] = {}
+    aggregate: dict[str, object] = {}
+    seen_threads: set[str] = set()
+    if (
+        len(identities.blocks) != 12
+        or len({v.run_id for v in identities.blocks.values()}) != 12
+    ):
+        raise ValueError("duplicate or missing block identity")
+    for name in policy.blocks:
+        validate_identity(
+            inspect_evidence(runs / name),
+            identities.blocks[name],
+            identities.ordered_prompt_sha256,
+            seen_threads,
+        )
+    for name in policy.blocks:
         details, report = score_block(
             runs / name,
             manifest,
             reference,
-            name.split("-")[1],
-            set(policy["boundary_affected_positions"][name]),
+            identities.blocks[name].effort,
+            set(policy.boundary_affected_positions[name]),
         )
         if report.counts is None or report.evidence_state == "invalid":
             raise ValueError("unknown or invalid run inventory")
+        aggregate[name] = public_block(
+            details,
+            report,
+            len(policy.boundary_affected_positions[name]),
+            identities.blocks[name].effort,
+        )
         result[name] = {
             "details": details,
             "summary": summarize(details),
             "public_counts": report.counts.model_dump(),
         }
+    with output.with_name(output.stem + "-aggregate.json").open("x") as stream:
+        json.dump(aggregate, stream, indent=2)
+        stream.write("\n")
     with output.open("x") as stream:
         json.dump(
             {
@@ -205,6 +259,36 @@ def write_scores(
         stream.write("\n")
 
 
+def load_policy(policy_path: Path, identities_path: Path) -> tuple[Policy, Identities]:
+    """Bind post-review identity facts to the pre-grading policy.
+
+    Returns:
+        Validated policy and identities.
+
+    Raises:
+        ValueError: Digests or inventories do not match.
+    """
+    policy_raw = policy_path.read_bytes()
+    if (
+        digest(policy_raw)
+        != "54b53c50aeadb554a2d46e36949e5b9647b1f09b36d99f52020fa422cbe0de57"
+    ):
+        raise ValueError("predeclared policy digest mismatch")
+    policy = Policy.model_validate_json(policy_raw)
+    identities_raw = identities_path.read_bytes()
+    if (
+        digest(identities_raw)
+        != "47729cb99b6caf878e2d39d6b3be3c42ac66d0fcf9a36ab69e62ba5988394d90"
+    ):
+        raise ValueError("identity digest mismatch")
+    identities = Identities.model_validate_json(identities_raw)
+    if identities.pre_grading_policy_sha256 != digest(policy_raw) or set(
+        identities.blocks
+    ) != set(policy.blocks):
+        raise ValueError("identity policy mismatch")
+    return policy, identities
+
+
 def main() -> None:
     """Write a fresh private score file.
 
@@ -214,25 +298,22 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--policy", type=Path, required=True)
+    parser.add_argument("--identities", type=Path, required=True)
     parser.add_argument("--reference", type=Path, required=True)
     parser.add_argument("--runs", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    policy_raw = args.policy.read_bytes()
-    if (
-        digest(policy_raw)
-        != "54b53c50aeadb554a2d46e36949e5b9647b1f09b36d99f52020fa422cbe0de57"
-    ):
-        raise ValueError("predeclared policy digest mismatch")
-    policy = json.loads(policy_raw)
+    policy, identities = load_policy(args.policy, args.identities)
     raw = args.manifest.read_bytes()
-    if digest(raw) != policy["manifest_sha256"]:
+    if digest(raw) != policy.manifest_sha256:
         raise ValueError("manifest digest mismatch")
     reference = read_reference(args.reference)
-    if reference.digest != policy["private_index_sha256"]:
+    if reference.digest != policy.private_index_sha256:
         raise ValueError("private reference digest mismatch")
-    manifest = json.loads(raw)
-    write_scores(args.runs, args.output, policy, manifest, reference, digest(raw))
+    manifest = Manifest.model_validate_json(raw)
+    write_scores(
+        args.runs, args.output, policy, identities, manifest, reference, digest(raw)
+    )
 
 
 if __name__ == "__main__":

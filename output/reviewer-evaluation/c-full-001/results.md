@@ -7,6 +7,12 @@ controls were false positives and one PASS control was excluded for a denied
 tool attempt. These are classifications against a small authored reference, not
 independently adjudicated findings or evidence of historical generality.
 
+At high effort, the three repetitions caught 12/12, 11/12, and 12/12
+violations, with 1, 0, and 1 false positives respectively and no exclusions.
+At medium effort they caught 10/12, 10/12, and 9/12; the third had one
+invalid violation excluded. Each repetition has 12 violation controls and 12
+PASS controls.
+
 The fixed denominator is 12 violations and 12 PASS controls per block. Eligible
 denominators remove invalid and boundary-affected calls; UNKNOWN and
 NOT_APPLICABLE are neither PASS nor detected violations. The full 2,232-call
@@ -110,10 +116,10 @@ Provider usage totals are 11,633,761 input tokens, including 5,387,392 cached
 input; cache-write input is zero. Output is 160,638, including 79,821 reasoning
 tokens. Categories are not additive where included. Candidate-adjusted input
 subtracts per attempt the previously observed candidate baseline: 3,570 for
-none, medium, and high; 3,568 for low, floored at zero. These baselines are
-estimates of overhead rather than enforced bounds. Candidate-adjusted complete
-tokens add the full output to adjusted input. The table retains raw categories;
-no cost is inferred.
+none, medium, and high; 3,568 for low. Negative adjustments are retained. These
+baselines are estimates of overhead rather than enforced bounds.
+Candidate-adjusted complete tokens add the full output to adjusted input. The
+table retains raw categories; no cost is inferred.
 
 ## Execution and limits
 
@@ -121,10 +127,12 @@ The pilot ran first and is reused once as repetition 1 medium. The remaining
 order was rep1 none, low, high; rep2 low, medium, high, none; rep3 medium, high,
 none, low. All blocks used concurrency 25, not the protocol's serial setting or
 the pilot's originally planned 3. Each contains 186 calls and one attempt per
-call; there were no retries, probes or refills. The pilot used head `3e88202d`;
-other blocks used `6d06876d`. The intervening change was a code fix, and the
-reviewed C source and prompt content is identical. Execution was separately
-authorized with the known unverified isolation limitation.
+call; there were no harness retries, probes or refills. Codex internally
+performed transport reconnects and HTTPS fallback on some attempts; these are
+included in the observed attempt records and latency. The pilot used head
+`3e88202d`; other blocks used `6d06876d`. The intervening change was a code fix,
+and the reviewed C source and prompt content is identical. Execution was
+separately authorized with the known unverified isolation limitation.
 
 The 22 flagged attempts each issued one code-mode `exec` call, and each
 corresponding native session returned the disabled-host denial, with no
@@ -155,7 +163,7 @@ frozen index and a new private output file:
 
 ```sh
 make reviewer-c-verify-archive CLI_ARGS='--evidence output/reviewer-evaluation/c-full-001 --destination /absolute/new/extracted-directory'
-make reviewer-c-score CLI_ARGS='--manifest doc/feat/reviewer/engineering/evaluation/inputs/c-manifest.json --policy output/reviewer-evaluation/c-full-001/analysis-policy.json --reference /absolute/private/index.md --runs /absolute/new/extracted-directory --output /absolute/new/private-score.json'
+make reviewer-c-score CLI_ARGS='--manifest doc/feat/reviewer/engineering/evaluation/inputs/c-manifest.json --policy output/reviewer-evaluation/c-full-001/analysis-policy.json --identities output/reviewer-evaluation/c-full-001/block-identities.json --reference /absolute/private/index.md --runs /absolute/new/extracted-directory --output /absolute/new/private-score.json'
 ```
 
 The verifier checks archive and member hashes, inventory, duplicates and path
@@ -163,3 +171,10 @@ safety, and inspects the restored runs without rewriting the recorded paths.
 Inspection checks internal consistency, not authenticated lineage or safe-read
 enforcement. [aggregate.json](aggregate.json) contains the C-only aggregate
 values underlying these tables; keyed classifications remain private.
+
+The identity and ordered packet mapping in
+[block-identities.json](block-identities.json) was recorded after grading during
+review. It binds the original pre-grading policy by its unchanged SHA-256; it is
+factual provenance, not a new pre-grading policy. The score command writes a
+private keyed score file and a companion `-aggregate.json` containing
+reproducible public counts and resources.

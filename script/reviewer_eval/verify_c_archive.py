@@ -3,17 +3,18 @@
 
 import argparse
 from hashlib import sha256
-import json
 from pathlib import Path
 import sys
 import tarfile
-from typing import Any
 
+from pydantic import TypeAdapter
+
+from script.reviewer_eval.c_models import Inventory, InventoryRow
 from script.reviewer_eval.report import inspect_evidence
 
 
 def extract(
-    archive: Path, destination: Path, rows: list[dict[str, Any]], expected_hash: str
+    archive: Path, destination: Path, rows: list[InventoryRow], expected_hash: str
 ) -> None:
     """Verify every archive member before placing it in a new directory.
 
@@ -22,7 +23,7 @@ def extract(
     """
     if sha256(archive.read_bytes()).hexdigest() != expected_hash:
         raise ValueError("archive digest mismatch")
-    expected = {row["relative_path"]: row for row in rows}
+    expected = {row.relative_path: row for row in rows}
     if len(expected) != len(rows):
         raise ValueError("duplicate inventory path")
     with tarfile.open(archive) as source:
@@ -44,25 +45,25 @@ def extract(
                 raise ValueError("missing archive member")
             data = stream.read()
             row = expected[member.name]
-            if len(data) != row["size"] or sha256(data).hexdigest() != row["sha256"]:
+            if len(data) != row.size or sha256(data).hexdigest() != row.sha256:
                 raise ValueError("member digest mismatch")
             target = destination / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
 
 
-def verify_launcher(evidence: Path, rows: list[dict[str, Any]]) -> None:
+def verify_launcher(evidence: Path, rows: list[InventoryRow]) -> None:
     """Verify retained launcher records.
 
     Raises:
         ValueError: A launcher record is unsafe or inconsistent.
     """
     for row in rows:
-        path = Path(row["relative_path"])
+        path = Path(row.relative_path)
         if path.name != str(path):
             raise ValueError("unsafe launcher evidence path")
         data = (evidence / path).read_bytes()
-        if len(data) != row["size"] or sha256(data).hexdigest() != row["sha256"]:
+        if len(data) != row.size or sha256(data).hexdigest() != row.sha256:
             raise ValueError("launcher evidence digest mismatch")
 
 
@@ -77,19 +78,23 @@ def main() -> None:
     parser.add_argument("--destination", type=Path, required=True)
     args = parser.parse_args()
     args.destination.mkdir(parents=True, exist_ok=False)
-    inventory = json.loads((args.evidence / "inventory.json").read_bytes())
-    verify_launcher(args.evidence, inventory["launcher_evidence"])
-    for name, inventory_file in inventory["blocks"].items():
+    inventory = Inventory.model_validate_json(
+        (args.evidence / "inventory.json").read_bytes()
+    )
+    verify_launcher(args.evidence, inventory.launcher_evidence)
+    for name, inventory_file in inventory.blocks.items():
         if Path(name).name != name or name in {".", ".."}:
             raise ValueError("unsafe block name")
         if inventory_file != "inventory/" + name + ".json":
             raise ValueError("unsafe member inventory path")
-        rows = json.loads((args.evidence / inventory_file).read_bytes())
-        metadata = inventory["archives"][name]
-        if metadata["file"] != name + ".tar.gz":
+        rows = TypeAdapter(list[InventoryRow]).validate_json(
+            (args.evidence / inventory_file).read_bytes()
+        )
+        metadata = inventory.archives[name]
+        if metadata.file != name + ".tar.gz":
             raise ValueError("unsafe archive name")
         dest = args.destination / name
-        extract(args.evidence / metadata["file"], dest, rows, metadata["sha256"])
+        extract(args.evidence / metadata.file, dest, rows, metadata.sha256)
         report = inspect_evidence(dest).report
         if report.evidence_state == "invalid" or report.counts is None:
             raise ValueError(f"invalid restored evidence: {name}")
