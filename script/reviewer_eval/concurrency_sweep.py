@@ -35,7 +35,14 @@ from script.eval.runner.ports import CliBinding, CliBindingResolver
 from script.eval.standalone import create_composition, run_owned
 from script.eval.workspace import acquire_workspace, validate_workspace_selection
 from script.reviewer_eval.report import inspect_evidence
-from script.reviewer_eval.sweep_manifest import INPUT, MANIFEST, ROOT, generate
+from script.reviewer_eval.sweep_manifest import (
+    INPUT,
+    MANIFEST,
+    ROOT,
+    SCHEDULE,
+    Pair,
+    generate,
+)
 from script.reviewer_eval.transcript import extract_response
 
 
@@ -49,9 +56,25 @@ class Block(TypedDict):
 class Manifest(TypedDict):
     """Public selected pairs and exact block schedule."""
 
-    pairs: list[dict[str, object]]
+    pairs: list[Pair]
     blocks: list[Block]
 
+
+CALLS_PER_BLOCK = 50
+BLOCK_COUNT = sum(len(order) for order in SCHEDULE)
+TOTAL_CALLS = CALLS_PER_BLOCK * BLOCK_COUNT
+VALID_MINIMUM = 49
+OUTPUT_BYTES_PER_ATTEMPT = 1024 * 1024
+TIMEOUT_SECONDS = 300
+CLEANUP_SECONDS = 10
+SCHEDULED_WAVES = sum(
+    (CALLS_PER_BLOCK + concurrency - 1) // concurrency
+    for order in SCHEDULE
+    for concurrency in order
+)
+OVERHEAD_ALLOWANCE_SECONDS = 600
+SCHEDULED_CAPACITY_SECONDS = SCHEDULED_WAVES * (TIMEOUT_SECONDS + CLEANUP_SECONDS)
+BENIGN_STDERR = b"Reading additional input from stdin...\n"
 
 DIRECTORIES = tuple(
     str(INPUT / name) for name in ("c-shared", "c-rules", "c-functions")
@@ -85,7 +108,7 @@ class ByteQuarterEstimator:
 class SweepPlanBuilder:
     """Select only the frozen pairs from ordinary composed C contexts."""
 
-    def __init__(self, run_id: str, pairs: list[dict[str, object]]) -> None:
+    def __init__(self, run_id: str, pairs: list[Pair]) -> None:
         self.run_id = run_id
         self.pairs = pairs
 
@@ -124,7 +147,10 @@ class SweepPlanBuilder:
             ):
                 raise ValueError("selected prompt drift")
             calls.append(call.model_copy(update={"position": len(calls)}))
-        if len(calls) != 50 or len({c.context_indices for c in calls}) != 50:
+        if (
+            len(calls) != CALLS_PER_BLOCK
+            or len({c.context_indices for c in calls}) != CALLS_PER_BLOCK
+        ):
             raise ValueError("selection must contain 50 distinct pairs")
         return full.model_copy(update={"calls": tuple(calls)})
 
@@ -146,11 +172,11 @@ def configuration(concurrency: int, output: Path | None) -> HarnessConfig:
         "-c",
         str(concurrency),
         "--timeout-seconds",
-        "300",
+        str(TIMEOUT_SECONDS),
         "--cleanup-timeout-seconds",
-        "10",
+        str(CLEANUP_SECONDS),
         "--output-limit-bytes",
-        str(1024 * 1024),
+        str(OUTPUT_BYTES_PER_ATTEMPT),
         "--retry-limit",
         "0",
         "--capacity-retry-limit",
@@ -178,7 +204,7 @@ def frozen_manifest() -> Manifest:
     return cast(Manifest, json.loads(raw))
 
 
-async def prepare(pairs: list[dict[str, object]]) -> DryRunReport:
+async def prepare(pairs: list[Pair]) -> DryRunReport:
     """Estimate without resolving a CLI binding or constructing evidence.
 
     Returns:
@@ -238,15 +264,15 @@ def estimates(report: DryRunReport, manifest: Manifest) -> int:
             f"total={total} tokens"
         )
     lines.extend([
-        f"600-call supplied-input estimate: {total * 12} tokens; excludes "
+        f"600-call supplied-input estimate: {total * BLOCK_COUNT} tokens; excludes "
         "automatic context, framing and output; not usage or cost",
         "300s/call + 10s cleanup; 1 MiB/attempt; retries=0; quota probes=0; "
         "600 MiB output before evidence overhead",
         "Serial capacity 51h 40m; 201 waves = 17h 18m 30s; both exclude overhead; "
-        "actual subscription cost unknown",
+        "minimum wall bound adds 600s overhead; actual subscription cost unknown",
     ])
     sys.stdout.write("\n".join(lines) + "\n")
-    return total * 12
+    return total * BLOCK_COUNT
 
 
 def head() -> str:
@@ -394,7 +420,7 @@ class CheckedBinding:
 async def execute_block(
     config: HarnessConfig,
     status: EvidenceStatus,
-    pairs: list[dict[str, object]],
+    pairs: list[Pair],
     expected: tuple[str, str],
 ) -> DryRunReport | RunRecord:
     """Use the ordinary owned workspace and supervisor composition.
@@ -416,7 +442,7 @@ async def execute_block(
 async def timed_block(
     config: HarnessConfig,
     status: EvidenceStatus,
-    pairs: list[dict[str, object]],
+    pairs: list[Pair],
     executable: tuple[str, str],
     deadline: float,
 ) -> int:
@@ -431,9 +457,7 @@ async def timed_block(
         )
 
 
-def check_block(
-    output: Path, pairs: list[dict[str, object]], expected_cli: tuple[str, str]
-) -> None:
+def check_block(output: Path, pairs: list[Pair], expected_cli: tuple[str, str]) -> None:
     """Refuse unsafe, incomplete, unexpected or insufficient public evidence.
 
     Raises:
@@ -447,8 +471,8 @@ def check_block(
         inspection.plan is None
         or report.counts is None
         or report.evidence_state != "complete"
-        or report.planned_count != 50
-        or report.counts.complete < 49
+        or report.planned_count != CALLS_PER_BLOCK
+        or report.counts.complete < VALID_MINIMUM
     ):
         raise ValueError(
             "block evidence incomplete, invalid or below 49 valid responses"
@@ -465,7 +489,7 @@ def check_block(
                 / sha256(attempt.call_id.encode()).hexdigest()
                 / f"attempt-{attempt.attempt_number}"
             )
-            if path.with_suffix(".stderr").read_bytes().strip():
+            if path.with_suffix(".stderr").read_bytes() not in (b"", BENIGN_STDERR):
                 raise ValueError("unexpected stderr; retained for review")
             extract_response(path.with_suffix(".stdout").read_bytes())
 
@@ -483,6 +507,22 @@ def positive(value: str) -> float:
     if not math.isfinite(result) or result <= 0:
         raise argparse.ArgumentTypeError("bound must be finite and positive")
     return result
+
+
+def require_planning_bounds(
+    total: int, supplied_ceiling: float, wall_seconds: float, evidence_bytes: float
+) -> None:
+    """Refuse bounds below the disclosed planning capacities.
+
+    Raises:
+        ValueError: A supplied bound is below its planning capacity.
+    """
+    if (
+        supplied_ceiling < total
+        or wall_seconds < SCHEDULED_CAPACITY_SECONDS + OVERHEAD_ALLOWANCE_SECONDS
+        or evidence_bytes <= TOTAL_CALLS * OUTPUT_BYTES_PER_ATTEMPT
+    ):
+        raise ValueError("authorized bounds do not cover planned capacity and overhead")
 
 
 def parser() -> argparse.ArgumentParser:
@@ -503,7 +543,7 @@ def parser() -> argparse.ArgumentParser:
         help="assert that future execution authority has been granted",
     )
     p.add_argument("--output", type=Path, help="fresh external evidence root")
-    p.add_argument("--token-planning-ceiling", type=positive)
+    p.add_argument("--supplied-input-token-planning-ceiling", type=positive)
     p.add_argument("--wall-seconds", type=positive)
     p.add_argument("--evidence-bytes", type=positive)
     return p
@@ -512,7 +552,7 @@ def parser() -> argparse.ArgumentParser:
 def run_block(
     runner: asyncio.Runner,
     config: HarnessConfig,
-    pairs: list[dict[str, object]],
+    pairs: list[Pair],
     executable: tuple[str, str],
     deadline: float,
 ) -> int:
@@ -582,7 +622,11 @@ def run_schedule(
     """
     pairs = manifest["pairs"]
     for index, block in enumerate(manifest["blocks"]):
-        remaining_output = (len(manifest["blocks"]) - index) * 50 * 1024 * 1024
+        remaining_output = (
+            (len(manifest["blocks"]) - index)
+            * CALLS_PER_BLOCK
+            * OUTPUT_BYTES_PER_ATTEMPT
+        )
         if (
             head() != revision
             or cli() != executable
@@ -627,7 +671,7 @@ def main() -> int:
         if (
             not args.authorized_600_calls
             or args.output is None
-            or args.token_planning_ceiling is None
+            or args.supplied_input_token_planning_ceiling is None
             or args.wall_seconds is None
             or args.evidence_bytes is None
         ):
@@ -635,14 +679,12 @@ def main() -> int:
                 "execution requires explicit authority and finite token, "
                 "wall and evidence bounds"
             )
-        if (
-            args.token_planning_ceiling < total
-            or args.wall_seconds <= 186000
-            or args.evidence_bytes <= 600 * 1024 * 1024
-        ):
-            raise ValueError(
-                "authorized bounds do not cover the planned capacity and overhead"
-            )
+        require_planning_bounds(
+            total,
+            args.supplied_input_token_planning_ceiling,
+            args.wall_seconds,
+            args.evidence_bytes,
+        )
         output = fresh_output_path(args.output)
         revision = head()
         executable = cli()

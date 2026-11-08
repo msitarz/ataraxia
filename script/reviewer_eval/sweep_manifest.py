@@ -5,6 +5,7 @@ import argparse
 from hashlib import sha256
 import json
 from pathlib import Path
+from typing import TypedDict, cast
 
 ROOT = Path("doc/feat/reviewer/engineering/evaluation")
 INPUT = ROOT / "inputs"
@@ -13,6 +14,27 @@ SOURCE_REVISION = "db569b5203e618f01a878ef02af059f1bd638cd9"
 RULES = ("R1", "R3", "R4")
 FILES = ("r1/dispatch.py.txt", "r3/planning.py.txt", "r4/ledger.py.txt")
 QUOTAS = ((6, 6, 5), (6, 5, 6), (5, 6, 5))
+SCHEDULE = ((1, 5, 10, 25), (5, 10, 25, 1), (10, 25, 1, 5))
+
+
+class Combination(TypedDict):
+    """Public identity, source files, and composed-prompt metadata."""
+
+    rule_id: str
+    rule_file: str
+    file_id: str
+    function_file: str
+    function_name: str
+    prompt_sha256: str
+    prompt_bytes: int
+    estimated_tokens: int
+
+
+class Pair(Combination):
+    """Selected combination with its size bin and deterministic sample hash."""
+
+    size_bin: int
+    selection_hash: str
 
 
 def digest(data: bytes) -> str:
@@ -20,7 +42,7 @@ def digest(data: bytes) -> str:
     return sha256(data).hexdigest()
 
 
-def select_group(rows: list[dict[str, object]], quota: int) -> list[dict[str, object]]:
+def select_group(rows: list[Combination], quota: int) -> list[Pair]:
     """Select a group's members by size bins and identity hashes.
 
     Returns:
@@ -30,15 +52,24 @@ def select_group(rows: list[dict[str, object]], quota: int) -> list[dict[str, ob
         ValueError: The inventory cannot satisfy the quota.
     """
     rows = sorted(rows, key=lambda r: (r["prompt_bytes"], r["function_name"]))
-    bins: list[list[dict[str, object]]] = [[], [], []]
+    bins: list[list[Pair]] = [[], [], []]
     for index, row in enumerate(rows):
         bin_index = 3 * index // len(rows)
         identity = f"{row['rule_id']}\n{row['file_id']}\n{row['function_name']}"
-        bins[bin_index].append({
-            **row,
-            "size_bin": bin_index,
-            "selection_hash": digest(identity.encode()),
-        })
+        bins[bin_index].append(
+            Pair(
+                rule_id=row["rule_id"],
+                rule_file=row["rule_file"],
+                file_id=row["file_id"],
+                function_file=row["function_file"],
+                function_name=row["function_name"],
+                prompt_sha256=row["prompt_sha256"],
+                prompt_bytes=row["prompt_bytes"],
+                estimated_tokens=row["estimated_tokens"],
+                size_bin=bin_index,
+                selection_hash=digest(identity.encode()),
+            )
+        )
     for group in bins:
         group.sort(
             key=lambda r: (
@@ -48,7 +79,7 @@ def select_group(rows: list[dict[str, object]], quota: int) -> list[dict[str, ob
                 r["function_name"],
             )
         )
-    result: list[dict[str, object]] = []
+    result: list[Pair] = []
     while len(result) < quota:
         before = len(result)
         for group in bins:
@@ -66,8 +97,10 @@ def generate() -> bytes:
         The deterministic UTF-8 manifest.
     """
     source = INPUT / "c-manifest.json"
-    combinations = json.loads(source.read_bytes())["combinations"]
-    selected = []
+    combinations = cast(
+        list[Combination], json.loads(source.read_bytes())["combinations"]
+    )
+    selected: list[Pair] = []
     for ri, rule in enumerate(RULES):
         for fi, file_id in enumerate(FILES):
             group = [
@@ -87,11 +120,7 @@ def generate() -> bytes:
         "pairs": selected,
         "blocks": [
             {"repetition": rep + 1, "concurrency": c}
-            for rep, order in enumerate((
-                (1, 5, 10, 25),
-                (5, 10, 25, 1),
-                (10, 25, 1, 5),
-            ))
+            for rep, order in enumerate(SCHEDULE)
             for c in order
         ],
     }

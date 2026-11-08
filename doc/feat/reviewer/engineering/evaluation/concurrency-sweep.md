@@ -189,7 +189,7 @@ replace each placeholder with the authorized value and select a fresh external
 output path whose parent exists:
 
 ```sh
-.venv/bin/python -m script.reviewer_eval.concurrency_sweep --execute --authorized-600-calls --output /absolute/external/fresh-directory --token-planning-ceiling TOKEN_COUNT --wall-seconds SECONDS --evidence-bytes BYTES
+.venv/bin/python -m script.reviewer_eval.concurrency_sweep --execute --authorized-600-calls --output /absolute/external/fresh-directory --supplied-input-token-planning-ceiling TOKEN_COUNT --wall-seconds SECONDS --evidence-bytes BYTES
 ```
 
 The launcher checks the clean actual HEAD, input and manifest digests, system
@@ -200,7 +200,10 @@ dispatched within that block may have run before detection. It stops before the
 next block on unexpected activity. Evidence size and free storage are checked
 between blocks while reserving the remaining output caps; evidence overhead can
 exceed the ceiling during an active block. A later restart needs new authority.
-Supplied input token estimates use the C byte-per-four planning proxy and
-exclude automatic context and output; subscription cost and actual usage remain
-unknown until observed. Record any known account activity, network conditions,
-or cache observations alongside the retained evidence.
+The supplied-input planning ceiling covers only that proxy, not actual usage;
+future approval must reconcile automatic context and output separately. The wall
+bound must cover 201 scheduled waves plus 600 seconds of overhead; neither is a
+wall-time prediction. Supplied input token estimates use the C byte-per-four
+planning proxy and exclude automatic context and output; subscription cost and
+actual usage remain unknown until observed. Record any known account activity,
+network conditions, or cache observations alongside the retained evidence.
