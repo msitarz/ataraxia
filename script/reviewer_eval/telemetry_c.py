@@ -13,6 +13,7 @@ import json
 import math
 from pathlib import Path
 import re
+import sys
 import tempfile
 import textwrap
 
@@ -726,12 +727,53 @@ def generate(evidence: Path) -> dict[str, bytes]:
     }
 
 
-def main() -> None:
-    """Generate into a fresh directory or compare with retained artifacts.
+def check_artifact(name: str, generated: bytes, retained: bytes) -> tuple[str, ...]:
+    """Compare retained observations while reporting historical code drift.
+
+    Returns:
+        Paths whose retained code digests differ from the current analysis.
 
     Raises:
-        ValueError: A retained output differs.
+        ValueError: The artifact or its provenance structure differs.
     """
+    if name != "telemetry.json":
+        if retained != generated:
+            raise ValueError(f"artifact differs: {name}")
+        return ()
+    old = json.loads(retained)
+    current = json.loads(generated)
+    if not isinstance(old, dict) or not isinstance(current, dict):
+        raise ValueError("invalid telemetry summary")
+    old_code = old.get("code_sha256")
+    current_code = current.get("code_sha256")
+    if not isinstance(old_code, dict) or not isinstance(current_code, dict):
+        raise ValueError("invalid telemetry code provenance")
+    if old_code.keys() != current_code.keys():
+        raise ValueError("telemetry code provenance paths differ")
+    if any(
+        not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None
+        for value in (*old_code.values(), *current_code.values())
+    ):
+        raise ValueError("invalid telemetry code provenance digest")
+    canonical = (
+        json.dumps(current, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode()
+    if canonical != generated:
+        raise ValueError(f"artifact differs: {name}")
+    changed = tuple(
+        sorted(path for path in old_code if old_code[path] != current_code[path])
+    )
+    current["code_sha256"] = old_code
+    normalized = (
+        json.dumps(current, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode()
+    if normalized != retained:
+        raise ValueError(f"artifact differs: {name}")
+    return changed
+
+
+def main() -> None:
+    """Generate into a fresh directory or compare with retained artifacts."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--evidence", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -743,8 +785,13 @@ def main() -> None:
     for name, data in artifacts.items():
         target = args.output / name
         if args.check:
-            if target.read_bytes() != data:
-                raise ValueError(f"artifact differs: {name}")
+            changed = check_artifact(name, data, target.read_bytes())
+            if changed:
+                sys.stderr.write(
+                    "Retained code provenance differs from current analysis: "
+                    + ", ".join(changed)
+                    + "\n"
+                )
         else:
             target.write_bytes(data)
 

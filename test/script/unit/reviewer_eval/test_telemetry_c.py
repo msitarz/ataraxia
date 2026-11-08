@@ -5,7 +5,84 @@ import json
 
 import pytest
 
-from script.reviewer_eval.telemetry_c import distribution, notices, timeline
+from script.reviewer_eval.telemetry_c import (
+    check_artifact,
+    distribution,
+    notices,
+    timeline,
+)
+
+
+def test_check_reports_code_drift_without_rewriting_historical_provenance() -> None:
+    # Given
+    retained = {"code_sha256": {"reader.py": "a" * 64}, "attempts": 50}
+    current = {"code_sha256": {"reader.py": "b" * 64}, "attempts": 50}
+    retained_bytes = (json.dumps(retained, indent=2, sort_keys=True) + "\n").encode()
+    current_bytes = (json.dumps(current, indent=2, sort_keys=True) + "\n").encode()
+
+    # When
+    changed = check_artifact("telemetry.json", current_bytes, retained_bytes)
+
+    # Then
+    assert changed == ("reader.py",)
+    assert json.loads(retained_bytes)["code_sha256"]["reader.py"] == "a" * 64
+
+
+def test_check_rejects_changed_observations_despite_code_drift() -> None:
+    # Given
+    retained = {"code_sha256": {"reader.py": "a" * 64}, "attempts": 50}
+    current = {"code_sha256": {"reader.py": "b" * 64}, "attempts": 49}
+    retained_bytes = (json.dumps(retained, indent=2, sort_keys=True) + "\n").encode()
+    current_bytes = (json.dumps(current, indent=2, sort_keys=True) + "\n").encode()
+
+    # When
+    with pytest.raises(ValueError, match=r"artifact differs: telemetry\.json"):
+        check_artifact("telemetry.json", current_bytes, retained_bytes)
+
+    # Then
+    assert json.loads(retained_bytes)["attempts"] == 50
+
+
+def test_check_rejects_a_changed_csv() -> None:
+    # Given
+    retained = b"position,state\n0,complete\n"
+    generated = b"position,state\n0,invalid\n"
+
+    # When
+    with pytest.raises(ValueError, match=r"artifact differs: telemetry-attempts\.csv"):
+        check_artifact("telemetry-attempts.csv", generated, retained)
+
+    # Then
+    assert retained.endswith(b"complete\n")
+
+
+def test_check_rejects_invalid_historical_code_digest() -> None:
+    # Given
+    retained = b'{"code_sha256":{"reader.py":"bad"}}'
+    generated = b'{"code_sha256":{"reader.py":"' + b"a" * 64 + b'"}}'
+
+    # When
+    with pytest.raises(ValueError, match="invalid telemetry code provenance digest"):
+        check_artifact("telemetry.json", generated, retained)
+
+    # Then
+    assert b"bad" in retained
+
+
+def test_check_rejects_removed_provenance_path() -> None:
+    # Given
+    retained = {"code_sha256": {"reader.py": "a" * 64}, "attempts": 50}
+    no_paths: dict[str, str] = {}
+    current = {"code_sha256": no_paths, "attempts": 50}
+    retained_bytes = (json.dumps(retained, indent=2, sort_keys=True) + "\n").encode()
+    current_bytes = (json.dumps(current, indent=2, sort_keys=True) + "\n").encode()
+
+    # When
+    with pytest.raises(ValueError, match="provenance paths differ"):
+        check_artifact("telemetry.json", current_bytes, retained_bytes)
+
+    # Then
+    assert json.loads(retained_bytes)["code_sha256"] == {"reader.py": "a" * 64}
 
 
 def test_quantiles_and_unknown_values() -> None:
