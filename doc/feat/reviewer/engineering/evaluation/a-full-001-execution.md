@@ -72,7 +72,9 @@ byte-identical copies are stored in the linked directory without rewriting the
 recorded paths. Saved-result reads of all 12 relocated runs reproduced the
 original public state counts; this checks reader compatibility, not
 authenticated lineage. The digest manifest covers all retained files except
-itself.
+itself. The later
+[transport-validator revalidation](../../../../../output/reviewer-evaluation/ab-transport-revalidation-001/README.md)
+found no changes to these public reports.
 
 Before any harness invocation, an initial `make eval` failed while uv tried to
 fetch dependency metadata and DNS was unavailable. No run tree or model call was

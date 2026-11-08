@@ -165,7 +165,9 @@ byte-identical copies, with absolute stream references pointing to those
 original paths. Every public report was generated against its original run.
 [SHA256SUMS](SHA256SUMS) records all 252 copied run and report files, verified
 against the originals. Each slot has one attempt and there were no quota probes
-or replacements.
+or replacements. The later
+[transport-validator revalidation](../ab-transport-revalidation-001/README.md)
+found no changes to these public reports.
 
 The private index SHA-256 is
 `ddc084c2f2c168bef1dead140e508953688e3d721b7de56ee4e5aa53644febd8`.
