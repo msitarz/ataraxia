@@ -308,3 +308,7 @@ reviewer-c-score: ## score saved C evidence offline; CLI_ARGS supplies explicit 
 .PHONY: reviewer-c-verify-archive
 reviewer-c-verify-archive: ## verify and restore archived C evidence; CLI_ARGS supplies paths
 	uv run --no-sync python -m script.reviewer_eval.verify_c_archive $(_CLI_ARGS)
+
+.PHONY: reviewer-c-telemetry
+reviewer-c-telemetry: ## derive offline C transport telemetry; CLI_ARGS supplies paths
+	uv run --no-sync python -m script.reviewer_eval.telemetry_c $(_CLI_ARGS)
