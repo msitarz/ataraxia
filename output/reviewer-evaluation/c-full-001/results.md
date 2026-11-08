@@ -178,3 +178,13 @@ review. It binds the original pre-grading policy by its unchanged SHA-256; it is
 factual provenance, not a new pre-grading policy. The score command writes a
 private keyed score file and a companion `-aggregate.json` containing
 reproducible public counts and resources.
+
+For offline process and transport analysis, see the
+[telemetry report](telemetry/telemetry.md),
+[machine summary](telemetry/telemetry.json), and
+[per-attempt metrics](telemetry/telemetry-attempts.csv). Reproduce the
+retained artifacts without provider access:
+
+```sh
+make reviewer-c-telemetry CLI_ARGS='--evidence output/reviewer-evaluation/c-full-001 --output output/reviewer-evaluation/c-full-001/telemetry --check'
+```

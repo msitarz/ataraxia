@@ -1,0 +1,4107 @@
+{
+  "all": {
+    "answer_present": 2232,
+    "attempts": 2232,
+    "elapsed_seconds": {
+      "known": 2232,
+      "max": 93.90954800788313,
+      "mean": 16.811110651143075,
+      "min": 3.978838926181197,
+      "missing": 0,
+      "p50": 10.912218472920358,
+      "p90": 34.4070874246303,
+      "p95": 36.310082338890055,
+      "p99": 39.77686015661806
+    },
+    "failed_with_unknown_error": 0,
+    "fallback": {
+      "attempts": 567,
+      "notices": 567
+    },
+    "local_exceptions": 0,
+    "no_recovery_elapsed_seconds": {
+      "known": 1380,
+      "max": 65.68313440587372,
+      "mean": 8.773461577322914,
+      "min": 3.978838926181197,
+      "missing": 0,
+      "p50": 8.009868638124317,
+      "p90": 12.543860338814556,
+      "p95": 14.004232357162982,
+      "p99": 17.163325218618855
+    },
+    "overloaded": {
+      "attempts": 0,
+      "notices": 0
+    },
+    "profiles": {
+      "both": 567,
+      "fallback_only": 0,
+      "none": 1380,
+      "reconnect_only": 285
+    },
+    "reconnect": {
+      "attempts": 852,
+      "notices": 3057
+    },
+    "recovery_elapsed_seconds": {
+      "known": 852,
+      "max": 93.90954800788313,
+      "mean": 29.829838024232068,
+      "min": 11.342458338011056,
+      "missing": 0,
+      "p50": 32.1288470167201,
+      "p90": 36.90017101368867,
+      "p95": 38.04723060806282,
+      "p99": 41.96918928075582
+    },
+    "recovery_usage": {
+      "cache_write_input_tokens": {
+        "distribution": {
+          "known": 852,
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "total": 0
+      },
+      "cached_input_tokens": {
+        "distribution": {
+          "known": 852,
+          "max": 2688.0,
+          "mean": 2479.774647887324,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 2688.0,
+          "p90": 2688.0,
+          "p95": 2688.0,
+          "p99": 2688.0
+        },
+        "total": 2112768
+      },
+      "input_tokens": {
+        "distribution": {
+          "known": 852,
+          "max": 5949.0,
+          "mean": 5230.475352112676,
+          "min": 4449.0,
+          "missing": 0,
+          "p50": 5270.0,
+          "p90": 5737.9,
+          "p95": 5783.0,
+          "p99": 5901.0
+        },
+        "total": 4456365
+      },
+      "output_tokens": {
+        "distribution": {
+          "known": 852,
+          "max": 507.0,
+          "mean": 71.81338028169014,
+          "min": 33.0,
+          "missing": 0,
+          "p50": 36.0,
+          "p90": 159.0,
+          "p95": 218.45000000000005,
+          "p99": 378.96000000000004
+        },
+        "total": 61185
+      },
+      "reasoning_output_tokens": {
+        "distribution": {
+          "known": 852,
+          "max": 469.0,
+          "mean": 35.78169014084507,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 0.0,
+          "p90": 121.0,
+          "p95": 180.45000000000005,
+          "p99": 340.47
+        },
+        "total": 30486
+      }
+    },
+    "states": {
+      "complete": 2228,
+      "invalid": 4
+    },
+    "status_403": {
+      "attempts": 852,
+      "notices": 3624
+    },
+    "status_429": {
+      "attempts": 0,
+      "notices": 0
+    },
+    "status_503": {
+      "attempts": 0,
+      "notices": 0
+    },
+    "terminal_failure": 0,
+    "terminal_success": 2232,
+    "unknown_errors": {
+      "attempts": 0,
+      "notices": 0
+    },
+    "usage": {
+      "cache_write_input_tokens": {
+        "distribution": {
+          "known": 2232,
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 0.0,
+          "p90": 0.0,
+          "p95": 0.0,
+          "p99": 0.0
+        },
+        "total": 0
+      },
+      "cached_input_tokens": {
+        "distribution": {
+          "known": 2232,
+          "max": 8448.0,
+          "mean": 2413.706093189964,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 2688.0,
+          "p90": 2688.0,
+          "p95": 2688.0,
+          "p99": 2688.0
+        },
+        "total": 5387392
+      },
+      "input_tokens": {
+        "distribution": {
+          "known": 2232,
+          "max": 11942.0,
+          "mean": 5212.258512544803,
+          "min": 4447.0,
+          "missing": 0,
+          "p50": 5230.0,
+          "p90": 5660.0,
+          "p95": 5785.0,
+          "p99": 5951.0
+        },
+        "total": 11633761
+      },
+      "output_tokens": {
+        "distribution": {
+          "known": 2232,
+          "max": 1153.0,
+          "mean": 71.97043010752688,
+          "min": 33.0,
+          "missing": 0,
+          "p50": 36.0,
+          "p90": 160.9000000000001,
+          "p95": 221.0,
+          "p99": 462.52000000000044
+        },
+        "total": 160638
+      },
+      "reasoning_output_tokens": {
+        "distribution": {
+          "known": 2232,
+          "max": 1116.0,
+          "mean": 35.76209677419355,
+          "min": 0.0,
+          "missing": 0,
+          "p50": 0.0,
+          "p90": 122.0,
+          "p95": 185.0,
+          "p99": 424.1400000000003
+        },
+        "total": 79821
+      }
+    }
+  },
+  "base_revision": "d28438df92580c50703902341ec639a612bf0aaf",
+  "blocks": {
+    "rep1-high": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 41.977893183007836,
+          "mean": 17.19529024779206,
+          "min": 5.280455163680017,
+          "missing": 0,
+          "p50": 11.861182302003726,
+          "p90": 34.80870396643877,
+          "p95": 36.2221361027332,
+          "p99": 40.14301268323326
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 50,
+          "notices": 50
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 119,
+          "max": 25.38547109393403,
+          "mean": 9.790120532391828,
+          "min": 5.280455163680017,
+          "missing": 0,
+          "p50": 9.345013486687094,
+          "p90": 13.689631523750723,
+          "p95": 15.713751934468743,
+          "p99": 20.84511297116987
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 50,
+          "fallback_only": 0,
+          "none": 119,
+          "reconnect_only": 17
+        },
+        "reconnect": {
+          "attempts": 67,
+          "notices": 243
+        },
+        "recovery_elapsed_seconds": {
+          "known": 67,
+          "max": 41.977893183007836,
+          "mean": 30.347755861711867,
+          "min": 14.424708327744156,
+          "missing": 0,
+          "p50": 32.30914784874767,
+          "p90": 36.837648946326226,
+          "p95": 38.19797030570917,
+          "p99": 41.96662930950522
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 67,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 67,
+              "max": 2688.0,
+              "mean": 2126.3283582089553,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 142464
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 67,
+              "max": 5903.0,
+              "mean": 5331.044776119403,
+              "min": 4634.0,
+              "missing": 0,
+              "p50": 5289.0,
+              "p90": 5738.2,
+              "p95": 5750.1,
+              "p99": 5815.88
+            },
+            "total": 357180
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 67,
+              "max": 507.0,
+              "mean": 143.46268656716418,
+              "min": 68.0,
+              "missing": 0,
+              "p50": 112.0,
+              "p90": 226.39999999999998,
+              "p95": 308.7000000000001,
+              "p99": 460.80000000000024
+            },
+            "total": 9612
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 67,
+              "max": 469.0,
+              "mean": 106.04477611940298,
+              "min": 30.0,
+              "missing": 0,
+              "p50": 74.0,
+              "p90": 188.99999999999997,
+              "p95": 271.0000000000001,
+              "p99": 423.46000000000026
+            },
+            "total": 7105
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 67,
+          "notices": 293
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2095.483870967742,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 389760
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 5949.0,
+              "mean": 5160.709677419355,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5219.5,
+              "p90": 5624.0,
+              "p95": 5770.25,
+              "p99": 5829.900000000001
+            },
+            "total": 959892
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 1046.0,
+              "mean": 169.78494623655914,
+              "min": 62.0,
+              "missing": 0,
+              "p50": 131.5,
+              "p90": 285.0,
+              "p95": 387.75,
+              "p99": 601.6000000000008
+            },
+            "total": 31580
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 1009.0,
+              "mean": 132.2258064516129,
+              "min": 27.0,
+              "missing": 0,
+              "p50": 93.0,
+              "p90": 248.0,
+              "p95": 349.5,
+              "p99": 562.6000000000008
+            },
+            "total": 24594
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 136.74862408638,
+        "answer_present_per_minute": 81.60959625414996,
+        "complete_per_minute": 81.60959625414996,
+        "mean_active_over_window": 23.389052175246565,
+        "peak": 25,
+        "start_span_seconds": 119.45866298675537,
+        "terminal_success_per_minute": 81.60959625414996,
+        "window_seconds": 136.74862408638
+      }
+    },
+    "rep1-low": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 65.68313440587372,
+          "mean": 12.834697768332497,
+          "min": 4.537711302284151,
+          "missing": 0,
+          "p50": 7.764529424253851,
+          "p90": 29.687166810967028,
+          "p95": 32.62774770928081,
+          "p99": 36.193477954133414
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 35,
+          "notices": 35
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 135,
+          "max": 65.68313440587372,
+          "mean": 7.95585232588497,
+          "min": 4.537711302284151,
+          "missing": 0,
+          "p50": 6.943781445734203,
+          "p90": 10.016778218839317,
+          "p95": 12.987240246403962,
+          "p99": 15.182790227187795
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 35,
+          "fallback_only": 0,
+          "none": 135,
+          "reconnect_only": 16
+        },
+        "reconnect": {
+          "attempts": 51,
+          "notices": 177
+        },
+        "recovery_elapsed_seconds": {
+          "known": 51,
+          "max": 36.5243355599232,
+          "mean": 25.749288645399478,
+          "min": 17.28269568644464,
+          "missing": 0,
+          "p50": 26.8901724293828,
+          "p90": 34.247491953894496,
+          "p95": 35.589659466641024,
+          "p99": 36.329713438870385
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 51,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 51,
+              "max": 2688.0,
+              "mean": 2319.0588235294117,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 118272
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 51,
+              "max": 5819.0,
+              "mean": 5396.529411764706,
+              "min": 5085.0,
+              "missing": 0,
+              "p50": 5367.0,
+              "p90": 5568.0,
+              "p95": 5795.0,
+              "p99": 5817.5
+            },
+            "total": 275223
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 51,
+              "max": 40.0,
+              "mean": 36.627450980392155,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 37.0,
+              "p90": 38.0,
+              "p95": 39.0,
+              "p99": 39.5
+            },
+            "total": 1868
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 51,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 51,
+          "notices": 212
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 8448.0,
+              "mean": 2190.451612903226,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 7756.800000000003
+            },
+            "total": 407424
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 11942.0,
+              "mean": 5364.263440860215,
+              "min": 4451.0,
+              "missing": 0,
+              "p50": 5241.0,
+              "p90": 5749.0,
+              "p95": 5811.75,
+              "p99": 11328.95
+            },
+            "total": 997753
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 75.0,
+              "mean": 36.48924731182796,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 39.0,
+              "p99": 65.35000000000005
+            },
+            "total": 6787
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 143.3121781349182,
+        "answer_present_per_minute": 77.87195858187052,
+        "complete_per_minute": 77.87195858187052,
+        "mean_active_over_window": 16.658283886921126,
+        "peak": 25,
+        "start_span_seconds": 84.54132008552551,
+        "terminal_success_per_minute": 77.87195858187052,
+        "window_seconds": 143.3121781349182
+      }
+    },
+    "rep1-medium": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 65.15044108498842,
+          "mean": 17.20787122338179,
+          "min": 4.661286016460508,
+          "missing": 0,
+          "p50": 14.042038651648909,
+          "p90": 32.90522149624303,
+          "p95": 33.99660348671023,
+          "p99": 35.34700025920757
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 53,
+          "notices": 53
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 108,
+          "max": 65.15044108498842,
+          "mean": 9.69435205304978,
+          "min": 4.661286016460508,
+          "missing": 0,
+          "p50": 7.701017695013434,
+          "p90": 14.454010125948116,
+          "p95": 14.646837679529563,
+          "p99": 16.346714532841002
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 53,
+          "fallback_only": 0,
+          "none": 108,
+          "reconnect_only": 25
+        },
+        "reconnect": {
+          "attempts": 78,
+          "notices": 284
+        },
+        "recovery_elapsed_seconds": {
+          "known": 78,
+          "max": 36.71758614806458,
+          "mean": 27.611205459226113,
+          "min": 15.177672896068543,
+          "missing": 0,
+          "p50": 30.24803527770564,
+          "p90": 34.00567135820165,
+          "p95": 34.718076250725424,
+          "p99": 35.475996578158814
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 78,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 78,
+              "max": 2688.0,
+              "mean": 2343.3846153846152,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 182784
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 78,
+              "max": 5903.0,
+              "mean": 5328.74358974359,
+              "min": 4634.0,
+              "missing": 0,
+              "p50": 5303.0,
+              "p90": 5681.7,
+              "p95": 5748.45,
+              "p99": 5801.360000000001
+            },
+            "total": 415642
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 78,
+              "max": 38.0,
+              "mean": 35.35897435897436,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 37.0,
+              "p95": 37.0,
+              "p99": 38.0
+            },
+            "total": 2758
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 78,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 78,
+          "notices": 337
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 7936.0,
+              "mean": 1964.731182795699,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 365440
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 10843.0,
+              "mean": 5189.935483870968,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5219.5,
+              "p90": 5647.0,
+              "p95": 5780.0,
+              "p99": 5909.900000000001
+            },
+            "total": 965328
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 389.0,
+              "mean": 38.19892473118279,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 91.75000000000026
+            },
+            "total": 7105
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 353.0,
+              "mean": 2.6666666666666665,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 55.05000000000027
+            },
+            "total": 496
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 138.28061485290527,
+        "answer_present_per_minute": 80.70545543835878,
+        "complete_per_minute": 80.70545543835878,
+        "mean_active_over_window": 23.14640405690754,
+        "peak": 25,
+        "start_span_seconds": 115.06426692008972,
+        "terminal_success_per_minute": 80.70545543835878,
+        "window_seconds": 138.28061485290527
+      }
+    },
+    "rep1-none": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 93.90954800788313,
+          "mean": 17.518802973233985,
+          "min": 4.878673424012959,
+          "missing": 0,
+          "p50": 11.949939978541806,
+          "p90": 33.406636404339224,
+          "p95": 34.733756674220785,
+          "p99": 37.23163960748353
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 51,
+          "notices": 51
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 107,
+          "max": 16.144179277587682,
+          "mean": 8.974211551514498,
+          "min": 4.878673424012959,
+          "missing": 0,
+          "p50": 8.480491497088224,
+          "p90": 12.239879560098052,
+          "p95": 13.602233905903997,
+          "p99": 14.577704201638698
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 51,
+          "fallback_only": 0,
+          "none": 107,
+          "reconnect_only": 28
+        },
+        "reconnect": {
+          "attempts": 79,
+          "notices": 289
+        },
+        "recovery_elapsed_seconds": {
+          "known": 79,
+          "max": 93.90954800788313,
+          "mean": 29.09185717733506,
+          "min": 14.596529708709568,
+          "missing": 0,
+          "p50": 30.86182342004031,
+          "p90": 35.62191045498476,
+          "p95": 36.33494807095266,
+          "p99": 50.30593802884215
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 79,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 79,
+              "max": 2688.0,
+              "mean": 2449.8227848101264,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 193536
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 79,
+              "max": 5901.0,
+              "mean": 5323.645569620253,
+              "min": 4632.0,
+              "missing": 0,
+              "p50": 5293.0,
+              "p90": 5671.8,
+              "p95": 5746.3,
+              "p99": 5798.04
+            },
+            "total": 420568
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 79,
+              "max": 38.0,
+              "mean": 35.25316455696203,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 37.0,
+              "p95": 37.0,
+              "p99": 37.22
+            },
+            "total": 2785
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 79,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 79,
+          "notices": 340
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 8320.0,
+              "mean": 2206.967741935484,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 7372.800000000003
+            },
+            "total": 410496
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 11629.0,
+              "mean": 5244.521505376344,
+              "min": 4447.0,
+              "missing": 0,
+              "p50": 5226.5,
+              "p90": 5668.0,
+              "p95": 5783.25,
+              "p99": 9717.750000000005
+            },
+            "total": 975481
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 70.0,
+              "mean": 35.79032258064516,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 51.250000000000085
+            },
+            "total": 6657
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 177.1052529811859,
+        "answer_present_per_minute": 63.013376577743514,
+        "complete_per_minute": 63.013376577743514,
+        "mean_active_over_window": 18.399241864329472,
+        "peak": 25,
+        "start_span_seconds": 117.06769704818726,
+        "terminal_success_per_minute": 63.013376577743514,
+        "window_seconds": 177.1052529811859
+      }
+    },
+    "rep2-high": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 43.20089327869937,
+          "mean": 19.60649021729196,
+          "min": 4.910488531924784,
+          "missing": 0,
+          "p50": 17.50194076495245,
+          "p90": 34.864702184917405,
+          "p95": 37.09103484952357,
+          "p99": 42.29832221847028
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 50,
+          "notices": 50
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 93,
+          "max": 28.05639817006886,
+          "mean": 9.212857852199225,
+          "min": 4.910488531924784,
+          "missing": 0,
+          "p50": 8.192255930043757,
+          "p90": 12.817832071147858,
+          "p95": 15.617640117369598,
+          "p99": 20.47072243776171
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 50,
+          "fallback_only": 0,
+          "none": 93,
+          "reconnect_only": 43
+        },
+        "reconnect": {
+          "attempts": 93,
+          "notices": 312
+        },
+        "recovery_elapsed_seconds": {
+          "known": 93,
+          "max": 43.20089327869937,
+          "mean": 30.000122582384694,
+          "min": 14.194280382245779,
+          "missing": 0,
+          "p50": 30.16738149570301,
+          "p90": 37.10252876663581,
+          "p95": 40.15633482979611,
+          "p99": 42.99686716623604
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 2688.0,
+              "mean": 2601.2903225806454,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 241920
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 5903.0,
+              "mean": 5177.322580645161,
+              "min": 4467.0,
+              "missing": 0,
+              "p50": 5186.0,
+              "p90": 5613.4,
+              "p95": 5746.8,
+              "p99": 5781.5599999999995
+            },
+            "total": 481491
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 475.0,
+              "mean": 161.33333333333334,
+              "min": 63.0,
+              "missing": 0,
+              "p50": 129.0,
+              "p90": 300.1999999999999,
+              "p95": 372.6,
+              "p99": 458.43999999999994
+            },
+            "total": 15004
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 440.0,
+              "mean": 124.25806451612904,
+              "min": 27.0,
+              "missing": 0,
+              "p50": 90.0,
+              "p90": 264.39999999999986,
+              "p95": 337.20000000000005,
+              "p99": 421.59999999999997
+            },
+            "total": 11556
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 93,
+          "notices": 362
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2586.8387096774195,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 481152
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 5949.0,
+              "mean": 5160.709677419355,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5219.5,
+              "p90": 5624.0,
+              "p95": 5770.25,
+              "p99": 5829.900000000001
+            },
+            "total": 959892
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 1153.0,
+              "mean": 178.7741935483871,
+              "min": 63.0,
+              "missing": 0,
+              "p50": 137.5,
+              "p90": 326.5,
+              "p95": 424.5,
+              "p99": 618.4500000000004
+            },
+            "total": 33252
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 1116.0,
+              "mean": 141.26344086021504,
+              "min": 27.0,
+              "missing": 0,
+              "p50": 99.0,
+              "p90": 289.0,
+              "p95": 387.0,
+              "p99": 581.3000000000004
+            },
+            "total": 26275
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 153.48577308654785,
+        "answer_present_per_minute": 72.7103221072293,
+        "complete_per_minute": 72.7103221072293,
+        "mean_active_over_window": 23.76058177363305,
+        "peak": 25,
+        "start_span_seconds": 135.34926104545593,
+        "terminal_success_per_minute": 72.7103221072293,
+        "window_seconds": 153.48577308654785
+      }
+    },
+    "rep2-low": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 185,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 1,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 39.78906930517405,
+          "mean": 15.861252990125688,
+          "min": 4.582165908999741,
+          "missing": 0,
+          "p50": 10.080555603373796,
+          "p90": 33.68220811593346,
+          "p95": 35.344859762932174,
+          "p99": 36.47612255467102
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 36,
+          "notices": 36
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 125,
+          "max": 15.734751608222723,
+          "mean": 8.504946022771298,
+          "min": 4.582165908999741,
+          "missing": 0,
+          "p50": 8.134651634842157,
+          "p90": 11.421358758956194,
+          "p95": 12.14048756621778,
+          "p99": 14.550140742175286
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 36,
+          "fallback_only": 0,
+          "none": 125,
+          "reconnect_only": 25
+        },
+        "reconnect": {
+          "attempts": 61,
+          "notices": 219
+        },
+        "recovery_elapsed_seconds": {
+          "known": 61,
+          "max": 39.78906930517405,
+          "mean": 30.93565251339288,
+          "min": 15.66883159801364,
+          "missing": 0,
+          "p50": 33.14269068511203,
+          "p90": 35.86119208205491,
+          "p95": 36.36501219077036,
+          "p99": 38.09338949723169
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 2688.0,
+              "mean": 2511.7377049180327,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 153216
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 5947.0,
+              "mean": 5215.737704918033,
+              "min": 4632.0,
+              "missing": 0,
+              "p50": 5250.0,
+              "p90": 5784.0,
+              "p95": 5795.0,
+              "p99": 5867.8
+            },
+            "total": 318160
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 40.0,
+              "mean": 35.295081967213115,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 37.0,
+              "p95": 38.0,
+              "p99": 39.4
+            },
+            "total": 2153
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 185,
+          "invalid": 1
+        },
+        "status_403": {
+          "attempts": 61,
+          "notices": 255
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 7936.0,
+              "mean": 2585.462365591398,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 3475.20000000003
+            },
+            "total": 480896
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 10968.0,
+              "mean": 5217.344086021505,
+              "min": 4447.0,
+              "missing": 0,
+              "p50": 5217.5,
+              "p90": 5668.0,
+              "p95": 5783.25,
+              "p99": 6668.200000000027
+            },
+            "total": 970426
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 81.0,
+              "mean": 35.623655913978496,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 37.5,
+              "p95": 38.0,
+              "p99": 41.950000000000074
+            },
+            "total": 6626
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 120.94094109535217,
+        "answer_present_per_minute": 92.27644417948791,
+        "complete_per_minute": 91.78033426454442,
+        "mean_active_over_window": 24.394463801231595,
+        "peak": 25,
+        "start_span_seconds": 115.25374102592468,
+        "terminal_success_per_minute": 92.27644417948791,
+        "window_seconds": 120.94094109535217
+      }
+    },
+    "rep2-medium": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 40.65275948308408,
+          "mean": 17.410550084510838,
+          "min": 5.879715310875326,
+          "missing": 0,
+          "p50": 10.95712166116573,
+          "p90": 37.24748764326796,
+          "p95": 38.64515929983463,
+          "p99": 40.55912171094678
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 53,
+          "notices": 53
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 113,
+          "max": 15.140175088774413,
+          "mean": 8.94009143643213,
+          "min": 5.879715310875326,
+          "missing": 0,
+          "p50": 8.30603855708614,
+          "p90": 12.143947949353604,
+          "p95": 13.497264326550066,
+          "p99": 15.029540260601784
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 53,
+          "fallback_only": 0,
+          "none": 113,
+          "reconnect_only": 20
+        },
+        "reconnect": {
+          "attempts": 73,
+          "notices": 272
+        },
+        "recovery_elapsed_seconds": {
+          "known": 73,
+          "max": 40.65275948308408,
+          "mean": 30.522355937016236,
+          "min": 15.676965565886348,
+          "missing": 0,
+          "p50": 32.90244309604168,
+          "p90": 38.80567462556064,
+          "p95": 39.83378130523488,
+          "p99": 40.63077629681677
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 73,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 73,
+              "max": 2688.0,
+              "mean": 2356.6027397260273,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 172032
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 73,
+              "max": 5819.0,
+              "mean": 5129.369863013699,
+              "min": 4451.0,
+              "missing": 0,
+              "p50": 5313.0,
+              "p90": 5478.0,
+              "p95": 5586.400000000001,
+              "p99": 5816.84
+            },
+            "total": 374444
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 73,
+              "max": 40.0,
+              "mean": 35.986301369863014,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 36.0,
+              "p90": 38.0,
+              "p95": 39.0,
+              "p99": 39.28
+            },
+            "total": 2627
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 73,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 73,
+          "notices": 325
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2254.451612903226,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 419328
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 5951.0,
+              "mean": 5162.709677419355,
+              "min": 4451.0,
+              "missing": 0,
+              "p50": 5221.5,
+              "p90": 5626.0,
+              "p95": 5772.25,
+              "p99": 5831.900000000001
+            },
+            "total": 960264
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 174.0,
+              "mean": 37.155913978494624,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.75,
+              "p99": 100.60000000000002
+            },
+            "total": 6911
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 136.0,
+              "mean": 1.7096774193548387,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 61.75000000000003
+            },
+            "total": 318
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 142.4781517982483,
+        "answer_present_per_minute": 78.32779874771795,
+        "complete_per_minute": 78.32779874771795,
+        "mean_active_over_window": 22.72953940865421,
+        "peak": 25,
+        "start_span_seconds": 119.25035190582275,
+        "terminal_success_per_minute": 78.32779874771795,
+        "window_seconds": 142.4781517982483
+      }
+    },
+    "rep2-none": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 185,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 1,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 38.16932384669781,
+          "mean": 15.952332192225763,
+          "min": 5.338124207220972,
+          "missing": 0,
+          "p50": 9.399562120437622,
+          "p90": 35.28466835571453,
+          "p95": 36.37941102834884,
+          "p99": 37.54092389345169
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 35,
+          "notices": 35
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 125,
+          "max": 14.008258023764938,
+          "mean": 8.534795269545167,
+          "min": 5.338124207220972,
+          "missing": 0,
+          "p50": 8.373441265895963,
+          "p90": 10.86050834013149,
+          "p95": 12.327595828007906,
+          "p99": 13.932022356614471
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 35,
+          "fallback_only": 0,
+          "none": 125,
+          "reconnect_only": 26
+        },
+        "reconnect": {
+          "attempts": 61,
+          "notices": 211
+        },
+        "recovery_elapsed_seconds": {
+          "known": 61,
+          "max": 38.16932384669781,
+          "mean": 31.152202935423702,
+          "min": 13.818538093939424,
+          "missing": 0,
+          "p50": 33.548671452794224,
+          "p90": 37.24703917745501,
+          "p95": 37.37541457777843,
+          "p99": 37.82780155688524
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 2688.0,
+              "mean": 2599.8688524590166,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 158592
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 5949.0,
+              "mean": 5229.377049180328,
+              "min": 4634.0,
+              "missing": 0,
+              "p50": 5252.0,
+              "p90": 5786.0,
+              "p95": 5797.0,
+              "p99": 5869.8
+            },
+            "total": 318992
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 40.0,
+              "mean": 35.459016393442624,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 39.4
+            },
+            "total": 2163
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 61,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 185,
+          "invalid": 1
+        },
+        "status_403": {
+          "attempts": 61,
+          "notices": 246
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 7168.0,
+              "mean": 2582.021505376344,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 3091.2000000000153
+            },
+            "total": 480256
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 10233.0,
+              "mean": 5237.596774193548,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5234.0,
+              "p90": 5709.5,
+              "p95": 5790.5,
+              "p99": 9054.650000000001
+            },
+            "total": 974193
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 58.0,
+              "mean": 35.63978494623656,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 49.45000000000002
+            },
+            "total": 6629
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 122.43930697441101,
+        "answer_present_per_minute": 91.14719999462562,
+        "complete_per_minute": 90.6571612849771,
+        "mean_active_over_window": 24.22938720927906,
+        "peak": 25,
+        "start_span_seconds": 114.16474413871765,
+        "terminal_success_per_minute": 91.14719999462562,
+        "window_seconds": 122.43930697441101
+      }
+    },
+    "rep3-high": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 43.9987482749857,
+          "mean": 20.459362222585245,
+          "min": 4.811631586868316,
+          "missing": 0,
+          "p50": 17.31067475536838,
+          "p90": 35.96405032207258,
+          "p95": 38.046127454494126,
+          "p99": 42.568650337983854
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 57,
+          "notices": 57
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 93,
+          "max": 26.957616575993598,
+          "mean": 9.6965405023106,
+          "min": 4.811631586868316,
+          "missing": 0,
+          "p50": 8.82368937227875,
+          "p90": 13.467308321967721,
+          "p95": 16.988611766323448,
+          "p99": 25.457275577820834
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 57,
+          "fallback_only": 0,
+          "none": 93,
+          "reconnect_only": 36
+        },
+        "reconnect": {
+          "attempts": 93,
+          "notices": 347
+        },
+        "recovery_elapsed_seconds": {
+          "known": 93,
+          "max": 43.9987482749857,
+          "mean": 31.222183942859893,
+          "min": 15.480384422000498,
+          "missing": 0,
+          "p50": 32.85929203312844,
+          "p90": 38.04659981681034,
+          "p95": 39.94042708054185,
+          "p99": 42.68828285213559
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 2688.0,
+              "mean": 2630.1935483870966,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 244608
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 5901.0,
+              "mean": 5181.741935483871,
+              "min": 4465.0,
+              "missing": 0,
+              "p50": 5223.0,
+              "p90": 5509.6,
+              "p95": 5642.8,
+              "p99": 5761.16
+            },
+            "total": 481902
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 471.0,
+              "mean": 164.27956989247312,
+              "min": 69.0,
+              "missing": 0,
+              "p50": 145.0,
+              "p90": 292.59999999999997,
+              "p95": 346.0,
+              "p99": 407.51999999999987
+            },
+            "total": 15278
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 93,
+              "max": 435.0,
+              "mean": 127.15053763440861,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 108.0,
+              "p90": 256.99999999999994,
+              "p95": 309.8,
+              "p99": 370.5999999999999
+            },
+            "total": 11825
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 93,
+          "notices": 404
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2601.2903225806454,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 483840
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 5947.0,
+              "mean": 5158.709677419355,
+              "min": 4447.0,
+              "missing": 0,
+              "p50": 5217.5,
+              "p90": 5622.0,
+              "p95": 5768.25,
+              "p99": 5827.900000000001
+            },
+            "total": 959520
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 1026.0,
+              "mean": 184.46236559139786,
+              "min": 60.0,
+              "missing": 0,
+              "p50": 145.0,
+              "p90": 337.5,
+              "p95": 401.25,
+              "p99": 737.0000000000015
+            },
+            "total": 34310
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 988.0,
+              "mean": 146.8978494623656,
+              "min": 23.0,
+              "missing": 0,
+              "p50": 108.0,
+              "p90": 298.0,
+              "p95": 364.75,
+              "p99": 698.0000000000015
+            },
+            "total": 27323
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 161.58259296417236,
+        "answer_present_per_minute": 69.06684560059327,
+        "complete_per_minute": 69.06684560059327,
+        "mean_active_over_window": 23.551618362531354,
+        "peak": 25,
+        "start_span_seconds": 141.06615900993347,
+        "terminal_success_per_minute": 69.06684560059327,
+        "window_seconds": 161.58259296417236
+      }
+    },
+    "rep3-low": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 39.056998011656106,
+          "mean": 15.892759660584352,
+          "min": 4.602821330074221,
+          "missing": 0,
+          "p50": 9.584445814369246,
+          "p90": 34.36196314590052,
+          "p95": 36.31228773505427,
+          "p99": 38.504221393913035
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 50,
+          "notices": 50
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 121,
+          "max": 15.317867987789214,
+          "mean": 8.139863433443349,
+          "min": 4.602821330074221,
+          "missing": 0,
+          "p50": 7.428079089149833,
+          "p90": 11.795092510990798,
+          "p95": 13.289430995006114,
+          "p99": 14.709583992697297
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 50,
+          "fallback_only": 0,
+          "none": 121,
+          "reconnect_only": 15
+        },
+        "reconnect": {
+          "attempts": 65,
+          "notices": 232
+        },
+        "recovery_elapsed_seconds": {
+          "known": 65,
+          "max": 39.056998011656106,
+          "mean": 30.325074175723756,
+          "min": 11.342458338011056,
+          "missing": 0,
+          "p50": 33.000756931025535,
+          "p90": 37.207630317565055,
+          "p95": 37.84770145276561,
+          "p99": 38.87335408467799
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 65,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 65,
+              "max": 2688.0,
+              "mean": 2563.9384615384615,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 166656
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 65,
+              "max": 5949.0,
+              "mean": 5122.923076923077,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5172.0,
+              "p90": 5784.8,
+              "p95": 5796.4,
+              "p99": 5864.5199999999995
+            },
+            "total": 332990
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 65,
+              "max": 40.0,
+              "mean": 35.184615384615384,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 39.36
+            },
+            "total": 2287
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 65,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 65,
+          "notices": 282
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2601.2903225806454,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 483840
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 5949.0,
+              "mean": 5160.709677419355,
+              "min": 4449.0,
+              "missing": 0,
+              "p50": 5219.5,
+              "p90": 5624.0,
+              "p95": 5770.25,
+              "p99": 5829.900000000001
+            },
+            "total": 959892
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 40.0,
+              "mean": 35.344086021505376,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.0,
+              "p99": 39.0
+            },
+            "total": 6574
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 120.66904997825623,
+        "answer_present_per_minute": 92.48436116809538,
+        "complete_per_minute": 92.48436116809538,
+        "mean_active_over_window": 24.497816220165863,
+        "peak": 25,
+        "start_span_seconds": 115.13073110580444,
+        "terminal_success_per_minute": 92.48436116809538,
+        "window_seconds": 120.66904997825623
+      }
+    },
+    "rep3-medium": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 184,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 2,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 39.23351040203124,
+          "mean": 16.208689624305954,
+          "min": 4.32882991572842,
+          "missing": 0,
+          "p50": 9.825257380725816,
+          "p90": 35.53649240662344,
+          "p95": 36.17408218886703,
+          "p99": 37.779813147638926
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 53,
+          "notices": 53
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 118,
+          "max": 15.842561949975789,
+          "mean": 8.244585317796318,
+          "min": 4.32882991572842,
+          "missing": 0,
+          "p50": 7.4862957103177905,
+          "p90": 11.549705913197249,
+          "p95": 13.154909008718096,
+          "p99": 13.977345130541362
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 53,
+          "fallback_only": 0,
+          "none": 118,
+          "reconnect_only": 15
+        },
+        "reconnect": {
+          "attempts": 68,
+          "notices": 243
+        },
+        "recovery_elapsed_seconds": {
+          "known": 68,
+          "max": 39.23351040203124,
+          "mean": 30.028752979719737,
+          "min": 13.858579851221293,
+          "missing": 0,
+          "p50": 33.66880608838983,
+          "p90": 36.889244120335206,
+          "p95": 37.59455461944454,
+          "p99": 38.71438925242051
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 68,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 68,
+              "max": 2688.0,
+              "mean": 2608.9411764705883,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 177408
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 68,
+              "max": 5819.0,
+              "mean": 5102.058823529412,
+              "min": 4451.0,
+              "missing": 0,
+              "p50": 5270.5,
+              "p90": 5491.9,
+              "p95": 5790.85,
+              "p99": 5816.99
+            },
+            "total": 346940
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 68,
+              "max": 40.0,
+              "mean": 35.794117647058826,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 39.0,
+              "p99": 39.33
+            },
+            "total": 2434
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 68,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 184,
+          "invalid": 2
+        },
+        "status_403": {
+          "attempts": 68,
+          "notices": 296
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 2688.0,
+              "mean": 2557.935483870968,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 475776
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 10352.0,
+              "mean": 5190.645161290323,
+              "min": 4451.0,
+              "missing": 0,
+              "p50": 5230.5,
+              "p90": 5649.0,
+              "p95": 5782.0,
+              "p99": 5911.900000000001
+            },
+            "total": 965460
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 167.0,
+              "mean": 40.043010752688176,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 39.0,
+              "p95": 75.25,
+              "p99": 139.0000000000001
+            },
+            "total": 7448
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 128.0,
+              "mean": 4.381720430107527,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 36.75,
+              "p99": 101.7000000000001
+            },
+            "total": 815
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 132.14013195037842,
+        "answer_present_per_minute": 84.45579579253659,
+        "complete_per_minute": 83.5476689560577,
+        "mean_active_over_window": 22.81556496078482,
+        "peak": 25,
+        "start_span_seconds": 117.12348794937134,
+        "terminal_success_per_minute": 84.45579579253659,
+        "window_seconds": 132.14013195037842
+      }
+    },
+    "rep3-none": {
+      "cli_version": "codex-cli 0.166.0",
+      "configured_concurrency": 25,
+      "counts": {
+        "complete": 186,
+        "failed": 0,
+        "incomplete": 0,
+        "invalid": 0,
+        "not_started": 0
+      },
+      "planned_calls": 186,
+      "runner_version": "0.1.0",
+      "summary": {
+        "answer_present": 186,
+        "attempts": 186,
+        "elapsed_seconds": {
+          "known": 186,
+          "max": 37.349840581882745,
+          "mean": 15.585228609346775,
+          "min": 3.978838926181197,
+          "missing": 0,
+          "p50": 9.04840758186765,
+          "p90": 33.497936653671786,
+          "p95": 34.1420863813255,
+          "p99": 35.80922675577459
+        },
+        "failed_with_unknown_error": 0,
+        "fallback": {
+          "attempts": 44,
+          "notices": 44
+        },
+        "local_exceptions": 0,
+        "no_recovery_elapsed_seconds": {
+          "known": 123,
+          "max": 16.55145052773878,
+          "mean": 8.16687258408685,
+          "min": 3.978838926181197,
+          "missing": 0,
+          "p50": 7.302254710812122,
+          "p90": 11.234588936157525,
+          "p95": 14.271813303558172,
+          "p99": 16.33542476135306
+        },
+        "overloaded": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "profiles": {
+          "both": 44,
+          "fallback_only": 0,
+          "none": 123,
+          "reconnect_only": 19
+        },
+        "reconnect": {
+          "attempts": 63,
+          "notices": 228
+        },
+        "recovery_elapsed_seconds": {
+          "known": 63,
+          "max": 37.349840581882745,
+          "mean": 30.06868561104472,
+          "min": 16.69136319961399,
+          "missing": 0,
+          "p50": 32.2627786770463,
+          "p90": 34.95916150230914,
+          "p95": 35.51982512907125,
+          "p99": 37.11589082433842
+        },
+        "recovery_usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 63,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 63,
+              "max": 2688.0,
+              "mean": 2560.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 2688.0
+            },
+            "total": 161280
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 63,
+              "max": 5947.0,
+              "mean": 5283.063492063492,
+              "min": 4632.0,
+              "missing": 0,
+              "p50": 5242.0,
+              "p90": 5762.6,
+              "p95": 5783.7,
+              "p99": 5918.4800000000005
+            },
+            "total": 332833
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 63,
+              "max": 38.0,
+              "mean": 35.17460317460318,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 37.0,
+              "p95": 37.0,
+              "p99": 37.38
+            },
+            "total": 2216
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 63,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        },
+        "states": {
+          "complete": 186
+        },
+        "status_403": {
+          "attempts": 63,
+          "notices": 272
+        },
+        "status_429": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "status_503": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "terminal_failure": 0,
+        "terminal_success": 186,
+        "unknown_errors": {
+          "attempts": 0,
+          "notices": 0
+        },
+        "usage": {
+          "cache_write_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          },
+          "cached_input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 8320.0,
+              "mean": 2737.548387096774,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 2688.0,
+              "p90": 2688.0,
+              "p95": 2688.0,
+              "p99": 7571.200000000001
+            },
+            "total": 509184
+          },
+          "input_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 11626.0,
+              "mean": 5299.247311827957,
+              "min": 4447.0,
+              "missing": 0,
+              "p50": 5237.0,
+              "p90": 5736.5,
+              "p95": 5794.25,
+              "p99": 10338.5
+            },
+            "total": 985660
+          },
+          "output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 77.0,
+              "mean": 36.33870967741935,
+              "min": 33.0,
+              "missing": 0,
+              "p50": 35.0,
+              "p90": 38.0,
+              "p95": 38.75,
+              "p99": 73.15
+            },
+            "total": 6759
+          },
+          "reasoning_output_tokens": {
+            "distribution": {
+              "known": 186,
+              "max": 0.0,
+              "mean": 0.0,
+              "min": 0.0,
+              "missing": 0,
+              "p50": 0.0,
+              "p90": 0.0,
+              "p95": 0.0,
+              "p99": 0.0
+            },
+            "total": 0
+          }
+        }
+      },
+      "timeline": {
+        "active_union_seconds": 119.96150803565979,
+        "answer_present_per_minute": 93.02984084430295,
+        "complete_per_minute": 93.02984084430295,
+        "mean_active_over_window": 24.165473982250717,
+        "peak": 25,
+        "start_span_seconds": 113.30587100982666,
+        "terminal_success_per_minute": 93.02984084430295,
+        "window_seconds": 119.96150803565979
+      }
+    }
+  },
+  "code_sha256": {
+    "script/reviewer_eval/c_resources.py": "67f4e2f7955abd7e3b7f6467782b5b994bfceacb2430c5a7cb430dccac66b6ed",
+    "script/reviewer_eval/report.py": "588d083dce56188595856ec4958da06572303fd22664827275a71190739a9931",
+    "script/reviewer_eval/telemetry_c.py": "bf8d8aa967e24e3714319651fcdc6dc8cce2ea13af4a245e57ec47a97f1fa4a6",
+    "script/reviewer_eval/transcript.py": "292d25aa5fa61a57dce731ec4b5c7eaa7fdce9eac673e560868ab022901d9b60",
+    "script/reviewer_eval/verify_c_archive.py": "565750b86cbd0890d3351170c09b95e30bfb61878305a201e2598050622f3027"
+  },
+  "efforts": {
+    "high": {
+      "answer_present": 558,
+      "attempts": 558,
+      "elapsed_seconds": {
+        "known": 558,
+        "max": 43.9987482749857,
+        "mean": 19.08704756255642,
+        "min": 4.811631586868316,
+        "missing": 0,
+        "p50": 13.967445640591905,
+        "p90": 35.44207757804543,
+        "p95": 37.55455027904827,
+        "p99": 42.16896102497354
+      },
+      "failed_with_unknown_error": 0,
+      "fallback": {
+        "attempts": 157,
+        "notices": 157
+      },
+      "local_exceptions": 0,
+      "no_recovery_elapsed_seconds": {
+        "known": 305,
+        "max": 28.05639817006886,
+        "mean": 9.58556849286571,
+        "min": 4.811631586868316,
+        "missing": 0,
+        "p50": 8.814323347993195,
+        "p90": 13.550223940983418,
+        "p95": 16.369876752048732,
+        "p99": 25.15419096898279
+      },
+      "overloaded": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "profiles": {
+        "both": 157,
+        "fallback_only": 0,
+        "none": 305,
+        "reconnect_only": 96
+      },
+      "reconnect": {
+        "attempts": 253,
+        "notices": 902
+      },
+      "recovery_elapsed_seconds": {
+        "known": 253,
+        "max": 43.9987482749857,
+        "mean": 30.541399800721113,
+        "min": 14.194280382245779,
+        "missing": 0,
+        "p50": 31.76926007680595,
+        "p90": 37.82595820473507,
+        "p95": 39.82402301616967,
+        "p99": 42.76863162256777
+      },
+      "recovery_usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 253,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 253,
+            "max": 2688.0,
+            "mean": 2486.1343873517785,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 628992
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 253,
+            "max": 5903.0,
+            "mean": 5219.656126482213,
+            "min": 4465.0,
+            "missing": 0,
+            "p50": 5231.0,
+            "p90": 5620.000000000001,
+            "p95": 5746.0,
+            "p99": 5833.399999999999
+          },
+          "total": 1320573
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 253,
+            "max": 507.0,
+            "mean": 157.68379446640316,
+            "min": 63.0,
+            "missing": 0,
+            "p50": 132.0,
+            "p90": 279.4000000000002,
+            "p95": 356.0000000000001,
+            "p99": 463.71999999999986
+          },
+          "total": 39894
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 253,
+            "max": 469.0,
+            "mean": 120.49802371541502,
+            "min": 27.0,
+            "missing": 0,
+            "p50": 95.0,
+            "p90": 242.00000000000017,
+            "p95": 320.60000000000014,
+            "p99": 427.1999999999998
+          },
+          "total": 30486
+        }
+      },
+      "states": {
+        "complete": 558
+      },
+      "status_403": {
+        "attempts": 253,
+        "notices": 1059
+      },
+      "status_429": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "status_503": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "terminal_failure": 0,
+      "terminal_success": 558,
+      "unknown_errors": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 2688.0,
+            "mean": 2427.8709677419356,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 1354752
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 5949.0,
+            "mean": 5160.043010752688,
+            "min": 4447.0,
+            "missing": 0,
+            "p50": 5218.5,
+            "p90": 5634.6,
+            "p95": 5771.0,
+            "p99": 5853.119999999995
+          },
+          "total": 2879304
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 1153.0,
+            "mean": 177.67383512544802,
+            "min": 60.0,
+            "missing": 0,
+            "p50": 137.0,
+            "p90": 318.90000000000003,
+            "p95": 413.0999999999997,
+            "p99": 686.029999999999
+          },
+          "total": 99142
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 1116.0,
+            "mean": 140.1290322580645,
+            "min": 23.0,
+            "missing": 0,
+            "p50": 99.0,
+            "p90": 281.20000000000005,
+            "p95": 374.24999999999966,
+            "p99": 648.169999999999
+          },
+          "total": 78192
+        }
+      }
+    },
+    "low": {
+      "answer_present": 558,
+      "attempts": 558,
+      "elapsed_seconds": {
+        "known": 558,
+        "max": 65.68313440587372,
+        "mean": 14.862903473014178,
+        "min": 4.537711302284151,
+        "missing": 0,
+        "p50": 9.047115912893787,
+        "p90": 33.558348833257334,
+        "p95": 35.29675719649531,
+        "p99": 37.764170883256
+      },
+      "failed_with_unknown_error": 0,
+      "fallback": {
+        "attempts": 121,
+        "notices": 121
+      },
+      "local_exceptions": 0,
+      "no_recovery_elapsed_seconds": {
+        "known": 381,
+        "max": 65.68313440587372,
+        "mean": 8.1944403997048,
+        "min": 4.537711302284151,
+        "missing": 0,
+        "p50": 7.381287387106568,
+        "p90": 11.354952217079699,
+        "p95": 13.055979353841394,
+        "p99": 14.906647081859404
+      },
+      "overloaded": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "profiles": {
+        "both": 121,
+        "fallback_only": 0,
+        "none": 381,
+        "reconnect_only": 56
+      },
+      "reconnect": {
+        "attempts": 177,
+        "notices": 628
+      },
+      "recovery_elapsed_seconds": {
+        "known": 177,
+        "max": 39.78906930517405,
+        "mean": 29.21705280030725,
+        "min": 11.342458338011056,
+        "missing": 0,
+        "p50": 32.097475848160684,
+        "p90": 36.167683767899874,
+        "p95": 36.61560687841847,
+        "p99": 38.838920848369604
+      },
+      "recovery_usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 177,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 177,
+            "max": 2688.0,
+            "mean": 2475.3898305084745,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 438144
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 177,
+            "max": 5949.0,
+            "mean": 5233.745762711865,
+            "min": 4449.0,
+            "missing": 0,
+            "p50": 5276.0,
+            "p90": 5783.4,
+            "p95": 5796.2,
+            "p99": 5849.720000000001
+          },
+          "total": 926373
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 177,
+            "max": 40.0,
+            "mean": 35.63841807909605,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 38.0,
+            "p95": 38.19999999999999,
+            "p99": 40.0
+          },
+          "total": 6308
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 177,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        }
+      },
+      "states": {
+        "complete": 557,
+        "invalid": 1
+      },
+      "status_403": {
+        "attempts": 177,
+        "notices": 749
+      },
+      "status_429": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "status_503": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "terminal_failure": 0,
+      "terminal_success": 558,
+      "unknown_errors": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 8448.0,
+            "mean": 2459.0681003584227,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 6439.679999999891
+          },
+          "total": 1372160
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 11942.0,
+            "mean": 5247.439068100359,
+            "min": 4447.0,
+            "missing": 0,
+            "p50": 5230.5,
+            "p90": 5697.900000000001,
+            "p95": 5790.3,
+            "p99": 10357.519999999997
+          },
+          "total": 2928071
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 81.0,
+            "mean": 35.818996415770606,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 38.0,
+            "p95": 38.0,
+            "p99": 56.0
+          },
+          "total": 19987
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        }
+      }
+    },
+    "medium": {
+      "answer_present": 558,
+      "attempts": 558,
+      "elapsed_seconds": {
+        "known": 558,
+        "max": 65.15044108498842,
+        "mean": 16.942370310732862,
+        "min": 4.32882991572842,
+        "missing": 0,
+        "p50": 11.722334082005545,
+        "p90": 35.110845008073376,
+        "p95": 37.15022121150978,
+        "p99": 39.49098141174295
+      },
+      "failed_with_unknown_error": 0,
+      "fallback": {
+        "attempts": 159,
+        "notices": 159
+      },
+      "local_exceptions": 0,
+      "no_recovery_elapsed_seconds": {
+        "known": 339,
+        "max": 65.15044108498842,
+        "mean": 8.938293278897264,
+        "min": 4.32882991572842,
+        "missing": 0,
+        "p50": 7.901172907091677,
+        "p90": 13.375460957270116,
+        "p95": 14.388213262148202,
+        "p99": 15.536113645490262
+      },
+      "overloaded": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "profiles": {
+        "both": 159,
+        "fallback_only": 0,
+        "none": 339,
+        "reconnect_only": 60
+      },
+      "reconnect": {
+        "attempts": 219,
+        "notices": 799
+      },
+      "recovery_elapsed_seconds": {
+        "known": 219,
+        "max": 40.65275948308408,
+        "mean": 29.332242976450978,
+        "min": 13.858579851221293,
+        "missing": 0,
+        "p50": 32.29286837903783,
+        "p90": 37.487935588043186,
+        "p95": 38.483962416648865,
+        "p99": 40.41983399143442
+      },
+      "recovery_usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 219,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 219,
+            "max": 2688.0,
+            "mean": 2430.246575342466,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 532224
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 219,
+            "max": 5903.0,
+            "mean": 5191.899543378995,
+            "min": 4451.0,
+            "missing": 0,
+            "p50": 5292.0,
+            "p90": 5531.599999999999,
+            "p95": 5752.7,
+            "p99": 5818.46
+          },
+          "total": 1137026
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 219,
+            "max": 40.0,
+            "mean": 35.70319634703196,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 38.0,
+            "p95": 38.0,
+            "p99": 39.0
+          },
+          "total": 7819
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 219,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        }
+      },
+      "states": {
+        "complete": 556,
+        "invalid": 2
+      },
+      "status_403": {
+        "attempts": 219,
+        "notices": 958
+      },
+      "status_429": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "status_503": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "terminal_failure": 0,
+      "terminal_success": 558,
+      "unknown_errors": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 7936.0,
+            "mean": 2259.0394265232976,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 1260544
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 10843.0,
+            "mean": 5181.096774193548,
+            "min": 4449.0,
+            "missing": 0,
+            "p50": 5226.0,
+            "p90": 5644.0,
+            "p95": 5783.3,
+            "p99": 5905.0
+          },
+          "total": 2891052
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 389.0,
+            "mean": 38.46594982078853,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 38.0,
+            "p95": 39.0,
+            "p99": 118.02999999999895
+          },
+          "total": 21464
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 353.0,
+            "mean": 2.9193548387096775,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 80.1799999999987
+          },
+          "total": 1629
+        }
+      }
+    },
+    "none": {
+      "answer_present": 558,
+      "attempts": 558,
+      "elapsed_seconds": {
+        "known": 558,
+        "max": 93.90954800788313,
+        "mean": 16.35212125826884,
+        "min": 3.978838926181197,
+        "missing": 0,
+        "p50": 10.606425357051194,
+        "p90": 33.85876342146658,
+        "p95": 35.5592577020172,
+        "p99": 37.37073441268411
+      },
+      "failed_with_unknown_error": 0,
+      "fallback": {
+        "attempts": 130,
+        "notices": 130
+      },
+      "local_exceptions": 0,
+      "no_recovery_elapsed_seconds": {
+        "known": 355,
+        "max": 16.55145052773878,
+        "mean": 8.53976161281093,
+        "min": 3.978838926181197,
+        "missing": 0,
+        "p50": 8.126308504026383,
+        "p90": 11.430615456216042,
+        "p95": 12.938188514858485,
+        "p99": 15.969847220638766
+      },
+      "overloaded": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "profiles": {
+        "both": 130,
+        "fallback_only": 0,
+        "none": 355,
+        "reconnect_only": 73
+      },
+      "reconnect": {
+        "attempts": 203,
+        "notices": 728
+      },
+      "recovery_elapsed_seconds": {
+        "known": 203,
+        "max": 93.90954800788313,
+        "mean": 30.014129505251887,
+        "min": 13.818538093939424,
+        "missing": 0,
+        "p50": 32.24037362029776,
+        "p90": 36.17600144762546,
+        "p95": 37.18417482660152,
+        "p99": 37.999336654152714
+      },
+      "recovery_usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 203,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 203,
+            "max": 2688.0,
+            "mean": 2529.103448275862,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 2688.0
+          },
+          "total": 513408
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 203,
+            "max": 5949.0,
+            "mean": 5282.724137931034,
+            "min": 4632.0,
+            "missing": 0,
+            "p50": 5268.0,
+            "p90": 5749.0,
+            "p95": 5785.8,
+            "p99": 5901.0
+          },
+          "total": 1072393
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 203,
+            "max": 40.0,
+            "mean": 35.29064039408867,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 37.0,
+            "p95": 37.900000000000006,
+            "p99": 38.0
+          },
+          "total": 7164
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 203,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        }
+      },
+      "states": {
+        "complete": 557,
+        "invalid": 1
+      },
+      "status_403": {
+        "attempts": 203,
+        "notices": 858
+      },
+      "status_429": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "status_503": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "terminal_failure": 0,
+      "terminal_success": 558,
+      "unknown_errors": {
+        "attempts": 0,
+        "notices": 0
+      },
+      "usage": {
+        "cache_write_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        },
+        "cached_input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 8320.0,
+            "mean": 2508.8458781362006,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 2688.0,
+            "p90": 2688.0,
+            "p95": 2688.0,
+            "p99": 7223.039999999994
+          },
+          "total": 1399936
+        },
+        "input_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 11629.0,
+            "mean": 5260.455197132616,
+            "min": 4447.0,
+            "missing": 0,
+            "p50": 5232.5,
+            "p90": 5735.0,
+            "p95": 5792.0,
+            "p99": 10239.449999999999
+          },
+          "total": 2935334
+        },
+        "output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 77.0,
+            "mean": 35.922939068100355,
+            "min": 33.0,
+            "missing": 0,
+            "p50": 35.0,
+            "p90": 38.0,
+            "p95": 38.0,
+            "p99": 64.42999999999995
+          },
+          "total": 20045
+        },
+        "reasoning_output_tokens": {
+          "distribution": {
+            "known": 558,
+            "max": 0.0,
+            "mean": 0.0,
+            "min": 0.0,
+            "missing": 0,
+            "p50": 0.0,
+            "p90": 0.0,
+            "p95": 0.0,
+            "p99": 0.0
+          },
+          "total": 0
+        }
+      }
+    }
+  },
+  "inputs_sha256": {
+    "block-identities.json": "47729cb99b6caf878e2d39d6b3be3c42ac66d0fcf9a36ab69e62ba5988394d90",
+    "inventory.json": "4383a878539e7c15fa7c3020d8df19f3e8b9b585dbb354dfbc52e97440ade74a",
+    "inventory/rep1-high.json": "a1eb0108357b686d4fd8e8d7efaf67d6dc386d7883dbdf1f45d75d8df861edd4",
+    "inventory/rep1-low.json": "0df7109214cbc08ac4f4a49174c394386654f0277dd96db71a13a8b1eaf3cb96",
+    "inventory/rep1-medium.json": "5922223913520cfbe45abb038c7db85cc774c560afa640f078c095b50594ae7d",
+    "inventory/rep1-none.json": "fc999f6bf5837a1f36cb968c84a6bcd0073bd5af792984f679182bf49874eb40",
+    "inventory/rep2-high.json": "1d8fc13ee62f9a6edf7f52cdb08629f62031fcdb1c0c0e11c5909b7f15dd70f7",
+    "inventory/rep2-low.json": "bea767365cf7f898a9883f1d3ae520ed58324d3e07b2ebee4bbce3f189288488",
+    "inventory/rep2-medium.json": "37a84d587516cb24cda59b81f8353937e15fc531a51642e2e70c0f667296df36",
+    "inventory/rep2-none.json": "5fb291991855acdbb8896da0f2370adb48d9f4e4a45944f94ff294c1574810c5",
+    "inventory/rep3-high.json": "cfa8cbfc3d8d914956f141eef343009c012f787aa3a13cdd528a9f9eec6207b3",
+    "inventory/rep3-low.json": "0b6df0b60b88c28504417907a3e390820df798cc2b3be0b7d76e492859d530e0",
+    "inventory/rep3-medium.json": "32e24b06cb116e3eb79c82f6b3128af6ef512999204980aace20827c1b6a3728",
+    "inventory/rep3-none.json": "21bf7521d2ca06cd56b35ec840314db66d1ef4997e3493657d6caf990bb10a25",
+    "rep1-high.tar.gz": "d096dcdf2e226b2814cf6db8f89580b59a33b7c57b5d48558c37758655862744",
+    "rep1-low.tar.gz": "2f9337331436ceda98db870aa9588ab6392ef2b090df7a147f2ef0d0bb59d478",
+    "rep1-medium.tar.gz": "bb0cbe8f12d98054177fa85e051e29d027ad66ca6a1d965332016ee4ec5a2bb5",
+    "rep1-none.tar.gz": "fa64d401c987885f1b80db37a11e310b0ef48078f871bb241a8f8098d894e7f4",
+    "rep2-high.tar.gz": "4bc66f183c3ee8442e4bc3c7f1228ba8c8f51f9aed7d25261c30bcc8b5b2536a",
+    "rep2-low.tar.gz": "ee934128b9e82ac8d5c1e3debfcf52f2b984cf8b9c984fff1d02a43d558ed171",
+    "rep2-medium.tar.gz": "d44876d3c80286866f21b153fbae1cdebccba35782317674b692941905c9858c",
+    "rep2-none.tar.gz": "4c59bbb9a644a57444eeff7fac7bf0745f7294571c61d947eeaca447ee3e54b3",
+    "rep3-high.tar.gz": "b8bbd9fb2593d832191b55cb1d3c2f4e693e3ee22b1c2d88e5a886629a10c78b",
+    "rep3-low.tar.gz": "294a2614d3cdf3b955ca9baff3dbefaa7ecdac4ecea5e4134b7c923c88b4a725",
+    "rep3-medium.tar.gz": "6eb5787f07ef6f2cd21358e47b28d9fab2d7e2d151d55bb9048fd71f1d6ed4f7",
+    "rep3-none.tar.gz": "3ff1dfa72bf3218a3a196123d2776c9821e8d889efbcffe987d3db1851daf91a"
+  },
+  "method": "C retained telemetry; linear percentile interpolation at (n-1)*p",
+  "timeline_all": {
+    "active_union_seconds": 1669.1441259384155,
+    "mean_active_over_window": 9.036474900578392,
+    "peak": 25,
+    "start_span_seconds": 4146.831768989563,
+    "window_seconds": 4152.370087862015
+  }
+}
