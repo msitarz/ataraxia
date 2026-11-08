@@ -188,3 +188,7 @@ retained artifacts without provider access:
 ```sh
 make reviewer-c-telemetry CLI_ARGS='--evidence output/reviewer-evaluation/c-full-001 --output output/reviewer-evaluation/c-full-001/telemetry --check'
 ```
+
+The check compares the observations and reports any changes in the analysis
+code digests separately. The retained machine summary keeps the original
+generation's code provenance.
