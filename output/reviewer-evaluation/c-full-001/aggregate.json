@@ -1,0 +1,727 @@
+{
+  "rep1-medium": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 13,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 10,
+      "missed": 2,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 1,
+    "resources": {
+      "input_tokens": 965328,
+      "cached_input_tokens": 365440,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 7105,
+      "reasoning_output_tokens": 496,
+      "candidate_adjusted_input": 301308,
+      "candidate_adjusted_complete": 308413
+    },
+    "attempt_window_seconds": 138.28,
+    "aggregate_attempt_seconds": 3200.66
+  },
+  "rep1-none": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 13,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 10,
+      "missed": 2,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 3,
+    "resources": {
+      "input_tokens": 975481,
+      "cached_input_tokens": 410496,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6657,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 311461,
+      "candidate_adjusted_complete": 318118
+    },
+    "attempt_window_seconds": 177.11,
+    "aggregate_attempt_seconds": 3258.5
+  },
+  "rep1-low": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 12,
+      "correct_pass": 10,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 10,
+      "missed": 2,
+      "pass_excluded": 1,
+      "excluded_boundary": 1,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 2,
+        "correct_pass": 2,
+        "pass_excluded": 1,
+        "excluded_boundary": 1,
+        "violation_total": 4,
+        "judgment_violation": 5,
+        "caught": 4,
+        "pass_other": 1,
+        "false_positive": 1
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 7,
+    "resources": {
+      "input_tokens": 997753,
+      "cached_input_tokens": 407424,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6787,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 334105,
+      "candidate_adjusted_complete": 340892
+    },
+    "attempt_window_seconds": 143.31,
+    "aggregate_attempt_seconds": 2387.25
+  },
+  "rep1-high": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 11,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 13,
+      "caught": 12,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 0,
+    "resources": {
+      "input_tokens": 959892,
+      "cached_input_tokens": 389760,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 31580,
+      "reasoning_output_tokens": 24594,
+      "candidate_adjusted_input": 295872,
+      "candidate_adjusted_complete": 327452
+    },
+    "attempt_window_seconds": 136.75,
+    "aggregate_attempt_seconds": 3198.32
+  },
+  "rep2-low": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 14,
+      "correct_pass": 12,
+      "violation_total": 12,
+      "judgment_violation": 10,
+      "caught": 10,
+      "missed": 2
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 185,
+      "incomplete": 0,
+      "invalid": 1,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 2,
+    "resources": {
+      "input_tokens": 970426,
+      "cached_input_tokens": 480896,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6626,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 306778,
+      "candidate_adjusted_complete": 313404
+    },
+    "attempt_window_seconds": 120.94,
+    "aggregate_attempt_seconds": 2950.19
+  },
+  "rep2-medium": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 13,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 10,
+      "missed": 2,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 0,
+    "resources": {
+      "input_tokens": 960264,
+      "cached_input_tokens": 419328,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6911,
+      "reasoning_output_tokens": 318,
+      "candidate_adjusted_input": 296244,
+      "candidate_adjusted_complete": 303155
+    },
+    "attempt_window_seconds": 142.48,
+    "aggregate_attempt_seconds": 3238.36
+  },
+  "rep2-high": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 13,
+      "correct_pass": 12,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 11,
+      "missed": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 0,
+    "resources": {
+      "input_tokens": 959892,
+      "cached_input_tokens": 481152,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 33252,
+      "reasoning_output_tokens": 26275,
+      "candidate_adjusted_input": 295872,
+      "candidate_adjusted_complete": 329124
+    },
+    "attempt_window_seconds": 153.49,
+    "aggregate_attempt_seconds": 3646.81
+  },
+  "rep2-none": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 13,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 11,
+      "caught": 10,
+      "missed": 2,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 185,
+      "incomplete": 0,
+      "invalid": 1,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 3,
+    "resources": {
+      "input_tokens": 974193,
+      "cached_input_tokens": 480256,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6629,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 310173,
+      "candidate_adjusted_complete": 316802
+    },
+    "attempt_window_seconds": 122.44,
+    "aggregate_attempt_seconds": 2967.13
+  },
+  "rep3-medium": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 14,
+      "correct_pass": 12,
+      "violation_total": 12,
+      "judgment_violation": 9,
+      "caught": 9,
+      "missed": 2,
+      "violation_excluded": 1,
+      "excluded_invalid": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "violation_excluded": 1,
+        "excluded_invalid": 1
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 184,
+      "incomplete": 0,
+      "invalid": 2,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 1,
+    "resources": {
+      "input_tokens": 965460,
+      "cached_input_tokens": 475776,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 7448,
+      "reasoning_output_tokens": 815,
+      "candidate_adjusted_input": 301440,
+      "candidate_adjusted_complete": 308888
+    },
+    "attempt_window_seconds": 132.14,
+    "aggregate_attempt_seconds": 3014.82
+  },
+  "rep3-high": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 11,
+      "correct_pass": 11,
+      "violation_total": 12,
+      "judgment_violation": 13,
+      "caught": 12,
+      "pass_other": 1,
+      "false_positive": 1
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 3,
+        "correct_pass": 3,
+        "judgment_violation": 5,
+        "pass_other": 1,
+        "false_positive": 1,
+        "violation_total": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 0,
+    "resources": {
+      "input_tokens": 959520,
+      "cached_input_tokens": 483840,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 34310,
+      "reasoning_output_tokens": 27323,
+      "candidate_adjusted_input": 295500,
+      "candidate_adjusted_complete": 329810
+    },
+    "attempt_window_seconds": 161.58,
+    "aggregate_attempt_seconds": 3805.44
+  },
+  "rep3-none": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 14,
+      "correct_pass": 12,
+      "violation_total": 12,
+      "judgment_violation": 10,
+      "caught": 10,
+      "missed": 2
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 5,
+    "resources": {
+      "input_tokens": 985660,
+      "cached_input_tokens": 509184,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6759,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 321640,
+      "candidate_adjusted_complete": 328399
+    },
+    "attempt_window_seconds": 119.96,
+    "aggregate_attempt_seconds": 2898.85
+  },
+  "rep3-low": {
+    "summary": {
+      "pass_total": 12,
+      "judgment_pass": 14,
+      "correct_pass": 12,
+      "violation_total": 12,
+      "judgment_violation": 10,
+      "caught": 10,
+      "missed": 2
+    },
+    "rules": {
+      "R1": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 3,
+        "caught": 3,
+        "missed": 1
+      },
+      "R3": {
+        "pass_total": 4,
+        "judgment_pass": 4,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "judgment_violation": 4,
+        "caught": 4
+      },
+      "R4": {
+        "pass_total": 4,
+        "judgment_pass": 5,
+        "correct_pass": 4,
+        "violation_total": 4,
+        "missed": 1,
+        "judgment_violation": 3,
+        "caught": 3
+      }
+    },
+    "public_counts": {
+      "complete": 186,
+      "incomplete": 0,
+      "invalid": 0,
+      "failed": 0,
+      "not_started": 0
+    },
+    "boundary_calls": 0,
+    "resources": {
+      "input_tokens": 959892,
+      "cached_input_tokens": 483840,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6574,
+      "reasoning_output_tokens": 0,
+      "candidate_adjusted_input": 296244,
+      "candidate_adjusted_complete": 302818
+    },
+    "attempt_window_seconds": 120.67,
+    "aggregate_attempt_seconds": 2956.05
+  }
+}

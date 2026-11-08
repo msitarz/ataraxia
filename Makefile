@@ -300,3 +300,11 @@ work-review: ## review Work sizing and remind owner to publish and deliver PR
 .PHONY: reviewer-c-prepare
 reviewer-c-prepare: ## generate or verify public static C artifacts; CLI_ARGS=--check verifies
 	uv run --no-sync python -m script.reviewer_eval.prepare_c $(_CLI_ARGS)
+
+.PHONY: reviewer-c-score
+reviewer-c-score: ## score saved C evidence offline; CLI_ARGS supplies explicit paths
+	uv run --no-sync python -m script.reviewer_eval.score_c $(_CLI_ARGS)
+
+.PHONY: reviewer-c-verify-archive
+reviewer-c-verify-archive: ## verify and restore archived C evidence; CLI_ARGS supplies paths
+	uv run --no-sync python -m script.reviewer_eval.verify_c_archive $(_CLI_ARGS)

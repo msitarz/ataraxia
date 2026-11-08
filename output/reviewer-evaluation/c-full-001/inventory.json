@@ -1,0 +1,98 @@
+{
+  "blocks": {
+    "rep1-medium": "inventory/rep1-medium.json",
+    "rep1-none": "inventory/rep1-none.json",
+    "rep1-low": "inventory/rep1-low.json",
+    "rep1-high": "inventory/rep1-high.json",
+    "rep2-low": "inventory/rep2-low.json",
+    "rep2-medium": "inventory/rep2-medium.json",
+    "rep2-high": "inventory/rep2-high.json",
+    "rep2-none": "inventory/rep2-none.json",
+    "rep3-medium": "inventory/rep3-medium.json",
+    "rep3-high": "inventory/rep3-high.json",
+    "rep3-none": "inventory/rep3-none.json",
+    "rep3-low": "inventory/rep3-low.json"
+  },
+  "archives": {
+    "rep1-medium": {
+      "file": "rep1-medium.tar.gz",
+      "size": 485113,
+      "sha256": "bb0cbe8f12d98054177fa85e051e29d027ad66ca6a1d965332016ee4ec5a2bb5"
+    },
+    "rep1-none": {
+      "file": "rep1-none.tar.gz",
+      "size": 486498,
+      "sha256": "fa64d401c987885f1b80db37a11e310b0ef48078f871bb241a8f8098d894e7f4"
+    },
+    "rep1-low": {
+      "file": "rep1-low.tar.gz",
+      "size": 475066,
+      "sha256": "2f9337331436ceda98db870aa9588ab6392ef2b090df7a147f2ef0d0bb59d478"
+    },
+    "rep1-high": {
+      "file": "rep1-high.tar.gz",
+      "size": 487012,
+      "sha256": "d096dcdf2e226b2814cf6db8f89580b59a33b7c57b5d48558c37758655862744"
+    },
+    "rep2-low": {
+      "file": "rep2-low.tar.gz",
+      "size": 481932,
+      "sha256": "ee934128b9e82ac8d5c1e3debfcf52f2b984cf8b9c984fff1d02a43d558ed171"
+    },
+    "rep2-medium": {
+      "file": "rep2-medium.tar.gz",
+      "size": 488319,
+      "sha256": "d44876d3c80286866f21b153fbae1cdebccba35782317674b692941905c9858c"
+    },
+    "rep2-high": {
+      "file": "rep2-high.tar.gz",
+      "size": 491352,
+      "sha256": "4bc66f183c3ee8442e4bc3c7f1228ba8c8f51f9aed7d25261c30bcc8b5b2536a"
+    },
+    "rep2-none": {
+      "file": "rep2-none.tar.gz",
+      "size": 478495,
+      "sha256": "4c59bbb9a644a57444eeff7fac7bf0745f7294571c61d947eeaca447ee3e54b3"
+    },
+    "rep3-medium": {
+      "file": "rep3-medium.tar.gz",
+      "size": 487824,
+      "sha256": "6eb5787f07ef6f2cd21358e47b28d9fab2d7e2d151d55bb9048fd71f1d6ed4f7"
+    },
+    "rep3-high": {
+      "file": "rep3-high.tar.gz",
+      "size": 494784,
+      "sha256": "b8bbd9fb2593d832191b55cb1d3c2f4e693e3ee22b1c2d88e5a886629a10c78b"
+    },
+    "rep3-none": {
+      "file": "rep3-none.tar.gz",
+      "size": 479624,
+      "sha256": "3ff1dfa72bf3218a3a196123d2776c9821e8d889efbcffe987d3db1851daf91a"
+    },
+    "rep3-low": {
+      "file": "rep3-low.tar.gz",
+      "size": 483001,
+      "sha256": "294a2614d3cdf3b955ca9baff3dbefaa7ecdac4ecea5e4134b7c923c88b4a725"
+    }
+  },
+  "launcher_evidence": [
+    {
+      "relative_path": "launcher.sh",
+      "original_path": "/Users/nzs/ataraxia-eval-results/c-remaining-c25-001/launcher.sh",
+      "size": 2481,
+      "sha256": "3d61c35f7f73936821d84514c6a48e90d50c2bcda9e245144293fad897b089f8"
+    },
+    {
+      "relative_path": "launcher.sha256",
+      "original_path": "/Users/nzs/ataraxia-eval-results/c-remaining-c25-001/launcher.sha256",
+      "size": 131,
+      "sha256": "5f72be9ee76e83d22b05f6b44832ccabd0b8e58f10b23b9db680b3d93fe9721d"
+    },
+    {
+      "relative_path": "pre-execution.txt",
+      "original_path": "/Users/nzs/ataraxia-eval-results/c-remaining-c25-001/pre-execution.txt",
+      "size": 691,
+      "sha256": "55a2bf7193c22cebd269249c905e9f766f6637fb8983ef389275387c2efdcc83"
+    }
+  ]
+}
