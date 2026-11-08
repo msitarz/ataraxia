@@ -1,0 +1,64 @@
+{
+  "decision": "Before grading: all code-mode attempts with disabled-host denial receive no primary quality credit, regardless of schema; fixed denominators retain them, valid-only denominators exclude them. Invalid outputs likewise receive no credit. UNKNOWN and NOT_APPLICABLE remain distinct.",
+  "blocks": [
+    "rep1-medium",
+    "rep1-none",
+    "rep1-low",
+    "rep1-high",
+    "rep2-low",
+    "rep2-medium",
+    "rep2-high",
+    "rep2-none",
+    "rep3-medium",
+    "rep3-high",
+    "rep3-none",
+    "rep3-low"
+  ],
+  "boundary_affected_positions": {
+    "rep1-medium": [
+      106
+    ],
+    "rep1-none": [
+      38,
+      128,
+      136
+    ],
+    "rep1-low": [
+      32,
+      77,
+      87,
+      137,
+      139,
+      140,
+      147
+    ],
+    "rep1-high": [],
+    "rep2-low": [
+      103,
+      109
+    ],
+    "rep2-medium": [],
+    "rep2-high": [],
+    "rep2-none": [
+      6,
+      22,
+      85
+    ],
+    "rep3-medium": [
+      151
+    ],
+    "rep3-high": [],
+    "rep3-none": [
+      19,
+      79,
+      85,
+      86,
+      125
+    ],
+    "rep3-low": []
+  },
+  "manifest_sha256": "1b19e59e3c166f28838148f7855c297771058780fb18ddc49d08658cd8bfcd6f",
+  "private_index_sha256": "ddc084c2f2c168bef1dead140e508953688e3d721b7de56ee4e5aa53644febd8",
+  "manifest_revision": "6d06876d1fa74d6db872c79f086fbf70293f93a6",
+  "concurrency": 25
+}
