@@ -76,12 +76,36 @@ def notices(raw: bytes) -> tuple[int, int, int, int, int, int, int]:
     return counts[0], counts[1], counts[2], counts[3], counts[4], counts[5], counts[6]
 
 
+def error_payload(event: dict[str, object]) -> dict[str, object] | None:
+    """Select structured error events while excluding model message bodies.
+
+    Returns:
+        The error object or None.
+    """
+    if event.get("type") == "error":
+        return event
+    nested = event.get("error")
+    if event.get("jsonrpc") == "2.0" and isinstance(nested, dict):
+        return nested
+    item = event.get("item")
+    if (
+        event.get("type") == "item.completed"
+        and isinstance(item, dict)
+        and item.get("type") == "error"
+    ):
+        return item
+    return None
+
+
 def count_event(counts: list[int], event: dict[str, object]) -> None:
     """Classify a single decoded event without inspecting answer text."""
-    item = event.get("item")
-    error = event if event.get("type") == "error" else item
-    if not isinstance(error, dict) or error.get("type") != "error":
+    error = error_payload(event)
+    if error is None:
         return
+    counts[6] += int(error.get("code") == -32001)
+    nested_error = error.get("error")
+    if isinstance(nested_error, dict):
+        counts[6] += int(nested_error.get("code") == -32001)
     message = error.get("message")
     if _reconnect(event):
         counts[0] += 1
@@ -102,7 +126,6 @@ def add_status_counts(counts: list[int], message: str) -> None:
             r"unexpected status 403\b",
             r"unexpected status 429\b",
             r"unexpected status 503\b",
-            r'"code"\s*:\s*-32001(?!\d)',
         ),
         start=3,
     ):
@@ -407,6 +430,68 @@ def read_block(
     }
 
 
+def recovery_row(name: str, selected: list[Attempt]) -> str:
+    """Render one recovery and latency table row.
+
+    Returns:
+        Markdown table row.
+    """
+    stats = distribution([r.elapsed for r in selected])
+    median, p95 = stats["p50"], stats["p95"]
+    median_text = f"{median:.2f}" if median is not None else "unknown"
+    p95_text = f"{p95:.2f}" if p95 is not None else "unknown"
+    recovered = sum(bool(r.reconnect or r.fallback) for r in selected)
+    fallback = (
+        100 * sum(bool(r.fallback) for r in selected) / len(selected) if selected else 0
+    )
+    return (
+        f"| {name} | {recovered}/{len(selected)} | {fallback:.2f}% | "
+        f"{median_text} | {p95_text} | {stats['known']}/{stats['missing']} |"
+    )
+
+
+def recovery_groups(rows: list[Attempt]) -> list[tuple[str, list[Attempt]]]:
+    """Select blocks, efforts and overall recovery subsets.
+
+    Returns:
+        Named groups of attempts.
+    """
+    groups = [
+        (name, [r for r in rows if r.block == name])
+        for name in sorted({r.block for r in rows})
+    ]
+    groups += [
+        (effort, [r for r in rows if r.effort == effort])
+        for effort in ("none", "low", "medium", "high")
+    ]
+    groups += [
+        ("Recovery overall", [r for r in rows if r.reconnect or r.fallback]),
+        (
+            "No recovery overall",
+            [r for r in rows if not r.reconnect and not r.fallback],
+        ),
+    ]
+    return groups
+
+
+def recovery_table(rows: list[Attempt]) -> list[str]:
+    """Summarize observed recovery and latency by block and effort.
+
+    Returns:
+        Markdown table and method text.
+    """
+    lines = [
+        "",
+        "| Group | Recovery/attempts | Fallback % | Elapsed p50 s | "
+        "Elapsed p95 s | Known/missing |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    groups = recovery_groups(rows)
+    for name, selected in groups:
+        lines.append(recovery_row(name, selected))
+    return lines
+
+
 def markdown(
     rows: list[Attempt], blocks: dict[str, object], overall: dict[str, float | int]
 ) -> bytes:
@@ -416,21 +501,32 @@ def markdown(
         UTF-8 Markdown.
     """
     summary = summarize(rows)
+    versions = sorted({
+        str(item["cli_version"]) for item in blocks.values() if isinstance(item, dict)
+    })
+    concurrencies = sorted({
+        str(item["configured_concurrency"])
+        for item in blocks.values()
+        if isinstance(item, dict)
+    })
     profiles = summary["profiles"]
     assert isinstance(profiles, dict)
     lines = [
         "# C process and transport telemetry",
         "",
-        f"All {len(rows):,} CLI processes finished successfully at "
-        f"configured concurrency 25; "
+        f"{sum(r.terminal_success for r in rows):,} of {len(rows):,} CLI processes "
+        f"finished successfully; configured concurrency: {', '.join(concurrencies)}; "
         f"{sum(r.state == 'complete' for r in rows):,} responses were schema-complete "
-        f"and {sum(r.state == 'invalid' for r in rows)} were invalid. The "
-        f"22 previously "
+        f"and {sum(r.state == 'invalid' for r in rows)} were invalid. "
+        "The previously documented 22 "
         "recorded boundary-affected calls remain separate from these "
         "structural counts.",
         "",
-        f"{profiles['reconnect_only'] + profiles['both']:,} attempts emitted reconnect "
-        f"notices and {profiles['fallback_only'] + profiles['both']:,} "
+        f"{profiles['reconnect_only'] + profiles['both']:,}/{len(rows):,} "
+        f"({100 * (profiles['reconnect_only'] + profiles['both']) / len(rows):.2f}%) "
+        "attempts emitted reconnect "
+        f"notices and {profiles['fallback_only'] + profiles['both']:,}/{len(rows):,} "
+        f"({100 * (profiles['fallback_only'] + profiles['both']) / len(rows):.2f}%) "
         f"emitted HTTPS fallback "
         f"notices; {profiles['both']:,} had both and {profiles['none']:,} had neither. "
         f"These include {sum(r.reconnect for r in rows):,} reconnect and "
@@ -442,11 +538,11 @@ def markdown(
         f"{sum(r.overloaded for r in rows)}; unknown error events are "
         f"{sum(r.unknown_errors for r in rows)}. "
         "The notices describe recovery within one CLI process, not harness retries. "
-        "The first WebSocket retry is hidden, so emitted notices do not "
-        "count physical attempts.",
+        f"Recorded CLI versions: {', '.join(versions)}. The Codex 0.166 source "
+        "behavior examined in the earlier investigation hides the first WebSocket "
+        "retry; emitted notices do not count physical attempts.",
         "",
-        "Each block has 186 calls and one attempt per call; all were run "
-        "at concurrency 25. "
+        "The recorded blocks each have 186 calls and one attempt per call. "
         "This establishes completion for this workload with recovery, not "
         "an optimal concurrency, "
         "a subscription limit, or a speedup over serial execution. The 403 WebSocket "
@@ -470,6 +566,7 @@ def markdown(
             f"{timing['mean_active_over_window']:.2f} | "
             f"{timing['start_span_seconds']:.2f} |"
         )
+    lines.extend(recovery_table(rows))
     lines.extend([
         "",
         "Windows span earliest process start through latest end; rates use each "
@@ -488,8 +585,9 @@ def markdown(
         "distributions do not establish a causal latency effect. Cached input is "
         "included in input, and reasoning is included in output. No cost is inferred.",
         "",
-        "Status counts cover structured `unexpected status` diagnostics in error "
-        "events, not arbitrary answer text. Counts describe emitted occurrences and "
+        "HTTP status counts cover `unexpected status` diagnostics in error "
+        "events, not arbitrary answer text. Numeric -32001 counts cover direct and "
+        "nested structured error code fields only. Counts describe occurrences and "
         "distinct attempts; the same 403 can appear in reconnect and fallback notices. "
         "Unknown error shapes are counted separately. Original archives, inventories "
         "and launcher metadata are verified before analysis; inspection checks "

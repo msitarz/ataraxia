@@ -3171,7 +3171,7 @@
   "code_sha256": {
     "script/reviewer_eval/c_resources.py": "67f4e2f7955abd7e3b7f6467782b5b994bfceacb2430c5a7cb430dccac66b6ed",
     "script/reviewer_eval/report.py": "588d083dce56188595856ec4958da06572303fd22664827275a71190739a9931",
-    "script/reviewer_eval/telemetry_c.py": "bf8d8aa967e24e3714319651fcdc6dc8cce2ea13af4a245e57ec47a97f1fa4a6",
+    "script/reviewer_eval/telemetry_c.py": "409fde1807c077f4a541e73ba42d5bf83bf015c5ccfd17252b93ce99067f9e4c",
     "script/reviewer_eval/transcript.py": "292d25aa5fa61a57dce731ec4b5c7eaa7fdce9eac673e560868ab022901d9b60",
     "script/reviewer_eval/verify_c_archive.py": "565750b86cbd0890d3351170c09b95e30bfb61878305a201e2598050622f3027"
   },

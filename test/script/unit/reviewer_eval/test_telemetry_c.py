@@ -145,3 +145,67 @@ def test_missing_usage_makes_category_total_unknown(input_tokens: int | None) ->
             "p99": None,
         },
     }
+
+
+def test_structured_error_codes_do_not_read_message_text() -> None:
+    # Given
+    events = [
+        {"type": "error", "code": -32001, "message": "failed"},
+        {"jsonrpc": "2.0", "error": {"code": -32001, "message": "failed"}},
+        {"type": "error", "message": '{"code": -32001}'},
+        {"type": "error", "message": "unknown"},
+    ]
+    raw = b"\n".join(json.dumps(event).encode() for event in events)
+
+    # When
+    result = notices(raw)
+
+    # Then
+    assert result == (0, 0, 4, 0, 0, 0, 2)
+
+
+def test_failed_attempt_keeps_observed_reconnect_profile() -> None:
+    # Given
+    from script.reviewer_eval.telemetry_c import Attempt, summarize
+
+    row = Attempt(
+        "rep1-high",
+        "high",
+        0,
+        1,
+        "failed",
+        False,
+        False,
+        "2026-01-01T00:00:00Z",
+        None,
+        None,
+        1,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        False,
+        dict.fromkeys((
+            "input_tokens",
+            "cached_input_tokens",
+            "cache_write_input_tokens",
+            "output_tokens",
+            "reasoning_output_tokens",
+        )),
+    )
+
+    # When
+    result = summarize([row])
+
+    # Then
+    assert result["terminal_success"] == 0
+    assert result["terminal_failure"] == 1
+    assert result["failed_with_unknown_error"] == 1
+    assert result["profiles"] == {
+        "none": 0,
+        "reconnect_only": 1,
+        "fallback_only": 0,
+        "both": 0,
+    }
