@@ -2,6 +2,7 @@
 """Inspect saved harness evidence without reading the original checkout."""
 
 from collections import Counter
+from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import dataclass
 from hashlib import sha256
@@ -22,7 +23,7 @@ from script.eval.model import (
     RunRecord,
     SettingValue,
 )
-from script.eval.plan import PurePlanBuilder
+from script.eval.plan import PlanBuilder, PurePlanBuilder
 from script.eval.runner.adapters import CodexAttemptRequestBuilder
 from script.eval.runner.adapters.codex import (
     CONTROL_PROFILE,
@@ -126,15 +127,21 @@ def inspect_run(run_root: Path) -> Report:
     return inspect_evidence(run_root).report
 
 
-def inspect_evidence(run_root: Path) -> Inspection:
+def inspect_evidence(
+    run_root: Path, *, planner_factory: Callable[[str], PlanBuilder] = PurePlanBuilder
+) -> Inspection:
     """Inspect a run and retain the exact validated plan used for its report.
+
+    The default reconstructs the full matrix. A caller supplying another
+    planner must independently establish its expected selection; saved results
+    must not be used as the source of that selection.
 
     Returns:
         The plan, if valid, and its inspection report.
     """
     root = run_root.resolve(strict=True)
     try:
-        plan = _plan(root)
+        plan = _plan(root, planner_factory)
     except (OSError, ValueError, IndexError) as exc:
         return Inspection(None, _report(None, "invalid", f"invalid plan: {exc}", []))
     return Inspection(plan, _inspect_plan(root, plan))
@@ -238,7 +245,7 @@ def _load[T: BaseModel](root: Path, relative: Path, model: type[T]) -> T:
     return model.model_validate_json(raw)
 
 
-def _plan(root: Path) -> FrozenPlan:
+def _plan(root: Path, planner_factory: Callable[[str], PlanBuilder]) -> FrozenPlan:
     plan: FrozenPlan = _load(root, Path("plan.json"), FrozenPlan)
     if any(sha256(s.content).hexdigest() != s.content_sha256 for s in plan.snapshots):
         raise ValueError("snapshot digest mismatch")
@@ -251,7 +258,7 @@ def _plan(root: Path) -> FrozenPlan:
     inputs = FrozenInputs(
         plan.repository_root, plan.head_commit, plan.snapshots, instruction
     )
-    if PurePlanBuilder(plan.run_id).plan(inputs, plan.configuration) != plan:
+    if planner_factory(plan.run_id).plan(inputs, plan.configuration) != plan:
         raise ValueError("plan matrix, prompt or boundary mismatch")
     if not plan.calls:
         raise ValueError("plan has no calls")

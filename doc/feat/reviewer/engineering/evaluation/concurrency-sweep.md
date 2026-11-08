@@ -171,3 +171,36 @@ capacity, subscription limits, causal network effects, or classification/vote
 quality. Retain raw observations, manifest, launcher timestamps, failures,
 deviations, confounds and analysis. Results can support a bounded concurrency
 recommendation; they cannot complete the broader Evaluation or adopt policy.
+
+## Prepared terminal invocation
+
+From a clean checkout of the reviewed preparation revision, run the offline
+manifest check and dry run:
+
+```sh
+.venv/bin/python -m script.reviewer_eval.sweep_manifest --check
+.venv/bin/python -m script.reviewer_eval.concurrency_sweep
+```
+
+The dry run makes no CLI binding, model, or quota calls. Future execution
+requires a separate explicit authorization covering all 600 attempts and
+reconciled planning, wall-time and evidence-storage bounds. The operator must
+replace each placeholder with the authorized value and select a fresh external
+output path whose parent exists:
+
+```sh
+.venv/bin/python -m script.reviewer_eval.concurrency_sweep --execute --authorized-600-calls --output /absolute/external/fresh-directory --token-planning-ceiling TOKEN_COUNT --wall-seconds SECONDS --evidence-bytes BYTES
+```
+
+The launcher checks the clean actual HEAD, input and manifest digests, system
+CLI path and version, and remaining deadline before each block. It records the
+launcher and manifest digests and retains block streams and timing in the
+external root. It checks observed tool activity after each block; calls already
+dispatched within that block may have run before detection. It stops before the
+next block on unexpected activity. Evidence size and free storage are checked
+between blocks while reserving the remaining output caps; evidence overhead can
+exceed the ceiling during an active block. A later restart needs new authority.
+Supplied input token estimates use the C byte-per-four planning proxy and
+exclude automatic context and output; subscription cost and actual usage remain
+unknown until observed. Record any known account activity, network conditions,
+or cache observations alongside the retained evidence.
