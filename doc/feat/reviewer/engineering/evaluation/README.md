@@ -181,6 +181,9 @@ isolation.
 
 ## Links
 
+- [Prospective C concurrency sweep](concurrency-sweep.md) defines a separately
+  prepared 600-call feasibility follow-up with public validity and throughput
+  thresholds; preparation and a PR authorize no calls.
 - [Offline A/B/C comparison](comparison.md) interprets the retained results
   against the primary screen and reports the bounded exploratory recommendation.
 - [Stopped exploratory A slice](../../../../../output/reviewer-evaluation/ab-001/a-series-execution.json)
