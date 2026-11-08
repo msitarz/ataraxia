@@ -181,6 +181,8 @@ isolation.
 
 ## Links
 
+- [Offline A/B/C comparison](comparison.md) interprets the retained results
+  against the primary screen and reports the bounded exploratory recommendation.
 - [Stopped exploratory A slice](../../../../../output/reviewer-evaluation/ab-001/a-series-execution.json)
   retains one initial A observation, three additional attempted calls, and
   eight unstarted slots; it does not complete or adjudicate the Evaluation.
