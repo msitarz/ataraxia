@@ -13,7 +13,7 @@ help: ## display this command index
 	@echo "Run project tools through Make targets; ARGS narrows target-specific checks."
 	@echo "doc-check always checks every active Work, regardless of ARGS."
 
-singlequote := $(shell echo "'")
+singlequote := '#'
 # Quote caller selectors as literal, whitespace-separated shell words.
 _SHELL_WORDS = $(foreach arg,$(1),'$(subst $(singlequote),'"'"',$(arg))')
 # Quote one shell value while preserving embedded spaces and apostrophes.
